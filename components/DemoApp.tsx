@@ -89,9 +89,9 @@ export default function DemoApp() {
         if (typeof data.musicOn === "boolean") setMusicOn(data.musicOn);
         if (Array.isArray(data.earnings) && data.earnings.length) setEarnings(data.earnings.slice(-20));
         if (Array.isArray(data.movements)) setMovements(data.movements.slice(0, 20));
-        if (typeof data.tutorialSeen === "boolean") setTutorialSeen(data.tutorialSeen);
       } catch {}
     }
+    setTutorialSeen(localStorage.getItem("skill-arena-color-tutorial-v1") === "1");
     setIsLoaded(true);
   }, []);
 
@@ -150,6 +150,7 @@ export default function DemoApp() {
       setTutorialStep((step) => step + 1);
       return;
     }
+    localStorage.setItem("skill-arena-color-tutorial-v1", "1");
     setTutorialSeen(true);
     setTutorialOpen(false);
   }
@@ -242,6 +243,7 @@ export default function DemoApp() {
   function logoutDemo() {
     localStorage.removeItem("skill-arena-v2");
     localStorage.removeItem("skill-arena-v3");
+    localStorage.removeItem("skill-arena-color-tutorial-v1");
     setOnboarded(false);
     setProvider(null);
     setPlayerName("PLAYER_001");
