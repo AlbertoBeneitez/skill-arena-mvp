@@ -23,7 +23,14 @@ type PersistedState = {
   musicOn: boolean;
   earnings: EarningsPoint[];
   movements: Movement[];
+  tutorialSeen: boolean;
 };
+
+const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "play", "game", "wallet", "profile", "legal"];
+
+function isScreen(value: unknown): value is Screen {
+  return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
+}
 
 const AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${i + 1}.svg`);
 const START_BALANCE = 25;
@@ -55,6 +62,9 @@ export default function DemoApp() {
   const [musicOn, setMusicOn] = useState(true);
   const [earnings, setEarnings] = useState<EarningsPoint[]>([{ label: "Inicio", value: 0 }]);
   const [movements, setMovements] = useState<Movement[]>([]);
+  const [tutorialSeen, setTutorialSeen] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
   const [selectedGame, setSelectedGame] = useState<GameMeta>(GAMES[0]);
   const [selectedStake, setSelectedStake] = useState<Stake>(0);
   const [selectedMode, setSelectedMode] = useState<MatchMode>("create");
@@ -65,7 +75,7 @@ export default function DemoApp() {
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
   useEffect(() => {
-    const raw = localStorage.getItem("skill-arena-v2");
+    const raw = localStorage.getItem("skill-arena-v3") ?? localStorage.getItem("skill-arena-v2");
     if (raw) {
       try {
         const data = JSON.parse(raw) as Partial<PersistedState>;
@@ -79,6 +89,7 @@ export default function DemoApp() {
         if (typeof data.musicOn === "boolean") setMusicOn(data.musicOn);
         if (Array.isArray(data.earnings) && data.earnings.length) setEarnings(data.earnings.slice(-20));
         if (Array.isArray(data.movements)) setMovements(data.movements.slice(0, 20));
+        if (typeof data.tutorialSeen === "boolean") setTutorialSeen(data.tutorialSeen);
       } catch {}
     }
     setIsLoaded(true);
@@ -97,9 +108,51 @@ export default function DemoApp() {
       musicOn,
       earnings,
       movements,
+      tutorialSeen,
     };
-    localStorage.setItem("skill-arena-v2", JSON.stringify(data));
-  }, [isLoaded, onboarded, provider, playerName, avatarId, balance, netEarnings, nextTurn, musicOn, earnings, movements]);
+    localStorage.setItem("skill-arena-v3", JSON.stringify(data));
+  }, [isLoaded, onboarded, provider, playerName, avatarId, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    window.history.replaceState({ skillArenaScreen: screen }, "", `#${screen}`);
+
+    const onPopState = (event: PopStateEvent) => {
+      const target = event.state?.skillArenaScreen;
+      setActiveGame(false);
+      setResult(null);
+      setTutorialOpen(false);
+      setScreen(isScreen(target) ? target : onboarded ? "home" : "welcome");
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [isLoaded, onboarded]);
+
+  useEffect(() => {
+    if (isLoaded && onboarded && screen === "play" && !tutorialSeen) {
+      setTutorialStep(0);
+      setTutorialOpen(true);
+    }
+  }, [isLoaded, onboarded, screen, tutorialSeen]);
+
+  function navigate(next: Screen, replace = false) {
+    if (next === screen) return;
+    const state = { skillArenaScreen: next };
+    if (replace) window.history.replaceState(state, "", `#${next}`);
+    else window.history.pushState(state, "", `#${next}`);
+    setScreen(next);
+  }
+
+  function advanceTutorial() {
+    if (tutorialStep < 2) {
+      setTutorialStep((step) => step + 1);
+      return;
+    }
+    setTutorialSeen(true);
+    setTutorialOpen(false);
+  }
 
   const rank = rankingFromEarnings(netEarnings);
 
@@ -121,14 +174,14 @@ export default function DemoApp() {
   function chooseProvider(nextProvider: Exclude<Provider, null>) {
     setProvider(nextProvider);
     setAvatarId(Math.floor(Math.random() * AVATARS.length));
-    setScreen("avatar-setup");
+    navigate("avatar-setup");
   }
 
   function completeAvatar() {
     const clean = playerName.trim().slice(0, 18);
     setPlayerName(clean || "PLAYER_001");
     setOnboarded(true);
-    setScreen("home");
+    navigate("home", true);
   }
 
   function openGame(game: GameMeta) {
@@ -137,7 +190,7 @@ export default function DemoApp() {
     setSelectedMode(modeForStake(game, 0, nextTurn));
     setResult(null);
     setActiveGame(false);
-    setScreen("play");
+    navigate("play");
   }
 
   function selectStake(stake: Stake) {
@@ -154,7 +207,7 @@ export default function DemoApp() {
     setResult(null);
     setGameKey((k) => k + 1);
     setActiveGame(true);
-    setScreen("game");
+    navigate("game");
   }
 
   function finishMatch(gameResult: GameResult) {
@@ -183,11 +236,12 @@ export default function DemoApp() {
     setNetEarnings(0);
     setNextTurn("create");
     setEarnings([{ label: "Inicio", value: 0 }]);
-    setScreen("profile");
+    navigate("profile");
   }
 
   function logoutDemo() {
     localStorage.removeItem("skill-arena-v2");
+    localStorage.removeItem("skill-arena-v3");
     setOnboarded(false);
     setProvider(null);
     setPlayerName("PLAYER_001");
@@ -197,7 +251,7 @@ export default function DemoApp() {
     setNextTurn("create");
     setEarnings([{ label: "Inicio", value: 0 }]);
     setMovements([]);
-    setScreen("welcome");
+    navigate("welcome", true);
   }
 
   if (screen === "welcome") {
@@ -225,7 +279,7 @@ export default function DemoApp() {
     return (
       <main className="onboarding">
         <section className="setupCard">
-          <button className="textBack" onClick={() => setScreen("welcome")}>← VOLVER</button>
+          <button className="textBack" onClick={() => window.history.back()}>← VOLVER</button>
           <div className="screenCode">02 / AVATAR</div>
           <h1>CONFIGURA TU AVATAR</h1>
           <label className="fieldLabel">NOMBRE</label>
@@ -247,14 +301,14 @@ export default function DemoApp() {
   return (
     <main className="appShell">
       <header className="appHeader">
-        <button className="logoButton" onClick={() => setScreen("home")}>SKILL ARENA</button>
-        <button className="balanceChip" onClick={() => setScreen("wallet")}>{euro(balance)}</button>
+        <button className="logoButton" onClick={() => navigate("home")}>SKILL ARENA</button>
+        <button className="balanceChip" onClick={() => navigate("wallet")}>{euro(balance)}</button>
       </header>
 
       <div className="appBody">
         {screen === "home" && (
           <>
-            <button className="playerStrip" onClick={() => setScreen("profile")}>
+            <button className="playerStrip" onClick={() => navigate("profile")}>
               <img src={AVATARS[avatarId]} alt="Avatar" />
               <strong>{playerName}</strong>
               <span className="rankNumber">#{rank}</span>
@@ -262,7 +316,7 @@ export default function DemoApp() {
             </button>
 
             <section className="homeSection">
-              <div className="sectionTitle"><span>JUGAR</span><button onClick={() => setScreen("play")}>VER TODOS →</button></div>
+              <div className="sectionTitle"><span>JUGAR</span><button onClick={() => navigate("play")}>VER TODOS →</button></div>
               <div className="gameGrid">
                 {GAMES.map((game) => (
                   <button className="gameCard" key={game.id} onClick={() => openGame(game)}>
@@ -283,7 +337,7 @@ export default function DemoApp() {
 
         {screen === "play" && (
           <section className="catalogScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => setScreen("home")}>← INICIO</button><span>JUGAR</span></div>
+            <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← INICIO</button><span>JUGAR</span></div>
             <div className="gameGrid large">
               {GAMES.map((game) => (
                 <button className={`gameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`} key={game.id} onClick={() => openGame(game)}>
@@ -323,14 +377,14 @@ export default function DemoApp() {
 
         {screen === "game" && (
           <section className="gameScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => { if (!activeGame) setScreen("play"); }}>← {activeGame ? "PARTIDA" : "VOLVER"}</button><span>{selectedGame.name.toUpperCase()}</span></div>
+            <div className="screenTop"><button className="textBack" onClick={() => { if (!activeGame) window.history.back(); }}>← {activeGame ? "PARTIDA" : "VOLVER"}</button><span>{selectedGame.name.toUpperCase()}</span></div>
             <GameLoader game={selectedGame} active={activeGame} instanceKey={gameKey} onFinish={finishMatch} />
             {result && (
               <div className={`resultPanel ${result.won ? "win" : "loss"}`}>
                 <b>{result.won ? "VICTORIA" : "DERROTA"}</b>
                 <span>{result.score} pts · {(result.timeMs / 1000).toFixed(2)} s</span>
                 <strong>{selectedStake === 0 ? "0,00 €" : result.won ? `+${euro(prizeForStake(selectedStake) - selectedStake)}` : `-${euro(selectedStake)}`}</strong>
-                <button className="mainAction" onClick={() => setScreen("play")}>VOLVER A JUGAR</button>
+                <button className="mainAction" onClick={() => navigate("play")}>VOLVER A JUGAR</button>
               </div>
             )}
           </section>
@@ -359,9 +413,9 @@ export default function DemoApp() {
             </div>
             <div className="settingsList">
               <button onClick={() => setMusicOn((v) => !v)}><span>MÚSICA</span><b>{musicOn ? "ON" : "OFF"}</b></button>
-              <button onClick={() => setScreen("avatar-setup")}><span>CAMBIAR NOMBRE / FOTO</span><b>→</b></button>
+              <button onClick={() => navigate("avatar-setup")}><span>CAMBIAR NOMBRE / FOTO</span><b>→</b></button>
               <button onClick={resetAvatar}><span>RESETEAR AVATAR</span><b>0 €</b></button>
-              <button onClick={() => setScreen("legal")}><span>LEGAL</span><b>→</b></button>
+              <button onClick={() => navigate("legal")}><span>LEGAL</span><b>→</b></button>
               <button onClick={logoutDemo}><span>CERRAR SESIÓN DEMO</span><b>×</b></button>
             </div>
             <p className="resetNote">Resetear avatar reinicia ranking y resultado competitivo visible. El saldo de wallet no se borra.</p>
@@ -370,7 +424,7 @@ export default function DemoApp() {
 
         {screen === "legal" && (
           <section className="simpleScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => setScreen("profile")}>← AVATAR</button><span>LEGAL</span></div>
+            <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← AVATAR</button><span>LEGAL</span></div>
             <div className="legalTabs">
               <button className={legalTab === "terms" ? "active" : ""} onClick={() => setLegalTab("terms")}>TÉRMINOS</button>
               <button className={legalTab === "privacy" ? "active" : ""} onClick={() => setLegalTab("privacy")}>PRIVACIDAD</button>
@@ -386,12 +440,32 @@ export default function DemoApp() {
         )}
       </div>
 
+      {tutorialOpen && screen === "play" && (
+        <div className="tutorialOverlay" role="dialog" aria-modal="true" aria-label="Tutorial de tipos de partida">
+          <div className="tutorialCard">
+            <div className="tutorialProgress">PRIMERA VEZ · {tutorialStep + 1}/3</div>
+            <h2>{tutorialStep === 0 ? "VERDE · TÚ CREAS" : tutorialStep === 1 ? "AZUL · YA EXISTE UNA JUGADA" : "MORADO · HAY ALGUIEN ESPERANDO"}</h2>
+            <button className={`tutorialStake ${tutorialStep === 0 ? "create" : tutorialStep === 1 ? "existing" : "waiting"}`} disabled>
+              5€
+            </button>
+            <p>
+              {tutorialStep === 0
+                ? "Juegas primero. Tu resultado queda guardado para que otro jugador intente superarlo."
+                : tutorialStep === 1
+                  ? "Otro jugador ya dejó su resultado. Tú juegas ahora para intentar superarlo."
+                  : "Hay un jugador esperando una partida de este importe. Este color indica cola activa."}
+            </p>
+            <button className="mainAction" onClick={advanceTutorial}>{tutorialStep < 2 ? "SIGUIENTE" : "ENTENDIDO"}</button>
+          </div>
+        </div>
+      )}
+
       {screen !== "game" && screen !== "legal" && (
         <nav className="bottomNav" aria-label="Navegación principal">
-          <button className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><span>⌂</span>INICIO</button>
-          <button className={screen === "play" ? "active" : ""} onClick={() => { setScreen("play"); setSelectedGame(GAMES[0]); setSelectedStake(0); setSelectedMode(modeForStake(GAMES[0], 0, nextTurn)); }}><span>▶</span>JUGAR</button>
-          <button className={screen === "wallet" ? "active" : ""} onClick={() => setScreen("wallet")}><span>□</span>WALLET</button>
-          <button className={screen === "profile" ? "active" : ""} onClick={() => setScreen("profile")}><img src={AVATARS[avatarId]} alt="" />AVATAR</button>
+          <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}><span>⌂</span>INICIO</button>
+          <button className={screen === "play" ? "active" : ""} onClick={() => { navigate("play"); setSelectedGame(GAMES[0]); setSelectedStake(0); setSelectedMode(modeForStake(GAMES[0], 0, nextTurn)); }}><span>▶</span>JUGAR</button>
+          <button className={screen === "wallet" ? "active" : ""} onClick={() => navigate("wallet")}><span>□</span>WALLET</button>
+          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}><img src={AVATARS[avatarId]} alt="" />AVATAR</button>
         </nav>
       )}
     </main>
