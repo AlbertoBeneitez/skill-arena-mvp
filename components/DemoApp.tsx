@@ -1,472 +1,399 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import RunnerGame from "./RunnerGame";
+import GameLoader from "./GameLoader";
+import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
+import type { GameResult } from "@/lib/types";
 
-type Result = { won: boolean; score: number; timeMs: number };
+type Screen = "welcome" | "avatar-setup" | "home" | "play" | "game" | "wallet" | "profile" | "legal";
+type Provider = "google" | "apple" | null;
+type Turn = "create" | "existing";
 
-const ENTRY = 5;
-const PRIZE = 9;
-const STARTING_BALANCE = 25;
+type EarningsPoint = { label: string; value: number };
+type Movement = { label: string; amount: number };
 
-const tournaments = [
-  {
-    name: "Neon Dash",
-    mode: "1 vs 1 · recorrido fijo",
-    entry: 5,
-    prize: 9,
-    players: "1/2",
-    playable: true,
-  },
-  {
-    name: "Tap Sprint",
-    mode: "8 jugadores · velocidad",
-    entry: 3,
-    prize: 20,
-    players: "5/8",
-    playable: false,
-  },
-  {
-    name: "Precision Grid",
-    mode: "16 jugadores · precisión",
-    entry: 2,
-    prize: 24,
-    players: "11/16",
-    playable: false,
-  },
-];
+type PersistedState = {
+  onboarded: boolean;
+  provider: Provider;
+  playerName: string;
+  avatarId: number;
+  balance: number;
+  netEarnings: number;
+  nextTurn: Turn;
+  musicOn: boolean;
+  earnings: EarningsPoint[];
+  movements: Movement[];
+};
+
+const AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${i + 1}.svg`);
+const START_BALANCE = 25;
+
+function euro(value: number) {
+  return `${value.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+}
+
+function rankingFromEarnings(value: number) {
+  if (value >= 100) return 12;
+  if (value >= 50) return 48;
+  if (value >= 20) return 133;
+  if (value >= 5) return 241;
+  if (value >= 0) return 417;
+  if (value >= -10) return 612;
+  if (value >= -30) return 819;
+  return 1042;
+}
 
 export default function DemoApp() {
-  const [balance, setBalance] = useState(STARTING_BALANCE);
+  const [screen, setScreen] = useState<Screen>("welcome");
+  const [onboarded, setOnboarded] = useState(false);
+  const [provider, setProvider] = useState<Provider>(null);
+  const [playerName, setPlayerName] = useState("PLAYER_001");
+  const [avatarId, setAvatarId] = useState(0);
+  const [balance, setBalance] = useState(START_BALANCE);
+  const [netEarnings, setNetEarnings] = useState(0);
+  const [nextTurn, setNextTurn] = useState<Turn>("create");
+  const [musicOn, setMusicOn] = useState(true);
+  const [earnings, setEarnings] = useState<EarningsPoint[]>([{ label: "Inicio", value: 0 }]);
+  const [movements, setMovements] = useState<Movement[]>([]);
+  const [selectedGame, setSelectedGame] = useState<GameMeta>(GAMES[0]);
+  const [selectedStake, setSelectedStake] = useState<Stake>(0);
+  const [selectedMode, setSelectedMode] = useState<MatchMode>("create");
   const [activeGame, setActiveGame] = useState(false);
   const [gameKey, setGameKey] = useState(0);
-  const [result, setResult] = useState<Result | null>(null);
-  const [history, setHistory] = useState<string[]>([]);
-  const [notice, setNotice] = useState(
-    "Demo: saldo y premios son créditos ficticios."
-  );
-
-  // Evita sobrescribir localStorage antes de haber recuperado
-  // los datos guardados previamente.
+  const [result, setResult] = useState<GameResult | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
-  // 1. Recuperar saldo e historial guardados al abrir la web.
   useEffect(() => {
-    const saved = localStorage.getItem("skillarena-demo");
-
-    if (saved) {
+    const raw = localStorage.getItem("skill-arena-v2");
+    if (raw) {
       try {
-        const data = JSON.parse(saved);
-
-        if (typeof data.balance === "number") {
-          setBalance(data.balance);
-        }
-
-        if (Array.isArray(data.history)) {
-          setHistory(data.history.slice(0, 8));
-        }
-      } catch {
-        console.warn("No se pudieron recuperar los datos guardados.");
-      }
+        const data = JSON.parse(raw) as Partial<PersistedState>;
+        if (data.onboarded) { setOnboarded(true); setScreen("home"); }
+        if (data.provider === "google" || data.provider === "apple") setProvider(data.provider);
+        if (typeof data.playerName === "string") setPlayerName(data.playerName);
+        if (typeof data.avatarId === "number") setAvatarId(Math.max(0, Math.min(AVATARS.length - 1, data.avatarId)));
+        if (typeof data.balance === "number") setBalance(data.balance);
+        if (typeof data.netEarnings === "number") setNetEarnings(data.netEarnings);
+        if (data.nextTurn === "create" || data.nextTurn === "existing") setNextTurn(data.nextTurn);
+        if (typeof data.musicOn === "boolean") setMusicOn(data.musicOn);
+        if (Array.isArray(data.earnings) && data.earnings.length) setEarnings(data.earnings.slice(-20));
+        if (Array.isArray(data.movements)) setMovements(data.movements.slice(0, 20));
+      } catch {}
     }
-
     setIsLoaded(true);
   }, []);
 
-  // 2. Guardar cambios únicamente después de haber cargado
-  // el estado anterior.
   useEffect(() => {
     if (!isLoaded) return;
-
-    localStorage.setItem(
-      "skillarena-demo",
-      JSON.stringify({
-        balance,
-        history,
-      })
-    );
-  }, [balance, history, isLoaded]);
-
-  const canEnter = balance >= ENTRY && !activeGame;
-
-  const stats = useMemo(() => {
-    const wins = history.filter((x) => x.startsWith("Victoria")).length;
-    const losses = history.filter((x) => x.startsWith("Derrota")).length;
-
-    return {
-      wins,
-      losses,
-      played: wins + losses,
+    const data: PersistedState = {
+      onboarded,
+      provider,
+      playerName,
+      avatarId,
+      balance,
+      netEarnings,
+      nextTurn,
+      musicOn,
+      earnings,
+      movements,
     };
-  }, [history]);
+    localStorage.setItem("skill-arena-v2", JSON.stringify(data));
+  }, [isLoaded, onboarded, provider, playerName, avatarId, balance, netEarnings, nextTurn, musicOn, earnings, movements]);
 
-  function enterTournament() {
-    if (!canEnter) return;
+  const rank = rankingFromEarnings(netEarnings);
 
-    setBalance((b) => b - ENTRY);
+  const chartPoints = useMemo(() => {
+    if (earnings.length === 1) return "0,74 100,74";
+    const values = earnings.map((p) => p.value);
+    const min = Math.min(...values, 0);
+    const max = Math.max(...values, 0);
+    const span = Math.max(1, max - min);
+    return earnings
+      .map((point, index) => {
+        const x = (index / (earnings.length - 1)) * 100;
+        const y = 92 - ((point.value - min) / span) * 76;
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(" ");
+  }, [earnings]);
+
+  function chooseProvider(nextProvider: Exclude<Provider, null>) {
+    setProvider(nextProvider);
+    setAvatarId(Math.floor(Math.random() * AVATARS.length));
+    setScreen("avatar-setup");
+  }
+
+  function completeAvatar() {
+    const clean = playerName.trim().slice(0, 18);
+    setPlayerName(clean || "PLAYER_001");
+    setOnboarded(true);
+    setScreen("home");
+  }
+
+  function openGame(game: GameMeta) {
+    setSelectedGame(game);
+    setSelectedStake(0);
+    setSelectedMode(modeForStake(game, 0, nextTurn));
+    setResult(null);
+    setActiveGame(false);
+    setScreen("play");
+  }
+
+  function selectStake(stake: Stake) {
+    setSelectedStake(stake);
+    setSelectedMode(modeForStake(selectedGame, stake, nextTurn));
+  }
+
+  function startMatch() {
+    if (selectedStake > balance) return;
+    setBalance((b) => Number((b - selectedStake).toFixed(2)));
+    if (selectedStake > 0) {
+      setMovements((items) => [{ label: `${selectedGame.name} · entrada`, amount: -selectedStake }, ...items].slice(0, 20));
+    }
     setResult(null);
     setGameKey((k) => k + 1);
     setActiveGame(true);
-    setNotice(
-      `${ENTRY} créditos bloqueados como entrada. Partida iniciada.`
+    setScreen("game");
+  }
+
+  function finishMatch(gameResult: GameResult) {
+    setActiveGame(false);
+    setResult(gameResult);
+    const prize = prizeForStake(selectedStake);
+    const delta = gameResult.won ? prize - selectedStake : -selectedStake;
+
+    if (gameResult.won && prize > 0) {
+      setBalance((b) => Number((b + prize).toFixed(2)));
+      setMovements((items) => [{ label: `${selectedGame.name} · premio`, amount: prize }, ...items].slice(0, 20));
+    }
+
+    if (selectedStake > 0) {
+      const nextValue = Number((netEarnings + delta).toFixed(2));
+      setNetEarnings(nextValue);
+      setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
+    }
+
+    setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
+  }
+
+  function resetAvatar() {
+    setAvatarId((avatarId + 1) % AVATARS.length);
+    setPlayerName("PLAYER_NEW");
+    setNetEarnings(0);
+    setNextTurn("create");
+    setEarnings([{ label: "Inicio", value: 0 }]);
+    setScreen("profile");
+  }
+
+  function logoutDemo() {
+    localStorage.removeItem("skill-arena-v2");
+    setOnboarded(false);
+    setProvider(null);
+    setPlayerName("PLAYER_001");
+    setAvatarId(0);
+    setBalance(START_BALANCE);
+    setNetEarnings(0);
+    setNextTurn("create");
+    setEarnings([{ label: "Inicio", value: 0 }]);
+    setMovements([]);
+    setScreen("welcome");
+  }
+
+  if (screen === "welcome") {
+    return (
+      <main className="onboarding">
+        <section className="welcomeCard">
+          <div className="wordmark">SKILL ARENA</div>
+          <div className="olympus" aria-label="Camino hacia el Olimpo">
+            <div className="olympusPeak">OLIMPO</div>
+            <div className="mountain mountainLeft" />
+            <div className="mountain mountainRight" />
+            <div className="pathLine p1" /><div className="pathLine p2" /><div className="pathLine p3" /><div className="pathLine p4" />
+            <div className="traveler" />
+          </div>
+          <div className="welcomeCopy">SUBE. COMPITE. LLEGA ARRIBA.</div>
+          <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
+          <button className="authButton apple" onClick={() => chooseProvider("apple")}><span>●</span>Continuar con Apple</button>
+          <p className="microcopy">Demo V2 · sin pagos reales</p>
+        </section>
+      </main>
     );
   }
 
-  function finishGame(r: Result) {
-    setActiveGame(false);
-    setResult(r);
-
-    if (r.won) {
-      setBalance((b) => b + PRIZE);
-
-      setHistory((h) =>
-        [
-          `Victoria · +${PRIZE} cr · ${(r.timeMs / 1000).toFixed(2)} s`,
-          ...h,
-        ].slice(0, 8)
-      );
-
-      setNotice(
-        `Victoria. Premio simulado de ${PRIZE} créditos abonado al ledger demo.`
-      );
-    } else {
-      setHistory((h) =>
-        [`Derrota · -${ENTRY} cr · score ${r.score}`, ...h].slice(0, 8)
-      );
-
-      setNotice(
-        "Partida finalizada. La entrada queda consumida en esta simulación."
-      );
-    }
-  }
-
-  function resetDemo() {
-    setBalance(STARTING_BALANCE);
-    setHistory([]);
-    setResult(null);
-    setActiveGame(false);
-    setNotice("Demo restablecida a 25 créditos ficticios.");
+  if (screen === "avatar-setup") {
+    return (
+      <main className="onboarding">
+        <section className="setupCard">
+          <button className="textBack" onClick={() => setScreen("welcome")}>← VOLVER</button>
+          <div className="screenCode">02 / AVATAR</div>
+          <h1>CONFIGURA TU AVATAR</h1>
+          <label className="fieldLabel">NOMBRE</label>
+          <input className="nameInput" value={playerName} onChange={(e) => setPlayerName(e.target.value)} maxLength={18} />
+          <div className="fieldLabel">FOTO</div>
+          <div className="avatarGallery">
+            {AVATARS.map((avatar, index) => (
+              <button key={avatar} className={`avatarChoice ${avatarId === index ? "selected" : ""}`} onClick={() => setAvatarId(index)}>
+                <img src={avatar} alt={`Avatar ${index + 1}`} />
+              </button>
+            ))}
+          </div>
+          <button className="mainAction" onClick={completeAvatar}>ENTRAR EN SKILL ARENA</button>
+        </section>
+      </main>
+    );
   }
 
   return (
-    <main>
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="SkillArena inicio">
-          <span className="brandMark">S</span>
-          <span>
-            SkillArena <small>BETA</small>
-          </span>
-        </a>
-
-        <nav className="nav">
-          <a href="#lobby">Torneos</a>
-          <a href="#ranking">Ranking</a>
-          <a href="#wallet">Wallet</a>
-        </nav>
-
-        <div className="account">
-          <div>
-            <span className="muted">Saldo demo</span>
-            <strong>{balance.toFixed(2)} cr</strong>
-          </div>
-          <div className="avatar">AB</div>
-        </div>
+    <main className="appShell">
+      <header className="appHeader">
+        <button className="logoButton" onClick={() => setScreen("home")}>SKILL ARENA</button>
+        <button className="balanceChip" onClick={() => setScreen("wallet")}>{euro(balance)}</button>
       </header>
 
-      <section className="hero" id="top">
-        <div className="heroCopy">
-          <div className="eyebrow">COMPITE · DEMUESTRA · GANA</div>
-
-          <h1>
-            Torneos de habilidad.
-            <br />
-            <span>Sin azar.</span>
-          </h1>
-
-          <p>
-            Una primera versión funcional de tu plataforma: eliges torneo,
-            pagas una entrada ficticia, juegas un recorrido determinista y el
-            resultado actualiza tu saldo demo.
-          </p>
-
-          <div className="heroActions">
-            <a className="primary" href="#play">
-              Probar torneo
-            </a>
-
-            <a className="secondary" href="#lobby">
-              Ver lobby
-            </a>
-          </div>
-
-          <div className="trustRow">
-            <span>◉ Resultado por habilidad</span>
-            <span>◉ Recorrido idéntico</span>
-            <span>◉ Ledger simulado</span>
-          </div>
-        </div>
-
-        <div className="heroPanel">
-          <div className="liveTag">● TORNEO DESTACADO</div>
-
-          <h3>Neon Dash</h3>
-
-          <p>
-            Todos juegan exactamente el mismo recorrido. No existe RNG ni
-            generación aleatoria.
-          </p>
-
-          <div className="prizeGrid">
-            <div>
-              <span>Entrada</span>
-              <b>5 cr</b>
-            </div>
-
-            <div>
-              <span>Premio</span>
-              <b>9 cr</b>
-            </div>
-
-            <div>
-              <span>Formato</span>
-              <b>1 vs 1</b>
-            </div>
-          </div>
-
-          <button
-            className="primary full"
-            onClick={enterTournament}
-            disabled={!canEnter}
-          >
-            {balance < ENTRY
-              ? "Saldo insuficiente"
-              : activeGame
-                ? "Partida en curso"
-                : "Entrar y jugar"}
-          </button>
-        </div>
-      </section>
-
-      <div className="notice">{notice}</div>
-
-      <section className="section" id="lobby">
-        <div className="sectionHead">
-          <div>
-            <span className="eyebrow">LOBBY</span>
-            <h2>Torneos disponibles</h2>
-          </div>
-
-          <span className="online">● 128 jugadores online</span>
-        </div>
-
-        <div className="cards">
-          {tournaments.map((t, i) => (
-            <article className="tournament" key={t.name}>
-              <div className={`gameThumb g${i + 1}`}>
-                <span>{i === 0 ? "▶" : i === 1 ? "⚡" : "◎"}</span>
-              </div>
-
-              <div className="cardBody">
-                <div className="cardTop">
-                  <h3>{t.name}</h3>
-                  <span>{t.players}</span>
-                </div>
-
-                <p>{t.mode}</p>
-
-                <div className="metrics">
-                  <span>
-                    Entrada <b>{t.entry} cr</b>
-                  </span>
-
-                  <span>
-                    Premio <b>{t.prize} cr</b>
-                  </span>
-                </div>
-
-                <button
-                  className={t.playable ? "cardButton active" : "cardButton"}
-                  onClick={t.playable ? enterTournament : undefined}
-                  disabled={!t.playable || !canEnter}
-                >
-                  {t.playable ? "Jugar demo" : "Próximamente"}
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section playSection" id="play">
-        <div className="sectionHead">
-          <div>
-            <span className="eyebrow">JUEGO DEMO</span>
-            <h2>Neon Dash</h2>
-          </div>
-
-          <button
-            className="ghost"
-            onClick={enterTournament}
-            disabled={!canEnter}
-          >
-            Nueva partida · {ENTRY} cr
-          </button>
-        </div>
-
-        <RunnerGame
-          key={gameKey}
-          active={activeGame}
-          onFinish={finishGame}
-        />
-
-        {result && (
-          <div className={`resultBox ${result.won ? "win" : "loss"}`}>
-            <strong>{result.won ? "Victoria" : "Eliminado"}</strong>
-
-            <span>
-              {result.won
-                ? `Tiempo: ${(result.timeMs / 1000).toFixed(2)} s · +${PRIZE} cr`
-                : `Distancia: ${result.score} · -${ENTRY} cr`}
-            </span>
-          </div>
-        )}
-      </section>
-
-      <section className="section split" id="wallet">
-        <div className="panel">
-          <span className="eyebrow">WALLET DEMO</span>
-
-          <div className="walletValue">
-            {balance.toFixed(2)} <small>cr</small>
-          </div>
-
-          <p className="muted">
-            Créditos ficticios. En producción esta capa se conectaría al
-            ledger y al proveedor financiero.
-          </p>
-
-          <div className="walletButtons">
-            <button
-              onClick={() => {
-                setBalance((b) => b + 10);
-                setNotice("Depósito simulado: +10 créditos.");
-              }}
-            >
-              +10 cr prueba
+      <div className="appBody">
+        {screen === "home" && (
+          <>
+            <button className="playerStrip" onClick={() => setScreen("profile")}>
+              <img src={AVATARS[avatarId]} alt="Avatar" />
+              <strong>{playerName}</strong>
+              <span className="rankNumber">#{rank}</span>
+              <span className={`moneyNumber ${netEarnings < 0 ? "negative" : ""}`}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</span>
             </button>
 
-            <button onClick={resetDemo}>Restablecer</button>
-          </div>
+            <section className="homeSection">
+              <div className="sectionTitle"><span>JUGAR</span><button onClick={() => setScreen("play")}>VER TODOS →</button></div>
+              <div className="gameGrid">
+                {GAMES.map((game) => (
+                  <button className="gameCard" key={game.id} onClick={() => openGame(game)}>
+                    <img src={game.cover} alt={game.name} />
+                    <div><strong>{game.name}</strong><span>1 VS 1</span></div>
+                  </button>
+                ))}
+              </div>
+            </section>
 
-          <div className="history">
-            <h4>Últimos movimientos</h4>
+            <section className="turnPanel">
+              <span>PRÓXIMA JUGADA</span>
+              <strong>{nextTurn === "create" ? "INICIAL" : "CONTRA JUGADA EXISTENTE"}</strong>
+              <small>{nextTurn === "create" ? "Tu resultado quedará disponible para otro jugador." : "Ahora tienes derecho a consumir una jugada ya creada."}</small>
+            </section>
+          </>
+        )}
 
-            {history.length === 0 ? (
-              <p className="muted">Todavía no hay partidas.</p>
-            ) : (
-              history.map((x, i) => (
-                <div className="historyRow" key={`${x}-${i}`}>
-                  <span>{x}</span>
-                  <small>ahora</small>
-                </div>
-              ))
+        {screen === "play" && (
+          <section className="catalogScreen">
+            <div className="screenTop"><button className="textBack" onClick={() => setScreen("home")}>← INICIO</button><span>JUGAR</span></div>
+            <div className="gameGrid large">
+              {GAMES.map((game) => (
+                <button className={`gameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`} key={game.id} onClick={() => openGame(game)}>
+                  <img src={game.cover} alt={game.name} />
+                  <div><strong>{game.name}</strong><span>1 VS 1</span></div>
+                </button>
+              ))}
+            </div>
+
+            <div className="gameDetail">
+              <img className="detailCover" src={selectedGame.cover} alt={selectedGame.name} />
+              <div className="detailHeader"><h2>{selectedGame.name}</h2><span>1 VS 1</span></div>
+              <div className="stakesLabel">ELIGE PARTIDA</div>
+              <div className="stakesGrid">
+                {STAKES.map((stake) => {
+                  const mode = modeForStake(selectedGame, stake, nextTurn);
+                  return (
+                    <button
+                      key={stake}
+                      className={`stakeButton ${mode} ${selectedStake === stake ? "selected" : ""}`}
+                      onClick={() => selectStake(stake)}
+                    >
+                      {stake}€
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="modeLegend"><span><i className="dot create" /> inicial</span><span><i className="dot existing" /> existente</span><span><i className="dot waiting" /> sala de espera</span></div>
+              <div className="selectedMatchLine">
+                <span>{selectedMode === "create" ? "PARTIDA INICIAL" : selectedMode === "existing" ? "JUGADA EXISTENTE" : "RIVAL EN SALA"}</span>
+                <strong>{selectedStake === 0 ? "GRATIS" : `PREMIO ${euro(prizeForStake(selectedStake))}`}</strong>
+              </div>
+              <button className="mainAction" onClick={startMatch} disabled={selectedStake > balance}>JUGAR · {selectedStake}€</button>
+            </div>
+          </section>
+        )}
+
+        {screen === "game" && (
+          <section className="gameScreen">
+            <div className="screenTop"><button className="textBack" onClick={() => { if (!activeGame) setScreen("play"); }}>← {activeGame ? "PARTIDA" : "VOLVER"}</button><span>{selectedGame.name.toUpperCase()}</span></div>
+            <GameLoader game={selectedGame} active={activeGame} instanceKey={gameKey} onFinish={finishMatch} />
+            {result && (
+              <div className={`resultPanel ${result.won ? "win" : "loss"}`}>
+                <b>{result.won ? "VICTORIA" : "DERROTA"}</b>
+                <span>{result.score} pts · {(result.timeMs / 1000).toFixed(2)} s</span>
+                <strong>{selectedStake === 0 ? "0,00 €" : result.won ? `+${euro(prizeForStake(selectedStake) - selectedStake)}` : `-${euro(selectedStake)}`}</strong>
+                <button className="mainAction" onClick={() => setScreen("play")}>VOLVER A JUGAR</button>
+              </div>
             )}
-          </div>
-        </div>
+          </section>
+        )}
 
-        <div className="panel" id="ranking">
-          <span className="eyebrow">PERFIL / RANKING</span>
+        {screen === "wallet" && (
+          <section className="simpleScreen">
+            <div className="screenTop"><span>WALLET</span></div>
+            <div className="walletBalance"><small>SALDO</small><strong>{euro(balance)}</strong></div>
+            <div className="walletActions"><button onClick={() => { setBalance((b) => b + 10); setMovements((m) => [{ label: "Ingreso demo", amount: 10 }, ...m]); }}>INGRESAR</button><button disabled>RETIRAR</button></div>
+            <div className="movementList"><div className="listTitle">HISTORIAL</div>{movements.length === 0 ? <p className="emptyText">Sin movimientos.</p> : movements.map((m, i) => <div className="movement" key={`${m.label}-${i}`}><span>{m.label}</span><b className={m.amount < 0 ? "negative" : ""}>{m.amount > 0 ? "+" : ""}{euro(m.amount)}</b></div>)}</div>
+          </section>
+        )}
 
-          <div className="profileRow">
-            <div className="avatar big">AB</div>
-
-            <div>
-              <h3>Jugador Demo</h3>
-              <p className="muted">#247 global</p>
+        {screen === "profile" && (
+          <section className="simpleScreen">
+            <div className="screenTop"><span>AVATAR</span></div>
+            <div className="profileStrip"><img src={AVATARS[avatarId]} alt="Avatar" /><div><strong>{playerName}</strong><span>#{rank}</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <div className="chartPanel">
+              <div className="chartHead"><span>DINERO GANADO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
+              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Dinero ganado en función del tiempo">
+                <line x1="0" y1="50" x2="100" y2="50" className="zeroLine" />
+                <polyline points={chartPoints} className="profitLine" />
+              </svg>
+              <div className="chartAxis"><span>INICIO</span><span>AHORA</span></div>
             </div>
-          </div>
-
-          <div className="stats">
-            <div>
-              <b>{stats.played}</b>
-              <span>Partidas</span>
+            <div className="settingsList">
+              <button onClick={() => setMusicOn((v) => !v)}><span>MÚSICA</span><b>{musicOn ? "ON" : "OFF"}</b></button>
+              <button onClick={() => setScreen("avatar-setup")}><span>CAMBIAR NOMBRE / FOTO</span><b>→</b></button>
+              <button onClick={resetAvatar}><span>RESETEAR AVATAR</span><b>0 €</b></button>
+              <button onClick={() => setScreen("legal")}><span>LEGAL</span><b>→</b></button>
+              <button onClick={logoutDemo}><span>CERRAR SESIÓN DEMO</span><b>×</b></button>
             </div>
+            <p className="resetNote">Resetear avatar reinicia ranking y resultado competitivo visible. El saldo de wallet no se borra.</p>
+          </section>
+        )}
 
-            <div>
-              <b>{stats.wins}</b>
-              <span>Victorias</span>
+        {screen === "legal" && (
+          <section className="simpleScreen">
+            <div className="screenTop"><button className="textBack" onClick={() => setScreen("profile")}>← AVATAR</button><span>LEGAL</span></div>
+            <div className="legalTabs">
+              <button className={legalTab === "terms" ? "active" : ""} onClick={() => setLegalTab("terms")}>TÉRMINOS</button>
+              <button className={legalTab === "privacy" ? "active" : ""} onClick={() => setLegalTab("privacy")}>PRIVACIDAD</button>
+              <button className={legalTab === "cookies" ? "active" : ""} onClick={() => setLegalTab("cookies")}>COOKIES</button>
+              <button className={legalTab === "rules" ? "active" : ""} onClick={() => setLegalTab("rules")}>REGLAS</button>
             </div>
+            <article className="legalCopy">
+              <h2>{legalTab === "terms" ? "Términos y condiciones" : legalTab === "privacy" ? "Privacidad" : legalTab === "cookies" ? "Cookies" : "Reglas de competición"}</h2>
+              <p>Contenido de demostración. Antes de operar con dinero real esta sección deberá sustituirse por documentación jurídica revisada y aplicable al servicio definitivo.</p>
+              <p>La arquitectura reserva esta pantalla para que las condiciones sean accesibles desde la aplicación móvil sin depender de una web externa.</p>
+            </article>
+          </section>
+        )}
+      </div>
 
-            <div>
-              <b>{stats.losses}</b>
-              <span>Derrotas</span>
-            </div>
-          </div>
-
-          <div className="leaderboard">
-            <div>
-              <b>1</b>
-              <span>NovaRunner</span>
-              <strong>2.481</strong>
-            </div>
-
-            <div>
-              <b>2</b>
-              <span>Vector9</span>
-              <strong>2.344</strong>
-            </div>
-
-            <div>
-              <b>3</b>
-              <span>ByteFox</span>
-              <strong>2.201</strong>
-            </div>
-
-            <div className="you">
-              <b>247</b>
-              <span>Jugador Demo</span>
-              <strong>1.180</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section architecture">
-        <span className="eyebrow">QUÉ ESTÁ SIMULANDO ESTE MVP</span>
-
-        <div className="flow">
-          <div>
-            <b>Next.js</b>
-            <span>interfaz + juego</span>
-          </div>
-
-          <i>→</i>
-
-          <div>
-            <b>localStorage</b>
-            <span>saldo temporal</span>
-          </div>
-
-          <i>→</i>
-
-          <div className="future">
-            <b>PostgreSQL</b>
-            <span>siguiente fase</span>
-          </div>
-
-          <i>→</i>
-
-          <div className="future">
-            <b>EMI</b>
-            <span>dinero real</span>
-          </div>
-        </div>
-      </section>
-
-      <footer>
-        <span>SkillArena MVP · nombre provisional</span>
-        <span>Sin pagos reales · sin RNG</span>
-      </footer>
+      {screen !== "game" && screen !== "legal" && (
+        <nav className="bottomNav" aria-label="Navegación principal">
+          <button className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><span>⌂</span>INICIO</button>
+          <button className={screen === "play" ? "active" : ""} onClick={() => { setScreen("play"); setSelectedGame(GAMES[0]); setSelectedStake(0); setSelectedMode(modeForStake(GAMES[0], 0, nextTurn)); }}><span>▶</span>JUGAR</button>
+          <button className={screen === "wallet" ? "active" : ""} onClick={() => setScreen("wallet")}><span>□</span>WALLET</button>
+          <button className={screen === "profile" ? "active" : ""} onClick={() => setScreen("profile")}><img src={AVATARS[avatarId]} alt="" />AVATAR</button>
+        </nav>
+      )}
     </main>
   );
 }

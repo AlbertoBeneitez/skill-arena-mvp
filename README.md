@@ -1,40 +1,42 @@
-# SkillArena MVP
+# Skill Arena V2 — demo mobile-first
 
-Primera versión funcional de una plataforma de torneos deterministas de habilidad.
+Segunda versión funcional de Skill Arena. Está pensada para probar producto y UX en móvil antes de conectar autenticación real, PostgreSQL, ledger o pagos.
 
 ## Qué incluye
 
-- Landing + lobby de torneos.
-- Wallet visual con créditos ficticios.
-- Historial y ranking demo.
-- Un minijuego jugable (`Neon Dash`) con recorrido fijo y sin RNG.
-- Flujo de entrada de 5 créditos y premio ficticio de 9 créditos.
-- Persistencia temporal mediante `localStorage`.
-- Responsive para PC y móvil.
-- Preparado para desplegar en Vercel.
+- Onboarding: Skill Arena → Continuar con Google/Apple (simulado) → configurar avatar.
+- Galería de 8 avatares ficticios.
+- Panel de jugador horizontal: imagen, nombre, ranking y dinero ganado/perdido.
+- 4 juegos demo, todos 1 vs 1.
+- Portada/cover de cada juego antes de jugar.
+- Stakes: 0 €, 1 €, 5 €, 10 € y 50 €.
+- Estado de matchmaking por color de todo el botón:
+  - verde = jugada inicial;
+  - azul = jugada existente;
+  - morado = jugador esperando.
+- Alternancia automática inicial → existente → inicial → existente.
+- Wallet demo e historial.
+- Avatar/perfil con gráfico de beneficio/pérdida acumulada.
+- Reset competitivo de avatar sin borrar el saldo demo.
+- Música ON/OFF como preferencia preparada para la integración futura.
+- Zona legal placeholder.
 
-## Ejecutar en GitHub Codespaces
+## Arquitectura de juegos
+
+Los metadatos están separados en `lib/games.ts` y cada juego vive en `components/games/`.
+`GameLoader.tsx` utiliza `next/dynamic` para cargar el código del juego bajo demanda.
+
+Esto permite ampliar el catálogo sin rehacer la interfaz. Para juegos futuros con assets pesados, la intención es mantener solo metadata/covers ligeras en la app principal y servir sprites, audio, mapas y otros recursos desde object storage/CDN.
+
+## Desarrollo
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Después abre el puerto 3000 que detecte Codespaces.
-
-## Publicar en Vercel
-
-1. Sube este proyecto a un repositorio de GitHub.
-2. En Vercel, importa el repositorio.
-3. Framework: Next.js (detección automática).
-4. Deploy.
-
-En esta versión no necesitas `DATABASE_URL` ni `BETTER_AUTH_SECRET`, porque aún no existe una base de datos ni autenticación real.
-
-## Siguiente fase recomendada
-
-Sustituir `localStorage` por PostgreSQL y añadir autenticación real. Después, crear un ledger append-only del servidor, torneos persistentes, partidas con identificador de servidor y validación de resultados. La integración EMI/pagos reales debe ir después de esa capa.
+Después abre el puerto 3000.
 
 ## Importante
 
-Esta demo usa créditos ficticios. No custodia dinero ni procesa pagos reales. El motor del juego es deliberadamente simple y sirve para validar experiencia de usuario; no constituye todavía un sistema anti-cheat de producción.
+Google/Apple, dinero, matchmaking, ranking y legal son simulaciones de producto. No hay autenticación real, PostgreSQL, EMI, KYC ni pagos reales en esta V2.
