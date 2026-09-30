@@ -146,6 +146,17 @@ img { max-width: 100%; }
 .settingsList { margin-top: 12px; border: 2px solid var(--line); }.settingsList button { width: 100%; min-height: 50px; border: 0; border-bottom: 1px solid var(--line); background: var(--panel); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; font-size: 11px; text-align: left; }.settingsList button:last-child { border-bottom: 0; }.settingsList b { color: var(--green); }.resetNote { font-size: 9px; color: #68726a; line-height: 1.5; }
 .legalTabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }.legalTabs button { min-height: 42px; border: 2px solid var(--line); background: var(--panel); color: var(--muted); font-size: 9px; }.legalTabs button.active { color: #071009; background: var(--green); border-color: var(--green); }.legalCopy { margin-top: 12px; border: 2px solid var(--line); background: var(--panel); padding: 16px; }.legalCopy h2 { font-size: 18px; }.legalCopy p { color: #9aa39b; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13px; line-height: 1.6; }
 
+
+.tutorialOverlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: end center; background: rgba(0,0,0,.72); padding: 18px 14px calc(18px + env(safe-area-inset-bottom)); }
+.tutorialCard { width: min(100%, 430px); border: 2px solid #445248; background: #0b100c; padding: 18px; box-shadow: 0 -10px 40px rgba(0,0,0,.4); }
+.tutorialProgress { color: var(--muted); font-size: 9px; letter-spacing: .12em; margin-bottom: 10px; }
+.tutorialCard h2 { margin: 0 0 16px; font-size: 19px; line-height: 1.2; }
+.tutorialStake { width: 92px; height: 64px; border: 3px solid #fff; color: #061008; font-size: 18px; font-weight: 950; opacity: 1 !important; }
+.tutorialStake.create { background: var(--green); }
+.tutorialStake.existing { background: var(--blue); }
+.tutorialStake.waiting { background: var(--purple); }
+.tutorialCard p { margin: 16px 0 20px; color: #b8c0b9; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.5; }
+
 .bottomNav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); z-index: 40; display: grid; grid-template-columns: repeat(4, 1fr); background: #080c09; border-top: 2px solid var(--line); }
 .bottomNav button { border: 0; background: transparent; color: #667068; font-size: 8px; font-weight: 900; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .bottomNav button > span { font-size: 18px; line-height: 1; }.bottomNav button.active { color: var(--green); }.bottomNav img { width: 21px; height: 21px; object-fit: cover; border: 1px solid currentColor; }
