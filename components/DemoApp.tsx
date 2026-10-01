@@ -355,7 +355,7 @@ export default function DemoApp() {
           <div className="wordmark">SKILL ARENA</div>
           <div className="authStack">
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
-            <button className="authButton apple" onClick={() => chooseProvider("apple")}><span>●</span>Continuar con Apple</button>
+            <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
           <p className="microcopy">V3.1 · demo</p>
         </section>
