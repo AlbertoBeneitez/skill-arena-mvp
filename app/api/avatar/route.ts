@@ -41,10 +41,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Describe tu avatar." }, { status: 400 });
     }
 
+    const basePrompt =
+      process.env.AVATAR_BASE_PROMPT?.trim() ||
+      [
+        "Create one original square profile avatar for a competitive mobile skill-game app.",
+        "The character must be fictional and original: do not copy celebrities, copyrighted characters, logos, brands, or game franchises.",
+        "Visual direction: expressive premium fantasy-arena portrait, colorful, polished mobile-game artwork, readable at small circular crop, clean background, no text."
+      ].join(" ");
+
     const prompt = [
-      "Create one original square profile avatar for a competitive mobile skill-game app.",
-      "The character must be fictional and original: do not copy celebrities, copyrighted characters, logos, brands, or game franchises.",
-      "Visual direction: expressive premium fantasy-arena portrait, colorful, polished mobile-game artwork, readable at small circular crop, clean background, no text.",
+      basePrompt,
       playerName ? `Avatar name for mood only: ${playerName}.` : "",
       `User description: ${description}`,
     ].filter(Boolean).join(" ");
