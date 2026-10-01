@@ -166,3 +166,265 @@ img { max-width: 100%; }
   .gameGrid { grid-template-columns: repeat(4, 1fr); }
   .welcomeCard, .setupCard { min-height: 760px; }
 }
+
+
+/* =========================================================
+   V3.1 — identidad visual cálida, clara y más cercana a app
+   ========================================================= */
+:root {
+  --bg: #f3eee5;
+  --panel: #fffaf2;
+  --panel2: #f0e6d8;
+  --line: #d9cdbd;
+  --text: #24231f;
+  --muted: #756f66;
+  --green: #62cf8d;
+  --blue: #6f9ee8;
+  --purple: #b887d9;
+  --red: #d95757;
+  --yellow: #f1c85b;
+  --coral: #ee765c;
+  --ink: #24231f;
+}
+
+html, body { background: var(--bg); color: var(--text); }
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.wordmark, .screenCode, .sectionTitle, .stakesLabel, .bottomNav, .tutorialProgress, .miniGameTitle {
+  font-family: "Courier New", ui-monospace, monospace;
+}
+
+/* Onboarding */
+.onboarding {
+  background:
+    radial-gradient(circle at 15% 12%, rgba(238,118,92,.13), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(241,200,91,.18), transparent 24%),
+    #f3eee5;
+  padding: 18px;
+}
+.welcomeCard, .setupCard {
+  width: min(100%, 440px);
+  min-height: 720px;
+  border: 1px solid #d8ccbc;
+  border-radius: 28px;
+  background: rgba(255,250,242,.96);
+  padding: 26px 22px;
+  box-shadow: 0 18px 50px rgba(86,66,42,.12);
+}
+.wordmark {
+  color: #2f4738;
+  font-size: clamp(31px, 9vw, 47px);
+  letter-spacing: .04em;
+}
+.olympus {
+  height: 300px;
+  border: 0;
+  border-radius: 24px;
+  background: #bfe2ec;
+  box-shadow: inset 0 0 0 1px rgba(60,79,68,.08);
+}
+.olympus::before {
+  content: "";
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  right: 28px;
+  top: 28px;
+  background: #f5cf67;
+  box-shadow: 0 0 0 10px rgba(245,207,103,.16);
+}
+.olympusPeak { color: #554328; font-weight: 950; }
+.mountainLeft { border-bottom-color: #8db08a; }
+.mountainRight { border-bottom-color: #6f9274; }
+.pathLine { background: #f7e1a4; height: 5px; border-radius: 99px; }
+.traveler { background: var(--coral); border-color: #fff8ed; border-radius: 4px; }
+.welcomeCopy {
+  color: #6d655b;
+  font-size: 12px;
+  letter-spacing: .08em;
+  margin: 7px 0 24px;
+}
+.authButton {
+  min-height: 56px;
+  border: 1px solid #d6cabb;
+  border-radius: 14px;
+  background: #fff;
+  color: #24231f;
+  box-shadow: 0 5px 14px rgba(73,57,38,.06);
+}
+.authButton.apple { background: #25241f; color: #fff; border-color: #25241f; }
+.authButton span { border-radius: 50%; }
+.microcopy { color: #948b7e; }
+.textBack { color: #746c61; }
+.screenCode { color: #458865; font-weight: 900; }
+.setupCard h1 { color: #2c2b26; margin-bottom: 8px; }
+.setupIntro { margin: 0 0 18px; color: #7b7267; font-size: 14px; line-height: 1.5; }
+
+/* Avatar V3.1 */
+.avatarSetupCard { min-height: 760px; }
+.avatarPortraitWrap { display: grid; place-items: center; margin: 10px 0 22px; }
+.avatarPortrait {
+  position: relative;
+  width: 154px;
+  height: 154px;
+  border-radius: 50%;
+  padding: 5px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(70,52,34,.16), 0 0 0 2px #e0d2c2;
+}
+.avatarPortrait img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.cameraButton {
+  position: absolute;
+  right: 0;
+  bottom: 7px;
+  width: 45px;
+  height: 45px;
+  border: 3px solid #fffaf2;
+  border-radius: 50%;
+  background: #2f4738;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  box-shadow: 0 5px 14px rgba(53,43,31,.22);
+}
+.hiddenFileInput { display: none; }
+.fieldLabel { color: #7e7467; font-size: 11px; font-weight: 800; letter-spacing: .07em; }
+.nameInput, .promptInput {
+  width: 100%;
+  border: 1px solid #d7cbbb;
+  border-radius: 14px;
+  background: #fff;
+  color: #2c2b26;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(80,60,40,.03);
+}
+.nameInput { height: 52px; padding: 0 14px; }
+.promptInput {
+  min-height: 96px;
+  resize: vertical;
+  padding: 13px 14px;
+  font: inherit;
+  line-height: 1.45;
+}
+.nameInput:focus, .promptInput:focus { border-color: #6aaa83; box-shadow: 0 0 0 3px rgba(98,207,141,.18); }
+.avatarActions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 8px; }
+.secondaryAction {
+  min-height: 46px;
+  border: 1px solid #d6c8b7;
+  border-radius: 12px;
+  background: #f7efe4;
+  color: #3f3a33;
+  font-size: 10px;
+  font-weight: 900;
+}
+.avatarNote { color: #8d8376; font-size: 10px; line-height: 1.45; margin: 4px 0 14px; }
+.mainAction {
+  border-radius: 14px;
+  background: #2f8f65;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(47,143,101,.18);
+}
+
+/* App shell */
+.appShell { background: #f3eee5; color: #25241f; }
+.appHeader {
+  height: 60px;
+  border-bottom: 1px solid #ddd2c3;
+  background: rgba(255,250,242,.94);
+  backdrop-filter: blur(12px);
+}
+.logoButton { color: #304c3b; }
+.balanceChip {
+  background: #e6f4ea;
+  color: #28744e;
+  padding: 8px 10px;
+  border-radius: 999px;
+}
+.playerStrip, .gameCard, .turnPanel, .gameDetail, .walletBalance, .profileStrip, .chartPanel, .settingsList, .legalCopy {
+  background: #fffaf2;
+  border: 1px solid #ddd1c1;
+  color: #2b2924;
+  box-shadow: 0 7px 20px rgba(73,57,38,.07);
+}
+.playerStrip { border-radius: 18px; }
+.playerStrip img, .profileStrip img {
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #e1d4c3;
+}
+.rankNumber { color: #5975b7; }
+.moneyNumber { color: #2f8f65; }
+.sectionTitle > span { color: #352f29; }
+.sectionTitle button { color: #8a7d70; }
+.gameCard { border-radius: 16px; }
+.gameCard.selectedGame { border-color: #2f8f65; box-shadow: 0 0 0 2px rgba(47,143,101,.13); }
+.gameCard > img { border-bottom: 1px solid #ddd1c1; }
+.gameCard strong { color: #2e2b26; }
+.gameCard span { color: #8b8175; }
+.turnPanel { border-radius: 16px; background: #f9f0de; }
+.turnPanel strong { color: #2f8f65; }
+.turnPanel small { color: #766f65; }
+.screenTop { color: #2f2d29; }
+.gameDetail { border-radius: 18px; padding: 12px; }
+.detailCover { border: 0; border-radius: 13px; }
+.detailHeader h2, .selectedMatchLine strong { color: #2b2924; }
+.stakesLabel, .modeLegend, .selectedMatchLine span { color: #81776a; }
+.stakeButton { border-radius: 12px; color: #292720; }
+.stakeButton.selected { border-color: #2b2924; outline-color: rgba(255,255,255,.8); }
+.selectedMatchLine { border-color: #dfd4c5; }
+
+.walletBalance, .profileStrip, .chartPanel, .settingsList, .legalCopy { border-radius: 18px; }
+.walletActions button {
+  border: 0;
+  border-radius: 13px;
+  background: #2f8f65;
+  color: #fff;
+}
+.walletActions button:last-child { background: #e8e0d5; color: #8a8176; }
+.listTitle, .movement { border-color: #e2d7c9; }
+.profileStrip span { color: #5975b7; }
+.chartHead strong, .movement b, .settingsList b { color: #2f8f65; }
+.chartPanel { background: #fffdf8; }
+.zeroLine { stroke: #d8cec1; }
+.profitLine { stroke: #2f8f65; }
+.settingsList { overflow: hidden; }
+.settingsList button { background: #fffaf2; color: #312e29; border-color: #e2d7c9; }
+.resetNote, .legalCopy p { color: #7d7469; }
+.legalTabs button {
+  border: 1px solid #ddd1c1;
+  border-radius: 11px;
+  background: #fffaf2;
+  color: #756c61;
+}
+.legalTabs button.active { background: #2f8f65; border-color: #2f8f65; color: #fff; }
+
+.tutorialCard {
+  border: 0;
+  border-radius: 22px;
+  background: #fffaf2;
+  color: #2b2924;
+  box-shadow: 0 -8px 40px rgba(42,33,23,.18);
+}
+.tutorialCard p { color: #6e665d; }
+
+.bottomNav {
+  background: rgba(255,250,242,.97);
+  border-top: 1px solid #ddd2c3;
+  backdrop-filter: blur(12px);
+}
+.bottomNav button { color: #928779; }
+.bottomNav button.active { color: #2f8f65; }
+.bottomNav img { border: 0; border-radius: 50%; }
+
+/* Los juegos conservan un entorno más contrastado para legibilidad */
+.gameStage { border-radius: 18px; overflow: hidden; border-color: #cfc4b5; }
+.gameLoading { border-radius: 18px; border-color: #d8cdbf; background: #fffaf2; color: #2f8f65; }
+.resultPanel { border-radius: 16px; background: #fffaf2; color: #2b2924; }
+.resultPanel > strong { color: #2f8f65; }
+
+@media (max-width: 420px) {
+  .welcomeCard, .setupCard { min-height: calc(100dvh - 24px); border-radius: 22px; padding: 22px 18px; }
+  .avatarPortrait { width: 138px; height: 138px; }
+  .avatarActions { grid-template-columns: 1fr; }
+}
