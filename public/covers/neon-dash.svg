@@ -1,1 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450"><rect width="800" height="450" fill="#081018"/><g stroke="#183327" stroke-width="2"><path d="M0 100H800M0 200H800M0 300H800M100 0V450M200 0V450M300 0V450M400 0V450M500 0V450M600 0V450M700 0V450"/></g><rect x="0" y="350" width="800" height="100" fill="#122018"/><rect y="350" width="800" height="6" fill="#79ffb6"/><rect x="110" y="278" width="55" height="72" fill="#79ffb6"/><rect x="141" y="292" width="9" height="9" fill="#06110b"/><rect x="370" y="290" width="70" height="60" fill="#ff6b77"/><rect x="590" y="250" width="58" height="100" fill="#ff6b77"/><text x="42" y="72" fill="#f4fff8" font-family="monospace" font-size="38" font-weight="700">NEON DASH</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+<rect width="800" height="450" rx="34" fill="#F6C96A"/>
+<circle cx="680" cy="78" r="56" fill="#FFF1B9"/>
+<path d="M0 315L155 195l118 70 125-147 135 122 98-62 169 137v135H0Z" fill="#7CA985"/>
+<path d="M0 350h800v100H0Z" fill="#F7F0E6"/>
+<path d="M0 350h800" stroke="#2F4738" stroke-width="8"/>
+<rect x="128" y="274" width="62" height="76" rx="10" fill="#EE765C"/>
+<circle cx="176" cy="300" r="7" fill="#24231F"/>
+<path d="M330 350l42-68 42 68M555 350l47-96 47 96" fill="#B887D9"/>
+<text x="45" y="74" fill="#2F4738" font-family="Arial, sans-serif" font-size="42" font-weight="900">NEON DASH</text>
+<text x="48" y="108" fill="#6B5D49" font-family="Arial, sans-serif" font-size="18" font-weight="700">SALTA · AFÍNATE · SUPERA</text>
+</svg>
