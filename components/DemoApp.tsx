@@ -75,6 +75,19 @@ export default function DemoApp() {
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
   useEffect(() => {
+    // En desarrollo queremos probar siempre el flujo completo desde cero.
+    // En producción, el onboarding y el tutorial se recuerdan normalmente.
+    if (process.env.NODE_ENV === "development") {
+      setOnboarded(false);
+      setProvider(null);
+      setScreen("welcome");
+      setTutorialSeen(false);
+      setTutorialOpen(false);
+      setTutorialStep(0);
+      setIsLoaded(true);
+      return;
+    }
+
     const raw = localStorage.getItem("skill-arena-v3") ?? localStorage.getItem("skill-arena-v2");
     if (raw) {
       try {
