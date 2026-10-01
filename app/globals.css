@@ -441,3 +441,237 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   .avatarPortrait { width: 138px; height: 138px; }
   .avatarActions { grid-template-columns: 1fr; }
 }
+
+
+/* =========================================================
+   V3.1b — arena fantástica luminosa, original
+   ========================================================= */
+:root {
+  --bg: #74c7ef;
+  --panel: #fff8e9;
+  --panel2: #e8f2ff;
+  --line: #c89c42;
+  --text: #27324a;
+  --muted: #66738b;
+  --green: #61c884;
+  --blue: #5c91e8;
+  --purple: #9e71d5;
+  --red: #df5c58;
+  --yellow: #f3c74f;
+  --coral: #ef765d;
+  --royal: #315fba;
+  --gold: #e8b63d;
+  --stone: #f7ecd4;
+}
+
+html, body {
+  background: #74c7ef;
+}
+
+.arenaOnboarding {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,.92) 0 6%, transparent 6.5%),
+    radial-gradient(circle at 78% 13%, rgba(255,255,255,.82) 0 8%, transparent 8.5%),
+    linear-gradient(180deg, #65bce9 0%, #9dd8f2 48%, #7cc990 48.2%, #55a969 100%);
+}
+.arenaOnboarding::before,
+.arenaOnboarding::after {
+  content: "";
+  position: absolute;
+  bottom: -42px;
+  width: 220px;
+  height: 210px;
+  background: #d6c39d;
+  border: 7px solid rgba(96,72,42,.18);
+  border-radius: 38px 38px 0 0;
+  box-shadow: inset 0 14px 0 rgba(255,255,255,.3);
+}
+.arenaOnboarding::before { left: -100px; transform: rotate(8deg); }
+.arenaOnboarding::after { right: -100px; transform: rotate(-8deg); }
+
+.welcomeCardCompact,
+.avatarSetupMinimal {
+  position: relative;
+  z-index: 2;
+  min-height: auto;
+  border: 3px solid rgba(115,77,23,.22);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255,250,237,.98), rgba(244,229,199,.98));
+  box-shadow:
+    0 9px 0 rgba(84,58,26,.16),
+    0 22px 52px rgba(45,75,108,.28);
+}
+.welcomeCardCompact {
+  min-height: 430px;
+  justify-content: center;
+  gap: 16px;
+}
+.arenaBadge {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 2px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #4979d2, #284f9f);
+  color: #fff5cf;
+  border: 5px solid #f0c44f;
+  box-shadow: 0 7px 0 #8f6923, inset 0 3px 0 rgba(255,255,255,.25);
+  font-family: "Courier New", monospace;
+  font-size: 32px;
+  font-weight: 950;
+  letter-spacing: -.05em;
+}
+.welcomeCardCompact .wordmark {
+  margin: 0 0 18px;
+  color: #31569a;
+  text-shadow: 0 2px 0 #fff, 0 4px 0 rgba(93,67,20,.12);
+}
+.authStack { display: grid; gap: 10px; }
+.authStack .authButton { margin: 0; }
+
+.avatarSetupMinimal {
+  width: min(100%, 410px);
+  padding: 30px 22px 24px;
+  justify-content: center;
+  gap: 10px;
+}
+.avatarSetupMinimal .avatarPortraitWrap { margin: 0 0 18px; }
+.avatarSetupMinimal .avatarPortrait {
+  width: 168px;
+  height: 168px;
+  border: 5px solid #f2c64f;
+  box-shadow: 0 7px 0 #9b752d, 0 14px 30px rgba(48,71,96,.2);
+}
+.avatarChangeButton {
+  background: linear-gradient(145deg, #4778d1, #2f5fae);
+  border-color: #fff4d4;
+  box-shadow: 0 4px 0 #27477f;
+}
+.avatarChangeButton.open { background: linear-gradient(145deg, #a779db, #8355bc); }
+
+.avatarSetupMinimal .nameInput,
+.avatarSetupMinimal .promptInput {
+  border: 2px solid #cfa54e;
+  background: #fffdf6;
+  box-shadow: inset 0 2px 0 rgba(75,52,20,.05);
+}
+.avatarSetupMinimal .nameInput {
+  height: 56px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+.nameAvailability {
+  min-height: 18px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .05em;
+}
+.nameAvailability.available { color: #25855b; }
+.nameAvailability.unavailable { color: #c54e4a; }
+.avatarEditor {
+  margin: 2px 0 8px;
+  background: rgba(255,249,235,.88);
+  border: 2px solid #d6b261;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.7);
+}
+.avatarError {
+  margin-top: 8px;
+  color: #b84440;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.secondaryAction {
+  background: linear-gradient(180deg, #f8d865, #e8b63d);
+  border: 2px solid #c28e29;
+  color: #4b3c1e;
+  box-shadow: 0 3px 0 #9d7022;
+}
+.mainAction {
+  background: linear-gradient(180deg, #6dd596, #3ea66c);
+  border: 2px solid #2e8a59;
+  box-shadow: 0 4px 0 #246c47;
+  color: #fff;
+}
+.mainAction:active,
+.secondaryAction:active,
+.authButton:active { transform: translateY(2px); box-shadow: none; }
+
+.appShell {
+  background:
+    linear-gradient(180deg, rgba(117,199,239,.96) 0 180px, rgba(235,243,248,.98) 360px),
+    #edf3f6;
+}
+.appHeader {
+  background: linear-gradient(180deg, #3d73c6, #315fae);
+  border-bottom: 4px solid #e4b343;
+  box-shadow: 0 3px 0 rgba(82,54,17,.18);
+}
+.logoButton { color: #fff8da; text-shadow: 0 2px 0 rgba(42,49,77,.35); }
+.balanceChip {
+  background: linear-gradient(180deg, #f8d763, #e6b13b);
+  color: #4e3a17;
+  border: 2px solid #c8962e;
+  box-shadow: 0 3px 0 #9c7125;
+}
+
+.playerStrip, .gameCard, .turnPanel, .gameDetail, .walletBalance, .profileStrip, .chartPanel, .settingsList, .legalCopy {
+  border: 2px solid #d0aa5b;
+  background: linear-gradient(180deg, #fffdf5, #f4ead7);
+  box-shadow: 0 5px 0 rgba(132,94,34,.13), 0 11px 22px rgba(58,82,113,.10);
+}
+.playerStrip, .gameCard, .turnPanel, .gameDetail,
+.walletBalance, .profileStrip, .chartPanel, .settingsList, .legalCopy {
+  border-radius: 18px;
+}
+.gameCard.selectedGame {
+  border-color: #5a89df;
+  box-shadow: 0 0 0 3px rgba(90,137,223,.2), 0 5px 0 rgba(65,83,128,.14);
+}
+.turnPanel { background: linear-gradient(180deg, #fff4bf, #f5df93); }
+.sectionTitle > span, .screenTop { color: #2f4f85; }
+.stakeButton { box-shadow: inset 0 2px 0 rgba(255,255,255,.32), 0 3px 0 rgba(61,65,83,.15); }
+.stakeButton.create { background: #64d08d; }
+.stakeButton.existing { background: #6f9de7; }
+.stakeButton.waiting { background: #a87bd8; }
+
+.bottomNav {
+  background: linear-gradient(180deg, #fffdf8, #efe1c7);
+  border-top: 3px solid #d3aa51;
+  box-shadow: 0 -5px 18px rgba(50,78,108,.12);
+}
+.bottomNav button { color: #778298; }
+.bottomNav button.active { color: #315fae; }
+
+.tutorialCard {
+  border: 3px solid #d0a342;
+  background: linear-gradient(180deg, #fffdf4, #f2e5ca);
+  box-shadow: 0 -6px 0 rgba(117,83,27,.12), 0 -18px 44px rgba(33,46,66,.22);
+}
+.tutorialActions {
+  display: grid;
+  grid-template-columns: .78fr 1.22fr;
+  gap: 9px;
+  margin-top: 4px;
+}
+.tutorialActions.single { grid-template-columns: 1fr; }
+.tutorialBack {
+  min-height: 54px;
+  border: 2px solid #b99345;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff4d5, #ead6aa);
+  color: #5b4827;
+  font-weight: 950;
+  box-shadow: 0 3px 0 #ac863d;
+}
+
+@media (max-width: 420px) {
+  .arenaOnboarding { padding: 12px; }
+  .welcomeCardCompact { min-height: calc(100dvh - 70px); }
+  .avatarSetupMinimal { min-height: calc(100dvh - 52px); }
+}
