@@ -2,96 +2,102 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-type GeminiImageBlock = {
-  type?: string;
-  data?: string;
-  mime_type?: string;
-};
-
-function extractImage(payload: any): GeminiImageBlock | null {
-  if (payload?.output_image?.data) return payload.output_image;
-
-  const stepBlocks = Array.isArray(payload?.steps)
-    ? payload.steps.flatMap((step: any) => Array.isArray(step?.content) ? step.content : [])
-    : [];
-  const stepImage = stepBlocks.find((block: GeminiImageBlock) => block?.type === "image" && block?.data);
-  if (stepImage) return stepImage;
-
-  const legacyImage = Array.isArray(payload?.outputs)
-    ? payload.outputs.find((block: GeminiImageBlock) => block?.type === "image" && block?.data)
-    : null;
-  return legacyImage ?? null;
-}
-
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+
+    if (!accountId || !apiToken) {
       return NextResponse.json(
-        { error: "Falta configurar GEMINI_API_KEY." },
+        { error: "Falta configurar Cloudflare Workers AI." },
         { status: 503 }
       );
     }
 
     const body = await request.json();
-    const description = typeof body?.description === "string" ? body.description.trim().slice(0, 180) : "";
-    const playerName = typeof body?.playerName === "string" ? body.playerName.trim().slice(0, 18) : "";
+
+    const description =
+      typeof body?.description === "string"
+        ? body.description.trim().slice(0, 180)
+        : "";
+
+    const playerName =
+      typeof body?.playerName === "string"
+        ? body.playerName.trim().slice(0, 18)
+        : "";
 
     if (!description) {
-      return NextResponse.json({ error: "Describe tu avatar." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Describe tu avatar." },
+        { status: 400 }
+      );
     }
 
     const basePrompt =
       process.env.AVATAR_BASE_PROMPT?.trim() ||
       [
-        "Create one original square profile avatar for a competitive mobile skill-game app.",
-        "The character must be fictional and original: do not copy celebrities, copyrighted characters, logos, brands, or game franchises.",
-        "Visual direction: expressive premium fantasy-arena portrait, colorful, polished mobile-game artwork, readable at small circular crop, clean background, no text."
+        "Crea un avatar cuadrado original para Skill Arena.",
+        "Debe ser un retrato de fantasía para una arena competitiva, atractivo, colorido y pulido.",
+        "Debe funcionar bien en recorte circular y a tamaño pequeño.",
+        "Fondo limpio, sin texto ni logotipos.",
+        "El personaje debe ser completamente original y ficticio.",
+        "No copies ni imites personajes protegidos, celebridades, marcas, franquicias ni obras con derechos de autor.",
+        "Evita cualquier contenido ilegal o que infrinja derechos de terceros."
       ].join(" ");
 
     const prompt = [
       basePrompt,
-      playerName ? `Avatar name for mood only: ${playerName}.` : "",
-      `User description: ${description}`,
-    ].filter(Boolean).join(" ");
+      playerName ? `Nombre del avatar: ${playerName}.` : "",
+      `Descripción del jugador: ${description}`,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-        "Api-Revision": "2026-05-20",
-      },
-      body: JSON.stringify({
-        model: "gemini-3.1-flash-image",
-        input: [{ type: "text", text: prompt }],
-        response_format: {
-          type: "image",
-          mime_type: "image/jpeg",
-          aspect_ratio: "1:1",
-          image_size: "1K",
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          prompt,
+          steps: 4,
+        }),
+      }
+    );
 
-    const payload = await response.json();
+    const data = await response.json().catch(() => null);
 
-    if (!response.ok) {
+    if (!response.ok || !data?.success) {
+      const message =
+        data?.errors?.[0]?.message ||
+        data?.result?.error ||
+        "Cloudflare no pudo generar el avatar.";
+
       return NextResponse.json(
-        { error: payload?.error?.message || "Gemini no pudo generar el avatar." },
-        { status: response.status }
+        { error: message },
+        { status: response.status || 502 }
       );
     }
 
-    const image = extractImage(payload);
-    if (!image?.data) {
-      return NextResponse.json({ error: "Gemini no devolvió una imagen." }, { status: 502 });
+    const imageBase64 = data?.result?.image;
+
+    if (typeof imageBase64 !== "string" || !imageBase64) {
+      return NextResponse.json(
+        { error: "Cloudflare no devolvió una imagen válida." },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({
-      image: `data:${image.mime_type || "image/jpeg"};base64,${image.data}`,
+      image: `data:image/jpeg;base64,${imageBase64}`,
     });
   } catch {
-    return NextResponse.json({ error: "Error al generar el avatar." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al generar el avatar." },
+      { status: 500 }
+    );
   }
 }
