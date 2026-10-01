@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import type { GameResult } from "@/lib/types";
@@ -17,6 +17,7 @@ type PersistedState = {
   provider: Provider;
   playerName: string;
   avatarId: number;
+  avatarSrc: string;
   balance: number;
   netEarnings: number;
   nextTurn: Turn;
@@ -54,8 +55,11 @@ export default function DemoApp() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [onboarded, setOnboarded] = useState(false);
   const [provider, setProvider] = useState<Provider>(null);
-  const [playerName, setPlayerName] = useState("PLAYER_001");
+  const [playerName, setPlayerName] = useState("");
   const [avatarId, setAvatarId] = useState(0);
+  const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
+  const [avatarPrompt, setAvatarPrompt] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [balance, setBalance] = useState(START_BALANCE);
   const [netEarnings, setNetEarnings] = useState(0);
   const [nextTurn, setNextTurn] = useState<Turn>("create");
@@ -80,6 +84,10 @@ export default function DemoApp() {
     if (process.env.NODE_ENV === "development") {
       setOnboarded(false);
       setProvider(null);
+      setPlayerName("");
+      setAvatarId(0);
+      setAvatarSrc(AVATARS[0]);
+      setAvatarPrompt("");
       setScreen("welcome");
       setTutorialSeen(false);
       setTutorialOpen(false);
@@ -95,7 +103,12 @@ export default function DemoApp() {
         if (data.onboarded) { setOnboarded(true); setScreen("home"); }
         if (data.provider === "google" || data.provider === "apple") setProvider(data.provider);
         if (typeof data.playerName === "string") setPlayerName(data.playerName);
-        if (typeof data.avatarId === "number") setAvatarId(Math.max(0, Math.min(AVATARS.length - 1, data.avatarId)));
+        if (typeof data.avatarId === "number") {
+          const nextAvatarId = Math.max(0, Math.min(AVATARS.length - 1, data.avatarId));
+          setAvatarId(nextAvatarId);
+          setAvatarSrc(AVATARS[nextAvatarId]);
+        }
+        if (typeof data.avatarSrc === "string" && data.avatarSrc) setAvatarSrc(data.avatarSrc);
         if (typeof data.balance === "number") setBalance(data.balance);
         if (typeof data.netEarnings === "number") setNetEarnings(data.netEarnings);
         if (data.nextTurn === "create" || data.nextTurn === "existing") setNextTurn(data.nextTurn);
@@ -115,6 +128,7 @@ export default function DemoApp() {
       provider,
       playerName,
       avatarId,
+      avatarSrc,
       balance,
       netEarnings,
       nextTurn,
@@ -124,7 +138,7 @@ export default function DemoApp() {
       tutorialSeen,
     };
     localStorage.setItem("skill-arena-v3", JSON.stringify(data));
-  }, [isLoaded, onboarded, provider, playerName, avatarId, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -187,8 +201,29 @@ export default function DemoApp() {
 
   function chooseProvider(nextProvider: Exclude<Provider, null>) {
     setProvider(nextProvider);
-    setAvatarId(Math.floor(Math.random() * AVATARS.length));
+    const nextAvatarId = Math.floor(Math.random() * AVATARS.length);
+    setAvatarId(nextAvatarId);
+    setAvatarSrc(AVATARS[nextAvatarId]);
+    setAvatarPrompt("");
     navigate("avatar-setup");
+  }
+
+  function generateAvatarProposal() {
+    const seed = `${playerName.trim().toLowerCase()}|${avatarPrompt.trim().toLowerCase()}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i += 1) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    const nextAvatarId = seed ? hash % AVATARS.length : (avatarId + 1) % AVATARS.length;
+    setAvatarId(nextAvatarId);
+    setAvatarSrc(AVATARS[nextAvatarId]);
+  }
+
+  function handleAvatarUpload(file?: File) {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") setAvatarSrc(reader.result);
+    };
+    reader.readAsDataURL(file);
   }
 
   function completeAvatar() {
@@ -245,7 +280,9 @@ export default function DemoApp() {
   }
 
   function resetAvatar() {
-    setAvatarId((avatarId + 1) % AVATARS.length);
+    const nextAvatarId = (avatarId + 1) % AVATARS.length;
+    setAvatarId(nextAvatarId);
+    setAvatarSrc(AVATARS[nextAvatarId]);
     setPlayerName("PLAYER_NEW");
     setNetEarnings(0);
     setNextTurn("create");
@@ -259,8 +296,10 @@ export default function DemoApp() {
     localStorage.removeItem("skill-arena-color-tutorial-v1");
     setOnboarded(false);
     setProvider(null);
-    setPlayerName("PLAYER_001");
+    setPlayerName("");
     setAvatarId(0);
+    setAvatarSrc(AVATARS[0]);
+    setAvatarPrompt("");
     setBalance(START_BALANCE);
     setNetEarnings(0);
     setNextTurn("create");
@@ -284,7 +323,7 @@ export default function DemoApp() {
           <div className="welcomeCopy">SUBE. COMPITE. LLEGA ARRIBA.</div>
           <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
           <button className="authButton apple" onClick={() => chooseProvider("apple")}><span>●</span>Continuar con Apple</button>
-          <p className="microcopy">Demo V2 · sin pagos reales</p>
+          <p className="microcopy">V3.1 · demo de interfaz · sin pagos reales</p>
         </section>
       </main>
     );
@@ -292,22 +331,53 @@ export default function DemoApp() {
 
   if (screen === "avatar-setup") {
     return (
-      <main className="onboarding">
-        <section className="setupCard">
+      <main className="onboarding onboardingLight">
+        <section className="setupCard avatarSetupCard">
           <button className="textBack" onClick={() => window.history.back()}>← VOLVER</button>
-          <div className="screenCode">02 / AVATAR</div>
-          <h1>CONFIGURA TU AVATAR</h1>
-          <label className="fieldLabel">NOMBRE</label>
-          <input className="nameInput" value={playerName} onChange={(e) => setPlayerName(e.target.value)} maxLength={18} />
-          <div className="fieldLabel">FOTO</div>
-          <div className="avatarGallery">
-            {AVATARS.map((avatar, index) => (
-              <button key={avatar} className={`avatarChoice ${avatarId === index ? "selected" : ""}`} onClick={() => setAvatarId(index)}>
-                <img src={avatar} alt={`Avatar ${index + 1}`} />
-              </button>
-            ))}
+          <div className="screenCode">TU IDENTIDAD</div>
+          <h1>CREA TU AVATAR</h1>
+          <p className="setupIntro">Elige tu nombre y crea una imagen que te represente dentro de Skill Arena.</p>
+
+          <div className="avatarPortraitWrap">
+            <div className="avatarPortrait">
+              <img src={avatarSrc} alt="Propuesta de avatar" />
+              <button className="cameraButton" type="button" onClick={() => fileInputRef.current?.click()} aria-label="Cambiar foto">📷</button>
+            </div>
+            <input
+              ref={fileInputRef}
+              className="hiddenFileInput"
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleAvatarUpload(e.target.files?.[0])}
+            />
           </div>
-          <button className="mainAction" onClick={completeAvatar}>ENTRAR EN SKILL ARENA</button>
+
+          <label className="fieldLabel" htmlFor="avatar-name">NOMBRE DE AVATAR</label>
+          <input
+            id="avatar-name"
+            className="nameInput"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            maxLength={18}
+            placeholder="Ej. Ares_17"
+          />
+
+          <label className="fieldLabel" htmlFor="avatar-prompt">DESCRIBE CÓMO QUIERES VERTE</label>
+          <textarea
+            id="avatar-prompt"
+            className="promptInput"
+            value={avatarPrompt}
+            onChange={(e) => setAvatarPrompt(e.target.value)}
+            maxLength={180}
+            placeholder="Ej. aventurero, pelo oscuro, chaqueta roja, estilo elegante..."
+          />
+
+          <div className="avatarActions">
+            <button className="secondaryAction" type="button" onClick={generateAvatarProposal}>✨ GENERAR PROPUESTA</button>
+            <button className="secondaryAction" type="button" onClick={() => fileInputRef.current?.click()}>📷 SUBIR FOTO</button>
+          </div>
+          <p className="avatarNote">En V3.1 la generación usa propuestas locales. En la siguiente fase conectaremos la generación real por IA.</p>
+          <button className="mainAction" onClick={completeAvatar}>CONTINUAR</button>
         </section>
       </main>
     );
@@ -324,7 +394,7 @@ export default function DemoApp() {
         {screen === "home" && (
           <>
             <button className="playerStrip" onClick={() => navigate("profile")}>
-              <img src={AVATARS[avatarId]} alt="Avatar" />
+              <img src={avatarSrc} alt="Avatar" />
               <strong>{playerName}</strong>
               <span className="rankNumber">#{rank}</span>
               <span className={`moneyNumber ${netEarnings < 0 ? "negative" : ""}`}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</span>
@@ -417,7 +487,7 @@ export default function DemoApp() {
         {screen === "profile" && (
           <section className="simpleScreen">
             <div className="screenTop"><span>AVATAR</span></div>
-            <div className="profileStrip"><img src={AVATARS[avatarId]} alt="Avatar" /><div><strong>{playerName}</strong><span>#{rank}</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>#{rank}</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
             <div className="chartPanel">
               <div className="chartHead"><span>DINERO GANADO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
               <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Dinero ganado en función del tiempo">
@@ -480,7 +550,7 @@ export default function DemoApp() {
           <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}><span>⌂</span>INICIO</button>
           <button className={screen === "play" ? "active" : ""} onClick={() => { navigate("play"); setSelectedGame(GAMES[0]); setSelectedStake(0); setSelectedMode(modeForStake(GAMES[0], 0, nextTurn)); }}><span>▶</span>JUGAR</button>
           <button className={screen === "wallet" ? "active" : ""} onClick={() => navigate("wallet")}><span>□</span>WALLET</button>
-          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}><img src={AVATARS[avatarId]} alt="" />AVATAR</button>
+          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}><img src={avatarSrc} alt="" />AVATAR</button>
         </nav>
       )}
     </main>
