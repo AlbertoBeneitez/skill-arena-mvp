@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450"><rect width="800" height="450" fill="#11100b"/><g transform="translate(260 85)"><g fill="#181a13" stroke="#6c6843" stroke-width="4"><rect x="0" y="0" width="80" height="80"/><rect x="95" y="0" width="80" height="80"/><rect x="190" y="0" width="80" height="80"/><rect x="0" y="95" width="80" height="80"/><rect x="95" y="95" width="80" height="80"/><rect x="190" y="95" width="80" height="80"/><rect x="0" y="190" width="80" height="80"/><rect x="95" y="190" width="80" height="80"/><rect x="190" y="190" width="80" height="80"/></g><rect x="0" y="0" width="80" height="80" fill="#f2df74"/><rect x="95" y="95" width="80" height="80" fill="#f2df74"/><rect x="190" y="190" width="80" height="80" fill="#f2df74"/></g><text x="42" y="72" fill="#fffbe8" font-family="monospace" font-size="38" font-weight="700">GRID RECALL</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+<rect width="800" height="450" rx="34" fill="#DDEEDC"/>
+<path d="M0 360c130-80 220-40 330-95 130-65 242-43 470 35v150H0Z" fill="#BFD7E9"/>
+<g transform="translate(250 128)">
+<rect x="0" y="0" width="96" height="96" rx="18" fill="#FFF9F0"/>
+<rect x="108" y="0" width="96" height="96" rx="18" fill="#F6C96A"/>
+<rect x="216" y="0" width="96" height="96" rx="18" fill="#FFF9F0"/>
+<rect x="0" y="108" width="96" height="96" rx="18" fill="#EE765C"/>
+<rect x="108" y="108" width="96" height="96" rx="18" fill="#FFF9F0"/>
+<rect x="216" y="108" width="96" height="96" rx="18" fill="#B887D9"/>
+</g>
+<text x="45" y="74" fill="#31513D" font-family="Arial, sans-serif" font-size="42" font-weight="900">GRID RECALL</text>
+<text x="48" y="108" fill="#607465" font-family="Arial, sans-serif" font-size="18" font-weight="700">MIRA · MEMORIZA · RESPONDE</text>
+</svg>
