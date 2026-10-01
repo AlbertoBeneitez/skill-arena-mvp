@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         input: [{ type: "text", text: prompt }],
         response_format: {
           type: "image",
-          mime_type: "image/png",
+          mime_type: "image/jpeg",
           aspect_ratio: "1:1",
           image_size: "1K",
         },
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      image: `data:${image.mime_type || "image/png"};base64,${image.data}`,
+      image: `data:${image.mime_type || "image/jpeg"};base64,${image.data}`,
     });
   } catch {
     return NextResponse.json({ error: "Error al generar el avatar." }, { status: 500 });
