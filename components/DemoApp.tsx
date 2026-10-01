@@ -59,6 +59,7 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   const [avatarPrompt, setAvatarPrompt] = useState("");
+  const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [balance, setBalance] = useState(START_BALANCE);
   const [netEarnings, setNetEarnings] = useState(0);
@@ -88,6 +89,7 @@ export default function DemoApp() {
       setAvatarId(0);
       setAvatarSrc(AVATARS[0]);
       setAvatarPrompt("");
+      setAvatarEditorOpen(false);
       setScreen("welcome");
       setTutorialSeen(false);
       setTutorialOpen(false);
@@ -205,6 +207,7 @@ export default function DemoApp() {
     setAvatarId(nextAvatarId);
     setAvatarSrc(AVATARS[nextAvatarId]);
     setAvatarPrompt("");
+    setAvatarEditorOpen(false);
     navigate("avatar-setup");
   }
 
@@ -300,6 +303,7 @@ export default function DemoApp() {
     setAvatarId(0);
     setAvatarSrc(AVATARS[0]);
     setAvatarPrompt("");
+    setAvatarEditorOpen(false);
     setBalance(START_BALANCE);
     setNetEarnings(0);
     setNextTurn("create");
@@ -341,7 +345,15 @@ export default function DemoApp() {
           <div className="avatarPortraitWrap">
             <div className="avatarPortrait">
               <img src={avatarSrc} alt="Propuesta de avatar" />
-              <button className="cameraButton" type="button" onClick={() => fileInputRef.current?.click()} aria-label="Cambiar foto">📷</button>
+              <button
+                className={`avatarChangeButton ${avatarEditorOpen ? "open" : ""}`}
+                type="button"
+                onClick={() => setAvatarEditorOpen((open) => !open)}
+                aria-label="Cambiar avatar"
+                aria-expanded={avatarEditorOpen}
+              >
+                ↻
+              </button>
             </div>
             <input
               ref={fileInputRef}
@@ -362,21 +374,26 @@ export default function DemoApp() {
             placeholder="Ej. Ares_17"
           />
 
-          <label className="fieldLabel" htmlFor="avatar-prompt">DESCRIBE CÓMO QUIERES VERTE</label>
-          <textarea
-            id="avatar-prompt"
-            className="promptInput"
-            value={avatarPrompt}
-            onChange={(e) => setAvatarPrompt(e.target.value)}
-            maxLength={180}
-            placeholder="Ej. aventurero, pelo oscuro, chaqueta roja, estilo elegante..."
-          />
+          {avatarEditorOpen && (
+            <div className="avatarEditor">
+              <label className="fieldLabel" htmlFor="avatar-prompt">DESCRIBE CÓMO QUIERES VERTE</label>
+              <textarea
+                id="avatar-prompt"
+                className="promptInput"
+                value={avatarPrompt}
+                onChange={(e) => setAvatarPrompt(e.target.value)}
+                maxLength={180}
+                placeholder="Ej. aventurero, pelo oscuro, chaqueta roja, estilo elegante..."
+              />
 
-          <div className="avatarActions">
-            <button className="secondaryAction" type="button" onClick={generateAvatarProposal}>✨ GENERAR PROPUESTA</button>
-            <button className="secondaryAction" type="button" onClick={() => fileInputRef.current?.click()}>📷 SUBIR FOTO</button>
-          </div>
-          <p className="avatarNote">En V3.1 la generación usa propuestas locales. En la siguiente fase conectaremos la generación real por IA.</p>
+              <div className="avatarActions">
+                <button className="secondaryAction" type="button" onClick={generateAvatarProposal}>✨ GENERAR</button>
+                <button className="secondaryAction" type="button" onClick={() => fileInputRef.current?.click()}>SUBIR FOTO</button>
+              </div>
+              <p className="avatarNote">En V3.1 la generación usa propuestas locales. En la siguiente fase conectaremos la generación real por IA.</p>
+            </div>
+          )}
+
           <button className="mainAction" onClick={completeAvatar}>CONTINUAR</button>
         </section>
       </main>
