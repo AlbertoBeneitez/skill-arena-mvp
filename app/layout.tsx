@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Skill Arena — V2",
-  description: "Demo mobile-first de Skill Arena.",
+  title: "Skill Arena — V3.1",
+  description: "V3.1 mobile-first de Skill Arena.",
 };
 
 export const viewport = {
