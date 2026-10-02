@@ -13,10 +13,10 @@ const INITIAL: Arrow[] = [
   { id: 2, r: 1, c: 2, dir: "U" },
   { id: 3, r: 2, c: 2, dir: "U" },
   { id: 4, r: 2, c: 0, dir: "R" },
-  { id: 5, r: 2, c: 4, dir: "L" },
+  { id: 5, r: 2, c: 4, dir: "U" },
   { id: 6, r: 4, c: 2, dir: "U" },
   { id: 7, r: 4, c: 0, dir: "R" },
-  { id: 8, r: 4, c: 4, dir: "L" },
+  { id: 8, r: 4, c: 4, dir: "D" },
   { id: 9, r: 5, c: 1, dir: "D" },
   { id: 10, r: 5, c: 3, dir: "D" },
 ];
