@@ -1259,3 +1259,31 @@ html, body {
     text-align: center;
   }
 }
+
+.gameBrief {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.gameBrief > div {
+  min-height: 66px;
+  padding: 9px 10px;
+  border: 1px solid #d9cba9;
+  border-radius: 12px;
+  background: rgba(255,255,255,.48);
+}
+.gameBrief span {
+  display: block;
+  margin-bottom: 5px;
+  color: #7c6f58;
+  font-size: 7px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+.gameBrief p {
+  margin: 0;
+  color: #3f526f;
+  font-size: 9px;
+  line-height: 1.35;
+}
