@@ -39,6 +39,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     running: false,
     ticks: 0,
     shotTicks: 0,
+    readyTicks: 0,
     last: 0,
     acc: 0,
   });
@@ -54,6 +55,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     s.flying = false;
     s.aiming = false;
     s.shotTicks = 0;
+    s.readyTicks = 0;
   }, []);
 
   const finish = useCallback(() => {
@@ -62,7 +64,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     s.running = false;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     const timeMs = Math.round((s.ticks * 1000) / 120);
-    const score = Math.max(0, s.score + s.hitCount * 140 + Math.round(timeMs / 36));
+    const score = Math.max(0, s.score + s.hitCount * 140);
     gameTone("bad");
     haptic([28, 28, 48]);
     finishRef.current({ won: false, score, timeMs });
@@ -87,7 +89,11 @@ export default function VectorStrike({ active, onFinish }: Props) {
   const step = useCallback(() => {
     const s = state.current;
     s.ticks += 1;
-    if (!s.flying) return;
+    if (!s.flying) {
+      s.readyTicks += 1;
+      if (s.readyTicks > 960) finish();
+      return;
+    }
 
     const stage = currentStage();
     s.shotTicks += 1;
@@ -271,7 +277,8 @@ export default function VectorStrike({ active, onFinish }: Props) {
     ctx.fillText(`${s.score.toLocaleString("es-ES")} PTS`, 270, 36);
     ctx.fillStyle = "rgba(255,255,255,.72)";
     ctx.font = "700 10px system-ui";
-    ctx.fillText(s.flying ? "EN VUELO" : "UN TIRO · SI FALLAS, TERMINA", 26, 54);
+    const readyLeft = Math.max(0, 8 - s.readyTicks / 120);
+    ctx.fillText(s.flying ? "EN VUELO" : `UN TIRO · ${readyLeft.toFixed(1)}s PARA DECIDIR`, 26, 54);
   }, [currentStage, predict]);
 
   const loop = useCallback((now: number) => {
@@ -301,6 +308,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
       running: true,
       ticks: 0,
       shotTicks: 0,
+      readyTicks: 0,
       last: 0,
       acc: 0,
     };
@@ -359,6 +367,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     s.flying = true;
     s.aiming = false;
     s.shotTicks = 0;
+    s.readyTicks = 0;
     gameTone("tap");
     haptic(8);
   }
