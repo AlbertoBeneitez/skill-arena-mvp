@@ -16,6 +16,8 @@ export type GameMeta = {
   rivalScore: number;
   rivalName: string;
   rivalAvatar: string;
+  instruction: string;
+  scoring: string;
 };
 
 export const GAMES: GameMeta[] = [
@@ -32,6 +34,8 @@ export const GAMES: GameMeta[] = [
     rivalScore: 12200,
     rivalName: "NOVA",
     rivalAvatar: "/avatars/avatar-6.svg",
+    instruction: "Muévete, salta y encadena checkpoints sin tocar pinchos.",
+    scoring: "Tiempo + cristales − penalizaciones.",
   },
   {
     id: "orbit-rush",
@@ -46,6 +50,8 @@ export const GAMES: GameMeta[] = [
     rivalScore: 12500,
     rivalName: "ORBIT",
     rivalAvatar: "/avatars/avatar-3.svg",
+    instruction: "Toca para alternar entre la órbita interior y exterior.",
+    scoring: "Ritmo limpio + combo − impactos.",
   },
   {
     id: "vector-strike",
@@ -60,6 +66,8 @@ export const GAMES: GameMeta[] = [
     rivalScore: 10300,
     rivalName: "KIRA",
     rivalAvatar: "/avatars/avatar-5.svg",
+    instruction: "Arrastra para apuntar y suelta. Usa rebotes cuando haga falta.",
+    scoring: "Precisión + pocos intentos + velocidad.",
   },
   {
     id: "brick-breaker",
@@ -74,6 +82,8 @@ export const GAMES: GameMeta[] = [
     rivalScore: 11800,
     rivalName: "VOLT",
     rivalAvatar: "/avatars/avatar-8.svg",
+    instruction: "Arrastra la pala y decide el ángulo de cada rebote.",
+    scoring: "Bloques + combo + velocidad − fallos.",
   },
 ];
 
