@@ -1520,3 +1520,19 @@ html, body {
   .driftControls button { font-size:9px; }
   .tapReactorHud { grid-template-columns:76px 1fr 76px; }
 }
+
+.gameCardBenchmark {
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(114,89,45,.13);
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: .03em;
+}
+.gameCardBenchmark b { color: #2f69ad; }
+.gameCardBenchmark em { color: #b27a1f; font-style: normal; }
