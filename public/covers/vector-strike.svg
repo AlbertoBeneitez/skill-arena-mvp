@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#eff9ff"/><stop offset=".62" stop-color="#cbe8f8"/><stop offset=".63" stop-color="#a8c585"/><stop offset="1" stop-color="#708d59"/></linearGradient>
+<filter id="g"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="800" height="600" fill="url(#bg)"/>
+<g opacity=".17" stroke="#46627d"><path d="M0 80H800M0 160H800M0 240H800M0 320H800M0 400H800M0 480H800"/><path d="M80 0V600M160 0V600M240 0V600M320 0V600M400 0V600M480 0V600M560 0V600M640 0V600M720 0V600"/></g>
+<rect x="350" y="235" width="52" height="285" rx="8" fill="#40506a"/>
+<circle cx="625" cy="175" r="55" fill="#ffd467" opacity=".35"/>
+<circle cx="625" cy="175" r="38" fill="none" stroke="#e9ae2f" stroke-width="12"/>
+<circle cx="625" cy="175" r="12" fill="#e9ae2f"/>
+<path d="M120 480Q290 185 615 175" fill="none" stroke="#315fba" stroke-width="7" stroke-dasharray="12 16" opacity=".8"/>
+<circle cx="120" cy="480" r="18" fill="#315fba" filter="url(#g)"/>
+<text x="48" y="84" font-family="Arial" font-weight="900" font-size="53" fill="#284c7f">VECTOR</text>
+<text x="48" y="135" font-family="Arial" font-weight="900" font-size="53" fill="#284c7f">STRIKE</text>
+<text x="48" y="555" font-family="Arial" font-weight="800" font-size="23" fill="#40506a">AIM · BANK · EXECUTE</text>
+</svg>
