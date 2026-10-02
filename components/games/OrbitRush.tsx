@@ -16,13 +16,16 @@ const LANES = [92, 137] as const;
 const DT = 1 / 120;
 const FINISH = Math.PI * 18;
 
-const HAZARD_BLUEPRINT: Array<[number, Lane]> = [
+const HAZARD_TURNS: Array<[number, Lane]> = [
   [0.9, 0], [1.55, 1], [2.15, 1], [2.82, 0], [3.45, 1], [4.08, 0],
   [4.72, 0], [5.28, 1], [5.92, 0], [6.46, 1], [7.03, 1], [7.62, 0],
   [8.18, 1], [8.72, 0], [9.31, 0], [9.88, 1], [10.42, 0], [10.96, 1],
   [11.48, 0], [12.04, 1], [12.58, 1], [13.14, 0], [13.67, 1], [14.18, 0],
   [14.68, 0], [15.18, 1], [15.72, 0], [16.24, 1], [16.75, 1], [17.28, 0],
-].map(([turn, lane]) => [turn * Math.PI, lane]);
+];
+const HAZARD_BLUEPRINT: Array<[number, Lane]> = HAZARD_TURNS.map(
+  ([turn, lane]): [number, Lane] => [turn * Math.PI, lane]
+);
 
 function makeHazards(): Hazard[] {
   return HAZARD_BLUEPRINT.map(([progress, lane]) => ({ progress, lane, passed: false }));
