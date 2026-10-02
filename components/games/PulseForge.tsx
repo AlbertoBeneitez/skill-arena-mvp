@@ -52,6 +52,9 @@ export default function PulseForge({active,onFinish}:Props){
     s.score+=520+Math.round(precision*420)+s.combo*24;
     s.combo+=1;
     s.round+=1;
+    const nextTarget=targetFor(s.round);
+    s.marker=nextTarget.center>=50?0:100;
+    s.direction=nextTarget.center>=50?1:-1;
     setView({marker:s.marker,score:s.score,combo:s.combo,round:s.round});
     gameTone(perfect?"good":"tap");
     haptic(perfect?12:6);
@@ -68,16 +71,22 @@ export default function PulseForge({active,onFinish}:Props){
       const dt=Math.min(.04,(now-s.last)/1000);
       s.last=now;
       s.ticks+=1;
+      const previous=s.marker;
       let next=s.marker+s.direction*dt*speedFor(s.round);
-      if(next>=100){next=100;s.direction=-1;}
-      if(next<=0){next=0;s.direction=1;}
-      s.marker=next;
+      const target=targetFor(s.round);
+      const lower=target.center-target.width/2;
+      const upper=target.center+target.width/2;
+      const missed=s.direction>0
+        ? previous<=upper&&next>upper
+        : previous>=lower&&next<lower;
+      if(missed){finish();return;}
+      s.marker=Math.max(0,Math.min(100,next));
       setView({marker:s.marker,score:s.score,combo:s.combo,round:s.round});
       frameRef.current=requestAnimationFrame(loop);
     };
     frameRef.current=requestAnimationFrame(loop);
     return()=>{state.current.running=false;if(frameRef.current!==null)cancelAnimationFrame(frameRef.current);};
-  },[active]);
+  },[active,finish]);
 
   const target=targetFor(view.round);
   const left=target.center-target.width/2;
