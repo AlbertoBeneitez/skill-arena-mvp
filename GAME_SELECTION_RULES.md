@@ -141,13 +141,19 @@ Before real-money use:
 
 ## 8. V4 competitive catalog
 
-The active V4 catalog deliberately prioritizes deeper, repeatable competitive mechanics over quick repository demos.
+The active V4 catalog contains eight original Skill Arena prototypes. They are designed as **endless score attacks that continue until the player fails**. None has a fixed match-completion endpoint.
 
-- **Shadow Sprint** — original Skill Arena time-trial platformer. Fixed authored course, fixed-step 120 Hz simulation, coyote time/jump buffering, checkpoints, deterministic collectibles, penalties, and score attack.
-- **Orbit Rush** — original one-touch orbital reflex game. Every hazard position and timing progression is authored in source; lane changes are the only competitive input.
-- **Vector Strike** — original deterministic precision/physics challenge. Fixed targets, fixed walls, trajectory preview, authored stages, and fixed-step projectile simulation.
-- **Prism Break** — original Skill Arena paddle/angle-control score attack. Authored waves, fixed initial velocity per wave, combo scoring, recovery after misses, and fixed-step simulation.
+- **Orbit Rush** — one-touch orbital lane switching. Authored lane/gap patterns; the first impact ends the run.
+- **Vector Strike** — deterministic precision/physics. One shot per target; targets repeat in an authored sequence with shrinking radii; the first missed shot ends the run.
+- **Pulse Forge** — timing challenge with authored target centers, increasing cursor speed, and shrinking hit windows; the first mistimed tap ends the run.
+- **Stack Forge** — precision stacking. Block movement is deterministic and accelerates with height; zero overlap ends the run.
+- **Lane Surge** — three-lane reaction game with authored safe-lane/gap sequences and increasing speed; the first collision ends the run.
+- **Drift Line** — continuous steering through a deterministic mathematical corridor; speed increases and road width contracts; touching either boundary ends the run.
+- **Sky Thread** — one-touch flight through authored gate openings and spacings; the first collision ends the run.
+- **Tap Reactor** — reaction/precision target tapping using an authored position sequence, shrinking targets, and shorter time windows; a miss or timeout ends the run.
 
-The active game files contain no calls to `Math.random`, `random`, `rnd`, `rndi`, or `shuffle`. The V4 implementations are written directly for Skill Arena and do not depend on the source code or assets of the previously reviewed third-party game repositories.
+The active game files contain no calls or identifiers matching `Math.random`, `random`, `shuffle`, `rnd`, `rndi`, or `seed`. Gameplay sequences, target positions, physics constants, and difficulty progression are defined deterministically in source.
 
-Before any real-money use, these prototypes still require server-side replay/result verification, authoritative match state, anti-tamper controls, latency/device testing, and a formal legal review of the final competition rules.
+The retired Shadow Sprint, Gravity Shift, Arrow Escape, and Prism Break prototype files and covers were removed from V4 so the repository reflects the current product direction.
+
+Before real-money use, all games still require authoritative server-side result/replay verification, input logging, anti-tamper controls, device/latency testing, accessibility review, production audio/art passes, and a formal legal review of the final competition rules.
