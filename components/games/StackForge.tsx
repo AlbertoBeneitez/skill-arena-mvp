@@ -46,7 +46,7 @@ export default function StackForge({ active, onFinish }: Props) {
     gameTone("bad");
     haptic([28, 26, 52]);
     finishRef.current({ won: false, score: s.score, timeMs });
-  }, [finish]);
+  }, []);
 
   const place = useCallback(() => {
     const s = state.current;
@@ -95,7 +95,7 @@ export default function StackForge({ active, onFinish }: Props) {
       s.bounces += 1;
     }
     if (s.bounces >= 6) finish();
-  }, []);
+  }, [finish]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
