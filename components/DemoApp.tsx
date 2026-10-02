@@ -508,22 +508,44 @@ export default function DemoApp() {
               <span className={`moneyNumber ${netEarnings < 0 ? "negative" : ""}`}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</span>
             </button>
 
+            <section className="arenaSummary">
+              <div className="arenaSummaryMain">
+                <span>ARENA RATING</span>
+                <strong>{Math.max(1000, 1200 + wins * 22 - losses * 14)}</strong>
+                <small>#{rank} global demo</small>
+              </div>
+              <div className="arenaMetric"><span>RACHA</span><b>{streak}</b></div>
+              <div className="arenaMetric"><span>VICTORIAS</span><b>{wins}</b></div>
+              <div className="arenaMetric"><span>WIN RATE</span><b>{winRate}%</b></div>
+            </section>
+
             <section className="homeSection">
-              <div className="sectionTitle"><span>JUGAR</span><button onClick={() => navigate("play")}>VER TODOS →</button></div>
-              <div className="gameGrid">
+              <div className="sectionTitle"><span>ARENAS</span><button onClick={() => navigate("play")}>VER TODAS →</button></div>
+              <div className="gameGrid premiumGrid">
                 {GAMES.map((game) => (
-                  <button className="gameCard" key={game.id} onClick={() => openGame(game)}>
-                    <img src={game.cover} alt={game.name} />
-                    <div><strong>{game.name}</strong><span>1 VS 1</span></div>
+                  <button className="gameCard premiumGameCard" key={game.id} onClick={() => openGame(game)}>
+                    <div className="gameCoverWrap">
+                      <img src={game.cover} alt={game.name} />
+                      <span className="gameCategory">{game.category}</span>
+                      <span className="gameDifficulty">{game.difficulty}</span>
+                    </div>
+                    <div className="gameCardCopy">
+                      <strong>{game.name}</strong>
+                      <span>{game.tagline}</span>
+                      <small>{game.skillLabel}</small>
+                    </div>
                   </button>
                 ))}
               </div>
             </section>
 
-            <section className="turnPanel">
-              <span>PRÓXIMA JUGADA</span>
-              <strong>{nextTurn === "create" ? "INICIAL" : "CONTRA JUGADA EXISTENTE"}</strong>
-              <small>{nextTurn === "create" ? "Tu resultado quedará disponible para otro jugador." : "Ahora tienes derecho a consumir una jugada ya creada."}</small>
+            <section className="turnPanel competitiveTurn">
+              <div>
+                <span>PRÓXIMO DUELO</span>
+                <strong>{nextTurn === "create" ? "MARCA EL RETO" : "SUPERA UNA MARCA"}</strong>
+              </div>
+              <div className="turnPulse"><i /> LIVE</div>
+              <small>{nextTurn === "create" ? "Juegas primero y dejas una marca que otro jugador tendrá que superar." : "Ya existe una marca. Entra y demuestra que puedes superarla."}</small>
             </section>
           </>
         )}
@@ -533,16 +555,30 @@ export default function DemoApp() {
             <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← INICIO</button><span>JUGAR</span></div>
             <div className="gameGrid large">
               {GAMES.map((game) => (
-                <button className={`gameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`} key={game.id} onClick={() => openGame(game)}>
-                  <img src={game.cover} alt={game.name} />
-                  <div><strong>{game.name}</strong><span>1 VS 1</span></div>
+                <button className={`gameCard premiumGameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`} key={game.id} onClick={() => openGame(game)}>
+                  <div className="gameCoverWrap">
+                    <img src={game.cover} alt={game.name} />
+                    <span className="gameCategory">{game.category}</span>
+                  </div>
+                  <div className="gameCardCopy"><strong>{game.name}</strong><span>{game.skillLabel}</span></div>
                 </button>
               ))}
             </div>
 
             <div className="gameDetail">
               <img className="detailCover" src={selectedGame.cover} alt={selectedGame.name} />
-              <div className="detailHeader"><h2>{selectedGame.name}</h2><span>1 VS 1</span></div>
+              <div className="detailHeader">
+                <div><h2>{selectedGame.name}</h2><p>{selectedGame.tagline}</p></div>
+                <span>{selectedGame.difficulty}</span>
+              </div>
+              <div className="skillChips">
+                <span>{selectedGame.category}</span><span>{selectedGame.skillLabel}</span><span>100% SKILL</span>
+              </div>
+              <div className="rivalPreview">
+                <div className="rivalIdentity"><img src={selectedGame.rivalAvatar} alt="" /><div><small>MARCA A SUPERAR</small><strong>{selectedGame.rivalName}</strong></div></div>
+                <b>{selectedGame.rivalScore.toLocaleString("es-ES")} pts</b>
+              </div>
+              <div className="personalBestLine"><span>TU MEJOR MARCA</span><b>{selectedBest ? `${selectedBest.toLocaleString("es-ES")} pts` : "SIN MARCA"}</b></div>
               <div className="stakesLabel">ELIGE PARTIDA</div>
               <div className="stakesGrid">
                 {STAKES.map((stake) => {
@@ -570,14 +606,55 @@ export default function DemoApp() {
 
         {screen === "game" && (
           <section className="gameScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => { if (!activeGame) window.history.back(); }}>← {activeGame ? "PARTIDA" : "VOLVER"}</button><span>{selectedGame.name.toUpperCase()}</span></div>
-            <GameLoader game={selectedGame} active={activeGame} instanceKey={gameKey} onFinish={finishMatch} />
+            <div className="screenTop"><button className="textBack" onClick={() => { if (!activeGame && countdown === null) window.history.back(); }}>← {activeGame || countdown !== null ? "DUELO" : "VOLVER"}</button><span>{selectedGame.name.toUpperCase()}</span></div>
+
+            <div className="duelHud">
+              <div className="duelist">
+                <img src={avatarSrc} alt="" />
+                <div><small>TÚ</small><strong>{playerName || "PLAYER"}</strong></div>
+              </div>
+              <div className="versusBadge">VS</div>
+              <div className="duelist rival">
+                <div><small>RIVAL</small><strong>{selectedGame.rivalName}</strong></div>
+                <img src={selectedGame.rivalAvatar} alt="" />
+              </div>
+            </div>
+            <div className="duelObjective">
+              <span>OBJETIVO</span>
+              <strong>SUPERA {selectedGame.rivalScore.toLocaleString("es-ES")} PTS</strong>
+              <small>{selectedGame.skillLabel} · mismo estado inicial · cero azar</small>
+            </div>
+
+            <div className="gameArenaWrap">
+              <GameLoader game={selectedGame} active={activeGame} instanceKey={gameKey} onFinish={finishMatch} />
+              {countdown !== null && (
+                <div className="countdownOverlay">
+                  <small>PREPÁRATE</small>
+                  <b>{countdown > 0 ? countdown : "GO"}</b>
+                  <span>{selectedGame.tagline}</span>
+                </div>
+              )}
+            </div>
+
             {result && (
-              <div className={`resultPanel ${result.won ? "win" : "loss"}`}>
-                <b>{result.won ? "VICTORIA" : "DERROTA"}</b>
-                <span>{result.score} pts · {(result.timeMs / 1000).toFixed(2)} s</span>
-                <strong>{selectedStake === 0 ? "0,00 €" : result.won ? `+${euro(prizeForStake(selectedStake) - selectedStake)}` : `-${euro(selectedStake)}`}</strong>
-                <button className="mainAction" onClick={() => navigate("play")}>VOLVER A JUGAR</button>
+              <div className={`resultPanel premiumResult ${result.won ? "win" : "loss"}`}>
+                <div className="resultIcon">{result.won ? "🏆" : "⚔"}</div>
+                <b>{result.won ? "VICTORIA" : "RETO NO SUPERADO"}</b>
+                <p>{result.won ? `Has superado a ${selectedGame.rivalName}.` : `Te han faltado ${Math.max(0, selectedGame.rivalScore - result.score).toLocaleString("es-ES")} puntos.`}</p>
+                <div className="scoreComparison">
+                  <div><small>TU MARCA</small><strong>{result.score.toLocaleString("es-ES")}</strong></div>
+                  <div className="scoreVs">VS</div>
+                  <div><small>{selectedGame.rivalName}</small><strong>{selectedGame.rivalScore.toLocaleString("es-ES")}</strong></div>
+                </div>
+                <div className="resultMeta">
+                  <span>{(result.timeMs / 1000).toFixed(2)} s</span>
+                  <span>Racha {result.won ? streak : 0}</span>
+                  <strong>{selectedStake === 0 ? "0,00 €" : result.won ? `+${euro(prizeForStake(selectedStake) - selectedStake)}` : `-${euro(selectedStake)}`}</strong>
+                </div>
+                <div className="resultActions">
+                  <button className="rematchAction" onClick={startMatch}>REVANCHA</button>
+                  <button className="mainAction" onClick={() => navigate("play")}>OTRA ARENA</button>
+                </div>
               </div>
             )}
           </section>
