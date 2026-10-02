@@ -198,12 +198,14 @@ export default function DemoApp() {
 
   useEffect(() => {
     if (screen !== "game" || countdown === null) return;
-    if (countdown <= 0) {
-      setCountdown(null);
+    if (countdown === 0) {
       gameTone("good");
       haptic([20, 35, 35]);
-      setActiveGame(true);
-      return;
+      const timer = window.setTimeout(() => {
+        setCountdown(null);
+        setActiveGame(true);
+      }, 360);
+      return () => window.clearTimeout(timer);
     }
     gameTone("countdown");
     haptic(8);
@@ -419,7 +421,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V4 · juegos deterministas</p>
+          <p className="microcopy">V4 · COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -599,7 +601,7 @@ export default function DemoApp() {
                 <span>{selectedMode === "create" ? "PARTIDA INICIAL" : selectedMode === "existing" ? "JUGADA EXISTENTE" : "RIVAL EN SALA"}</span>
                 <strong>{selectedStake === 0 ? "GRATIS" : `PREMIO ${euro(prizeForStake(selectedStake))}`}</strong>
               </div>
-              <button className="mainAction" onClick={startMatch} disabled={selectedStake > balance}>JUGAR · {selectedStake}€</button>
+              <button className="mainAction duelEntryAction" onClick={startMatch} disabled={selectedStake > balance}>{selectedStake === 0 ? "ENTRENAR GRATIS" : `ENTRAR AL DUELO · ${selectedStake}€`}</button>
             </div>
           </section>
         )}
