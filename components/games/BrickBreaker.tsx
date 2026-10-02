@@ -340,7 +340,7 @@ export default function BrickBreaker({ active, onFinish }: Props) {
         onPointerMove={(event) => {
           if (event.buttons || event.pointerType === "touch") movePaddle(event.clientX);
         }}
-        aria-label="Brick Breaker"
+        aria-label="Prism Break"
       />
       <div className="brickHud">
         <div><small>WAVE</small><strong>{hud.wave + 1}/3</strong></div>
