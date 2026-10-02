@@ -139,13 +139,15 @@ Before real-money use:
 
 
 
-## 8. V4 prototype catalog
+## 8. V4 competitive catalog
 
-The V4 branch contains four directly integrated deterministic prototypes selected for Skill Arena:
+The active V4 catalog deliberately prioritizes deeper, repeatable competitive mechanics over quick repository demos.
 
-- **Shadow Sprint** — original Skill Arena time-trial platformer implementation with fixed authored course and fixed-step simulation.
-- **Gravity Shift** — original Skill Arena gravity/slide puzzle implementation. It does not reuse the code, levels, assets, or template from the previously reviewed GravitySwitch repository.
-- **Arrow Escape** — original Skill Arena implementation of a directional grid-escape puzzle using an authored fixed board.
-- **Brick Breaker** — original Skill Arena implementation of the classic paddle/ball skill mechanic with fixed brick layout and fixed-step simulation.
+- **Shadow Sprint** — original Skill Arena time-trial platformer. Fixed authored course, fixed-step 120 Hz simulation, coyote time/jump buffering, checkpoints, deterministic collectibles, penalties, and score attack.
+- **Orbit Rush** — original one-touch orbital reflex game. Every hazard position and timing progression is authored in source; lane changes are the only competitive input.
+- **Vector Strike** — original deterministic precision/physics challenge. Fixed targets, fixed walls, trajectory preview, authored stages, and fixed-step projectile simulation.
+- **Prism Break** — original Skill Arena paddle/angle-control score attack. Authored waves, fixed initial velocity per wave, combo scoring, recovery after misses, and fixed-step simulation.
 
-These V4 prototypes contain no gameplay RNG. Their competitive layouts and initial state are fixed in source. The prototypes are intended for gameplay evaluation before production-grade server verification and anti-cheat are added.
+The active game files contain no calls to `Math.random`, `random`, `rnd`, `rndi`, or `shuffle`. The V4 implementations are written directly for Skill Arena and do not depend on the source code or assets of the previously reviewed third-party game repositories.
+
+Before any real-money use, these prototypes still require server-side replay/result verification, authoritative match state, anti-tamper controls, latency/device testing, and a formal legal review of the final competition rules.
