@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+<defs>
+<radialGradient id="bg" cx="50%" cy="45%" r="70%"><stop stop-color="#294984"/><stop offset=".55" stop-color="#101d45"/><stop offset="1" stop-color="#080f27"/></radialGradient>
+<filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="800" height="600" fill="url(#bg)"/>
+<g transform="translate(400 300)" fill="none">
+<circle r="105" stroke="#6ddcff" stroke-width="7" opacity=".8"/>
+<circle r="168" stroke="#ffffff" stroke-width="4" opacity=".18"/>
+<g stroke="#ff6177" stroke-width="25" stroke-linecap="round" filter="url(#glow)">
+<path d="M-51-92A105 105 0 0 1-12-104"/>
+<path d="M118-120A168 168 0 0 1 151-73"/>
+<path d="M-166 28A168 168 0 0 1-160 51"/>
+</g>
+<circle cy="-105" r="18" fill="#72e9ff" stroke="#fff" stroke-width="5" filter="url(#glow)"/>
+</g>
+<text x="58" y="88" font-family="Arial" font-weight="900" font-size="56" fill="#fff">ORBIT</text>
+<text x="58" y="142" font-family="Arial" font-weight="900" font-size="56" fill="#70e4ff">RUSH</text>
+<text x="58" y="535" font-family="Arial" font-weight="800" font-size="24" fill="#ffdf6b">ONE TAP · PURE TIMING</text>
+</svg>
