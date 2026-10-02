@@ -180,6 +180,7 @@ export default function DemoApp() {
     const onPopState = (event: PopStateEvent) => {
       const target = event.state?.skillArenaScreen;
       setActiveGame(false);
+      setCountdown(null);
       setResult(null);
       setTutorialOpen(false);
       setScreen(isScreen(target) ? target : onboarded ? "home" : "welcome");
@@ -308,6 +309,7 @@ export default function DemoApp() {
   }
 
   function openGame(game: GameMeta) {
+    haptic(5);
     setSelectedGame(game);
     setSelectedStake(0);
     setSelectedMode(modeForStake(game, 0, nextTurn));
@@ -317,6 +319,7 @@ export default function DemoApp() {
   }
 
   function selectStake(stake: Stake) {
+    haptic(4);
     setSelectedStake(stake);
     setSelectedMode(modeForStake(selectedGame, stake, nextTurn));
   }
@@ -331,6 +334,7 @@ export default function DemoApp() {
     setActiveGame(false);
     setGameKey((k) => k + 1);
     setCountdown(3);
+    gameTone("countdown");
     haptic(12);
     navigate("game");
   }
