@@ -341,7 +341,7 @@ export default function DemoApp() {
 
   function finishMatch(gameResult: GameResult) {
     setActiveGame(false);
-    const didWin = gameResult.won && gameResult.score >= selectedGame.rivalScore;
+    const didWin = gameResult.score >= selectedGame.rivalScore;
     const resolvedResult = { ...gameResult, won: didWin };
     setResult(resolvedResult);
     setBestScores((scores) => ({
@@ -578,7 +578,7 @@ export default function DemoApp() {
                 <span>{selectedGame.difficulty}</span>
               </div>
               <div className="skillChips">
-                <span>{selectedGame.category}</span><span>{selectedGame.skillLabel}</span><span>100% SKILL</span>
+                <span>{selectedGame.category}</span><span>{selectedGame.skillLabel}</span><span>100% SKILL</span><span>HASTA FALLAR</span>
               </div>
               <div className="gameBrief">
                 <div><span>CONTROLES</span><p>{selectedGame.instruction}</p></div>
@@ -632,7 +632,7 @@ export default function DemoApp() {
             <div className="duelObjective">
               <span>OBJETIVO</span>
               <strong>SUPERA {selectedGame.rivalScore.toLocaleString("es-ES")} PTS</strong>
-              <small>{selectedGame.skillLabel} · mismo estado inicial · cero azar</small>
+              <small>{selectedGame.skillLabel} · mismo estado inicial · cero azar · la ronda termina al fallar</small>
             </div>
 
             <div className="gameArenaWrap">
@@ -650,7 +650,7 @@ export default function DemoApp() {
               <div className={`resultPanel premiumResult ${result.won ? "win" : "loss"}`}>
                 <div className="resultIcon">{result.won ? "🏆" : "⚔"}</div>
                 <b>{result.won ? "VICTORIA" : "RETO NO SUPERADO"}</b>
-                <p>{result.won ? `Has superado a ${selectedGame.rivalName}.` : `Te han faltado ${Math.max(0, selectedGame.rivalScore - result.score).toLocaleString("es-ES")} puntos.`}</p>
+                <p>{result.won ? `Has superado la marca de ${selectedGame.rivalName} antes de caer.` : `La ronda terminó al fallar. Te han faltado ${Math.max(0, selectedGame.rivalScore - result.score).toLocaleString("es-ES")} puntos.`}</p>
                 <div className="scoreComparison">
                   <div><small>TU MARCA</small><strong>{result.score.toLocaleString("es-ES")}</strong></div>
                   <div className="scoreVs">VS</div>
