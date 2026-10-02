@@ -31,6 +31,7 @@ export default function StackForge({ active, onFinish }: Props) {
     score: 0,
     combo: 0,
     cameraY: 0,
+    bounces: 0,
   });
   const [hud, setHud] = useState({ height: 0, combo: 0, score: 0, width: START_W });
 
@@ -45,7 +46,7 @@ export default function StackForge({ active, onFinish }: Props) {
     gameTone("bad");
     haptic([28, 26, 52]);
     finishRef.current({ won: false, score: s.score, timeMs });
-  }, []);
+  }, [finish]);
 
   const place = useCallback(() => {
     const s = state.current;
@@ -72,6 +73,7 @@ export default function StackForge({ active, onFinish }: Props) {
     s.dir *= -1;
     s.speed = Math.min(330, 135 + s.blocks.length * 8);
     s.cameraY = Math.max(0, (s.blocks.length - 11) * BLOCK_H);
+    s.bounces = 0;
 
     setHud({ height: s.blocks.length - 1, combo: s.combo, score: s.score, width: overlap });
     gameTone(perfect ? "good" : "tap");
@@ -85,11 +87,14 @@ export default function StackForge({ active, onFinish }: Props) {
     if (s.movingX <= 8) {
       s.movingX = 8;
       s.dir = 1;
+      s.bounces += 1;
     }
     if (s.movingX + s.movingW >= W - 8) {
       s.movingX = W - 8 - s.movingW;
       s.dir = -1;
+      s.bounces += 1;
     }
+    if (s.bounces >= 6) finish();
   }, []);
 
   const draw = useCallback(() => {
@@ -169,6 +174,7 @@ export default function StackForge({ active, onFinish }: Props) {
       score: 0,
       combo: 0,
       cameraY: 0,
+      bounces: 0,
     };
     setHud({ height: 0, combo: 0, score: 0, width: START_W });
     draw();
