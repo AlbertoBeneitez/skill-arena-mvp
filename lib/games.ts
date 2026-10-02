@@ -4,7 +4,7 @@ export type Stake = (typeof STAKES)[number];
 export type MatchMode = "create" | "existing" | "waiting";
 
 export type GameMeta = {
-  id: "neon-dash" | "pulse-tap" | "grid-recall" | "line-shift";
+  id: "shadow-sprint" | "gravity-shift" | "arrow-escape" | "brick-breaker";
   name: string;
   cover: string;
   enabled: boolean;
@@ -13,30 +13,30 @@ export type GameMeta = {
 
 export const GAMES: GameMeta[] = [
   {
-    id: "neon-dash",
-    name: "Neon Dash",
-    cover: "/covers/neon-dash.svg",
+    id: "shadow-sprint",
+    name: "Shadow Sprint",
+    cover: "/covers/shadow-sprint.svg",
     enabled: true,
     waitingStakes: [5],
   },
   {
-    id: "pulse-tap",
-    name: "Pulse Tap",
-    cover: "/covers/pulse-tap.svg",
+    id: "gravity-shift",
+    name: "Gravity Shift",
+    cover: "/covers/gravity-shift.svg",
     enabled: true,
     waitingStakes: [1, 10],
   },
   {
-    id: "grid-recall",
-    name: "Grid Recall",
-    cover: "/covers/grid-recall.svg",
+    id: "arrow-escape",
+    name: "Arrow Escape",
+    cover: "/covers/arrow-escape.svg",
     enabled: true,
     waitingStakes: [0],
   },
   {
-    id: "line-shift",
-    name: "Line Shift",
-    cover: "/covers/line-shift.svg",
+    id: "brick-breaker",
+    name: "Brick Breaker",
+    cover: "/covers/brick-breaker.svg",
     enabled: true,
     waitingStakes: [50],
   },
