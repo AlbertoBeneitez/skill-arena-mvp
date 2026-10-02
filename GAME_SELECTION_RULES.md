@@ -38,6 +38,8 @@ A game can only be approved for Skill Arena when all of the following are true:
    - GPL and AGPL are not accepted for the default Skill Arena stack.
    - MPL-2.0 requires separate review before use.
    - A public GitHub repository without an explicit licence is **not** approved.
+   - A README saying "MIT" is not enough if the repository has no actual licence file.
+   - A licence inherited from a framework/template is not enough unless it clearly licenses the game author's own contributions. If the root licence only names the upstream template/framework copyright holder, treat the game source as **not approved for reuse** until the author explicitly licenses their contributions.
 
 7. **Assets audited separately**
    - The code licence does not automatically license art, music, SFX, fonts, trademarks, characters, or third-party packs.
