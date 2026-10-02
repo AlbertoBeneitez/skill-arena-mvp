@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import type { GameResult } from "@/lib/types";
+import { gameTone, haptic } from "@/lib/gameFeedback";
 
 type Screen = "welcome" | "avatar-setup" | "home" | "play" | "game" | "wallet" | "profile" | "legal";
 type Provider = "google" | "apple" | null;
@@ -25,6 +26,10 @@ type PersistedState = {
   earnings: EarningsPoint[];
   movements: Movement[];
   tutorialSeen: boolean;
+  wins: number;
+  losses: number;
+  streak: number;
+  bestScores: Record<string, number>;
 };
 
 const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "play", "game", "wallet", "profile", "legal"];
@@ -86,6 +91,11 @@ export default function DemoApp() {
   const [activeGame, setActiveGame] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const [result, setResult] = useState<GameResult | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [wins, setWins] = useState(0);
+  const [losses, setLosses] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [bestScores, setBestScores] = useState<Record<string, number>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -129,6 +139,10 @@ export default function DemoApp() {
         if (typeof data.musicOn === "boolean") setMusicOn(data.musicOn);
         if (Array.isArray(data.earnings) && data.earnings.length) setEarnings(data.earnings.slice(-20));
         if (Array.isArray(data.movements)) setMovements(data.movements.slice(0, 20));
+        if (typeof data.wins === "number") setWins(data.wins);
+        if (typeof data.losses === "number") setLosses(data.losses);
+        if (typeof data.streak === "number") setStreak(data.streak);
+        if (data.bestScores && typeof data.bestScores === "object") setBestScores(data.bestScores);
       } catch {}
     }
     setTutorialSeen(localStorage.getItem("skill-arena-color-tutorial-v1") === "1");
@@ -150,9 +164,13 @@ export default function DemoApp() {
       earnings,
       movements,
       tutorialSeen,
+      wins,
+      losses,
+      streak,
+      bestScores,
     };
     localStorage.setItem("skill-arena-v3", JSON.stringify(data));
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, bestScores]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -178,6 +196,21 @@ export default function DemoApp() {
     }
   }, [isLoaded, onboarded, screen, tutorialSeen]);
 
+  useEffect(() => {
+    if (screen !== "game" || countdown === null) return;
+    if (countdown <= 0) {
+      setCountdown(null);
+      gameTone("good");
+      haptic([20, 35, 35]);
+      setActiveGame(true);
+      return;
+    }
+    gameTone("countdown");
+    haptic(8);
+    const timer = window.setTimeout(() => setCountdown((value) => value === null ? null : value - 1), 650);
+    return () => window.clearTimeout(timer);
+  }, [screen, countdown]);
+
   function navigate(next: Screen, replace = false) {
     if (next === screen) return;
     const state = { skillArenaScreen: next };
@@ -198,6 +231,9 @@ export default function DemoApp() {
 
   const rank = rankingFromEarnings(netEarnings);
   const nameAvailable = isDemoNameAvailable(playerName);
+  const matchesPlayed = wins + losses;
+  const winRate = matchesPlayed ? Math.round((wins / matchesPlayed) * 100) : 0;
+  const selectedBest = bestScores[selectedGame.id] ?? 0;
 
   const chartPoints = useMemo(() => {
     if (earnings.length === 1) return "0,74 100,74";
@@ -290,18 +326,39 @@ export default function DemoApp() {
       setMovements((items) => [{ label: `${selectedGame.name} · entrada`, amount: -selectedStake }, ...items].slice(0, 20));
     }
     setResult(null);
+    setActiveGame(false);
     setGameKey((k) => k + 1);
-    setActiveGame(true);
+    setCountdown(3);
+    haptic(12);
     navigate("game");
   }
 
   function finishMatch(gameResult: GameResult) {
     setActiveGame(false);
-    setResult(gameResult);
-    const prize = prizeForStake(selectedStake);
-    const delta = gameResult.won ? prize - selectedStake : -selectedStake;
+    const didWin = gameResult.won && gameResult.score >= selectedGame.rivalScore;
+    const resolvedResult = { ...gameResult, won: didWin };
+    setResult(resolvedResult);
+    setBestScores((scores) => ({
+      ...scores,
+      [selectedGame.id]: Math.max(scores[selectedGame.id] ?? 0, gameResult.score),
+    }));
 
-    if (gameResult.won && prize > 0) {
+    if (didWin) {
+      setWins((value) => value + 1);
+      setStreak((value) => value + 1);
+      gameTone("win");
+      haptic([30, 45, 60]);
+    } else {
+      setLosses((value) => value + 1);
+      setStreak(0);
+      gameTone("bad");
+      haptic(35);
+    }
+
+    const prize = prizeForStake(selectedStake);
+    const delta = didWin ? prize - selectedStake : -selectedStake;
+
+    if (didWin && prize > 0) {
       setBalance((b) => Number((b + prize).toFixed(2)));
       setMovements((items) => [{ label: `${selectedGame.name} · premio`, amount: prize }, ...items].slice(0, 20));
     }
@@ -344,6 +401,11 @@ export default function DemoApp() {
     setNextTurn("create");
     setEarnings([{ label: "Inicio", value: 0 }]);
     setMovements([]);
+    setWins(0);
+    setLosses(0);
+    setStreak(0);
+    setBestScores({});
+    setCountdown(null);
     navigate("welcome", true);
   }
 
