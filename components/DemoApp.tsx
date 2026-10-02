@@ -386,6 +386,10 @@ export default function DemoApp() {
     setNetEarnings(0);
     setNextTurn("create");
     setEarnings([{ label: "Inicio", value: 0 }]);
+    setWins(0);
+    setLosses(0);
+    setStreak(0);
+    setBestScores({});
     navigate("profile");
   }
 
@@ -425,7 +429,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V4 · COMPETITIVE BUILD</p>
+          <p className="microcopy">8 ARENAS · 100% SKILL · CERO AZAR</p>
         </section>
       </main>
     );
@@ -539,6 +543,10 @@ export default function DemoApp() {
                       <strong>{game.name}</strong>
                       <span>{game.tagline}</span>
                       <small>{game.skillLabel}</small>
+                      <div className="gameCardBenchmark">
+                        <b>{bestScores[game.id] ? `PB ${bestScores[game.id].toLocaleString("es-ES")}` : "SIN PB"}</b>
+                        <em>RIVAL {game.rivalScore.toLocaleString("es-ES")}</em>
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -566,7 +574,14 @@ export default function DemoApp() {
                     <img src={game.cover} alt={game.name} />
                     <span className="gameCategory">{game.category}</span>
                   </div>
-                  <div className="gameCardCopy"><strong>{game.name}</strong><span>{game.skillLabel}</span></div>
+                  <div className="gameCardCopy">
+                    <strong>{game.name}</strong>
+                    <span>{game.skillLabel}</span>
+                    <div className="gameCardBenchmark">
+                      <b>{bestScores[game.id] ? `PB ${bestScores[game.id].toLocaleString("es-ES")}` : "SIN PB"}</b>
+                      <em>RIVAL {game.rivalScore.toLocaleString("es-ES")}</em>
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>
