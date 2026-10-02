@@ -141,7 +141,6 @@ export default function VectorStrike({ active, onFinish }: Props) {
     }
 
     if (s.ball.y - BALL_R > H || s.shotTicks > 720) {
-      s.attempts += 1;
       s.score = Math.max(0, s.score - 110);
       gameTone("bad");
       haptic(18);
