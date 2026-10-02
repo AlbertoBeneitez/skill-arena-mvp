@@ -137,3 +137,15 @@ Before real-money use:
 - ensure both competitors receive the same competitive state;
 - keep financial/legal records separate from cosmetic profile resets.
 
+
+
+## 8. V4 prototype catalog
+
+The V4 branch contains four directly integrated deterministic prototypes selected for Skill Arena:
+
+- **Shadow Sprint** — original Skill Arena time-trial platformer implementation with fixed authored course and fixed-step simulation.
+- **Gravity Shift** — original Skill Arena gravity/slide puzzle implementation. It does not reuse the code, levels, assets, or template from the previously reviewed GravitySwitch repository.
+- **Arrow Escape** — original Skill Arena implementation of a directional grid-escape puzzle using an authored fixed board.
+- **Brick Breaker** — original Skill Arena implementation of the classic paddle/ball skill mechanic with fixed brick layout and fixed-step simulation.
+
+These V4 prototypes contain no gameplay RNG. Their competitive layouts and initial state are fixed in source. The prototypes are intended for gameplay evaluation before production-grade server verification and anti-cheat are added.
