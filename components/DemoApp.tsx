@@ -580,6 +580,10 @@ export default function DemoApp() {
               <div className="skillChips">
                 <span>{selectedGame.category}</span><span>{selectedGame.skillLabel}</span><span>100% SKILL</span>
               </div>
+              <div className="gameBrief">
+                <div><span>CONTROLES</span><p>{selectedGame.instruction}</p></div>
+                <div><span>PUNTUACIÓN</span><p>{selectedGame.scoring}</p></div>
+              </div>
               <div className="rivalPreview">
                 <div className="rivalIdentity"><img src={selectedGame.rivalAvatar} alt="" /><div><small>MARCA A SUPERAR</small><strong>{selectedGame.rivalName}</strong></div></div>
                 <b>{selectedGame.rivalScore.toLocaleString("es-ES")} pts</b>
