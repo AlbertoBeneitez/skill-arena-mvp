@@ -648,8 +648,10 @@ export default function DemoApp() {
                   <div className="scoreVs">VS</div>
                   <div><small>{selectedGame.rivalName}</small><strong>{selectedGame.rivalScore.toLocaleString("es-ES")}</strong></div>
                 </div>
+                {result.score >= selectedBest && <div className="newBestBadge">★ NUEVA MEJOR MARCA</div>}
                 <div className="resultMeta">
                   <span>{(result.timeMs / 1000).toFixed(2)} s</span>
+                  <span>Rating {result.won ? "+22" : "-14"}</span>
                   <span>Racha {result.won ? streak : 0}</span>
                   <strong>{selectedStake === 0 ? "0,00 €" : result.won ? `+${euro(prizeForStake(selectedStake) - selectedStake)}` : `-${euro(selectedStake)}`}</strong>
                 </div>
