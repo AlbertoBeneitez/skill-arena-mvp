@@ -154,11 +154,15 @@ export default function DriftLine({ active, onFinish }: Props) {
     ctx.fillStyle = "#fff";
     ctx.font = "800 12px system-ui";
     ctx.fillText(`${Math.round(s.distance)} m`,26,36);
+    const worldAtPlayer = s.distance + (H - PLAYER_Y) * 1.1;
+    const currentCenter = centerAt(worldAtPlayer);
+    const currentHalfWidth = halfWidthAt(s.distance);
+    const clean = Math.max(0, Math.round(100 - (Math.abs(s.x - currentCenter) / currentHalfWidth) * 100));
     ctx.fillStyle = "#79e3a4";
-    ctx.fillText(`LÍNEA ${hud.clean}%`,145,36);
+    ctx.fillText(`LÍNEA ${clean}%`,145,36);
     ctx.fillStyle = "#ffdc67";
     ctx.fillText(`×${(speedFor(s.distance)/150).toFixed(2)}`,310,36);
-  }, [hud.clean]);
+  }, []);
 
   const loop = useCallback((now: number) => {
     const s = state.current;
