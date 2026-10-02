@@ -17,10 +17,10 @@ const BALL_R = 7;
 const GRAVITY = 330;
 
 const STAGES: Stage[] = [
-  { target: { x: 305, y: 330 }, radius: 25, walls: [], label: "DIRECTO" },
-  { target: { x: 318, y: 224 }, radius: 24, walls: [{ x: 188, y: 300, w: 28, h: 220 }], label: "BANCA" },
-  { target: { x: 302, y: 158 }, radius: 22, walls: [{ x: 170, y: 245, w: 26, h: 275 }, { x: 270, y: 350, w: 92, h: 24 }], label: "DOBLE LECTURA" },
-  { target: { x: 92, y: 180 }, radius: 21, walls: [{ x: 175, y: 210, w: 25, h: 310 }, { x: 70, y: 360, w: 90, h: 24 }], label: "REVERSO" },
+  { target: { x: 305, y: 330 }, radius: 28, walls: [], label: "DIRECTO" },
+  { target: { x: 318, y: 224 }, radius: 26, walls: [{ x: 188, y: 300, w: 28, h: 220 }], label: "BANCA" },
+  { target: { x: 302, y: 158 }, radius: 24, walls: [{ x: 170, y: 245, w: 26, h: 275 }, { x: 270, y: 350, w: 92, h: 24 }], label: "DOBLE LECTURA" },
+  { target: { x: 92, y: 180 }, radius: 23, walls: [{ x: 175, y: 210, w: 25, h: 310 }, { x: 70, y: 360, w: 90, h: 24 }], label: "REVERSO" },
 ];
 
 export default function VectorStrike({ active, onFinish }: Props) {
@@ -34,9 +34,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     flying: false,
     aiming: false,
     aim: { ...START },
-    stage: 0,
-    attempts: 0,
-    totalAttempts: 0,
+    hitCount: 0,
     score: 0,
     running: false,
     ticks: 0,
@@ -44,7 +42,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     last: 0,
     acc: 0,
   });
-  const [hud, setHud] = useState({ stage: 0, attempts: 0, totalAttempts: 0, score: 0, aiming: false });
+  const [hud, setHud] = useState({ hitCount: 0, score: 0, cycle: 1 });
 
   useEffect(() => { finishRef.current = onFinish; }, [onFinish]);
 
@@ -64,10 +62,10 @@ export default function VectorStrike({ active, onFinish }: Props) {
     s.running = false;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     const timeMs = Math.round((s.ticks * 1000) / 120);
-    const score = Math.max(1000, s.score + 4800 - s.totalAttempts * 180 - Math.round(timeMs / 24));
-    gameTone("win");
-    haptic([20, 30, 55]);
-    finishRef.current({ won: true, score, timeMs });
+    const score = Math.max(0, s.score + s.hitCount * 140 + Math.round(timeMs / 36));
+    gameTone("bad");
+    haptic([28, 28, 48]);
+    finishRef.current({ won: false, score, timeMs });
   }, []);
 
   function overlapsCircleRect(x: number, y: number, r: number, wall: Wall) {
@@ -78,12 +76,20 @@ export default function VectorStrike({ active, onFinish }: Props) {
     return dx * dx + dy * dy <= r * r;
   }
 
+  const currentStage = useCallback(() => {
+    const s = state.current;
+    const base = STAGES[s.hitCount % STAGES.length];
+    const cycle = Math.floor(s.hitCount / STAGES.length);
+    const radius = Math.max(13, base.radius - cycle * 2);
+    return { ...base, radius, cycle };
+  }, []);
+
   const step = useCallback(() => {
     const s = state.current;
     s.ticks += 1;
     if (!s.flying) return;
 
-    const stage = STAGES[s.stage];
+    const stage = currentStage();
     s.shotTicks += 1;
     const prevX = s.ball.x;
     const prevY = s.ball.y;
@@ -107,8 +113,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     for (const wall of stage.walls) {
       if (!overlapsCircleRect(s.ball.x, s.ball.y, BALL_R, wall)) continue;
       const cameFromSide = prevX + BALL_R <= wall.x || prevX - BALL_R >= wall.x + wall.w;
-      const cameFromTopBottom = prevY + BALL_R <= wall.y || prevY - BALL_R >= wall.y + wall.h;
-      if (cameFromSide && !cameFromTopBottom) {
+      if (cameFromSide) {
         s.vx *= -0.88;
         s.ball.x = prevX;
       } else {
@@ -124,29 +129,25 @@ export default function VectorStrike({ active, onFinish }: Props) {
     const dy = s.ball.y - stage.target.y;
     if (dx * dx + dy * dy <= (stage.radius + BALL_R) * (stage.radius + BALL_R)) {
       const shotSeconds = s.shotTicks / 120;
-      const accuracyBonus = Math.max(0, 1200 - s.attempts * 230);
-      const speedBonus = Math.max(0, 650 - Math.round(shotSeconds * 100));
-      s.score += 1350 + accuracyBonus + speedBonus;
+      const speedBonus = Math.max(0, 650 - Math.round(shotSeconds * 95));
+      const precisionBonus = Math.max(0, Math.round(900 - Math.sqrt(dx * dx + dy * dy) * 22));
+      s.score += 1180 + speedBonus + precisionBonus + stage.cycle * 120;
+      s.hitCount += 1;
       gameTone("good");
-      haptic([12, 18, 20]);
-
-      if (s.stage >= STAGES.length - 1) {
-        finish();
-        return;
-      }
-      s.stage += 1;
-      s.attempts = 0;
+      haptic([12, 16, 18]);
       resetShot();
+      setHud({
+        hitCount: s.hitCount,
+        score: s.score,
+        cycle: Math.floor(s.hitCount / STAGES.length) + 1,
+      });
       return;
     }
 
-    if (s.ball.y - BALL_R > H || s.shotTicks > 720) {
-      s.score = Math.max(0, s.score - 110);
-      gameTone("bad");
-      haptic(18);
-      resetShot();
+    if (s.ball.y - BALL_R > H || s.ball.x < -30 || s.ball.x > W + 30 || s.shotTicks > 760) {
+      finish();
     }
-  }, [finish, resetShot]);
+  }, [currentStage, finish, resetShot]);
 
   const predict = useCallback((vx: number, vy: number, stage: Stage) => {
     const points: Point[] = [];
@@ -154,7 +155,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     let y = START.y;
     let sx = vx;
     let sy = vy;
-    for (let i = 0; i < 150; i += 5) {
+    for (let i = 0; i < 145; i += 5) {
       for (let k = 0; k < 5; k++) {
         const px = x;
         const py = y;
@@ -184,7 +185,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const s = state.current;
-    const stage = STAGES[s.stage];
+    const stage = currentStage();
 
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#eef8ff");
@@ -217,7 +218,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
     ctx.strokeStyle = "#f1b93d";
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(0, 0, stage.radius * .36, 0, Math.PI * 2);
+    ctx.arc(0, 0, stage.radius * .34, 0, Math.PI * 2);
     ctx.fillStyle = "#f1b93d";
     ctx.fill();
     ctx.restore();
@@ -229,9 +230,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
       const power = Math.min(1, mag / 150);
       const angle = Math.atan2(dy, dx);
       const speed = 310 + power * 250;
-      const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed;
-      const prediction = predict(vx, vy, stage);
+      const prediction = predict(Math.cos(angle) * speed, Math.sin(angle) * speed, stage);
       prediction.forEach((point, index) => {
         if (index % 2) return;
         ctx.globalAlpha = Math.max(.12, .65 - index * .025);
@@ -261,24 +260,19 @@ export default function VectorStrike({ active, onFinish }: Props) {
     ctx.beginPath();
     ctx.arc(START.x, START.y, 18, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.font = "900 12px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("●", START.x, START.y + 4);
-    ctx.textAlign = "start";
 
     ctx.fillStyle = "rgba(36,55,88,.84)";
     ctx.fillRect(14, 14, W - 28, 52);
     ctx.fillStyle = "#fff";
     ctx.font = "800 12px system-ui";
-    ctx.fillText(`FASE ${s.stage + 1}/${STAGES.length}`, 26, 36);
-    ctx.fillText(stage.label, 136, 36);
+    ctx.fillText(`DIANAS ${s.hitCount}`, 26, 36);
+    ctx.fillText(stage.label, 132, 36);
     ctx.fillStyle = "#ffdc68";
-    ctx.fillText(`${s.score.toLocaleString("es-ES")} PTS`, 280, 36);
+    ctx.fillText(`${s.score.toLocaleString("es-ES")} PTS`, 270, 36);
     ctx.fillStyle = "rgba(255,255,255,.72)";
     ctx.font = "700 10px system-ui";
-    ctx.fillText(s.flying ? "EN VUELO" : "ARRASTRA PARA APUNTAR · SUELTA PARA LANZAR", 26, 54);
-  }, [predict]);
+    ctx.fillText(s.flying ? "EN VUELO" : "UN TIRO · SI FALLAS, TERMINA", 26, 54);
+  }, [currentStage, predict]);
 
   const loop = useCallback((now: number) => {
     const s = state.current;
@@ -302,9 +296,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
       flying: false,
       aiming: false,
       aim: { ...START },
-      stage: 0,
-      attempts: 0,
-      totalAttempts: 0,
+      hitCount: 0,
       score: 0,
       running: true,
       ticks: 0,
@@ -312,7 +304,7 @@ export default function VectorStrike({ active, onFinish }: Props) {
       last: 0,
       acc: 0,
     };
-    setHud({ stage: 0, attempts: 0, totalAttempts: 0, score: 0, aiming: false });
+    setHud({ hitCount: 0, score: 0, cycle: 1 });
     draw();
     rafRef.current = requestAnimationFrame(loop);
   }, [draw, loop]);
@@ -340,7 +332,6 @@ export default function VectorStrike({ active, onFinish }: Props) {
     if (!s.running || s.flying) return;
     s.aiming = true;
     s.aim = canvasPoint(clientX, clientY);
-    setHud((value) => ({ ...value, aiming: true }));
     haptic(4);
   }
 
@@ -368,11 +359,8 @@ export default function VectorStrike({ active, onFinish }: Props) {
     s.flying = true;
     s.aiming = false;
     s.shotTicks = 0;
-    s.attempts += 1;
-    s.totalAttempts += 1;
     gameTone("tap");
     haptic(8);
-    setHud({ stage: s.stage, attempts: s.attempts, totalAttempts: s.totalAttempts, score: s.score, aiming: false });
   }
 
   return (
@@ -392,11 +380,11 @@ export default function VectorStrike({ active, onFinish }: Props) {
         aria-label="Vector Strike"
       />
       <div className="vectorHud">
-        <span>FASE {state.current.stage + 1}/4</span>
-        <b>{state.current.score.toLocaleString("es-ES")} pts</b>
-        <span>{state.current.totalAttempts} lanzamientos</span>
+        <span>DIANAS {hud.hitCount}</span>
+        <b>{hud.score.toLocaleString("es-ES")} pts</b>
+        <span>NIVEL {hud.cycle}</span>
       </div>
-      <div className="gameRule">Arrastra en la dirección del disparo · la trayectoria es 100% determinista</div>
+      <div className="gameRule">Cada diana da paso a la siguiente · el primer fallo termina la partida</div>
     </div>
   );
 }
