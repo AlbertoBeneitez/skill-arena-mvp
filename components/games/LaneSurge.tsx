@@ -36,7 +36,7 @@ export default function LaneSurge({ active, onFinish }: Props) {
     distance: 0,
     gates: buildGates(),
     nextPatternIndex: 18,
-    nextGateDistance: 620 + Array.from({ length: 18 }).reduce((sum, _, i) => sum + GAP_PATTERN[i % GAP_PATTERN.length], 0),
+    nextGateDistance: 0,
     running: false,
     ticks: 0,
     last: 0,
