@@ -68,7 +68,7 @@ export function createTowerDropManifest(args?: {
     gameplay_content_hash: expectedTowerDropContentHash(),
     simulation: {
       tick_rate: TOWER_DROP_V1.tickRate,
-      coordinate_width: TOWER_DROP_V1.widthMilli / 1000,
+      coordinate_width: 390,
       coordinate_height: 620,
       end_condition: "FIRST_FAILURE",
     },
