@@ -31,7 +31,7 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Deterministic replay tests
+      - name: Determinism and device-equivalence tests
         run: pnpm test:determinism
 
       - name: Build
