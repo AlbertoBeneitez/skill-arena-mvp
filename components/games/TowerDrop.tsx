@@ -44,7 +44,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
   const verifyingRef = useRef(false);
   const generationRef = useRef(0);
 
-  const [hud, setHud] = useState({ height: 0, combo: 0, score: 0 });
   const [verificationState, setVerificationState] = useState<
     "idle" | "starting" | "playing" | "verifying" | "error"
   >("idle");
@@ -246,13 +245,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       return;
     }
 
-    if (s.tick % 6 === 0) {
-      setHud({
-        height: s.blocks.length - 1,
-        combo: s.combo,
-        score: s.score,
-      });
-    }
   }, [submitReplay]);
 
   const loop = useCallback(
@@ -290,7 +282,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       inputsRef.current = [];
       sessionRef.current = null;
       stateRef.current = createTowerDropState();
-      setHud({ height: 0, combo: 0, score: 0 });
       draw();
 
       try {
@@ -393,11 +384,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
     });
 
     const dropped: TowerDropState = dropTowerBlock(s);
-    setHud({
-      height: dropped.blocks.length - 1,
-      combo: dropped.combo,
-      score: dropped.score,
-    });
 
     if (dropped.status === "failed") {
       void submitReplay(dropped);
