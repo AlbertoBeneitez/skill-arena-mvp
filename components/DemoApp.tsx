@@ -95,6 +95,7 @@ export default function DemoApp() {
   const [selectedGame, setSelectedGame] = useState<GameMeta>(GAMES[0]);
   const [selectedStake, setSelectedStake] = useState<Stake>(0);
   const [selectedMode, setSelectedMode] = useState<MatchMode>("create");
+  const [ghostEnabled, setGhostEnabled] = useState(true);
   const [activeGame, setActiveGame] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const [result, setResult] = useState<GameResult | null>(null);
@@ -319,7 +320,9 @@ export default function DemoApp() {
     haptic(5);
     setSelectedGame(game);
     setSelectedStake(0);
-    setSelectedMode(modeForStake(game, 0, nextTurn));
+    const mode = modeForStake(game, 0, nextTurn);
+    setSelectedMode(mode);
+    setGhostEnabled(mode === "existing");
     setResult(null);
     setActiveGame(false);
     navigate("play");
@@ -327,8 +330,10 @@ export default function DemoApp() {
 
   function selectStake(stake: Stake) {
     haptic(4);
+    const mode = modeForStake(selectedGame, stake, nextTurn);
     setSelectedStake(stake);
-    setSelectedMode(modeForStake(selectedGame, stake, nextTurn));
+    setSelectedMode(mode);
+    setGhostEnabled(mode === "existing");
   }
 
   function startMatch() {
@@ -454,7 +459,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V6 · SERVER-VERIFIED CORE</p>
+          <p className="microcopy">V7 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -528,12 +533,14 @@ export default function DemoApp() {
 
   return (
     <main className="appShell">
-      <header className="appHeader">
-        <button className="logoButton" onClick={() => navigate("home")}>SKILL ARENA</button>
-        <button className="balanceChip" onClick={() => navigate("wallet")}>{euro(balance)}</button>
-      </header>
+      {screen !== "game" && (
+        <header className="appHeader">
+          <button className="logoButton" onClick={() => navigate("home")}>SKILL ARENA</button>
+          <button className="balanceChip" onClick={() => navigate("wallet")}>{euro(balance)}</button>
+        </header>
+      )}
 
-      <div className="appBody">
+      <div className={`appBody ${screen === "game" ? "gameBody" : ""}`}>
         {screen === "home" && (
           <>
             <button className="playerStrip" onClick={() => navigate("profile")}>
@@ -565,10 +572,7 @@ export default function DemoApp() {
                     <div className="gameCardCopy">
                       <strong>{game.name}</strong>
                       <span>{game.tagline}</span>
-                      <div className="gameCardBenchmark">
-                        <b>{bestScores[game.id] ? `PB ${bestScores[game.id].toLocaleString("es-ES")}` : "SIN PB"}</b>
-                        <em>RIVAL {game.rivalScore.toLocaleString("es-ES")}</em>
-                      </div>
+                      <div className="gameCardHint">HASTA FALLAR</div>
                     </div>
                   </button>
                 ))}
@@ -598,10 +602,7 @@ export default function DemoApp() {
                   <div className="gameCardCopy">
                     <strong>{game.name}</strong>
                     <span>{game.tagline}</span>
-                    <div className="gameCardBenchmark">
-                      <b>{bestScores[game.id] ? `PB ${bestScores[game.id].toLocaleString("es-ES")}` : "SIN PB"}</b>
-                      <em>RIVAL {game.rivalScore.toLocaleString("es-ES")}</em>
-                    </div>
+                    <div className="gameCardHint">HASTA FALLAR</div>
                   </div>
                 </button>
               ))}
@@ -617,10 +618,28 @@ export default function DemoApp() {
                 <div><span>PUNTUACIÓN</span><p>{selectedGame.scoring}</p></div>
               </div>
               <div className="rivalPreview">
-                <div className="rivalIdentity"><img src={selectedGame.rivalAvatar} alt="" /><div><small>MARCA A SUPERAR</small><strong>{selectedGame.rivalName}</strong></div></div>
-                <b>{selectedGame.rivalScore.toLocaleString("es-ES")} pts</b>
+                <div className="rivalIdentity">
+                  <img src={selectedGame.rivalAvatar} alt="" />
+                  <div>
+                    <small>{selectedMode === "existing" ? "RIVAL YA HA JUGADO" : "RIVAL DEMO"}</small>
+                    <strong>{selectedGame.rivalName}</strong>
+                  </div>
+                </div>
+                <b>{selectedMode === "existing" ? "MARCA OCULTA" : "1 VS 1"}</b>
               </div>
-              <div className="personalBestLine"><span>TU MEJOR MARCA</span><b>{selectedBest ? `${selectedBest.toLocaleString("es-ES")} pts` : "SIN MARCA"}</b></div>
+              {selectedMode === "existing" && (
+                <label className="ghostOption">
+                  <span>
+                    <b>👻 MARCA FANTASMA</b>
+                    <small>Ver una referencia visual del intento del rival sin mostrar su resultado.</small>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={ghostEnabled}
+                    onChange={(event) => setGhostEnabled(event.target.checked)}
+                  />
+                </label>
+              )}
               <div className="stakesLabel">ELIGE PARTIDA</div>
               <div className="stakesGrid">
                 {STAKES.map((stake) => {
@@ -648,27 +667,42 @@ export default function DemoApp() {
 
         {screen === "game" && (
           <section className="gameScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => { if (!activeGame && countdown === null) window.history.back(); }}>← {activeGame || countdown !== null ? "DUELO" : "VOLVER"}</button><span>{selectedGame.name.toUpperCase()}</span></div>
-
-            <div className="duelHud">
-              <div className="duelist">
-                <img src={avatarSrc} alt="" />
-                <div><small>TÚ</small><strong>{playerName || "PLAYER"}</strong></div>
+            <div className="mobileGameHeader">
+              <button
+                className="mobileGameBack"
+                onClick={() => {
+                  if (!activeGame && countdown === null) window.history.back();
+                }}
+                aria-label="Volver"
+              >
+                ←
+              </button>
+              <div>
+                <strong>{selectedGame.name}</strong>
+                <small>{selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€ · 1 VS 1`}</small>
               </div>
-              <div className="versusBadge">VS</div>
-              <div className="duelist rival">
-                <div><small>RIVAL</small><strong>{selectedGame.rivalName}</strong></div>
-                <img src={selectedGame.rivalAvatar} alt="" />
-              </div>
-            </div>
-            <div className="duelObjective">
-              <span>OBJETIVO</span>
-              <strong>SUPERA {selectedGame.rivalScore.toLocaleString("es-ES")} PTS</strong>
-              <small>Mismo estado inicial · cero azar · la ronda termina al fallar</small>
+              {selectedMode === "existing" ? (
+                <button
+                  className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
+                  onClick={() => setGhostEnabled((value) => !value)}
+                  aria-pressed={ghostEnabled}
+                >
+                  👻
+                </button>
+              ) : (
+                <span className="fairPlayDot">●</span>
+              )}
             </div>
 
-            {selectedGame.id === "tower-drop" && (
-              <div className="quickHowTo">
+            <div className="compactMatchStrip">
+              <span>{playerName || "TÚ"}</span>
+              <b>VS</b>
+              <span>{selectedGame.rivalName}</span>
+              {selectedMode === "existing" && ghostEnabled && <em>👻 fantasma activo</em>}
+            </div>
+
+            {selectedGame.id === "tower-drop" && !activeGame && !result && (
+              <div className="quickHowTo quickHowToGame">
                 <strong>CÓMO JUGAR</strong>
                 <span><b>1</b> Mira el bloque que se mueve.</span>
                 <span><b>2</b> Toca cuando esté encima de la torre.</span>
@@ -677,7 +711,14 @@ export default function DemoApp() {
             )}
 
             <div className="gameArenaWrap">
-              <GameLoader game={selectedGame} active={activeGame} stake={selectedStake} instanceKey={gameKey} onFinish={finishMatch} />
+              <GameLoader
+                game={selectedGame}
+                active={activeGame}
+                stake={selectedStake}
+                ghostEnabled={selectedMode === "existing" && ghostEnabled}
+                instanceKey={gameKey}
+                onFinish={finishMatch}
+              />
               {countdown !== null && (
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>
@@ -700,14 +741,10 @@ export default function DemoApp() {
                   </>
                 ) : (
                   <>
-                    <div className="finalScoreBlock">
-                      <small>RESULTADO</small>
-                      <strong>{result.score.toLocaleString("es-ES")} pts</strong>
-                    </div>
-                    <div className="demoPercentileBlock">
+                    <div className="demoPercentileBlock resultOnlyPercentile">
                       <span>MEJOR QUE</span>
                       <strong>{demoPercentile(result.score, selectedGame.rivalScore)}%</strong>
-                      <small>DE LOS RESULTADOS DEMO DE REFERENCIA</small>
+                      <small>DE LOS INTENTOS DEMO DE REFERENCIA</small>
                     </div>
                     {result.verified === true && (
                       <div className="serverVerifiedBadge">
@@ -802,7 +839,14 @@ export default function DemoApp() {
       {screen !== "game" && screen !== "legal" && (
         <nav className="bottomNav" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}><span>⌂</span>INICIO</button>
-          <button className={screen === "play" ? "active" : ""} onClick={() => { navigate("play"); setSelectedGame(GAMES[0]); setSelectedStake(0); setSelectedMode(modeForStake(GAMES[0], 0, nextTurn)); }}><span>▶</span>JUGAR</button>
+          <button className={screen === "play" ? "active" : ""} onClick={() => {
+            navigate("play");
+            setSelectedGame(GAMES[0]);
+            setSelectedStake(0);
+            const mode = modeForStake(GAMES[0], 0, nextTurn);
+            setSelectedMode(mode);
+            setGhostEnabled(mode === "existing");
+          }}><span>▶</span>JUGAR</button>
           <button className={screen === "wallet" ? "active" : ""} onClick={() => navigate("wallet")}>
             <svg className="navWalletIcon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h12A2.5 2.5 0 0 1 20 6.5V8h-5a3 3 0 0 0 0 6h5v3.5a2.5 2.5 0 0 1-2.5 2.5h-12A2.5 2.5 0 0 1 3 17.5z" />
