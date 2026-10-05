@@ -811,7 +811,7 @@ export default function DemoApp() {
                   </>
                 )}
                 <div className="resultActions">
-                  <button className="rematchAction" onClick={startMatch}>OTRA VEZ</button>
+                  <button className="rematchAction" onClick={() => startMatch()}>OTRA VEZ</button>
                   <button className="mainAction" onClick={() => navigate("play")}>OTRO JUEGO</button>
                 </div>
               </div>
