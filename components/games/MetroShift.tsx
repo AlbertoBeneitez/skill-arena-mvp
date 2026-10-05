@@ -64,12 +64,18 @@ export default function MetroShift({active,onFinish}:Props){
 
   function move(d:-1|1){const s=state.current;if(!s.running)return;const n=Math.max(0,Math.min(2,s.lane+d)) as Lane;if(n===s.lane)return;s.lane=n;gameTone("tap");haptic(5);}
   function jump(){const s=state.current;if(!s.running||s.jumpY<0)return;s.jumpVy=-430;gameTone("tap");haptic(5);}
-  function gesture(dx:number,dy:number){if(Math.abs(dx)>Math.abs(dy)){if(dx>28)move(1);else if(dx<-28)move(-1);}else if(dy<-28)jump();}
+  function localPoint(clientX:number,clientY:number){
+    const canvas=canvasRef.current;
+    if(!canvas)return{x:0,y:0};
+    const rect=canvas.getBoundingClientRect();
+    return{x:((clientX-rect.left)/rect.width)*W,y:((clientY-rect.top)/rect.height)*H};
+  }
+  function gesture(dx:number,dy:number){if(Math.abs(dx)>Math.abs(dy)){if(dx>30)move(1);else if(dx<-30)move(-1);}else if(dy<-30)jump();}
 
   return <div className="gameStage skillGameStage metroShiftArena">
     <canvas ref={canvasRef} width={W} height={H} className="gameCanvas"
-      onPointerDown={e=>{swipeRef.current={x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);}}
-      onPointerUp={e=>{if(!swipeRef.current)return;gesture(e.clientX-swipeRef.current.x,e.clientY-swipeRef.current.y);swipeRef.current=null;}}
+      onPointerDown={e=>{swipeRef.current=localPoint(e.clientX,e.clientY);e.currentTarget.setPointerCapture(e.pointerId);}}
+      onPointerUp={e=>{if(!swipeRef.current)return;const p=localPoint(e.clientX,e.clientY);gesture(p.x-swipeRef.current.x,p.y-swipeRef.current.y);swipeRef.current=null;}}
       onPointerCancel={()=>{swipeRef.current=null;}} aria-label="Metro Shift"/>
     <div className="metroControls"><button onPointerDown={()=>move(-1)}>◀</button><button onPointerDown={jump}>SALTAR</button><button onPointerDown={()=>move(1)}>▶</button></div>
     <div className="gameRule">Rojo: cambia de carril · amarillo bajo: salta · la velocidad sube gradualmente</div>
