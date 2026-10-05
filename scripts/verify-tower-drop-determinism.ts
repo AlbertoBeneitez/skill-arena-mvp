@@ -58,3 +58,56 @@ assert(!malformed.valid, "malformed input sequence was accepted");
 console.log(
   `Tower Drop v1 deterministic replay OK: score=${first.score}, height=${first.height}, finalTick=${FINAL_TICK}`
 );
+
+
+function simulateRenderRate(frameHz: number) {
+  const { createTowerDropState, stepTowerDrop, dropTowerBlock } = require("../lib/verified/towerDropCore.v1") as typeof import("../lib/verified/towerDropCore.v1");
+  const state = createTowerDropState();
+  let inputIndex = 0;
+  let accumulator = 0;
+  const frameSeconds = 1 / frameHz;
+  const tickSeconds = 1 / 120;
+  let guard = 0;
+
+  while (state.status === "running" && guard < 200_000) {
+    accumulator += frameSeconds;
+
+    while (accumulator + 1e-12 >= tickSeconds && state.status === "running") {
+      while (
+        inputIndex < GOLDEN_INPUTS.length &&
+        GOLDEN_INPUTS[inputIndex].tick === state.tick &&
+        state.status === "running"
+      ) {
+        dropTowerBlock(state);
+        inputIndex += 1;
+      }
+
+      if (state.status !== "running") break;
+      stepTowerDrop(state);
+      accumulator -= tickSeconds;
+    }
+
+    guard += 1;
+  }
+
+  return {
+    tick: state.tick,
+    score: state.score,
+    height: state.blocks.length - 1,
+    failure: state.failure,
+  };
+}
+
+const render60 = simulateRenderRate(60);
+const render120 = simulateRenderRate(120);
+const render144 = simulateRenderRate(144);
+
+assert(
+  JSON.stringify(render60) === JSON.stringify(render120) &&
+    JSON.stringify(render120) === JSON.stringify(render144),
+  `device/render-rate equivalence failed: 60=${JSON.stringify(render60)} 120=${JSON.stringify(render120)} 144=${JSON.stringify(render144)}`
+);
+
+console.log(
+  `Render-rate equivalence OK: 60/120/144 Hz -> score=${render60.score}, finalTick=${render60.tick}`
+);
