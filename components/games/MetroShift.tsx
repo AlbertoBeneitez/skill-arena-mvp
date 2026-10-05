@@ -21,6 +21,7 @@ type Obstacle = {
 
 const W = 390;
 const H = 620;
+const CX = W / 2;
 const DT = 1 / 120;
 const PLAYER_Y = 500;
 const PLAYER_HALF_W = 17;
