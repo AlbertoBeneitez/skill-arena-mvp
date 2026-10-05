@@ -94,8 +94,14 @@ export default function HelixDive({active,onFinish}:Props){
 
   useEffect(()=>{if(active)start();return()=>{state.current.running=false;if(rafRef.current!==null)cancelAnimationFrame(rafRef.current);};},[active,start]);
 
-  function down(x:number){dragRef.current={x,rotation:state.current.rotation};}
-  function move(x:number){if(!dragRef.current)return;state.current.rotation=dragRef.current.rotation+(x-dragRef.current.x)*.012;}
+  function localX(clientX:number){
+    const canvas=canvasRef.current;
+    if(!canvas)return 0;
+    const rect=canvas.getBoundingClientRect();
+    return ((clientX-rect.left)/rect.width)*W;
+  }
+  function down(clientX:number){dragRef.current={x:localX(clientX),rotation:state.current.rotation};}
+  function move(clientX:number){if(!dragRef.current)return;const x=localX(clientX);state.current.rotation=dragRef.current.rotation+(x-dragRef.current.x)*.012;}
   function up(){dragRef.current=null;}
 
   return <div className="gameStage skillGameStage helixDiveArena">
