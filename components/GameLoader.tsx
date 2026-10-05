@@ -20,15 +20,16 @@ function GameLoading() {
 type Props = {
   game: GameMeta;
   active: boolean;
+  stake: number;
   instanceKey: number;
   onFinish: (result: GameResult) => void;
 };
 
-export default function GameLoader({ game, active, instanceKey, onFinish }: Props) {
+export default function GameLoader({ game, active, stake, instanceKey, onFinish }: Props) {
   const key = `${game.id}-${instanceKey}`;
   switch (game.id) {
     case "tower-drop":
-      return <TowerDrop key={key} active={active} onFinish={onFinish} />;
+      return <TowerDrop key={key} active={active} stake={stake} onFinish={onFinish} />;
     case "helix-dive":
       return <HelixDive key={key} active={active} onFinish={onFinish} />;
     case "slice-rush":
