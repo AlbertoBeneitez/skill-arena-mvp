@@ -111,7 +111,7 @@ export default function TapReactor({ active, onFinish }: Props) {
     ctx.fillStyle="#ffdd69";
     ctx.fillText(`COMBO ×${s.combo}`,150,36);
     ctx.fillStyle="#7fe3aa";
-    ctx.fillText(`${s.score.toLocaleString("es-ES")}`,300,36);
+    ctx.fillText("SIGUE",304,36);
   },[]);
 
   const loop=useCallback((now:number)=>{
