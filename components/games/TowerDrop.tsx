@@ -151,15 +151,11 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       ctx.fillText("👻 FANTASMA", 278, 37);
     }
 
-    ctx.fillStyle = "rgba(38,58,91,.72)";
-    ctx.fillRect(14, 76, 152, 27);
-    ctx.fillStyle = "#d7e6ff";
-    ctx.font = "800 8px system-ui";
-    ctx.fillText(
-      `CORE ${TOWER_DROP_V1.gameVersion} · ${TOWER_DROP_V1.tickRate} TICK/S`,
-      23,
-      93
-    );
+    ctx.fillStyle = "rgba(255,255,255,.46)";
+    ctx.font = "900 11px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("TOCA PARA SOLTAR", W / 2, H - 28);
+    ctx.textAlign = "start";
   }, []);
 
   const submitReplay = useCallback(async (state: TowerDropState) => {
@@ -440,35 +436,21 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
         </div>
       )}
 
-      <div className="towerDropHud">
-        <div>
-          <small>ALTURA</small>
-          <strong>{hud.height}</strong>
-        </div>
-        <button onPointerDown={place} disabled={verificationState !== "playing"}>
-          TOCA PARA SOLTAR
-        </button>
-        <div>
-          <small>COMBO</small>
-          <strong>×{hud.combo}</strong>
-        </div>
-      </div>
-
-      <div className="verifiedGameLine">
+      <div className="verifiedGameLine compactVerifiedLine">
         <span className={verificationState === "error" ? "bad" : ""}>
           {verificationState === "playing"
-            ? "● PARTIDA VERIFICABLE"
+            ? "✓ PARTIDA VERIFICABLE"
             : verificationState === "verifying"
-              ? "● REPLAY EN SERVIDOR"
+              ? "VERIFICANDO…"
               : verificationState === "error"
-                ? "● NO VERIFICADO"
-                : "● PREPARANDO"}
+                ? "NO VERIFICADO"
+                : "PREPARANDO…"}
         </span>
-        {ghostEnabled && <b>👻 FANTASMA ACTIVO</b>}
+        {ghostEnabled && <b>👻 FANTASMA</b>}
       </div>
 
-      <div className="gameRule towerDropRule">
-        Toca la pantalla o el botón cuando el bloque esté justo encima de la torre
+      <div className="gameRule floatingGameRule towerDropRule">
+        Toca cuando el bloque esté justo encima de la torre
       </div>
     </div>
   );
