@@ -5,6 +5,7 @@ on:
     branches:
       - v4-mobile
       - v5-mobile
+      - v6-mobile
   workflow_dispatch:
 
 jobs:
@@ -29,6 +30,9 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      - name: Deterministic replay tests
+        run: pnpm test:determinism
 
       - name: Build
         run: pnpm build
