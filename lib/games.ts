@@ -104,7 +104,7 @@ export const GAMES: GameMeta[] = [
     rivalScore: 6100,
     rivalName: "MIRA",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Toca izquierda/derecha para cambiar de carril y el centro para saltar.",
+    instruction: "Desliza a izquierda o derecha para cambiar de carril y hacia arriba para saltar.",
     scoring: "Esquiva obstáculos hasta la primera colisión.",
   },
   {
@@ -122,22 +122,6 @@ export const GAMES: GameMeta[] = [
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Toca arriba para subir de órbita y abajo para bajar.",
     scoring: "Supera obstáculos hasta el primer impacto.",
-  },
-  {
-    id: "tap-reactor",
-    name: "Tap Reactor",
-    cover: "/covers/tap-reactor.svg",
-    enabled: true,
-    waitingStakes: [5],
-    category: "VELOCIDAD",
-    tagline: "Ve. Toca. Repite.",
-    difficulty: "MEDIA",
-    skillLabel: "REACCIÓN + PUNTERÍA",
-    rivalScore: 7600,
-    rivalName: "LYNX",
-    rivalAvatar: "/avatars/avatar-3.svg",
-    instruction: "Toca el núcleo antes de que expire el anillo.",
-    scoring: "Fallar o llegar tarde termina la partida.",
   },
 ];
 
