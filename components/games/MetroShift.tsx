@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
@@ -9,10 +9,11 @@ type Props = {
   ghostEnabled: boolean;
   onFinish: (result: GameResult) => void;
 };
+
 type Lane = 0 | 1 | 2;
 type Kind = "wall" | "barrier";
 type Obstacle = {
-  distance: number;
+  y: number;
   lane: Lane;
   kind: Kind;
   passed: boolean;
@@ -21,40 +22,68 @@ type Obstacle = {
 const W = 390;
 const H = 620;
 const DT = 1 / 120;
-const PLAYER_Y = 502;
-const LANES = [98, 195, 292] as const;
-const LANE_PATTERN: Lane[] = [1,0,2,2,1,0,1,2,0,0,2,1,0,2,1,1,0,2,2,0,1,2,0,1];
+const PLAYER_Y = 500;
+const PLAYER_HALF_W = 17;
+const PLAYER_TOP = 28;
+const PLAYER_BOTTOM = 23;
+const LANES = [92, 195, 298] as const;
+
+const LANE_PATTERN: Lane[] = [
+  1,0,2,2,1,0,1,2,0,0,2,1,0,2,1,1,0,2,2,0,1,2,0,1,
+];
 const KIND_PATTERN: Kind[] = [
   "wall","wall","barrier","wall","barrier","wall","wall","barrier",
   "wall","barrier","wall","wall","barrier","wall","barrier","wall",
   "wall","barrier","wall","wall","barrier","wall","barrier","wall",
 ];
-const GAP_PATTERN = [258,238,246,224,238,214,228,208,220,204,214,198];
-const GHOST_LANES: Lane[] = [1,1,0,0,1,2,2,1,0,1,2,1,1,0,2,2,1,0];
+const GAP_PATTERN = [236,222,246,214,230,208,226,202,218,198,212,194];
+const GHOST_LANES: Lane[] = [1,1,0,0,1,2,2,1,0,1,2,1,1,0,2,2,1,0,1,2,1,0,2,1];
 
-function initialObstacles() {
-  const list: Obstacle[] = [];
-  let distance = 660;
+function speedFor(passed: number) {
+  return Math.min(330, 170 + passed * 3.2);
+}
 
-  for (let index = 0; index < 18; index += 1) {
-    list.push({
-      distance,
+function sizeFor(y: number, kind: Kind) {
+  const depth = Math.max(0.34, Math.min(1, (y - 70) / (PLAYER_Y - 70)));
+  const width = 36 + 34 * depth;
+  const height = kind === "wall" ? 42 + 54 * depth : 18 + 22 * depth;
+  return { depth, width, height };
+}
+
+function obstacleX(lane: Lane, y: number) {
+  const depth = Math.max(0.34, Math.min(1, (y - 70) / (PLAYER_Y - 70)));
+  const spacing = 33 + 70 * depth;
+  return W / 2 + (lane - 1) * spacing;
+}
+
+function makeInitialObstacles() {
+  const items: Obstacle[] = [];
+  let y = 155;
+
+  for (let index = 0; index < 12; index += 1) {
+    items.push({
+      y,
       lane: LANE_PATTERN[index % LANE_PATTERN.length],
       kind: KIND_PATTERN[index % KIND_PATTERN.length],
       passed: false,
     });
-    distance += GAP_PATTERN[index % GAP_PATTERN.length];
+    y -= GAP_PATTERN[index % GAP_PATTERN.length];
   }
 
-  return {
-    list,
-    nextDistance: list[list.length - 1].distance,
-    nextIndex: 18,
-  };
+  return { items, nextIndex: 12 };
 }
 
-function speedFor(passed: number) {
-  return Math.min(338, 186 + passed * 3.5);
+function rectanglesOverlap(
+  ax1: number,
+  ay1: number,
+  ax2: number,
+  ay2: number,
+  bx1: number,
+  by1: number,
+  bx2: number,
+  by2: number
+) {
+  return ax1 < bx2 && ax2 > bx1 && ay1 < by2 && ay2 > by1;
 }
 
 export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
@@ -62,12 +91,11 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
   const swipeRef = useRef<{ x: number; y: number } | null>(null);
+
   const state = useRef({
     lane: 1 as Lane,
     x: LANES[1] as number,
-    distance: 0,
     obstacles: [] as Obstacle[],
-    nextDistance: 0,
     nextIndex: 0,
     running: false,
     ticks: 0,
@@ -77,9 +105,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     score: 0,
     jumpY: 0,
     jumpVy: 0,
-    laneFlash: 0,
   });
-  const [hud, setHud] = useState({ passed: 0, lane: 2 });
 
   useEffect(() => {
     finishRef.current = onFinish;
@@ -88,44 +114,46 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
   const finish = useCallback(() => {
     const s = state.current;
     if (!s.running) return;
+
     s.running = false;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    const timeMs = Math.round((s.ticks * 1000) / 120);
     gameTone("bad");
     haptic([32, 25, 52]);
-    finishRef.current({ won: false, score: s.score, timeMs });
+
+    finishRef.current({
+      won: false,
+      score: s.score,
+      timeMs: Math.round((s.ticks * 1000) / 120),
+    });
   }, []);
 
-  const extend = useCallback(() => {
+  const addObstacleAbove = useCallback(() => {
     const s = state.current;
     const index = s.nextIndex++;
-    const compression = Math.max(
-      0.76,
-      1 - Math.floor(s.passed / 18) * 0.032
+    const topY = s.obstacles.reduce(
+      (minimum, obstacle) => Math.min(minimum, obstacle.y),
+      90
     );
-
-    s.nextDistance +=
-      GAP_PATTERN[index % GAP_PATTERN.length] * compression;
+    const compression = Math.max(0.76, 1 - Math.floor(s.passed / 18) * 0.03);
 
     s.obstacles.push({
-      distance: s.nextDistance,
+      y: topY - GAP_PATTERN[index % GAP_PATTERN.length] * compression,
       lane: LANE_PATTERN[index % LANE_PATTERN.length],
       kind: KIND_PATTERN[index % KIND_PATTERN.length],
       passed: false,
     });
 
-    if (s.obstacles.length > 26) s.obstacles.shift();
+    if (s.obstacles.length > 20) {
+      s.obstacles = s.obstacles.filter((obstacle) => obstacle.y < H + 100);
+    }
   }, []);
 
   const step = useCallback(() => {
     const s = state.current;
     s.ticks += 1;
 
-    const previous = s.distance;
-    s.distance += speedFor(s.passed) * DT;
-
-    s.x += (LANES[s.lane] - s.x) * 0.28;
-    s.laneFlash = Math.max(0, s.laneFlash - 1);
+    const speed = speedFor(s.passed);
+    s.x += (LANES[s.lane] - s.x) * 0.31;
 
     s.jumpVy += 1220 * DT;
     s.jumpY += s.jumpVy * DT;
@@ -134,171 +162,166 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
       s.jumpVy = 0;
     }
 
+    const playerX1 = s.x - PLAYER_HALF_W;
+    const playerX2 = s.x + PLAYER_HALF_W;
+    const playerY1 = PLAYER_Y + s.jumpY - PLAYER_TOP;
+    const playerY2 = PLAYER_Y + s.jumpY + PLAYER_BOTTOM;
+
     for (const obstacle of s.obstacles) {
+      obstacle.y += speed * DT;
+
       if (obstacle.passed) continue;
 
-      const previousY = obstacle.distance - previous;
-      const screenY = obstacle.distance - s.distance;
+      const { width, height } = sizeFor(obstacle.y, obstacle.kind);
+      const x = obstacleX(obstacle.lane, obstacle.y);
+      const obstacleX1 = x - width / 2;
+      const obstacleX2 = x + width / 2;
+      const obstacleY1 = obstacle.y - height / 2;
+      const obstacleY2 = obstacle.y + height / 2;
 
-      if (previousY > PLAYER_Y && screenY <= PLAYER_Y) {
-        const sameLane = Math.abs(s.x - LANES[obstacle.lane]) < 36;
+      // Collision is based on the actual visible rectangles on every fixed tick.
+      // Any overlap with any part of the player ends the attempt.
+      if (
+        rectanglesOverlap(
+          playerX1,
+          playerY1,
+          playerX2,
+          playerY2,
+          obstacleX1,
+          obstacleY1,
+          obstacleX2,
+          obstacleY2
+        )
+      ) {
+        finish();
+        return;
+      }
 
-        if (sameLane) {
-          if (obstacle.kind === "wall") {
-            finish();
-            return;
-          }
-
-          if (obstacle.kind === "barrier" && s.jumpY > -38) {
-            finish();
-            return;
-          }
-        }
-
+      if (obstacleY1 > PLAYER_Y + PLAYER_BOTTOM + 18) {
         obstacle.passed = true;
         s.passed += 1;
-        s.score += 270 + Math.min(520, s.passed * 16);
+        s.score += 280 + Math.min(520, s.passed * 16);
+        addObstacleAbove();
 
         if (s.passed % 5 === 0) {
           gameTone("good");
           haptic(8);
         }
-
-        extend();
       }
     }
-
-    if (s.ticks % 6 === 0) {
-      setHud({ passed: s.passed, lane: s.lane + 1 });
-    }
-  }, [extend, finish]);
+  }, [addObstacleAbove, finish]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const s = state.current;
 
+    const s = state.current;
     const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, "#6db8df");
-    sky.addColorStop(0.38, "#dcecf4");
-    sky.addColorStop(0.39, "#556556");
+    sky.addColorStop(0, "#67b7df");
+    sky.addColorStop(0.34, "#d9eef7");
+    sky.addColorStop(0.35, "#5d6d60");
     sky.addColorStop(1, "#202827");
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
 
-    // City silhouettes
-    ctx.fillStyle = "rgba(37,54,66,.42)";
-    const skylineOffset = (s.distance * 0.08) % 96;
+    // City
+    ctx.fillStyle = "rgba(33,49,63,.40)";
+    const skylineOffset = (s.ticks * 0.22) % 96;
     for (let x = -96 - skylineOffset; x < W + 96; x += 96) {
-      const h1 = 72 + ((Math.floor((x + skylineOffset) / 96) % 3 + 3) % 3) * 24;
-      ctx.fillRect(x, 106 - h1, 54, h1);
-      ctx.fillRect(x + 61, 126 - h1 * 0.72, 28, h1 * 0.72);
+      const index = Math.floor((x + skylineOffset + 96) / 96);
+      const h1 = 62 + ((index % 3 + 3) % 3) * 24;
+      ctx.fillRect(x, 112 - h1, 52, h1);
+      ctx.fillRect(x + 59, 126 - h1 * 0.72, 30, h1 * 0.72);
     }
 
-    // Perspective road
+    // Road perspective.
     ctx.beginPath();
-    ctx.moveTo(124, 112);
-    ctx.lineTo(266, 112);
-    ctx.lineTo(370, H);
-    ctx.lineTo(20, H);
+    ctx.moveTo(135, 92);
+    ctx.lineTo(255, 92);
+    ctx.lineTo(372, H);
+    ctx.lineTo(18, H);
     ctx.closePath();
-    ctx.fillStyle = "#2d343f";
+    ctx.fillStyle = "#2c343e";
     ctx.fill();
 
-    ctx.strokeStyle = "rgba(255,255,255,.5)";
+    ctx.strokeStyle = "rgba(255,255,255,.50)";
     ctx.lineWidth = 3;
     ctx.setLineDash([18, 18]);
-    for (const x of [160, 230]) {
+    for (const topX of [175, 215]) {
       ctx.beginPath();
-      ctx.moveTo(x + (x < 195 ? 14 : -14), 112);
-      ctx.lineTo(x + (x < 195 ? -38 : 38), H);
+      ctx.moveTo(topX, 92);
+      ctx.lineTo(topX < CX ? 132 : 258, H);
       ctx.stroke();
     }
     ctx.setLineDash([]);
 
-    // Current lane highlight
-    const laneX = LANES[s.lane];
-    ctx.fillStyle = "rgba(87,210,235,.08)";
-    ctx.beginPath();
-    const laneIndex = s.lane;
-    const bottomLeft = laneIndex === 0 ? 25 : laneIndex === 1 ? 138 : 250;
-    const bottomRight = laneIndex === 0 ? 138 : laneIndex === 1 ? 250 : 365;
-    const topLeft = laneIndex === 0 ? 124 : laneIndex === 1 ? 172 : 219;
-    const topRight = laneIndex === 0 ? 172 : laneIndex === 1 ? 219 : 266;
-    ctx.moveTo(topLeft, 112);
-    ctx.lineTo(topRight, 112);
-    ctx.lineTo(bottomRight, H);
-    ctx.lineTo(bottomLeft, H);
-    ctx.closePath();
-    ctx.fill();
-
-    // Obstacles
+    // Obstacles genuinely travel from the top of the screen toward the player.
     for (const obstacle of s.obstacles) {
-      const y = obstacle.distance - s.distance;
-      if (y < 72 || y > H + 60) continue;
+      if (obstacle.y < 65 || obstacle.y > H + 90 || obstacle.passed) continue;
 
-      const depth = Math.max(0.28, Math.min(1, (y - 80) / 455));
-      const spacing = 97 * depth;
-      const center = W / 2;
-      const xs = [center - spacing, center, center + spacing];
-      const x = xs[obstacle.lane];
-      const width = 58 * depth + 15;
+      const { depth, width, height } = sizeFor(obstacle.y, obstacle.kind);
+      const x = obstacleX(obstacle.lane, obstacle.y);
 
       if (obstacle.kind === "wall") {
-        const height = 70 * depth + 18;
-        ctx.fillStyle = "#df5362";
-        ctx.fillRect(x - width / 2, y - height / 2, width, height);
-        ctx.fillStyle = "rgba(255,255,255,.26)";
-        ctx.fillRect(x - width / 2 + 5, y - height / 2 + 5, width - 10, 5);
-        ctx.fillStyle = "#ffd260";
-        ctx.fillRect(x - width / 2 + 6, y + height / 2 - 14, width - 12, 7);
+        ctx.fillStyle = "#e04e5e";
+        ctx.fillRect(x - width / 2, obstacle.y - height / 2, width, height);
+        ctx.fillStyle = "rgba(255,255,255,.28)";
+        ctx.fillRect(x - width / 2 + 5, obstacle.y - height / 2 + 5, width - 10, 5);
+        ctx.fillStyle = "#ffd360";
+        ctx.fillRect(x - width / 2 + 5, obstacle.y + height / 2 - 13, width - 10, 7);
       } else {
-        const height = 28 * depth + 10;
-        ctx.fillStyle = "#e1a83c";
-        ctx.fillRect(x - width / 2, y - height / 2, width, height);
-        ctx.fillStyle = "rgba(255,255,255,.3)";
-        ctx.fillRect(x - width / 2 + 5, y - height / 2 + 4, width - 10, 4);
+        ctx.fillStyle = "#e0a53a";
+        ctx.fillRect(x - width / 2, obstacle.y - height / 2, width, height);
+        ctx.fillStyle = "rgba(255,255,255,.30)";
+        ctx.fillRect(x - width / 2 + 4, obstacle.y - height / 2 + 4, width - 8, 4);
+
+        // Legs make the low barrier visually obvious.
+        ctx.fillStyle = "#9f7020";
+        const leg = Math.max(4, 7 * depth);
+        ctx.fillRect(x - width / 2 + 6, obstacle.y + height / 2, leg, 11 * depth + 4);
+        ctx.fillRect(x + width / 2 - 6 - leg, obstacle.y + height / 2, leg, 11 * depth + 4);
       }
     }
 
-    // Opponent ghost
+    // Ghost is exactly at the player's vertical height.
     if (ghostEnabled) {
-      const ghostLane =
-        GHOST_LANES[Math.min(GHOST_LANES.length - 1, s.passed % GHOST_LANES.length)];
+      const ghostLane = GHOST_LANES[s.passed % GHOST_LANES.length];
       const ghostX = LANES[ghostLane];
+      const ghostY = PLAYER_Y + s.jumpY;
+
       ctx.save();
       ctx.globalAlpha = 0.34;
-      ctx.translate(ghostX, PLAYER_Y - 54);
+      ctx.translate(ghostX, ghostY);
       ctx.fillStyle = "#d7f8ff";
       ctx.beginPath();
-      ctx.moveTo(0, -23);
-      ctx.lineTo(15, 19);
-      ctx.lineTo(0, 13);
-      ctx.lineTo(-15, 19);
+      ctx.moveTo(0, -28);
+      ctx.lineTo(17, 22);
+      ctx.lineTo(0, 15);
+      ctx.lineTo(-17, 22);
       ctx.closePath();
       ctx.fill();
-      ctx.globalAlpha = 0.78;
-      ctx.fillStyle = "#e9fbff";
+      ctx.globalAlpha = 0.86;
+      ctx.fillStyle = "#f1fdff";
       ctx.font = "900 12px system-ui";
       ctx.textAlign = "center";
-      ctx.fillText("👻", 0, -31);
+      ctx.fillText("👻", 0, -34);
       ctx.restore();
     }
 
-    // Player
+    // Player.
     ctx.save();
     ctx.translate(s.x, PLAYER_Y + s.jumpY);
-    ctx.rotate(Math.max(-0.18, Math.min(0.18, (LANES[s.lane] - s.x) / 100)));
+    ctx.rotate(Math.max(-0.16, Math.min(0.16, (LANES[s.lane] - s.x) / 90)));
     ctx.shadowBlur = 15;
     ctx.shadowColor = "#ffd34f";
     ctx.fillStyle = "#ffd34f";
     ctx.beginPath();
     ctx.moveTo(0, -28);
-    ctx.lineTo(18, 23);
+    ctx.lineTo(17, 23);
     ctx.lineTo(0, 16);
-    ctx.lineTo(-18, 23);
+    ctx.lineTo(-17, 23);
     ctx.closePath();
     ctx.fill();
     ctx.shadowBlur = 0;
@@ -306,18 +329,28 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.fillRect(-7, -11, 14, 20);
     ctx.restore();
 
-    ctx.fillStyle = "rgba(23,35,55,.86)";
-    ctx.fillRect(14, 14, W - 28, 52);
-    ctx.font = "800 12px system-ui";
+    // Compact HUD.
+    ctx.fillStyle = "rgba(20,32,52,.86)";
+    ctx.fillRect(14, 14, W - 28, 48);
+    ctx.font = "900 12px system-ui";
     ctx.fillStyle = "#fff";
-    ctx.fillText(`SUPERADOS ${s.passed}`, 26, 36);
-    ctx.fillStyle = "#77e5ff";
-    ctx.fillText(`CARRIL ${s.lane + 1}/3`, 270, 36);
+    ctx.textAlign = "left";
+    ctx.fillText(`SUPERADOS ${s.passed}`, 26, 44);
+    ctx.fillStyle = "#7de5f5";
+    ctx.textAlign = "right";
+    ctx.fillText(`CARRIL ${s.lane + 1}/3`, W - 26, 44);
+
+    ctx.fillStyle = "rgba(255,255,255,.45)";
+    ctx.font = "900 24px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("←      ↑      →", CX, H - 28);
+    ctx.textAlign = "start";
   }, [ghostEnabled]);
 
   const loop = useCallback((now: number) => {
     const s = state.current;
     if (!s.running) return;
+
     if (!s.last) s.last = now;
     s.acc += Math.min(0.05, (now - s.last) / 1000);
     s.last = now;
@@ -332,14 +365,12 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
   }, [draw, step]);
 
   const start = useCallback(() => {
-    const initial = initialObstacles();
+    const initial = makeInitialObstacles();
 
     state.current = {
       lane: 1,
       x: LANES[1],
-      distance: 0,
-      obstacles: initial.list,
-      nextDistance: initial.nextDistance,
+      obstacles: initial.items,
       nextIndex: initial.nextIndex,
       running: true,
       ticks: 0,
@@ -349,17 +380,14 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
       score: 0,
       jumpY: 0,
       jumpVy: 0,
-      laneFlash: 0,
     };
 
-    setHud({ passed: 0, lane: 2 });
     draw();
     rafRef.current = requestAnimationFrame(loop);
   }, [draw, loop]);
 
   useEffect(() => {
     if (active) start();
-
     return () => {
       state.current.running = false;
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -374,8 +402,6 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     if (next === s.lane) return;
 
     s.lane = next;
-    s.laneFlash = 12;
-    setHud({ passed: s.passed, lane: next + 1 });
     gameTone("tap");
     haptic(5);
   }
@@ -383,8 +409,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
   function jump() {
     const s = state.current;
     if (!s.running || s.jumpY < -2) return;
-
-    s.jumpVy = -440;
+    s.jumpVy = -450;
     gameTone("tap");
     haptic(5);
   }
@@ -401,9 +426,9 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
 
   function gesture(dx: number, dy: number) {
     if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 30) move(1);
-      else if (dx < -30) move(-1);
-    } else if (dy < -30) {
+      if (dx > 24) move(1);
+      else if (dx < -24) move(-1);
+    } else if (dy < -24) {
       jump();
     }
   }
@@ -430,20 +455,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
         }}
         aria-label="Metro Shift"
       />
-
-      <div className="metroControls metroControlsV7">
-        <button type="button" onPointerDown={() => move(-1)}>◀</button>
-        <button type="button" onPointerDown={jump}>↑ SALTAR</button>
-        <button type="button" onPointerDown={() => move(1)}>▶</button>
-      </div>
-
-      <div className="metroLegend">
-        <span><i className="wallSample" /> cambia de carril</span>
-        <span><i className="barrierSample" /> salta</span>
-        {ghostEnabled && <span>👻 rival</span>}
-      </div>
-
-      <div className="gameRule">Botones o gesto · sigue hasta la primera colisión</div>
+      <div className="gameRule floatingGameRule">Desliza ← → para cambiar · ↑ para saltar</div>
     </div>
   );
 }
