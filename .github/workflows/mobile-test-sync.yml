@@ -1,0 +1,23 @@
+name: Sync Mobile Test
+
+on:
+  push:
+    branches:
+      - "v*-mobile"
+
+permissions:
+  contents: write
+
+jobs:
+  sync-mobile-test:
+    if: github.ref_name != 'mobile-test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current version
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Point mobile-test at this commit
+        run: |
+          git push origin HEAD:refs/heads/mobile-test --force
