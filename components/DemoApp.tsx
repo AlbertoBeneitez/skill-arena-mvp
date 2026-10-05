@@ -83,6 +83,7 @@ export default function DemoApp() {
   const [avatarGenerating, setAvatarGenerating] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastGameTapRef = useRef<{ id: string; at: number } | null>(null);
   const [balance, setBalance] = useState(START_BALANCE);
   const [netEarnings, setNetEarnings] = useState(0);
   const [nextTurn, setNextTurn] = useState<Turn>("create");
@@ -206,6 +207,25 @@ export default function DemoApp() {
   }, [isLoaded, onboarded, screen, tutorialSeen]);
 
   useEffect(() => {
+    if (screen !== "game") return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverscroll = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+    window.scrollTo(0, 0);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overscrollBehavior = previousBodyOverscroll;
+    };
+  }, [screen]);
+
+  useEffect(() => {
     if (screen !== "game" || countdown === null) return;
     if (countdown === 0) {
       gameTone("good");
@@ -244,7 +264,6 @@ export default function DemoApp() {
   const nameAvailable = isDemoNameAvailable(playerName);
   const matchesPlayed = wins + losses;
   const winRate = matchesPlayed ? Math.round((wins / matchesPlayed) * 100) : 0;
-  const selectedBest = bestScores[selectedGame.id] ?? 0;
 
   const chartPoints = useMemo(() => {
     if (earnings.length === 1) return "0,74 100,74";
@@ -318,6 +337,8 @@ export default function DemoApp() {
 
   function openGame(game: GameMeta) {
     haptic(5);
+
+    const preserveScrollY = screen === "play" ? window.scrollY : 0;
     setSelectedGame(game);
     setSelectedStake(0);
     const mode = modeForStake(game, 0, nextTurn);
@@ -325,7 +346,28 @@ export default function DemoApp() {
     setGhostEnabled(mode === "existing");
     setResult(null);
     setActiveGame(false);
-    navigate("play");
+
+    if (screen !== "play") {
+      navigate("play");
+    } else {
+      requestAnimationFrame(() => window.scrollTo(0, preserveScrollY));
+    }
+  }
+
+  function handleGameTap(game: GameMeta) {
+    const now = performance.now();
+    const previous = lastGameTapRef.current;
+    const isDoubleTap =
+      previous?.id === game.id && now - previous.at <= 520;
+
+    if (isDoubleTap) {
+      lastGameTapRef.current = null;
+      startMatch(game);
+      return;
+    }
+
+    lastGameTapRef.current = { id: game.id, at: now };
+    openGame(game);
   }
 
   function selectStake(stake: Stake) {
@@ -336,12 +378,29 @@ export default function DemoApp() {
     setGhostEnabled(mode === "existing");
   }
 
-  function startMatch() {
-    if (selectedStake > balance) return;
-    setBalance((b) => Number((b - selectedStake).toFixed(2)));
-    if (selectedStake > 0) {
-      setMovements((items) => [{ label: `${selectedGame.name} · entrada`, amount: -selectedStake }, ...items].slice(0, 20));
+  function startMatch(gameOverride?: GameMeta) {
+    const game = gameOverride ?? selectedGame;
+    const stake = game.id === selectedGame.id ? selectedStake : 0;
+    const mode =
+      game.id === selectedGame.id
+        ? selectedMode
+        : modeForStake(game, stake, nextTurn);
+
+    if (stake > balance) return;
+
+    setSelectedGame(game);
+    setSelectedStake(stake);
+    setSelectedMode(mode);
+    setGhostEnabled(mode === "existing");
+
+    setBalance((b) => Number((b - stake).toFixed(2)));
+    if (stake > 0) {
+      setMovements((items) => [
+        { label: `${game.name} · entrada`, amount: -stake },
+        ...items,
+      ].slice(0, 20));
     }
+
     setResult(null);
     setActiveGame(false);
     setGameKey((k) => k + 1);
@@ -459,7 +518,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V7 · MOBILE COMPETITIVE BUILD</p>
+          <p className="microcopy">V8 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -572,7 +631,7 @@ export default function DemoApp() {
                     <div className="gameCardCopy">
                       <strong>{game.name}</strong>
                       <span>{game.tagline}</span>
-                      <div className="gameCardHint">HASTA FALLAR</div>
+                      <div className="gameCardHint">TOCA PARA ELEGIR</div>
                     </div>
                   </button>
                 ))}
@@ -595,27 +654,33 @@ export default function DemoApp() {
             <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← INICIO</button><span>JUGAR</span></div>
             <div className="gameGrid large">
               {GAMES.map((game) => (
-                <button className={`gameCard premiumGameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`} key={game.id} onClick={() => openGame(game)}>
+                <button
+                  className={`gameCard premiumGameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`}
+                  key={game.id}
+                  onClick={() => handleGameTap(game)}
+                >
                   <div className="gameCoverWrap">
                     <img src={game.cover} alt={game.name} />
                   </div>
                   <div className="gameCardCopy">
                     <strong>{game.name}</strong>
                     <span>{game.tagline}</span>
-                    <div className="gameCardHint">HASTA FALLAR</div>
+                    <div className="gameCardHint">
+                      {selectedGame.id === game.id ? "DOBLE TOQUE PARA JUGAR" : "TOCA PARA SELECCIONAR"}
+                    </div>
                   </div>
                 </button>
               ))}
             </div>
 
-            <div className="gameDetail">
+            <div className="gameDetail gameDetailAligned">
               <img className="detailCover" src={selectedGame.cover} alt={selectedGame.name} />
               <div className="detailHeader">
                 <div><h2>{selectedGame.name}</h2><p>{selectedGame.tagline}</p></div>
               </div>
               <div className="gameBrief">
                 <div><span>CONTROLES</span><p>{selectedGame.instruction}</p></div>
-                <div><span>PUNTUACIÓN</span><p>{selectedGame.scoring}</p></div>
+                <div><span>OBJETIVO</span><p>{selectedGame.scoring}</p></div>
               </div>
               <div className="rivalPreview">
                 <div className="rivalIdentity">
@@ -660,7 +725,7 @@ export default function DemoApp() {
                 <span>{selectedMode === "create" ? "PARTIDA INICIAL" : selectedMode === "existing" ? "JUGADA EXISTENTE" : "RIVAL EN SALA"}</span>
                 <strong>{selectedStake === 0 ? "GRATIS" : `PREMIO ${euro(prizeForStake(selectedStake))}`}</strong>
               </div>
-              <button className="mainAction duelEntryAction" onClick={startMatch} disabled={selectedStake > balance}>{selectedStake === 0 ? "ENTRENAR GRATIS" : `ENTRAR AL DUELO · ${selectedStake}€`}</button>
+              <button className="mainAction duelEntryAction" onClick={() => startMatch()} disabled={selectedStake > balance}>{selectedStake === 0 ? "ENTRENAR GRATIS" : `ENTRAR AL DUELO · ${selectedStake}€`}</button>
             </div>
           </section>
         )}
@@ -700,15 +765,6 @@ export default function DemoApp() {
               <span>{selectedGame.rivalName}</span>
               {selectedMode === "existing" && ghostEnabled && <em>👻 fantasma activo</em>}
             </div>
-
-            {selectedGame.id === "tower-drop" && !activeGame && !result && (
-              <div className="quickHowTo quickHowToGame">
-                <strong>CÓMO JUGAR</strong>
-                <span><b>1</b> Mira el bloque que se mueve.</span>
-                <span><b>2</b> Toca cuando esté encima de la torre.</span>
-                <span><b>3</b> Sigue apilando hasta que falles.</span>
-              </div>
-            )}
 
             <div className="gameArenaWrap">
               <GameLoader
