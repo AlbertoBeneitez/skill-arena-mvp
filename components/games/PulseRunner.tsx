@@ -55,7 +55,6 @@ export default function PulseRunner({active,onFinish}:Props){
 
   return <div className="gameStage skillGameStage pulseRunnerArena">
     <canvas ref={canvasRef} width={W} height={H} className="gameCanvas" onPointerDown={down} onPointerUp={up} onPointerCancel={up} aria-label="Pulse Runner"/>
-    <div className="pulseRunnerHud"><div><small>SUPERADOS</small><strong>{hud.passed}</strong></div><button onPointerDown={down} onPointerUp={up} onPointerCancel={up}>SALTAR</button><div><small>CONTROL</small><strong>TOCA</strong></div></div>
-    <div className="gameRule">Mantén un instante para alargar el salto · cada obstáculo acelera</div>
+    <div className="gameRule floatingGameRule">Toca para saltar · mantén un instante para alargar</div>
   </div>;
 }
