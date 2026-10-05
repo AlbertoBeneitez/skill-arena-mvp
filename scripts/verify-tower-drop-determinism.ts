@@ -1,5 +1,8 @@
 import {
+  createTowerDropState,
+  dropTowerBlock,
   replayTowerDrop,
+  stepTowerDrop,
   type TowerDropInput,
 } from "../lib/verified/towerDropCore.v1";
 
@@ -61,7 +64,6 @@ console.log(
 
 
 function simulateRenderRate(frameHz: number) {
-  const { createTowerDropState, stepTowerDrop, dropTowerBlock } = require("../lib/verified/towerDropCore.v1") as typeof import("../lib/verified/towerDropCore.v1");
   const state = createTowerDropState();
   let inputIndex = 0;
   let accumulator = 0;
