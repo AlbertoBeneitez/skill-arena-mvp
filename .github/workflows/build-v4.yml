@@ -3,10 +3,7 @@ name: Build Skill Arena
 on:
   push:
     branches:
-      - v4-mobile
-      - v5-mobile
-      - v6-mobile
-      - v7-mobile
+      - "v*-mobile"
   workflow_dispatch:
 
 jobs:
