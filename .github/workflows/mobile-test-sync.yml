@@ -9,15 +9,35 @@ permissions:
   contents: write
 
 jobs:
-  sync-mobile-test:
-    if: github.ref_name != 'mobile-test'
+  validate-and-sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout current version
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Point mobile-test at this commit
-        run: |
-          git push origin HEAD:refs/heads/mobile-test --force
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.7.0
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Determinism and device-equivalence tests
+        run: pnpm test:determinism
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Publish validated build to mobile-test
+        run: git push origin HEAD:refs/heads/mobile-test --force
