@@ -1795,3 +1795,136 @@ html, body {
   font-weight: 900;
   overflow-wrap: anywhere;
 }
+
+
+/* =========================================================
+   V6.1 — clearer play instructions + neutral result summary
+   ========================================================= */
+
+.quickHowTo {
+  margin: 0 0 10px;
+  padding: 11px 12px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 9px;
+  border: 2px solid #d6ad52;
+  border-radius: 14px;
+  background: linear-gradient(180deg,#fff9dd,#f2e3ae);
+  color: #44516a;
+}
+.quickHowTo > strong {
+  grid-column: 1 / -1;
+  color: #6a4b17;
+  font-size: 9px;
+  letter-spacing: .08em;
+}
+.quickHowTo span {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+.quickHowTo span b {
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #315fae;
+  color: #fff;
+  font-size: 9px;
+}
+
+.towerDropRule {
+  color: #3f4f6c;
+  font-weight: 850;
+  font-size: 10px;
+}
+.towerDropHud button {
+  font-size: 9px;
+  letter-spacing: .03em;
+}
+
+.walletTitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.walletTitleIcon {
+  width: 23px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #315fae;
+  color: #fff2bc;
+  font-size: 12px;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,.12);
+}
+
+.navWalletIcon {
+  width: 21px;
+  height: 21px;
+  display: block;
+  fill: currentColor;
+}
+
+.neutralResult {
+  border-color: #d0aa5b !important;
+  text-align: center;
+}
+.finalScoreBlock {
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  padding: 8px 0 4px;
+}
+.finalScoreBlock small {
+  color: #7c7469;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+.finalScoreBlock strong {
+  color: #2d5f9f;
+  font-size: 34px;
+  line-height: 1;
+}
+.demoPercentileBlock {
+  margin: 8px 0 10px;
+  padding: 15px 12px;
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  border: 1px solid #d6c79f;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,220,90,.28), transparent 55%),
+    rgba(255,255,255,.5);
+}
+.demoPercentileBlock span {
+  color: #7d7466;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.demoPercentileBlock strong {
+  color: #2f8f65;
+  font-size: 38px;
+  line-height: 1;
+}
+.demoPercentileBlock small {
+  color: #817868;
+  font-size: 7px;
+  font-weight: 850;
+}
+
+@media (max-width:430px) {
+  .quickHowTo { padding: 10px; }
+  .finalScoreBlock strong { font-size: 31px; }
+  .demoPercentileBlock strong { font-size: 34px; }
+}
