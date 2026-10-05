@@ -20,6 +20,7 @@ import {
 type Props = {
   active: boolean;
   stake: number;
+  ghostEnabled: boolean;
   onFinish: (result: GameResult) => void;
 };
 
@@ -32,7 +33,7 @@ const W = 390;
 const H = 620;
 const BLOCK_H = 28;
 
-export default function TowerDrop({ active, stake, onFinish }: Props) {
+export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
@@ -83,6 +84,27 @@ export default function TowerDrop({ active, stake, onFinish }: Props) {
     ctx.save();
     ctx.translate(0, cameraY);
 
+    if (ghostEnabled) {
+      const ghostWidths = [228, 222, 211, 201, 189, 176, 162, 148];
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "#6de6ff";
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 2;
+      ghostWidths.forEach((width, index) => {
+        const x = (W - width) / 2 + (index % 2 === 0 ? -5 : 5);
+        const y = H - 92 - index * BLOCK_H;
+        ctx.strokeRect(x, y, width, BLOCK_H - 3);
+      });
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.72;
+      ctx.fillStyle = "#6de6ff";
+      ctx.font = "900 14px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("👻", W / 2, H - 92 - ghostWidths.length * BLOCK_H - 8);
+      ctx.restore();
+    }
+
     s.blocks.forEach((block, index) => {
       const palette = [
         "#4c7ed7",
@@ -124,8 +146,10 @@ export default function TowerDrop({ active, stake, onFinish }: Props) {
     ctx.fillText(`ALTURA ${Math.max(0, s.blocks.length - 1)}`, 26, 37);
     ctx.fillStyle = s.combo > 1 ? "#ffdc65" : "#c9d8f3";
     ctx.fillText(`PERFECT ×${s.combo}`, 145, 37);
-    ctx.fillStyle = "#78e2a4";
-    ctx.fillText(`${s.score.toLocaleString("es-ES")}`, 300, 37);
+    if (ghostEnabled) {
+      ctx.fillStyle = "#77e5ff";
+      ctx.fillText("👻 FANTASMA", 278, 37);
+    }
 
     ctx.fillStyle = "rgba(38,58,91,.72)";
     ctx.fillRect(14, 76, 152, 27);
@@ -433,14 +457,14 @@ export default function TowerDrop({ active, stake, onFinish }: Props) {
       <div className="verifiedGameLine">
         <span className={verificationState === "error" ? "bad" : ""}>
           {verificationState === "playing"
-            ? "● INPUTS POR TICK"
+            ? "● PARTIDA VERIFICABLE"
             : verificationState === "verifying"
               ? "● REPLAY EN SERVIDOR"
               : verificationState === "error"
                 ? "● NO VERIFICADO"
                 : "● PREPARANDO"}
         </span>
-        <b>{hud.score.toLocaleString("es-ES")} pts cliente</b>
+        {ghostEnabled && <b>👻 FANTASMA ACTIVO</b>}
       </div>
 
       <div className="gameRule towerDropRule">
