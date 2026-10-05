@@ -25,7 +25,7 @@ export default function PulseRunner({active,onFinish}:Props){
   const addObstacle=useCallback(()=>{const s=state.current,i=s.nextIndex++;const compression=Math.max(.72,1-Math.floor(s.passed/18)*.035);s.nextX+=GAP_PATTERN[i%GAP_PATTERN.length]*compression;s.obstacles.push({x:s.nextX,w:34+(i%3)*4,h:HEIGHT_PATTERN[i%HEIGHT_PATTERN.length],passed:false});if(s.obstacles.length>20)s.obstacles.shift();},[]);
 
   const step=useCallback(()=>{const s=state.current;s.ticks++;const speed=speedFor(s.passed);s.scroll+=speed*DT;
-    if(jumpHeld.current)s.jumpBuffer=8;else s.jumpBuffer=Math.max(0,s.jumpBuffer-1);
+    s.jumpBuffer=Math.max(0,s.jumpBuffer-1);
     if(s.grounded)s.coyote=8;else s.coyote=Math.max(0,s.coyote-1);
     if(s.jumpBuffer>0&&s.coyote>0){s.vy=-505;s.grounded=false;s.coyote=0;s.jumpBuffer=0;gameTone("tap");haptic(4);}
     if(!jumpHeld.current&&s.vy<-180)s.vy+=1450*DT*1.5;
@@ -48,10 +48,10 @@ export default function PulseRunner({active,onFinish}:Props){
   },[]);
 
   const loop=useCallback((now:number)=>{const s=state.current;if(!s.running)return;if(!s.last)s.last=now;s.acc+=Math.min(.05,(now-s.last)/1000);s.last=now;while(s.acc>=DT&&s.running){step();s.acc-=DT;}draw();if(s.running)rafRef.current=requestAnimationFrame(loop);},[draw,step]);
-  const start=useCallback(()=>{const obstacles:Obstacle[]=[];let x=520;for(let i=0;i<9;i++){obstacles.push({x,w:34+(i%3)*4,h:HEIGHT_PATTERN[i%HEIGHT_PATTERN.length],passed:false});x+=GAP_PATTERN[i%GAP_PATTERN.length];}state.current={y:FLOOR-PH,vy:0,scroll:0,obstacles,nextX:x,nextIndex:9,running:true,ticks:0,last:0,acc:0,passed:0,score:0,grounded:true,coyote:8,jumpBuffer:0};jumpHeld.current=false;setHud({passed:0,score:0,speed:1});draw();rafRef.current=requestAnimationFrame(loop);},[draw,loop]);
+  const start=useCallback(()=>{const obstacles:Obstacle[]=[];let x=520;for(let i=0;i<9;i++){obstacles.push({x,w:34+(i%3)*4,h:HEIGHT_PATTERN[i%HEIGHT_PATTERN.length],passed:false});x+=GAP_PATTERN[i%GAP_PATTERN.length];}const lastX=obstacles[obstacles.length-1].x;state.current={y:FLOOR-PH,vy:0,scroll:0,obstacles,nextX:lastX,nextIndex:9,running:true,ticks:0,last:0,acc:0,passed:0,score:0,grounded:true,coyote:8,jumpBuffer:0};jumpHeld.current=false;setHud({passed:0,score:0,speed:1});draw();rafRef.current=requestAnimationFrame(loop);},[draw,loop]);
   useEffect(()=>{if(active)start();return()=>{state.current.running=false;if(rafRef.current!==null)cancelAnimationFrame(rafRef.current);};},[active,start]);
 
-  const down=()=>{jumpHeld.current=true;};const up=()=>{jumpHeld.current=false;};
+  const down=()=>{jumpHeld.current=true;state.current.jumpBuffer=8;};const up=()=>{jumpHeld.current=false;};
 
   return <div className="gameStage skillGameStage pulseRunnerArena">
     <canvas ref={canvasRef} width={W} height={H} className="gameCanvas" onPointerDown={down} onPointerUp={up} onPointerCancel={up} aria-label="Pulse Runner"/>
