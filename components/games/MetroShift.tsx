@@ -17,7 +17,7 @@ const GAP_PATTERN=[248,226,238,214,232,205,220,198,212,192,205,188];
 function initialObstacles(){
   const list:Obstacle[]=[];let d=620;
   for(let i=0;i<16;i++){list.push({distance:d,lane:LANE_PATTERN[i%LANE_PATTERN.length],kind:KIND_PATTERN[i%KIND_PATTERN.length],passed:false});d+=GAP_PATTERN[i%GAP_PATTERN.length];}
-  return {list,nextDistance:d,nextIndex:16};
+  return {list,nextDistance:list[list.length-1].distance,nextIndex:16};
 }
 
 export default function MetroShift({active,onFinish}:Props){
