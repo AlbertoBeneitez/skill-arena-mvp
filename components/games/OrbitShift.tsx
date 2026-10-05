@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
@@ -46,7 +46,6 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
     nextHazard: 1.55,
     nextIndex: 0,
   });
-  const [hud, setHud] = useState({ passed: 0, lane: 2 });
 
   useEffect(() => {
     finishRef.current = onFinish;
@@ -92,9 +91,6 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
       }
     }
 
-    if (s.ticks % 5 === 0) {
-      setHud({ passed: s.passed, lane: s.lane + 1 });
-    }
   }, [finish]);
 
   const draw = useCallback(() => {
@@ -252,7 +248,6 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
       nextHazard: 1.55,
       nextIndex: 0,
     };
-    setHud({ passed: 0, lane: 2 });
     draw();
     rafRef.current = requestAnimationFrame(loop);
   }, [draw, loop]);
@@ -271,7 +266,6 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
     const next = Math.max(0, Math.min(3, s.lane + direction)) as Lane;
     if (next === s.lane) return;
     s.lane = next;
-    setHud({ passed: s.passed, lane: next + 1 });
     gameTone("tap");
     haptic(5);
   }
