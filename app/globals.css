@@ -2393,3 +2393,81 @@ html, body {
   max-height: calc(100dvh - 92px);
   overflow: hidden;
 }
+
+
+/* V8 aligned catalog text and touch behavior */
+.gameCard,
+.premiumGameCard { touch-action: manipulation; }
+
+.gameCardCopy {
+  align-content: start;
+  text-align: left;
+}
+.gameCardCopy > strong,
+.gameCardCopy > span,
+.gameCardHint { width: 100%; }
+.gameCardCopy > strong { line-height: 1.15; }
+.gameCardCopy > span {
+  min-height: 2.5em;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.25;
+}
+.gameCardHint {
+  margin-top: auto;
+  padding-top: 7px;
+  border-top: 1px solid rgba(93,111,139,.10);
+  text-align: left;
+  line-height: 1.2;
+}
+.selectedGame .gameCardHint { color: #2d69ad; }
+
+.gameDetailAligned .detailHeader,
+.gameDetailAligned .gameBrief,
+.gameDetailAligned .rivalPreview,
+.gameDetailAligned .selectedMatchLine {
+  text-align: left;
+}
+.gameDetailAligned .gameBrief > div {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.gameDetailAligned .gameBrief span {
+  padding-top: 1px;
+  line-height: 1.25;
+}
+.gameDetailAligned .gameBrief p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.metroShiftArena,
+.helixDiveArena,
+.jetStreamArena,
+.pulseRunnerArena,
+.orbitShiftArena,
+.towerDropArena {
+  position: relative;
+}
+
+@media (max-width: 430px) {
+  .mobileGameHeader { min-height: 42px; }
+  .compactMatchStrip {
+    min-height: 31px;
+    margin-inline: 7px;
+    padding-block: 5px;
+  }
+  .floatingGameRule {
+    bottom: 62px;
+    font-size: 7px !important;
+  }
+  .compactVerifiedLine { top: 66px; }
+  .gameDetailAligned .gameBrief > div {
+    grid-template-columns: 72px 1fr;
+    gap: 8px;
+  }
+}
