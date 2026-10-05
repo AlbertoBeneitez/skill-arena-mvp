@@ -139,21 +139,34 @@ Before real-money use:
 
 
 
-## 8. V4 competitive catalog
+## 8. V5 product direction
 
-The active V4 catalog contains eight original Skill Arena prototypes. They are designed as **endless score attacks that continue until the player fails**. None has a fixed match-completion endpoint.
+V5 follows the mobile mechanics that have tested best with the product owner: tower stacking, spiral/helix control, swipe slicing, jet/flight control, one-touch obstacle running, projectile/target smashing, lane-based endless running, and reaction tapping.
 
-- **Orbit Rush** — one-touch orbital lane switching. Authored lane/gap patterns; the first impact ends the run.
-- **Vector Strike** — deterministic precision/physics. One shot per target; targets repeat in an authored sequence with shrinking radii; the first missed shot ends the run.
-- **Pulse Forge** — timing challenge with authored target centers, increasing cursor speed, and shrinking hit windows; the first mistimed tap ends the run.
-- **Stack Forge** — precision stacking. Block movement is deterministic and accelerates with height; zero overlap ends the run.
-- **Lane Surge** — three-lane reaction game with authored safe-lane/gap sequences and increasing speed; the first collision ends the run.
-- **Drift Line** — continuous steering through a deterministic mathematical corridor; speed increases and road width contracts; touching either boundary ends the run.
-- **Sky Thread** — one-touch flight through authored gate openings and spacings; the first collision ends the run.
-- **Tap Reactor** — reaction/precision target tapping using an authored position sequence, shrinking targets, and shorter time windows; a miss or timeout ends the run.
+These are used only as broad gameplay references. V5 uses original Skill Arena code, names, layouts, scoring, visuals, and deterministic patterns. It does not copy third-party characters, brands, levels, assets, UI trade dress, or source code.
 
-The active game files contain no calls or identifiers matching `Math.random`, `random`, `shuffle`, `rnd`, `rndi`, or `seed`. Gameplay sequences, target positions, physics constants, and difficulty progression are defined deterministically in source.
+### Mandatory V5 match loop
 
-The retired Shadow Sprint, Gravity Shift, Arrow Escape, and Prism Break prototype files and covers were removed from V4 so the repository reflects the current product direction.
+Every active arena is an **endless score attack**:
 
-Before real-money use, all games still require authoritative server-side result/replay verification, input logging, anti-tamper controls, device/latency testing, accessibility review, production audio/art passes, and a formal legal review of the final competition rules.
+1. Start from a fixed deterministic state.
+2. Continue while the player succeeds.
+3. Increase difficulty gradually rather than through abrupt random jumps.
+4. End immediately on the defined first failure condition.
+5. Compare the final score against the rival/player benchmark.
+6. Make replay immediate and preserve per-game personal bests.
+
+There is no normal "level completed" match ending.
+
+### Active V5 arenas
+
+- **Tower Drop** — deterministic moving-block stacking; speed rises as the tower grows; zero overlap ends the run.
+- **Helix Dive** — deterministic spiral-platform pattern; gaps narrow gradually and fall acceleration increases; touching a red sector ends the run.
+- **Slice Rush** — deterministic target trajectories and spawn order; spawn pressure and movement speed increase; missing a required target or slicing a red hazard ends the run.
+- **Jet Stream** — deterministic gate centers and spacings; scroll speed rises and the opening narrows gradually; collision ends the run.
+- **Pulse Runner** — deterministic obstacle order; horizontal speed rises and spacing compresses gradually; collision ends the run.
+- **Shatter Shot** — deterministic lane/target order; panels approach faster and spawn closer together; a panel reaching the impact line or an inaccurate tap ends the run.
+- **Metro Shift** — deterministic lane and obstacle-type sequence; speed rises and spacing compresses gradually; collision ends the run.
+- **Tap Reactor** — deterministic target-position sequence with shrinking targets and shorter response windows; miss or timeout ends the run.
+
+All active V5 game logic must remain free of gameplay RNG. Before real-money deployment, add authoritative server-side replay/result verification, input logging, anti-tamper controls, device/latency qualification, and formal legal review of the final competition rules.
