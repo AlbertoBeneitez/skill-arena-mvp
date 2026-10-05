@@ -341,6 +341,24 @@ export default function DemoApp() {
 
   function finishMatch(gameResult: GameResult) {
     setActiveGame(false);
+
+    if (selectedGame.id === "tower-drop" && gameResult.verified !== true) {
+      if (selectedStake > 0) {
+        setBalance((value) => Number((value + selectedStake).toFixed(2)));
+        setMovements((items) => [
+          { label: `${selectedGame.name} · devolución verificación`, amount: selectedStake },
+          ...items,
+        ].slice(0, 20));
+      }
+      setResult({
+        ...gameResult,
+        won: false,
+        score: 0,
+        verified: false,
+      });
+      return;
+    }
+
     const didWin = gameResult.score >= selectedGame.rivalScore;
     const resolvedResult = { ...gameResult, won: didWin };
     setResult(resolvedResult);
@@ -429,7 +447,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V5 · 8 ARENAS · HASTA FALLAR</p>
+          <p className="microcopy">V6 · SERVER-VERIFIED CORE</p>
         </section>
       </main>
     );
@@ -651,7 +669,7 @@ export default function DemoApp() {
             </div>
 
             <div className="gameArenaWrap">
-              <GameLoader game={selectedGame} active={activeGame} instanceKey={gameKey} onFinish={finishMatch} />
+              <GameLoader game={selectedGame} active={activeGame} stake={selectedStake} instanceKey={gameKey} onFinish={finishMatch} />
               {countdown !== null && (
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>
@@ -663,20 +681,53 @@ export default function DemoApp() {
 
             {result && (
               <div className={`resultPanel premiumResult ${result.won ? "win" : "loss"}`}>
-                <div className="resultIcon">{result.won ? "🏆" : "⚔"}</div>
-                <b>{result.won ? "VICTORIA" : "RETO NO SUPERADO"}</b>
-                <p>{result.won ? `Has superado la marca de ${selectedGame.rivalName} antes de caer.` : `La ronda terminó al fallar. Te han faltado ${Math.max(0, selectedGame.rivalScore - result.score).toLocaleString("es-ES")} puntos.`}</p>
-                <div className="scoreComparison">
-                  <div><small>TU MARCA</small><strong>{result.score.toLocaleString("es-ES")}</strong></div>
-                  <div className="scoreVs">VS</div>
-                  <div><small>{selectedGame.rivalName}</small><strong>{selectedGame.rivalScore.toLocaleString("es-ES")}</strong></div>
-                </div>
-                {result.score >= selectedBest && <div className="newBestBadge">★ NUEVA MEJOR MARCA</div>}
+                <div className="resultIcon">{result.verified === false ? "⚠" : result.won ? "🏆" : "⚔"}</div>
+                <b>
+                  {result.verified === false
+                    ? "INTENTO NO VERIFICADO"
+                    : result.won
+                      ? "VICTORIA"
+                      : "RETO NO SUPERADO"}
+                </b>
+                <p>
+                  {result.verified === false
+                    ? `El servidor rechazó o no pudo verificar el replay. ${selectedStake > 0 ? "La entrada demo se ha devuelto." : "No se registra resultado competitivo."}`
+                    : result.won
+                      ? `Has superado la marca de ${selectedGame.rivalName} antes de caer.`
+                      : `La ronda terminó al fallar. Te han faltado ${Math.max(0, selectedGame.rivalScore - result.score).toLocaleString("es-ES")} puntos.`}
+                </p>
+                {result.verified !== false && (
+                  <>
+                    <div className="scoreComparison">
+                      <div><small>TU MARCA</small><strong>{result.score.toLocaleString("es-ES")}</strong></div>
+                      <div className="scoreVs">VS</div>
+                      <div><small>{selectedGame.rivalName}</small><strong>{selectedGame.rivalScore.toLocaleString("es-ES")}</strong></div>
+                    </div>
+                    {result.score >= selectedBest && <div className="newBestBadge">★ NUEVA MEJOR MARCA</div>}
+                  </>
+                )}
+                {result.verified === true && (
+                  <div className="serverVerifiedBadge">
+                    ✓ SERVER REPLAY VERIFICADO
+                    {result.verificationId && <small>ID {result.verificationId.slice(0, 8)}</small>}
+                  </div>
+                )}
+                {result.verified === false && result.verificationError && (
+                  <div className="verificationErrorCode">{result.verificationError}</div>
+                )}
                 <div className="resultMeta">
                   <span>{(result.timeMs / 1000).toFixed(2)} s</span>
-                  <span>Rating {result.won ? "+22" : "-14"}</span>
+                  <span>{result.verified === true ? "Resultado servidor" : `Rating ${result.won ? "+22" : "-14"}`}</span>
                   <span>Racha {result.won ? streak : 0}</span>
-                  <strong>{selectedStake === 0 ? "0,00 €" : result.won ? `+${euro(prizeForStake(selectedStake) - selectedStake)}` : `-${euro(selectedStake)}`}</strong>
+                  <strong>
+                    {result.verified === false
+                      ? "DEVUELTO"
+                      : selectedStake === 0
+                        ? "0,00 €"
+                        : result.won
+                          ? `+${euro(prizeForStake(selectedStake) - selectedStake)}`
+                          : `-${euro(selectedStake)}`}
+                  </strong>
                 </div>
                 <div className="resultActions">
                   <button className="rematchAction" onClick={startMatch}>REVANCHA</button>
