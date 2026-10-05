@@ -1,9 +1,10 @@
-name: Build V4
+name: Build Skill Arena
 
 on:
   push:
     branches:
       - v4-mobile
+      - v5-mobile
   workflow_dispatch:
 
 jobs:
