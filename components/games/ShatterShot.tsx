@@ -9,10 +9,11 @@ type Panel = { lane: 0 | 1 | 2; y: number; speed: number; hit: boolean; id: numb
 
 const W = 390;
 const H = 620;
+const DT = 1 / 120;
 const IMPACT_Y = 515;
 const LANE_X = [95, 195, 295] as const;
 const LANE_PATTERN: Array<0 | 1 | 2> = [1,0,2,1,2,0,0,2,1,1,0,2,2,1,0,1];
-const GAP_PATTERN = [92,84,98,80,90,76,86,74,82,72,79,70];
+const GAP_PATTERN = [184,168,196,160,180,152,172,148,164,144,158,140];
 
 export default function ShatterShot({ active, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -23,9 +24,10 @@ export default function ShatterShot({ active, onFinish }: Props) {
     index: 0,
     hits: 0,
     ticks: 0,
-    nextSpawn: 24,
+    nextSpawnTick: 24,
     running: false,
     last: 0,
+    acc: 0,
     score: 0,
     combo: 0,
   });
@@ -38,7 +40,7 @@ export default function ShatterShot({ active, onFinish }: Props) {
     if (!s.running) return;
     s.running = false;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    const timeMs = Math.round((s.ticks * 1000) / 60);
+    const timeMs = Math.round((s.ticks * 1000) / 120);
     gameTone("bad");
     haptic([30,25,52]);
     finishRef.current({ won: false, score: s.score, timeMs });
@@ -48,7 +50,7 @@ export default function ShatterShot({ active, onFinish }: Props) {
     const s = state.current;
     const i = s.index++;
     const level = Math.floor(i / 8);
-    const speed = Math.min(5.7, 2.55 + level * 0.18);
+    const speed = Math.min(335, 153 + level * 11);
     s.panels.push({
       lane: LANE_PATTERN[i % LANE_PATTERN.length],
       y: 82,
@@ -56,8 +58,8 @@ export default function ShatterShot({ active, onFinish }: Props) {
       hit: false,
       id: i,
     });
-    const gap = Math.max(44, GAP_PATTERN[i % GAP_PATTERN.length] - level * 2);
-    s.nextSpawn = s.ticks + gap;
+    const gapTicks = Math.max(88, GAP_PATTERN[i % GAP_PATTERN.length] - level * 4);
+    s.nextSpawnTick = s.ticks + gapTicks;
   }, []);
 
   const tap = useCallback((clientX: number, clientY: number) => {
@@ -95,6 +97,24 @@ export default function ShatterShot({ active, onFinish }: Props) {
     haptic(s.combo % 5 === 0 ? 10 : 5);
     setHud({ hits: s.hits, score: s.score, combo: s.combo });
   }, [finish]);
+
+  const step = useCallback(() => {
+    const s = state.current;
+    s.ticks += 1;
+
+    if (s.ticks >= s.nextSpawnTick) spawn();
+
+    for (const panel of s.panels) {
+      if (panel.hit) continue;
+      panel.y += panel.speed * DT;
+      if (panel.y >= IMPACT_Y) {
+        finish();
+        return;
+      }
+    }
+
+    s.panels = s.panels.filter((panel) => !panel.hit && panel.y < H + 50);
+  }, [finish, spawn]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -161,25 +181,21 @@ export default function ShatterShot({ active, onFinish }: Props) {
   const loop = useCallback((now: number) => {
     const s = state.current;
     if (!s.running) return;
-    const dt = s.last ? Math.min(0.04, (now - s.last) / 16.666) : 1;
+    if (!s.last) s.last = now;
+    s.acc += Math.min(0.05, (now - s.last) / 1000);
     s.last = now;
-    s.ticks += 1;
 
-    if (s.ticks >= s.nextSpawn) spawn();
-
-    for (const panel of s.panels) {
-      if (panel.hit) continue;
-      panel.y += panel.speed * dt;
-      if (panel.y >= IMPACT_Y) {
-        finish();
-        return;
-      }
+    while (s.acc >= DT && s.running) {
+      step();
+      s.acc -= DT;
     }
 
-    s.panels = s.panels.filter((panel) => !panel.hit && panel.y < H + 50);
+    if (s.ticks % 4 === 0) {
+      setHud({ hits: s.hits, score: s.score, combo: s.combo });
+    }
     draw();
     if (s.running) rafRef.current = requestAnimationFrame(loop);
-  }, [draw, finish, spawn]);
+  }, [draw, step]);
 
   const start = useCallback(() => {
     state.current = {
@@ -187,9 +203,10 @@ export default function ShatterShot({ active, onFinish }: Props) {
       index: 0,
       hits: 0,
       ticks: 0,
-      nextSpawn: 24,
+      nextSpawnTick: 24,
       running: true,
       last: 0,
+      acc: 0,
       score: 0,
       combo: 0,
     };
