@@ -294,12 +294,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
         onPointerDown={(event) => touch(event.clientY)}
         aria-label="Orbit Shift"
       />
-      <div className="orbitShiftControls">
-        <button type="button" onPointerDown={() => moveOrbit(1)}>↑ SUBIR ÓRBITA</button>
-        <div><small>ÓRBITA</small><strong>{hud.lane}/4</strong></div>
-        <button type="button" onPointerDown={() => moveOrbit(-1)}>↓ BAJAR ÓRBITA</button>
-      </div>
-      <div className="gameRule">Toca arriba para subir y abajo para bajar · evita el arco rojo</div>
+      <div className="gameRule floatingGameRule">Arriba: sube de órbita · abajo: baja</div>
     </div>
   );
 }
