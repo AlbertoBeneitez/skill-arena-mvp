@@ -429,7 +429,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">8 ARENAS · 100% SKILL · CERO AZAR</p>
+          <p className="microcopy">V5 · 8 ARENAS · HASTA FALLAR</p>
         </section>
       </main>
     );
