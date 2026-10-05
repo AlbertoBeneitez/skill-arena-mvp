@@ -56,6 +56,13 @@ function rankingFromEarnings(value: number) {
   return 1042;
 }
 
+function demoPercentile(score: number, benchmark: number) {
+  if (score <= 0) return 1;
+  const ratio = score / Math.max(1, benchmark);
+  const percentile = Math.round(100 / (1 + Math.exp(-3.2 * (ratio - 0.78))));
+  return Math.max(1, Math.min(99, percentile));
+}
+
 const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "soporte", "support"]);
 
 function isDemoNameAvailable(value: string) {
@@ -554,13 +561,10 @@ export default function DemoApp() {
                   <button className="gameCard premiumGameCard" key={game.id} onClick={() => openGame(game)}>
                     <div className="gameCoverWrap">
                       <img src={game.cover} alt={game.name} />
-                      <span className="gameCategory">{game.category}</span>
-                      <span className="gameDifficulty">{game.difficulty}</span>
                     </div>
                     <div className="gameCardCopy">
                       <strong>{game.name}</strong>
                       <span>{game.tagline}</span>
-                      <small>{game.skillLabel}</small>
                       <div className="gameCardBenchmark">
                         <b>{bestScores[game.id] ? `PB ${bestScores[game.id].toLocaleString("es-ES")}` : "SIN PB"}</b>
                         <em>RIVAL {game.rivalScore.toLocaleString("es-ES")}</em>
@@ -590,11 +594,10 @@ export default function DemoApp() {
                 <button className={`gameCard premiumGameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`} key={game.id} onClick={() => openGame(game)}>
                   <div className="gameCoverWrap">
                     <img src={game.cover} alt={game.name} />
-                    <span className="gameCategory">{game.category}</span>
                   </div>
                   <div className="gameCardCopy">
                     <strong>{game.name}</strong>
-                    <span>{game.skillLabel}</span>
+                    <span>{game.tagline}</span>
                     <div className="gameCardBenchmark">
                       <b>{bestScores[game.id] ? `PB ${bestScores[game.id].toLocaleString("es-ES")}` : "SIN PB"}</b>
                       <em>RIVAL {game.rivalScore.toLocaleString("es-ES")}</em>
@@ -608,10 +611,6 @@ export default function DemoApp() {
               <img className="detailCover" src={selectedGame.cover} alt={selectedGame.name} />
               <div className="detailHeader">
                 <div><h2>{selectedGame.name}</h2><p>{selectedGame.tagline}</p></div>
-                <span>{selectedGame.difficulty}</span>
-              </div>
-              <div className="skillChips">
-                <span>{selectedGame.category}</span><span>{selectedGame.skillLabel}</span><span>100% SKILL</span><span>HASTA FALLAR</span>
               </div>
               <div className="gameBrief">
                 <div><span>CONTROLES</span><p>{selectedGame.instruction}</p></div>
@@ -665,8 +664,17 @@ export default function DemoApp() {
             <div className="duelObjective">
               <span>OBJETIVO</span>
               <strong>SUPERA {selectedGame.rivalScore.toLocaleString("es-ES")} PTS</strong>
-              <small>{selectedGame.skillLabel} · mismo estado inicial · cero azar · la ronda termina al fallar</small>
+              <small>Mismo estado inicial · cero azar · la ronda termina al fallar</small>
             </div>
+
+            {selectedGame.id === "tower-drop" && (
+              <div className="quickHowTo">
+                <strong>CÓMO JUGAR</strong>
+                <span><b>1</b> Mira el bloque que se mueve.</span>
+                <span><b>2</b> Toca cuando esté encima de la torre.</span>
+                <span><b>3</b> Sigue apilando hasta que falles.</span>
+              </div>
+            )}
 
             <div className="gameArenaWrap">
               <GameLoader game={selectedGame} active={activeGame} stake={selectedStake} instanceKey={gameKey} onFinish={finishMatch} />
@@ -680,58 +688,38 @@ export default function DemoApp() {
             </div>
 
             {result && (
-              <div className={`resultPanel premiumResult ${result.won ? "win" : "loss"}`}>
-                <div className="resultIcon">{result.verified === false ? "⚠" : result.won ? "🏆" : "⚔"}</div>
-                <b>
-                  {result.verified === false
-                    ? "INTENTO NO VERIFICADO"
-                    : result.won
-                      ? "VICTORIA"
-                      : "RETO NO SUPERADO"}
-                </b>
-                <p>
-                  {result.verified === false
-                    ? `El servidor rechazó o no pudo verificar el replay. ${selectedStake > 0 ? "La entrada demo se ha devuelto." : "No se registra resultado competitivo."}`
-                    : result.won
-                      ? `Has superado la marca de ${selectedGame.rivalName} antes de caer.`
-                      : `La ronda terminó al fallar. Te han faltado ${Math.max(0, selectedGame.rivalScore - result.score).toLocaleString("es-ES")} puntos.`}
-                </p>
-                {result.verified !== false && (
+              <div className="resultPanel premiumResult neutralResult">
+                {result.verified === false ? (
                   <>
-                    <div className="scoreComparison">
-                      <div><small>TU MARCA</small><strong>{result.score.toLocaleString("es-ES")}</strong></div>
-                      <div className="scoreVs">VS</div>
-                      <div><small>{selectedGame.rivalName}</small><strong>{selectedGame.rivalScore.toLocaleString("es-ES")}</strong></div>
+                    <div className="resultIcon">⚠</div>
+                    <b>RESULTADO NO VERIFICADO</b>
+                    <p>No se registra este intento competitivo.</p>
+                    {result.verificationError && (
+                      <div className="verificationErrorCode">{result.verificationError}</div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="finalScoreBlock">
+                      <small>RESULTADO</small>
+                      <strong>{result.score.toLocaleString("es-ES")} pts</strong>
                     </div>
-                    {result.score >= selectedBest && <div className="newBestBadge">★ NUEVA MEJOR MARCA</div>}
+                    <div className="demoPercentileBlock">
+                      <span>MEJOR QUE</span>
+                      <strong>{demoPercentile(result.score, selectedGame.rivalScore)}%</strong>
+                      <small>DE LOS RESULTADOS DEMO DE REFERENCIA</small>
+                    </div>
+                    {result.verified === true && (
+                      <div className="serverVerifiedBadge">
+                        ✓ SERVER REPLAY VERIFICADO
+                        {result.verificationId && <small>ID {result.verificationId.slice(0, 8)}</small>}
+                      </div>
+                    )}
                   </>
                 )}
-                {result.verified === true && (
-                  <div className="serverVerifiedBadge">
-                    ✓ SERVER REPLAY VERIFICADO
-                    {result.verificationId && <small>ID {result.verificationId.slice(0, 8)}</small>}
-                  </div>
-                )}
-                {result.verified === false && result.verificationError && (
-                  <div className="verificationErrorCode">{result.verificationError}</div>
-                )}
-                <div className="resultMeta">
-                  <span>{(result.timeMs / 1000).toFixed(2)} s</span>
-                  <span>{result.verified === true ? "Resultado servidor" : `Rating ${result.won ? "+22" : "-14"}`}</span>
-                  <span>Racha {result.won ? streak : 0}</span>
-                  <strong>
-                    {result.verified === false
-                      ? "DEVUELTO"
-                      : selectedStake === 0
-                        ? "0,00 €"
-                        : result.won
-                          ? `+${euro(prizeForStake(selectedStake) - selectedStake)}`
-                          : `-${euro(selectedStake)}`}
-                  </strong>
-                </div>
                 <div className="resultActions">
-                  <button className="rematchAction" onClick={startMatch}>REVANCHA</button>
-                  <button className="mainAction" onClick={() => navigate("play")}>OTRA ARENA</button>
+                  <button className="rematchAction" onClick={startMatch}>OTRA VEZ</button>
+                  <button className="mainAction" onClick={() => navigate("play")}>OTRO JUEGO</button>
                 </div>
               </div>
             )}
@@ -740,7 +728,7 @@ export default function DemoApp() {
 
         {screen === "wallet" && (
           <section className="simpleScreen">
-            <div className="screenTop"><span>WALLET</span></div>
+            <div className="screenTop walletTitle"><span className="walletTitleIcon" aria-hidden="true">▣</span><span>WALLET</span></div>
             <div className="walletBalance"><small>SALDO</small><strong>{euro(balance)}</strong></div>
             <div className="walletActions"><button onClick={() => { setBalance((b) => b + 10); setMovements((m) => [{ label: "Ingreso demo", amount: 10 }, ...m]); }}>INGRESAR</button><button disabled>RETIRAR</button></div>
             <div className="movementList"><div className="listTitle">HISTORIAL</div>{movements.length === 0 ? <p className="emptyText">Sin movimientos.</p> : movements.map((m, i) => <div className="movement" key={`${m.label}-${i}`}><span>{m.label}</span><b className={m.amount < 0 ? "negative" : ""}>{m.amount > 0 ? "+" : ""}{euro(m.amount)}</b></div>)}</div>
@@ -749,7 +737,7 @@ export default function DemoApp() {
 
         {screen === "profile" && (
           <section className="simpleScreen">
-            <div className="screenTop"><span>AVATAR</span></div>
+            <div className="screenTop"><span>{playerName || "PERFIL"}</span></div>
             <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>#{rank}</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
             <div className="chartPanel">
               <div className="chartHead"><span>DINERO GANADO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
@@ -772,7 +760,7 @@ export default function DemoApp() {
 
         {screen === "legal" && (
           <section className="simpleScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← AVATAR</button><span>LEGAL</span></div>
+            <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← {playerName || "PERFIL"}</button><span>LEGAL</span></div>
             <div className="legalTabs">
               <button className={legalTab === "terms" ? "active" : ""} onClick={() => setLegalTab("terms")}>TÉRMINOS</button>
               <button className={legalTab === "privacy" ? "active" : ""} onClick={() => setLegalTab("privacy")}>PRIVACIDAD</button>
@@ -815,8 +803,14 @@ export default function DemoApp() {
         <nav className="bottomNav" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}><span>⌂</span>INICIO</button>
           <button className={screen === "play" ? "active" : ""} onClick={() => { navigate("play"); setSelectedGame(GAMES[0]); setSelectedStake(0); setSelectedMode(modeForStake(GAMES[0], 0, nextTurn)); }}><span>▶</span>JUGAR</button>
-          <button className={screen === "wallet" ? "active" : ""} onClick={() => navigate("wallet")}><span>□</span>WALLET</button>
-          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}><img src={avatarSrc} alt="" />AVATAR</button>
+          <button className={screen === "wallet" ? "active" : ""} onClick={() => navigate("wallet")}>
+            <svg className="navWalletIcon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h12A2.5 2.5 0 0 1 20 6.5V8h-5a3 3 0 0 0 0 6h5v3.5a2.5 2.5 0 0 1-2.5 2.5h-12A2.5 2.5 0 0 1 3 17.5z" />
+              <path d="M14.8 9.5H21v3h-6.2a1.5 1.5 0 0 1 0-3Z" />
+            </svg>
+            WALLET
+          </button>
+          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}><img src={avatarSrc} alt="" />{playerName || "PERFIL"}</button>
         </nav>
       )}
     </main>
