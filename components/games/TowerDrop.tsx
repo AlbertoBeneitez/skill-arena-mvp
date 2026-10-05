@@ -422,7 +422,7 @@ export default function TowerDrop({ active, stake, onFinish }: Props) {
           <strong>{hud.height}</strong>
         </div>
         <button onPointerDown={place} disabled={verificationState !== "playing"}>
-          SOLTAR
+          TOCA PARA SOLTAR
         </button>
         <div>
           <small>COMBO</small>
@@ -443,8 +443,8 @@ export default function TowerDrop({ active, stake, onFinish }: Props) {
         <b>{hud.score.toLocaleString("es-ES")} pts cliente</b>
       </div>
 
-      <div className="gameRule">
-        El cliente solo envía inputs · la puntuación válida la recalcula el servidor
+      <div className="gameRule towerDropRule">
+        Toca la pantalla o el botón cuando el bloque esté justo encima de la torre
       </div>
     </div>
   );
