@@ -7,13 +7,6 @@ export async function POST(request: Request) {
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
     const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
-    if (!accountId || !apiToken) {
-      return NextResponse.json(
-        { error: "Falta configurar Cloudflare Workers AI." },
-        { status: 503 }
-      );
-    }
-
     const body = await request.json();
 
     const description =
@@ -31,6 +24,20 @@ export async function POST(request: Request) {
         { error: "Describe tu avatar." },
         { status: 400 }
       );
+    }
+
+    if (!accountId || !apiToken) {
+      const key = `${playerName}:${description}`;
+      let hash = 0;
+      for (let index = 0; index < key.length; index += 1) {
+        hash = (hash * 31 + key.charCodeAt(index)) >>> 0;
+      }
+      const fallbackAvatar = (hash % 8) + 1;
+
+      return NextResponse.json({
+        image: `/avatars/avatar-${fallbackAvatar}.svg`,
+        fallback: true,
+      });
     }
 
     const basePrompt =
