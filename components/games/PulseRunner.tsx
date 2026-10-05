@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback,useEffect,useRef,useState } from "react";
+import { useCallback,useEffect,useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { gameTone,haptic } from "@/lib/gameFeedback";
 
@@ -15,7 +15,6 @@ export default function PulseRunner({active,onFinish}:Props){
   const canvasRef=useRef<HTMLCanvasElement|null>(null),rafRef=useRef<number|null>(null),finishRef=useRef(onFinish);
   const jumpHeld=useRef(false);
   const state=useRef({y:FLOOR-PH,vy:0,scroll:0,obstacles:[] as Obstacle[],nextX:520,nextIndex:0,running:false,ticks:0,last:0,acc:0,passed:0,score:0,grounded:true,coyote:0,jumpBuffer:0});
-  const [hud,setHud]=useState({passed:0});
   useEffect(()=>{finishRef.current=onFinish;},[onFinish]);
 
   const speedFor=(p:number)=>Math.min(330,170+p*3.4);
@@ -35,7 +34,6 @@ export default function PulseRunner({active,onFinish}:Props){
     for(const o of s.obstacles){const x=o.x-s.scroll;if(x>W+70||x+o.w<-50)continue;const oy1=FLOOR-o.h;
       if(px2>x&&px1<x+o.w&&py2>oy1&&py1<FLOOR){finish();return;}
       if(!o.passed&&x+o.w<PLAYER_X){o.passed=true;s.passed++;s.score+=300+Math.min(520,s.passed*18);gameTone(s.passed%5===0?"good":"tap");if(s.passed%5===0)haptic(8);addObstacle();}}
-    if(s.ticks%5===0)setHud({passed:s.passed});
   },[addObstacle,finish]);
 
   const draw=useCallback(()=>{const c=canvasRef.current;if(!c)return;const ctx=c.getContext("2d");if(!ctx)return;const s=state.current;
@@ -48,7 +46,7 @@ export default function PulseRunner({active,onFinish}:Props){
   },[]);
 
   const loop=useCallback((now:number)=>{const s=state.current;if(!s.running)return;if(!s.last)s.last=now;s.acc+=Math.min(.05,(now-s.last)/1000);s.last=now;while(s.acc>=DT&&s.running){step();s.acc-=DT;}draw();if(s.running)rafRef.current=requestAnimationFrame(loop);},[draw,step]);
-  const start=useCallback(()=>{const obstacles:Obstacle[]=[];let x=520;for(let i=0;i<9;i++){obstacles.push({x,w:34+(i%3)*4,h:HEIGHT_PATTERN[i%HEIGHT_PATTERN.length],passed:false});x+=GAP_PATTERN[i%GAP_PATTERN.length];}const lastX=obstacles[obstacles.length-1].x;state.current={y:FLOOR-PH,vy:0,scroll:0,obstacles,nextX:lastX,nextIndex:9,running:true,ticks:0,last:0,acc:0,passed:0,score:0,grounded:true,coyote:8,jumpBuffer:0};jumpHeld.current=false;setHud({passed:0});draw();rafRef.current=requestAnimationFrame(loop);},[draw,loop]);
+  const start=useCallback(()=>{const obstacles:Obstacle[]=[];let x=520;for(let i=0;i<9;i++){obstacles.push({x,w:34+(i%3)*4,h:HEIGHT_PATTERN[i%HEIGHT_PATTERN.length],passed:false});x+=GAP_PATTERN[i%GAP_PATTERN.length];}const lastX=obstacles[obstacles.length-1].x;state.current={y:FLOOR-PH,vy:0,scroll:0,obstacles,nextX:lastX,nextIndex:9,running:true,ticks:0,last:0,acc:0,passed:0,score:0,grounded:true,coyote:8,jumpBuffer:0};jumpHeld.current=false;draw();rafRef.current=requestAnimationFrame(loop);},[draw,loop]);
   useEffect(()=>{if(active)start();return()=>{state.current.running=false;if(rafRef.current!==null)cancelAnimationFrame(rafRef.current);};},[active,start]);
 
   const down=()=>{jumpHeld.current=true;state.current.jumpBuffer=8;};const up=()=>{jumpHeld.current=false;};
