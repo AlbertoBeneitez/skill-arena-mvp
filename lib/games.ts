@@ -7,11 +7,10 @@ export type GameMeta = {
   id:
     | "tower-drop"
     | "helix-dive"
-    | "slice-rush"
     | "jet-stream"
     | "pulse-runner"
-    | "shatter-shot"
     | "metro-shift"
+    | "orbit-shift"
     | "tap-reactor";
   name: string;
   cover: string;
@@ -42,8 +41,8 @@ export const GAMES: GameMeta[] = [
     rivalScore: 6200,
     rivalName: "ATLAS",
     rivalAvatar: "/avatars/avatar-7.svg",
-    instruction: "Toca para soltar el bloque móvil sobre la torre.",
-    scoring: "Altura + precisión + combo. Sin solape, fin.",
+    instruction: "Toca cuando el bloque móvil esté encima de la torre.",
+    scoring: "Sigue apilando hasta fallar.",
   },
   {
     id: "helix-dive",
@@ -58,24 +57,8 @@ export const GAMES: GameMeta[] = [
     rivalScore: 5800,
     rivalName: "NOVA",
     rivalAvatar: "/avatars/avatar-6.svg",
-    instruction: "Arrastra izquierda/derecha para girar el anillo y alinear el hueco.",
-    scoring: "Pisos atravesados + caídas limpias. Tocar zona roja, fin.",
-  },
-  {
-    id: "slice-rush",
-    name: "Slice Rush",
-    cover: "/covers/slice-rush.svg",
-    enabled: true,
-    waitingStakes: [1],
-    category: "REFLEJOS",
-    tagline: "Traza rápido. No cortes lo prohibido.",
-    difficulty: "ALTA",
-    skillLabel: "REACCIÓN + PUNTERÍA",
-    rivalScore: 7600,
-    rivalName: "KIRA",
-    rivalAvatar: "/avatars/avatar-5.svg",
-    instruction: "Desliza el dedo atravesando los objetivos azules. Evita los rojos.",
-    scoring: "Aciertos + combo + precisión. Fallar objetivo o tocar rojo, fin.",
+    instruction: "Mantén pulsada la mitad izquierda o derecha para girar en esa dirección.",
+    scoring: "Atraviesa pisos; tocar rojo termina la partida.",
   },
   {
     id: "jet-stream",
@@ -91,7 +74,7 @@ export const GAMES: GameMeta[] = [
     rivalName: "AERO",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "Mantén pulsado para subir; suelta para caer.",
-    scoring: "Puertas superadas + centrado. Chocar, fin.",
+    scoring: "Atraviesa puertas hasta chocar.",
   },
   {
     id: "pulse-runner",
@@ -106,24 +89,8 @@ export const GAMES: GameMeta[] = [
     rivalScore: 7200,
     rivalName: "VOLT",
     rivalAvatar: "/avatars/avatar-8.svg",
-    instruction: "Toca para saltar obstáculos. Mantén para alargar ligeramente el salto.",
-    scoring: "Obstáculos + combo + distancia. Colisión, fin.",
-  },
-  {
-    id: "shatter-shot",
-    name: "Shatter Shot",
-    cover: "/covers/shatter-shot.svg",
-    enabled: true,
-    waitingStakes: [1, 50],
-    category: "PRECISIÓN",
-    tagline: "Rompe el objetivo antes de que te alcance.",
-    difficulty: "ALTA",
-    skillLabel: "PUNTERÍA + PRIORIDAD",
-    rivalScore: 6500,
-    rivalName: "ION",
-    rivalAvatar: "/avatars/avatar-4.svg",
-    instruction: "Toca los paneles azules antes de que crucen la línea de impacto.",
-    scoring: "Paneles destruidos + rapidez + combo. Dejar pasar uno, fin.",
+    instruction: "Toca para saltar; mantén un instante para alargar el salto.",
+    scoring: "Sigue hasta colisionar.",
   },
   {
     id: "metro-shift",
@@ -132,14 +99,30 @@ export const GAMES: GameMeta[] = [
     enabled: true,
     waitingStakes: [10, 50],
     category: "REACCIÓN",
-    tagline: "Tres carriles. Dos movimientos por delante.",
+    tagline: "Tres carriles. Decide rápido.",
     difficulty: "ALTA",
     skillLabel: "LECTURA + REACCIÓN",
     rivalScore: 6100,
     rivalName: "MIRA",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Desliza izquierda/derecha para cambiar de carril y arriba para saltar.",
-    scoring: "Puertas + velocidad + acciones limpias. Colisión, fin.",
+    instruction: "Toca izquierda/derecha para cambiar de carril y el centro para saltar.",
+    scoring: "Esquiva obstáculos hasta la primera colisión.",
+  },
+  {
+    id: "orbit-shift",
+    name: "Orbit Shift",
+    cover: "/covers/orbit-rush.svg",
+    enabled: true,
+    waitingStakes: [1, 10],
+    category: "CONTROL",
+    tagline: "Sube o baja de órbita antes del impacto.",
+    difficulty: "ALTA",
+    skillLabel: "LECTURA + TIMING",
+    rivalScore: 6400,
+    rivalName: "ORBIT",
+    rivalAvatar: "/avatars/avatar-3.svg",
+    instruction: "Toca arriba para subir de órbita y abajo para bajar.",
+    scoring: "Supera obstáculos hasta el primer impacto.",
   },
   {
     id: "tap-reactor",
@@ -155,7 +138,7 @@ export const GAMES: GameMeta[] = [
     rivalName: "LYNX",
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Toca el núcleo antes de que expire el anillo.",
-    scoring: "Rapidez + precisión + racha. Fallar o llegar tarde, fin.",
+    scoring: "Fallar o llegar tarde termina la partida.",
   },
 ];
 
@@ -170,5 +153,5 @@ export function modeForStake(
 
 export function prizeForStake(stake: Stake) {
   if (stake === 0) return 0;
-  return Number((stake * 1.8).toFixed(2));
+  return Number((stake * 2).toFixed(2));
 }
