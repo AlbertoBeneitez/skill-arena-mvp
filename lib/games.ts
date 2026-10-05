@@ -10,8 +10,7 @@ export type GameMeta = {
     | "jet-stream"
     | "pulse-runner"
     | "metro-shift"
-    | "orbit-shift"
-    | "tap-reactor";
+    | "orbit-shift";
   name: string;
   cover: string;
   enabled: boolean;
@@ -67,13 +66,13 @@ export const GAMES: GameMeta[] = [
     enabled: true,
     waitingStakes: [5, 10],
     category: "CONTROL",
-    tagline: "Mantén altura. Lee la próxima puerta.",
+    tagline: "Cruza cada puerta sin tocar los bordes.",
     difficulty: "ALTA",
     skillLabel: "RITMO + CONTROL",
     rivalScore: 6900,
     rivalName: "AERO",
     rivalAvatar: "/avatars/avatar-2.svg",
-    instruction: "Mantén pulsado para subir; suelta para caer.",
+    instruction: "Pulsa la pantalla para subir y suelta para caer.",
     scoring: "Atraviesa puertas hasta chocar.",
   },
   {
