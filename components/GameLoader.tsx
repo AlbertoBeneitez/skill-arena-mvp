@@ -10,7 +10,6 @@ const JetStream = dynamic(() => import("./games/JetStream"), { ssr: false, loadi
 const PulseRunner = dynamic(() => import("./games/PulseRunner"), { ssr: false, loading: () => <GameLoading /> });
 const MetroShift = dynamic(() => import("./games/MetroShift"), { ssr: false, loading: () => <GameLoading /> });
 const OrbitShift = dynamic(() => import("./games/OrbitShift"), { ssr: false, loading: () => <GameLoading /> });
-const TapReactor = dynamic(() => import("./games/TapReactor"), { ssr: false, loading: () => <GameLoading /> });
 
 function GameLoading() {
   return <div className="gameLoading">PREPARANDO ARENA…</div>;
@@ -48,7 +47,5 @@ export default function GameLoader({
       return <MetroShift key={key} active={active} ghostEnabled={ghostEnabled} onFinish={onFinish} />;
     case "orbit-shift":
       return <OrbitShift key={key} active={active} ghostEnabled={ghostEnabled} onFinish={onFinish} />;
-    case "tap-reactor":
-      return <TapReactor key={key} active={active} onFinish={onFinish} />;
   }
 }
