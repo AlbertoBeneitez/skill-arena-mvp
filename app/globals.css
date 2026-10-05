@@ -2302,3 +2302,94 @@ html, body {
     margin: 8px 9px;
   }
 }
+
+
+/* V8 fixed mobile game viewport */
+.gameScreen {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: max(4px, env(safe-area-inset-top)) 0 max(4px, env(safe-area-inset-bottom));
+}
+.mobileGameHeader,
+.compactMatchStrip { flex: 0 0 auto; }
+.gameScreen .gameArenaWrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+.gameScreen .skillGameStage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.gameScreen .gameCanvas {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 390 / 620;
+  touch-action: none;
+}
+.floatingGameRule {
+  position: absolute;
+  left: 50%;
+  bottom: 70px;
+  z-index: 8;
+  width: max-content;
+  max-width: calc(100% - 28px);
+  transform: translateX(-50%);
+  padding: 7px 11px !important;
+  border: 1px solid rgba(214,229,252,.16) !important;
+  border-radius: 999px;
+  background: rgba(9,18,37,.72) !important;
+  color: #e8f1ff !important;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+}
+.compactVerifiedLine {
+  position: absolute;
+  top: 72px;
+  right: 10px;
+  z-index: 9;
+  min-height: 0;
+  width: auto;
+  max-width: calc(100% - 20px);
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(10,27,45,.72);
+  pointer-events: none;
+}
+.compactVerifiedLine span,
+.compactVerifiedLine b {
+  font-size: 7px !important;
+  white-space: nowrap;
+}
+.gameScreen > .premiumResult {
+  position: absolute;
+  z-index: 50;
+  left: 10px;
+  right: 10px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  margin: 0;
+  max-height: calc(100dvh - 92px);
+  overflow: hidden;
+}
