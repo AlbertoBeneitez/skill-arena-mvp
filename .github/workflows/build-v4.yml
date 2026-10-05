@@ -6,6 +6,7 @@ on:
       - v4-mobile
       - v5-mobile
       - v6-mobile
+      - v7-mobile
   workflow_dispatch:
 
 jobs:
