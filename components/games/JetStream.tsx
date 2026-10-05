@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback,useEffect,useRef,useState } from "react";
+import { useCallback,useEffect,useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { gameTone,haptic } from "@/lib/gameFeedback";
 
@@ -17,7 +17,6 @@ export default function JetStream({active,onFinish}:Props){
   const canvasRef=useRef<HTMLCanvasElement|null>(null),rafRef=useRef<number|null>(null),finishRef=useRef(onFinish);
   const thrust=useRef(false);
   const state=useRef({y:H/2,vy:0,scroll:0,gates:makeGates(),next:10,running:false,ticks:0,last:0,acc:0,passed:0,score:0});
-  const [hud,setHud]=useState({passed:0});
   useEffect(()=>{finishRef.current=onFinish;},[onFinish]);
 
   const speedFor=(p:number)=>Math.min(270,128+p*3);
@@ -33,7 +32,6 @@ export default function JetStream({active,onFinish}:Props){
     const gap=gapFor(s.passed);
     for(const g of s.gates){const gx=g.x-s.scroll;if(gx<PLAYER_X+R&&gx+30>PLAYER_X-R){if(s.y-R<g.center-gap/2||s.y+R>g.center+gap/2){finish();return;}}
       if(!g.passed&&gx+30<PLAYER_X-R){g.passed=true;s.passed++;const precision=Math.max(0,1-Math.abs(s.y-g.center)/(gap/2));s.score+=280+Math.round(precision*200);gameTone(precision>.72?"good":"tap");if(precision>.72)haptic(7);extend();}}
-    if(s.ticks%5===0)setHud({passed:s.passed});
   },[extend,finish]);
 
   const draw=useCallback(()=>{const c=canvasRef.current;if(!c)return;const ctx=c.getContext("2d");if(!ctx)return;const s=state.current,gap=gapFor(s.passed);
@@ -45,7 +43,7 @@ export default function JetStream({active,onFinish}:Props){
   },[]);
 
   const loop=useCallback((now:number)=>{const s=state.current;if(!s.running)return;if(!s.last)s.last=now;s.acc+=Math.min(.05,(now-s.last)/1000);s.last=now;while(s.acc>=DT&&s.running){step();s.acc-=DT;}draw();if(s.running)rafRef.current=requestAnimationFrame(loop);},[draw,step]);
-  const start=useCallback(()=>{state.current={y:H/2,vy:0,scroll:0,gates:makeGates(),next:10,running:true,ticks:0,last:0,acc:0,passed:0,score:0};thrust.current=false;setHud({passed:0});draw();rafRef.current=requestAnimationFrame(loop);},[draw,loop]);
+  const start=useCallback(()=>{state.current={y:H/2,vy:0,scroll:0,gates:makeGates(),next:10,running:true,ticks:0,last:0,acc:0,passed:0,score:0};thrust.current=false;draw();rafRef.current=requestAnimationFrame(loop);},[draw,loop]);
   useEffect(()=>{if(active)start();return()=>{state.current.running=false;if(rafRef.current!==null)cancelAnimationFrame(rafRef.current);};},[active,start]);
 
   return <div className="gameStage skillGameStage jetStreamArena">
