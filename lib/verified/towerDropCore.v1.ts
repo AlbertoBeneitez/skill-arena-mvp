@@ -207,9 +207,7 @@ export function replayTowerDrop(
 
   let inputIndex = 0;
 
-  while (state.tick < finalTick && state.status === "running") {
-    stepTowerDrop(state);
-
+  while (state.status === "running") {
     while (
       inputIndex < inputs.length &&
       inputs[inputIndex].tick === state.tick &&
@@ -218,6 +216,9 @@ export function replayTowerDrop(
       dropTowerBlock(state);
       inputIndex += 1;
     }
+
+    if (state.status !== "running" || state.tick >= finalTick) break;
+    stepTowerDrop(state);
   }
 
   if (inputIndex !== inputs.length) {
