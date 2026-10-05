@@ -219,10 +219,10 @@ export default function TowerDrop({ active, stake, onFinish }: Props) {
     const s = stateRef.current;
     if (s.status !== "running") return;
 
-    stepTowerDrop(s);
+    const stepped: TowerDropState = stepTowerDrop(s);
 
-    if (s.status === "failed") {
-      void submitReplay(s);
+    if (stepped.status === "failed") {
+      void submitReplay(stepped);
       return;
     }
 
@@ -372,15 +372,15 @@ export default function TowerDrop({ active, stake, onFinish }: Props) {
       action: "DROP",
     });
 
-    dropTowerBlock(s);
+    const dropped: TowerDropState = dropTowerBlock(s);
     setHud({
-      height: s.blocks.length - 1,
-      combo: s.combo,
-      score: s.score,
+      height: dropped.blocks.length - 1,
+      combo: dropped.combo,
+      score: dropped.score,
     });
 
-    if (s.status === "failed") {
-      void submitReplay(s);
+    if (dropped.status === "failed") {
+      void submitReplay(dropped);
       return;
     }
 
