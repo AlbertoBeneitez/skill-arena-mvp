@@ -4857,3 +4857,297 @@ html, body {
   border-color: rgba(49,95,174,.34);
   background: rgba(255,255,255,.62);
 }
+
+
+/* V16.2 — competitive puzzle and group-flow refinements */
+
+/* Solitaire: one visible timer, explicit destination selection. */
+.solitaireSprint {
+  padding-top: 8px;
+}
+
+.solitaireTimer {
+  width: fit-content;
+  min-width: 92px;
+  margin: 0 auto 8px;
+  padding: 7px 13px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  background: rgba(5,18,15,.34);
+  color: #fff4d8;
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.solitairePile.foundation {
+  cursor: pointer;
+}
+
+.solitairePile.foundation:active,
+.solitaireCard.faceUp:active {
+  transform: translateY(1px);
+}
+
+/* Mine Grid: fixed common opening + mobile flag mode. */
+.mineCell.startCell {
+  position: relative;
+  background: linear-gradient(180deg,#ffd76a,#eeb64b);
+  color: #15365b;
+  box-shadow:
+    0 0 0 3px rgba(255,218,95,.24),
+    inset 0 -3px 0 rgba(0,0,0,.12);
+  animation: mineStartPulse 1.15s ease-in-out infinite alternate;
+}
+
+.mineCell.flagged {
+  background: linear-gradient(180deg,#7b648f,#5d496f);
+  color: #fff;
+}
+
+@keyframes mineStartPulse {
+  from { transform: scale(.96); }
+  to { transform: scale(1.03); }
+}
+
+.mineModeControl {
+  width: min(100%, 430px);
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.mineModeControl > span {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  min-height: 46px;
+  border: 1px solid rgba(255,216,103,.22);
+  border-radius: 12px;
+  background: rgba(255,216,103,.08);
+  color: #ffe18a;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.mineModeControl button {
+  min-height: 46px;
+  border: 1px solid rgba(138,166,205,.22);
+  border-radius: 12px;
+  background: #243a5a;
+  color: #cfe0f6;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.mineModeControl button.active {
+  border-color: #63d8eb;
+  background: #315fae;
+  color: #fff;
+}
+
+/* Grid Serpent: immediate swipe recognition plus reliable D-pad. */
+.serpentGame {
+  position: absolute;
+  inset: 0;
+  background: #081522;
+}
+
+.serpentGame .deterministicCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.serpentDpad {
+  position: absolute;
+  right: 12px;
+  bottom: 14px;
+  z-index: 5;
+  width: 134px;
+  height: 134px;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  grid-template-rows: repeat(3,1fr);
+  gap: 5px;
+  pointer-events: none;
+}
+
+.serpentDpad button {
+  pointer-events: auto;
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 12px;
+  background: rgba(20,44,69,.82);
+  color: #d9f8ef;
+  font-size: 22px;
+  font-weight: 950;
+  backdrop-filter: blur(4px);
+  touch-action: manipulation;
+}
+
+.serpentDpad button:active {
+  background: rgba(70,201,145,.88);
+  transform: scale(.95);
+}
+
+.serpentDpad .up { grid-column: 2; grid-row: 1; }
+.serpentDpad .left { grid-column: 1; grid-row: 2; }
+.serpentDpad .right { grid-column: 3; grid-row: 2; }
+.serpentDpad .down { grid-column: 2; grid-row: 3; }
+
+/* Group competition: creator-entered numeric rules. */
+.numericConfigCard label {
+  display: grid;
+  gap: 8px;
+}
+
+.numericConfigCard label > span,
+.competitionConfigCard > span {
+  color: #75694f;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.numericConfigCard input {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 12px;
+  border: 1px solid #c9b88f;
+  border-radius: 12px;
+  background: #fffdf8;
+  color: #315fae;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 950;
+  outline: none;
+}
+
+.numericConfigCard small {
+  color: #86785e;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.numberInputWithUnit {
+  display: grid;
+  grid-template-columns: 1fr 48px;
+  gap: 6px;
+}
+
+.numberInputWithUnit b {
+  display: grid;
+  place-items: center;
+  border: 1px solid #c9b88f;
+  border-radius: 12px;
+  background: #efe3ca;
+  color: #6f624b;
+  font-size: 18px;
+}
+
+.leagueModeToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.leagueModeToggle button,
+.secondaryScheduleAction {
+  min-height: 44px;
+  border: 1px solid #c9b88f;
+  border-radius: 11px;
+  background: #f7efdf;
+  color: #66728a;
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.leagueModeToggle button.selected {
+  border-color: #315fae;
+  background: #edf4ff;
+  color: #315fae;
+}
+
+.leagueScheduleStatus {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 11px;
+  background: rgba(49,95,174,.07);
+}
+
+.leagueScheduleStatus strong {
+  color: #315fae;
+  font-size: 18px;
+}
+
+.leagueScheduleStatus span {
+  color: #6e7890;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.leaguePickGrid button:disabled {
+  opacity: .42;
+}
+
+.leagueScheduleList {
+  display: grid;
+  gap: 5px;
+  max-height: 270px;
+  overflow-y: auto;
+}
+
+.leagueScheduleList > div {
+  min-height: 40px;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 9px;
+  border: 1px dashed rgba(111,123,144,.28);
+  border-radius: 10px;
+  background: rgba(255,255,255,.40);
+}
+
+.leagueScheduleList > div.filled {
+  border-style: solid;
+  border-color: rgba(49,95,174,.20);
+  background: #f3f7fd;
+}
+
+.leagueScheduleList span {
+  color: #8a7a5a;
+  font-size: 8px;
+  font-weight: 950;
+}
+
+.leagueScheduleList strong {
+  color: #315fae;
+  font-size: 10px;
+}
+
+@media (max-width: 430px) {
+  .serpentDpad {
+    width: 120px;
+    height: 120px;
+    right: 9px;
+    bottom: 10px;
+  }
+
+  .serpentDpad button {
+    font-size: 20px;
+  }
+
+  .solitaireTimer {
+    margin-bottom: 6px;
+  }
+}
