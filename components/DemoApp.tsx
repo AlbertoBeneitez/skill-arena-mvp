@@ -449,10 +449,19 @@ export default function DemoApp() {
   }
 
   function leaveGameNow() {
-    if (selectedStake > 0 && !result) {
+    const entryWasCharged =
+      matchScope !== "group" ||
+      !groupCompetition ||
+      groupCompetition.type === "quick" ||
+      groupStage === 1;
+
+    if (selectedStake > 0 && !result && entryWasCharged) {
       setBalance((value) => Number((value + selectedStake).toFixed(2)));
       setMovements((items) => [
-        { label: `${selectedGame.name} · cancelación demo`, amount: selectedStake },
+        {
+          label: `${selectedGame.name} · cancelación demo`,
+          amount: selectedStake,
+        },
         ...items,
       ].slice(0, 20));
     }
@@ -504,6 +513,7 @@ export default function DemoApp() {
     group !== null &&
     groupCompetition.type !== "quick" &&
     groupStage < groupStageTotal &&
+    result?.verified !== false &&
     (groupCompetition.type !== "tournament" || result?.won === true);
 
   const chartPoints = useMemo(() => {
