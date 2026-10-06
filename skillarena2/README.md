@@ -1,19 +1,40 @@
 # SkillArena2
 
-Laboratorio paralelo a Skill Arena. La rama `skillarena2` no modifica `main`.
+Laboratorio **mobile-first** para convertir software open-source en juegos transferibles a Skill Arena. La rama `skillarena2` permanece separada de `main`.
 
-## Qué hace
+## Regla
 
-El experimento descarga versiones **fijadas por commit** de cuatro upstreams y evita reescribirlos antes de probarlos:
+Un juego solo es candidato si cumple simultáneamente:
 
-- **Tower Building Game** — `iamkun/tower_game`, MIT. Se publica como copia jugable casi intacta.
-- **HexGL** — `BKcore/HexGL`, MIT. Se publica como copia jugable casi intacta.
-- **Agar.io clone** — `owenashurst/agar.io-clone`, MIT. Se conserva como laboratorio de servidor autoritativo.
-- **osu! lazer** — `ppy/osu`, MIT para el código. Se trae de forma sparse para estudiar timing/scoring/replay/input; no se incorporan marca ni recursos de osu!.
+- móvil/táctil;
+- licencia permisiva y auditable;
+- núcleo de código trasladable a Skill Arena;
+- determinismo alcanzable;
+- score e inputs capturables;
+- branding y recursos sustituibles.
 
-Los repositorios clonados viven en `vendor/` y **no se versionan dentro de Skill Arena**. Los dos juegos web estáticos se copian a `public/games/` durante el bootstrap.
+## Candidato activo
 
-## Arranque en Codespaces
+### Tower Lab
+
+Base: `iamkun/tower_game` (MIT), fijada al commit indicado en `vendor-lock.json`.
+
+El bootstrap conserva el upstream en `vendor/tower` y genera una copia de laboratorio en `public/games/tower` con cambios mínimos alrededor del núcleo:
+
+- orientación y prueba mobile-first;
+- branding externo principal sustituido por Skill Arena Lab;
+- Google Analytics upstream retirado;
+- `Math.random()` reemplazado por PRNG determinista basado en `?seed=`;
+- captura de inputs para replay v1;
+- telemetría de score/bloques/inputs hacia el launcher.
+
+La verificación autoritativa de replay en servidor **todavía está pendiente**. No usar esta versión para dinero real.
+
+## Referencias no candidatas
+
+HexGL, osu! lazer y Agar.io clone se mantienen solo como referencias técnicas y no se descargan por defecto.
+
+## Ejecutar
 
 ```bash
 cd skillarena2
@@ -24,29 +45,12 @@ npm run dev:fast
 
 Abrir el puerto **4173**.
 
-También puede hacerse en una sola orden:
+Para descargar también las referencias:
 
 ```bash
-cd skillarena2
-npm run dev
+npm run bootstrap:refs
 ```
 
-## Agar.io clone
+## Objetivo de transferencia
 
-Después del bootstrap:
-
-```bash
-cd skillarena2
-npm run dev:agar
-```
-
-Ese upstream usa Node + Socket.IO y se ejecuta separado del launcher estático. Su objetivo aquí es estudiar arquitectura de servidor, no convertirlo todavía en un juego de Skill Arena.
-
-## Regla del experimento
-
-1. Primero: upstream prácticamente tal cual.
-2. Segundo: medir controles, tiempo de sesión, dificultad, rendimiento móvil y superficie de trampas.
-3. Tercero: solo si pasa el filtro, crear un adaptador Skill Arena.
-4. Cuarto: después añadir determinismo/replay/server-verification y sustituir identidad visual o recursos cuando sea necesario.
-
-No mezclar este laboratorio con el ledger, wallet ni dinero real.
+Todo candidato deberá terminar adaptándose al contrato de `shared/` y después poder moverse a la carpeta de juegos de Skill Arena sin llevarse el launcher de SkillArena2 ni depender del repositorio upstream completo.
