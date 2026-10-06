@@ -9,7 +9,14 @@ export type GameMeta = {
     | "jet-stream"
     | "pulse-runner"
     | "metro-shift"
-    | "orbit-shift";
+    | "orbit-shift"
+    | "solitaire-sprint"
+    | "mine-grid"
+    | "grid-serpent"
+    | "merge-grid"
+    | "pixel-logic"
+    | "brick-relay"
+    | "stack-shift";
   name: string;
   cover: string;
   enabled: boolean;
@@ -23,6 +30,7 @@ export type GameMeta = {
   rivalAvatar: string;
   instruction: string;
   scoring: string;
+  deterministicSeed?: string;
 };
 
 export const GAMES: GameMeta[] = [
@@ -105,7 +113,128 @@ export const GAMES: GameMeta[] = [
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Usa los controles inferiores para subir o bajar de órbita.",
     scoring: "Supera obstáculos hasta el primer impacto.",
+  },,
+
+  {
+    id: "solitaire-sprint",
+    name: "Solitaire Sprint",
+    cover: "/covers/solitaire-sprint.svg",
+    enabled: true,
+    waitingStakes: [1, 5],
+    category: "CARTAS",
+    tagline: "Misma baraja. Gana quien avance más y más rápido.",
+    difficulty: "MEDIA",
+    skillLabel: "PLANIFICACIÓN + VELOCIDAD",
+    rivalScore: 7600,
+    rivalName: "ACE",
+    rivalAvatar: "/avatars/avatar-5.svg",
+    instruction: "Toca cartas para moverlas. Ambos jugadores reciben exactamente la misma baraja.",
+    scoring: "Sube cartas a las bases y optimiza cada movimiento.",
+    deterministicSeed: "solitaire-arena-001",
   },
+  {
+    id: "mine-grid",
+    name: "Mine Grid",
+    cover: "/covers/mine-grid.svg",
+    enabled: true,
+    waitingStakes: [1, 10],
+    category: "LÓGICA",
+    tagline: "Mismo campo. Cada decisión cuenta.",
+    difficulty: "MEDIA",
+    skillLabel: "DEDUCCIÓN + VELOCIDAD",
+    rivalScore: 8600,
+    rivalName: "NODE",
+    rivalAvatar: "/avatars/avatar-4.svg",
+    instruction: "Destapa casillas. Ambos jugadores reciben exactamente el mismo campo de minas.",
+    scoring: "Suma casillas seguras sin tocar una mina.",
+    deterministicSeed: "mine-grid-arena-001",
+  },
+  {
+    id: "grid-serpent",
+    name: "Grid Serpent",
+    cover: "/covers/grid-serpent.svg",
+    enabled: true,
+    waitingStakes: [5, 10],
+    category: "CONTROL",
+    tagline: "Misma ruta de comida. Sobrevive mejor.",
+    difficulty: "ALTA",
+    skillLabel: "CONTROL + ANTICIPACIÓN",
+    rivalScore: 7000,
+    rivalName: "VIPER",
+    rivalAvatar: "/avatars/avatar-6.svg",
+    instruction: "Desliza para cambiar de dirección. La secuencia de comida es idéntica para ambos.",
+    scoring: "Come, crece y evita paredes y tu propio cuerpo.",
+    deterministicSeed: "grid-serpent-arena-001",
+  },
+  {
+    id: "merge-grid",
+    name: "Merge Grid",
+    cover: "/covers/merge-grid.svg",
+    enabled: true,
+    waitingStakes: [1, 5],
+    category: "PUZZLE",
+    tagline: "Mismas apariciones. Mejor estrategia.",
+    difficulty: "MEDIA",
+    skillLabel: "PLANIFICACIÓN + EFICIENCIA",
+    rivalScore: 5200,
+    rivalName: "MESH",
+    rivalAvatar: "/avatars/avatar-2.svg",
+    instruction: "Desliza el tablero. Las posiciones y valores que aparecen siguen la misma secuencia.",
+    scoring: "Combina valores y evita quedarte sin movimientos.",
+    deterministicSeed: "merge-grid-arena-001",
+  },
+  {
+    id: "pixel-logic",
+    name: "Pixel Logic",
+    cover: "/covers/pixel-logic.svg",
+    enabled: true,
+    waitingStakes: [0, 5],
+    category: "LÓGICA",
+    tagline: "Mismo puzzle. Menos errores, menos tiempo.",
+    difficulty: "MEDIA",
+    skillLabel: "LÓGICA + VELOCIDAD",
+    rivalScore: 9800,
+    rivalName: "PIXEL",
+    rivalAvatar: "/avatars/avatar-8.svg",
+    instruction: "Usa las pistas de filas y columnas para reconstruir el mismo patrón.",
+    scoring: "Completa correctamente el patrón antes que tu rival.",
+    deterministicSeed: "pixel-logic-arena-001",
+  },
+  {
+    id: "brick-relay",
+    name: "Brick Relay",
+    cover: "/covers/brick-relay.svg",
+    enabled: true,
+    waitingStakes: [5, 50],
+    category: "PRECISIÓN",
+    tagline: "Mismo muro y misma física. Devuelve cada bola.",
+    difficulty: "ALTA",
+    skillLabel: "PRECISIÓN + CONTROL",
+    rivalScore: 6800,
+    rivalName: "RICO",
+    rivalAvatar: "/avatars/avatar-1.svg",
+    instruction: "Arrastra para mover la pala. El mapa y el lanzamiento inicial son idénticos.",
+    scoring: "Rompe bloques sin dejar caer la bola.",
+    deterministicSeed: "brick-relay-arena-001",
+  },
+  {
+    id: "stack-shift",
+    name: "Stack Shift",
+    cover: "/covers/stack-shift.svg",
+    enabled: true,
+    waitingStakes: [10, 50],
+    category: "PUZZLE",
+    tagline: "Misma secuencia. Construye mejor bajo presión.",
+    difficulty: "ALTA",
+    skillLabel: "ESPACIO + VELOCIDAD",
+    rivalScore: 7400,
+    rivalName: "STACK",
+    rivalAvatar: "/avatars/avatar-3.svg",
+    instruction: "Mueve, gira y baja piezas. Ambos reciben la misma secuencia exacta.",
+    scoring: "Completa filas y evita alcanzar la parte superior.",
+    deterministicSeed: "stack-shift-arena-001",
+  },
+
 ];
 
 export function modeForStake(
