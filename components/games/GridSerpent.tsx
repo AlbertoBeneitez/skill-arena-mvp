@@ -22,26 +22,40 @@ const CELL_H = H / ROWS;
 type Point = { x: number; y: number };
 type Direction = "up" | "down" | "left" | "right";
 
-function key(point: Point) {
+function pointKey(point: Point) {
   return `${point.x},${point.y}`;
+}
+
+function opposite(a: Direction, b: Direction) {
+  return (
+    (a === "left" && b === "right") ||
+    (a === "right" && b === "left") ||
+    (a === "up" && b === "down") ||
+    (a === "down" && b === "up")
+  );
 }
 
 function createFoodSequence(seed: string) {
   const rng = createRng(seed);
-  return Array.from({ length: 200 }, () => ({
+  return Array.from({ length: 300 }, () => ({
     x: rng.nextInt(COLS),
     y: rng.nextInt(ROWS),
   }));
 }
 
-function nextFreeFood(sequence: Point[], startIndex: number, occupied: Set<string>) {
+function nextFreeFood(
+  sequence: Point[],
+  startIndex: number,
+  occupied: Set<string>
+) {
   for (let offset = 0; offset < sequence.length; offset += 1) {
     const index = (startIndex + offset) % sequence.length;
     const candidate = sequence[index];
-    if (!occupied.has(key(candidate))) {
+    if (!occupied.has(pointKey(candidate))) {
       return { food: candidate, index: index + 1 };
     }
   }
+
   return { food: { x: 1, y: 1 }, index: startIndex + 1 };
 }
 
@@ -56,6 +70,7 @@ export default function GridSerpent({
   const foodSequence = useMemo(() => createFoodSequence(seed), [seed]);
   const startRef = useRef(0);
   const swipeRef = useRef<Point | null>(null);
+
   const stateRef = useRef({
     snake: [
       { x: 9, y: 15 },
@@ -63,7 +78,7 @@ export default function GridSerpent({
       { x: 7, y: 15 },
     ] as Point[],
     direction: "right" as Direction,
-    queued: "right" as Direction,
+    queue: [] as Direction[],
     food: { x: 13, y: 15 } as Point,
     foodIndex: 0,
     score: 0,
@@ -75,24 +90,28 @@ export default function GridSerpent({
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const s = stateRef.current;
 
+    const s = stateRef.current;
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#102844");
     bg.addColorStop(1, "#081522");
+
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
     ctx.strokeStyle = "rgba(255,255,255,.045)";
     ctx.lineWidth = 1;
+
     for (let x = 0; x <= COLS; x += 1) {
       ctx.beginPath();
       ctx.moveTo(x * CELL_W, 0);
       ctx.lineTo(x * CELL_W, H);
       ctx.stroke();
     }
+
     for (let y = 0; y <= ROWS; y += 1) {
       ctx.beginPath();
       ctx.moveTo(0, y * CELL_H);
@@ -129,10 +148,15 @@ export default function GridSerpent({
     (won: boolean) => {
       const s = stateRef.current;
       if (!s.running) return;
+
       s.running = false;
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
       gameTone(won ? "win" : "bad");
       haptic(won ? [18, 28, 45] : 30);
+
       onFinish({
         won,
         score: s.score,
@@ -144,9 +168,16 @@ export default function GridSerpent({
 
   const step = useCallback(() => {
     const s = stateRef.current;
-    s.direction = s.queued;
+
+    if (s.queue.length) {
+      const next = s.queue.shift()!;
+      if (!opposite(s.direction, next)) {
+        s.direction = next;
+      }
+    }
 
     const head = { ...s.snake[0] };
+
     if (s.direction === "up") head.y -= 1;
     if (s.direction === "down") head.y += 1;
     if (s.direction === "left") head.x -= 1;
@@ -157,7 +188,9 @@ export default function GridSerpent({
       head.x >= COLS ||
       head.y < 0 ||
       head.y >= ROWS ||
-      s.snake.some((part) => part.x === head.x && part.y === head.y)
+      s.snake.some(
+        (part) => part.x === head.x && part.y === head.y
+      )
     ) {
       finish(false);
       return;
@@ -167,11 +200,18 @@ export default function GridSerpent({
 
     if (head.x === s.food.x && head.y === s.food.y) {
       s.score += 1000;
-      s.stepMs = Math.max(78, s.stepMs - 5);
-      const occupied = new Set(s.snake.map(key));
-      const next = nextFreeFood(foodSequence, s.foodIndex, occupied);
+      s.stepMs = Math.max(76, s.stepMs - 5);
+
+      const occupied = new Set(s.snake.map(pointKey));
+      const next = nextFreeFood(
+        foodSequence,
+        s.foodIndex,
+        occupied
+      );
+
       s.food = next.food;
       s.foodIndex = next.index;
+
       gameTone("good");
       haptic(6);
 
@@ -190,13 +230,20 @@ export default function GridSerpent({
       if (!s.running) return;
 
       if (!s.lastStepAt) s.lastStepAt = now;
-      while (now - s.lastStepAt >= s.stepMs && s.running) {
+
+      while (
+        now - s.lastStepAt >= s.stepMs &&
+        s.running
+      ) {
         step();
         s.lastStepAt += s.stepMs;
       }
 
       draw();
-      if (s.running) rafRef.current = requestAnimationFrame(loop);
+
+      if (s.running) {
+        rafRef.current = requestAnimationFrame(loop);
+      }
     },
     [draw, step]
   );
@@ -209,13 +256,14 @@ export default function GridSerpent({
       { x: 8, y: 15 },
       { x: 7, y: 15 },
     ];
-    const occupied = new Set(initialSnake.map(key));
+
+    const occupied = new Set(initialSnake.map(pointKey));
     const first = nextFreeFood(foodSequence, 0, occupied);
 
     stateRef.current = {
       snake: initialSnake,
       direction: "right",
-      queued: "right",
+      queue: [],
       food: first.food,
       foodIndex: first.index,
       score: 0,
@@ -223,38 +271,74 @@ export default function GridSerpent({
       lastStepAt: 0,
       stepMs: 145,
     };
+
     startRef.current = performance.now();
     draw();
     rafRef.current = requestAnimationFrame(loop);
 
     return () => {
       stateRef.current.running = false;
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
   }, [active, draw, foodSequence, loop]);
 
   function queueDirection(next: Direction) {
-    const current = stateRef.current.direction;
+    const s = stateRef.current;
+    if (!s.running) return;
+
+    const reference =
+      s.queue[s.queue.length - 1] ?? s.direction;
+
     if (
-      (current === "left" && next === "right") ||
-      (current === "right" && next === "left") ||
-      (current === "up" && next === "down") ||
-      (current === "down" && next === "up")
+      next === reference ||
+      opposite(reference, next) ||
+      s.queue.length >= 2
     ) {
       return;
     }
-    stateRef.current.queued = next;
+
+    s.queue.push(next);
     haptic(2);
   }
 
   function pointFromEvent(clientX: number, clientY: number) {
     const rect = canvasRef.current?.getBoundingClientRect();
+
     if (!rect) return { x: clientX, y: clientY };
-    return { x: clientX - rect.left, y: clientY - rect.top };
+
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  }
+
+  function processSwipe(point: Point) {
+    const origin = swipeRef.current;
+    if (!origin) return false;
+
+    const dx = point.x - origin.x;
+    const dy = point.y - origin.y;
+
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) {
+      return false;
+    }
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      queueDirection(dx > 0 ? "right" : "left");
+    } else {
+      queueDirection(dy > 0 ? "down" : "up");
+    }
+
+    // Reset the gesture origin so a single continuous swipe can buffer
+    // another corner without waiting for pointer-up.
+    swipeRef.current = point;
+    return true;
   }
 
   return (
-    <div className="detGameSurface canvasDetGame">
+    <div className="detGameSurface serpentGame">
       <canvas
         ref={canvasRef}
         width={W}
@@ -262,27 +346,85 @@ export default function GridSerpent({
         className="gameCanvas deterministicCanvas"
         aria-label="Grid Serpent"
         onPointerDown={(event) => {
-          swipeRef.current = pointFromEvent(event.clientX, event.clientY);
+          swipeRef.current = pointFromEvent(
+            event.clientX,
+            event.clientY
+          );
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
-        onPointerUp={(event) => {
+        onPointerMove={(event) => {
           if (!swipeRef.current) return;
-          const end = pointFromEvent(event.clientX, event.clientY);
-          const dx = end.x - swipeRef.current.x;
-          const dy = end.y - swipeRef.current.y;
+          processSwipe(
+            pointFromEvent(event.clientX, event.clientY)
+          );
+        }}
+        onPointerUp={(event) => {
+          if (swipeRef.current) {
+            processSwipe(
+              pointFromEvent(event.clientX, event.clientY)
+            );
+          }
           swipeRef.current = null;
 
-          if (Math.abs(dx) > Math.abs(dy)) {
-            if (Math.abs(dx) > 16) queueDirection(dx > 0 ? "right" : "left");
-          } else if (Math.abs(dy) > 16) {
-            queueDirection(dy > 0 ? "down" : "up");
-          }
-
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            event.currentTarget.releasePointerCapture(event.pointerId);
+          if (
+            event.currentTarget.hasPointerCapture(event.pointerId)
+          ) {
+            event.currentTarget.releasePointerCapture(
+              event.pointerId
+            );
           }
         }}
+        onPointerCancel={() => {
+          swipeRef.current = null;
+        }}
       />
+
+      <div className="serpentDpad" aria-label="Controles">
+        <button
+          type="button"
+          className="up"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            queueDirection("up");
+          }}
+          aria-label="Arriba"
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          className="left"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            queueDirection("left");
+          }}
+          aria-label="Izquierda"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          className="right"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            queueDirection("right");
+          }}
+          aria-label="Derecha"
+        >
+          →
+        </button>
+        <button
+          type="button"
+          className="down"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            queueDirection("down");
+          }}
+          aria-label="Abajo"
+        >
+          ↓
+        </button>
+      </div>
     </div>
   );
 }
