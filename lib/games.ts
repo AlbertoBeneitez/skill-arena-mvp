@@ -113,8 +113,7 @@ export const GAMES: GameMeta[] = [
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Usa los controles inferiores para subir o bajar de órbita.",
     scoring: "Supera obstáculos hasta el primer impacto.",
-  },,
-
+  },
   {
     id: "solitaire-sprint",
     name: "Solitaire Sprint",
