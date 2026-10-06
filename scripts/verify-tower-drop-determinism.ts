@@ -16,6 +16,20 @@ function centre(block: { xMilli: number; wMilli: number }) {
   return block.xMilli + Math.floor(block.wMilli / 2);
 }
 
+// Read through helpers so TypeScript does not incorrectly retain a literal
+// property narrowing across mutating simulation calls.
+function statePhase(state: TowerDropState): TowerDropState["phase"] {
+  return state.phase;
+}
+
+function stateStatus(state: TowerDropState): TowerDropState["status"] {
+  return state.status;
+}
+
+function stateFailure(state: TowerDropState): TowerDropState["failure"] {
+  return state.failure;
+}
+
 /**
  * Build a deterministic "skilled" input stream by releasing only when the
  * hanging block is almost centred over the current support. After four
@@ -29,11 +43,11 @@ function buildGoldenRun() {
   let guard = 0;
 
   while (
-    state.status === "running" &&
+    stateStatus(state) === "running" &&
     state.blocks.length - 1 < targetHeight &&
     guard < 100_000
   ) {
-    if (state.phase === "swing") {
+    if (statePhase(state) === "swing") {
       const top = state.blocks[state.blocks.length - 1];
       const moving = {
         xMilli: state.movingXMilli,
@@ -50,7 +64,7 @@ function buildGoldenRun() {
       }
     }
 
-    if (state.status === "running") {
+    if (stateStatus(state) === "running") {
       stepTowerDrop(state);
     }
     guard += 1;
@@ -61,14 +75,14 @@ function buildGoldenRun() {
     "golden builder did not stack four floors"
   );
 
-  while (state.status === "running" && guard < 200_000) {
+  while (stateStatus(state) === "running" && guard < 200_000) {
     stepTowerDrop(state);
     guard += 1;
   }
 
-  assert(state.status === "failed", "golden run did not resolve");
+  assert(stateStatus(state) === "failed", "golden run did not resolve");
   assert(
-    state.failure === "TIMEOUT_IDLE",
+    stateFailure(state) === "TIMEOUT_IDLE",
     `golden run failed unexpectedly: ${state.failure}`
   );
 
@@ -112,7 +126,7 @@ assert(
 // Mechanical invariant: DROP releases into an accelerated fall.
 const falling = createTowerDropState();
 dropTowerBlock(falling);
-assert(falling.phase === "falling", "DROP did not release the pendulum load");
+assert(statePhase(falling) === "falling", "DROP did not release the pendulum load");
 stepTowerDrop(falling);
 const firstY = falling.fallYMilli;
 const firstVelocity = falling.fallVYMilliPerSecond;
@@ -137,22 +151,22 @@ tipping.fallVYMilliPerSecond = 200_000;
 stepTowerDrop(tipping);
 
 assert(
-  tipping.phase === "tipping-left",
+  statePhase(tipping) === "tipping-left",
   `expected left tip, got ${tipping.phase}`
 );
 assert(
-  tipping.failure === "CENTER_OF_MASS",
+  stateFailure(tipping) === "CENTER_OF_MASS",
   "tip did not mark centre-of-mass instability"
 );
 
 let tipGuard = 0;
-while (tipping.status === "running" && tipGuard < 1_000) {
+while (stateStatus(tipping) === "running" && tipGuard < 1_000) {
   stepTowerDrop(tipping);
   tipGuard += 1;
 }
 assert(
-  tipping.status === "failed" &&
-    tipping.failure === "CENTER_OF_MASS",
+  stateStatus(tipping) === "failed" &&
+    stateFailure(tipping) === "CENTER_OF_MASS",
   "tipping block did not rotate to failure"
 );
 
@@ -165,18 +179,18 @@ noSupport.fallVYMilliPerSecond = 200_000;
 stepTowerDrop(noSupport);
 
 assert(
-  noSupport.phase === "falling-out",
+  statePhase(noSupport) === "falling-out",
   `expected falling-out, got ${noSupport.phase}`
 );
 
 let fallOutGuard = 0;
-while (noSupport.status === "running" && fallOutGuard < 1_000) {
+while (stateStatus(noSupport) === "running" && fallOutGuard < 1_000) {
   stepTowerDrop(noSupport);
   fallOutGuard += 1;
 }
 assert(
-  noSupport.status === "failed" &&
-    noSupport.failure === "NO_SUPPORT",
+  stateStatus(noSupport) === "failed" &&
+    stateFailure(noSupport) === "NO_SUPPORT",
   "unsupported block did not fall out"
 );
 
@@ -189,22 +203,22 @@ function simulateRenderRate(frameHz: number) {
   let guard = 0;
 
   while (
-    state.status === "running" &&
+    stateStatus(state) === "running" &&
     guard < 2_000_000
   ) {
     accumulator += frameSeconds;
 
     while (
       accumulator + 1e-12 >= tickSeconds &&
-      state.status === "running"
+      stateStatus(state) === "running"
     ) {
       while (
         inputIndex < golden.inputs.length &&
         golden.inputs[inputIndex].tick === state.tick &&
-        state.status === "running"
+        stateStatus(state) === "running"
       ) {
         assert(
-          state.phase === "swing",
+          statePhase(state) === "swing",
           "render-rate simulation attempted DROP outside swing"
         );
         dropTowerBlock(state);
