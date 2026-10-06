@@ -1088,7 +1088,7 @@ export default function DemoApp() {
         </div>
       )}
 
-      {screen !== "game" && screen !== "legal" && screen !== "avatar-setup" && screen !== "welcome" && (
+      {screen !== "game" && screen !== "legal" && (
         <nav className="bottomNav bottomNavTwo" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}>
             <span>▶</span>JUGAR
