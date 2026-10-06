@@ -21,6 +21,7 @@ type Props = {
   active: boolean;
   stake: number;
   ghostEnabled: boolean;
+  targetScore: number;
   onFinish: (result: GameResult) => void;
 };
 
@@ -35,7 +36,7 @@ const BLOCK_H = 44;
 const CRANE_Y = 118;
 const DROP_MS = 520;
 
-export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Props) {
+export default function TowerDrop({ active, stake, ghostEnabled, targetScore, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
@@ -208,18 +209,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
 
     ctx.restore();
 
-    ctx.fillStyle = "rgba(38,58,91,.86)";
-    ctx.fillRect(14, 14, W - 28, 54);
-    ctx.font = "900 14px system-ui";
-    ctx.fillStyle = "#fff";
-    ctx.fillText(`ALTURA ${Math.max(0, s.blocks.length - 1)}`, 26, 37);
-    ctx.fillStyle = s.combo > 1 ? "#ffdc65" : "#c9d8f3";
-    ctx.fillText(`PERFECT ×${s.combo}`, 145, 37);
-    if (ghostEnabled) {
-      ctx.fillStyle = "#77e5ff";
-      ctx.fillText("👻 FANTASMA", 278, 37);
-    }
-
     ctx.fillStyle = "rgba(255,255,255,.46)";
     ctx.font = "900 13px system-ui";
     ctx.textAlign = "center";
@@ -281,7 +270,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
 
       setVerificationMessage("Replay verificado.");
       finishRef.current({
-        won: false,
+        won: data.won === true,
         score: data.score ?? 0,
         timeMs: data.time_ms ?? 0,
         verified: true,
@@ -368,6 +357,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             stake_minor: Math.round(stake * 100),
+            target_score: targetScore,
           }),
         });
         const data = await response.json();
@@ -423,7 +413,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
         });
       }
     },
-    [active, draw, loop, stake]
+    [active, draw, loop, stake, targetScore]
   );
 
   useEffect(() => {
@@ -463,9 +453,9 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       action: "DROP",
     });
 
-    const dropped: TowerDropState = dropTowerBlock(s);
+    const dropped: TowerDropState = dropTowerBlock(s, targetScore);
 
-    if (dropped.status === "failed") {
+    if (dropped.status === "failed" || dropped.status === "won") {
       void submitReplay(dropped);
       return;
     }
@@ -483,7 +473,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
 
     gameTone(s.combo > 0 ? "good" : "tap");
     haptic(s.combo > 0 ? 10 : 5);
-  }, [submitReplay, verificationState]);
+  }, [submitReplay, targetScore, verificationState]);
 
   return (
     <div className="gameStage skillGameStage towerDropArena verifiedArena">
