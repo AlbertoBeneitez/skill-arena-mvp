@@ -178,7 +178,12 @@ export default function DemoApp() {
           setAvatarId(nextAvatarId);
           setAvatarSrc(AVATARS[nextAvatarId]);
         }
-        if (typeof data.avatarSrc === "string" && data.avatarSrc) setAvatarSrc(data.avatarSrc);
+        if (typeof data.avatarSrc === "string" && data.avatarSrc) {
+          setAvatarSrc(data.avatarSrc);
+          if (data.avatarSrc.startsWith("data:image/")) {
+            void compactAvatarSource(data.avatarSrc).then(setAvatarSrc);
+          }
+        }
         if (typeof data.balance === "number") setBalance(data.balance);
         if (typeof data.netEarnings === "number") setNetEarnings(data.netEarnings);
         if (data.nextTurn === "create" || data.nextTurn === "existing") setNextTurn(data.nextTurn);
@@ -497,6 +502,12 @@ export default function DemoApp() {
     const resolvedResult = { ...gameResult, won: didWin };
     setResult(resolvedResult);
 
+    if (selectedStake === 0) {
+      gameTone(didWin ? "good" : "bad");
+      haptic(didWin ? 10 : 20);
+      return;
+    }
+
     if (didWin) {
       setWins((value) => value + 1);
       setStreak((value) => value + 1);
@@ -517,12 +528,9 @@ export default function DemoApp() {
       setMovements((items) => [{ label: `${selectedGame.name} · premio`, amount: prize }, ...items].slice(0, 20));
     }
 
-    if (selectedStake > 0) {
-      const nextValue = Number((netEarnings + delta).toFixed(2));
-      setNetEarnings(nextValue);
-      setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
-    }
-
+    const nextValue = Number((netEarnings + delta).toFixed(2));
+    setNetEarnings(nextValue);
+    setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
     setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
   }
 
