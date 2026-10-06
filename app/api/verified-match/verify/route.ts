@@ -5,11 +5,11 @@ import type {
   AttemptTicket,
   VerifiedAttemptPayload,
 } from "@/lib/verified/contracts";
-import type { TowerDropInput } from "@/lib/verified/towerDropCore.v1";
+import type { TowerDropInput } from "@/lib/verified/towerDropCore.v2";
 import {
   replayTowerDrop,
-  TOWER_DROP_V1,
-} from "@/lib/verified/towerDropCore.v1";
+  TOWER_DROP_V2,
+} from "@/lib/verified/towerDropCore.v2";
 import {
   hashManifest,
   hashReplay,
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     return reject("SIMULATION_FASTER_THAN_REAL_TIME", 409);
   }
 
-  if (replay.state.tick > TOWER_DROP_V1.tickRate * 60 * 15) {
+  if (replay.state.tick > TOWER_DROP_V2.tickRate * 60 * 15) {
     return reject("ATTEMPT_TOO_LONG");
   }
 

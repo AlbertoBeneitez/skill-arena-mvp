@@ -1,11 +1,11 @@
-import type { TowerDropInput } from "./towerDropCore.v1";
+import type { TowerDropInput } from "./towerDropCore.v2";
 
 export type MatchManifest = {
   manifest_version: 1;
   match_id: string;
   game_id: "tower-drop";
-  game_version: "1.1.0";
-  engine_version: "skill-core-1";
+  game_version: "2.0.0";
+  engine_version: "skill-core-2";
   rules_hash: string;
   gameplay_content_hash: string;
   simulation: {
@@ -23,7 +23,7 @@ export type MatchManifest = {
     target_score: number;
   };
   input_protocol: {
-    version: 1;
+    version: 2;
     allowed_actions: ["DROP"];
   };
   created_at: string;
@@ -58,6 +58,6 @@ export type VerifiedAttemptResult = {
   score?: number;
   time_ms?: number;
   height?: number;
-  failure?: "NO_OVERLAP" | "TIMEOUT_IDLE" | null;
+  failure?: "NO_SUPPORT" | "CENTER_OF_MASS" | "TIMEOUT_IDLE" | null;
   won?: boolean;
 };

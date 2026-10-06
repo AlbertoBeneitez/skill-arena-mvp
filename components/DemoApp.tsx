@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
-import { createDemoClosedGroup, groupPot, groupTargetScore, type ClosedGroup } from "@/lib/groupPlay";
+import { competitionProgressLabel, createDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
 
@@ -67,6 +67,36 @@ function demoPercentile(score: number, benchmark: number) {
   const ratio = score / Math.max(1, benchmark);
   const percentile = Math.round(100 / (1 + Math.exp(-3.2 * (ratio - 0.78))));
   return Math.max(1, Math.min(99, percentile));
+}
+
+function totalCompetitionStages(
+  config: GroupCompetitionConfig,
+  memberCount: number
+) {
+  if (config.type === "league") return config.rounds;
+  if (config.type === "tournament") {
+    return Math.max(
+      1,
+      Math.ceil(
+        (Math.max(2, memberCount) - 1) /
+          Math.max(1, config.eliminatedPerRound)
+      )
+    );
+  }
+  return 1;
+}
+
+function payoutShare(
+  config: GroupCompetitionConfig,
+  placement: 1 | 2 | 3
+) {
+  if (config.distribution === "top2-70-30") {
+    return placement === 1 ? 0.7 : placement === 2 ? 0.3 : 0;
+  }
+  if (config.distribution === "top3-60-30-10") {
+    return placement === 1 ? 0.6 : placement === 2 ? 0.3 : 0.1;
+  }
+  return placement === 1 ? 1 : 0;
 }
 
 const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "soporte", "support"]);
@@ -235,6 +265,9 @@ export default function DemoApp() {
   const [matchTargetScore, setMatchTargetScore] = useState(GAMES[0].rivalScore);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
+  const [groupCompetition, setGroupCompetition] = useState<GroupCompetitionConfig | null>(null);
+  const [groupStage, setGroupStage] = useState(1);
+  const [groupCompetitionWins, setGroupCompetitionWins] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -416,10 +449,19 @@ export default function DemoApp() {
   }
 
   function leaveGameNow() {
-    if (selectedStake > 0 && !result) {
+    const entryWasCharged =
+      matchScope !== "group" ||
+      !groupCompetition ||
+      groupCompetition.type === "quick" ||
+      groupStage === 1;
+
+    if (selectedStake > 0 && !result && entryWasCharged) {
       setBalance((value) => Number((value + selectedStake).toFixed(2)));
       setMovements((items) => [
-        { label: `${selectedGame.name} · cancelación demo`, amount: selectedStake },
+        {
+          label: `${selectedGame.name} · cancelación demo`,
+          amount: selectedStake,
+        },
         ...items,
       ].slice(0, 20));
     }
@@ -461,6 +503,18 @@ export default function DemoApp() {
   const nameAvailable = isDemoNameAvailable(playerName);
   const matchesPlayed = wins + losses;
   const winRate = matchesPlayed ? Math.round((wins / matchesPlayed) * 100) : 0;
+  const groupStageTotal =
+    group && groupCompetition
+      ? totalCompetitionStages(groupCompetition, group.members.length)
+      : 1;
+  const groupCanAdvance =
+    matchScope === "group" &&
+    groupCompetition !== null &&
+    group !== null &&
+    groupCompetition.type !== "quick" &&
+    groupStage < groupStageTotal &&
+    result?.verified !== false &&
+    (groupCompetition.type !== "tournament" || result?.won === true);
 
   const chartPoints = useMemo(() => {
     if (earnings.length === 1) return "0,74 100,74";
@@ -588,10 +642,19 @@ export default function DemoApp() {
     setActiveGame(false);
 
     if (selectedGame.id === "tower-drop" && gameResult.verified !== true) {
-      if (selectedStake > 0) {
+      const entryWasCharged =
+        matchScope !== "group" ||
+        !groupCompetition ||
+        groupCompetition.type === "quick" ||
+        groupStage === 1;
+
+      if (selectedStake > 0 && entryWasCharged) {
         setBalance((value) => Number((value + selectedStake).toFixed(2)));
         setMovements((items) => [
-          { label: `${selectedGame.name} · devolución verificación`, amount: selectedStake },
+          {
+            label: `${selectedGame.name} · devolución verificación`,
+            amount: selectedStake,
+          },
           ...items,
         ].slice(0, 20));
       }
@@ -609,10 +672,12 @@ export default function DemoApp() {
     if (didWin) setShowWinAnimation(true);
     setResult(resolvedResult);
 
-    if (selectedStake === 0) {
-      gameTone(didWin ? "good" : "bad");
-      haptic(didWin ? 10 : 20);
-      return;
+    const inGroupCompetition =
+      matchScope === "group" && group !== null && groupCompetition !== null;
+
+    const winsAfter = groupCompetitionWins + (didWin ? 1 : 0);
+    if (inGroupCompetition && didWin) {
+      setGroupCompetitionWins(winsAfter);
     }
 
     if (didWin) {
@@ -627,17 +692,86 @@ export default function DemoApp() {
       haptic(35);
     }
 
-    const prize = matchScope === "group" && group ? groupPot(group) : prizeForStake(selectedStake);
+    if (selectedStake === 0) return;
+
+    if (inGroupCompetition && group && groupCompetition) {
+      const totalStages = totalCompetitionStages(
+        groupCompetition,
+        group.members.length
+      );
+      const eliminated =
+        groupCompetition.type === "tournament" && !didWin;
+      const competitionFinished =
+        groupCompetition.type === "quick" ||
+        groupStage >= totalStages ||
+        eliminated;
+
+      if (!competitionFinished) return;
+
+      let placement: 1 | 2 | 3 = 1;
+
+      if (groupCompetition.type === "league") {
+        const ratio = winsAfter / Math.max(1, totalStages);
+        placement = ratio >= 0.67 ? 1 : ratio >= 0.34 ? 2 : 3;
+      } else if (groupCompetition.type === "tournament") {
+        placement =
+          didWin && groupStage >= totalStages
+            ? 1
+            : groupStage >= totalStages
+              ? 2
+              : 3;
+      } else {
+        placement = didWin ? 1 : 3;
+      }
+
+      const pot = groupPot(group, groupCompetition.stake);
+      const prize =
+        groupCompetition.type === "quick" && !didWin
+          ? 0
+          : Number(
+              (pot * payoutShare(groupCompetition, placement)).toFixed(2)
+            );
+      const delta = Number(
+        (prize - groupCompetition.stake).toFixed(2)
+      );
+
+      if (prize > 0) {
+        setBalance((value) => Number((value + prize).toFixed(2)));
+        setMovements((items) => [
+          {
+            label: `${group.name} · premio ${payoutLabel(groupCompetition.distribution)}`,
+            amount: prize,
+          },
+          ...items,
+        ].slice(0, 20));
+      }
+
+      const nextValue = Number((netEarnings + delta).toFixed(2));
+      setNetEarnings(nextValue);
+      setEarnings((points) => [
+        ...points,
+        { label: `P${points.length}`, value: nextValue },
+      ].slice(-20));
+      return;
+    }
+
+    const prize = prizeForStake(selectedStake);
     const delta = didWin ? prize - selectedStake : -selectedStake;
 
     if (didWin && prize > 0) {
-      setBalance((b) => Number((b + prize).toFixed(2)));
-      setMovements((items) => [{ label: `${selectedGame.name} · premio`, amount: prize }, ...items].slice(0, 20));
+      setBalance((value) => Number((value + prize).toFixed(2)));
+      setMovements((items) => [
+        { label: `${selectedGame.name} · premio`, amount: prize },
+        ...items,
+      ].slice(0, 20));
     }
 
     const nextValue = Number((netEarnings + delta).toFixed(2));
     setNetEarnings(nextValue);
-    setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
+    setEarnings((points) => [
+      ...points,
+      { label: `P${points.length}`, value: nextValue },
+    ].slice(-20));
     setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
   }
 
@@ -658,25 +792,47 @@ export default function DemoApp() {
     haptic(4);
   }
 
-  function startGroupMatch(game: GameMeta) {
-    if (!group || matchStartLockRef.current || group.stake > balance) return;
+  function startGroupCompetition(
+    game: GameMeta,
+    config: GroupCompetitionConfig,
+    options?: { chargeEntry?: boolean; nextStage?: number }
+  ) {
+    const chargeEntry = options?.chargeEntry ?? true;
+    if (
+      !group ||
+      matchStartLockRef.current ||
+      (chargeEntry && config.stake > balance)
+    ) {
+      return;
+    }
+    const nextStage = options?.nextStage ?? 1;
 
-    const stake = group.stake;
     matchStartLockRef.current = true;
     setStartingGameId(game.id);
     setSelectedGame(game);
-    setSelectedStake(stake);
+    setSelectedStake(config.stake);
     setSelectedMode("create");
     setGhostEnabled(false);
     setMatchScope("group");
     setMatchTargetScore(groupTargetScore(group, game));
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
+    setGroupCompetition(config);
+    setGroupStage(nextStage);
+    if (chargeEntry) setGroupCompetitionWins(0);
 
-    setBalance((value) => Number((value - stake).toFixed(2)));
-    if (stake > 0) {
+    if (chargeEntry && config.stake > 0) {
+      setBalance((value) => Number((value - config.stake).toFixed(2)));
       setMovements((items) => [
-        { label: `${group.name} · entrada`, amount: -stake },
+        {
+          label:
+            config.type === "quick"
+              ? `${group.name} · partida rápida`
+              : config.type === "league"
+                ? `${group.name} · entrada liga`
+                : `${group.name} · entrada torneo`,
+          amount: -config.stake,
+        },
         ...items,
       ].slice(0, 20));
     }
@@ -688,6 +844,23 @@ export default function DemoApp() {
     gameTone("countdown");
     haptic(12);
     navigate("game");
+  }
+
+  function repeatOrContinueGroupCompetition() {
+    if (!group || !groupCompetition) return;
+
+    if (groupCompetition.type === "quick") {
+      startGroupCompetition(selectedGame, groupCompetition, {
+        chargeEntry: true,
+        nextStage: 1,
+      });
+      return;
+    }
+
+    startGroupCompetition(selectedGame, groupCompetition, {
+      chargeEntry: false,
+      nextStage: groupStage + 1,
+    });
   }
 
   function resetAvatar() {
@@ -957,7 +1130,7 @@ export default function DemoApp() {
             avatarSrc={avatarSrc}
             onCreateGroup={createClosedGroup}
             onSetStake={setClosedGroupStake}
-            onPlayGroup={startGroupMatch}
+            onStartCompetition={startGroupCompetition}
           />
         )}
 
@@ -974,8 +1147,8 @@ export default function DemoApp() {
               <div>
                 <strong>{selectedGame.name}</strong>
                 <small>
-                  {matchScope === "group"
-                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€`} · 1 VS ${Math.max(1, (group?.members.length ?? 2) - 1)}`
+                  {matchScope === "group" && groupCompetition && group
+                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
                     : selectedStake === 0
                       ? "ENTRENAMIENTO"
                       : `${selectedStake}€ · 1 VS 1`}
@@ -1057,22 +1230,65 @@ export default function DemoApp() {
                     <div className="resultIcon">⚠</div>
                     <b>RESULTADO NO VERIFICADO</b>
                     <p>No se registra este intento competitivo.</p>
-                    {result.verificationError && (
-                      <div className="verificationErrorCode">{result.verificationError}</div>
-                    )}
                   </>
                 ) : (
                   <>
                     <div className="demoPercentileBlock resultOnlyPercentile">
                       <span>MEJOR QUE</span>
-                      <strong>{demoPercentile(result.score, selectedGame.rivalScore)}%</strong>
+                      <strong>{demoPercentile(result.score, matchTargetScore)}%</strong>
                       <small>DE LOS INTENTOS DEMO</small>
                     </div>
                   </>
                 )}
                 <div className="resultActions">
-                  <button className="rematchAction" onClick={() => startMatch()}>OTRA VEZ</button>
-                  <button className="mainAction" onClick={() => navigate("home")}>OTRO JUEGO</button>
+                  {matchScope === "group" && groupCompetition ? (
+                    <>
+                      {groupCompetition.type === "quick" ? (
+                        <button
+                          className="rematchAction"
+                          disabled={groupCompetition.stake > balance}
+                          onClick={repeatOrContinueGroupCompetition}
+                        >
+                          REPETIR
+                        </button>
+                      ) : groupCanAdvance ? (
+                        <button
+                          className="rematchAction"
+                          onClick={repeatOrContinueGroupCompetition}
+                        >
+                          {groupCompetition.type === "league"
+                            ? "SIGUIENTE JORNADA"
+                            : "SIGUIENTE RONDA"}
+                        </button>
+                      ) : (
+                        <button
+                          className="rematchAction"
+                          onClick={() => navigate("group")}
+                        >
+                          VOLVER AL GRUPO
+                        </button>
+                      )}
+                      <button
+                        className="mainAction"
+                        onClick={() => navigate("group")}
+                      >
+                        {groupCompetition.type === "quick"
+                          ? "VOLVER AL GRUPO"
+                          : groupCanAdvance
+                            ? "SALIR A GRUPO"
+                            : "NUEVA COMPETICIÓN"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="rematchAction" onClick={() => startMatch()}>
+                        OTRA VEZ
+                      </button>
+                      <button className="mainAction" onClick={() => navigate("home")}>
+                        OTRO JUEGO
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}

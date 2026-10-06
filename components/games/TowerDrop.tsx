@@ -12,10 +12,10 @@ import {
   createTowerDropState,
   dropTowerBlock,
   stepTowerDrop,
-  TOWER_DROP_V1,
+  TOWER_DROP_V2,
   type TowerDropInput,
   type TowerDropState,
-} from "@/lib/verified/towerDropCore.v1";
+} from "@/lib/verified/towerDropCore.v2";
 
 type Props = {
   active: boolean;
@@ -33,10 +33,34 @@ type Session = {
 const W = 390;
 const H = 620;
 const BLOCK_H = 44;
-const CRANE_Y = 118;
-const DROP_MS = 520;
+const CRANE_PIVOT_Y = 88;
+const SWING_BLOCK_Y = 142;
+const BASE_Y = H - 92;
 
-export default function TowerDrop({ active, stake, ghostEnabled, targetScore, onFinish }: Props) {
+const PALETTE = [
+  "#4c7ed7",
+  "#6f63d7",
+  "#c764bd",
+  "#e8894c",
+  "#45b783",
+  "#d9ad3f",
+];
+
+function blockWorldY(index: number) {
+  return BASE_Y - index * BLOCK_H;
+}
+
+function nextBlockWorldY(blockCount: number) {
+  return BASE_Y - blockCount * BLOCK_H;
+}
+
+export default function TowerDrop({
+  active,
+  stake,
+  ghostEnabled,
+  targetScore,
+  onFinish,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
@@ -47,24 +71,39 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
   const verifyingRef = useRef(false);
   const generationRef = useRef(0);
   const cameraRef = useRef(0);
-  const resolutionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dropFxRef = useRef<{
-    x: number;
-    width: number;
-    fromY: number;
-    toY: number;
-    startedAt: number;
-    blockIndex: number;
-  } | null>(null);
 
   const [verificationState, setVerificationState] = useState<
     "idle" | "starting" | "playing" | "verifying" | "error"
   >("idle");
-  const [verificationMessage, setVerificationMessage] = useState("");
 
   useEffect(() => {
     finishRef.current = onFinish;
   }, [onFinish]);
+
+  const drawBlock = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      width: number,
+      paletteIndex: number,
+      alpha = 1
+    ) => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.shadowBlur = 11;
+      ctx.shadowColor = "rgba(49,95,174,.28)";
+      ctx.fillStyle = PALETTE[Math.abs(paletteIndex) % PALETTE.length];
+      ctx.fillRect(x, y, width, BLOCK_H - 4);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "rgba(255,255,255,.34)";
+      ctx.fillRect(x + 5, y + 5, Math.max(0, width - 10), 6);
+      ctx.fillStyle = "rgba(0,0,0,.10)";
+      ctx.fillRect(x, y + BLOCK_H - 9, width, 5);
+      ctx.restore();
+    },
+    []
+  );
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -74,12 +113,19 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
 
     const s = stateRef.current;
     const ticks = s.tick;
-    const fallingBlock = dropFxRef.current ? 1 : 0;
-    const stableBlocks = Math.max(1, s.blocks.length - fallingBlock);
-    const highestWorldY = H - 92 - (stableBlocks - 1) * BLOCK_H;
-    const targetCameraY = Math.max(0, CRANE_Y + 96 - highestWorldY);
-    cameraRef.current += (targetCameraY - cameraRef.current) * 0.12;
-    if (Math.abs(targetCameraY - cameraRef.current) < 0.1) {
+    const stableBlocks = Math.max(1, s.blocks.length);
+    const highestWorldY =
+      BASE_Y - (stableBlocks - 1) * BLOCK_H;
+    const targetCameraY = Math.max(
+      0,
+      CRANE_PIVOT_Y + 116 - highestWorldY
+    );
+
+    cameraRef.current +=
+      (targetCameraY - cameraRef.current) * 0.12;
+    if (
+      Math.abs(targetCameraY - cameraRef.current) < 0.1
+    ) {
       cameraRef.current = targetCameraY;
     }
     const cameraY = cameraRef.current;
@@ -91,254 +137,285 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = "rgba(255,255,255,.55)";
+    // Slow clouds keep motion visible without adding a HUD.
+    ctx.fillStyle = "rgba(255,255,255,.50)";
     for (let i = 0; i < 5; i += 1) {
-      const x = ((i * 126 - ticks * 0.15) % (W + 150)) - 60;
-      const y = 82 + (i % 2) * 58;
+      const x =
+        ((i * 126 - ticks * 0.14) % (W + 150)) - 60;
+      const y = 74 + (i % 2) * 58;
       ctx.beginPath();
-      ctx.arc(x, y, 22, 0, Math.PI * 2);
-      ctx.arc(x + 28, y + 5, 31, 0, Math.PI * 2);
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.arc(x + 27, y + 4, 29, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Industrial crane: the moving block hangs from the trolley.
-    const dropFxForCrane = dropFxRef.current;
-    const trolleyX = dropFxForCrane
-      ? dropFxForCrane.x + dropFxForCrane.width / 2
-      : s.movingXMilli / 1000 + s.movingWMilli / 2000;
+    // Fixed overhead crane. Unlike v1, the load swings from a real pivot.
     ctx.strokeStyle = "#455a77";
     ctx.lineWidth = 8;
     ctx.beginPath();
-    ctx.moveTo(18, 88);
-    ctx.lineTo(W - 18, 88);
+    ctx.moveTo(18, 72);
+    ctx.lineTo(W - 18, 72);
     ctx.stroke();
 
     ctx.fillStyle = "#f0b84a";
-    ctx.fillRect(trolleyX - 20, 76, 40, 24);
+    ctx.fillRect(W / 2 - 21, 61, 42, 22);
     ctx.fillStyle = "#3e5069";
-    ctx.fillRect(trolleyX - 7, 99, 14, 14);
-
-    ctx.strokeStyle = "#344760";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(trolleyX, 112);
-    ctx.lineTo(trolleyX, CRANE_Y + 18);
-    ctx.stroke();
+    ctx.fillRect(W / 2 - 7, 79, 14, 14);
 
     ctx.save();
     ctx.translate(0, cameraY);
 
     if (ghostEnabled) {
-      const ghostWidths = [228, 222, 211, 201, 189, 176, 162, 148];
+      const ghostWidth = TOWER_DROP_V2.blockWidthMilli / 1000;
       ctx.save();
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = 0.16;
       ctx.strokeStyle = "#6de6ff";
       ctx.setLineDash([6, 5]);
       ctx.lineWidth = 2;
-      ghostWidths.forEach((width, index) => {
-        const x = (W - width) / 2 + (index % 2 === 0 ? -5 : 5);
-        const y = H - 92 - index * BLOCK_H;
-        ctx.strokeRect(x, y, width, BLOCK_H - 3);
-      });
-      ctx.setLineDash([]);
-      ctx.globalAlpha = 0.72;
-      ctx.fillStyle = "#6de6ff";
-      ctx.font = "900 14px system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText("👻", W / 2, H - 92 - ghostWidths.length * BLOCK_H - 8);
+      for (let index = 1; index <= 7; index += 1) {
+        const x =
+          (W - ghostWidth) / 2 +
+          (index % 2 === 0 ? -7 : 7);
+        ctx.strokeRect(
+          x,
+          blockWorldY(index),
+          ghostWidth,
+          BLOCK_H - 3
+        );
+      }
       ctx.restore();
     }
 
-    const palette = [
-      "#4c7ed7",
-      "#6f63d7",
-      "#c764bd",
-      "#e8894c",
-      "#45b783",
-      "#d9ad3f",
-    ];
-
-    const fx = dropFxRef.current;
-    const now = performance.now();
-    let activeFx = fx;
-    if (fx && now - fx.startedAt >= DROP_MS) {
-      dropFxRef.current = null;
-      activeFx = null;
-    }
-
     s.blocks.forEach((block, index) => {
-      if (activeFx?.blockIndex === index) return;
-
-      const x = block.xMilli / 1000;
-      const width = block.wMilli / 1000;
-      const y = H - 92 - index * BLOCK_H;
-      ctx.fillStyle = palette[index % palette.length];
-      ctx.fillRect(x, y, width, BLOCK_H - 4);
-      ctx.fillStyle = "rgba(255,255,255,.32)";
-      ctx.fillRect(x + 5, y + 5, Math.max(0, width - 10), 6);
-      ctx.fillStyle = "rgba(0,0,0,.10)";
-      ctx.fillRect(x, y + BLOCK_H - 9, width, 5);
+      drawBlock(
+        ctx,
+        block.xMilli / 1000,
+        blockWorldY(index),
+        block.wMilli / 1000,
+        index
+      );
     });
 
-    if (activeFx) {
-      const progress = Math.min(1, (now - activeFx.startedAt) / DROP_MS);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const screenY =
-        activeFx.fromY +
-        (activeFx.toY + cameraY - activeFx.fromY) * eased;
-      const y = screenY - cameraY;
-      ctx.shadowBlur = 16;
-      ctx.shadowColor = "#315fae";
-      ctx.fillStyle = palette[Math.abs(activeFx.blockIndex) % palette.length];
-      ctx.fillRect(activeFx.x, y, activeFx.width, BLOCK_H - 4);
-      ctx.fillStyle = "rgba(255,255,255,.34)";
-      ctx.fillRect(activeFx.x + 5, y + 5, Math.max(0, activeFx.width - 10), 6);
-      ctx.shadowBlur = 0;
-    } else if (s.status === "running") {
-      const hangingX = s.movingXMilli / 1000;
-      const hangingW = s.movingWMilli / 1000;
+    const nextIndex = s.blocks.length;
+    const targetY = nextBlockWorldY(nextIndex);
+    const blockWidth = s.movingWMilli / 1000;
 
-      const hangingY = CRANE_Y + 18 - cameraY;
-      ctx.shadowBlur = 14;
-      ctx.shadowColor = "#315fae";
-      ctx.fillStyle = "#315fae";
-      ctx.fillRect(hangingX, hangingY, hangingW, BLOCK_H - 4);
-      ctx.fillStyle = "rgba(255,255,255,.32)";
-      ctx.fillRect(hangingX + 5, hangingY + 5, Math.max(0, hangingW - 10), 6);
-      ctx.shadowBlur = 0;
+    if (s.status === "running" && s.phase === "swing") {
+      const x = s.movingXMilli / 1000;
+      const centerX = x + blockWidth / 2;
+      const startWorldY = SWING_BLOCK_Y - cameraY;
+
+      ctx.strokeStyle = "#344760";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(W / 2, CRANE_PIVOT_Y - cameraY);
+      ctx.lineTo(centerX, startWorldY);
+      ctx.stroke();
+
+      ctx.fillStyle = "#344760";
+      ctx.beginPath();
+      ctx.arc(centerX, startWorldY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawBlock(
+        ctx,
+        x,
+        startWorldY + 5,
+        blockWidth,
+        nextIndex
+      );
+    } else if (
+      s.phase === "falling" ||
+      s.phase === "falling-out"
+    ) {
+      const progress =
+        s.fallYMilli / TOWER_DROP_V2.dropDistanceMilli;
+      const startWorldY = SWING_BLOCK_Y + 5 - cameraY;
+      const y =
+        startWorldY +
+        (targetY - startWorldY) * progress;
+
+      drawBlock(
+        ctx,
+        s.fallXMilli / 1000,
+        y,
+        blockWidth,
+        nextIndex
+      );
+    } else if (
+      s.phase === "tipping-left" ||
+      s.phase === "tipping-right"
+    ) {
+      const x = s.fallXMilli / 1000;
+      const pivotX = s.tipPivotXMilli / 1000;
+      const pivotY = targetY + BLOCK_H - 4;
+      const radians =
+        (s.tipDirection *
+          (s.tipAngleMilliDeg / 1000) *
+          Math.PI) /
+        180;
+
+      ctx.save();
+      ctx.translate(pivotX, pivotY);
+      ctx.rotate(radians);
+      drawBlock(
+        ctx,
+        x - pivotX,
+        targetY - pivotY,
+        blockWidth,
+        nextIndex
+      );
+      ctx.restore();
     }
 
     ctx.restore();
+  }, [drawBlock]);
 
-  }, []);
+  const submitReplay = useCallback(
+    async (state: TowerDropState) => {
+      if (verifyingRef.current) return;
+      verifyingRef.current = true;
+      loopingRef.current = false;
 
-  const submitReplay = useCallback(async (state: TowerDropState) => {
-    if (verifyingRef.current) return;
-    verifyingRef.current = true;
-    loopingRef.current = false;
-    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    setVerificationState("verifying");
-    setVerificationMessage("Reproduciendo inputs en servidor…");
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
 
-    const session = sessionRef.current;
-    if (!session) {
-      setVerificationState("error");
-      setVerificationMessage("No existe ticket de intento.");
-      finishRef.current({
-        won: false,
-        score: 0,
-        timeMs: 0,
-        verified: false,
-        verificationError: "MISSING_ATTEMPT_TICKET",
-      });
-      return;
-    }
+      setVerificationState("verifying");
 
-    try {
-      const response = await fetch("/api/verified-match/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          manifest: session.manifest,
-          ticket: session.ticket,
-          inputs: inputsRef.current,
-          final_tick: state.tick,
-        }),
-      });
-
-      const data = (await response.json()) as VerifiedAttemptResult;
-
-      if (!response.ok || !data.ok || !data.verified) {
-        const error = data.error || "SERVER_REPLAY_REJECTED";
+      const session = sessionRef.current;
+      if (!session) {
         setVerificationState("error");
-        setVerificationMessage(`Intento rechazado: ${error}`);
         finishRef.current({
           won: false,
           score: 0,
-          timeMs: Math.round(
-            (state.tick * 1000) / TOWER_DROP_V1.tickRate
-          ),
+          timeMs: 0,
           verified: false,
-          verificationError: error,
+          verificationError: "MISSING_ATTEMPT_TICKET",
         });
         return;
       }
 
-      setVerificationMessage("Replay verificado.");
-      finishRef.current({
-        won: data.won === true,
-        score: data.score ?? 0,
-        timeMs: data.time_ms ?? 0,
-        verified: true,
-        verificationId: data.verification_id,
-        replayHash: data.replay_hash,
-        failureReason: data.failure ?? null,
-      });
-    } catch {
-      setVerificationState("error");
-      setVerificationMessage("No se pudo contactar con el verificador.");
-      finishRef.current({
-        won: false,
-        score: 0,
-        timeMs: Math.round(
-          (state.tick * 1000) / TOWER_DROP_V1.tickRate
-        ),
-        verified: false,
-        verificationError: "VERIFIER_UNAVAILABLE",
-      });
-    }
-  }, []);
+      try {
+        const response = await fetch("/api/verified-match/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            manifest: session.manifest,
+            ticket: session.ticket,
+            inputs: inputsRef.current,
+            final_tick: state.tick,
+          }),
+        });
+
+        const data =
+          (await response.json()) as VerifiedAttemptResult;
+
+        if (!response.ok || !data.ok || !data.verified) {
+          const error =
+            data.error || "SERVER_REPLAY_REJECTED";
+          setVerificationState("error");
+          finishRef.current({
+            won: false,
+            score: 0,
+            timeMs: Math.round(
+              (state.tick * 1000) /
+                TOWER_DROP_V2.tickRate
+            ),
+            verified: false,
+            verificationError: error,
+          });
+          return;
+        }
+
+        finishRef.current({
+          won: data.won === true,
+          score: data.score ?? 0,
+          timeMs: data.time_ms ?? 0,
+          verified: true,
+          failureReason: data.failure ?? null,
+        });
+      } catch {
+        setVerificationState("error");
+        finishRef.current({
+          won: false,
+          score: 0,
+          timeMs: Math.round(
+            (state.tick * 1000) /
+              TOWER_DROP_V2.tickRate
+          ),
+          verified: false,
+          verificationError: "VERIFIER_UNAVAILABLE",
+        });
+      }
+    },
+    []
+  );
 
   const step = useCallback(() => {
     const s = stateRef.current;
     if (s.status !== "running") return;
 
-    const stepped: TowerDropState = stepTowerDrop(s);
+    const beforeBlocks = s.blocks.length;
+    const beforePhase = s.phase;
 
-    if (stepped.status === "failed") {
-      void submitReplay(stepped);
-      return;
+    const stepped = stepTowerDrop(s, targetScore);
+
+    if (stepped.blocks.length > beforeBlocks) {
+      gameTone(stepped.combo > 0 ? "good" : "tap");
+      haptic(stepped.combo > 0 ? 10 : 5);
+    } else if (
+      beforePhase === "falling" &&
+      (stepped.phase === "tipping-left" ||
+        stepped.phase === "tipping-right")
+    ) {
+      haptic(8);
     }
 
-  }, [submitReplay]);
+    if (
+      stepped.status === "failed" ||
+      stepped.status === "won"
+    ) {
+      draw();
+      void submitReplay(stepped);
+    }
+  }, [draw, submitReplay, targetScore]);
 
   const loop = useCallback(
     (now: number) => {
       const s = stateRef.current;
-      if (
-        !loopingRef.current ||
-        (s.status !== "running" && dropFxRef.current === null)
-      ) return;
+      if (!loopingRef.current || s.status !== "running") {
+        return;
+      }
 
-      const timing = (
-        stateRef.current as TowerDropState & { lastFrame?: number; accumulator?: number }
-      );
+      const timing = stateRef.current as TowerDropState & {
+        lastFrame?: number;
+        accumulator?: number;
+      };
+
       if (!timing.lastFrame) timing.lastFrame = now;
       timing.accumulator =
         (timing.accumulator ?? 0) +
         Math.min(0.05, (now - timing.lastFrame) / 1000);
       timing.lastFrame = now;
 
-      const dt = 1 / TOWER_DROP_V1.tickRate;
-      const dropping = dropFxRef.current !== null;
+      const dt = 1 / TOWER_DROP_V2.tickRate;
 
-      if (!dropping && s.status === "running") {
-        while (
-          (timing.accumulator ?? 0) >= dt &&
-          loopingRef.current &&
-          stateRef.current.status === "running"
-        ) {
-          step();
-          timing.accumulator = (timing.accumulator ?? 0) - dt;
-        }
-      } else {
-        timing.accumulator = 0;
+      while (
+        (timing.accumulator ?? 0) >= dt &&
+        loopingRef.current &&
+        stateRef.current.status === "running"
+      ) {
+        step();
+        timing.accumulator =
+          (timing.accumulator ?? 0) - dt;
       }
 
       draw();
+
       if (
         loopingRef.current &&
-        (stateRef.current.status === "running" || dropFxRef.current !== null)
+        stateRef.current.status === "running"
       ) {
         rafRef.current = requestAnimationFrame(loop);
       }
@@ -349,29 +426,26 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
   const beginVerifiedAttempt = useCallback(
     async (generation: number) => {
       setVerificationState("starting");
-      setVerificationMessage("Solicitando manifiesto y ticket…");
       verifyingRef.current = false;
       loopingRef.current = false;
-      if (resolutionTimerRef.current !== null) {
-        clearTimeout(resolutionTimerRef.current);
-        resolutionTimerRef.current = null;
-      }
       inputsRef.current = [];
       sessionRef.current = null;
-      dropFxRef.current = null;
       cameraRef.current = 0;
       stateRef.current = createTowerDropState();
       draw();
 
       try {
-        const response = await fetch("/api/verified-match/start", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            stake_minor: Math.round(stake * 100),
-            target_score: targetScore,
-          }),
-        });
+        const response = await fetch(
+          "/api/verified-match/start",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              stake_minor: Math.round(stake * 100),
+              target_score: targetScore,
+            }),
+          }
+        );
         const data = await response.json();
 
         if (
@@ -395,27 +469,22 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
           ticket: data.ticket as AttemptTicket,
         };
 
-        const state = createTowerDropState() as TowerDropState & {
-          lastFrame?: number;
-          accumulator?: number;
-        };
+        const state =
+          createTowerDropState() as TowerDropState & {
+            lastFrame?: number;
+            accumulator?: number;
+          };
         state.lastFrame = 0;
         state.accumulator = 0;
         stateRef.current = state;
 
         setVerificationState("playing");
-        setVerificationMessage(
-          data.ticket.security_mode === "production"
-            ? "Servidor autoritativo activo"
-            : "Replay server-side activo · firma demo"
-        );
         loopingRef.current = true;
         draw();
         rafRef.current = requestAnimationFrame(loop);
       } catch {
         if (generation !== generationRef.current) return;
         setVerificationState("error");
-        setVerificationMessage("No se pudo iniciar el intento verificado.");
         finishRef.current({
           won: false,
           score: 0,
@@ -440,27 +509,26 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       generationRef.current += 1;
       loopingRef.current = false;
       stateRef.current.status = "failed";
-      if (resolutionTimerRef.current !== null) {
-        clearTimeout(resolutionTimerRef.current);
-        resolutionTimerRef.current = null;
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
       }
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, [active, beginVerifiedAttempt]);
 
   const place = useCallback(() => {
     const s = stateRef.current;
-    if (dropFxRef.current) return;
 
     if (
       verificationState !== "playing" ||
       !loopingRef.current ||
-      s.status !== "running"
+      s.status !== "running" ||
+      s.phase !== "swing"
     ) {
       return;
     }
 
-    const previous = inputsRef.current[inputsRef.current.length - 1];
+    const previous =
+      inputsRef.current[inputsRef.current.length - 1];
     if (previous?.tick === s.tick) return;
 
     inputsRef.current.push({
@@ -469,48 +537,10 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       action: "DROP",
     });
 
-    // Capture the crane load before mutating the deterministic engine.
-    // This prevents terminal outcomes (win/fail) from skipping the visible drop.
-    const carriedX = s.movingXMilli / 1000;
-    const carriedWidth = s.movingWMilli / 1000;
-    const dropped: TowerDropState = dropTowerBlock(s, targetScore);
-    const terminal = dropped.status === "failed" || dropped.status === "won";
-
-    if (dropped.status === "failed") {
-      dropFxRef.current = {
-        x: carriedX,
-        width: carriedWidth,
-        fromY: CRANE_Y + 18,
-        toY: H + 36,
-        startedAt: performance.now(),
-        blockIndex: dropped.blocks.length,
-      };
-    } else {
-      const landedIndex = dropped.blocks.length - 1;
-      const landed = dropped.blocks[landedIndex];
-      dropFxRef.current = {
-        x: landed.xMilli / 1000,
-        width: landed.wMilli / 1000,
-        fromY: CRANE_Y + 18,
-        toY: H - 92 - landedIndex * BLOCK_H,
-        startedAt: performance.now(),
-        blockIndex: landedIndex,
-      };
-    }
-
-    gameTone(dropped.status === "won" ? "win" : s.combo > 0 ? "good" : "tap");
-    haptic(dropped.status === "won" ? [16, 24, 42] : s.combo > 0 ? 10 : 5);
-
-    if (terminal) {
-      if (resolutionTimerRef.current !== null) {
-        clearTimeout(resolutionTimerRef.current);
-      }
-      resolutionTimerRef.current = setTimeout(() => {
-        resolutionTimerRef.current = null;
-        void submitReplay(dropped);
-      }, DROP_MS + 40);
-    }
-  }, [submitReplay, targetScore, verificationState]);
+    dropTowerBlock(s, targetScore);
+    gameTone("tap");
+    haptic(4);
+  }, [targetScore, verificationState]);
 
   return (
     <div className="gameStage skillGameStage towerDropArena verifiedArena">
@@ -520,7 +550,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
         height={H}
         className="gameCanvas"
         onPointerDown={place}
-        aria-label="Tower Drop verificado"
+        aria-label="Tower Drop"
       />
 
       {(verificationState === "starting" ||
@@ -533,7 +563,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
           </span>
         </div>
       )}
-
     </div>
   );
 }
