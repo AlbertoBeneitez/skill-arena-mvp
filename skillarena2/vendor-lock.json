@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "upstreams": [
     {
       "id": "tower",
@@ -7,6 +7,9 @@
       "repo": "https://github.com/iamkun/tower_game.git",
       "commit": "c6fa84afe179b661fa71cf7cc8788d0c47ca2875",
       "license": "MIT",
+      "role": "candidate",
+      "mobileTarget": true,
+      "transferTarget": true,
       "mode": "playable-static",
       "publicPath": "games/tower"
     },
@@ -16,6 +19,9 @@
       "repo": "https://github.com/BKcore/HexGL.git",
       "commit": "6addc95a2fce3bf05f4d751823cc054c61a16d68",
       "license": "MIT",
+      "role": "reference",
+      "mobileTarget": false,
+      "transferTarget": false,
       "mode": "playable-static",
       "publicPath": "games/hexgl"
     },
@@ -25,6 +31,9 @@
       "repo": "https://github.com/ppy/osu.git",
       "commit": "387748797f301feeaa10c59cbe4462c76eb74cf4",
       "license": "MIT-code-only",
+      "role": "reference",
+      "mobileTarget": false,
+      "transferTarget": false,
       "mode": "source-lab",
       "sparsePaths": [
         "LICENCE",
@@ -40,6 +49,9 @@
       "repo": "https://github.com/owenashurst/agar.io-clone.git",
       "commit": "cb8c12173cd6ae07abbc300a8838de0ab1d358ad",
       "license": "MIT",
+      "role": "reference",
+      "mobileTarget": false,
+      "transferTarget": false,
       "mode": "server-lab"
     }
   ]
