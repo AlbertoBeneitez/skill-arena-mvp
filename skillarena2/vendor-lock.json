@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "upstreams": [
+    {
+      "id": "tower",
+      "name": "Tower Building Game",
+      "repo": "https://github.com/iamkun/tower_game.git",
+      "commit": "c6fa84afe179b661fa71cf7cc8788d0c47ca2875",
+      "license": "MIT",
+      "mode": "playable-static",
+      "publicPath": "games/tower"
+    },
+    {
+      "id": "hexgl",
+      "name": "HexGL",
+      "repo": "https://github.com/BKcore/HexGL.git",
+      "commit": "6addc95a2fce3bf05f4d751823cc054c61a16d68",
+      "license": "MIT",
+      "mode": "playable-static",
+      "publicPath": "games/hexgl"
+    },
+    {
+      "id": "osu",
+      "name": "osu! lazer code lab",
+      "repo": "https://github.com/ppy/osu.git",
+      "commit": "387748797f301feeaa10c59cbe4462c76eb74cf4",
+      "license": "MIT-code-only",
+      "mode": "source-lab",
+      "sparsePaths": [
+        "LICENCE",
+        "osu.Game/Beatmaps",
+        "osu.Game/Rulesets",
+        "osu.Game/Scoring",
+        "osu.Game/Screens/Play"
+      ]
+    },
+    {
+      "id": "agar",
+      "name": "Agar.io clone",
+      "repo": "https://github.com/owenashurst/agar.io-clone.git",
+      "commit": "cb8c12173cd6ae07abbc300a8838de0ab1d358ad",
+      "license": "MIT",
+      "mode": "server-lab"
+    }
+  ]
+}
