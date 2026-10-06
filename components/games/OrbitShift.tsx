@@ -10,24 +10,25 @@ type Props = {
   onFinish: (result: GameResult) => void;
 };
 
-type Lane = 0 | 1 | 2 | 3;
+type Lane = 0 | 1 | 2 | 3 | 4;
 
 const W = 390;
 const H = 620;
 const CX = W / 2;
 const CY = 270;
 const DT = 1 / 120;
-const LANES = [72, 103, 134, 165] as const;
+const LANES = [62, 91, 120, 149, 178] as const;
 
 const HAZARD_LANES: Lane[] = [
-  1,2,0,3,2,1,3,0,1,2,3,1,0,2,1,3,
-  0,1,3,2,0,2,3,1,2,0,1,3,2,1,0,3,
+  2,3,1,4,2,0,3,1,4,2,0,4,1,3,2,0,
+  4,2,1,3,0,2,4,1,3,2,0,4,3,1,2,0,
+  4,1,3,2,4,0,2,1,
 ];
 const GAP_PATTERN = [
   1.5,1.34,1.43,1.29,1.39,1.25,1.33,1.23,1.31,1.19,1.27,1.17,
 ];
 const GHOST_PATH: Lane[] = [
-  1,2,2,3,2,1,0,1,2,3,2,1,0,1,1,2,3,3,2,1,0,1,2,2,
+  2,3,3,4,3,2,1,0,1,2,3,4,3,2,1,0,1,2,3,4,4,3,2,1,2,3,2,1,
 ];
 
 function speedFor(passed: number) {
@@ -38,18 +39,20 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
-  const [laneDisplay, setLaneDisplay] = useState<Lane>(1);
+  const [laneDisplay, setLaneDisplay] = useState<Lane>(2);
 
   const state = useRef({
     progress: 0,
-    lane: 1 as Lane,
-    radius: LANES[1] as number,
+    lane: 2 as Lane,
+    radius: LANES[2] as number,
     running: false,
     ticks: 0,
     last: 0,
     acc: 0,
     passed: 0,
-    nextHazard: 1.72,
+    combo: 0,
+    pulse: 0,
+    nextHazard: 1.86,
     nextIndex: 0,
   });
 
@@ -75,6 +78,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
   const step = useCallback(() => {
     const s = state.current;
     s.ticks += 1;
+    s.pulse = Math.max(0, s.pulse - 1);
 
     const previous = s.progress;
     s.progress += speedFor(s.passed) * DT;
@@ -92,6 +96,8 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
       }
 
       s.passed += 1;
+      s.combo += 1;
+      s.pulse = 18;
       s.nextIndex += 1;
 
       const compression = Math.max(
@@ -117,12 +123,23 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
 
     const s = state.current;
 
-    const bg = ctx.createRadialGradient(CX, CY, 20, CX, CY, 370);
+    const bg = ctx.createRadialGradient(CX, CY, 18, CX, CY, 390);
     bg.addColorStop(0, "#2a4c88");
     bg.addColorStop(0.55, "#101e47");
     bg.addColorStop(1, "#060c20");
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
+
+    // Deterministic star field / speed particles.
+    ctx.fillStyle = "rgba(185,222,255,.42)";
+    for (let i = 0; i < 28; i += 1) {
+      const angle = i * 2.399 + s.progress * 0.015;
+      const radius = 34 + ((i * 37) % 170);
+      const x = CX + Math.cos(angle) * radius;
+      const y = CY + Math.sin(angle) * radius;
+      const size = 1 + (i % 3) * 0.55;
+      ctx.fillRect(x, y, size, size);
+    }
 
     // Rotating space grid gives motion without affecting gameplay.
     ctx.save();
@@ -214,9 +231,9 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.arc(CX, CY, s.radius, -Math.PI / 2 + 0.03, -Math.PI / 2 + 0.32);
     ctx.stroke();
 
-    ctx.shadowBlur = 24;
-    ctx.shadowColor = "#72e6ff";
-    ctx.fillStyle = "#72e6ff";
+    ctx.shadowBlur = 24 + s.pulse * 0.45;
+    ctx.shadowColor = s.pulse > 0 ? "#ffd95a" : "#72e6ff";
+    ctx.fillStyle = s.pulse > 0 ? "#9af3ff" : "#72e6ff";
     ctx.beginPath();
     ctx.arc(px, py, 11, 0, Math.PI * 2);
     ctx.fill();
@@ -256,13 +273,19 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.fillStyle = "rgba(7,13,32,.84)";
     ctx.fillRect(14, 14, W - 28, 50);
     ctx.fillStyle = "#fff";
-    ctx.font = "900 12px system-ui";
+    ctx.font = "900 14px system-ui";
     ctx.textAlign = "left";
     ctx.fillText(`SUPERADOS ${s.passed}`, 26, 44);
 
     ctx.textAlign = "right";
     ctx.fillStyle = "#77e5ff";
-    ctx.fillText(`ÓRBITA ${s.lane + 1}/4`, W - 26, 44);
+    ctx.fillText(`ÓRBITA ${s.lane + 1}/5`, W - 26, 44);
+
+    if (s.combo > 1) {
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffd95a";
+      ctx.fillText(`RACHA ×${s.combo}`, CX, 44);
+    }
 
     ctx.textAlign = "start";
   }, [ghostEnabled]);
@@ -287,18 +310,20 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
   const start = useCallback(() => {
     state.current = {
       progress: 0,
-      lane: 1,
-      radius: LANES[1],
+      lane: 2,
+      radius: LANES[2],
       running: true,
       ticks: 0,
       last: 0,
       acc: 0,
       passed: 0,
-      nextHazard: 1.72,
+      combo: 0,
+      pulse: 0,
+      nextHazard: 1.86,
       nextIndex: 0,
     };
 
-    setLaneDisplay(1);
+    setLaneDisplay(2);
     draw();
     rafRef.current = requestAnimationFrame(loop);
   }, [draw, loop]);
@@ -318,7 +343,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
 
     const next = Math.max(
       0,
-      Math.min(3, s.lane + direction)
+      Math.min(4, s.lane + direction)
     ) as Lane;
 
     if (next === s.lane) {
@@ -368,7 +393,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
         <button
           type="button"
           onPointerDown={() => moveOrbit(1)}
-          disabled={laneDisplay === 3}
+          disabled={laneDisplay === 4}
         >
           <b>SUBIR</b>
           <span>↑</span>
