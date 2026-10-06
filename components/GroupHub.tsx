@@ -15,6 +15,8 @@ type Props = {
   onPlayGroup: (game: GameMeta) => void;
 };
 
+type GroupTab = "group" | "create-match";
+
 export default function GroupHub({
   group,
   balance,
@@ -27,6 +29,7 @@ export default function GroupHub({
   const [draftName, setDraftName] = useState("Mi grupo");
   const [draftStake, setDraftStake] = useState<Stake>(5);
   const [copied, setCopied] = useState(false);
+  const [tab, setTab] = useState<GroupTab>("group");
 
   const activeStake = group?.stake ?? draftStake;
   const rivals = Math.max(0, (group?.members.length ?? 1) - 1);
@@ -51,6 +54,21 @@ export default function GroupHub({
   if (!group) {
     return (
       <section className="groupScreen">
+        <div className="groupSubtabs" role="tablist" aria-label="Secciones del grupo">
+          <button type="button" role="tab" aria-selected="true" className="active">
+            MI GRUPO
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            disabled
+            title="Crea primero el grupo cerrado"
+          >
+            CREAR PARTIDA
+          </button>
+        </div>
+
         <div className="groupHero">
           <span>GRUPO CERRADO</span>
           <h1>Compite con tu gente</h1>
@@ -111,86 +129,140 @@ export default function GroupHub({
 
   return (
     <section className="groupScreen">
-      <div className="groupHeaderCard">
-        <div>
-          <small>GRUPO CERRADO</small>
-          <h1>{group.name}</h1>
-        </div>
-        <button type="button" onClick={() => void copyCode()}>
-          {copied ? "COPIADO" : group.code}
+      <div className="groupSubtabs" role="tablist" aria-label="Secciones del grupo">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "group"}
+          className={tab === "group" ? "active" : ""}
+          onClick={() => setTab("group")}
+        >
+          MI GRUPO
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "create-match"}
+          className={tab === "create-match" ? "active" : ""}
+          onClick={() => setTab("create-match")}
+        >
+          CREAR PARTIDA
         </button>
       </div>
 
-      <div className="groupSummaryGrid">
-        <div>
-          <span>RIVALES</span>
-          <strong>{rivals}</strong>
-        </div>
-        <div>
-          <span>POR JUGADOR</span>
-          <strong>{activeStake === 0 ? "0€" : `${activeStake}€`}</strong>
-        </div>
-        <div>
-          <span>BOTE DEMO</span>
-          <strong>{pot === 0 ? "—" : `${pot}€`}</strong>
-        </div>
-      </div>
-
-      <div className="groupMembersCard">
-        <div className="groupSectionTitle">
-          <span>INTEGRANTES</span>
-          <small>1 VS TODOS</small>
-        </div>
-        <div className="groupMembers">
-          {group.members.map((member) => (
-            <div key={member.id} className={member.isYou ? "you" : ""}>
-              <img src={member.avatar} alt="" />
-              <span>{member.name}</span>
-              {member.isYou && <b>TÚ</b>}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="groupStakeBlock groupStakeCard">
-        <span>DINERO POR PARTIDA</span>
-        <div className="groupStakeGrid">
-          {STAKES.map((stake) => (
-            <button
-              key={stake}
-              type="button"
-              className={activeStake === stake ? "selected" : ""}
-              disabled={stake > balance}
-              onClick={() => onSetStake(stake)}
-            >
-              {stake === 0 ? "GRATIS" : `${stake}€`}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="groupSectionTitle groupGameTitle">
-        <span>ELIGE JUEGO</span>
-        <small>GANA QUIEN HAGA LA MEJOR MARCA</small>
-      </div>
-
-      <div className="groupGameGrid">
-        {playableGames.map((game) => (
-          <article key={game.id}>
-            <img src={game.cover} alt={game.name} />
+      {tab === "group" ? (
+        <>
+          <div className="groupHeaderCard">
             <div>
-              <strong>{game.name}</strong>
-              <button
-                type="button"
-                disabled={activeStake > balance || rivals < 1}
-                onClick={() => onPlayGroup(game)}
-              >
-                JUGAR 1 VS {rivals}
-              </button>
+              <small>GRUPO CERRADO</small>
+              <h1>{group.name}</h1>
             </div>
-          </article>
-        ))}
-      </div>
+            <button type="button" onClick={() => void copyCode()}>
+              {copied ? "COPIADO" : group.code}
+            </button>
+          </div>
+
+          <div className="groupSummaryGrid">
+            <div>
+              <span>RIVALES</span>
+              <strong>{rivals}</strong>
+            </div>
+            <div>
+              <span>POR JUGADOR</span>
+              <strong>{activeStake === 0 ? "0€" : `${activeStake}€`}</strong>
+            </div>
+            <div>
+              <span>BOTE DEMO</span>
+              <strong>{pot === 0 ? "—" : `${pot}€`}</strong>
+            </div>
+          </div>
+
+          <div className="groupMembersCard">
+            <div className="groupSectionTitle">
+              <span>INTEGRANTES</span>
+              <small>1 VS TODOS</small>
+            </div>
+            <div className="groupMembers">
+              {group.members.map((member) => (
+                <div key={member.id} className={member.isYou ? "you" : ""}>
+                  <img src={member.avatar} alt="" />
+                  <span>{member.name}</span>
+                  {member.isYou && <b>TÚ</b>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            className="groupPrimaryAction groupCreateMatchShortcut"
+            type="button"
+            onClick={() => setTab("create-match")}
+          >
+            CREAR PARTIDA
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="groupMatchSetupHead">
+            <small>PARTIDA PRIVADA</small>
+            <h1>Configura el enfrentamiento</h1>
+            <p>
+              Juegas una vez contra la mejor marca del resto del grupo.
+            </p>
+          </div>
+
+          <div className="groupStakeBlock groupStakeCard">
+            <span>DINERO POR JUGADOR</span>
+            <div className="groupStakeGrid">
+              {STAKES.map((stake) => (
+                <button
+                  key={stake}
+                  type="button"
+                  className={activeStake === stake ? "selected" : ""}
+                  disabled={stake > balance}
+                  onClick={() => onSetStake(stake)}
+                >
+                  {stake === 0 ? "GRATIS" : `${stake}€`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="groupMatchSummary">
+            <div>
+              <span>FORMATO</span>
+              <strong>1 VS {rivals}</strong>
+            </div>
+            <div>
+              <span>BOTE DEMO</span>
+              <strong>{pot === 0 ? "—" : `${pot}€`}</strong>
+            </div>
+          </div>
+
+          <div className="groupSectionTitle groupGameTitle">
+            <span>ELIGE JUEGO</span>
+            <small>MEJOR MARCA GANA</small>
+          </div>
+
+          <div className="groupGameGrid">
+            {playableGames.map((game) => (
+              <article key={game.id}>
+                <img src={game.cover} alt={game.name} />
+                <div>
+                  <strong>{game.name}</strong>
+                  <button
+                    type="button"
+                    disabled={activeStake > balance || rivals < 1}
+                    onClick={() => onPlayGroup(game)}
+                  >
+                    JUGAR 1 VS {rivals}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 }

@@ -369,13 +369,6 @@ export default function PulseRunner({ active, targetScore, onFinish }: Props) {
     ctx.fillRect(5, -7, 5, 5);
     ctx.restore();
 
-    if (s.ticks < 520) {
-      ctx.fillStyle = "rgba(255,255,255,.64)";
-      ctx.font = "900 13px system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText("TOCA PARA SALTAR · MANTÉN UN INSTANTE", W / 2, H - 28);
-    }
-
     ctx.textAlign = "start";
   }, []);
 

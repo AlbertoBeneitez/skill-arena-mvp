@@ -210,11 +210,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
 
     ctx.restore();
 
-    ctx.fillStyle = "rgba(255,255,255,.46)";
-    ctx.font = "900 13px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("TOCA PARA SOLTAR", W / 2, H - 28);
-    ctx.textAlign = "start";
   }, []);
 
   const submitReplay = useCallback(async (state: TowerDropState) => {
@@ -534,33 +529,11 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
           <span>
             {verificationState === "starting"
               ? "PREPARANDO PARTIDA"
-              : "VERIFICANDO RESULTADO"}
+              : "COMPROBANDO RESULTADO"}
           </span>
-          <b>
-            {verificationState === "starting"
-              ? "MANIFEST + TICKET"
-              : "SERVER REPLAY"}
-          </b>
-          <small>{verificationMessage}</small>
         </div>
       )}
 
-      <div className="verifiedGameLine compactVerifiedLine">
-        <span className={verificationState === "error" ? "bad" : ""}>
-          {verificationState === "playing"
-            ? "✓ PARTIDA VERIFICABLE"
-            : verificationState === "verifying"
-              ? "VERIFICANDO…"
-              : verificationState === "error"
-                ? "NO VERIFICADO"
-                : "PREPARANDO…"}
-        </span>
-        {ghostEnabled && <b>👻 FANTASMA</b>}
-      </div>
-
-      <div className="gameRule floatingGameRule towerDropRule">
-        Toca cuando el bloque esté justo encima de la torre
-      </div>
     </div>
   );
 }

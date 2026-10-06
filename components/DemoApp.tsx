@@ -234,6 +234,7 @@ export default function DemoApp() {
   const [matchScope, setMatchScope] = useState<MatchScope>("duel");
   const [matchTargetScore, setMatchTargetScore] = useState(GAMES[0].rivalScore);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -414,6 +415,38 @@ export default function DemoApp() {
     setScreen(next);
   }
 
+  function leaveGameNow() {
+    if (selectedStake > 0 && !result) {
+      setBalance((value) => Number((value + selectedStake).toFixed(2)));
+      setMovements((items) => [
+        { label: `${selectedGame.name} · cancelación demo`, amount: selectedStake },
+        ...items,
+      ].slice(0, 20));
+    }
+
+    matchStartLockRef.current = false;
+    setStartingGameId(null);
+    setActiveGame(false);
+    setCountdown(null);
+    setResult(null);
+    setShowWinAnimation(false);
+    setExitConfirmOpen(false);
+    navigate(matchScope === "group" ? "group" : "home", true);
+  }
+
+  function requestExitGame() {
+    if (activeGame || countdown !== null) {
+      if (selectedStake === 0) {
+        leaveGameNow();
+      } else {
+        setExitConfirmOpen(true);
+      }
+      return;
+    }
+
+    leaveGameNow();
+  }
+
   function advanceTutorial() {
     if (tutorialStep < 2) {
       setTutorialStep((step) => step + 1);
@@ -530,6 +563,7 @@ export default function DemoApp() {
     setMatchScope("duel");
     setMatchTargetScore(game.rivalScore);
     setShowWinAnimation(false);
+    setExitConfirmOpen(false);
 
     setBalance((b) => Number((b - stake).toFixed(2)));
     if (stake > 0) {
@@ -637,6 +671,7 @@ export default function DemoApp() {
     setMatchScope("group");
     setMatchTargetScore(groupTargetScore(group, game));
     setShowWinAnimation(false);
+    setExitConfirmOpen(false);
 
     setBalance((value) => Number((value - stake).toFixed(2)));
     if (stake > 0) {
@@ -931,9 +966,7 @@ export default function DemoApp() {
             <div className="mobileGameHeader">
               <button
                 className="mobileGameBack"
-                onClick={() => {
-                  if (!activeGame && countdown === null) window.history.back();
-                }}
+                onClick={requestExitGame}
                 aria-label="Volver"
               >
                 ←
@@ -948,26 +981,27 @@ export default function DemoApp() {
                       : `${selectedStake}€ · 1 VS 1`}
                 </small>
               </div>
-              <button
-                className={`gameSoundToggle ${musicOn ? "on" : "off"}`}
-                type="button"
-                aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
-                aria-pressed={musicOn}
-                onClick={() => setMusicOn((value) => !value)}
-              >
-                {musicOn ? "🔊" : "🔇"}
-              </button>
-              {selectedMode === "existing" && matchScope === "duel" ? (
+              <div className="gameHeaderActions">
                 <button
-                  className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
-                  onClick={() => setGhostEnabled((value) => !value)}
-                  aria-pressed={ghostEnabled}
+                  className={`gameSoundToggle ${musicOn ? "on" : "off"}`}
+                  type="button"
+                  aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
+                  aria-pressed={musicOn}
+                  onClick={() => setMusicOn((value) => !value)}
                 >
-                  👻
+                  {musicOn ? "🔊" : "🔇"}
                 </button>
-              ) : (
-                <span className="fairPlayDot">●</span>
-              )}
+                {selectedMode === "existing" && matchScope === "duel" && (
+                  <button
+                    className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
+                    onClick={() => setGhostEnabled((value) => !value)}
+                    aria-pressed={ghostEnabled}
+                    aria-label="Mostrar u ocultar fantasma"
+                  >
+                    👻
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="compactMatchStrip">
@@ -1018,9 +1052,27 @@ export default function DemoApp() {
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>
                   <b>{countdown > 0 ? countdown : "GO"}</b>
+                  <span>{selectedGame.instruction}</span>
                 </div>
               )}
             </div>
+
+            {exitConfirmOpen && (
+              <div className="gameExitOverlay" role="dialog" aria-modal="true" aria-label="Salir de la partida">
+                <div className="gameExitCard">
+                  <strong>SALIR DE LA PARTIDA</strong>
+                  <p>
+                    {selectedStake > 0
+                      ? "Esta demo devolverá la entrada al salir."
+                      : "La partida actual se cancelará."}
+                  </p>
+                  <div>
+                    <button type="button" onClick={() => setExitConfirmOpen(false)}>SEGUIR JUGANDO</button>
+                    <button type="button" className="danger" onClick={leaveGameNow}>SALIR</button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {result && (
               <div className="resultPanel premiumResult neutralResult">
@@ -1040,12 +1092,6 @@ export default function DemoApp() {
                       <strong>{demoPercentile(result.score, selectedGame.rivalScore)}%</strong>
                       <small>DE LOS INTENTOS DEMO</small>
                     </div>
-                    {result.verified === true && (
-                      <div className="serverVerifiedBadge">
-                        ✓ SERVER REPLAY VERIFICADO
-                        {result.verificationId && <small>ID {result.verificationId.slice(0, 8)}</small>}
-                      </div>
-                    )}
                   </>
                 )}
                 <div className="resultActions">
