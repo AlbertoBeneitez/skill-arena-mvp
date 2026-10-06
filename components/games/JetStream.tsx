@@ -39,7 +39,8 @@ export default function JetStream({active,onFinish}:Props){
     ctx.fillStyle="rgba(255,255,255,.5)";for(let i=0;i<5;i++){const x=((i*130-s.scroll*.18)%(W+180))-70,y=80+(i%2)*75;ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.arc(x+27,y+3,29,0,Math.PI*2);ctx.fill();}
     for(const g of s.gates){const x=g.x-s.scroll;if(x<-50||x>W+40)continue;const top=g.center-gap/2,bottom=g.center+gap/2;ctx.fillStyle="#2f5da8";ctx.fillRect(x,0,30,top);ctx.fillRect(x,bottom,30,H-bottom);ctx.fillStyle="#efc64d";ctx.fillRect(x-3,top-7,36,7);ctx.fillRect(x-3,bottom,36,7);}
     ctx.save();ctx.translate(PLAYER_X,s.y);ctx.rotate(Math.max(-.35,Math.min(.35,s.vy/500)));ctx.shadowBlur=18;ctx.shadowColor="#ffd34f";ctx.fillStyle="#ffd34f";ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(-10,-11);ctx.lineTo(-3,0);ctx.lineTo(-10,11);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#315fae";ctx.fillRect(-7,-4,10,8);ctx.fillStyle=thrust.current?"#ff8e43":"#8cb7d0";ctx.fillRect(-16,-3,8,6);ctx.restore();
-    ctx.fillStyle="rgba(32,54,89,.84)";ctx.fillRect(14,14,W-28,52);ctx.font="800 12px system-ui";ctx.fillStyle="#fff";ctx.fillText(`PUERTAS ${s.passed}`,26,36);
+    ctx.fillStyle="rgba(32,54,89,.86)";ctx.fillRect(14,14,W-28,52);ctx.font="900 14px system-ui";ctx.fillStyle="#fff";ctx.fillText(`PUERTAS ${s.passed}`,26,44);
+    if(s.passed<3){ctx.textAlign="center";ctx.fillStyle="rgba(255,255,255,.62)";ctx.font="900 13px system-ui";ctx.fillText("PULSA PARA SUBIR · SUELTA PARA CAER",W/2,H-26);ctx.textAlign="start";}
   },[]);
 
   const loop=useCallback((now:number)=>{const s=state.current;if(!s.running)return;if(!s.last)s.last=now;s.acc+=Math.min(.05,(now-s.last)/1000);s.last=now;while(s.acc>=DT&&s.running){step();s.acc-=DT;}draw();if(s.running)rafRef.current=requestAnimationFrame(loop);},[draw,step]);
@@ -68,6 +69,5 @@ export default function JetStream({active,onFinish}:Props){
       onPointerLeave={()=>{thrust.current=false;}}
       aria-label="Jet Stream"
     />
-    <div className="gameRule floatingGameRule">Pulsa para subir · suelta para caer</div>
   </div>;
 }
