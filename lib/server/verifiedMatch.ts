@@ -11,9 +11,9 @@ import type {
   MatchManifest,
 } from "@/lib/verified/contracts";
 import {
-  TOWER_DROP_V1,
-  TOWER_DROP_V1_CONTENT,
-} from "@/lib/verified/towerDropCore.v1";
+  TOWER_DROP_V2,
+  TOWER_DROP_V2_CONTENT,
+} from "@/lib/verified/towerDropCore.v2";
 
 const DEMO_SIGNING_SECRET =
   "skill-arena-demo-verification-key-not-for-production";
@@ -50,7 +50,7 @@ export function hashManifest(manifest: MatchManifest) {
 }
 
 export function expectedTowerDropContentHash() {
-  return sha256(canonicalJson(TOWER_DROP_V1_CONTENT));
+  return sha256(canonicalJson(TOWER_DROP_V2_CONTENT));
 }
 
 export function expectedRulesHash() {
@@ -70,12 +70,12 @@ export function createTowerDropManifest(args?: {
     manifest_version: 1,
     match_id: args?.matchId ?? randomUUID(),
     game_id: "tower-drop",
-    game_version: TOWER_DROP_V1.gameVersion,
-    engine_version: TOWER_DROP_V1.engineVersion,
+    game_version: TOWER_DROP_V2.gameVersion,
+    engine_version: TOWER_DROP_V2.engineVersion,
     rules_hash: expectedRulesHash(),
     gameplay_content_hash: expectedTowerDropContentHash(),
     simulation: {
-      tick_rate: TOWER_DROP_V1.tickRate,
+      tick_rate: TOWER_DROP_V2.tickRate,
       coordinate_width: 390,
       coordinate_height: 620,
       end_condition: "FIRST_FAILURE_OR_TARGET",
@@ -89,7 +89,7 @@ export function createTowerDropManifest(args?: {
       target_score: targetScore,
     },
     input_protocol: {
-      version: TOWER_DROP_V1.inputProtocolVersion,
+      version: TOWER_DROP_V2.inputProtocolVersion,
       allowed_actions: ["DROP"],
     },
     created_at: createdAt,
@@ -186,8 +186,8 @@ export function validateManifest(manifest: MatchManifest) {
   if (
     manifest.manifest_version !== 1 ||
     manifest.game_id !== "tower-drop" ||
-    manifest.game_version !== TOWER_DROP_V1.gameVersion ||
-    manifest.engine_version !== TOWER_DROP_V1.engineVersion
+    manifest.game_version !== TOWER_DROP_V2.gameVersion ||
+    manifest.engine_version !== TOWER_DROP_V2.engineVersion
   ) {
     return { ok: false as const, error: "UNSUPPORTED_GAME_VERSION" };
   }
@@ -201,9 +201,9 @@ export function validateManifest(manifest: MatchManifest) {
   }
 
   if (
-    manifest.simulation.tick_rate !== TOWER_DROP_V1.tickRate ||
+    manifest.simulation.tick_rate !== TOWER_DROP_V2.tickRate ||
     manifest.simulation.coordinate_width !==
-      TOWER_DROP_V1.widthMilli / 1000 ||
+      TOWER_DROP_V2.widthMilli / 1000 ||
     manifest.simulation.coordinate_height !== 620 ||
     manifest.simulation.end_condition !== "FIRST_FAILURE_OR_TARGET"
   ) {
@@ -212,7 +212,7 @@ export function validateManifest(manifest: MatchManifest) {
 
   if (
     manifest.input_protocol.version !==
-      TOWER_DROP_V1.inputProtocolVersion ||
+      TOWER_DROP_V2.inputProtocolVersion ||
     manifest.input_protocol.allowed_actions.length !== 1 ||
     manifest.input_protocol.allowed_actions[0] !== "DROP"
   ) {
