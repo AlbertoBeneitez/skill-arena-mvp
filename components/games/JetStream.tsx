@@ -39,7 +39,38 @@ export default function JetStream({active,onFinish}:Props){
     ctx.fillStyle="rgba(255,255,255,.5)";for(let i=0;i<5;i++){const x=((i*130-s.scroll*.18)%(W+180))-70,y=80+(i%2)*75;ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.arc(x+27,y+3,29,0,Math.PI*2);ctx.fill();}
     for(const g of s.gates){const x=g.x-s.scroll;if(x<-50||x>W+40)continue;const top=g.center-gap/2,bottom=g.center+gap/2;ctx.fillStyle="#2f5da8";ctx.fillRect(x,0,30,top);ctx.fillRect(x,bottom,30,H-bottom);ctx.fillStyle="#efc64d";ctx.fillRect(x-3,top-7,36,7);ctx.fillRect(x-3,bottom,36,7);}
     ctx.save();ctx.translate(PLAYER_X,s.y);ctx.rotate(Math.max(-.35,Math.min(.35,s.vy/500)));ctx.shadowBlur=18;ctx.shadowColor="#ffd34f";ctx.fillStyle="#ffd34f";ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(-10,-11);ctx.lineTo(-3,0);ctx.lineTo(-10,11);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#315fae";ctx.fillRect(-7,-4,10,8);ctx.fillStyle=thrust.current?"#ff8e43":"#8cb7d0";ctx.fillRect(-16,-3,8,6);ctx.restore();
-    ctx.fillStyle="rgba(32,54,89,.86)";ctx.fillRect(14,14,W-28,52);ctx.font="900 14px system-ui";ctx.fillStyle="#fff";ctx.fillText(`PUERTAS ${s.passed}`,26,44);
+    const speed=speedFor(s.passed);
+    ctx.save();
+    ctx.fillStyle="rgba(20,43,78,.90)";
+    ctx.fillRect(12,12,W-24,66);
+    ctx.fillStyle="rgba(255,255,255,.08)";
+    ctx.fillRect(134,20,1,50);
+    ctx.fillRect(255,20,1,50);
+
+    ctx.textAlign="center";
+    ctx.font="800 8px system-ui";
+    ctx.fillStyle="#9cc7e8";
+    ctx.fillText("PUERTAS",73,31);
+    ctx.fillText("PUNTOS",195,31);
+    ctx.fillText("RITMO",316,31);
+
+    ctx.font="950 20px system-ui";
+    ctx.fillStyle="#fff";
+    ctx.fillText(String(s.passed),73,57);
+    ctx.fillStyle="#ffd35c";
+    ctx.fillText(String(s.score),195,57);
+    ctx.fillStyle="#79e4f2";
+    ctx.fillText(String(Math.round(speed)),316,57);
+
+    const precisionGate=s.gates.find(g=>!g.passed&&g.x-s.scroll>PLAYER_X);
+    if(precisionGate){
+      const distance=Math.max(0,Math.min(1,(precisionGate.x-s.scroll-PLAYER_X)/230));
+      ctx.fillStyle="rgba(255,255,255,.12)";
+      ctx.fillRect(24,68,W-48,4);
+      ctx.fillStyle="#66d8ef";
+      ctx.fillRect(24,68,(W-48)*(1-distance),4);
+    }
+    ctx.restore();
     if(s.passed<3){ctx.textAlign="center";ctx.fillStyle="rgba(255,255,255,.62)";ctx.font="900 13px system-ui";ctx.fillText("PULSA PARA SUBIR · SUELTA PARA CAER",W/2,H-26);ctx.textAlign="start";}
   },[]);
 
