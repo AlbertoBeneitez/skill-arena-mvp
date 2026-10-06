@@ -13,8 +13,6 @@ export type GameMeta = {
     | "solitaire-sprint"
     | "mine-grid"
     | "grid-serpent"
-    | "merge-grid"
-    | "pixel-logic"
     | "brick-relay"
     | "stack-shift";
   name: string;
@@ -124,7 +122,7 @@ export const GAMES: GameMeta[] = [
     tagline: "Misma baraja. Gana quien avance más y más rápido.",
     difficulty: "MEDIA",
     skillLabel: "PLANIFICACIÓN + VELOCIDAD",
-    rivalScore: 7600,
+    rivalScore: 22500,
     rivalName: "ACE",
     rivalAvatar: "/avatars/avatar-5.svg",
     instruction: "Toca cartas para moverlas. Ambos jugadores reciben exactamente la misma baraja.",
@@ -165,40 +163,8 @@ export const GAMES: GameMeta[] = [
     scoring: "Come, crece y evita paredes y tu propio cuerpo.",
     deterministicSeed: "grid-serpent-arena-001",
   },
-  {
-    id: "merge-grid",
-    name: "Merge Grid",
-    cover: "/covers/merge-grid.svg",
-    enabled: true,
-    waitingStakes: [1, 5],
-    category: "PUZZLE",
-    tagline: "Mismas apariciones. Mejor estrategia.",
-    difficulty: "MEDIA",
-    skillLabel: "PLANIFICACIÓN + EFICIENCIA",
-    rivalScore: 5200,
-    rivalName: "MESH",
-    rivalAvatar: "/avatars/avatar-2.svg",
-    instruction: "Desliza el tablero. Las posiciones y valores que aparecen siguen la misma secuencia.",
-    scoring: "Combina valores y evita quedarte sin movimientos.",
-    deterministicSeed: "merge-grid-arena-001",
-  },
-  {
-    id: "pixel-logic",
-    name: "Pixel Logic",
-    cover: "/covers/pixel-logic.svg",
-    enabled: true,
-    waitingStakes: [0, 5],
-    category: "LÓGICA",
-    tagline: "Mismo puzzle. Menos errores, menos tiempo.",
-    difficulty: "MEDIA",
-    skillLabel: "LÓGICA + VELOCIDAD",
-    rivalScore: 9800,
-    rivalName: "PIXEL",
-    rivalAvatar: "/avatars/avatar-8.svg",
-    instruction: "Usa las pistas de filas y columnas para reconstruir el mismo patrón.",
-    scoring: "Completa correctamente el patrón antes que tu rival.",
-    deterministicSeed: "pixel-logic-arena-001",
-  },
+
+
   {
     id: "brick-relay",
     name: "Brick Relay",
