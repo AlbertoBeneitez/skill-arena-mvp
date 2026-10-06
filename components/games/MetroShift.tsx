@@ -575,13 +575,6 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
     ctx.fillRect(-7, -11, 14, 20);
     ctx.restore();
 
-    if (s.passed < 4) {
-      ctx.fillStyle = "rgba(255,255,255,.48)";
-      ctx.font = "900 21px system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText("←   desliza   ↑   desliza   →", CX, H - 25);
-    }
-
     ctx.textAlign = "start";
   }, [drawRoad, ghostEnabled]);
 
