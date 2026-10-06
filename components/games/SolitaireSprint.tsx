@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameResult } from "@/lib/types";
-import { seededShuffle } from "@/lib/deterministic/seeded";
+import { solitaireChallengeFor } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
 type Props = {
@@ -47,64 +47,45 @@ function card(suit: Suit, rank: number, faceUp = false): Card {
   };
 }
 
+function cardFromIndex(index: number, faceUp = false): Card {
+  const suit = SUITS[Math.floor(index / 13)];
+  const rank = (index % 13) + 1;
+  return card(suit, rank, faceUp);
+}
+
 /**
- * Generates a deal with a known solution path instead of shuffling blindly.
+ * Uses a curated pool of solver-validated standard Klondike deals.
  *
- * The suit order changes deterministically with the seed, but every deal is
- * built so exposed tableau cards can be cleared to the foundations in a known
- * order, after which the stock is also ordered as a valid foundation path.
- *
- * This gives Skill Arena a hard guarantee: every generated competitive deal
- * has at least one complete solution.
+ * The deals are not generated to be easy. They were accepted only after an
+ * offline solver completed them under the same rules as this client. The pool
+ * includes deals requiring substantial tableau rearrangement and several
+ * stock passes. A future server-issued match seed selects the same challenge
+ * for both competitors.
  */
-function dealGuaranteedSolvable(seed: string) {
-  const suits = seededShuffle(SUITS, seed);
+function dealVerifiedChallenge(seed: string) {
+  const challenge = solitaireChallengeFor(seed);
+  const deck = challenge.deck.map((index) => cardFromIndex(index));
 
-  const segments: Array<{ suit: Suit; from: number; to: number }> = [
-    { suit: suits[2], from: 6, to: 6 },
-    { suit: suits[1], from: 7, to: 8 },
-    { suit: suits[0], from: 8, to: 10 },
-    { suit: suits[3], from: 1, to: 4 },
-    { suit: suits[2], from: 1, to: 5 },
-    { suit: suits[1], from: 1, to: 6 },
-    { suit: suits[0], from: 1, to: 7 },
-  ];
+  const tableau: Card[][] = Array.from({ length: 7 }, () => []);
+  let cursor = 0;
 
-  const tableau = segments.map((segment) => {
-    const cards: Card[] = [];
-    for (let rank = segment.to; rank >= segment.from; rank -= 1) {
-      cards.push(card(segment.suit, rank, false));
-    }
-    cards[cards.length - 1].faceUp = true;
-    return cards;
-  });
-
-  const currentRank = new Map<Suit, number>([
-    [suits[0], 10],
-    [suits[1], 8],
-    [suits[2], 6],
-    [suits[3], 4],
-  ]);
-
-  const desiredDrawOrder: Card[] = [];
-  let added = true;
-
-  while (added) {
-    added = false;
-    for (const suit of suits) {
-      const nextRank = (currentRank.get(suit) ?? 0) + 1;
-      if (nextRank <= 13) {
-        desiredDrawOrder.push(card(suit, nextRank, false));
-        currentRank.set(suit, nextRank);
-        added = true;
-      }
+  for (let column = 0; column < 7; column += 1) {
+    for (let row = 0; row <= column; row += 1) {
+      tableau[column].push({
+        ...deck[cursor],
+        faceUp: row === column,
+      });
+      cursor += 1;
     }
   }
 
-  // Stock draws from the end.
-  const stock = desiredDrawOrder.reverse();
-
-  return { tableau, stock };
+  return {
+    tableau,
+    stock: deck.slice(cursor).map((item) => ({
+      ...item,
+      faceUp: false,
+    })),
+  };
 }
 
 function canPlaceOnTableau(cardToMove: Card, target?: Card) {
@@ -131,11 +112,11 @@ function formatTimer(ms: number) {
 
 export default function SolitaireSprint({
   active,
-  targetScore,
+  targetScore: _targetScore,
   seed,
   onFinish,
 }: Props) {
-  const initial = useMemo(() => dealGuaranteedSolvable(seed), [seed]);
+  const initial = useMemo(() => dealVerifiedChallenge(seed), [seed]);
   const [tableau, setTableau] = useState<Card[][]>(initial.tableau);
   const [stock, setStock] = useState<Card[]>(initial.stock);
   const [waste, setWaste] = useState<Card[]>([]);
@@ -151,7 +132,7 @@ export default function SolitaireSprint({
   const startRef = useRef(0);
 
   useEffect(() => {
-    const next = dealGuaranteedSolvable(seed);
+    const next = dealVerifiedChallenge(seed);
     setTableau(next.tableau);
     setStock(next.stock);
     setWaste([]);
@@ -189,10 +170,6 @@ export default function SolitaireSprint({
     const next = scoreRef.current + delta;
     scoreRef.current = next;
     setScore(next);
-
-    if (next >= targetScore) {
-      finish(true, next);
-    }
 
     return next;
   }
