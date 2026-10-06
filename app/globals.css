@@ -2896,3 +2896,391 @@ html, body {
     font-size: 21px;
   }
 }
+
+
+/* =========================================================
+   V11 — denser mobile product surface, larger type, crop editor
+   ========================================================= */
+
+.appHeader {
+  min-height: 58px;
+}
+
+.logoButton {
+  font-size: 16px !important;
+}
+
+.balanceChip {
+  min-height: 38px;
+  padding-inline: 13px;
+  font-size: 12px !important;
+}
+
+.homePlayMerged {
+  padding-bottom: 96px;
+}
+
+.mergedPlayerStrip {
+  min-height: 64px;
+}
+
+.mergedPlayerStrip strong {
+  font-size: 14px !important;
+}
+
+.mergedPlayerStrip .rankNumber,
+.mergedPlayerStrip .moneyNumber {
+  font-size: 11px !important;
+}
+
+.homePlayHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px 0;
+}
+
+.homePlayHeading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.homePlayHeading small {
+  color: #8a7857;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+
+.homePlayHeading h1 {
+  margin: 0;
+  color: #294f8c;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.homePlayHeading > button {
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid #cbb98f;
+  border-radius: 11px;
+  background: #fff9eb;
+  color: #415b83;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.quickStakeBar button {
+  font-size: 10px !important;
+  min-height: 42px;
+}
+
+.playGameCardFooter > strong {
+  font-size: 15px !important;
+}
+
+.cardPlayButton {
+  min-height: 44px;
+  font-size: 11px !important;
+}
+
+.mobileGameHeader strong {
+  font-size: 16px !important;
+}
+
+.mobileGameHeader small,
+.compactMatchStrip,
+.compactMatchStrip b,
+.compactMatchStrip em {
+  font-size: 9px !important;
+}
+
+.floatingGameRule {
+  font-size: 10px !important;
+}
+
+.verifiedGameLine,
+.verifiedGameLine b,
+.verifiedGameLine span,
+.compactVerifiedLine span,
+.compactVerifiedLine b {
+  font-size: 9px !important;
+}
+
+.resultPanel,
+.resultPanel p,
+.demoPercentileBlock small,
+.serverVerifiedBadge,
+.serverVerifiedBadge small {
+  font-size: 10px !important;
+}
+
+.demoPercentileBlock span {
+  font-size: 12px !important;
+}
+
+.resultActions button {
+  min-height: 46px;
+  font-size: 11px !important;
+}
+
+.bottomNav.bottomNavTwo {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.bottomNav.bottomNavTwo button {
+  font-size: 10px !important;
+}
+
+.bottomNav.bottomNavTwo button span {
+  font-size: 22px !important;
+}
+
+/* Avatar photo crop */
+.avatarCropOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(6,14,30,.78);
+  backdrop-filter: blur(8px);
+}
+
+.avatarCropCard {
+  width: min(100%, 360px);
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 20px;
+  background: #f8f3e8;
+  box-shadow: 0 24px 70px rgba(0,0,0,.38);
+}
+
+.cropTitle {
+  display: grid;
+  gap: 3px;
+  text-align: center;
+}
+
+.cropTitle strong {
+  color: #294f8c;
+  font-size: 15px;
+}
+
+.cropTitle small {
+  color: #727b8a;
+  font-size: 11px;
+}
+
+.avatarCropViewport {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #dbe5f1;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 6px #315fae;
+  touch-action: none;
+}
+
+.avatarCropViewport canvas {
+  display: block;
+  width: 240px;
+  height: 240px;
+}
+
+.cropCircleGuide {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255,255,255,.84);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.10);
+  pointer-events: none;
+}
+
+.cropZoom {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.cropZoom span {
+  color: #52627a;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.cropZoom input {
+  width: 100%;
+  accent-color: #315fae;
+}
+
+.cropActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.cropActions button {
+  min-height: 44px;
+  border: 1px solid #cbb98f;
+  border-radius: 12px;
+  background: #eee5d1;
+  color: #536078;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.cropActions button.primary {
+  border-color: #2d8b59;
+  background: linear-gradient(180deg,#67dc94,#3faf68);
+  color: #fff;
+}
+
+/* Account + wallet combined */
+.accountWalletCard {
+  display: grid;
+  gap: 11px;
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid #cfc0a0;
+  border-radius: 16px;
+  background: linear-gradient(180deg,#fffaf0,#efe4cf);
+  box-shadow: 0 6px 18px rgba(61,74,96,.08);
+}
+
+.accountWalletCard > div:first-child {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.accountWalletCard small {
+  color: #827354;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.accountWalletCard strong {
+  color: #294f8c;
+  font-size: 25px;
+}
+
+.accountWalletCard .walletActions button {
+  min-height: 44px;
+  font-size: 10px;
+}
+
+.miniMovementList {
+  display: grid;
+  gap: 6px;
+}
+
+.miniMovementList > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(92,78,49,.10);
+  color: #66748a;
+  font-size: 10px;
+}
+
+.miniMovementList b {
+  color: #2b7a50;
+}
+
+.miniMovementList b.negative {
+  color: #b95252;
+}
+
+/* Jet Stream uses every available pixel in the game stage. */
+.jetStreamArena {
+  width: 100% !important;
+  height: 100% !important;
+  align-items: stretch !important;
+}
+
+.jetStreamArena .gameCanvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+}
+
+/* Game canvases should read like full-screen products, not embedded demos. */
+.metroShiftArena,
+.pulseRunnerArena,
+.orbitShiftArena,
+.towerDropArena,
+.helixDiveArena {
+  background: #071024;
+}
+
+/* Larger form controls throughout onboarding/account. */
+.nameInput,
+.promptInput {
+  font-size: 14px !important;
+}
+
+.nameAvailability,
+.avatarError,
+.resetNote,
+.chartAxis,
+.settingsList button,
+.legalCopy,
+.legalTabs button {
+  font-size: 10px !important;
+}
+
+.mainAction,
+.secondaryAction,
+.authButton {
+  font-size: 12px !important;
+  min-height: 46px;
+}
+
+.profileStrip strong {
+  font-size: 15px !important;
+}
+
+.profileStrip span,
+.profileStrip b {
+  font-size: 11px !important;
+}
+
+.chartHead span {
+  font-size: 10px !important;
+}
+
+.chartHead strong {
+  font-size: 14px !important;
+}
+
+@media (max-width: 430px) {
+  .homePlayHeading h1 {
+    font-size: 22px;
+  }
+
+  .playGameCardFooter {
+    grid-template-columns: minmax(0,1fr) 102px;
+  }
+
+  .avatarCropCard {
+    padding: 14px;
+  }
+
+  .avatarCropViewport,
+  .avatarCropViewport canvas {
+    width: 220px;
+    height: 220px;
+  }
+}
