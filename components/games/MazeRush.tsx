@@ -106,6 +106,7 @@ export default function MazeRush({
   const [pellets, setPellets] = useState<Set<string>>(new Set());
   const [score, setScore] = useState(0);
   const scoreRef = useRef(0);
+  const playerRef = useRef<Point>(START);
   const runningRef = useRef(false);
   const startRef = useRef(0);
   const tickRef = useRef(0);
@@ -124,6 +125,7 @@ export default function MazeRush({
 
     setPellets(nextPellets);
     setPlayer(START);
+    playerRef.current = START;
     setDirection("left");
     setQueued("left");
     setEnemies(
@@ -190,6 +192,7 @@ export default function MazeRush({
           return copy;
         });
 
+        playerRef.current = next;
         return next;
       });
 
@@ -206,18 +209,22 @@ export default function MazeRush({
             const chase = tickRef.current % 10 < 7;
 
             if (chase) {
-              setPlayer((playerPoint) => {
-                chosen = [...candidates].sort((a, b) => {
-                  const da = distance(nextPoint(enemy.point, a), playerPoint);
-                  const db = distance(nextPoint(enemy.point, b), playerPoint);
-                  if (da !== db) return da - db;
-                  return (
-                    ["up", "left", "down", "right"].indexOf(a) -
-                    ["up", "left", "down", "right"].indexOf(b)
-                  );
-                })[0] ?? chosen;
-                return playerPoint;
-              });
+              const playerPoint = playerRef.current;
+              chosen = [...candidates].sort((a, b) => {
+                const da = distance(
+                  nextPoint(enemy.point, a),
+                  playerPoint
+                );
+                const db = distance(
+                  nextPoint(enemy.point, b),
+                  playerPoint
+                );
+                if (da !== db) return da - db;
+                return (
+                  ["up", "left", "down", "right"].indexOf(a) -
+                  ["up", "left", "down", "right"].indexOf(b)
+                );
+              })[0] ?? chosen;
             } else if (candidates.length > 1) {
               chosen = candidates[(rng.nextInt(candidates.length) + index) % candidates.length];
             }
