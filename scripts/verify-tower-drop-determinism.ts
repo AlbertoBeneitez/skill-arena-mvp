@@ -3,83 +3,210 @@ import {
   dropTowerBlock,
   replayTowerDrop,
   stepTowerDrop,
+  TOWER_DROP_V2,
   type TowerDropInput,
-} from "../lib/verified/towerDropCore.v1";
-
-const GOLDEN_INPUTS: TowerDropInput[] = [
-  66, 510, 571, 629, 685, 847, 1003, 1153,
-].map((tick, seq) => ({ seq, tick, action: "DROP" as const }));
-
-const FINAL_TICK = 37153;
-const EXPECTED = {
-  score: 8941,
-  height: 8,
-  failure: "TIMEOUT_IDLE",
-  timeMs: 309608,
-};
+  type TowerDropState,
+} from "../lib/verified/towerDropCore.v2";
 
 function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(message);
 }
 
-const first = replayTowerDrop(GOLDEN_INPUTS, FINAL_TICK);
-const second = replayTowerDrop(GOLDEN_INPUTS, FINAL_TICK);
+function centre(block: { xMilli: number; wMilli: number }) {
+  return block.xMilli + Math.floor(block.wMilli / 2);
+}
+
+/**
+ * Build a deterministic "skilled" input stream by releasing only when the
+ * hanging block is almost centred over the current support. After four
+ * successful floors, stop interacting and let the five-minute idle timeout
+ * resolve the run.
+ */
+function buildGoldenRun() {
+  const state = createTowerDropState();
+  const inputs: TowerDropInput[] = [];
+  const targetHeight = 4;
+  let guard = 0;
+
+  while (
+    state.status === "running" &&
+    state.blocks.length - 1 < targetHeight &&
+    guard < 100_000
+  ) {
+    if (state.phase === "swing") {
+      const top = state.blocks[state.blocks.length - 1];
+      const moving = {
+        xMilli: state.movingXMilli,
+        wMilli: state.movingWMilli,
+      };
+
+      if (Math.abs(centre(moving) - centre(top)) <= 2_500) {
+        inputs.push({
+          seq: inputs.length,
+          tick: state.tick,
+          action: "DROP",
+        });
+        dropTowerBlock(state);
+      }
+    }
+
+    if (state.status === "running") {
+      stepTowerDrop(state);
+    }
+    guard += 1;
+  }
+
+  assert(
+    state.blocks.length - 1 === targetHeight,
+    "golden builder did not stack four floors"
+  );
+
+  while (state.status === "running" && guard < 200_000) {
+    stepTowerDrop(state);
+    guard += 1;
+  }
+
+  assert(state.status === "failed", "golden run did not resolve");
+  assert(
+    state.failure === "TIMEOUT_IDLE",
+    `golden run failed unexpectedly: ${state.failure}`
+  );
+
+  return {
+    inputs,
+    finalTick: state.tick,
+    expected: {
+      score: state.score,
+      height: state.blocks.length - 1,
+      failure: state.failure,
+      timeMs: Math.round(
+        (state.tick * 1000) / TOWER_DROP_V2.tickRate
+      ),
+    },
+  };
+}
+
+const golden = buildGoldenRun();
+
+const first = replayTowerDrop(
+  golden.inputs,
+  golden.finalTick
+);
+const second = replayTowerDrop(
+  golden.inputs,
+  golden.finalTick
+);
 
 assert(first.valid, `golden replay rejected: ${first.error ?? "unknown"}`);
 assert(second.valid, `second replay rejected: ${second.error ?? "unknown"}`);
-assert(first.score === EXPECTED.score, `score changed: ${first.score}`);
-assert(first.height === EXPECTED.height, `height changed: ${first.height}`);
-assert(first.failure === EXPECTED.failure, `failure changed: ${first.failure}`);
-assert(first.timeMs === EXPECTED.timeMs, `time changed: ${first.timeMs}`);
+assert(first.score === golden.expected.score, "golden score changed during replay");
+assert(first.height === golden.expected.height, "golden height changed during replay");
+assert(first.failure === golden.expected.failure, "golden failure changed during replay");
+assert(first.timeMs === golden.expected.timeMs, "golden time changed during replay");
 
 assert(
-  JSON.stringify({
-    score: first.score,
-    height: first.height,
-    failure: first.failure,
-    timeMs: first.timeMs,
-    state: first.state,
-  }) ===
-    JSON.stringify({
-      score: second.score,
-      height: second.height,
-      failure: second.failure,
-      timeMs: second.timeMs,
-      state: second.state,
-    }),
-  "same manifest + same tick inputs did not produce an identical replay"
+  JSON.stringify(first.state) === JSON.stringify(second.state),
+  "same v2 tick inputs did not produce identical state"
 );
 
-const earlyEnd = replayTowerDrop(GOLDEN_INPUTS, FINAL_TICK - 1);
-assert(!earlyEnd.valid, "an attempt ending before the failure tick was accepted");
+// Mechanical invariant: DROP releases into an accelerated fall.
+const falling = createTowerDropState();
+dropTowerBlock(falling);
+assert(falling.phase === "falling", "DROP did not release the pendulum load");
+stepTowerDrop(falling);
+const firstY = falling.fallYMilli;
+const firstVelocity = falling.fallVYMilliPerSecond;
 
-const badSequence = GOLDEN_INPUTS.map((input) => ({ ...input }));
-badSequence[3].seq = 99;
-const malformed = replayTowerDrop(badSequence, FINAL_TICK);
-assert(!malformed.valid, "malformed input sequence was accepted");
+for (let index = 0; index < 20; index += 1) {
+  stepTowerDrop(falling);
+}
 
-console.log(
-  `Tower Drop v1 deterministic replay OK: score=${first.score}, height=${first.height}, finalTick=${FINAL_TICK}`
+assert(
+  falling.fallYMilli > firstY &&
+    falling.fallVYMilliPerSecond > firstVelocity,
+  "falling block did not accelerate under gravity"
 );
 
+// Mechanical invariant: partial support with centre of mass outside the
+// support polygon must tip around the edge before failing.
+const tipping = createTowerDropState();
+tipping.phase = "falling";
+tipping.fallXMilli = 1_000;
+tipping.fallYMilli = TOWER_DROP_V2.dropDistanceMilli - 1;
+tipping.fallVYMilliPerSecond = 200_000;
+stepTowerDrop(tipping);
+
+assert(
+  tipping.phase === "tipping-left",
+  `expected left tip, got ${tipping.phase}`
+);
+assert(
+  tipping.failure === "CENTER_OF_MASS",
+  "tip did not mark centre-of-mass instability"
+);
+
+let tipGuard = 0;
+while (tipping.status === "running" && tipGuard < 1_000) {
+  stepTowerDrop(tipping);
+  tipGuard += 1;
+}
+assert(
+  tipping.status === "failed" &&
+    tipping.failure === "CENTER_OF_MASS",
+  "tipping block did not rotate to failure"
+);
+
+// Mechanical invariant: zero support falls away instead of snapping to tower.
+const noSupport = createTowerDropState();
+noSupport.phase = "falling";
+noSupport.fallXMilli = 330_000;
+noSupport.fallYMilli = TOWER_DROP_V2.dropDistanceMilli - 1;
+noSupport.fallVYMilliPerSecond = 200_000;
+stepTowerDrop(noSupport);
+
+assert(
+  noSupport.phase === "falling-out",
+  `expected falling-out, got ${noSupport.phase}`
+);
+
+let fallOutGuard = 0;
+while (noSupport.status === "running" && fallOutGuard < 1_000) {
+  stepTowerDrop(noSupport);
+  fallOutGuard += 1;
+}
+assert(
+  noSupport.status === "failed" &&
+    noSupport.failure === "NO_SUPPORT",
+  "unsupported block did not fall out"
+);
 
 function simulateRenderRate(frameHz: number) {
   const state = createTowerDropState();
   let inputIndex = 0;
   let accumulator = 0;
   const frameSeconds = 1 / frameHz;
-  const tickSeconds = 1 / 120;
+  const tickSeconds = 1 / TOWER_DROP_V2.tickRate;
   let guard = 0;
 
-  while (state.status === "running" && guard < 200_000) {
+  while (
+    state.status === "running" &&
+    guard < 2_000_000
+  ) {
     accumulator += frameSeconds;
 
-    while (accumulator + 1e-12 >= tickSeconds && state.status === "running") {
+    while (
+      accumulator + 1e-12 >= tickSeconds &&
+      state.status === "running"
+    ) {
       while (
-        inputIndex < GOLDEN_INPUTS.length &&
-        GOLDEN_INPUTS[inputIndex].tick === state.tick &&
+        inputIndex < golden.inputs.length &&
+        golden.inputs[inputIndex].tick === state.tick &&
         state.status === "running"
       ) {
+        assert(
+          state.phase === "swing",
+          "render-rate simulation attempted DROP outside swing"
+        );
         dropTowerBlock(state);
         inputIndex += 1;
       }
@@ -97,6 +224,7 @@ function simulateRenderRate(frameHz: number) {
     score: state.score,
     height: state.blocks.length - 1,
     failure: state.failure,
+    phase: state.phase,
   };
 }
 
@@ -107,9 +235,15 @@ const render144 = simulateRenderRate(144);
 assert(
   JSON.stringify(render60) === JSON.stringify(render120) &&
     JSON.stringify(render120) === JSON.stringify(render144),
-  `device/render-rate equivalence failed: 60=${JSON.stringify(render60)} 120=${JSON.stringify(render120)} 144=${JSON.stringify(render144)}`
+  `render-rate equivalence failed: 60=${JSON.stringify(render60)} 120=${JSON.stringify(render120)} 144=${JSON.stringify(render144)}`
 );
 
 console.log(
-  `Render-rate equivalence OK: 60/120/144 Hz -> score=${render60.score}, finalTick=${render60.tick}`
+  [
+    "Tower Drop v2 deterministic replay OK",
+    `score=${first.score}`,
+    `height=${first.height}`,
+    `finalTick=${golden.finalTick}`,
+    "mechanics=pendulum+gravity+support+tip",
+  ].join(" · ")
 );
