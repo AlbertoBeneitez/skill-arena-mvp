@@ -5,43 +5,94 @@ import type { GameResult } from "@/lib/types";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
 type Props = { active: boolean; onFinish: (result: GameResult) => void };
-type Kind = "crate" | "pillar" | "spike";
-type Obstacle = {
-  x: number;
-  w: number;
-  h: number;
-  kind: Kind;
-  passed: boolean;
-};
-type Ring = {
-  x: number;
-  y: number;
-  collected: boolean;
-};
+type Kind = "spike" | "block" | "pillar";
+type Piece = { offset: number; kind: Kind; w: number; h: number };
+type Pattern = { span: number; pieces: Piece[] };
+type Obstacle = Piece & { x: number; passed: boolean };
 
 const W = 390;
 const H = 620;
 const DT = 1 / 120;
-const FLOOR = 524;
-const PLAYER_X = 86;
-const PW = 28;
-const PH = 36;
+const FLOOR = 522;
+const PLAYER_X = 82;
+const SIZE = 32;
+const QUARTER_TURN = Math.PI / 2;
 
-const GAP_PATTERN = [245,220,268,205,236,198,252,212,230,194,244,206,226,188];
-const HEIGHT_PATTERN = [34,50,40,62,44,68,38,56,46,64,42,70,52,58];
-const KIND_PATTERN: Kind[] = [
-  "crate","spike","crate","pillar","spike","crate","pillar",
-  "crate","spike","pillar","crate","spike","crate","pillar",
+const PATTERNS: Pattern[] = [
+  { span: 330, pieces: [{ offset: 0, kind: "spike", w: 30, h: 30 }] },
+  { span: 350, pieces: [{ offset: 0, kind: "block", w: 42, h: 42 }] },
+  {
+    span: 370,
+    pieces: [
+      { offset: 0, kind: "spike", w: 28, h: 30 },
+      { offset: 54, kind: "spike", w: 28, h: 30 },
+    ],
+  },
+  {
+    span: 390,
+    pieces: [
+      { offset: 0, kind: "block", w: 44, h: 50 },
+      { offset: 118, kind: "spike", w: 30, h: 30 },
+    ],
+  },
+  {
+    span: 405,
+    pieces: [
+      { offset: 0, kind: "spike", w: 28, h: 30 },
+      { offset: 88, kind: "block", w: 40, h: 38 },
+      { offset: 174, kind: "spike", w: 28, h: 30 },
+    ],
+  },
+  {
+    span: 420,
+    pieces: [
+      { offset: 0, kind: "pillar", w: 40, h: 64 },
+      { offset: 144, kind: "spike", w: 30, h: 30 },
+    ],
+  },
+  {
+    span: 430,
+    pieces: [
+      { offset: 0, kind: "spike", w: 28, h: 30 },
+      { offset: 48, kind: "spike", w: 28, h: 30 },
+      { offset: 162, kind: "block", w: 42, h: 46 },
+    ],
+  },
+  {
+    span: 445,
+    pieces: [
+      { offset: 0, kind: "block", w: 42, h: 54 },
+      { offset: 122, kind: "spike", w: 28, h: 30 },
+      { offset: 174, kind: "spike", w: 28, h: 30 },
+    ],
+  },
 ];
 
-function speedFor(passed: number) {
-  return Math.min(348, 168 + passed * 3.7);
+function speedFor(ticks: number) {
+  const seconds = ticks / 120;
+  return Math.min(278, 144 + Math.max(0, seconds - 7) * 1.55);
 }
 
-function obstacleWidth(kind: Kind, index: number) {
-  if (kind === "spike") return 28;
-  if (kind === "pillar") return 34 + (index % 2) * 5;
-  return 38 + (index % 3) * 4;
+function intersectsPlayer(
+  playerY: number,
+  obstacle: Obstacle,
+  scroll: number
+) {
+  const x = obstacle.x - scroll;
+  const px1 = PLAYER_X + 4;
+  const px2 = PLAYER_X + SIZE - 4;
+  const py1 = playerY + 4;
+  const py2 = playerY + SIZE - 3;
+
+  if (obstacle.kind === "spike") {
+    const ox1 = x + obstacle.w * 0.18;
+    const ox2 = x + obstacle.w * 0.82;
+    const oy1 = FLOOR - obstacle.h * 0.68;
+    return px2 > ox1 && px1 < ox2 && py2 > oy1 && py1 < FLOOR;
+  }
+
+  const oy1 = FLOOR - obstacle.h;
+  return px2 > x && px1 < x + obstacle.w && py2 > oy1 && py1 < FLOOR;
 }
 
 export default function PulseRunner({ active, onFinish }: Props) {
@@ -51,13 +102,13 @@ export default function PulseRunner({ active, onFinish }: Props) {
   const jumpHeld = useRef(false);
 
   const state = useRef({
-    y: FLOOR - PH,
+    y: FLOOR - SIZE,
     vy: 0,
+    angle: 0,
     scroll: 0,
     obstacles: [] as Obstacle[],
-    rings: [] as Ring[],
-    nextX: 600,
-    nextIndex: 0,
+    nextPatternX: 780,
+    nextPatternIndex: 0,
     running: false,
     ticks: 0,
     last: 0,
@@ -65,15 +116,32 @@ export default function PulseRunner({ active, onFinish }: Props) {
     passed: 0,
     score: 0,
     grounded: true,
-    coyote: 0,
+    coyote: 8,
     jumpBuffer: 0,
-    combo: 0,
-    pulse: 0,
+    holdTicks: 0,
+    flash: 0,
   });
 
   useEffect(() => {
     finishRef.current = onFinish;
   }, [onFinish]);
+
+  const spawnPattern = useCallback(() => {
+    const s = state.current;
+    const pattern = PATTERNS[s.nextPatternIndex % PATTERNS.length];
+    const baseX = s.nextPatternX;
+
+    for (const piece of pattern.pieces) {
+      s.obstacles.push({
+        ...piece,
+        x: baseX + piece.offset,
+        passed: false,
+      });
+    }
+
+    s.nextPatternX += pattern.span;
+    s.nextPatternIndex += 1;
+  }, []);
 
   const finish = useCallback(() => {
     const s = state.current;
@@ -91,246 +159,187 @@ export default function PulseRunner({ active, onFinish }: Props) {
     });
   }, []);
 
-  const addPattern = useCallback(() => {
-    const s = state.current;
-    const index = s.nextIndex++;
-    const compression = Math.max(
-      0.72,
-      1 - Math.floor(s.passed / 18) * 0.035
-    );
-    const kind = KIND_PATTERN[index % KIND_PATTERN.length];
-    const height =
-      kind === "spike"
-        ? 30
-        : HEIGHT_PATTERN[index % HEIGHT_PATTERN.length];
-
-    s.nextX += GAP_PATTERN[index % GAP_PATTERN.length] * compression;
-
-    s.obstacles.push({
-      x: s.nextX,
-      w: obstacleWidth(kind, index),
-      h: height,
-      kind,
-      passed: false,
-    });
-
-    // Deterministic mid-air reward line. It creates a reason to control jump length.
-    if (index % 2 === 0) {
-      const ringY =
-        FLOOR - Math.min(150, 78 + (index % 4) * 20);
-      s.rings.push({
-        x: s.nextX - 72,
-        y: ringY,
-        collected: false,
-      });
-    }
-
-    // Occasional double obstacle creates rhythm changes without randomness.
-    if (index % 7 === 5) {
-      s.obstacles.push({
-        x: s.nextX + 82,
-        w: 28,
-        h: 30,
-        kind: "spike",
-        passed: false,
-      });
-    }
-
-    if (s.obstacles.length > 26) s.obstacles.shift();
-    if (s.rings.length > 18) s.rings.shift();
-  }, []);
-
   const step = useCallback(() => {
     const s = state.current;
     s.ticks += 1;
-    s.pulse = Math.max(0, s.pulse - 1);
+    s.flash = Math.max(0, s.flash - 1);
 
-    const speed = speedFor(s.passed);
+    const speed = speedFor(s.ticks);
     s.scroll += speed * DT;
 
+    while (s.nextPatternX - s.scroll < 1450) {
+      spawnPattern();
+    }
+
     s.jumpBuffer = Math.max(0, s.jumpBuffer - 1);
-    if (s.grounded) s.coyote = 8;
+    if (s.grounded) s.coyote = 9;
     else s.coyote = Math.max(0, s.coyote - 1);
 
     if (s.jumpBuffer > 0 && s.coyote > 0) {
-      s.vy = -510;
+      s.vy = -485;
       s.grounded = false;
       s.coyote = 0;
       s.jumpBuffer = 0;
+      s.holdTicks = 0;
       gameTone("tap");
       haptic(4);
     }
 
-    if (!jumpHeld.current && s.vy < -175) {
-      s.vy += 1450 * DT * 1.55;
+    if (!s.grounded) {
+      if (jumpHeld.current && s.vy < 0 && s.holdTicks < 16) {
+        s.vy -= 330 * DT;
+        s.holdTicks += 1;
+      } else if (!jumpHeld.current && s.vy < -175) {
+        s.vy += 1150 * DT;
+      }
+
+      s.vy += 1375 * DT;
+      s.y += s.vy * DT;
+      s.angle += (speed * DT / 74) * QUARTER_TURN;
     }
 
-    s.vy += 1450 * DT;
-    s.y += s.vy * DT;
-
-    if (s.y + PH >= FLOOR) {
-      s.y = FLOOR - PH;
+    if (s.y + SIZE >= FLOOR) {
+      const wasAirborne = !s.grounded;
+      s.y = FLOOR - SIZE;
       s.vy = 0;
       s.grounded = true;
+      s.angle = Math.round(s.angle / QUARTER_TURN) * QUARTER_TURN;
+      if (wasAirborne) haptic(2);
     }
-
-    const px1 = PLAYER_X;
-    const px2 = PLAYER_X + PW;
-    const py1 = s.y;
-    const py2 = s.y + PH;
 
     for (const obstacle of s.obstacles) {
       const x = obstacle.x - s.scroll;
-      if (x > W + 80 || x + obstacle.w < -60) continue;
+      if (x > W + 90 || x + obstacle.w < -70) continue;
 
-      const oy1 = FLOOR - obstacle.h;
-
-      if (
-        px2 > x &&
-        px1 < x + obstacle.w &&
-        py2 > oy1 &&
-        py1 < FLOOR
-      ) {
+      if (intersectsPlayer(s.y, obstacle, s.scroll)) {
         finish();
         return;
       }
 
-      if (!obstacle.passed && x + obstacle.w < PLAYER_X) {
+      if (!obstacle.passed && x + obstacle.w < PLAYER_X + 2) {
         obstacle.passed = true;
         s.passed += 1;
-        s.combo += 1;
-        s.pulse = 18;
-        s.score += 300 + Math.min(540, s.combo * 24);
+        s.score += 430 + Math.min(520, s.passed * 18);
+        s.flash = 16;
 
-        gameTone(s.combo % 5 === 0 ? "good" : "tap");
-        if (s.combo % 5 === 0) haptic(8);
-        addPattern();
+        if (s.passed % 4 === 0) {
+          gameTone("good");
+          haptic(7);
+        }
       }
     }
 
-    for (const ring of s.rings) {
-      if (ring.collected) continue;
-
-      const x = ring.x - s.scroll;
-      const dx = PLAYER_X + PW / 2 - x;
-      const dy = s.y + PH / 2 - ring.y;
-
-      if (dx * dx + dy * dy < 28 * 28) {
-        ring.collected = true;
-        s.combo += 1;
-        s.score += 180 + s.combo * 8;
-        s.pulse = 24;
-        gameTone("good");
-        haptic(6);
-      }
+    if (s.obstacles.length > 70) {
+      s.obstacles = s.obstacles.filter(
+        (obstacle) => obstacle.x - s.scroll > -120
+      );
     }
-  }, [addPattern, finish]);
+  }, [finish, spawnPattern]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
     const s = state.current;
+    const speed = speedFor(s.ticks);
+    const sector = Math.min(5, 1 + Math.floor(s.passed / 8));
 
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, "#0f2854");
-    bg.addColorStop(0.52, "#244f86");
-    bg.addColorStop(0.53, "#18243f");
-    bg.addColorStop(1, "#080f22");
+    bg.addColorStop(0, "#111b45");
+    bg.addColorStop(0.58, "#1a315d");
+    bg.addColorStop(0.581, "#111a35");
+    bg.addColorStop(1, "#070d1f");
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Multi-layer parallax gives speed without changing physics.
-    ctx.fillStyle = "rgba(111,192,255,.08)";
-    for (let x = -((s.scroll * 0.14) % 72); x < W + 72; x += 72) {
-      ctx.fillRect(x, 92, 3, FLOOR - 92);
-    }
-
-    ctx.fillStyle = "rgba(111,192,255,.12)";
-    for (let x = -((s.scroll * 0.32) % 48); x < W + 48; x += 48) {
-      ctx.fillRect(x, 178, 2, FLOOR - 178);
-    }
-
-    // Speed streaks.
-    ctx.strokeStyle = "rgba(132,222,255,.18)";
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 8; i += 1) {
-      const y = 120 + i * 45;
-      const offset = (s.scroll * (0.5 + i * 0.02)) % 180;
+    const farOffset = (s.scroll * 0.18) % 56;
+    ctx.strokeStyle = "rgba(87,205,238,.10)";
+    ctx.lineWidth = 1;
+    for (let x = -farOffset; x < W + 56; x += 56) {
       ctx.beginPath();
-      ctx.moveTo(W - offset, y);
-      ctx.lineTo(W - offset + 42, y);
+      ctx.moveTo(x, 92);
+      ctx.lineTo(x, FLOOR);
       ctx.stroke();
     }
 
-    ctx.fillStyle = "#263958";
+    const nearOffset = (s.scroll * 0.5) % 72;
+    ctx.strokeStyle = "rgba(103,226,247,.14)";
+    for (let x = -nearOffset; x < W + 72; x += 72) {
+      ctx.beginPath();
+      ctx.moveTo(x, FLOOR - 112);
+      ctx.lineTo(x + 34, FLOOR - 112);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#1d2b4b";
     ctx.fillRect(0, FLOOR, W, H - FLOOR);
-    ctx.fillStyle = "#58d0e8";
+    ctx.fillStyle = "#63d9ed";
     ctx.fillRect(0, FLOOR, W, 5);
-
-    for (const ring of s.rings) {
-      if (ring.collected) continue;
-      const x = ring.x - s.scroll;
-      if (x < -40 || x > W + 40) continue;
-
-      ctx.strokeStyle = "#ffd95a";
-      ctx.lineWidth = 5;
-      ctx.shadowBlur = 12;
-      ctx.shadowColor = "#ffd95a";
-      ctx.beginPath();
-      ctx.arc(x, ring.y, 13, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,218,88,.6)";
+    for (let x = -((s.scroll * 0.85) % 44); x < W + 44; x += 44) {
+      ctx.fillRect(x, FLOOR + 22, 22, 3);
     }
 
     for (const obstacle of s.obstacles) {
       const x = obstacle.x - s.scroll;
-      if (x < -70 || x > W + 70) continue;
+      if (x < -80 || x > W + 80) continue;
 
       if (obstacle.kind === "spike") {
-        ctx.fillStyle = "#ff6b68";
+        const gradient = ctx.createLinearGradient(
+          x,
+          FLOOR - obstacle.h,
+          x,
+          FLOOR
+        );
+        gradient.addColorStop(0, "#ffda5f");
+        gradient.addColorStop(1, "#ef5d73");
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 9;
+        ctx.shadowColor = "rgba(239,93,115,.55)";
         ctx.beginPath();
         ctx.moveTo(x, FLOOR);
         ctx.lineTo(x + obstacle.w / 2, FLOOR - obstacle.h);
         ctx.lineTo(x + obstacle.w, FLOOR);
         ctx.closePath();
         ctx.fill();
-        ctx.fillStyle = "#ffd05e";
-        ctx.fillRect(x + 4, FLOOR - 6, obstacle.w - 8, 4);
+        ctx.shadowBlur = 0;
       } else {
         ctx.fillStyle =
-          obstacle.kind === "pillar" ? "#b45fe0" : "#ef586a";
+          obstacle.kind === "pillar" ? "#8a5bd1" : "#3c78d3";
+        ctx.shadowBlur = 9;
+        ctx.shadowColor = "rgba(91,142,225,.45)";
         ctx.fillRect(
           x,
           FLOOR - obstacle.h,
           obstacle.w,
           obstacle.h
         );
-        ctx.fillStyle = "rgba(255,255,255,.28)";
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(255,255,255,.22)";
         ctx.fillRect(
           x + 4,
-          FLOOR - obstacle.h + 4,
+          FLOOR - obstacle.h + 5,
           obstacle.w - 8,
           5
         );
-        ctx.fillStyle = "#ffcc59";
+        ctx.fillStyle = "#f3c955";
         ctx.fillRect(
           x + 4,
-          FLOOR - 10,
+          FLOOR - 9,
           obstacle.w - 8,
-          5
+          4
         );
       }
     }
 
-    // Shadow and subtle squash/stretch cues.
     ctx.save();
-    ctx.globalAlpha = s.grounded ? 0.36 : 0.2;
-    ctx.fillStyle = "#02060d";
+    ctx.globalAlpha = s.grounded ? 0.38 : 0.18;
+    ctx.fillStyle = "#02050c";
     ctx.beginPath();
     ctx.ellipse(
-      PLAYER_X + PW / 2,
+      PLAYER_X + SIZE / 2,
       FLOOR + 8,
       s.grounded ? 21 : 14,
       6,
@@ -342,89 +351,71 @@ export default function PulseRunner({ active, onFinish }: Props) {
     ctx.restore();
 
     ctx.save();
-    ctx.translate(PLAYER_X + PW / 2, s.y + PH / 2);
-    ctx.rotate(Math.max(-0.26, Math.min(0.26, s.vy / 760)));
-    const stretch = s.grounded ? 1 : 1.04;
-    ctx.scale(1 / stretch, stretch);
-    ctx.shadowBlur = 18 + s.pulse * 0.25;
-    ctx.shadowColor = s.pulse > 0 ? "#ffd95a" : "#6de6ff";
-    ctx.fillStyle = s.pulse > 0 ? "#82efff" : "#6de6ff";
-    ctx.fillRect(-PW / 2, -PH / 2, PW, PH);
+    ctx.translate(PLAYER_X + SIZE / 2, s.y + SIZE / 2);
+    ctx.rotate(s.angle);
+    ctx.shadowBlur = 18 + s.flash * 0.45;
+    ctx.shadowColor = s.flash > 0 ? "#ffdc68" : "#63e6f5";
+    ctx.fillStyle = "#61dceb";
+    ctx.fillRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(6, -8, 5, 5);
+    ctx.fillStyle = "#183d72";
+    ctx.fillRect(-SIZE / 2 + 5, -SIZE / 2 + 5, SIZE - 10, SIZE - 10);
+    ctx.fillStyle = "#fff4bc";
+    ctx.fillRect(5, -7, 5, 5);
     ctx.restore();
 
-    ctx.fillStyle = "rgba(7,14,34,.86)";
+    ctx.fillStyle = "rgba(7,14,34,.88)";
     ctx.fillRect(14, 14, W - 28, 52);
-    ctx.font = "900 14px system-ui";
+    ctx.font = "900 13px system-ui";
     ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
     ctx.fillText(`SUPERADOS ${s.passed}`, 26, 44);
     ctx.fillStyle = "#ffd95a";
+    ctx.textAlign = "center";
+    ctx.fillText(`FASE ${sector}`, W / 2, 44);
+    ctx.fillStyle = "#75e4f2";
     ctx.textAlign = "right";
-    ctx.fillText(`RACHA ×${Math.max(1, s.combo)}`, W - 26, 44);
-    ctx.textAlign = "start";
+    ctx.fillText(`${Math.round(speed)}`, W - 26, 44);
 
-    if (s.passed < 3) {
-      ctx.fillStyle = "rgba(255,255,255,.58)";
+    if (s.ticks < 520) {
+      ctx.fillStyle = "rgba(255,255,255,.64)";
       ctx.font = "900 13px system-ui";
       ctx.textAlign = "center";
-      ctx.fillText("TOCA · MANTÉN PARA SALTAR MÁS", W / 2, H - 28);
-      ctx.textAlign = "start";
+      ctx.fillText("TOCA PARA SALTAR · MANTÉN UN INSTANTE", W / 2, H - 28);
     }
+
+    ctx.textAlign = "start";
   }, []);
 
-  const loop = useCallback((now: number) => {
-    const s = state.current;
-    if (!s.running) return;
+  const loop = useCallback(
+    (now: number) => {
+      const s = state.current;
+      if (!s.running) return;
 
-    if (!s.last) s.last = now;
-    s.acc += Math.min(0.05, (now - s.last) / 1000);
-    s.last = now;
+      if (!s.last) s.last = now;
+      s.acc += Math.min(0.05, (now - s.last) / 1000);
+      s.last = now;
 
-    while (s.acc >= DT && s.running) {
-      step();
-      s.acc -= DT;
-    }
-
-    draw();
-    if (s.running) rafRef.current = requestAnimationFrame(loop);
-  }, [draw, step]);
-
-  const start = useCallback(() => {
-    const obstacles: Obstacle[] = [];
-    const rings: Ring[] = [];
-    let x = 620;
-
-    for (let i = 0; i < 10; i += 1) {
-      const kind = KIND_PATTERN[i % KIND_PATTERN.length];
-      obstacles.push({
-        x,
-        w: obstacleWidth(kind, i),
-        h: kind === "spike" ? 30 : HEIGHT_PATTERN[i % HEIGHT_PATTERN.length],
-        kind,
-        passed: false,
-      });
-
-      if (i % 2 === 0) {
-        rings.push({
-          x: x - 72,
-          y: FLOOR - Math.min(150, 78 + (i % 4) * 20),
-          collected: false,
-        });
+      while (s.acc >= DT && s.running) {
+        step();
+        s.acc -= DT;
       }
 
-      x += GAP_PATTERN[i % GAP_PATTERN.length];
-    }
+      draw();
+      if (s.running) rafRef.current = requestAnimationFrame(loop);
+    },
+    [draw, step]
+  );
 
+  const start = useCallback(() => {
     state.current = {
-      y: FLOOR - PH,
+      y: FLOOR - SIZE,
       vy: 0,
+      angle: 0,
       scroll: 0,
-      obstacles,
-      rings,
-      nextX: obstacles[obstacles.length - 1].x,
-      nextIndex: 10,
+      obstacles: [],
+      nextPatternX: 780,
+      nextPatternIndex: 0,
       running: true,
       ticks: 0,
       last: 0,
@@ -434,27 +425,31 @@ export default function PulseRunner({ active, onFinish }: Props) {
       grounded: true,
       coyote: 8,
       jumpBuffer: 0,
-      combo: 0,
-      pulse: 0,
+      holdTicks: 0,
+      flash: 0,
     };
+
+    for (let i = 0; i < 6; i += 1) spawnPattern();
 
     jumpHeld.current = false;
     draw();
     rafRef.current = requestAnimationFrame(loop);
-  }, [draw, loop]);
+  }, [draw, loop, spawnPattern]);
 
   useEffect(() => {
     if (active) start();
 
     return () => {
       state.current.running = false;
+      jumpHeld.current = false;
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, [active, start]);
 
   const down = () => {
+    if (!state.current.running) return;
     jumpHeld.current = true;
-    state.current.jumpBuffer = 8;
+    state.current.jumpBuffer = 10;
   };
 
   const up = () => {
@@ -479,6 +474,7 @@ export default function PulseRunner({ active, onFinish }: Props) {
           }
         }}
         onPointerCancel={up}
+        onPointerLeave={up}
         aria-label="Pulse Runner"
       />
     </div>
