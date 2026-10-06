@@ -54,6 +54,21 @@ export default function GroupHub({
   if (!group) {
     return (
       <section className="groupScreen">
+        <div className="groupSubtabs" role="tablist" aria-label="Secciones del grupo">
+          <button type="button" role="tab" aria-selected="true" className="active">
+            MI GRUPO
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            disabled
+            title="Crea primero el grupo cerrado"
+          >
+            CREAR PARTIDA
+          </button>
+        </div>
+
         <div className="groupHero">
           <span>GRUPO CERRADO</span>
           <h1>Compite con tu gente</h1>
