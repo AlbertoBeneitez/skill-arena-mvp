@@ -821,7 +821,18 @@ export default function DemoApp() {
       {screen !== "game" && (
         <header className="appHeader">
           <button className="logoButton" onClick={() => navigate("home")}>SKILL ARENA</button>
-          <button className="balanceChip" onClick={() => navigate("profile")}>{euro(balance)}</button>
+          <div className="appHeaderActions">
+            <button
+              className={`soundToggle ${musicOn ? "on" : "off"}`}
+              type="button"
+              aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
+              aria-pressed={musicOn}
+              onClick={() => setMusicOn((value) => !value)}
+            >
+              {musicOn ? "🔊" : "🔇"}
+            </button>
+            <button className="balanceChip" onClick={() => navigate("profile")}>{euro(balance)}</button>
+          </div>
         </header>
       )}
 
@@ -903,6 +914,18 @@ export default function DemoApp() {
           </section>
         )}
 
+        {screen === "group" && (
+          <GroupHub
+            group={group}
+            balance={balance}
+            playerName={playerName}
+            avatarSrc={avatarSrc}
+            onCreateGroup={createClosedGroup}
+            onSetStake={setClosedGroupStake}
+            onPlayGroup={startGroupMatch}
+          />
+        )}
+
         {screen === "game" && (
           <section className="gameScreen">
             <div className="mobileGameHeader">
@@ -917,9 +940,24 @@ export default function DemoApp() {
               </button>
               <div>
                 <strong>{selectedGame.name}</strong>
-                <small>{selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€ · 1 VS 1`}</small>
+                <small>
+                  {matchScope === "group"
+                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€`} · 1 VS ${Math.max(1, (group?.members.length ?? 2) - 1)}`
+                    : selectedStake === 0
+                      ? "ENTRENAMIENTO"
+                      : `${selectedStake}€ · 1 VS 1`}
+                </small>
               </div>
-              {selectedMode === "existing" ? (
+              <button
+                className={`gameSoundToggle ${musicOn ? "on" : "off"}`}
+                type="button"
+                aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
+                aria-pressed={musicOn}
+                onClick={() => setMusicOn((value) => !value)}
+              >
+                {musicOn ? "🔊" : "🔇"}
+              </button>
+              {selectedMode === "existing" && matchScope === "duel" ? (
                 <button
                   className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
                   onClick={() => setGhostEnabled((value) => !value)}
@@ -938,11 +976,22 @@ export default function DemoApp() {
                 <strong>{playerName || "TÚ"}</strong>
               </span>
               <b>VS</b>
-              <span className="matchPlayer matchPlayerRival">
-                <strong>{selectedGame.rivalName}</strong>
-                <img src={selectedGame.rivalAvatar} alt="" />
-              </span>
-              {selectedMode === "existing" && ghostEnabled && <em>👻 fantasma activo</em>}
+              {matchScope === "group" && group ? (
+                <span className="matchPlayer matchPlayerRival groupRivals">
+                  <strong>{group.name}</strong>
+                  <span className="groupAvatarStack">
+                    {group.members.filter((member) => !member.isYou).slice(0, 3).map((member) => (
+                      <img key={member.id} src={member.avatar} alt="" />
+                    ))}
+                  </span>
+                </span>
+              ) : (
+                <span className="matchPlayer matchPlayerRival">
+                  <strong>{selectedGame.rivalName}</strong>
+                  <img src={selectedGame.rivalAvatar} alt="" />
+                </span>
+              )}
+              {selectedMode === "existing" && ghostEnabled && matchScope === "duel" && <em>👻 fantasma activo</em>}
             </div>
 
             <div className="gameArenaWrap">
@@ -952,8 +1001,19 @@ export default function DemoApp() {
                 stake={selectedStake}
                 ghostEnabled={selectedMode === "existing" && ghostEnabled}
                 instanceKey={gameKey}
+                targetScore={matchTargetScore}
                 onFinish={finishMatch}
               />
+              {showWinAnimation && (
+                <div className="winCelebration" aria-live="assertive">
+                  <div className="winBurst" aria-hidden="true">
+                    <i /><i /><i /><i /><i /><i /><i /><i />
+                  </div>
+                  <span>🏆</span>
+                  <strong>VICTORIA</strong>
+                  <small>HAS SUPERADO LA MARCA</small>
+                </div>
+              )}
               {countdown !== null && (
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>
@@ -1093,9 +1153,12 @@ export default function DemoApp() {
       )}
 
       {screen !== "game" && screen !== "legal" && (
-        <nav className="bottomNav bottomNavTwo" aria-label="Navegación principal">
+        <nav className="bottomNav bottomNavThree" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}>
             <span>▶</span>JUGAR
+          </button>
+          <button className={screen === "group" ? "active" : ""} onClick={() => navigate("group")}>
+            <span>◉</span>GRUPO
           </button>
           <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}>
             <img src={avatarSrc} alt="" />CUENTA
