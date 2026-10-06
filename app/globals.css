@@ -5317,3 +5317,71 @@ html, body {
     bottom: 12px;
   }
 }
+
+
+/* V16.4 — curated challenge datasets and timed survival */
+
+.mineGridAdvanced {
+  padding: 10px;
+}
+
+.mineGridAdvanced .mineGridBoard {
+  width: min(100%, 430px);
+  gap: 3px;
+}
+
+.mineGridAdvanced .mineCell {
+  border-radius: 5px;
+  font-size: clamp(10px, 3vw, 17px);
+}
+
+.gameTimerChip {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 8;
+  transform: translateX(-50%);
+  min-width: 88px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  background: rgba(5,12,30,.66);
+  color: #fff6d7;
+  box-shadow: 0 7px 18px rgba(0,0,0,.18);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+}
+
+.brickRelayGame .gameTimerChip {
+  top: 9px;
+}
+
+.stackForgeGame {
+  position: absolute;
+  inset: 0;
+}
+
+.stackForgeGame .stackTimerChip {
+  top: 8px;
+}
+
+@media (max-width: 430px) {
+  .mineGridAdvanced {
+    padding: 7px;
+  }
+
+  .mineGridAdvanced .mineGridBoard {
+    gap: 2px;
+  }
+
+  .gameTimerChip {
+    min-width: 82px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
