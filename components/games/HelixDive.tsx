@@ -118,6 +118,11 @@ export default function HelixDive({ active, onFinish }: Props) {
         const throughGap = angleDistance(ballAngle, gapAngle) <= gapHalf;
         const hitRed = angleDistance(ballAngle, redAngle) <= redHalf;
 
+        if (hitRed) {
+          finish();
+          return;
+        }
+
         if (throughGap) {
           platform.passed = true;
           s.passed += 1;
@@ -133,11 +138,6 @@ export default function HelixDive({ active, onFinish }: Props) {
           gameTone(s.passed % 5 === 0 ? "good" : "tap");
           if (s.passed % 5 === 0) haptic(8);
           continue;
-        }
-
-        if (hitRed) {
-          finish();
-          return;
         }
 
         // Safe section: bounce cleanly from the exact collision plane.
