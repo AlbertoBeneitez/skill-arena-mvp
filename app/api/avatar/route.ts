@@ -9,19 +9,12 @@ type AvatarBody = {
 };
 
 function buildPrompt(playerName: string, description: string) {
-  const basePrompt =
-    process.env.AVATAR_BASE_PROMPT?.trim() ||
-    [
-      "Create one square original avatar portrait for Skill Arena.",
-      "Competitive fantasy-sport aesthetic, polished mobile-game quality, colorful and readable at small size.",
-      "Head-and-shoulders composition centered for a circular crop.",
-      "Clean background, no text, no logo, no watermark.",
-      "The character must be entirely original and fictional.",
-      "Do not copy or imitate protected characters, celebrities, brands, franchises, or copyrighted artwork.",
-    ].join(" ");
-
   return [
-    basePrompt,
+    "Create one square original avatar portrait for Skill Arena.",
+    "Polished competitive fantasy-sport mobile game aesthetic.",
+    "Head-and-shoulders portrait centered for a circular crop.",
+    "Readable at small size, clean background, no text, no logo, no watermark.",
+    "Entirely original fictional character; do not copy celebrities, brands, franchises, or protected characters.",
     playerName ? `Avatar name: ${playerName}.` : "",
     `Player description: ${description}.`,
   ]
@@ -29,56 +22,15 @@ function buildPrompt(playerName: string, description: string) {
     .join(" ");
 }
 
-async function generateWithCloudflare(prompt: string) {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-
-  if (!accountId || !apiToken) return null;
-
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt,
-        steps: 4,
-      }),
-      cache: "no-store",
-    }
-  );
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok || !data?.success) {
-    const message =
-      data?.errors?.[0]?.message ||
-      data?.result?.error ||
-      "Cloudflare no pudo generar el avatar.";
-    throw new Error(message);
-  }
-
-  const imageBase64 = data?.result?.image;
-  if (typeof imageBase64 !== "string" || !imageBase64) {
-    throw new Error("Cloudflare no devolvió una imagen válida.");
-  }
-
-  return {
-    image: `data:image/jpeg;base64,${imageBase64}`,
-    provider: "cloudflare",
-  };
-}
-
 async function generateWithVercelGateway(prompt: string) {
-  // Vercel automatically exposes VERCEL_OIDC_TOKEN in deployments.
-  // Locally, AI_GATEWAY_API_KEY can be used instead.
   const token =
-    process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+    process.env.AI_GATEWAY_API_KEY ||
+    process.env.VERCEL_AI_GATEWAY_KEY ||
+    process.env.VERCEL_OIDC_TOKEN;
 
-  if (!token) return null;
+  if (!token) {
+    throw new Error("Vercel AI Gateway no está autenticado en este deployment.");
+  }
 
   const response = await fetch(
     "https://ai-gateway.vercel.sh/v1/images/generations",
@@ -108,15 +60,19 @@ async function generateWithVercelGateway(prompt: string) {
     throw new Error(message);
   }
 
-  const imageBase64 = data?.data?.[0]?.b64_json;
-  if (typeof imageBase64 !== "string" || !imageBase64) {
-    throw new Error("Vercel AI Gateway no devolvió una imagen válida.");
+  const item = data?.data?.[0];
+  const imageBase64 = item?.b64_json;
+  const imageUrl = item?.url;
+
+  if (typeof imageBase64 === "string" && imageBase64) {
+    return `data:image/png;base64,${imageBase64}`;
   }
 
-  return {
-    image: `data:image/png;base64,${imageBase64}`,
-    provider: "vercel-ai-gateway",
-  };
+  if (typeof imageUrl === "string" && imageUrl) {
+    return imageUrl;
+  }
+
+  throw new Error("Vercel AI Gateway no devolvió una imagen válida.");
 }
 
 export async function POST(request: Request) {
@@ -124,12 +80,12 @@ export async function POST(request: Request) {
     const body = (await request.json()) as AvatarBody;
 
     const description =
-      typeof body?.description === "string"
+      typeof body.description === "string"
         ? body.description.trim().slice(0, 180)
         : "";
 
     const playerName =
-      typeof body?.playerName === "string"
+      typeof body.playerName === "string"
         ? body.playerName.trim().slice(0, 18)
         : "";
 
@@ -140,27 +96,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const prompt = buildPrompt(playerName, description);
-
-    // Prefer the originally configured Cloudflare provider when credentials exist.
-    const cloudflareResult = await generateWithCloudflare(prompt);
-    if (cloudflareResult) {
-      return NextResponse.json(cloudflareResult);
-    }
-
-    // On Vercel, use the project's OIDC identity through AI Gateway.
-    const vercelResult = await generateWithVercelGateway(prompt);
-    if (vercelResult) {
-      return NextResponse.json(vercelResult);
-    }
-
-    return NextResponse.json(
-      {
-        error:
-          "La generación IA no está configurada en este entorno. No se sustituirá por un avatar aleatorio.",
-      },
-      { status: 503 }
+    const image = await generateWithVercelGateway(
+      buildPrompt(playerName, description)
     );
+
+    return NextResponse.json({
+      image,
+      provider: "vercel-ai-gateway",
+    });
   } catch (error) {
     const message =
       error instanceof Error && error.message
