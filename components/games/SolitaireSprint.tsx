@@ -299,7 +299,7 @@ export default function SolitaireSprint({
     );
 
     if (foundationCount === 52) {
-      finish(true, Math.max(finalScore, targetScore));
+      finish(true, finalScore);
     }
 
     return true;
