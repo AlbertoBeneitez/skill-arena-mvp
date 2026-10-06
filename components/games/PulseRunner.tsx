@@ -52,7 +52,24 @@ export default function PulseRunner({active,onFinish}:Props){
   const down=()=>{jumpHeld.current=true;state.current.jumpBuffer=8;};const up=()=>{jumpHeld.current=false;};
 
   return <div className="gameStage skillGameStage pulseRunnerArena">
-    <canvas ref={canvasRef} width={W} height={H} className="gameCanvas" onPointerDown={down} onPointerUp={up} onPointerCancel={up} aria-label="Pulse Runner"/>
+    <canvas
+      ref={canvasRef}
+      width={W}
+      height={H}
+      className="gameCanvas"
+      onPointerDown={(event)=>{
+        event.currentTarget.setPointerCapture(event.pointerId);
+        down();
+      }}
+      onPointerUp={(event)=>{
+        up();
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      }}
+      onPointerCancel={up}
+      aria-label="Pulse Runner"
+    />
     <div className="gameRule floatingGameRule">Toca para saltar · mantén un instante para alargar</div>
   </div>;
 }
