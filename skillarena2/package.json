@@ -1,13 +1,15 @@
 {
   "name": "skillarena2-lab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Laboratorio paralelo de Skill Arena para probar upstreams open-source casi sin modificar.",
+  "description": "Laboratorio mobile-first para convertir juegos open-source en módulos transferibles a Skill Arena.",
   "type": "module",
   "scripts": {
     "bootstrap": "node scripts/bootstrap.mjs",
+    "bootstrap:refs": "node scripts/bootstrap.mjs --include-references",
     "dev": "node scripts/bootstrap.mjs && node scripts/dev-server.mjs",
     "dev:fast": "node scripts/dev-server.mjs",
+    "dev:refs": "node scripts/bootstrap.mjs --include-references && node scripts/dev-server.mjs",
     "dev:agar": "node scripts/run-agar.mjs",
     "check": "node scripts/check.mjs"
   },
