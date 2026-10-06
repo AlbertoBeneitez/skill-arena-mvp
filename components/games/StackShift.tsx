@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GameResult } from "@/lib/types";
 import { createRng } from "@/lib/deterministic/seeded";
 import { gameTone, haptic } from "@/lib/gameFeedback";
@@ -53,6 +53,7 @@ export default function StackShift({
   const rafRef = useRef<number | null>(null);
   const startRef = useRef(0);
   const seq = useMemo(() => pieceSequence(seed), [seed]);
+  const [elapsedMs, setElapsedMs] = useState(0);
 
   const stateRef = useRef({
     board: Array.from({ length: ROWS }, () => Array(COLS).fill("")) as string[][],
@@ -218,11 +219,25 @@ export default function StackShift({
       x:2,y:-1,sequenceIndex:0,score:0,lines:0,running:true,last:0,acc:0,
       fallAccumulator:0,fallInterval:.58,
     };
+    setElapsedMs(0);
     startRef.current=performance.now();
     spawn();
     draw();
     rafRef.current=requestAnimationFrame(loop);
-    return()=>{stateRef.current.running=false;if(rafRef.current!==null)cancelAnimationFrame(rafRef.current);};
+
+    const timer = window.setInterval(() => {
+      if (stateRef.current.running) {
+        setElapsedMs(
+          Math.round(performance.now() - startRef.current)
+        );
+      }
+    }, 200);
+
+    return()=>{
+      window.clearInterval(timer);
+      stateRef.current.running=false;
+      if(rafRef.current!==null)cancelAnimationFrame(rafRef.current);
+    };
   },[active,draw,loop,spawn]);
 
   function move(dx:number){
@@ -249,6 +264,10 @@ export default function StackShift({
 
   return (
     <div className="detGameSurface stackForgeGame">
+      <div className="gameTimerChip stackTimerChip">
+        {String(Math.floor(elapsedMs / 60000)).padStart(2, "0")}:
+        {String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0")}
+      </div>
       <canvas ref={canvasRef} width={W} height={H} className="gameCanvas deterministicCanvas" aria-label="Stack Shift" />
       <div className="stackForgeControls">
         <button type="button" onClick={()=>move(-1)}>←</button>
