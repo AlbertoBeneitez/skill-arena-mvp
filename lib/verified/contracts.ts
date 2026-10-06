@@ -4,7 +4,7 @@ export type MatchManifest = {
   manifest_version: 1;
   match_id: string;
   game_id: "tower-drop";
-  game_version: "1.0.0";
+  game_version: "1.1.0";
   engine_version: "skill-core-1";
   rules_hash: string;
   gameplay_content_hash: string;
@@ -12,7 +12,7 @@ export type MatchManifest = {
     tick_rate: 120;
     coordinate_width: 390;
     coordinate_height: 620;
-    end_condition: "FIRST_FAILURE";
+    end_condition: "FIRST_FAILURE_OR_TARGET";
   };
   competition: {
     players: 2;
@@ -20,6 +20,7 @@ export type MatchManifest = {
     stake_minor: number;
     currency: "EUR";
     tie_rule: "EXACT_TIE_REFUND";
+    target_score: number;
   };
   input_protocol: {
     version: 1;
@@ -58,4 +59,5 @@ export type VerifiedAttemptResult = {
   time_ms?: number;
   height?: number;
   failure?: "NO_OVERLAP" | "TIMEOUT_IDLE" | null;
+  won?: boolean;
 };
