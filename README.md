@@ -74,3 +74,16 @@ Google/Apple, dinero, matchmaking, ranking y legal son simulaciones de producto.
 - Metro Shift incorpora física lateral con velocidad/inercia y movimiento de obstáculos con aceleración visual por perspectiva.
 - Los cinco juegos terminan al alcanzar la marca objetivo; la victoria muestra una animación común a nivel de producto.
 - Tower Drop v1.1 conserva verificación server-side y admite cierre autoritativo por objetivo alcanzado o primer fallo.
+
+
+## Tower Drop v2
+
+Tower Drop usa ahora un motor determinista v2 con péndulo, caída acelerada,
+apoyo parcial, estabilidad por centro de masas y vuelco alrededor del borde.
+El resultado competitivo sigue verificándose mediante replay server-side a
+120 Hz.
+
+La mecánica toma inspiración de `iamkun/tower_game` (MIT, Copyright 2018
+BMQB, Inc). No se reutilizan sus assets, audio, interfaz ni marca. Consulta
+`THIRD_PARTY_NOTICES.md` y `docs/TOWER_DROP_V2.md` para la procedencia y
+separación entre mecánica MIT y código propio.
