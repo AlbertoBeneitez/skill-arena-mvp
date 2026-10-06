@@ -14,6 +14,10 @@ const MineGrid = dynamic(() => import("./games/MineGrid"), { ssr: false, loading
 const GridSerpent = dynamic(() => import("./games/GridSerpent"), { ssr: false, loading: () => <GameLoading /> });
 const BrickRelay = dynamic(() => import("./games/BrickRelay"), { ssr: false, loading: () => <GameLoading /> });
 const StackShift = dynamic(() => import("./games/StackShift"), { ssr: false, loading: () => <GameLoading /> });
+const MazeRush = dynamic(() => import("./games/MazeRush"), { ssr: false, loading: () => <GameLoading /> });
+const StarPhalanx = dynamic(() => import("./games/StarPhalanx"), { ssr: false, loading: () => <GameLoading /> });
+const RiverDash = dynamic(() => import("./games/RiverDash"), { ssr: false, loading: () => <GameLoading /> });
+const OrbBurst = dynamic(() => import("./games/OrbBurst"), { ssr: false, loading: () => <GameLoading /> });
 
 function GameLoading() {
   return <div className="gameLoading">PREPARANDO ARENA…</div>;
@@ -61,5 +65,13 @@ export default function GameLoader({
       return <BrickRelay key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "stack-shift":
       return <StackShift key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "maze-rush":
+      return <MazeRush key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "star-phalanx":
+      return <StarPhalanx key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "river-dash":
+      return <RiverDash key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "orb-burst":
+      return <OrbBurst key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
   }
 }
