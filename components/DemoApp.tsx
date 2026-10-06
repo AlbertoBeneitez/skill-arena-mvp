@@ -891,13 +891,13 @@ export default function DemoApp() {
                         </button>
                       )}
                     </div>
-                    <div className="playGameCardFooter">
-                      <strong>{game.name}</strong>
+                    <div className="playGameCardFooter playGameCardFooterOnlyAction">
                       <button
                         className="cardPlayButton"
                         type="button"
                         disabled={!canPlay || startingGameId !== null}
                         onClick={() => startMatch(game)}
+                        aria-label={`Jugar a ${game.name}`}
                         aria-busy={startingGameId === game.id}
                       >
                         {startingGameId === game.id

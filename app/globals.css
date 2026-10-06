@@ -4044,3 +4044,14 @@ html, body {
     height: 43px;
   }
 }
+
+
+/* V14.1 — duplicate card labels removed */
+.playGameCardFooter.playGameCardFooterOnlyAction {
+  grid-template-columns: 1fr !important;
+}
+
+.playGameCardFooterOnlyAction .cardPlayButton {
+  width: 100%;
+  min-width: 0;
+}

@@ -47,6 +47,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
   const verifyingRef = useRef(false);
   const generationRef = useRef(0);
   const cameraRef = useRef(0);
+  const resolutionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropFxRef = useRef<{
     x: number;
     width: number;
@@ -188,7 +189,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       const y = screenY - cameraY;
       ctx.shadowBlur = 16;
       ctx.shadowColor = "#315fae";
-      ctx.fillStyle = palette[activeFx.blockIndex % palette.length];
+      ctx.fillStyle = palette[Math.abs(activeFx.blockIndex) % palette.length];
       ctx.fillRect(activeFx.x, y, activeFx.width, BLOCK_H - 4);
       ctx.fillStyle = "rgba(255,255,255,.34)";
       ctx.fillRect(activeFx.x + 5, y + 5, Math.max(0, activeFx.width - 10), 6);
@@ -309,7 +310,10 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
   const loop = useCallback(
     (now: number) => {
       const s = stateRef.current;
-      if (!loopingRef.current || s.status !== "running") return;
+      if (
+        !loopingRef.current ||
+        (s.status !== "running" && dropFxRef.current === null)
+      ) return;
 
       const timing = (
         stateRef.current as TowerDropState & { lastFrame?: number; accumulator?: number }
@@ -323,8 +327,12 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       const dt = 1 / TOWER_DROP_V1.tickRate;
       const dropping = dropFxRef.current !== null;
 
-      if (!dropping) {
-        while ((timing.accumulator ?? 0) >= dt && loopingRef.current) {
+      if (!dropping && s.status === "running") {
+        while (
+          (timing.accumulator ?? 0) >= dt &&
+          loopingRef.current &&
+          stateRef.current.status === "running"
+        ) {
           step();
           timing.accumulator = (timing.accumulator ?? 0) - dt;
         }
@@ -333,7 +341,12 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       }
 
       draw();
-      if (loopingRef.current) rafRef.current = requestAnimationFrame(loop);
+      if (
+        loopingRef.current &&
+        (stateRef.current.status === "running" || dropFxRef.current !== null)
+      ) {
+        rafRef.current = requestAnimationFrame(loop);
+      }
     },
     [draw, step]
   );
@@ -344,6 +357,10 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       setVerificationMessage("Solicitando manifiesto y ticket…");
       verifyingRef.current = false;
       loopingRef.current = false;
+      if (resolutionTimerRef.current !== null) {
+        clearTimeout(resolutionTimerRef.current);
+        resolutionTimerRef.current = null;
+      }
       inputsRef.current = [];
       sessionRef.current = null;
       dropFxRef.current = null;
@@ -428,6 +445,10 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       generationRef.current += 1;
       loopingRef.current = false;
       stateRef.current.status = "failed";
+      if (resolutionTimerRef.current !== null) {
+        clearTimeout(resolutionTimerRef.current);
+        resolutionTimerRef.current = null;
+      }
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, [active, beginVerifiedAttempt]);
@@ -453,26 +474,47 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
       action: "DROP",
     });
 
+    // Capture the crane load before mutating the deterministic engine.
+    // This prevents terminal outcomes (win/fail) from skipping the visible drop.
+    const carriedX = s.movingXMilli / 1000;
+    const carriedWidth = s.movingWMilli / 1000;
     const dropped: TowerDropState = dropTowerBlock(s, targetScore);
+    const terminal = dropped.status === "failed" || dropped.status === "won";
 
-    if (dropped.status === "failed" || dropped.status === "won") {
-      void submitReplay(dropped);
-      return;
+    if (dropped.status === "failed") {
+      dropFxRef.current = {
+        x: carriedX,
+        width: carriedWidth,
+        fromY: CRANE_Y + 18,
+        toY: H + 36,
+        startedAt: performance.now(),
+        blockIndex: dropped.blocks.length,
+      };
+    } else {
+      const landedIndex = dropped.blocks.length - 1;
+      const landed = dropped.blocks[landedIndex];
+      dropFxRef.current = {
+        x: landed.xMilli / 1000,
+        width: landed.wMilli / 1000,
+        fromY: CRANE_Y + 18,
+        toY: H - 92 - landedIndex * BLOCK_H,
+        startedAt: performance.now(),
+        blockIndex: landedIndex,
+      };
     }
 
-    const landedIndex = dropped.blocks.length - 1;
-    const landed = dropped.blocks[landedIndex];
-    dropFxRef.current = {
-      x: landed.xMilli / 1000,
-      width: landed.wMilli / 1000,
-      fromY: CRANE_Y + 18,
-      toY: H - 92 - landedIndex * BLOCK_H,
-      startedAt: performance.now(),
-      blockIndex: landedIndex,
-    };
+    gameTone(dropped.status === "won" ? "win" : s.combo > 0 ? "good" : "tap");
+    haptic(dropped.status === "won" ? [16, 24, 42] : s.combo > 0 ? 10 : 5);
 
-    gameTone(s.combo > 0 ? "good" : "tap");
-    haptic(s.combo > 0 ? 10 : 5);
+    if (terminal) {
+      if (resolutionTimerRef.current !== null) {
+        clearTimeout(resolutionTimerRef.current);
+      }
+      resolutionTimerRef.current = setTimeout(() => {
+        resolutionTimerRef.current = null;
+        void submitReplay(dropped);
+      }, DROP_MS + 40);
+    }
   }, [submitReplay, targetScore, verificationState]);
 
   return (
