@@ -39,7 +39,7 @@ function isScreen(value: unknown): value is Screen {
 
 const AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${i + 1}.svg`);
 const START_BALANCE = 25;
-const APP_ITERATION = "v11";
+const APP_ITERATION = "v12";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
 const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
 
@@ -196,9 +196,7 @@ export default function DemoApp() {
   const [playerName, setPlayerName] = useState("");
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
-  const [avatarPrompt, setAvatarPrompt] = useState("");
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
-  const [avatarGenerating, setAvatarGenerating] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -240,9 +238,7 @@ export default function DemoApp() {
       setPlayerName("");
       setAvatarId(0);
       setAvatarSrc(AVATARS[0]);
-      setAvatarPrompt("");
       setAvatarEditorOpen(true);
-      setAvatarGenerating(false);
       setAvatarError("");
       setScreen("welcome");
       setTutorialSeen(false);
@@ -435,37 +431,9 @@ export default function DemoApp() {
     setProvider(nextProvider);
     setAvatarId(0);
     setAvatarSrc(AVATARS[0]);
-    setAvatarPrompt("");
     setAvatarEditorOpen(true);
     setAvatarError("");
     navigate("avatar-setup");
-  }
-
-  async function generateAvatarProposal() {
-    const description = avatarPrompt.trim();
-    if (!description) {
-      setAvatarError("Describe tu avatar.");
-      return;
-    }
-
-    setAvatarGenerating(true);
-    setAvatarError("");
-    try {
-      const response = await fetch("/api/avatar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, playerName: playerName.trim() }),
-      });
-      const data = await response.json();
-      if (!response.ok || typeof data.image !== "string") {
-        throw new Error(data.error || "No se pudo generar el avatar.");
-      }
-      setAvatarSrc(await compactAvatarSource(data.image));
-    } catch (error) {
-      setAvatarError(error instanceof Error ? error.message : "No se pudo generar el avatar.");
-    } finally {
-      setAvatarGenerating(false);
-    }
   }
 
   function handleAvatarUpload(file?: File) {
@@ -641,9 +609,7 @@ export default function DemoApp() {
     setPlayerName("");
     setAvatarId(0);
     setAvatarSrc(AVATARS[0]);
-    setAvatarPrompt("");
     setAvatarEditorOpen(false);
-    setAvatarGenerating(false);
     setAvatarError("");
     setBalance(START_BALANCE);
     setNetEarnings(0);
@@ -667,7 +633,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V11 · MOBILE COMPETITIVE BUILD</p>
+          <p className="microcopy">V12 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -714,26 +680,16 @@ export default function DemoApp() {
 
           {avatarEditorOpen && (
             <div className="avatarEditor">
-              <textarea
-                id="avatar-prompt"
-                className="promptInput"
-                value={avatarPrompt}
-                onChange={(e) => setAvatarPrompt(e.target.value)}
-                maxLength={180}
-                placeholder="Describe tu avatar..."
-                aria-label="Descripción del avatar"
-              />
-              <div className="avatarActions">
-                <button className="secondaryAction" type="button" onClick={generateAvatarProposal} disabled={avatarGenerating}>
-                  {avatarGenerating ? "GENERANDO..." : "GENERAR CON IA"}
+              <div className="avatarActions singleAvatarAction">
+                <button className="secondaryAction" type="button" onClick={() => fileInputRef.current?.click()}>
+                  SUBIR FOTO
                 </button>
-                <button className="secondaryAction" type="button" onClick={() => fileInputRef.current?.click()}>SUBIR FOTO</button>
               </div>
               {avatarError && <div className="avatarError">{avatarError}</div>}
             </div>
           )}
 
-          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable || avatarGenerating}>CONTINUAR</button>
+          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>CONTINUAR</button>
 
           {cropSource && (
             <div className="avatarCropOverlay" role="dialog" aria-modal="true" aria-label="Ajustar foto de avatar">
@@ -946,7 +902,7 @@ export default function DemoApp() {
                     <div className="demoPercentileBlock resultOnlyPercentile">
                       <span>MEJOR QUE</span>
                       <strong>{demoPercentile(result.score, selectedGame.rivalScore)}%</strong>
-                      <small>DE LOS INTENTOS DEMO DE REFERENCIA</small>
+                      <small>DE LOS INTENTOS DEMO</small>
                     </div>
                     {result.verified === true && (
                       <div className="serverVerifiedBadge">
