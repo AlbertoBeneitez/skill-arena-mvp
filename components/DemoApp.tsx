@@ -39,7 +39,7 @@ function isScreen(value: unknown): value is Screen {
 
 const AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${i + 1}.svg`);
 const START_BALANCE = 25;
-const APP_ITERATION = "v10";
+const APP_ITERATION = "v11";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
 const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
 
@@ -112,6 +112,83 @@ async function compactAvatarSource(source: string) {
   });
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function drawCrop(
+  canvas: HTMLCanvasElement,
+  source: string,
+  zoom: number,
+  offsetX: number,
+  offsetY: number
+) {
+  const image = new Image();
+  image.onload = () => {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const size = canvas.width;
+    const scale = Math.max(size / image.width, size / image.height) * zoom;
+    const width = image.width * scale;
+    const height = image.height * scale;
+    const maxX = Math.max(0, (width - size) / 2);
+    const maxY = Math.max(0, (height - size) / 2);
+    const x = (size - width) / 2 + offsetX * maxX;
+    const y = (size - height) / 2 + offsetY * maxY;
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = "#dce6f4";
+    ctx.fillRect(0, 0, size, size);
+    ctx.drawImage(image, x, y, width, height);
+  };
+  image.src = source;
+}
+
+async function cropAvatarSource(
+  source: string,
+  zoom: number,
+  offsetX: number,
+  offsetY: number
+) {
+  return new Promise<string>((resolve) => {
+    const image = new Image();
+
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        resolve(source);
+        return;
+      }
+
+      const scale = Math.max(256 / image.width, 256 / image.height) * zoom;
+      const width = image.width * scale;
+      const height = image.height * scale;
+      const maxX = Math.max(0, (width - 256) / 2);
+      const maxY = Math.max(0, (height - 256) / 2);
+
+      ctx.fillStyle = "#dce6f4";
+      ctx.fillRect(0, 0, 256, 256);
+      ctx.drawImage(
+        image,
+        (256 - width) / 2 + offsetX * maxX,
+        (256 - height) / 2 + offsetY * maxY,
+        width,
+        height
+      );
+
+      resolve(canvas.toDataURL("image/jpeg", 0.88));
+    };
+
+    image.onerror = () => resolve(source);
+    image.src = source;
+  });
+}
+
 export default function DemoApp() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [onboarded, setOnboarded] = useState(false);
@@ -124,6 +201,11 @@ export default function DemoApp() {
   const [avatarGenerating, setAvatarGenerating] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cropCanvasRef = useRef<HTMLCanvasElement>(null);
+  const cropDragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const [cropSource, setCropSource] = useState<string | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
   const matchStartLockRef = useRef(false);
   const [startingGameId, setStartingGameId] = useState<string | null>(null);
   const [balance, setBalance] = useState(START_BALANCE);
@@ -159,7 +241,7 @@ export default function DemoApp() {
       setAvatarId(0);
       setAvatarSrc(AVATARS[0]);
       setAvatarPrompt("");
-      setAvatarEditorOpen(false);
+      setAvatarEditorOpen(true);
       setAvatarGenerating(false);
       setAvatarError("");
       setScreen("welcome");
@@ -234,6 +316,17 @@ export default function DemoApp() {
   }, [musicOn]);
 
   useEffect(() => {
+    if (!cropSource || !cropCanvasRef.current) return;
+    drawCrop(
+      cropCanvasRef.current,
+      cropSource,
+      cropZoom,
+      cropOffset.x,
+      cropOffset.y
+    );
+  }, [cropSource, cropZoom, cropOffset]);
+
+  useEffect(() => {
     if (!isLoaded) return;
 
     window.history.replaceState({ skillArenaScreen: screen }, "", `#${screen}`);
@@ -257,7 +350,7 @@ export default function DemoApp() {
   }, [isLoaded, onboarded, screen, activeGame, countdown]);
 
   useEffect(() => {
-    if (isLoaded && onboarded && screen === "play" && !tutorialSeen) {
+    if (isLoaded && onboarded && screen === "home" && !tutorialSeen) {
       setTutorialStep(0);
       setTutorialOpen(true);
     }
@@ -300,11 +393,15 @@ export default function DemoApp() {
   }, [screen, countdown]);
 
   function navigate(next: Screen, replace = false) {
-    if (next === screen) return;
-    const state = { skillArenaScreen: next };
-    if (replace) window.history.replaceState(state, "", `#${next}`);
-    else window.history.pushState(state, "", `#${next}`);
-    setScreen(next);
+    const resolved: Screen =
+      next === "play" ? "home" : next === "wallet" ? "profile" : next;
+
+    if (resolved === screen) return;
+
+    const state = { skillArenaScreen: resolved };
+    if (replace) window.history.replaceState(state, "", `#${resolved}`);
+    else window.history.pushState(state, "", `#${resolved}`);
+    setScreen(resolved);
   }
 
   function advanceTutorial() {
@@ -384,12 +481,38 @@ export default function DemoApp() {
 
     setAvatarError("");
     const reader = new FileReader();
-    reader.onload = async () => {
+    reader.onload = () => {
       if (typeof reader.result === "string") {
-        setAvatarSrc(await compactAvatarSource(reader.result));
+        setCropSource(reader.result);
+        setCropZoom(1);
+        setCropOffset({ x: 0, y: 0 });
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  async function applyAvatarCrop() {
+    if (!cropSource) return;
+
+    const cropped = await cropAvatarSource(
+      cropSource,
+      cropZoom,
+      cropOffset.x,
+      cropOffset.y
+    );
+
+    setAvatarSrc(cropped);
+    setCropSource(null);
+  }
+
+  function moveCrop(clientX: number, clientY: number) {
+    const drag = cropDragRef.current;
+    if (!drag) return;
+
+    setCropOffset({
+      x: clamp(drag.ox + (clientX - drag.x) / 110, -1, 1),
+      y: clamp(drag.oy + (clientY - drag.y) / 110, -1, 1),
+    });
   }
 
   function completeAvatar() {
@@ -538,9 +661,9 @@ export default function DemoApp() {
   }
 
   function logoutDemo() {
-    localStorage.removeItem("skill-arena-v2");
-    localStorage.removeItem("skill-arena-v3");
-    localStorage.removeItem("skill-arena-color-tutorial-v1");
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TUTORIAL_KEY);
+    localStorage.removeItem("skill-arena-v10");
     setOnboarded(false);
     setProvider(null);
     setPlayerName("");
@@ -572,7 +695,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V10 · MOBILE COMPETITIVE BUILD</p>
+          <p className="microcopy">V11 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -639,6 +762,57 @@ export default function DemoApp() {
           )}
 
           <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable || avatarGenerating}>CONTINUAR</button>
+
+          {cropSource && (
+            <div className="avatarCropOverlay" role="dialog" aria-modal="true" aria-label="Ajustar foto de avatar">
+              <div className="avatarCropCard">
+                <div className="cropTitle">
+                  <strong>AJUSTA TU FOTO</strong>
+                  <small>Arrastra la imagen dentro del círculo.</small>
+                </div>
+                <div
+                  className="avatarCropViewport"
+                  onPointerDown={(event) => {
+                    cropDragRef.current = {
+                      x: event.clientX,
+                      y: event.clientY,
+                      ox: cropOffset.x,
+                      oy: cropOffset.y,
+                    };
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                  }}
+                  onPointerMove={(event) => moveCrop(event.clientX, event.clientY)}
+                  onPointerUp={(event) => {
+                    cropDragRef.current = null;
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                      event.currentTarget.releasePointerCapture(event.pointerId);
+                    }
+                  }}
+                  onPointerCancel={() => {
+                    cropDragRef.current = null;
+                  }}
+                >
+                  <canvas ref={cropCanvasRef} width={240} height={240} />
+                  <div className="cropCircleGuide" />
+                </div>
+                <label className="cropZoom">
+                  <span>ZOOM</span>
+                  <input
+                    type="range"
+                    min="1"
+                    max="2.4"
+                    step="0.05"
+                    value={cropZoom}
+                    onChange={(event) => setCropZoom(Number(event.target.value))}
+                  />
+                </label>
+                <div className="cropActions">
+                  <button type="button" onClick={() => setCropSource(null)}>CANCELAR</button>
+                  <button type="button" className="primary" onClick={() => void applyAvatarCrop()}>USAR FOTO</button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </main>
     );
@@ -649,65 +823,30 @@ export default function DemoApp() {
       {screen !== "game" && (
         <header className="appHeader">
           <button className="logoButton" onClick={() => navigate("home")}>SKILL ARENA</button>
-          <button className="balanceChip" onClick={() => navigate("wallet")}>{euro(balance)}</button>
+          <button className="balanceChip" onClick={() => navigate("profile")}>{euro(balance)}</button>
         </header>
       )}
 
       <div className={`appBody ${screen === "game" ? "gameBody" : ""}`}>
         {screen === "home" && (
-          <>
-            <button className="playerStrip" onClick={() => navigate("profile")}>
+          <section className="catalogScreen playCatalogSimple homePlayMerged">
+            <button className="playerStrip mergedPlayerStrip" onClick={() => navigate("profile")}>
               <img src={avatarSrc} alt="Avatar" />
               <strong>{playerName}</strong>
               <span className="rankNumber">#{rank}</span>
-              <span className={`moneyNumber ${netEarnings < 0 ? "negative" : ""}`}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</span>
+              <span className={`moneyNumber ${netEarnings < 0 ? "negative" : ""}`}>
+                {netEarnings > 0 ? "+" : ""}{euro(netEarnings)}
+              </span>
             </button>
 
-            <section className="arenaSummary">
-              <div className="arenaSummaryMain">
-                <span>RANKING</span>
-                <strong>#{rank}</strong>
-                <small>ordenado por ganancia neta demo</small>
-              </div>
-              <div className="arenaMetric"><span>GANANCIA</span><b>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
-              <div className="arenaMetric"><span>VICTORIAS</span><b>{wins}</b></div>
-              <div className="arenaMetric"><span>WIN RATE</span><b>{winRate}%</b></div>
-            </section>
-
-            <section className="homeSection">
-              <div className="sectionTitle"><span>ARENAS</span><button onClick={() => navigate("play")}>VER TODAS →</button></div>
-              <div className="gameGrid premiumGrid">
-                {GAMES.map((game) => (
-                  <button className="gameCard premiumGameCard" key={game.id} onClick={() => openGame(game)}>
-                    <div className="gameCoverWrap">
-                      <img src={game.cover} alt={game.name} />
-                    </div>
-                    <div className="gameCardCopy">
-                      <strong>{game.name}</strong>
-                      <span>{game.tagline}</span>
-                      <div className="gameCardHint">TOCA PARA ELEGIR</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="turnPanel competitiveTurn">
+            <div className="homePlayHeading">
               <div>
-                <span>PRÓXIMO DUELO</span>
-                <strong>{nextTurn === "create" ? "MARCA EL RETO" : "SUPERA UNA MARCA"}</strong>
+                <small>SKILL ARENA</small>
+                <h1>Elige arena</h1>
               </div>
-              <div className="turnPulse"><i /> LIVE</div>
-              <small>{nextTurn === "create" ? "Juegas primero y dejas una marca que otro jugador tendrá que superar." : "Ya existe una marca. Entra y demuestra que puedes superarla."}</small>
-            </section>
-          </>
-        )}
-
-        {screen === "play" && (
-          <section className="catalogScreen playCatalogSimple">
-            <div className="screenTop">
-              <button className="textBack" onClick={() => window.history.back()}>← INICIO</button>
-              <span>JUGAR</span>
+              <button type="button" onClick={() => navigate("profile")}>
+                SALDO {euro(balance)}
+              </button>
             </div>
 
             <div className="quickStakeBar" aria-label="Importe de la partida">
@@ -847,19 +986,10 @@ export default function DemoApp() {
                 )}
                 <div className="resultActions">
                   <button className="rematchAction" onClick={() => startMatch()}>OTRA VEZ</button>
-                  <button className="mainAction" onClick={() => navigate("play")}>OTRO JUEGO</button>
+                  <button className="mainAction" onClick={() => navigate("home")}>OTRO JUEGO</button>
                 </div>
               </div>
             )}
-          </section>
-        )}
-
-        {screen === "wallet" && (
-          <section className="simpleScreen">
-            <div className="screenTop walletTitle"><span className="walletTitleIcon" aria-hidden="true">▣</span><span>WALLET</span></div>
-            <div className="walletBalance"><small>SALDO</small><strong>{euro(balance)}</strong></div>
-            <div className="walletActions"><button onClick={() => { setBalance((b) => b + 10); setMovements((m) => [{ label: "Ingreso demo", amount: 10 }, ...m]); }}>INGRESAR</button><button disabled>RETIRAR</button></div>
-            <div className="movementList"><div className="listTitle">HISTORIAL</div>{movements.length === 0 ? <p className="emptyText">Sin movimientos.</p> : movements.map((m, i) => <div className="movement" key={`${m.label}-${i}`}><span>{m.label}</span><b className={m.amount < 0 ? "negative" : ""}>{m.amount > 0 ? "+" : ""}{euro(m.amount)}</b></div>)}</div>
           </section>
         )}
 
@@ -867,6 +997,37 @@ export default function DemoApp() {
           <section className="simpleScreen">
             <div className="screenTop"><span>{playerName || "PERFIL"}</span></div>
             <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>#{rank}</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+
+            <section className="accountWalletCard">
+              <div>
+                <small>SALDO</small>
+                <strong>{euro(balance)}</strong>
+              </div>
+              <div className="walletActions">
+                <button onClick={() => {
+                  setBalance((b) => b + 10);
+                  setMovements((m) => [{ label: "Ingreso demo", amount: 10 }, ...m]);
+                }}>INGRESAR</button>
+                <button
+                  disabled={balance < 10}
+                  onClick={() => {
+                    setBalance((b) => Number((b - 10).toFixed(2)));
+                    setMovements((m) => [{ label: "Retirada demo", amount: -10 }, ...m]);
+                  }}
+                >RETIRAR</button>
+              </div>
+              <div className="miniMovementList">
+                {movements.slice(0, 3).map((movement, index) => (
+                  <div key={`${movement.label}-${index}`}>
+                    <span>{movement.label}</span>
+                    <b className={movement.amount < 0 ? "negative" : ""}>
+                      {movement.amount > 0 ? "+" : ""}{euro(movement.amount)}
+                    </b>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             <div className="chartPanel">
               <div className="chartHead"><span>DINERO GANADO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
               <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Dinero ganado en función del tiempo">
@@ -877,7 +1038,7 @@ export default function DemoApp() {
             </div>
             <div className="settingsList">
               <button onClick={() => setMusicOn((v) => !v)}><span>SONIDO</span><b>{musicOn ? "ON" : "OFF"}</b></button>
-              <button onClick={() => { setAvatarEditorOpen(false); setAvatarError(""); navigate("avatar-setup"); }}><span>CAMBIAR NOMBRE / AVATAR</span><b>→</b></button>
+              <button onClick={() => { setAvatarEditorOpen(true); setAvatarError(""); navigate("avatar-setup"); }}><span>CAMBIAR NOMBRE / AVATAR</span><b>→</b></button>
               <button onClick={resetAvatar}><span>RESETEAR AVATAR</span><b>0 €</b></button>
               <button onClick={() => navigate("legal")}><span>LEGAL</span><b>→</b></button>
               <button onClick={logoutDemo}><span>CERRAR SESIÓN DEMO</span><b>×</b></button>
@@ -904,7 +1065,7 @@ export default function DemoApp() {
         )}
       </div>
 
-      {tutorialOpen && screen === "play" && (
+      {tutorialOpen && screen === "home" && (
         <div className="tutorialOverlay" role="dialog" aria-modal="true" aria-label="Tutorial de tipos de partida">
           <div className="tutorialCard">
             <div className="tutorialProgress">PRIMERA VEZ · {tutorialStep + 1}/3</div>
@@ -927,25 +1088,14 @@ export default function DemoApp() {
         </div>
       )}
 
-      {screen !== "game" && screen !== "legal" && (
-        <nav className="bottomNav" aria-label="Navegación principal">
-          <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}><span>⌂</span>INICIO</button>
-          <button className={screen === "play" ? "active" : ""} onClick={() => {
-            navigate("play");
-            setSelectedGame(GAMES[0]);
-            setSelectedStake(0);
-            const mode = modeForStake(GAMES[0], 0, nextTurn);
-            setSelectedMode(mode);
-            setGhostEnabled(mode === "existing");
-          }}><span>▶</span>JUGAR</button>
-          <button className={screen === "wallet" ? "active" : ""} onClick={() => navigate("wallet")}>
-            <svg className="navWalletIcon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h12A2.5 2.5 0 0 1 20 6.5V8h-5a3 3 0 0 0 0 6h5v3.5a2.5 2.5 0 0 1-2.5 2.5h-12A2.5 2.5 0 0 1 3 17.5z" />
-              <path d="M14.8 9.5H21v3h-6.2a1.5 1.5 0 0 1 0-3Z" />
-            </svg>
-            WALLET
+      {screen !== "game" && screen !== "legal" && screen !== "avatar-setup" && screen !== "welcome" && (
+        <nav className="bottomNav bottomNavTwo" aria-label="Navegación principal">
+          <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}>
+            <span>▶</span>JUGAR
           </button>
-          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}><img src={avatarSrc} alt="" />{playerName || "PERFIL"}</button>
+          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}>
+            <img src={avatarSrc} alt="" />CUENTA
+          </button>
         </nav>
       )}
     </main>
