@@ -14,6 +14,8 @@ const CX = W / 2;
 const BALL_Y = 176;
 const BALL_R = 13;
 const RADIUS = 124;
+const BALL_ANGLE = 0;
+const BALL_X = CX + RADIUS * 0.75;
 const PLATFORM_STEP = 118;
 
 const GAP_PATTERN = [-1.08,-.46,.28,1.12,.66,-.82,.04,1.38,-1.28,.49,-.20,.90];
@@ -113,10 +115,8 @@ export default function HelixDive({ active, onFinish }: Props) {
 
         const gapAngle = wrap(platform.gap + s.rotation);
         const redAngle = wrap(platform.redStart + s.rotation);
-        const ballAngle = -Math.PI / 2;
-
-        const throughGap = angleDistance(ballAngle, gapAngle) <= gapHalf;
-        const hitRed = angleDistance(ballAngle, redAngle) <= redHalf;
+        const throughGap = angleDistance(BALL_ANGLE, gapAngle) <= gapHalf;
+        const hitRed = angleDistance(BALL_ANGLE, redAngle) <= redHalf;
 
         if (hitRed) {
           finish();
@@ -206,11 +206,20 @@ export default function HelixDive({ active, onFinish }: Props) {
     ctx.fillStyle = "rgba(78,111,173,.42)";
     ctx.fillRect(CX - 7, 72, 14, H - 72);
 
+    ctx.strokeStyle = "rgba(255,212,90,.34)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    ctx.moveTo(CX, BALL_Y);
+    ctx.lineTo(BALL_X, BALL_Y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
     ctx.shadowBlur = 22;
     ctx.shadowColor = "#ffd45a";
     ctx.fillStyle = "#ffd45a";
     ctx.beginPath();
-    ctx.arc(CX, BALL_Y, BALL_R, 0, Math.PI * 2);
+    ctx.arc(BALL_X, BALL_Y, BALL_R, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
 
