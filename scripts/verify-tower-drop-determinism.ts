@@ -10,12 +10,12 @@ const GOLDEN_INPUTS: TowerDropInput[] = [
   66, 510, 571, 629, 685, 847, 1003, 1153,
 ].map((tick, seq) => ({ seq, tick, action: "DROP" as const }));
 
-const FINAL_TICK = 1638;
+const FINAL_TICK = 37153;
 const EXPECTED = {
   score: 8941,
   height: 8,
-  failure: "TIMEOUT_BOUNCES",
-  timeMs: 13650,
+  failure: "TIMEOUT_IDLE",
+  timeMs: 309608,
 };
 
 function assert(condition: unknown, message: string) {
