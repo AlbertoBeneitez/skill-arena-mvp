@@ -203,8 +203,6 @@ export const GAMES: GameMeta[] = [
     scoring: "Completa filas y evita alcanzar la parte superior.",
     deterministicSeed: "stack-shift-arena-001",
   },
-,
-
   {
     id: "maze-rush",
     name: "Maze Rush",
