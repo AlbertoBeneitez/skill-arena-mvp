@@ -494,6 +494,17 @@ export default function DemoApp() {
   const nameAvailable = isDemoNameAvailable(playerName);
   const matchesPlayed = wins + losses;
   const winRate = matchesPlayed ? Math.round((wins / matchesPlayed) * 100) : 0;
+  const groupStageTotal =
+    group && groupCompetition
+      ? totalCompetitionStages(groupCompetition, group.members.length)
+      : 1;
+  const groupCanAdvance =
+    matchScope === "group" &&
+    groupCompetition !== null &&
+    group !== null &&
+    groupCompetition.type !== "quick" &&
+    groupStage < groupStageTotal &&
+    (groupCompetition.type !== "tournament" || result?.won === true);
 
   const chartPoints = useMemo(() => {
     if (earnings.length === 1) return "0,74 100,74";
@@ -1126,8 +1137,8 @@ export default function DemoApp() {
               <div>
                 <strong>{selectedGame.name}</strong>
                 <small>
-                  {matchScope === "group"
-                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€`} · 1 VS ${Math.max(1, (group?.members.length ?? 2) - 1)}`
+                  {matchScope === "group" && groupCompetition && group
+                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
                     : selectedStake === 0
                       ? "ENTRENAMIENTO"
                       : `${selectedStake}€ · 1 VS 1`}
@@ -1209,22 +1220,65 @@ export default function DemoApp() {
                     <div className="resultIcon">⚠</div>
                     <b>RESULTADO NO VERIFICADO</b>
                     <p>No se registra este intento competitivo.</p>
-                    {result.verificationError && (
-                      <div className="verificationErrorCode">{result.verificationError}</div>
-                    )}
                   </>
                 ) : (
                   <>
                     <div className="demoPercentileBlock resultOnlyPercentile">
                       <span>MEJOR QUE</span>
-                      <strong>{demoPercentile(result.score, selectedGame.rivalScore)}%</strong>
+                      <strong>{demoPercentile(result.score, matchTargetScore)}%</strong>
                       <small>DE LOS INTENTOS DEMO</small>
                     </div>
                   </>
                 )}
                 <div className="resultActions">
-                  <button className="rematchAction" onClick={() => startMatch()}>OTRA VEZ</button>
-                  <button className="mainAction" onClick={() => navigate("home")}>OTRO JUEGO</button>
+                  {matchScope === "group" && groupCompetition ? (
+                    <>
+                      {groupCompetition.type === "quick" ? (
+                        <button
+                          className="rematchAction"
+                          disabled={groupCompetition.stake > balance}
+                          onClick={repeatOrContinueGroupCompetition}
+                        >
+                          REPETIR
+                        </button>
+                      ) : groupCanAdvance ? (
+                        <button
+                          className="rematchAction"
+                          onClick={repeatOrContinueGroupCompetition}
+                        >
+                          {groupCompetition.type === "league"
+                            ? "SIGUIENTE JORNADA"
+                            : "SIGUIENTE RONDA"}
+                        </button>
+                      ) : (
+                        <button
+                          className="rematchAction"
+                          onClick={() => navigate("group")}
+                        >
+                          VOLVER AL GRUPO
+                        </button>
+                      )}
+                      <button
+                        className="mainAction"
+                        onClick={() => navigate("group")}
+                      >
+                        {groupCompetition.type === "quick"
+                          ? "VOLVER AL GRUPO"
+                          : groupCanAdvance
+                            ? "SALIR A GRUPO"
+                            : "NUEVA COMPETICIÓN"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="rematchAction" onClick={() => startMatch()}>
+                        OTRA VEZ
+                      </button>
+                      <button className="mainAction" onClick={() => navigate("home")}>
+                        OTRO JUEGO
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}
