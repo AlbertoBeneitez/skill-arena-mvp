@@ -270,8 +270,6 @@ export default function TowerDrop({ active, stake, ghostEnabled, targetScore, on
         score: data.score ?? 0,
         timeMs: data.time_ms ?? 0,
         verified: true,
-        verificationId: data.verification_id,
-        replayHash: data.replay_hash,
         failureReason: data.failure ?? null,
       });
     } catch {
