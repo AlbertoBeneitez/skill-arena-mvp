@@ -24,7 +24,6 @@ const H = 620;
 const CX = W / 2;
 const DT = 1 / 120;
 const PLAYER_Y = 500;
-const PLAYER_TOP = 28;
 const PLAYER_BOTTOM = 23;
 
 type Point = { x: number; y: number };
@@ -166,14 +165,36 @@ function orientation(a: Point, b: Point, c: Point) {
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
+function onSegment(a: Point, b: Point, point: Point) {
+  const epsilon = 1e-9;
+  return (
+    Math.abs(orientation(a, b, point)) <= epsilon &&
+    point.x >= Math.min(a.x, b.x) - epsilon &&
+    point.x <= Math.max(a.x, b.x) + epsilon &&
+    point.y >= Math.min(a.y, b.y) - epsilon &&
+    point.y <= Math.max(a.y, b.y) + epsilon
+  );
+}
+
 function segmentsIntersect(a: Point, b: Point, c: Point, d: Point) {
+  const epsilon = 1e-9;
   const o1 = orientation(a, b, c);
   const o2 = orientation(a, b, d);
   const o3 = orientation(c, d, a);
   const o4 = orientation(c, d, b);
+
+  if (
+    ((o1 > epsilon && o2 < -epsilon) || (o1 < -epsilon && o2 > epsilon)) &&
+    ((o3 > epsilon && o4 < -epsilon) || (o3 < -epsilon && o4 > epsilon))
+  ) {
+    return true;
+  }
+
   return (
-    ((o1 >= 0 && o2 <= 0) || (o1 <= 0 && o2 >= 0)) &&
-    ((o3 >= 0 && o4 <= 0) || (o3 <= 0 && o4 >= 0))
+    onSegment(a, b, c) ||
+    onSegment(a, b, d) ||
+    onSegment(c, d, a) ||
+    onSegment(c, d, b)
   );
 }
 
