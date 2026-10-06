@@ -18,6 +18,12 @@ import {
 const DEMO_SIGNING_SECRET =
   "skill-arena-demo-verification-key-not-for-production";
 
+const ALLOWED_STAKES_MINOR = new Set([0, 100, 500, 1000, 5000]);
+
+export function isAllowedStakeMinor(value: number) {
+  return Number.isInteger(value) && ALLOWED_STAKES_MINOR.has(value);
+}
+
 const RULES_V1 = {
   players: 2,
   attemptsPerPlayer: 1,
@@ -208,6 +214,16 @@ export function validateManifest(manifest: MatchManifest) {
     manifest.input_protocol.allowed_actions[0] !== "DROP"
   ) {
     return { ok: false as const, error: "INPUT_PROTOCOL_MISMATCH" };
+  }
+
+  if (
+    manifest.competition.players !== 2 ||
+    manifest.competition.attempts_per_player !== 1 ||
+    manifest.competition.currency !== "EUR" ||
+    manifest.competition.tie_rule !== "EXACT_TIE_REFUND" ||
+    !isAllowedStakeMinor(manifest.competition.stake_minor)
+  ) {
+    return { ok: false as const, error: "COMPETITION_CONFIG_MISMATCH" };
   }
 
   return { ok: true as const };
