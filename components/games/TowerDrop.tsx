@@ -91,7 +91,10 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
     }
 
     // Industrial crane: the moving block hangs from the trolley.
-    const trolleyX = s.movingXMilli / 1000 + s.movingWMilli / 2000;
+    const dropFxForCrane = dropFxRef.current;
+    const trolleyX = dropFxForCrane
+      ? dropFxForCrane.x + dropFxForCrane.width / 2
+      : s.movingXMilli / 1000 + s.movingWMilli / 2000;
     ctx.strokeStyle = "#455a77";
     ctx.lineWidth = 8;
     ctx.beginPath();
@@ -316,9 +319,15 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       timing.lastFrame = now;
 
       const dt = 1 / TOWER_DROP_V1.tickRate;
-      while ((timing.accumulator ?? 0) >= dt && loopingRef.current) {
-        step();
-        timing.accumulator = (timing.accumulator ?? 0) - dt;
+      const dropping = dropFxRef.current !== null;
+
+      if (!dropping) {
+        while ((timing.accumulator ?? 0) >= dt && loopingRef.current) {
+          step();
+          timing.accumulator = (timing.accumulator ?? 0) - dt;
+        }
+      } else {
+        timing.accumulator = 0;
       }
 
       draw();
