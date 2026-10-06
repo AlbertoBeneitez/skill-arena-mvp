@@ -2,13 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
+import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
+import { createDemoClosedGroup, groupPot, groupTargetScore, type ClosedGroup } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
 
-type Screen = "welcome" | "avatar-setup" | "home" | "game" | "profile" | "legal";
+type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal";
 type Provider = "google" | "apple" | null;
 type Turn = "create" | "existing";
+type MatchScope = "duel" | "group";
 
 type EarningsPoint = { label: string; value: number };
 type Movement = { label: string; amount: number };
@@ -29,9 +32,10 @@ type PersistedState = {
   wins: number;
   losses: number;
   streak: number;
+  group: ClosedGroup | null;
 };
 
-const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "game", "profile", "legal"];
+const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "group", "game", "profile", "legal"];
 
 function isScreen(value: unknown): value is Screen {
   return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
@@ -69,7 +73,7 @@ const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "sopor
 
 function isDemoNameAvailable(value: string) {
   const clean = value.trim();
-  if (!/^[A-Za-z0-9_]{3,18}$/.test(clean)) return false;
+  if (!/^[A-Za-z0-9_ ]{3,18}$/.test(clean) || /\s{2,}/.test(clean)) return false;
   return !BLOCKED_DEMO_NAMES.has(clean.toLowerCase());
 }
 
@@ -226,6 +230,10 @@ export default function DemoApp() {
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [group, setGroup] = useState<ClosedGroup | null>(null);
+  const [matchScope, setMatchScope] = useState<MatchScope>("duel");
+  const [matchTargetScore, setMatchTargetScore] = useState(GAMES[0].rivalScore);
+  const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -244,6 +252,7 @@ export default function DemoApp() {
       setTutorialSeen(false);
       setTutorialOpen(false);
       setTutorialStep(0);
+      setGroup(null);
       setIsLoaded(true);
       return;
     }
@@ -275,6 +284,7 @@ export default function DemoApp() {
         if (typeof data.wins === "number") setWins(data.wins);
         if (typeof data.losses === "number") setLosses(data.losses);
         if (typeof data.streak === "number") setStreak(data.streak);
+        if (data.group && typeof data.group === "object") setGroup(data.group as ClosedGroup);
       } catch {}
     }
     setTutorialSeen(localStorage.getItem(TUTORIAL_KEY) === "1");
@@ -299,17 +309,24 @@ export default function DemoApp() {
       wins,
       losses,
       streak,
+      group,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group]);
 
   useEffect(() => {
     setGameSoundEnabled(musicOn);
   }, [musicOn]);
+
+  useEffect(() => {
+    if (!showWinAnimation) return;
+    const timer = window.setTimeout(() => setShowWinAnimation(false), 1350);
+    return () => window.clearTimeout(timer);
+  }, [showWinAnimation]);
 
   useEffect(() => {
     if (!cropSource || !cropCanvasRef.current) return;
@@ -481,7 +498,7 @@ export default function DemoApp() {
   }
 
   function completeAvatar() {
-    const clean = playerName.trim().slice(0, 18);
+    const clean = playerName.trim().replace(/\s+/g, " ").slice(0, 18);
     if (!isDemoNameAvailable(clean)) return;
     setPlayerName(clean);
     setOnboarded(true);
