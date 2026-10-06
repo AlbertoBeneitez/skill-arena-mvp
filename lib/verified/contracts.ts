@@ -57,5 +57,5 @@ export type VerifiedAttemptResult = {
   score?: number;
   time_ms?: number;
   height?: number;
-  failure?: "NO_OVERLAP" | "TIMEOUT_BOUNCES" | null;
+  failure?: "NO_OVERLAP" | "TIMEOUT_IDLE" | null;
 };
