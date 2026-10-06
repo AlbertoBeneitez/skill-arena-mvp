@@ -1,0 +1,17 @@
+{
+  "name": "skillarena2-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Laboratorio paralelo de Skill Arena para probar upstreams open-source casi sin modificar.",
+  "type": "module",
+  "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "dev": "node scripts/bootstrap.mjs && node scripts/dev-server.mjs",
+    "dev:fast": "node scripts/dev-server.mjs",
+    "dev:agar": "node scripts/run-agar.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
