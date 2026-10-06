@@ -24,9 +24,11 @@ const H = 620;
 const CX = W / 2;
 const DT = 1 / 120;
 const PLAYER_Y = 500;
-const PLAYER_HALF_W = 17;
 const PLAYER_TOP = 28;
 const PLAYER_BOTTOM = 23;
+
+type Point = { x: number; y: number };
+type Rect = { x1: number; y1: number; x2: number; y2: number };
 const LANES = [92, 195, 298] as const;
 
 const LANE_PATTERN: Lane[] = [
@@ -74,17 +76,134 @@ function makeInitialObstacles() {
   return { items, nextIndex: 12 };
 }
 
-function rectanglesOverlap(
-  ax1: number,
-  ay1: number,
-  ax2: number,
-  ay2: number,
-  bx1: number,
-  by1: number,
-  bx2: number,
-  by2: number
-) {
-  return ax1 < bx2 && ax2 > bx1 && ay1 < by2 && ay2 > by1;
+function rotatePoint(point: Point, angle: number): Point {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return {
+    x: point.x * cos - point.y * sin,
+    y: point.x * sin + point.y * cos,
+  };
+}
+
+function playerPolygon(
+  centerX: number,
+  centerY: number,
+  angle: number
+): Point[] {
+  return [
+    { x: 0, y: -28 },
+    { x: 17, y: 23 },
+    { x: 0, y: 16 },
+    { x: -17, y: 23 },
+  ].map((point) => {
+    const rotated = rotatePoint(point, angle);
+    return { x: centerX + rotated.x, y: centerY + rotated.y };
+  });
+}
+
+function obstacleRects(obstacle: Obstacle): Rect[] {
+  const { depth, width, height } = sizeFor(obstacle.y, obstacle.kind);
+  const x = obstacleX(obstacle.lane, obstacle.y);
+  const rects: Rect[] = [
+    {
+      x1: x - width / 2,
+      y1: obstacle.y - height / 2,
+      x2: x + width / 2,
+      y2: obstacle.y + height / 2,
+    },
+  ];
+
+  if (obstacle.kind === "barrier") {
+    const legWidth = Math.max(4, 7 * depth);
+    const legHeight = 11 * depth + 4;
+    const top = obstacle.y + height / 2;
+    rects.push(
+      {
+        x1: x - width / 2 + 6,
+        y1: top,
+        x2: x - width / 2 + 6 + legWidth,
+        y2: top + legHeight,
+      },
+      {
+        x1: x + width / 2 - 6 - legWidth,
+        y1: top,
+        x2: x + width / 2 - 6,
+        y2: top + legHeight,
+      }
+    );
+  }
+
+  return rects;
+}
+
+function pointInRect(point: Point, rect: Rect) {
+  return (
+    point.x >= rect.x1 &&
+    point.x <= rect.x2 &&
+    point.y >= rect.y1 &&
+    point.y <= rect.y2
+  );
+}
+
+function pointInPolygon(point: Point, polygon: Point[]) {
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const a = polygon[i];
+    const b = polygon[j];
+    const crosses =
+      (a.y > point.y) !== (b.y > point.y) &&
+      point.x <
+        ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y || 1e-9) + a.x;
+
+    if (crosses) inside = !inside;
+  }
+
+  return inside;
+}
+
+function orientation(a: Point, b: Point, c: Point) {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+function segmentsIntersect(a: Point, b: Point, c: Point, d: Point) {
+  const o1 = orientation(a, b, c);
+  const o2 = orientation(a, b, d);
+  const o3 = orientation(c, d, a);
+  const o4 = orientation(c, d, b);
+  return (
+    ((o1 >= 0 && o2 <= 0) || (o1 <= 0 && o2 >= 0)) &&
+    ((o3 >= 0 && o4 <= 0) || (o3 <= 0 && o4 >= 0))
+  );
+}
+
+function polygonHitsRect(polygon: Point[], rect: Rect) {
+  if (polygon.some((point) => pointInRect(point, rect))) return true;
+
+  const corners: Point[] = [
+    { x: rect.x1, y: rect.y1 },
+    { x: rect.x2, y: rect.y1 },
+    { x: rect.x2, y: rect.y2 },
+    { x: rect.x1, y: rect.y2 },
+  ];
+
+  if (corners.some((point) => pointInPolygon(point, polygon))) return true;
+
+  const rectEdges = corners.map((point, index) => [
+    point,
+    corners[(index + 1) % corners.length],
+  ] as const);
+
+  for (let index = 0; index < polygon.length; index += 1) {
+    const a = polygon[index];
+    const b = polygon[(index + 1) % polygon.length];
+
+    if (rectEdges.some(([c, d]) => segmentsIntersect(a, b, c, d))) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
@@ -163,42 +282,26 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
       s.jumpVy = 0;
     }
 
-    const playerX1 = s.x - PLAYER_HALF_W;
-    const playerX2 = s.x + PLAYER_HALF_W;
-    const playerY1 = PLAYER_Y + s.jumpY - PLAYER_TOP;
-    const playerY2 = PLAYER_Y + s.jumpY + PLAYER_BOTTOM;
+    const playerAngle = Math.max(
+      -0.16,
+      Math.min(0.16, (LANES[s.lane] - s.x) / 90)
+    );
+    const plane = playerPolygon(s.x, PLAYER_Y + s.jumpY, playerAngle);
 
     for (const obstacle of s.obstacles) {
       obstacle.y += speed * DT;
 
       if (obstacle.passed) continue;
 
-      const { width, height } = sizeFor(obstacle.y, obstacle.kind);
-      const x = obstacleX(obstacle.lane, obstacle.y);
-      const obstacleX1 = x - width / 2;
-      const obstacleX2 = x + width / 2;
-      const obstacleY1 = obstacle.y - height / 2;
-      const obstacleY2 = obstacle.y + height / 2;
+      const rects = obstacleRects(obstacle);
+      const mainRect = rects[0];
 
-      // Collision is based on the actual visible rectangles on every fixed tick.
-      // Any overlap with any part of the player ends the attempt.
-      if (
-        rectanglesOverlap(
-          playerX1,
-          playerY1,
-          playerX2,
-          playerY2,
-          obstacleX1,
-          obstacleY1,
-          obstacleX2,
-          obstacleY2
-        )
-      ) {
+      if (rects.some((rect) => polygonHitsRect(plane, rect))) {
         finish();
         return;
       }
 
-      if (obstacleY1 > PLAYER_Y + PLAYER_BOTTOM + 18) {
+      if (mainRect.y1 > PLAYER_Y + PLAYER_BOTTOM + 18) {
         obstacle.passed = true;
         s.passed += 1;
         s.score += 280 + Math.min(520, s.passed * 16);
