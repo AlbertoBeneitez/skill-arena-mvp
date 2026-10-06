@@ -4811,3 +4811,49 @@ html, body {
     grid-template-rows: 78px 1fr;
   }
 }
+
+
+/* V16.1 — guest onboarding option */
+
+.authDivider {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 18px;
+  color: #8b94a2;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.authDivider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(89,103,124,.18);
+}
+
+.authDivider span {
+  position: relative;
+  z-index: 1;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 9px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fffdf7;
+}
+
+.authButton.guest {
+  border-color: rgba(49,95,174,.28);
+  background: #edf4ff;
+  color: #315fae;
+}
+
+.authButton.guest span {
+  border-color: rgba(49,95,174,.34);
+  background: rgba(255,255,255,.62);
+}
