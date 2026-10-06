@@ -1,6 +1,6 @@
 export const TOWER_DROP_V1 = {
   gameId: "tower-drop",
-  gameVersion: "1.0.0",
+  gameVersion: "1.1.0",
   engineVersion: "skill-core-1",
   tickRate: 120,
   widthMilli: 390_000,
@@ -40,7 +40,7 @@ export type TowerDropState = {
   score: number;
   combo: number;
   blocks: TowerDropBlock[];
-  status: "running" | "failed";
+  status: "running" | "failed" | "won";
   failure: TowerDropFailure;
 };
 
@@ -116,7 +116,7 @@ export function stepTowerDrop(state: TowerDropState) {
   return state;
 }
 
-export function dropTowerBlock(state: TowerDropState) {
+export function dropTowerBlock(state: TowerDropState, targetScore = Number.MAX_SAFE_INTEGER) {
   if (state.status !== "running") return state;
 
   const cfg = TOWER_DROP_V1;
@@ -144,6 +144,13 @@ export function dropTowerBlock(state: TowerDropState) {
     state.combo * 28;
 
   state.combo = perfect ? state.combo + 1 : 0;
+
+  if (state.score >= targetScore) {
+    state.blocks.push({ xMilli: left, wMilli: overlap });
+    state.status = "won";
+    state.failure = null;
+    return state;
+  }
   state.blocks.push({ xMilli: left, wMilli: overlap });
   state.movingWMilli = overlap;
 
@@ -192,7 +199,8 @@ export function validateTowerDropInputs(inputs: TowerDropInput[], finalTick: num
 
 export function replayTowerDrop(
   inputs: TowerDropInput[],
-  finalTick: number
+  finalTick: number,
+  targetScore = Number.MAX_SAFE_INTEGER
 ): TowerDropReplayResult {
   const inputError = validateTowerDropInputs(inputs, finalTick);
   const state = createTowerDropState();
@@ -217,7 +225,7 @@ export function replayTowerDrop(
       inputs[inputIndex].tick === state.tick &&
       state.status === "running"
     ) {
-      dropTowerBlock(state);
+      dropTowerBlock(state, targetScore);
       inputIndex += 1;
     }
 
@@ -249,10 +257,10 @@ export function replayTowerDrop(
     };
   }
 
-  if (state.status !== "failed") {
+  if (state.status === "running") {
     return {
       valid: false,
-      error: "CLIENT_ENDED_BEFORE_FAILURE",
+      error: "CLIENT_ENDED_BEFORE_RESOLUTION",
       state,
       score: state.score,
       timeMs: Math.round((state.tick * 1000) / TOWER_DROP_V1.tickRate),
@@ -280,5 +288,5 @@ export const TOWER_DROP_V1_CONTENT = {
     comboStep: 28,
   },
   failureConditions: ["NO_OVERLAP", "TIMEOUT_IDLE"],
-  endCondition: "FIRST_FAILURE",
+  endCondition: "FIRST_FAILURE_OR_TARGET",
 } as const;
