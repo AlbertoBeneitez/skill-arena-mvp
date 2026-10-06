@@ -22,14 +22,22 @@ function buildPrompt(playerName: string, description: string) {
     .join(" ");
 }
 
-async function generateWithVercelGateway(prompt: string) {
+async function generateWithVercelGateway(
+  request: Request,
+  prompt: string
+) {
+  // Vercel injects a fresh OIDC token per request. Reading the request-scoped
+  // header avoids depending on a stale build-time environment snapshot.
   const token =
+    request.headers.get("x-vercel-oidc-token") ||
     process.env.AI_GATEWAY_API_KEY ||
-    process.env.VERCEL_AI_GATEWAY_KEY ||
+    process.env.VERCEL_AI_GATEWAY_API_KEY ||
     process.env.VERCEL_OIDC_TOKEN;
 
   if (!token) {
-    throw new Error("Vercel AI Gateway no está autenticado en este deployment.");
+    throw new Error(
+      "La generación IA no tiene credenciales en este deployment."
+    );
   }
 
   const response = await fetch(
@@ -56,23 +64,21 @@ async function generateWithVercelGateway(prompt: string) {
     const message =
       data?.error?.message ||
       data?.message ||
-      `Vercel AI Gateway respondió con ${response.status}.`;
+      `AI Gateway respondió con ${response.status}.`;
     throw new Error(message);
   }
 
   const item = data?.data?.[0];
-  const imageBase64 = item?.b64_json;
-  const imageUrl = item?.url;
 
-  if (typeof imageBase64 === "string" && imageBase64) {
-    return `data:image/png;base64,${imageBase64}`;
+  if (typeof item?.b64_json === "string" && item.b64_json) {
+    return `data:image/png;base64,${item.b64_json}`;
   }
 
-  if (typeof imageUrl === "string" && imageUrl) {
-    return imageUrl;
+  if (typeof item?.url === "string" && item.url) {
+    return item.url;
   }
 
-  throw new Error("Vercel AI Gateway no devolvió una imagen válida.");
+  throw new Error("AI Gateway no devolvió una imagen válida.");
 }
 
 export async function POST(request: Request) {
@@ -97,6 +103,7 @@ export async function POST(request: Request) {
     }
 
     const image = await generateWithVercelGateway(
+      request,
       buildPrompt(playerName, description)
     );
 
