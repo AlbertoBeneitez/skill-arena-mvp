@@ -5,21 +5,28 @@ import type { GameResult } from "@/lib/types";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
 type Props = { active: boolean; onFinish: (result: GameResult) => void };
-type Platform = { y: number; gap: number; redStart: number; passed: boolean };
+type Platform = {
+  y: number;
+  gap: number;
+  redStart: number;
+  passed: boolean;
+  safeStart: boolean;
+};
 
 const W = 390;
 const H = 620;
 const DT = 1 / 120;
 const CX = W / 2;
-const BALL_Y = 176;
+const BALL_Y = 182;
 const BALL_R = 13;
-const RADIUS = 124;
+const RADIUS = 126;
 const BALL_ANGLE = 0;
 const BALL_X = CX + RADIUS * 0.75;
-const PLATFORM_STEP = 118;
+const PLATFORM_STEP = 122;
+const WARMUP_TICKS = 96;
 
-const GAP_PATTERN = [-1.08,-.46,.28,1.12,.66,-.82,.04,1.38,-1.28,.49,-.20,.90];
-const RED_PATTERN = [.20,1.48,-.72,.82,-1.42,.47,1.06,-.14,1.57,-.96,.34,-1.54];
+const GAP_PATTERN = [0.55, -0.62, 0.92, -1.14, 0.34, 1.36, -0.28, -1.42, 0.76, -0.88, 1.12, -0.46];
+const RED_PATTERN = [Math.PI, 1.46, -0.72, 0.82, -1.42, 0.47, 1.06, -0.14, 1.57, -0.96, 0.34, -1.54];
 
 function wrap(angle: number) {
   let value = angle;
@@ -47,6 +54,7 @@ export default function HelixDive({ active, onFinish }: Props) {
     passed: 0,
     running: false,
     ticks: 0,
+    warmupTicks: WARMUP_TICKS,
     last: 0,
     acc: 0,
     platforms: [] as Platform[],
@@ -57,16 +65,30 @@ export default function HelixDive({ active, onFinish }: Props) {
     finishRef.current = onFinish;
   }, [onFinish]);
 
-  const makePlatform = useCallback((index: number, y: number): Platform => ({
-    y,
-    gap: GAP_PATTERN[index % GAP_PATTERN.length],
-    redStart: RED_PATTERN[index % RED_PATTERN.length],
-    passed: false,
-  }), []);
+  const makePlatform = useCallback((index: number, y: number): Platform => {
+    if (index === 0) {
+      return {
+        y,
+        gap: BALL_ANGLE,
+        redStart: Math.PI,
+        passed: false,
+        safeStart: true,
+      };
+    }
+
+    return {
+      y,
+      gap: GAP_PATTERN[(index - 1) % GAP_PATTERN.length],
+      redStart: RED_PATTERN[index % RED_PATTERN.length],
+      passed: false,
+      safeStart: index === 1,
+    };
+  }, []);
 
   const finish = useCallback(() => {
     const s = state.current;
     if (!s.running) return;
+
     s.running = false;
     turnRef.current = 0;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -81,74 +103,86 @@ export default function HelixDive({ active, onFinish }: Props) {
     });
   }, []);
 
+  const updateRotation = useCallback(() => {
+    const s = state.current;
+    const maxTurn = Math.min(2.55, 1.78 + s.passed * 0.014);
+    const target = turnRef.current * maxTurn;
+
+    s.angularVelocity += (target - s.angularVelocity) * 0.2;
+    if (turnRef.current === 0) s.angularVelocity *= 0.88;
+    if (Math.abs(s.angularVelocity) < 0.001) s.angularVelocity = 0;
+
+    s.rotation = wrap(s.rotation + s.angularVelocity * DT);
+  }, []);
+
   const step = useCallback(() => {
     const s = state.current;
     s.ticks += 1;
+    updateRotation();
 
-    // Smooth left/right steering. The direction always matches the touched half.
-    const maxTurn = Math.min(2.65, 1.92 + s.passed * 0.012);
-    const targetAngularVelocity = turnRef.current * maxTurn;
-    s.angularVelocity += (targetAngularVelocity - s.angularVelocity) * 0.16;
-    if (turnRef.current === 0 && Math.abs(s.angularVelocity) < 0.002) {
-      s.angularVelocity = 0;
+    if (s.warmupTicks > 0) {
+      s.warmupTicks -= 1;
+      return;
     }
-    s.rotation = wrap(s.rotation + s.angularVelocity * DT);
 
     const previousWorldY = BALL_Y + s.fall;
-    const gravity = 650 + Math.min(250, s.passed * 6);
+    const gravity = 610 + Math.min(260, s.passed * 7);
     s.vy += gravity * DT;
     s.fall += s.vy * DT;
     const currentWorldY = BALL_Y + s.fall;
 
-    const gapHalf = Math.max(0.26, 0.49 - s.passed * 0.004);
-    const redHalf = Math.min(0.39, 0.31 + s.passed * 0.0015);
+    const gapHalf = Math.max(0.27, 0.5 - s.passed * 0.004);
+    const redHalf = Math.min(0.4, 0.31 + s.passed * 0.0015);
 
-    if (s.vy > 0) {
-      for (const platform of s.platforms) {
-        if (platform.passed) continue;
+    if (s.vy <= 0) return;
 
-        const collisionY = platform.y - BALL_R * 0.25;
-        const crossedPlatform =
-          previousWorldY < collisionY && currentWorldY >= collisionY;
+    for (const platform of s.platforms) {
+      if (platform.passed) continue;
 
-        if (!crossedPlatform) continue;
+      const collisionY = platform.y - BALL_R * 0.2;
+      const crossed =
+        previousWorldY < collisionY && currentWorldY >= collisionY;
 
-        const gapAngle = wrap(platform.gap + s.rotation);
-        const redAngle = wrap(platform.redStart + s.rotation);
-        const throughGap = angleDistance(BALL_ANGLE, gapAngle) <= gapHalf;
-        const hitRed = angleDistance(BALL_ANGLE, redAngle) <= redHalf;
+      if (!crossed) continue;
 
-        if (hitRed) {
-          finish();
-          return;
-        }
+      const gapAngle = wrap(platform.gap + s.rotation);
+      const redAngle = wrap(platform.redStart + s.rotation);
 
-        if (throughGap) {
-          platform.passed = true;
-          s.passed += 1;
-          s.score += 420 + Math.min(500, s.passed * 18);
+      const throughGap =
+        angleDistance(BALL_ANGLE, gapAngle) <= gapHalf;
+      const hitRed =
+        !platform.safeStart &&
+        angleDistance(BALL_ANGLE, redAngle) <= redHalf;
 
-          const last = s.platforms[s.platforms.length - 1];
-          s.platforms.push(
-            makePlatform(s.next, last.y + PLATFORM_STEP)
-          );
-          s.next += 1;
-          if (s.platforms.length > 20) s.platforms.shift();
-
-          gameTone(s.passed % 5 === 0 ? "good" : "tap");
-          if (s.passed % 5 === 0) haptic(8);
-          continue;
-        }
-
-        // Safe section: bounce cleanly from the exact collision plane.
-        s.fall = collisionY - BALL_Y - 0.5;
-        s.vy = -285;
-        gameTone("tap");
-        haptic(4);
-        break;
+      if (hitRed) {
+        finish();
+        return;
       }
+
+      if (throughGap) {
+        platform.passed = true;
+        s.passed += 1;
+        s.score += 420 + Math.min(500, s.passed * 18);
+
+        const last = s.platforms[s.platforms.length - 1];
+        s.platforms.push(
+          makePlatform(s.next, last.y + PLATFORM_STEP)
+        );
+        s.next += 1;
+        if (s.platforms.length > 20) s.platforms.shift();
+
+        gameTone(s.passed % 5 === 0 ? "good" : "tap");
+        if (s.passed % 5 === 0) haptic(8);
+        continue;
+      }
+
+      s.fall = collisionY - BALL_Y - 0.5;
+      s.vy = -275;
+      gameTone("tap");
+      haptic(4);
+      break;
     }
-  }, [finish, makePlatform]);
+  }, [finish, makePlatform, updateRotation]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -157,6 +191,7 @@ export default function HelixDive({ active, onFinish }: Props) {
     if (!ctx) return;
 
     const s = state.current;
+
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#17234f");
     bg.addColorStop(1, "#081026");
@@ -166,14 +201,17 @@ export default function HelixDive({ active, onFinish }: Props) {
     ctx.fillStyle = "rgba(255,255,255,.035)";
     for (let y = 84; y < H; y += 44) ctx.fillRect(0, y, W, 1);
 
-    const gapHalf = Math.max(0.26, 0.49 - s.passed * 0.004);
-    const redHalf = Math.min(0.39, 0.31 + s.passed * 0.0015);
+    const gapHalf = Math.max(0.27, 0.5 - s.passed * 0.004);
+    const redHalf = Math.min(0.4, 0.31 + s.passed * 0.0015);
 
     for (const platform of s.platforms) {
       const y = platform.y - s.fall;
       if (y < 62 || y > H + 70) continue;
 
-      const perspective = Math.max(0.58, Math.min(1, 0.64 + (y / H) * 0.38));
+      const perspective = Math.max(
+        0.58,
+        Math.min(1, 0.64 + (y / H) * 0.38)
+      );
       const radius = RADIUS * perspective;
 
       ctx.save();
@@ -181,24 +219,26 @@ export default function HelixDive({ active, onFinish }: Props) {
       ctx.scale(1, 0.29);
 
       ctx.lineWidth = 27 * perspective;
-      ctx.strokeStyle = "rgba(116,156,224,.72)";
+      ctx.strokeStyle = "rgba(116,156,224,.78)";
       ctx.beginPath();
       ctx.arc(0, 0, radius, -Math.PI, Math.PI);
       ctx.stroke();
 
       const gap = wrap(platform.gap + s.rotation);
-      ctx.lineWidth = 33 * perspective;
+      ctx.lineWidth = 34 * perspective;
       ctx.strokeStyle = "#081026";
       ctx.beginPath();
       ctx.arc(0, 0, radius, gap - gapHalf, gap + gapHalf);
       ctx.stroke();
 
-      const red = wrap(platform.redStart + s.rotation);
-      ctx.lineWidth = 29 * perspective;
-      ctx.strokeStyle = "#ef5264";
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, red - redHalf, red + redHalf);
-      ctx.stroke();
+      if (!platform.safeStart) {
+        const red = wrap(platform.redStart + s.rotation);
+        ctx.lineWidth = 29 * perspective;
+        ctx.strokeStyle = "#ef5264";
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, red - redHalf, red + redHalf);
+        ctx.stroke();
+      }
 
       ctx.restore();
     }
@@ -206,7 +246,7 @@ export default function HelixDive({ active, onFinish }: Props) {
     ctx.fillStyle = "rgba(78,111,173,.42)";
     ctx.fillRect(CX - 7, 72, 14, H - 72);
 
-    ctx.strokeStyle = "rgba(255,212,90,.34)";
+    ctx.strokeStyle = "rgba(255,212,90,.35)";
     ctx.lineWidth = 2;
     ctx.setLineDash([4, 5]);
     ctx.beginPath();
@@ -223,8 +263,7 @@ export default function HelixDive({ active, onFinish }: Props) {
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Compact HUD.
-    ctx.fillStyle = "rgba(8,16,38,.84)";
+    ctx.fillStyle = "rgba(8,16,38,.88)";
     ctx.fillRect(14, 14, W - 28, 48);
     ctx.fillStyle = "#fff";
     ctx.font = "900 12px system-ui";
@@ -232,18 +271,29 @@ export default function HelixDive({ active, onFinish }: Props) {
     ctx.fillText(`PISOS ${s.passed}`, 26, 44);
     ctx.fillStyle = "#83e6f5";
     ctx.textAlign = "right";
-    ctx.fillText("EVITA ROJO", W - 26, 44);
+    ctx.fillText(
+      s.warmupTicks > 0 ? "PREPÁRATE" : "EVITA ROJO",
+      W - 26,
+      44
+    );
 
-    // Touch zones are shown inside the playfield instead of separate buttons.
-    ctx.fillStyle = "rgba(92,164,255,.07)";
-    ctx.fillRect(0, 80, W / 2, H - 80);
-    ctx.fillRect(W / 2, 80, W / 2, H - 80);
-    ctx.fillStyle = "rgba(255,255,255,.42)";
-    ctx.font = "900 30px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("◀", W * 0.24, H - 40);
-    ctx.fillText("▶", W * 0.76, H - 40);
-    ctx.textAlign = "start";
+    if (s.warmupTicks > 0) {
+      const seconds = Math.max(
+        1,
+        Math.ceil(s.warmupTicks / 120)
+      );
+
+      ctx.fillStyle = "rgba(7,15,34,.68)";
+      ctx.fillRect(72, 244, W - 144, 96);
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "center";
+      ctx.font = "950 16px system-ui";
+      ctx.fillText("COLOCA EL HUECO", CX, 279);
+      ctx.fillStyle = "#ffd45a";
+      ctx.font = "950 28px system-ui";
+      ctx.fillText(String(seconds), CX, 318);
+      ctx.textAlign = "start";
+    }
   }, []);
 
   const loop = useCallback((now: number) => {
@@ -266,7 +316,9 @@ export default function HelixDive({ active, onFinish }: Props) {
   const start = useCallback(() => {
     const platforms: Platform[] = [];
     for (let index = 0; index < 12; index += 1) {
-      platforms.push(makePlatform(index, 278 + index * PLATFORM_STEP));
+      platforms.push(
+        makePlatform(index, 316 + index * PLATFORM_STEP)
+      );
     }
 
     state.current = {
@@ -278,6 +330,7 @@ export default function HelixDive({ active, onFinish }: Props) {
       passed: 0,
       running: true,
       ticks: 0,
+      warmupTicks: WARMUP_TICKS,
       last: 0,
       acc: 0,
       platforms,
@@ -291,6 +344,7 @@ export default function HelixDive({ active, onFinish }: Props) {
 
   useEffect(() => {
     if (active) start();
+
     return () => {
       state.current.running = false;
       turnRef.current = 0;
@@ -298,15 +352,20 @@ export default function HelixDive({ active, onFinish }: Props) {
     };
   }, [active, start]);
 
-  const setDirection = useCallback((clientX: number) => {
+  const setDirection = useCallback((direction: -1 | 1) => {
+    if (!state.current.running) return;
+    if (turnRef.current !== direction) haptic(3);
+    turnRef.current = direction;
+  }, []);
+
+  const setDirectionFromX = useCallback((clientX: number) => {
     const canvas = canvasRef.current;
     if (!canvas || !state.current.running) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = ((clientX - rect.left) / rect.width) * W;
-    const next: -1 | 1 = x < W / 2 ? -1 : 1;
-    if (turnRef.current !== next) haptic(3);
-    turnRef.current = next;
-  }, []);
+    setDirection(x < W / 2 ? -1 : 1);
+  }, [setDirection]);
 
   const stopDirection = useCallback(() => {
     turnRef.current = 0;
@@ -321,16 +380,42 @@ export default function HelixDive({ active, onFinish }: Props) {
         className="gameCanvas"
         onPointerDown={(event) => {
           event.currentTarget.setPointerCapture(event.pointerId);
-          setDirection(event.clientX);
+          setDirectionFromX(event.clientX);
         }}
         onPointerMove={(event) => {
-          if (event.buttons) setDirection(event.clientX);
+          if (event.buttons) setDirectionFromX(event.clientX);
         }}
         onPointerUp={stopDirection}
         onPointerCancel={stopDirection}
         aria-label="Helix Dive"
       />
-      <div className="gameRule floatingGameRule">Mantén izquierda o derecha para girar</div>
+
+      <div className="helixControlKeys" aria-label="Controles de giro">
+        <button
+          type="button"
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            setDirection(-1);
+          }}
+          onPointerUp={stopDirection}
+          onPointerCancel={stopDirection}
+        >
+          <span>◀</span>
+          <b>IZQUIERDA</b>
+        </button>
+        <button
+          type="button"
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            setDirection(1);
+          }}
+          onPointerUp={stopDirection}
+          onPointerCancel={stopDirection}
+        >
+          <b>DERECHA</b>
+          <span>▶</span>
+        </button>
+      </div>
     </div>
   );
 }
