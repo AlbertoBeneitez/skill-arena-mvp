@@ -1,7 +1,13 @@
 let audioContext: AudioContext | null = null;
+let soundEnabled = true;
+
+export function setGameSoundEnabled(enabled: boolean) {
+  soundEnabled = enabled;
+  if (!enabled && audioContext?.state === "running") void audioContext.suspend();
+}
 
 function context() {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined" || !soundEnabled) return null;
   if (!audioContext) audioContext = new AudioContext();
   if (audioContext.state === "suspended") void audioContext.resume();
   return audioContext;
