@@ -2,46 +2,63 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1020" />
-  <title>SkillArena2 — Open-source lab</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#070b14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="screen-orientation" content="portrait" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <title>SkillArena2 — Mobile Transfer Lab</title>
   <link rel="stylesheet" href="./app.css" />
 </head>
 <body>
   <main class="shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">SKILL ARENA · PARALLEL LAB</p>
+        <p class="eyebrow">SKILL ARENA · MOBILE TRANSFER LAB</p>
         <h1>SkillArena2</h1>
-        <p class="lede">Upstreams casi intactos. Primero medimos jugabilidad, estructura y reutilización; después decidimos qué entra en Skill Arena.</p>
+        <p class="lede">Solo entran candidatos pensados para móvil y con código que pueda trasladarse después a Skill Arena.</p>
       </div>
-      <div class="badge">LAB · sin dinero real</div>
+      <div class="badge">LAB · SIN DINERO REAL</div>
     </header>
 
-    <section id="cards" class="cards" aria-label="Juegos del laboratorio"></section>
+    <section class="criteria" aria-label="Criterios">
+      <span>Móvil</span><span>Licencia permisiva</span><span>Trasplantable</span><span>Determinizable</span>
+    </section>
+
+    <section id="cards" class="cards" aria-label="Candidatos móviles"></section>
 
     <section class="stage">
       <div class="stage-head">
         <div>
-          <p class="eyebrow" id="stage-mode">SELECCIONA UN JUEGO</p>
+          <p class="eyebrow" id="stage-mode">CANDIDATO MÓVIL</p>
           <h2 id="stage-title">Banco de pruebas</h2>
         </div>
+        <div class="seed-control">
+          <label for="seed">Seed</label>
+          <input id="seed" value="demo-001" autocomplete="off" spellcheck="false" />
+        </div>
         <div class="stage-actions">
+          <button id="restart" class="secondary" disabled>Reiniciar</button>
           <button id="fullscreen" class="secondary" disabled>Pantalla completa</button>
-          <button id="close" class="secondary" disabled>Cerrar</button>
         </div>
       </div>
       <div id="stage-body" class="stage-body empty">
         <div>
           <strong>Objetivo</strong>
-          <p>Probar primero el upstream prácticamente tal cual. Las adaptaciones competitivas —seed, replay, verificación, score normalizado y anti-cheat— vienen después.</p>
+          <p>Conservar el núcleo útil del juego, convertir la experiencia a móvil, sustituir branding y preparar seed, inputs y replay para una futura verificación del servidor.</p>
         </div>
       </div>
     </section>
 
     <section class="telemetry">
-      <span>Telemetría del lab</span>
+      <span>Sesión de prueba</span>
       <code id="telemetry">sin sesión</code>
+    </section>
+
+    <section class="references">
+      <p class="eyebrow">REFERENCIAS TÉCNICAS · NO CANDIDATOS</p>
+      <p>HexGL, osu! lazer y Agar.io clone quedan fuera del catálogo móvil. Solo se descargan con <code>npm run bootstrap:refs</code> cuando haga falta estudiar una técnica concreta.</p>
     </section>
   </main>
   <script type="module" src="./app.js"></script>
