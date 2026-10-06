@@ -87,3 +87,18 @@ La mecánica toma inspiración de `iamkun/tower_game` (MIT, Copyright 2018
 BMQB, Inc). No se reutilizan sus assets, audio, interfaz ni marca. Consulta
 `THIRD_PARTY_NOTICES.md` y `docs/TOWER_DROP_V2.md` para la procedencia y
 separación entre mecánica MIT y código propio.
+
+
+## URLs de prueba
+
+La demo admite dos modos de QA mediante query string:
+
+- `?fresh=1`: fuerza el flujo de bienvenida/acceso/avatar aunque ya exista una
+  cuenta local. Conserva saldo, historial, estadísticas y grupo. Si se cierra
+  la pestaña antes de terminar el onboarding, no sobrescribe el perfil
+  guardado.
+- `?reset=1`: elimina todos los datos locales de Skill Arena en ese navegador
+  y simula una instalación completamente nueva.
+
+La query se conserva al cambiar de pantalla mediante hash, por lo que al
+recargar o volver a abrir el mismo enlace el modo de prueba vuelve a aplicarse.
