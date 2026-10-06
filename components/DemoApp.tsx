@@ -621,10 +621,19 @@ export default function DemoApp() {
     setActiveGame(false);
 
     if (selectedGame.id === "tower-drop" && gameResult.verified !== true) {
-      if (selectedStake > 0) {
+      const entryWasCharged =
+        matchScope !== "group" ||
+        !groupCompetition ||
+        groupCompetition.type === "quick" ||
+        groupStage === 1;
+
+      if (selectedStake > 0 && entryWasCharged) {
         setBalance((value) => Number((value + selectedStake).toFixed(2)));
         setMovements((items) => [
-          { label: `${selectedGame.name} · devolución verificación`, amount: selectedStake },
+          {
+            label: `${selectedGame.name} · devolución verificación`,
+            amount: selectedStake,
+          },
           ...items,
         ].slice(0, 20));
       }
@@ -642,10 +651,12 @@ export default function DemoApp() {
     if (didWin) setShowWinAnimation(true);
     setResult(resolvedResult);
 
-    if (selectedStake === 0) {
-      gameTone(didWin ? "good" : "bad");
-      haptic(didWin ? 10 : 20);
-      return;
+    const inGroupCompetition =
+      matchScope === "group" && group !== null && groupCompetition !== null;
+
+    const winsAfter = groupCompetitionWins + (didWin ? 1 : 0);
+    if (inGroupCompetition && didWin) {
+      setGroupCompetitionWins(winsAfter);
     }
 
     if (didWin) {
@@ -660,17 +671,86 @@ export default function DemoApp() {
       haptic(35);
     }
 
-    const prize = matchScope === "group" && group ? groupPot(group) : prizeForStake(selectedStake);
+    if (selectedStake === 0) return;
+
+    if (inGroupCompetition && group && groupCompetition) {
+      const totalStages = totalCompetitionStages(
+        groupCompetition,
+        group.members.length
+      );
+      const eliminated =
+        groupCompetition.type === "tournament" && !didWin;
+      const competitionFinished =
+        groupCompetition.type === "quick" ||
+        groupStage >= totalStages ||
+        eliminated;
+
+      if (!competitionFinished) return;
+
+      let placement: 1 | 2 | 3 = 1;
+
+      if (groupCompetition.type === "league") {
+        const ratio = winsAfter / Math.max(1, totalStages);
+        placement = ratio >= 0.67 ? 1 : ratio >= 0.34 ? 2 : 3;
+      } else if (groupCompetition.type === "tournament") {
+        placement =
+          didWin && groupStage >= totalStages
+            ? 1
+            : groupStage >= totalStages
+              ? 2
+              : 3;
+      } else {
+        placement = didWin ? 1 : 3;
+      }
+
+      const pot = groupPot(group, groupCompetition.stake);
+      const prize =
+        groupCompetition.type === "quick" && !didWin
+          ? 0
+          : Number(
+              (pot * payoutShare(groupCompetition, placement)).toFixed(2)
+            );
+      const delta = Number(
+        (prize - groupCompetition.stake).toFixed(2)
+      );
+
+      if (prize > 0) {
+        setBalance((value) => Number((value + prize).toFixed(2)));
+        setMovements((items) => [
+          {
+            label: `${group.name} · premio ${payoutLabel(groupCompetition.distribution)}`,
+            amount: prize,
+          },
+          ...items,
+        ].slice(0, 20));
+      }
+
+      const nextValue = Number((netEarnings + delta).toFixed(2));
+      setNetEarnings(nextValue);
+      setEarnings((points) => [
+        ...points,
+        { label: `P${points.length}`, value: nextValue },
+      ].slice(-20));
+      return;
+    }
+
+    const prize = prizeForStake(selectedStake);
     const delta = didWin ? prize - selectedStake : -selectedStake;
 
     if (didWin && prize > 0) {
-      setBalance((b) => Number((b + prize).toFixed(2)));
-      setMovements((items) => [{ label: `${selectedGame.name} · premio`, amount: prize }, ...items].slice(0, 20));
+      setBalance((value) => Number((value + prize).toFixed(2)));
+      setMovements((items) => [
+        { label: `${selectedGame.name} · premio`, amount: prize },
+        ...items,
+      ].slice(0, 20));
     }
 
     const nextValue = Number((netEarnings + delta).toFixed(2));
     setNetEarnings(nextValue);
-    setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
+    setEarnings((points) => [
+      ...points,
+      { label: `P${points.length}`, value: nextValue },
+    ].slice(-20));
     setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
   }
 
