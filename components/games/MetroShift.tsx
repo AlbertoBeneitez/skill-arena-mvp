@@ -467,7 +467,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     }
 
     for (const group of s.groups) {
-      if (group.y < 60 || group.y > H + 110 || group.passed) continue;
+      if (group.y < 60 || group.y > H + 110) continue;
 
       for (const hazard of group.hazards) {
         const { depth, width, height } = sizeFor(group.y, hazard.kind);
@@ -476,6 +476,10 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
         ctx.save();
         ctx.shadowBlur = 8 * depth;
         ctx.shadowColor = "rgba(0,0,0,.28)";
+
+        const trail = Math.max(4, 18 * depth);
+        ctx.fillStyle = "rgba(105,220,240,.10)";
+        ctx.fillRect(x - width / 2, group.y - height / 2 - trail, width, trail);
 
         if (hazard.kind === "wall") {
           ctx.fillStyle = "#db4e60";
@@ -557,15 +561,34 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.fillRect(-7, -11, 14, 20);
     ctx.restore();
 
-    ctx.fillStyle = "rgba(16,27,46,.88)";
-    ctx.fillRect(14, 14, W - 28, 48);
-    ctx.font = "900 12px system-ui";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "left";
-    ctx.fillText(`SUPERADOS ${s.passed}`, 26, 44);
-    ctx.fillStyle = "#7de5f5";
-    ctx.textAlign = "right";
-    ctx.fillText(`CARRIL ${s.lane + 1}/7`, W - 26, 44);
+    const speed = speedFor(s.ticks);
+    ctx.save();
+    ctx.fillStyle = "rgba(12,24,42,.91)";
+    ctx.fillRect(12, 12, W - 24, 68);
+    ctx.fillStyle = "rgba(255,255,255,.08)";
+    ctx.fillRect(134, 20, 1, 52);
+    ctx.fillRect(255, 20, 1, 52);
+
+    ctx.textAlign = "center";
+    ctx.font = "800 8px system-ui";
+    ctx.fillStyle = "#9eb2ce";
+    ctx.fillText("SUPERADOS", 73, 31);
+    ctx.fillText("PUNTOS", 195, 31);
+    ctx.fillText("RITMO", 316, 31);
+
+    ctx.font = "950 20px system-ui";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(String(s.passed), 73, 57);
+    ctx.fillStyle = "#ffd35d";
+    ctx.fillText(String(s.score), 195, 57);
+    ctx.fillStyle = "#74e0ef";
+    ctx.fillText(String(Math.round(speed)), 316, 57);
+
+    ctx.fillStyle = "rgba(255,255,255,.10)";
+    ctx.fillRect(24, 70, W - 48, 4);
+    ctx.fillStyle = "#5ed5e8";
+    ctx.fillRect(24, 70, (W - 48) * Math.min(1, (speed - 188) / 170), 4);
+    ctx.restore();
 
     if (s.passed < 4) {
       ctx.fillStyle = "rgba(255,255,255,.48)";

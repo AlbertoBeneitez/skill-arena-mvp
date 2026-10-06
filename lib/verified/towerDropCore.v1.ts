@@ -7,7 +7,7 @@ export const TOWER_DROP_V1 = {
   leftMilli: 8_000,
   startWidthMilli: 228_000,
   overlapFailureMilli: 1_000,
-  maxBouncesPerBlock: 5,
+  maxIdleTicksPerBlock: 120 * 60 * 5,
   baseSpeedMilliPerSecond: 132_000,
   speedStepMilliPerSecond: 6_500,
   maxSpeedMilliPerSecond: 320_000,
@@ -26,7 +26,7 @@ export type TowerDropBlock = {
   wMilli: number;
 };
 
-export type TowerDropFailure = "NO_OVERLAP" | "TIMEOUT_BOUNCES" | null;
+export type TowerDropFailure = "NO_OVERLAP" | "TIMEOUT_IDLE" | null;
 
 export type TowerDropState = {
   tick: number;
@@ -36,6 +36,7 @@ export type TowerDropState = {
   speedMilliPerSecond: number;
   movementRemainder: number;
   bounces: number;
+  idleTicks: number;
   score: number;
   combo: number;
   blocks: TowerDropBlock[];
@@ -67,6 +68,7 @@ export function createTowerDropState(): TowerDropState {
     speedMilliPerSecond: baseSpeedMilliPerSecond,
     movementRemainder: 0,
     bounces: 0,
+    idleTicks: 0,
     score: 0,
     combo: 0,
     blocks: [
@@ -85,6 +87,7 @@ export function stepTowerDrop(state: TowerDropState) {
 
   const cfg = TOWER_DROP_V1;
   state.tick += 1;
+  state.idleTicks += 1;
 
   const numerator = state.speedMilliPerSecond + state.movementRemainder;
   const deltaMilli = Math.floor(numerator / cfg.tickRate);
@@ -105,9 +108,9 @@ export function stepTowerDrop(state: TowerDropState) {
     state.bounces += 1;
   }
 
-  if (state.bounces >= cfg.maxBouncesPerBlock) {
+  if (state.idleTicks >= cfg.maxIdleTicksPerBlock) {
     state.status = "failed";
-    state.failure = "TIMEOUT_BOUNCES";
+    state.failure = "TIMEOUT_IDLE";
   }
 
   return state;
@@ -157,6 +160,7 @@ export function dropTowerBlock(state: TowerDropState) {
   );
   state.movementRemainder = 0;
   state.bounces = 0;
+  state.idleTicks = 0;
 
   return state;
 }
@@ -275,6 +279,6 @@ export const TOWER_DROP_V1_CONTENT = {
     perfectBonus: 240,
     comboStep: 28,
   },
-  failureConditions: ["NO_OVERLAP", "TIMEOUT_BOUNCES"],
+  failureConditions: ["NO_OVERLAP", "TIMEOUT_IDLE"],
   endCondition: "FIRST_FAILURE",
 } as const;

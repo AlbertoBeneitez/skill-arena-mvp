@@ -51,3 +51,13 @@ Google/Apple, dinero, matchmaking, ranking y legal son simulaciones de producto.
 - Pulse Runner se rediseña como auto-runner rítmico con patrones deterministas y dificultad progresiva.
 - Metro Shift mantiene avance continuo y responde al gesto durante el swipe.
 - El percentil demo se muestra como “Mejor que X% de los intentos demo”.
+
+
+## V13
+
+- Tower Drop y Metro Shift ocupan todo el viewport de juego, sin bandas negras.
+- Tower Drop permite hasta 5 minutos de inactividad por bloque antes del timeout verificado.
+- El encabezado 1 vs 1 muestra los avatares de ambos jugadores junto al nombre.
+- Jet Stream incorpora HUD de puertas, puntos, ritmo y proximidad a la siguiente puerta.
+- Metro Shift mantiene los obstáculos visibles y desplazándose después de superarlos, añade sensación de velocidad continua y sustituye el indicador de carril por un HUD de superados, puntos y ritmo.
+- Se amplían los objetivos táctiles principales: volver, jugar y navegación JUGAR/CUENTA.

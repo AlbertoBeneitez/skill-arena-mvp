@@ -633,7 +633,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V12 · MOBILE COMPETITIVE BUILD</p>
+          <p className="microcopy">V13 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -863,9 +863,15 @@ export default function DemoApp() {
             </div>
 
             <div className="compactMatchStrip">
-              <span>{playerName || "TÚ"}</span>
+              <span className="matchPlayer matchPlayerSelf">
+                <img src={avatarSrc} alt="" />
+                <strong>{playerName || "TÚ"}</strong>
+              </span>
               <b>VS</b>
-              <span>{selectedGame.rivalName}</span>
+              <span className="matchPlayer matchPlayerRival">
+                <strong>{selectedGame.rivalName}</strong>
+                <img src={selectedGame.rivalAvatar} alt="" />
+              </span>
               {selectedMode === "existing" && ghostEnabled && <em>👻 fantasma activo</em>}
             </div>
 
