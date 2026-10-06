@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameResult } from "@/lib/types";
 import { createRng } from "@/lib/deterministic/seeded";
 import { gameTone, haptic } from "@/lib/gameFeedback";
@@ -23,6 +23,7 @@ type Brick = {
   period: number;
   phase: number;
   colorIndex: number;
+  kind: "normal" | "armor" | "blast";
 };
 
 const W = 390;
@@ -52,11 +53,22 @@ function createWave(seed: string, wave: number) {
       const density = Math.max(1, 10 - Math.floor(wave / 2));
       if (row > 0 && rng.nextInt(density) === 0) continue;
 
-      const maxHp = Math.min(
-        3,
-        1 + Math.floor(wave / 3) + (rng.nextInt(6) === 0 ? 1 : 0)
-      );
-      const moving = wave >= 2 && (row + wave) % 2 === 0;
+      const roll = rng.nextInt(12);
+      const kind: Brick["kind"] =
+        roll === 0 && wave >= 2
+          ? "blast"
+          : roll <= 3 && wave >= 2
+            ? "armor"
+            : "normal";
+
+      const baseHp =
+        kind === "armor"
+          ? 2 + Math.floor(wave / 4)
+          : 1 + Math.floor(wave / 5);
+      const maxHp = Math.min(4, baseHp);
+      const moving =
+        wave >= 2 &&
+        ((row + wave) % 2 === 0 || kind === "blast");
 
       bricks.push({
         baseX: margin + col * (width + gap),
@@ -65,10 +77,19 @@ function createWave(seed: string, wave: number) {
         h: 19,
         hp: maxHp,
         maxHp,
-        drift: moving ? Math.min(16, 5 + wave * 1.4) : 0,
-        period: 150 + rng.nextInt(110),
-        phase: rng.nextInt(180),
-        colorIndex: (row + col + wave) % COLORS.length,
+        drift: moving
+          ? Math.min(22, 6 + wave * 1.7)
+          : 0,
+        period: Math.max(
+          95,
+          165 + rng.nextInt(120) - wave * 4
+        ),
+        phase: rng.nextInt(220),
+        colorIndex:
+          kind === "blast"
+            ? 2
+            : (row + col + wave) % COLORS.length,
+        kind,
       });
     }
   }
@@ -86,6 +107,7 @@ export default function BrickRelay({
   const rafRef = useRef<number | null>(null);
   const startRef = useRef(0);
   const pointerXRef = useRef(W / 2);
+  const [elapsedMs, setElapsedMs] = useState(0);
 
   const stateRef = useRef({
     paddleX: W / 2 - 48,
@@ -101,6 +123,7 @@ export default function BrickRelay({
     running: false,
     last: 0,
     acc: 0,
+    combo: 0,
   });
 
   const finish = useCallback(
@@ -131,7 +154,8 @@ export default function BrickRelay({
     const s = stateRef.current;
     s.wave += 1;
     s.bricks = createWave(seed, s.wave);
-    s.paddleW = Math.max(58, 96 - (s.wave - 1) * 3);
+    s.combo = 0;
+    s.paddleW = Math.max(50, 96 - (s.wave - 1) * 4);
 
     const currentSpeed = Math.hypot(s.vx, s.vy);
     const nextSpeed = Math.min(525, currentSpeed + 24);
@@ -186,6 +210,7 @@ export default function BrickRelay({
       s.vx = Math.sin(angle) * speed;
       s.vy = -Math.cos(angle) * speed;
       s.ballY = PADDLE_Y - BALL_R - 1;
+      s.combo = 0;
 
       gameTone("tap");
       haptic(2);
@@ -215,10 +240,63 @@ export default function BrickRelay({
       else s.vy *= -1;
 
       brick.hp -= 1;
-      s.score += brick.hp <= 0 ? 260 + s.wave * 22 : 90;
 
-      gameTone(brick.hp <= 0 ? "good" : "tap");
-      haptic(brick.hp <= 0 ? 4 : 2);
+      if (brick.hp <= 0) {
+        s.combo += 1;
+        const comboMultiplier = Math.min(2.4, 1 + s.combo * 0.08);
+        s.score += Math.round(
+          (280 + s.wave * 26) * comboMultiplier
+        );
+
+        if (brick.kind === "blast") {
+          let exploded = 0;
+
+          for (const nearby of s.bricks) {
+            if (nearby.hp <= 0 || nearby === brick) continue;
+
+            const nearbyX = brickX(nearby, s.ticks);
+            const centerDistance = Math.hypot(
+              nearbyX + nearby.w / 2 - (x + brick.w / 2),
+              nearby.y + nearby.h / 2 - (brick.y + brick.h / 2)
+            );
+
+            if (centerDistance <= 76) {
+              nearby.hp = 0;
+              exploded += 1;
+            }
+          }
+
+          s.score += exploded * (190 + s.wave * 18);
+
+          const speed = Math.min(
+            555,
+            Math.hypot(s.vx, s.vy) * 1.07
+          );
+          const angle = Math.atan2(
+            Math.abs(s.vx),
+            Math.abs(s.vy)
+          );
+          s.vx =
+            Math.sign(s.vx || 1) *
+            Math.sin(angle) *
+            speed;
+          s.vy =
+            Math.sign(s.vy || -1) *
+            Math.cos(angle) *
+            speed;
+
+          haptic([4, 14, 4]);
+        } else {
+          haptic(4);
+        }
+
+        gameTone("good");
+      } else {
+        s.score += 95;
+        gameTone("tap");
+        haptic(2);
+      }
+
       break;
     }
 
@@ -263,7 +341,10 @@ export default function BrickRelay({
 
       const x = brickX(brick, s.ticks);
       const ratio = brick.hp / brick.maxHp;
-      const color = COLORS[brick.colorIndex];
+      const color =
+        brick.kind === "armor"
+          ? "#7986a8"
+          : COLORS[brick.colorIndex];
 
       ctx.save();
       ctx.globalAlpha = 0.72 + ratio * 0.28;
@@ -281,6 +362,17 @@ export default function BrickRelay({
           Math.max(0, (brick.w - 6) * ratio),
           4
         );
+      }
+
+      if (brick.kind === "blast") {
+        ctx.fillStyle = "rgba(255,255,255,.82)";
+        ctx.beginPath();
+        ctx.moveTo(x + brick.w / 2, brick.y + 4);
+        ctx.lineTo(x + brick.w / 2 + 6, brick.y + brick.h / 2);
+        ctx.lineTo(x + brick.w / 2, brick.y + brick.h - 4);
+        ctx.lineTo(x + brick.w / 2 - 6, brick.y + brick.h / 2);
+        ctx.closePath();
+        ctx.fill();
       }
 
       ctx.restore();
@@ -342,15 +434,26 @@ export default function BrickRelay({
       running: true,
       last: 0,
       acc: 0,
+      combo: 0,
     };
 
     pointerXRef.current = W / 2;
+    setElapsedMs(0);
     startRef.current = performance.now();
 
     draw();
     rafRef.current = requestAnimationFrame(loop);
 
+    const timer = window.setInterval(() => {
+      if (stateRef.current.running) {
+        setElapsedMs(
+          Math.round(performance.now() - startRef.current)
+        );
+      }
+    }, 200);
+
     return () => {
+      window.clearInterval(timer);
       stateRef.current.running = false;
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -367,7 +470,11 @@ export default function BrickRelay({
   }
 
   return (
-    <div className="detGameSurface canvasDetGame">
+    <div className="detGameSurface canvasDetGame brickRelayGame">
+      <div className="gameTimerChip">
+        {String(Math.floor(elapsedMs / 60000)).padStart(2, "0")}:
+        {String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0")}
+      </div>
       <canvas
         ref={canvasRef}
         width={W}
