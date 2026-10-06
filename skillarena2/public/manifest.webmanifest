@@ -1,0 +1,9 @@
+{
+  "name": "SkillArena2 Mobile Transfer Lab",
+  "short_name": "SkillArena2",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070b14",
+  "theme_color": "#070b14"
+}
