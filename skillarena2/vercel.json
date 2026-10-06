@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run bootstrap",
+  "outputDirectory": "public",
+  "cleanUrls": true
+}
