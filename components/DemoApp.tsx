@@ -1004,30 +1004,6 @@ export default function DemoApp() {
               </div>
             </div>
 
-            <div className="compactMatchStrip">
-              <span className="matchPlayer matchPlayerSelf">
-                <img src={avatarSrc} alt="" />
-                <strong>{playerName || "TÚ"}</strong>
-              </span>
-              <b>VS</b>
-              {matchScope === "group" && group ? (
-                <span className="matchPlayer matchPlayerRival groupRivals">
-                  <strong>{group.name}</strong>
-                  <span className="groupAvatarStack">
-                    {group.members.filter((member) => !member.isYou).slice(0, 3).map((member) => (
-                      <img key={member.id} src={member.avatar} alt="" />
-                    ))}
-                  </span>
-                </span>
-              ) : (
-                <span className="matchPlayer matchPlayerRival">
-                  <strong>{selectedGame.rivalName}</strong>
-                  <img src={selectedGame.rivalAvatar} alt="" />
-                </span>
-              )}
-              {selectedMode === "existing" && ghostEnabled && matchScope === "duel" && <em>👻 fantasma activo</em>}
-            </div>
-
             <div className="gameArenaWrap">
               <GameLoader
                 game={selectedGame}
