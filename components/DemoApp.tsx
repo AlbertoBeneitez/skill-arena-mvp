@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
-import { createDemoClosedGroup, groupPot, groupTargetScore, type ClosedGroup } from "@/lib/groupPlay";
+import { competitionProgressLabel, createDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
 
@@ -235,6 +235,8 @@ export default function DemoApp() {
   const [matchTargetScore, setMatchTargetScore] = useState(GAMES[0].rivalScore);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
+  const [groupCompetition, setGroupCompetition] = useState<GroupCompetitionConfig | null>(null);
+  const [groupStage, setGroupStage] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -658,25 +660,41 @@ export default function DemoApp() {
     haptic(4);
   }
 
-  function startGroupMatch(game: GameMeta) {
-    if (!group || matchStartLockRef.current || group.stake > balance) return;
+  function startGroupCompetition(
+    game: GameMeta,
+    config: GroupCompetitionConfig,
+    options?: { chargeEntry?: boolean; nextStage?: number }
+  ) {
+    if (!group || matchStartLockRef.current || config.stake > balance) return;
 
-    const stake = group.stake;
+    const chargeEntry = options?.chargeEntry ?? true;
+    const nextStage = options?.nextStage ?? 1;
+
     matchStartLockRef.current = true;
     setStartingGameId(game.id);
     setSelectedGame(game);
-    setSelectedStake(stake);
+    setSelectedStake(config.stake);
     setSelectedMode("create");
     setGhostEnabled(false);
     setMatchScope("group");
     setMatchTargetScore(groupTargetScore(group, game));
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
+    setGroupCompetition(config);
+    setGroupStage(nextStage);
 
-    setBalance((value) => Number((value - stake).toFixed(2)));
-    if (stake > 0) {
+    if (chargeEntry && config.stake > 0) {
+      setBalance((value) => Number((value - config.stake).toFixed(2)));
       setMovements((items) => [
-        { label: `${group.name} · entrada`, amount: -stake },
+        {
+          label:
+            config.type === "quick"
+              ? `${group.name} · partida rápida`
+              : config.type === "league"
+                ? `${group.name} · entrada liga`
+                : `${group.name} · entrada torneo`,
+          amount: -config.stake,
+        },
         ...items,
       ].slice(0, 20));
     }
@@ -688,6 +706,23 @@ export default function DemoApp() {
     gameTone("countdown");
     haptic(12);
     navigate("game");
+  }
+
+  function repeatOrContinueGroupCompetition() {
+    if (!group || !groupCompetition) return;
+
+    if (groupCompetition.type === "quick") {
+      startGroupCompetition(selectedGame, groupCompetition, {
+        chargeEntry: true,
+        nextStage: 1,
+      });
+      return;
+    }
+
+    startGroupCompetition(selectedGame, groupCompetition, {
+      chargeEntry: false,
+      nextStage: groupStage + 1,
+    });
   }
 
   function resetAvatar() {
@@ -957,7 +992,7 @@ export default function DemoApp() {
             avatarSrc={avatarSrc}
             onCreateGroup={createClosedGroup}
             onSetStake={setClosedGroupStake}
-            onPlayGroup={startGroupMatch}
+            onStartCompetition={startGroupCompetition}
           />
         )}
 
