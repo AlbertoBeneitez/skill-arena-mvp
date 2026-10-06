@@ -1,8 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ClosedGroup } from "@/lib/groupPlay";
-import { groupPot } from "@/lib/groupPlay";
+import type {
+  ClosedGroup,
+  CompetitionType,
+  GroupCompetitionConfig,
+  PotDistribution,
+} from "@/lib/groupPlay";
+import {
+  groupPot,
+  maxUsefulPayout,
+  payoutLabel,
+} from "@/lib/groupPlay";
 import { GAMES, STAKES, type GameMeta, type Stake } from "@/lib/games";
 
 type Props = {
@@ -12,10 +21,16 @@ type Props = {
   avatarSrc: string;
   onCreateGroup: (name: string, stake: Stake) => void;
   onSetStake: (stake: Stake) => void;
-  onPlayGroup: (game: GameMeta) => void;
+  onStartCompetition: (
+    game: GameMeta,
+    config: GroupCompetitionConfig
+  ) => void;
 };
 
 type GroupTab = "group" | "create-match";
+
+const LEAGUE_ROUNDS = [3, 5, 7, 10] as const;
+const ELIMINATED_OPTIONS = [1, 2, 3] as const;
 
 export default function GroupHub({
   group,
@@ -24,21 +39,40 @@ export default function GroupHub({
   avatarSrc,
   onCreateGroup,
   onSetStake,
-  onPlayGroup,
+  onStartCompetition,
 }: Props) {
   const [draftName, setDraftName] = useState("Mi grupo");
   const [draftStake, setDraftStake] = useState<Stake>(5);
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<GroupTab>("group");
 
+  const [competitionType, setCompetitionType] =
+    useState<CompetitionType>("quick");
+  const [leagueRounds, setLeagueRounds] = useState(5);
+  const [eliminatedPerRound, setEliminatedPerRound] = useState(1);
+  const [distribution, setDistribution] =
+    useState<PotDistribution>("winner-takes-all");
+  const [selectedGameId, setSelectedGameId] = useState(GAMES[0].id);
+  const [ready, setReady] = useState(false);
+
   const activeStake = group?.stake ?? draftStake;
   const rivals = Math.max(0, (group?.members.length ?? 1) - 1);
-  const pot = group ? groupPot(group) : 0;
+  const pot = group ? groupPot(group, activeStake) : 0;
 
   const playableGames = useMemo(
     () => GAMES.filter((game) => game.enabled),
     []
   );
+
+  const selectedGame =
+    playableGames.find((game) => game.id === selectedGameId) ??
+    playableGames[0];
+
+  const payoutOptions = group
+    ? maxUsefulPayout(group)
+    : (["winner-takes-all"] as PotDistribution[]);
+
+  const allMembersReady = Boolean(group && ready && group.members.length > 1);
 
   async function copyCode() {
     if (!group) return;
@@ -51,11 +85,64 @@ export default function GroupHub({
     }
   }
 
+  function chooseCompetition(next: CompetitionType) {
+    setCompetitionType(next);
+    setReady(false);
+    if (next === "quick") {
+      setDistribution("winner-takes-all");
+    }
+  }
+
+  function setStake(stake: Stake) {
+    setReady(false);
+    onSetStake(stake);
+  }
+
+  function buildConfig(): GroupCompetitionConfig {
+    if (competitionType === "league") {
+      return {
+        type: "league",
+        stake: activeStake,
+        rounds: leagueRounds,
+        distribution,
+      };
+    }
+
+    if (competitionType === "tournament") {
+      return {
+        type: "tournament",
+        stake: activeStake,
+        eliminatedPerRound,
+        distribution,
+      };
+    }
+
+    return {
+      type: "quick",
+      stake: activeStake,
+      distribution: "winner-takes-all",
+    };
+  }
+
+  function startCompetition() {
+    if (!selectedGame || !allMembersReady || activeStake > balance) return;
+    onStartCompetition(selectedGame, buildConfig());
+  }
+
   if (!group) {
     return (
       <section className="groupScreen">
-        <div className="groupSubtabs" role="tablist" aria-label="Secciones del grupo">
-          <button type="button" role="tab" aria-selected="true" className="active">
+        <div
+          className="groupSubtabs"
+          role="tablist"
+          aria-label="Secciones del grupo"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected="true"
+            className="active"
+          >
             MI GRUPO
           </button>
           <button
@@ -73,8 +160,7 @@ export default function GroupHub({
           <span>GRUPO CERRADO</span>
           <h1>Compite con tu gente</h1>
           <p>
-            Crea una sala privada. Solo entra quien tenga el código. El importe
-            se fija para todos antes de jugar.
+            Crea una sala privada. Solo entra quien tenga el código.
           </p>
         </div>
 
@@ -89,30 +175,13 @@ export default function GroupHub({
             />
           </label>
 
-          <div className="groupStakeBlock">
-            <span>DINERO POR PARTIDA</span>
-            <div className="groupStakeGrid">
-              {STAKES.map((stake) => (
-                <button
-                  key={stake}
-                  type="button"
-                  className={draftStake === stake ? "selected" : ""}
-                  disabled={stake > balance}
-                  onClick={() => setDraftStake(stake)}
-                >
-                  {stake === 0 ? "GRATIS" : `${stake}€`}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div className="groupSetupPreview">
             <img src={avatarSrc} alt="" />
             <div>
               <small>CREADOR</small>
               <strong>{playerName || "TÚ"}</strong>
             </div>
-            <b>{draftStake === 0 ? "DEMO" : `${draftStake}€`}</b>
+            <b>PRIVADO</b>
           </div>
 
           <button
@@ -129,7 +198,11 @@ export default function GroupHub({
 
   return (
     <section className="groupScreen">
-      <div className="groupSubtabs" role="tablist" aria-label="Secciones del grupo">
+      <div
+        className="groupSubtabs"
+        role="tablist"
+        aria-label="Secciones del grupo"
+      >
         <button
           type="button"
           role="tab"
@@ -162,25 +235,10 @@ export default function GroupHub({
             </button>
           </div>
 
-          <div className="groupSummaryGrid">
-            <div>
-              <span>RIVALES</span>
-              <strong>{rivals}</strong>
-            </div>
-            <div>
-              <span>POR JUGADOR</span>
-              <strong>{activeStake === 0 ? "0€" : `${activeStake}€`}</strong>
-            </div>
-            <div>
-              <span>BOTE DEMO</span>
-              <strong>{pot === 0 ? "—" : `${pot}€`}</strong>
-            </div>
-          </div>
-
           <div className="groupMembersCard">
             <div className="groupSectionTitle">
               <span>INTEGRANTES</span>
-              <small>1 VS TODOS</small>
+              <small>{group.members.length} JUGADORES</small>
             </div>
             <div className="groupMembers">
               {group.members.map((member) => (
@@ -204,15 +262,42 @@ export default function GroupHub({
       ) : (
         <>
           <div className="groupMatchSetupHead">
-            <small>PARTIDA PRIVADA</small>
-            <h1>Configura el enfrentamiento</h1>
+            <small>NUEVA COMPETICIÓN</small>
+            <h1>Elige formato</h1>
             <p>
-              Juegas una vez contra la mejor marca del resto del grupo.
+              Define las reglas antes de abrir la sala de espera.
             </p>
           </div>
 
+          <div className="competitionTypeGrid">
+            <button
+              type="button"
+              className={competitionType === "quick" ? "active" : ""}
+              onClick={() => chooseCompetition("quick")}
+            >
+              <strong>PARTIDA RÁPIDA</strong>
+              <span>Una partida</span>
+            </button>
+            <button
+              type="button"
+              className={competitionType === "league" ? "active" : ""}
+              onClick={() => chooseCompetition("league")}
+            >
+              <strong>LIGA</strong>
+              <span>Varias jornadas</span>
+            </button>
+            <button
+              type="button"
+              className={competitionType === "tournament" ? "active" : ""}
+              onClick={() => chooseCompetition("tournament")}
+            >
+              <strong>TORNEO</strong>
+              <span>Eliminatorias</span>
+            </button>
+          </div>
+
           <div className="groupStakeBlock groupStakeCard">
-            <span>DINERO POR JUGADOR</span>
+            <span>PRECIO DE ENTRADA POR JUGADOR</span>
             <div className="groupStakeGrid">
               {STAKES.map((stake) => (
                 <button
@@ -220,7 +305,7 @@ export default function GroupHub({
                   type="button"
                   className={activeStake === stake ? "selected" : ""}
                   disabled={stake > balance}
-                  onClick={() => onSetStake(stake)}
+                  onClick={() => setStake(stake)}
                 >
                   {stake === 0 ? "GRATIS" : `${stake}€`}
                 </button>
@@ -228,38 +313,151 @@ export default function GroupHub({
             </div>
           </div>
 
+          {competitionType === "league" && (
+            <div className="competitionConfigCard">
+              <span>NÚMERO DE JORNADAS</span>
+              <div className="compactOptionGrid">
+                {LEAGUE_ROUNDS.map((rounds) => (
+                  <button
+                    key={rounds}
+                    type="button"
+                    className={leagueRounds === rounds ? "selected" : ""}
+                    onClick={() => {
+                      setLeagueRounds(rounds);
+                      setReady(false);
+                    }}
+                  >
+                    {rounds}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {competitionType === "tournament" && (
+            <div className="competitionConfigCard">
+              <span>ELIMINADOS POR RONDA</span>
+              <div className="compactOptionGrid">
+                {ELIMINATED_OPTIONS.filter(
+                  (value) => value < group.members.length
+                ).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={
+                      eliminatedPerRound === value ? "selected" : ""
+                    }
+                    onClick={() => {
+                      setEliminatedPerRound(value);
+                      setReady(false);
+                    }}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {competitionType !== "quick" && (
+            <div className="competitionConfigCard">
+              <span>REPARTO DEL BOTE</span>
+              <div className="payoutOptionList">
+                {payoutOptions.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    className={distribution === option ? "selected" : ""}
+                    onClick={() => {
+                      setDistribution(option);
+                      setReady(false);
+                    }}
+                  >
+                    {payoutLabel(option)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="groupMatchSummary">
             <div>
-              <span>FORMATO</span>
-              <strong>1 VS {rivals}</strong>
+              <span>JUGADORES</span>
+              <strong>{group.members.length}</strong>
             </div>
             <div>
-              <span>BOTE DEMO</span>
+              <span>BOTE</span>
               <strong>{pot === 0 ? "—" : `${pot}€`}</strong>
             </div>
           </div>
 
           <div className="groupSectionTitle groupGameTitle">
             <span>ELIGE JUEGO</span>
-            <small>MEJOR MARCA GANA</small>
+            <small>UNA MARCA POR JUGADOR</small>
           </div>
 
-          <div className="groupGameGrid">
+          <div className="groupGameGrid selectionMode">
             {playableGames.map((game) => (
-              <article key={game.id}>
+              <button
+                key={game.id}
+                type="button"
+                className={selectedGameId === game.id ? "selected" : ""}
+                onClick={() => {
+                  setSelectedGameId(game.id);
+                  setReady(false);
+                }}
+              >
                 <img src={game.cover} alt={game.name} />
-                <div>
-                  <strong>{game.name}</strong>
-                  <button
-                    type="button"
-                    disabled={activeStake > balance || rivals < 1}
-                    onClick={() => onPlayGroup(game)}
-                  >
-                    JUGAR 1 VS {rivals}
-                  </button>
-                </div>
-              </article>
+                <strong>{game.name}</strong>
+              </button>
             ))}
+          </div>
+
+          <div className="readyRoomCard">
+            <div className="groupSectionTitle">
+              <span>SALA DE ESPERA</span>
+              <small>
+                {ready
+                  ? `${group.members.length}/${group.members.length} LISTOS`
+                  : `${group.members.length - 1}/${group.members.length} LISTOS`}
+              </small>
+            </div>
+
+            <div className="readyMemberList">
+              {group.members.map((member) => {
+                const memberReady = !member.isYou || ready;
+                return (
+                  <div key={member.id}>
+                    <img src={member.avatar} alt="" />
+                    <strong>{member.name}</strong>
+                    <span className={memberReady ? "ready" : ""}>
+                      {memberReady ? "LISTO" : "PENDIENTE"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              className={`readyToggle ${ready ? "ready" : ""}`}
+              type="button"
+              onClick={() => setReady((value) => !value)}
+            >
+              {ready ? "✓ ESTÁS LISTO" : "ESTOY LISTO"}
+            </button>
+
+            <button
+              className="groupPrimaryAction"
+              type="button"
+              disabled={!allMembersReady || activeStake > balance}
+              onClick={startCompetition}
+            >
+              {competitionType === "quick"
+                ? "EMPEZAR PARTIDA"
+                : competitionType === "league"
+                  ? "EMPEZAR LIGA"
+                  : "EMPEZAR TORNEO"}
+            </button>
           </div>
         </>
       )}
