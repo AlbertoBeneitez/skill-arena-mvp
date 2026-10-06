@@ -6,7 +6,7 @@ import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMo
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
 
-type Screen = "welcome" | "avatar-setup" | "home" | "play" | "game" | "wallet" | "profile" | "legal";
+type Screen = "welcome" | "avatar-setup" | "home" | "game" | "profile" | "legal";
 type Provider = "google" | "apple" | null;
 type Turn = "create" | "existing";
 
@@ -31,7 +31,7 @@ type PersistedState = {
   streak: number;
 };
 
-const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "play", "game", "wallet", "profile", "legal"];
+const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "game", "profile", "legal"];
 
 function isScreen(value: unknown): value is Screen {
   return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
@@ -393,15 +393,12 @@ export default function DemoApp() {
   }, [screen, countdown]);
 
   function navigate(next: Screen, replace = false) {
-    const resolved: Screen =
-      next === "play" ? "home" : next === "wallet" ? "profile" : next;
+    if (next === screen) return;
 
-    if (resolved === screen) return;
-
-    const state = { skillArenaScreen: resolved };
-    if (replace) window.history.replaceState(state, "", `#${resolved}`);
-    else window.history.pushState(state, "", `#${resolved}`);
-    setScreen(resolved);
+    const state = { skillArenaScreen: next };
+    if (replace) window.history.replaceState(state, "", `#${next}`);
+    else window.history.pushState(state, "", `#${next}`);
+    setScreen(next);
   }
 
   function advanceTutorial() {
@@ -521,31 +518,6 @@ export default function DemoApp() {
     setPlayerName(clean);
     setOnboarded(true);
     navigate("home", true);
-  }
-
-  function openGame(game: GameMeta) {
-    haptic(5);
-
-    const preserveScrollY = screen === "play" ? window.scrollY : 0;
-    const isSameSelection = screen === "play" && selectedGame.id === game.id;
-
-    setSelectedGame(game);
-
-    if (!isSameSelection) {
-      setSelectedStake(0);
-      const mode = modeForStake(game, 0, nextTurn);
-      setSelectedMode(mode);
-      setGhostEnabled(mode === "existing");
-    }
-
-    setResult(null);
-    setActiveGame(false);
-
-    if (screen !== "play") {
-      navigate("play");
-    } else {
-      requestAnimationFrame(() => window.scrollTo(0, preserveScrollY));
-    }
   }
 
   function selectStake(stake: Stake) {
