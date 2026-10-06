@@ -52,8 +52,18 @@ export default function JetStream({active,onFinish}:Props){
       width={W}
       height={H}
       className="gameCanvas"
-      onPointerDown={()=>{thrust.current=true;gameTone("tap");haptic(4);}}
-      onPointerUp={()=>{thrust.current=false;}}
+      onPointerDown={(event)=>{
+        event.currentTarget.setPointerCapture(event.pointerId);
+        thrust.current=true;
+        gameTone("tap");
+        haptic(4);
+      }}
+      onPointerUp={(event)=>{
+        thrust.current=false;
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      }}
       onPointerCancel={()=>{thrust.current=false;}}
       onPointerLeave={()=>{thrust.current=false;}}
       aria-label="Jet Stream"
