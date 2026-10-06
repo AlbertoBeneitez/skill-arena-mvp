@@ -3,8 +3,6 @@ export type GameResult = {
   score: number;
   timeMs: number;
   verified?: boolean;
-  verificationId?: string;
-  replayHash?: string;
   failureReason?: string | null;
   verificationError?: string;
 };
