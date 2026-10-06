@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameResult } from "@/lib/types";
-import { createRng } from "@/lib/deterministic/seeded";
+import { mineChallengeFor } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
 type Props = {
@@ -12,23 +12,22 @@ type Props = {
   onFinish: (result: GameResult) => void;
 };
 
-const COLS = 8;
-const ROWS = 10;
-const MINES = 12;
-const START_INDEX = 4 * COLS + 3;
+const MINES = 24;
 
-function neighbors(index: number) {
-  const row = Math.floor(index / COLS);
-  const col = index % COLS;
+function neighbors(index: number, cols: number, rows: number) {
+  const row = Math.floor(index / cols);
+  const col = index % cols;
   const cells: number[] = [];
 
   for (let dy = -1; dy <= 1; dy += 1) {
     for (let dx = -1; dx <= 1; dx += 1) {
       if (!dx && !dy) continue;
+
       const rr = row + dy;
       const cc = col + dx;
-      if (rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS) {
-        cells.push(rr * COLS + cc);
+
+      if (rr >= 0 && rr < rows && cc >= 0 && cc < cols) {
+        cells.push(rr * cols + cc);
       }
     }
   }
@@ -36,14 +35,22 @@ function neighbors(index: number) {
   return cells;
 }
 
-function boardFromMines(mineSet: Set<number>) {
-  const values = Array(COLS * ROWS).fill(0);
+function boardFromMines(
+  mineIndexes: readonly number[],
+  cols: number,
+  rows: number
+) {
+  const mineSet = new Set(mineIndexes);
+  const values = Array(cols * rows).fill(0);
 
   for (const mine of mineSet) values[mine] = -1;
 
   for (let index = 0; index < values.length; index += 1) {
     if (values[index] === -1) continue;
-    values[index] = neighbors(index).filter((cell) => mineSet.has(cell)).length;
+
+    values[index] = neighbors(index, cols, rows).filter((cell) =>
+      mineSet.has(cell)
+    ).length;
   }
 
   return values;
@@ -52,102 +59,35 @@ function boardFromMines(mineSet: Set<number>) {
 function revealFlood(
   values: number[],
   revealed: Set<number>,
-  start: number
+  start: number,
+  cols: number,
+  rows: number
 ) {
   const queue = [start];
 
   while (queue.length) {
     const current = queue.shift()!;
-    if (revealed.has(current) || values[current] === -1) continue;
+
+    if (
+      revealed.has(current) ||
+      values[current] === -1
+    ) {
+      continue;
+    }
 
     revealed.add(current);
 
     if (values[current] === 0) {
-      for (const cell of neighbors(current)) {
-        if (!revealed.has(cell) && values[cell] !== -1) queue.push(cell);
-      }
-    }
-  }
-}
-
-/**
- * Solver restricted to standard local Minesweeper deductions:
- * 1) clue - flagged == unknown -> all unknown are mines
- * 2) clue == flagged -> all remaining unknown are safe
- *
- * A generated board is accepted only if these rules solve every safe cell
- * from the fixed shared opening square. No guessing is required.
- */
-function isGuessFree(values: number[]) {
-  const revealed = new Set<number>();
-  const flagged = new Set<number>();
-  revealFlood(values, revealed, START_INDEX);
-
-  let progress = true;
-
-  while (progress) {
-    progress = false;
-
-    for (const index of [...revealed]) {
-      const clue = values[index];
-      if (clue <= 0) continue;
-
-      const around = neighbors(index);
-      const unknown = around.filter(
-        (cell) => !revealed.has(cell) && !flagged.has(cell)
-      );
-      const flaggedAround = around.filter((cell) => flagged.has(cell)).length;
-
-      if (!unknown.length) continue;
-
-      if (clue - flaggedAround === unknown.length) {
-        for (const cell of unknown) {
-          if (!flagged.has(cell)) {
-            flagged.add(cell);
-            progress = true;
-          }
-        }
-      } else if (clue === flaggedAround) {
-        for (const cell of unknown) {
-          const before = revealed.size;
-          revealFlood(values, revealed, cell);
-          if (revealed.size > before) progress = true;
+      for (const cell of neighbors(current, cols, rows)) {
+        if (
+          !revealed.has(cell) &&
+          values[cell] !== -1
+        ) {
+          queue.push(cell);
         }
       }
     }
   }
-
-  return revealed.size === COLS * ROWS - MINES;
-}
-
-function createGuessFreeBoard(seed: string) {
-  const reserved = new Set([START_INDEX, ...neighbors(START_INDEX)]);
-
-  for (let attempt = 0; attempt < 1500; attempt += 1) {
-    const rng = createRng(`${seed}:guess-free:${attempt}`);
-    const mineSet = new Set<number>();
-
-    while (mineSet.size < MINES) {
-      const index = rng.nextInt(COLS * ROWS);
-      if (!reserved.has(index)) mineSet.add(index);
-    }
-
-    const values = boardFromMines(mineSet);
-    if (values[START_INDEX] === 0 && isGuessFree(values)) {
-      return values;
-    }
-  }
-
-  // Deterministic fallback: mines concentrated along the outer edge.
-  const fallbackMines = new Set<number>();
-  for (let index = 0; index < COLS * ROWS && fallbackMines.size < MINES; index += 1) {
-    const row = Math.floor(index / COLS);
-    const col = index % COLS;
-    if ((row === 0 || row === ROWS - 1 || col === COLS - 1) && !reserved.has(index)) {
-      fallbackMines.add(index);
-    }
-  }
-  return boardFromMines(fallbackMines);
 }
 
 export default function MineGrid({
@@ -156,11 +96,30 @@ export default function MineGrid({
   seed,
   onFinish,
 }: Props) {
-  const board = useMemo(() => createGuessFreeBoard(seed), [seed]);
-  const [revealed, setRevealed] = useState<Set<number>>(new Set());
-  const [flagged, setFlagged] = useState<Set<number>>(new Set());
+  const challenge = useMemo(
+    () => mineChallengeFor(seed),
+    [seed]
+  );
+
+  const board = useMemo(
+    () =>
+      boardFromMines(
+        challenge.mineIndexes,
+        challenge.cols,
+        challenge.rows
+      ),
+    [challenge]
+  );
+
+  const [revealed, setRevealed] = useState<Set<number>>(
+    new Set()
+  );
+  const [flagged, setFlagged] = useState<Set<number>>(
+    new Set()
+  );
   const [started, setStarted] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
+
   const runningRef = useRef(false);
   const startRef = useRef(0);
 
@@ -169,22 +128,34 @@ export default function MineGrid({
     setFlagged(new Set());
     setStarted(false);
     setFlagMode(false);
+
     runningRef.current = active;
-    if (active) startRef.current = performance.now();
+
+    if (active) {
+      startRef.current = performance.now();
+    }
 
     return () => {
       runningRef.current = false;
     };
   }, [active, seed]);
 
-  function finish(won: boolean, nextRevealed: Set<number>) {
+  function finish(
+    won: boolean,
+    nextRevealed: Set<number>
+  ) {
     if (!runningRef.current) return;
 
     runningRef.current = false;
+
     const safeCount = [...nextRevealed].filter(
       (index) => board[index] !== -1
     ).length;
-    const score = safeCount * 180;
+
+    const score =
+      safeCount * 160 +
+      flagged.size * 18 +
+      challenge.deductionRounds * 40;
 
     gameTone(won ? "win" : "bad");
     haptic(won ? [18, 25, 45] : 28);
@@ -192,7 +163,9 @@ export default function MineGrid({
     onFinish({
       won,
       score,
-      timeMs: Math.round(performance.now() - startRef.current),
+      timeMs: Math.round(
+        performance.now() - startRef.current
+      ),
     });
   }
 
@@ -205,8 +178,11 @@ export default function MineGrid({
       return;
     }
 
-    // Competitive fairness: both players must begin from the same opening.
-    if (!started && index !== START_INDEX) {
+    // Both competitors must start from the same validated opening.
+    if (
+      !started &&
+      index !== challenge.startIndex
+    ) {
       haptic(4);
       return;
     }
@@ -222,19 +198,32 @@ export default function MineGrid({
       return;
     }
 
-    revealFlood(board, next, index);
+    revealFlood(
+      board,
+      next,
+      index,
+      challenge.cols,
+      challenge.rows
+    );
+
     setRevealed(next);
 
     const safeCount = [...next].filter(
       (cell) => board[cell] !== -1
     ).length;
 
-    if (safeCount === COLS * ROWS - MINES) {
+    // Do not end early when a benchmark score is beaten. Mine Grid only
+    // finishes when the player actually clears the complete board.
+    if (
+      safeCount ===
+      challenge.cols * challenge.rows - MINES
+    ) {
       finish(true, next);
-    } else {
-      gameTone("tap");
-      haptic(3);
+      return;
     }
+
+    gameTone("tap");
+    haptic(3);
   }
 
   function toggleFlag(index: number) {
@@ -247,29 +236,50 @@ export default function MineGrid({
     }
 
     const next = new Set(flagged);
-    if (next.has(index)) next.delete(index);
-    else next.add(index);
+
+    if (next.has(index)) {
+      next.delete(index);
+    } else if (next.size < MINES) {
+      next.add(index);
+    }
+
     setFlagged(next);
     haptic(3);
   }
 
   function interact(index: number) {
-    if (!started && index === START_INDEX) {
+    if (
+      !started &&
+      index === challenge.startIndex
+    ) {
       reveal(index);
       return;
     }
 
-    if (flagMode) toggleFlag(index);
-    else reveal(index);
+    if (flagMode) {
+      toggleFlag(index);
+    } else {
+      reveal(index);
+    }
   }
 
   return (
-    <div className="detGameSurface mineGridGame" aria-label="Mine Grid">
-      <div className="mineGridBoard">
+    <div
+      className="detGameSurface mineGridGame mineGridAdvanced"
+      aria-label="Mine Grid"
+    >
+      <div
+        className="mineGridBoard"
+        style={{
+          gridTemplateColumns: `repeat(${challenge.cols}, 1fr)`,
+        }}
+      >
         {board.map((value, index) => {
           const open = revealed.has(index);
           const isFlagged = flagged.has(index);
-          const isStart = !started && index === START_INDEX;
+          const isStart =
+            !started &&
+            index === challenge.startIndex;
 
           return (
             <button
@@ -305,7 +315,9 @@ export default function MineGrid({
 
       <div className="mineModeControl">
         {!started ? (
-          <span>EMPIEZA EN EL PUNTO MARCADO</span>
+          <span>
+            EMPIEZA EN EL PUNTO MARCADO
+          </span>
         ) : (
           <>
             <button
@@ -320,7 +332,7 @@ export default function MineGrid({
               className={flagMode ? "active" : ""}
               onClick={() => setFlagMode(true)}
             >
-              MARCAR
+              MARCAR {flagged.size}/{MINES}
             </button>
           </>
         )}
