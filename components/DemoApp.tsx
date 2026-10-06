@@ -569,7 +569,6 @@ export default function DemoApp() {
     setWins(0);
     setLosses(0);
     setStreak(0);
-    setBestScores({});
     setCountdown(null);
     navigate("welcome", true);
   }
