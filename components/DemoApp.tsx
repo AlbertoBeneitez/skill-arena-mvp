@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import type { GameResult } from "@/lib/types";
-import { gameTone, haptic } from "@/lib/gameFeedback";
+import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
 
 type Screen = "welcome" | "avatar-setup" | "home" | "play" | "game" | "wallet" | "profile" | "legal";
 type Provider = "google" | "apple" | null;
@@ -29,7 +29,6 @@ type PersistedState = {
   wins: number;
   losses: number;
   streak: number;
-  bestScores: Record<string, number>;
 };
 
 const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "play", "game", "wallet", "profile", "legal"];
@@ -71,6 +70,45 @@ function isDemoNameAvailable(value: string) {
   return !BLOCKED_DEMO_NAMES.has(clean.toLowerCase());
 }
 
+async function compactAvatarSource(source: string) {
+  if (!source.startsWith("data:image/")) return source;
+
+  return new Promise<string>((resolve) => {
+    const image = new Image();
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 256;
+        canvas.height = 256;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          resolve(source);
+          return;
+        }
+
+        ctx.fillStyle = "#dce6f4";
+        ctx.fillRect(0, 0, 256, 256);
+
+        const scale = Math.max(256 / image.width, 256 / image.height);
+        const width = image.width * scale;
+        const height = image.height * scale;
+        const x = (256 - width) / 2;
+        const y = (256 - height) / 2;
+
+        ctx.drawImage(image, x, y, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      } catch {
+        resolve(source);
+      }
+    };
+
+    image.onerror = () => resolve(source);
+    image.src = source;
+  });
+}
+
 export default function DemoApp() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [onboarded, setOnboarded] = useState(false);
@@ -104,7 +142,6 @@ export default function DemoApp() {
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [bestScores, setBestScores] = useState<Record<string, number>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -151,7 +188,6 @@ export default function DemoApp() {
         if (typeof data.wins === "number") setWins(data.wins);
         if (typeof data.losses === "number") setLosses(data.losses);
         if (typeof data.streak === "number") setStreak(data.streak);
-        if (data.bestScores && typeof data.bestScores === "object") setBestScores(data.bestScores);
       } catch {}
     }
     setTutorialSeen(localStorage.getItem("skill-arena-color-tutorial-v1") === "1");
@@ -176,10 +212,17 @@ export default function DemoApp() {
       wins,
       losses,
       streak,
-      bestScores,
     };
-    localStorage.setItem("skill-arena-v3", JSON.stringify(data));
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, bestScores]);
+    try {
+      localStorage.setItem("skill-arena-v3", JSON.stringify(data));
+    } catch {
+      // Storage can be full on mobile; gameplay must continue even if persistence fails.
+    }
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak]);
+
+  useEffect(() => {
+    setGameSoundEnabled(musicOn);
+  }, [musicOn]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -187,6 +230,11 @@ export default function DemoApp() {
     window.history.replaceState({ skillArenaScreen: screen }, "", `#${screen}`);
 
     const onPopState = (event: PopStateEvent) => {
+      if (screen === "game" && (activeGame || countdown !== null)) {
+        window.history.pushState({ skillArenaScreen: "game" }, "", "#game");
+        return;
+      }
+
       const target = event.state?.skillArenaScreen;
       setActiveGame(false);
       setCountdown(null);
@@ -197,7 +245,7 @@ export default function DemoApp() {
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [isLoaded, onboarded]);
+  }, [isLoaded, onboarded, screen, activeGame, countdown]);
 
   useEffect(() => {
     if (isLoaded && onboarded && screen === "play" && !tutorialSeen) {
@@ -310,7 +358,7 @@ export default function DemoApp() {
       if (!response.ok || typeof data.image !== "string") {
         throw new Error(data.error || "No se pudo generar el avatar.");
       }
-      setAvatarSrc(data.image);
+      setAvatarSrc(await compactAvatarSource(data.image));
     } catch (error) {
       setAvatarError(error instanceof Error ? error.message : "No se pudo generar el avatar.");
     } finally {
@@ -320,9 +368,18 @@ export default function DemoApp() {
 
   function handleAvatarUpload(file?: File) {
     if (!file || !file.type.startsWith("image/")) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      setAvatarError("La imagen es demasiado grande. Máximo 8 MB.");
+      return;
+    }
+
+    setAvatarError("");
     const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") setAvatarSrc(reader.result);
+    reader.onload = async () => {
+      if (typeof reader.result === "string") {
+        setAvatarSrc(await compactAvatarSource(reader.result));
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -339,11 +396,17 @@ export default function DemoApp() {
     haptic(5);
 
     const preserveScrollY = screen === "play" ? window.scrollY : 0;
+    const isSameSelection = screen === "play" && selectedGame.id === game.id;
+
     setSelectedGame(game);
-    setSelectedStake(0);
-    const mode = modeForStake(game, 0, nextTurn);
-    setSelectedMode(mode);
-    setGhostEnabled(mode === "existing");
+
+    if (!isSameSelection) {
+      setSelectedStake(0);
+      const mode = modeForStake(game, 0, nextTurn);
+      setSelectedMode(mode);
+      setGhostEnabled(mode === "existing");
+    }
+
     setResult(null);
     setActiveGame(false);
 
@@ -433,10 +496,6 @@ export default function DemoApp() {
     const didWin = gameResult.score >= selectedGame.rivalScore;
     const resolvedResult = { ...gameResult, won: didWin };
     setResult(resolvedResult);
-    setBestScores((scores) => ({
-      ...scores,
-      [selectedGame.id]: Math.max(scores[selectedGame.id] ?? 0, gameResult.score),
-    }));
 
     if (didWin) {
       setWins((value) => value + 1);
@@ -478,7 +537,6 @@ export default function DemoApp() {
     setWins(0);
     setLosses(0);
     setStreak(0);
-    setBestScores({});
     navigate("profile");
   }
 
@@ -611,11 +669,11 @@ export default function DemoApp() {
 
             <section className="arenaSummary">
               <div className="arenaSummaryMain">
-                <span>ARENA RATING</span>
-                <strong>{Math.max(1000, 1200 + wins * 22 - losses * 14)}</strong>
-                <small>#{rank} global demo</small>
+                <span>RANKING</span>
+                <strong>#{rank}</strong>
+                <small>ordenado por ganancia neta demo</small>
               </div>
-              <div className="arenaMetric"><span>RACHA</span><b>{streak}</b></div>
+              <div className="arenaMetric"><span>GANANCIA</span><b>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
               <div className="arenaMetric"><span>VICTORIAS</span><b>{wins}</b></div>
               <div className="arenaMetric"><span>WIN RATE</span><b>{winRate}%</b></div>
             </section>
@@ -841,7 +899,7 @@ export default function DemoApp() {
               <div className="chartAxis"><span>INICIO</span><span>AHORA</span></div>
             </div>
             <div className="settingsList">
-              <button onClick={() => setMusicOn((v) => !v)}><span>MÚSICA</span><b>{musicOn ? "ON" : "OFF"}</b></button>
+              <button onClick={() => setMusicOn((v) => !v)}><span>SONIDO</span><b>{musicOn ? "ON" : "OFF"}</b></button>
               <button onClick={() => { setAvatarEditorOpen(false); setAvatarError(""); navigate("avatar-setup"); }}><span>CAMBIAR NOMBRE / AVATAR</span><b>→</b></button>
               <button onClick={resetAvatar}><span>RESETEAR AVATAR</span><b>0 €</b></button>
               <button onClick={() => navigate("legal")}><span>LEGAL</span><b>→</b></button>
