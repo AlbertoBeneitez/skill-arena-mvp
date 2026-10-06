@@ -10,7 +10,7 @@ type Props = {
   onFinish: (result: GameResult) => void;
 };
 
-type Lane = 0 | 1 | 2 | 3 | 4;
+type Lane = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 type Kind = "wall" | "barrier";
 type Hazard = { lane: Lane; kind: Kind };
 type ObstacleGroup = {
@@ -29,31 +29,31 @@ const DT = 1 / 120;
 const HORIZON_Y = 96;
 const PLAYER_Y = 500;
 const PLAYER_BOTTOM = 23;
-const PLAYER_LANES = [54, 124, 195, 266, 336] as const;
+const PLAYER_LANES = [32, 86, 140, 195, 250, 304, 358] as const;
 
 const GROUP_PATTERN: Hazard[][] = [
-  [{ lane: 2, kind: "wall" }],
-  [{ lane: 1, kind: "wall" }, { lane: 3, kind: "wall" }],
-  [{ lane: 0, kind: "barrier" }, { lane: 2, kind: "wall" }],
-  [{ lane: 2, kind: "barrier" }, { lane: 4, kind: "wall" }],
-  [{ lane: 0, kind: "wall" }, { lane: 3, kind: "barrier" }],
-  [{ lane: 1, kind: "barrier" }, { lane: 4, kind: "wall" }],
-  [{ lane: 0, kind: "wall" }, { lane: 2, kind: "wall" }, { lane: 4, kind: "barrier" }],
-  [{ lane: 1, kind: "wall" }, { lane: 3, kind: "barrier" }],
-  [{ lane: 0, kind: "barrier" }, { lane: 1, kind: "wall" }, { lane: 4, kind: "wall" }],
-  [{ lane: 2, kind: "wall" }, { lane: 3, kind: "wall" }],
-  [{ lane: 0, kind: "wall" }, { lane: 4, kind: "barrier" }],
-  [{ lane: 1, kind: "barrier" }, { lane: 2, kind: "wall" }, { lane: 4, kind: "wall" }],
-  [{ lane: 0, kind: "wall" }, { lane: 3, kind: "wall" }],
-  [{ lane: 1, kind: "wall" }, { lane: 2, kind: "barrier" }],
-  [{ lane: 0, kind: "barrier" }, { lane: 3, kind: "wall" }, { lane: 4, kind: "wall" }],
-  [{ lane: 1, kind: "wall" }, { lane: 4, kind: "barrier" }],
-];
+  [{ lane: 3, kind: "wall" }],
+  [{ lane: 1, kind: "wall" }, { lane: 5, kind: "wall" }],
+  [{ lane: 0, kind: "barrier" }, { lane: 3, kind: "wall" }, { lane: 6, kind: "barrier" }],
+  [{ lane: 2, kind: "wall" }, { lane: 4, kind: "wall" }],
+  [{ lane: 0, kind: "wall" }, { lane: 2, kind: "barrier" }, { lane: 5, kind: "wall" }],
+  [{ lane: 1, kind: "barrier" }, { lane: 3, kind: "wall" }, { lane: 6, kind: "wall" }],
+  [{ lane: 0, kind: "wall" }, { lane: 2, kind: "wall" }, { lane: 4, kind: "barrier" }, { lane: 6, kind: "wall" }],
+  [{ lane: 1, kind: "wall" }, { lane: 4, kind: "wall" }, { lane: 5, kind: "barrier" }],
+  [{ lane: 0, kind: "barrier" }, { lane: 3, kind: "wall" }, { lane: 5, kind: "wall" }],
+  [{ lane: 2, kind: "barrier" }, { lane: 4, kind: "wall" }, { lane: 6, kind: "barrier" }],
+  [{ lane: 0, kind: "wall" }, { lane: 1, kind: "wall" }, { lane: 5, kind: "barrier" }],
+  [{ lane: 2, kind: "wall" }, { lane: 3, kind: "barrier" }, { lane: 6, kind: "wall" }],
+  [{ lane: 0, kind: "barrier" }, { lane: 4, kind: "wall" }, { lane: 6, kind: "wall" }],
+  [{ lane: 1, kind: "wall" }, { lane: 3, kind: "wall" }, { lane: 5, kind: "wall" }],
+  [{ lane: 0, kind: "wall" }, { lane: 2, kind: "barrier" }, { lane: 4, kind: "wall" }, { lane: 6, kind: "barrier" }],
+  [{ lane: 1, kind: "barrier" }, { lane: 2, kind: "wall" }, { lane: 5, kind: "wall" }],
+]
 
 const GAP_PATTERN = [250, 232, 246, 220, 238, 216, 230, 210, 224, 206, 218, 202];
 const GHOST_LANES: Lane[] = [
-  2, 1, 1, 2, 3, 4, 3, 2, 1, 0, 1, 2, 3, 3, 2, 1, 0, 1, 2, 3, 4, 3, 2, 1,
-];
+  3,2,2,3,4,5,6,5,4,3,2,1,0,1,2,3,4,5,6,5,4,3,2,1,2,3,4,4,3,2,
+]
 
 function speedFor(passed: number) {
   return Math.min(344, 166 + passed * 3.45);
@@ -65,10 +65,10 @@ function depthFor(y: number) {
 
 function laneX(lane: Lane, y: number) {
   const depth = depthFor(y);
-  const topSpacing = 25;
-  const bottomSpacing = 70.5;
+  const topSpacing = 17;
+  const bottomSpacing = 54.3;
   const spacing = topSpacing + (bottomSpacing - topSpacing) * depth;
-  return CX + (lane - 2) * spacing;
+  return CX + (lane - 3) * spacing;
 }
 
 function sizeFor(y: number, kind: Kind) {
@@ -250,8 +250,8 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
   const swipeRef = useRef<{ x: number; y: number } | null>(null);
 
   const state = useRef({
-    lane: 2 as Lane,
-    x: PLAYER_LANES[2] as number,
+    lane: 3 as Lane,
+    x: PLAYER_LANES[3] as number,
     groups: [] as ObstacleGroup[],
     nextIndex: 0,
     running: false,
@@ -359,15 +359,15 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
 
   const drawRoad = useCallback((ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
-    ctx.moveTo(126, HORIZON_Y);
-    ctx.lineTo(264, HORIZON_Y);
-    ctx.lineTo(380, H);
-    ctx.lineTo(10, H);
+    ctx.moveTo(112, HORIZON_Y);
+    ctx.lineTo(278, HORIZON_Y);
+    ctx.lineTo(388, H);
+    ctx.lineTo(2, H);
     ctx.closePath();
     ctx.fillStyle = "#252d38";
     ctx.fill();
 
-    const boundaries = [-1.5, -0.5, 0.5, 1.5];
+    const boundaries = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5];
 
     ctx.lineWidth = 2;
     ctx.setLineDash([18, 19]);
@@ -375,8 +375,8 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
 
     for (const boundary of boundaries) {
       ctx.beginPath();
-      ctx.moveTo(CX + boundary * 25, HORIZON_Y);
-      ctx.lineTo(CX + boundary * 70.5, H);
+      ctx.moveTo(CX + boundary * 17, HORIZON_Y);
+      ctx.lineTo(CX + boundary * 54.3, H);
       ctx.stroke();
     }
 
@@ -385,12 +385,12 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.strokeStyle = "rgba(91,221,240,.38)";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(126, HORIZON_Y);
-    ctx.lineTo(10, H);
+    ctx.moveTo(112, HORIZON_Y);
+    ctx.lineTo(2, H);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(264, HORIZON_Y);
-    ctx.lineTo(380, H);
+    ctx.moveTo(278, HORIZON_Y);
+    ctx.lineTo(388, H);
     ctx.stroke();
   }, []);
 
@@ -428,8 +428,8 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     laneGlow.addColorStop(1, "rgba(89,224,242,.12)");
     ctx.fillStyle = laneGlow;
     ctx.beginPath();
-    ctx.moveTo(CX + (s.lane - 2) * 25 - 13, HORIZON_Y);
-    ctx.lineTo(CX + (s.lane - 2) * 25 + 13, HORIZON_Y);
+    ctx.moveTo(CX + (s.lane - 3) * 17 - 9, HORIZON_Y);
+    ctx.lineTo(CX + (s.lane - 3) * 17 + 9, HORIZON_Y);
     ctx.lineTo(activeLaneX + 34, H);
     ctx.lineTo(activeLaneX - 34, H);
     ctx.closePath();
@@ -439,12 +439,12 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     const nextGroup = s.groups.find((group) => !group.passed && group.y > HORIZON_Y - 80);
     if (nextGroup && nextGroup.y < 250) {
       const blocked = new Set(nextGroup.hazards.map((hazard) => hazard.lane));
-      for (let lane = 0; lane < 5; lane += 1) {
-        const x = 137 + lane * 29;
+      for (let lane = 0; lane < 7; lane += 1) {
+        const x = 108 + lane * 27;
         ctx.fillStyle = blocked.has(lane as Lane)
           ? "rgba(239,82,100,.78)"
           : "rgba(98,218,145,.72)";
-        ctx.fillRect(x, 74, 18, 4);
+        ctx.fillRect(x, 74, 16, 4);
       }
     }
 
@@ -547,7 +547,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.fillText(`SUPERADOS ${s.passed}`, 26, 44);
     ctx.fillStyle = "#7de5f5";
     ctx.textAlign = "right";
-    ctx.fillText(`CARRIL ${s.lane + 1}/5`, W - 26, 44);
+    ctx.fillText(`CARRIL ${s.lane + 1}/7`, W - 26, 44);
 
     if (s.passed < 4) {
       ctx.fillStyle = "rgba(255,255,255,.48)";
@@ -580,8 +580,8 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     const initial = makeInitialGroups();
 
     state.current = {
-      lane: 2,
-      x: PLAYER_LANES[2],
+      lane: 3,
+      x: PLAYER_LANES[3],
       groups: initial.items,
       nextIndex: initial.nextIndex,
       running: true,
@@ -608,15 +608,20 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     };
   }, [active, start]);
 
-  function move(direction: -1 | 1) {
+  function move(direction: -1 | 1, steps = 1) {
     const s = state.current;
     if (!s.running) return;
 
-    const next = Math.max(0, Math.min(4, s.lane + direction)) as Lane;
+    const next = Math.max(
+      0,
+      Math.min(6, s.lane + direction * steps)
+    ) as Lane;
+
     if (next === s.lane) return;
 
+    const delta = Math.abs(next - s.lane);
     s.lane = next;
-    s.laneChanges += 1;
+    s.laneChanges += delta;
     gameTone("tap");
     haptic(5);
   }
@@ -643,8 +648,9 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
 
   function gesture(dx: number, dy: number) {
     if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 22) move(1);
-      else if (dx < -22) move(-1);
+      const steps = Math.abs(dx) > 86 ? 2 : 1;
+      if (dx > 22) move(1, steps);
+      else if (dx < -22) move(-1, steps);
       return;
     }
 
