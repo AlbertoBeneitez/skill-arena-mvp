@@ -212,7 +212,7 @@ export function modeForStake(
   return nextTurn;
 }
 
-export function prizeForStake(stake: Stake) {
+export function prizeForStake(stake: number) {
   if (stake === 0) return 0;
   return Number((stake * 2).toFixed(2));
 }
