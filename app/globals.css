@@ -2675,3 +2675,224 @@ html, body {
     min-height: 50px;
   }
 }
+
+
+/* =========================================================
+   V10 — professional mobile interaction polish
+   ========================================================= */
+
+.mobileGameHeader {
+  border-bottom: 1px solid rgba(142,172,219,.08);
+  background: rgba(10,20,41,.88);
+  backdrop-filter: blur(12px);
+}
+
+.compactMatchStrip {
+  background: rgba(255,255,255,.045);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+.gameScreen .gameArenaWrap {
+  background: #071024;
+}
+
+.playGameCard {
+  border-width: 1px;
+  border-color: rgba(151,128,85,.28);
+  box-shadow:
+    0 8px 22px rgba(54,66,87,.10),
+    0 1px 0 rgba(255,255,255,.7) inset;
+}
+
+.playGameCardFooter {
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+}
+
+.cardPlayButton {
+  min-width: 92px;
+  padding-inline: 14px;
+  transition: transform .11s ease, box-shadow .11s ease, opacity .11s ease;
+}
+
+.cardPlayButton[aria-busy="true"] {
+  min-width: 102px;
+  cursor: progress;
+}
+
+.cardPlayButton:disabled {
+  opacity: .48;
+  box-shadow: none;
+  transform: none;
+}
+
+.quickStakeBar button {
+  transition: transform .11s ease, background .11s ease, border-color .11s ease;
+}
+
+.quickStakeBar button:active:not(:disabled),
+.cardGhostToggle:active,
+.mobileGameBack:active,
+.ghostToggle:active {
+  transform: scale(.96);
+}
+
+.quickStakeBar button:focus-visible,
+.cardPlayButton:focus-visible,
+.cardGhostToggle:focus-visible,
+.mobileGameBack:focus-visible,
+.ghostToggle:focus-visible,
+.orbitControlDock button:focus-visible {
+  outline: 3px solid rgba(113,218,239,.46);
+  outline-offset: 2px;
+}
+
+/* Orbit controls are anchored to the bottom safe area like a native game control dock. */
+.orbitShiftArena {
+  overflow: hidden;
+}
+
+.orbitControlDock {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 16;
+  display: grid;
+  grid-template-columns: 1fr 88px 1fr;
+  gap: 9px;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid rgba(111,226,255,.20);
+  border-radius: 18px;
+  background: rgba(7,16,38,.88);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.32),
+    inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter: blur(12px);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.orbitControlDock button {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #4aaec8;
+  border-radius: 14px;
+  background: linear-gradient(180deg,#3d8fb8,#286889);
+  box-shadow: 0 3px 0 #17485f;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .04em;
+  touch-action: manipulation;
+}
+
+.orbitControlDock button span {
+  color: #9bf1ff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.orbitControlDock button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #17485f;
+}
+
+.orbitControlDock button:disabled {
+  opacity: .28;
+  box-shadow: none;
+}
+
+.orbitPosition {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  min-height: 58px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.05);
+}
+
+.orbitPosition small {
+  color: #8097bd;
+  font-size: 6px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.orbitPosition strong {
+  color: #7ce8f8;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.orbitDots {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.orbitDots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+}
+
+.orbitDots i.active {
+  background: #7ce8f8;
+  box-shadow: 0 0 8px rgba(124,232,248,.7);
+}
+
+/* Five-lane Metro keeps the full canvas for gestures; no extra chrome competes with hazards. */
+.metroShiftArena .gameCanvas {
+  cursor: crosshair;
+}
+
+/* Professional accessibility convention: respect OS motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  .playGameCard *,
+  .quickStakeBar *,
+  .cardPlayButton,
+  .cardGhostToggle,
+  .mobileGameBack,
+  .ghostToggle,
+  .orbitControlDock button {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .playGameCardFooter {
+    grid-template-columns: minmax(0,1fr) 96px;
+  }
+
+  .cardPlayButton {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .orbitControlDock {
+    left: 9px;
+    right: 9px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    grid-template-columns: 1fr 76px 1fr;
+    gap: 7px;
+    padding: 7px;
+  }
+
+  .orbitControlDock button {
+    min-height: 54px;
+    font-size: 8px;
+  }
+
+  .orbitControlDock button span {
+    font-size: 21px;
+  }
+}
