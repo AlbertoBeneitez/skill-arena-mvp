@@ -628,6 +628,15 @@ export default function DemoApp() {
     navigate("avatar-setup");
   }
 
+  function continueWithoutProvider() {
+    setProvider(null);
+    setAvatarId(0);
+    setAvatarSrc(AVATARS[0]);
+    setAvatarEditorOpen(true);
+    setAvatarError("");
+    navigate("avatar-setup");
+  }
+
   function handleAvatarUpload(file?: File) {
     if (!file || !file.type.startsWith("image/")) return;
 
@@ -999,6 +1008,11 @@ export default function DemoApp() {
           <div className="authStack">
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
+            <div className="authDivider"><span>o</span></div>
+            <button className="authButton guest" onClick={continueWithoutProvider}>
+              <span aria-hidden="true">→</span>
+              Continuar sin cuenta
+            </button>
           </div>
           <p className="microcopy">V13 · MOBILE COMPETITIVE BUILD</p>
         </section>
