@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>SkillArena2 — Open-source lab</title>
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">SKILL ARENA · PARALLEL LAB</p>
+        <h1>SkillArena2</h1>
+        <p class="lede">Upstreams casi intactos. Primero medimos jugabilidad, estructura y reutilización; después decidimos qué entra en Skill Arena.</p>
+      </div>
+      <div class="badge">LAB · sin dinero real</div>
+    </header>
+
+    <section id="cards" class="cards" aria-label="Juegos del laboratorio"></section>
+
+    <section class="stage">
+      <div class="stage-head">
+        <div>
+          <p class="eyebrow" id="stage-mode">SELECCIONA UN JUEGO</p>
+          <h2 id="stage-title">Banco de pruebas</h2>
+        </div>
+        <div class="stage-actions">
+          <button id="fullscreen" class="secondary" disabled>Pantalla completa</button>
+          <button id="close" class="secondary" disabled>Cerrar</button>
+        </div>
+      </div>
+      <div id="stage-body" class="stage-body empty">
+        <div>
+          <strong>Objetivo</strong>
+          <p>Probar primero el upstream prácticamente tal cual. Las adaptaciones competitivas —seed, replay, verificación, score normalizado y anti-cheat— vienen después.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="telemetry">
+      <span>Telemetría del lab</span>
+      <code id="telemetry">sin sesión</code>
+    </section>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
