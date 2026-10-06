@@ -623,7 +623,7 @@ export default function DemoApp() {
               />
               <div className="avatarActions">
                 <button className="secondaryAction" type="button" onClick={generateAvatarProposal} disabled={avatarGenerating}>
-                  {avatarGenerating ? "GENERANDO..." : "GENERAR"}
+                  {avatarGenerating ? "GENERANDO..." : "GENERAR CON IA"}
                 </button>
                 <button className="secondaryAction" type="button" onClick={() => fileInputRef.current?.click()}>SUBIR FOTO</button>
               </div>
