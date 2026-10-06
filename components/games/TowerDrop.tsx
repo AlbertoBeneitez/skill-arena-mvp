@@ -31,7 +31,9 @@ type Session = {
 
 const W = 390;
 const H = 620;
-const BLOCK_H = 28;
+const BLOCK_H = 44;
+const CRANE_Y = 118;
+const DROP_MS = 230;
 
 export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -43,6 +45,14 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
   const loopingRef = useRef(false);
   const verifyingRef = useRef(false);
   const generationRef = useRef(0);
+  const dropFxRef = useRef<{
+    x: number;
+    width: number;
+    fromY: number;
+    toY: number;
+    startedAt: number;
+    blockIndex: number;
+  } | null>(null);
 
   const [verificationState, setVerificationState] = useState<
     "idle" | "starting" | "playing" | "verifying" | "error"
@@ -61,7 +71,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
 
     const s = stateRef.current;
     const ticks = s.tick;
-    const cameraY = Math.max(0, (s.blocks.length - 12) * BLOCK_H);
+    const cameraY = Math.max(0, (s.blocks.length - 8) * BLOCK_H);
 
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#6fc7ef");
@@ -79,6 +89,27 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       ctx.arc(x + 28, y + 5, 31, 0, Math.PI * 2);
       ctx.fill();
     }
+
+    // Industrial crane: the moving block hangs from the trolley.
+    const trolleyX = s.movingXMilli / 1000 + s.movingWMilli / 2000;
+    ctx.strokeStyle = "#455a77";
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(18, 88);
+    ctx.lineTo(W - 18, 88);
+    ctx.stroke();
+
+    ctx.fillStyle = "#f0b84a";
+    ctx.fillRect(trolleyX - 20, 76, 40, 24);
+    ctx.fillStyle = "#3e5069";
+    ctx.fillRect(trolleyX - 7, 99, 14, 14);
+
+    ctx.strokeStyle = "#344760";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(trolleyX, 112);
+    ctx.lineTo(trolleyX, CRANE_Y + 18);
+    ctx.stroke();
 
     ctx.save();
     ctx.translate(0, cameraY);
@@ -104,35 +135,58 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       ctx.restore();
     }
 
+    const palette = [
+      "#4c7ed7",
+      "#6f63d7",
+      "#c764bd",
+      "#e8894c",
+      "#45b783",
+      "#d9ad3f",
+    ];
+
+    const fx = dropFxRef.current;
+    const now = performance.now();
+    let activeFx = fx;
+    if (fx && now - fx.startedAt >= DROP_MS) {
+      dropFxRef.current = null;
+      activeFx = null;
+    }
+
     s.blocks.forEach((block, index) => {
-      const palette = [
-        "#4c7ed7",
-        "#6f63d7",
-        "#c764bd",
-        "#e8894c",
-        "#45b783",
-        "#d9ad3f",
-      ];
+      if (activeFx?.blockIndex === index) return;
+
       const x = block.xMilli / 1000;
       const width = block.wMilli / 1000;
       const y = H - 92 - index * BLOCK_H;
       ctx.fillStyle = palette[index % palette.length];
-      ctx.fillRect(x, y, width, BLOCK_H - 3);
-      ctx.fillStyle = "rgba(255,255,255,.35)";
-      ctx.fillRect(x + 4, y + 4, Math.max(0, width - 8), 4);
+      ctx.fillRect(x, y, width, BLOCK_H - 4);
+      ctx.fillStyle = "rgba(255,255,255,.32)";
+      ctx.fillRect(x + 5, y + 5, Math.max(0, width - 10), 6);
+      ctx.fillStyle = "rgba(0,0,0,.10)";
+      ctx.fillRect(x, y + BLOCK_H - 9, width, 5);
     });
 
-    if (s.status === "running") {
-      const movingY = H - 92 - s.blocks.length * BLOCK_H;
+    if (activeFx) {
+      const progress = Math.min(1, (now - activeFx.startedAt) / DROP_MS);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const y = activeFx.fromY + (activeFx.toY - activeFx.fromY) * eased;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = "#315fae";
+      ctx.fillStyle = palette[activeFx.blockIndex % palette.length];
+      ctx.fillRect(activeFx.x, y, activeFx.width, BLOCK_H - 4);
+      ctx.fillStyle = "rgba(255,255,255,.34)";
+      ctx.fillRect(activeFx.x + 5, y + 5, Math.max(0, activeFx.width - 10), 6);
+      ctx.shadowBlur = 0;
+    } else if (s.status === "running") {
+      const hangingX = s.movingXMilli / 1000;
+      const hangingW = s.movingWMilli / 1000;
+
       ctx.shadowBlur = 14;
       ctx.shadowColor = "#315fae";
       ctx.fillStyle = "#315fae";
-      ctx.fillRect(
-        s.movingXMilli / 1000,
-        movingY,
-        s.movingWMilli / 1000,
-        BLOCK_H - 3
-      );
+      ctx.fillRect(hangingX, CRANE_Y + 18, hangingW, BLOCK_H - 4);
+      ctx.fillStyle = "rgba(255,255,255,.32)";
+      ctx.fillRect(hangingX + 5, CRANE_Y + 23, Math.max(0, hangingW - 10), 6);
       ctx.shadowBlur = 0;
     }
 
@@ -140,7 +194,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
 
     ctx.fillStyle = "rgba(38,58,91,.86)";
     ctx.fillRect(14, 14, W - 28, 54);
-    ctx.font = "800 12px system-ui";
+    ctx.font = "900 14px system-ui";
     ctx.fillStyle = "#fff";
     ctx.fillText(`ALTURA ${Math.max(0, s.blocks.length - 1)}`, 26, 37);
     ctx.fillStyle = s.combo > 1 ? "#ffdc65" : "#c9d8f3";
@@ -151,7 +205,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
     }
 
     ctx.fillStyle = "rgba(255,255,255,.46)";
-    ctx.font = "900 11px system-ui";
+    ctx.font = "900 13px system-ui";
     ctx.textAlign = "center";
     ctx.fillText("TOCA PARA SOLTAR", W / 2, H - 28);
     ctx.textAlign = "start";
@@ -281,6 +335,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       loopingRef.current = false;
       inputsRef.current = [];
       sessionRef.current = null;
+      dropFxRef.current = null;
       stateRef.current = createTowerDropState();
       draw();
 
@@ -366,6 +421,8 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
 
   const place = useCallback(() => {
     const s = stateRef.current;
+    if (dropFxRef.current) return;
+
     if (
       verificationState !== "playing" ||
       !loopingRef.current ||
@@ -389,6 +446,17 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       void submitReplay(dropped);
       return;
     }
+
+    const landedIndex = dropped.blocks.length - 1;
+    const landed = dropped.blocks[landedIndex];
+    dropFxRef.current = {
+      x: landed.xMilli / 1000,
+      width: landed.wMilli / 1000,
+      fromY: CRANE_Y + 18,
+      toY: H - 92 - landedIndex * BLOCK_H,
+      startedAt: performance.now(),
+      blockIndex: landedIndex,
+    };
 
     gameTone(s.combo > 0 ? "good" : "tap");
     haptic(s.combo > 0 ? 10 : 5);
