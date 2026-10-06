@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
-type Props = { active: boolean; onFinish: (result: GameResult) => void };
+type Props = { active: boolean; targetScore: number; onFinish: (result: GameResult) => void };
 type Kind = "spike" | "block" | "pillar";
 type Piece = { offset: number; kind: Kind; w: number; h: number };
 type Pattern = { span: number; pieces: Piece[] };
@@ -95,7 +95,7 @@ function intersectsPlayer(
   return px2 > x && px1 < x + obstacle.w && py2 > oy1 && py1 < FLOOR;
 }
 
-export default function PulseRunner({ active, onFinish }: Props) {
+export default function PulseRunner({ active, targetScore, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
@@ -143,17 +143,17 @@ export default function PulseRunner({ active, onFinish }: Props) {
     s.nextPatternIndex += 1;
   }, []);
 
-  const finish = useCallback(() => {
+  const finish = useCallback((won = false) => {
     const s = state.current;
     if (!s.running) return;
 
     s.running = false;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    gameTone("bad");
-    haptic([30, 25, 52]);
+    gameTone(won ? "win" : "bad");
+    haptic(won ? [18, 28, 45] : [30, 25, 52]);
 
     finishRef.current({
-      won: false,
+      won,
       score: s.score,
       timeMs: Math.round((s.ticks * 1000) / 120),
     });
@@ -222,6 +222,11 @@ export default function PulseRunner({ active, onFinish }: Props) {
         s.score += 430 + Math.min(520, s.passed * 18);
         s.flash = 16;
 
+        if (s.score >= targetScore) {
+          finish(true);
+          return;
+        }
+
         if (s.passed % 4 === 0) {
           gameTone("good");
           haptic(7);
@@ -234,7 +239,7 @@ export default function PulseRunner({ active, onFinish }: Props) {
         (obstacle) => obstacle.x - s.scroll > -120
       );
     }
-  }, [finish, spawnPattern]);
+  }, [finish, spawnPattern, targetScore]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -363,19 +368,6 @@ export default function PulseRunner({ active, onFinish }: Props) {
     ctx.fillStyle = "#fff4bc";
     ctx.fillRect(5, -7, 5, 5);
     ctx.restore();
-
-    ctx.fillStyle = "rgba(7,14,34,.88)";
-    ctx.fillRect(14, 14, W - 28, 52);
-    ctx.font = "900 13px system-ui";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "left";
-    ctx.fillText(`SUPERADOS ${s.passed}`, 26, 44);
-    ctx.fillStyle = "#ffd95a";
-    ctx.textAlign = "center";
-    ctx.fillText(`FASE ${sector}`, W / 2, 44);
-    ctx.fillStyle = "#75e4f2";
-    ctx.textAlign = "right";
-    ctx.fillText(`${Math.round(speed)}`, W - 26, 44);
 
     if (s.ticks < 520) {
       ctx.fillStyle = "rgba(255,255,255,.64)";
