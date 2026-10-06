@@ -269,12 +269,53 @@ export default function DemoApp() {
   const [groupStage, setGroupStage] = useState(1);
   const [groupCompetitionWins, setGroupCompetitionWins] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const freshOnboardingRef = useRef(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const resetMode = params.get("reset") === "1";
+    const freshMode = !resetMode && params.get("fresh") === "1";
+    freshOnboardingRef.current = freshMode;
+
+    if (resetMode) {
+      const keysToRemove: string[] = [];
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+        if (key?.startsWith("skill-arena-")) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+      setOnboarded(false);
+      setProvider(null);
+      setPlayerName("");
+      setAvatarId(0);
+      setAvatarSrc(AVATARS[0]);
+      setAvatarEditorOpen(true);
+      setAvatarError("");
+      setBalance(START_BALANCE);
+      setNetEarnings(0);
+      setNextTurn("create");
+      setMusicOn(true);
+      setEarnings([{ label: "Inicio", value: 0 }]);
+      setMovements([]);
+      setTutorialSeen(false);
+      setTutorialOpen(false);
+      setTutorialStep(0);
+      setWins(0);
+      setLosses(0);
+      setStreak(0);
+      setGroup(null);
+      setScreen("welcome");
+      setIsLoaded(true);
+      return;
+    }
+
     // En desarrollo queremos probar siempre el flujo completo desde cero.
     // En producción, el onboarding y el tutorial se recuerdan normalmente.
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "development" && !freshMode) {
       setOnboarded(false);
       setProvider(null);
       setPlayerName("");
@@ -295,11 +336,21 @@ export default function DemoApp() {
     if (raw) {
       try {
         const data = JSON.parse(raw) as Partial<PersistedState>;
-        if (data.onboarded) { setOnboarded(true); setScreen("home"); }
-        if (data.provider === "google" || data.provider === "apple") setProvider(data.provider);
-        if (typeof data.playerName === "string") setPlayerName(data.playerName);
+        if (data.onboarded) {
+          setOnboarded(true);
+          setScreen("home");
+        }
+        if (data.provider === "google" || data.provider === "apple") {
+          setProvider(data.provider);
+        }
+        if (typeof data.playerName === "string") {
+          setPlayerName(data.playerName);
+        }
         if (typeof data.avatarId === "number") {
-          const nextAvatarId = Math.max(0, Math.min(AVATARS.length - 1, data.avatarId));
+          const nextAvatarId = Math.max(
+            0,
+            Math.min(AVATARS.length - 1, data.avatarId)
+          );
           setAvatarId(nextAvatarId);
           setAvatarSrc(AVATARS[nextAvatarId]);
         }
@@ -310,23 +361,60 @@ export default function DemoApp() {
           }
         }
         if (typeof data.balance === "number") setBalance(data.balance);
-        if (typeof data.netEarnings === "number") setNetEarnings(data.netEarnings);
-        if (data.nextTurn === "create" || data.nextTurn === "existing") setNextTurn(data.nextTurn);
-        if (typeof data.musicOn === "boolean") setMusicOn(data.musicOn);
-        if (Array.isArray(data.earnings) && data.earnings.length) setEarnings(data.earnings.slice(-20));
-        if (Array.isArray(data.movements)) setMovements(data.movements.slice(0, 20));
+        if (typeof data.netEarnings === "number") {
+          setNetEarnings(data.netEarnings);
+        }
+        if (
+          data.nextTurn === "create" ||
+          data.nextTurn === "existing"
+        ) {
+          setNextTurn(data.nextTurn);
+        }
+        if (typeof data.musicOn === "boolean") {
+          setMusicOn(data.musicOn);
+        }
+        if (Array.isArray(data.earnings) && data.earnings.length) {
+          setEarnings(data.earnings.slice(-20));
+        }
+        if (Array.isArray(data.movements)) {
+          setMovements(data.movements.slice(0, 20));
+        }
         if (typeof data.wins === "number") setWins(data.wins);
         if (typeof data.losses === "number") setLosses(data.losses);
         if (typeof data.streak === "number") setStreak(data.streak);
-        if (data.group && typeof data.group === "object") setGroup(data.group as ClosedGroup);
+        if (data.group && typeof data.group === "object") {
+          setGroup(data.group as ClosedGroup);
+        }
       } catch {}
     }
+
     setTutorialSeen(localStorage.getItem(TUTORIAL_KEY) === "1");
+
+    if (freshMode) {
+      // Repite solo el onboarding. El resto de la cuenta se conserva hasta
+      // que el usuario complete de nuevo su perfil.
+      setOnboarded(false);
+      setProvider(null);
+      setPlayerName("");
+      setAvatarId(0);
+      setAvatarSrc(AVATARS[0]);
+      setAvatarEditorOpen(true);
+      setAvatarError("");
+      setScreen("welcome");
+      setTutorialOpen(false);
+      setTutorialStep(0);
+    }
+
     setIsLoaded(true);
   }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
+
+    // ?fresh=1 is a transient onboarding pass. Do not overwrite the saved
+    // account if the tester closes the tab before finishing onboarding.
+    if (freshOnboardingRef.current && !onboarded) return;
+
     const data: PersistedState = {
       onboarded,
       provider,
@@ -589,6 +677,7 @@ export default function DemoApp() {
     if (!isDemoNameAvailable(clean)) return;
     setPlayerName(clean);
     setOnboarded(true);
+    freshOnboardingRef.current = false;
     navigate("home", true);
   }
 
