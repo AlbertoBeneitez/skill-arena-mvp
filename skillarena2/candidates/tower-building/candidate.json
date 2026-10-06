@@ -1,0 +1,17 @@
+{
+  "id": "tower-lab",
+  "upstream": "iamkun/tower_game",
+  "license": "MIT",
+  "target": "mobile-portrait",
+  "input": "single-touch",
+  "status": "mobile-prototype",
+  "transfer": {
+    "upstreamPinned": true,
+    "brandingShellReplaced": true,
+    "seededRandom": true,
+    "inputCapture": true,
+    "serverReplayVerification": false,
+    "assetAuditComplete": false,
+    "productionApproved": false
+  }
+}
