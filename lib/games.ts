@@ -130,6 +130,7 @@ export function modeForStake(
   stake: Stake,
   nextTurn: "create" | "existing"
 ): MatchMode {
+  if (stake === 0) return "create";
   if (game.waitingStakes.includes(stake)) return "waiting";
   return nextTurn;
 }
