@@ -1,43 +1,12 @@
 const games = [
   {
     id: "tower",
-    title: "Tower Building",
-    mode: "PLAYABLE · COPY",
+    title: "Tower Lab",
+    status: "CANDIDATO 01",
     license: "MIT",
-    tech: "HTML5 Canvas",
-    description: "Upstream de iamkun prácticamente intacto. Es el candidato más directo para estudiar integración real en Skill Arena.",
-    play: "./games/tower/index.html",
-    repo: "https://github.com/iamkun/tower_game"
-  },
-  {
-    id: "hexgl",
-    title: "HexGL",
-    mode: "PLAYABLE · COPY",
-    license: "MIT",
-    tech: "WebGL",
-    description: "Copia estática del upstream para estudiar control, precisión, tiempo y un juego 3D mucho más pesado que Tower.",
-    play: "./games/hexgl/index.html",
-    repo: "https://github.com/BKcore/HexGL"
-  },
-  {
-    id: "agar",
-    title: "Agar.io clone",
-    mode: "SERVER LAB",
-    license: "MIT",
-    tech: "Node + Socket.IO",
-    description: "Se conserva el proyecto como banco de pruebas de servidor autoritativo, movimiento y colisiones. No se propone como juego final.",
-    command: "npm run dev:agar",
-    repo: "https://github.com/owenashurst/agar.io-clone"
-  },
-  {
-    id: "osu",
-    title: "osu! lazer code lab",
-    mode: "SOURCE LAB",
-    license: "MIT · código",
-    tech: "C#",
-    description: "Se importa la parte de código relevante para estudiar timing, scoring, inputs y replay. No se reutilizan marca ni recursos de osu!.",
-    command: "vendor/osu/",
-    repo: "https://github.com/ppy/osu"
+    tech: "HTML5 Canvas · touch",
+    description: "Base de Tower Building conservada casi intacta en lógica. Menús rebrandeados, seed determinista y captura de inputs añadidos para preparar el trasplante a Skill Arena.",
+    play: "./games/tower/index.html"
   }
 ];
 
@@ -45,72 +14,58 @@ const cards = document.querySelector("#cards");
 const stageBody = document.querySelector("#stage-body");
 const stageTitle = document.querySelector("#stage-title");
 const stageMode = document.querySelector("#stage-mode");
-const closeButton = document.querySelector("#close");
 const fullscreenButton = document.querySelector("#fullscreen");
+const restartButton = document.querySelector("#restart");
+const seedInput = document.querySelector("#seed");
 const telemetry = document.querySelector("#telemetry");
+let activeGame = null;
 let activeFrame = null;
+
+function currentSeed() {
+  return (seedInput.value || "demo-001").trim() || "demo-001";
+}
 
 function renderCards() {
   cards.innerHTML = games.map((game) => `
     <article class="card">
       <div class="meta">
-        <span class="pill">${game.mode}</span>
+        <span class="pill">${game.status}</span>
         <span class="pill">${game.license}</span>
         <span class="pill">${game.tech}</span>
       </div>
       <h3>${game.title}</h3>
       <p>${game.description}</p>
-      <div class="card-actions">
-        <button class="primary" data-open="${game.id}">${game.play ? "Probar" : "Abrir ficha"}</button>
-        <a class="button secondary" href="${game.repo}" target="_blank" rel="noreferrer">Upstream</a>
+      <div class="checks" aria-label="Estado del candidato">
+        <span>✓ vertical/táctil</span>
+        <span>✓ upstream fijado</span>
+        <span>✓ branding externo retirado</span>
+        <span>◐ verificación servidor pendiente</span>
       </div>
+      <button class="primary" data-open="${game.id}">Probar en móvil</button>
     </article>
   `).join("");
+}
+
+function loadActiveGame() {
+  if (!activeGame) return;
+  const seed = encodeURIComponent(currentSeed());
+  const url = `${activeGame.play}?seed=${seed}`;
+  stageBody.className = "stage-body";
+  stageBody.innerHTML = `<div class="phone-frame"><iframe title="${activeGame.title}" src="${url}" allow="autoplay; fullscreen"></iframe></div>`;
+  activeFrame = stageBody.querySelector("iframe");
+  telemetry.textContent = `seed=${currentSeed()} · esperando partida`;
+  fullscreenButton.disabled = false;
+  restartButton.disabled = false;
 }
 
 function openGame(id) {
   const game = games.find((item) => item.id === id);
   if (!game) return;
-
+  activeGame = game;
   stageTitle.textContent = game.title;
-  stageMode.textContent = game.mode;
-  closeButton.disabled = false;
-
-  if (game.play) {
-    stageBody.className = "stage-body";
-    stageBody.innerHTML = `<iframe title="${game.title}" src="${game.play}" allow="autoplay; fullscreen; gamepad"></iframe>`;
-    activeFrame = stageBody.querySelector("iframe");
-    fullscreenButton.disabled = false;
-  } else {
-    activeFrame = null;
-    fullscreenButton.disabled = true;
-    stageBody.className = "stage-body";
-    stageBody.innerHTML = `
-      <div class="source-panel">
-        <div class="meta">
-          <span class="pill">${game.license}</span>
-          <span class="pill">${game.tech}</span>
-        </div>
-        <h3>${game.title}</h3>
-        <p>${game.description}</p>
-        <p>Este bloque está incorporado al laboratorio como upstream fijado por commit, pero no se fuerza dentro de un iframe porque no comparte la arquitectura web estática de Tower/HexGL.</p>
-        <strong>Entrada del laboratorio</strong>
-        <code class="command">${game.command}</code>
-      </div>`;
-  }
-
+  stageMode.textContent = game.status;
+  loadActiveGame();
   stageBody.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function closeStage() {
-  activeFrame = null;
-  stageTitle.textContent = "Banco de pruebas";
-  stageMode.textContent = "SELECCIONA UN JUEGO";
-  stageBody.className = "stage-body empty";
-  stageBody.innerHTML = "<div><strong>Objetivo</strong><p>Probar primero el upstream prácticamente tal cual. Las adaptaciones competitivas —seed, replay, verificación, score normalizado y anti-cheat— vienen después.</p></div>";
-  closeButton.disabled = true;
-  fullscreenButton.disabled = true;
-  telemetry.textContent = "sin sesión";
 }
 
 cards.addEventListener("click", (event) => {
@@ -118,17 +73,24 @@ cards.addEventListener("click", (event) => {
   if (button) openGame(button.dataset.open);
 });
 
-closeButton.addEventListener("click", closeStage);
+restartButton.addEventListener("click", loadActiveGame);
+seedInput.addEventListener("change", () => {
+  if (activeGame) loadActiveGame();
+});
+
 fullscreenButton.addEventListener("click", async () => {
-  if (!activeFrame) return;
+  const target = stageBody.querySelector(".phone-frame") || activeFrame;
+  if (!target) return;
   try {
-    await activeFrame.requestFullscreen();
+    await target.requestFullscreen();
   } catch {}
 });
 
 window.addEventListener("message", (event) => {
   if (event.data?.type !== "skillarena2:telemetry") return;
-  telemetry.textContent = JSON.stringify(event.data);
+  const { seed, score, successCount, inputCount, replayCapture } = event.data;
+  telemetry.textContent =
+    `seed=${seed ?? "-"} · score=${score ?? 0} · bloques=${successCount ?? 0} · inputs=${inputCount ?? 0} · ${replayCapture ?? "sin replay"}`;
 });
 
 renderCards();
