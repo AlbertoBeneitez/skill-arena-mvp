@@ -2471,3 +2471,207 @@ html, body {
     gap: 8px;
   }
 }
+
+
+/* =========================================================
+   V9 — direct play cards, no description blocks, Helix controls
+   ========================================================= */
+
+.playCatalogSimple {
+  display: grid;
+  gap: 12px;
+}
+
+.quickStakeBar {
+  position: sticky;
+  top: 64px;
+  z-index: 18;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #d5c39e;
+  border-radius: 14px;
+  background: rgba(255,250,240,.96);
+  box-shadow: 0 5px 18px rgba(52,67,92,.10);
+  backdrop-filter: blur(10px);
+}
+
+.quickStakeBar button {
+  min-height: 38px;
+  border: 1px solid #c9b88f;
+  border-radius: 10px;
+  background: #f4ead5;
+  color: #66728a;
+  font-size: 8px;
+  font-weight: 950;
+  touch-action: manipulation;
+}
+
+.quickStakeBar button.selected {
+  border-color: #315fae;
+  background: linear-gradient(180deg,#4778bd,#315fae);
+  color: #fff;
+  box-shadow: 0 3px 0 #244879;
+}
+
+.playGameGrid {
+  align-items: stretch;
+}
+
+.playGameCard {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #d3c19a;
+  border-radius: 16px;
+  background: linear-gradient(180deg,#fffdf7,#f1e5ce);
+  box-shadow: 0 5px 0 rgba(124,91,36,.11);
+}
+
+.playGameCard .gameCoverWrap {
+  position: relative;
+}
+
+.playGameCard .gameCoverWrap > img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  object-fit: cover;
+}
+
+.playGameCardFooter {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+}
+
+.playGameCardFooter > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #294f8c;
+  font-size: 13px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardPlayButton {
+  min-height: 42px;
+  border: 1px solid #2d8b59;
+  border-radius: 11px;
+  background: linear-gradient(180deg,#67dc94,#3faf68);
+  box-shadow: 0 3px 0 #277546;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 950;
+  touch-action: manipulation;
+}
+
+.cardPlayButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #277546;
+}
+
+.cardGhostToggle {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 50%;
+  background: rgba(17,33,63,.72);
+  opacity: .6;
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+.cardGhostToggle.active {
+  opacity: 1;
+  border-color: #6ee6f3;
+  box-shadow: 0 0 0 2px rgba(110,230,243,.16);
+}
+
+.helixDiveArena {
+  position: relative;
+}
+
+.helixControlKeys {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 18px;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.helixControlKeys button {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 2px solid #8fdff3;
+  border-radius: 14px;
+  background: linear-gradient(180deg,rgba(53,126,194,.97),rgba(32,82,143,.97));
+  box-shadow: 0 4px 0 #173f72, 0 0 0 1px rgba(255,255,255,.08) inset;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .04em;
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.helixControlKeys button span {
+  font-size: 22px;
+  line-height: 1;
+  color: #fff2a6;
+}
+
+.helixControlKeys button:active {
+  transform: translateY(2px);
+  border-color: #fff2a6;
+  background: linear-gradient(180deg,#3f89cf,#285f9e);
+  box-shadow: 0 2px 0 #173f72;
+}
+
+@media (max-width: 430px) {
+  .quickStakeBar {
+    top: 58px;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .quickStakeBar button {
+    min-height: 35px;
+    font-size: 7px;
+  }
+
+  .playGameCardFooter {
+    padding: 8px;
+  }
+
+  .cardPlayButton {
+    min-height: 39px;
+  }
+
+  .helixControlKeys {
+    left: 10px;
+    right: 10px;
+    bottom: 12px;
+    gap: 9px;
+  }
+
+  .helixControlKeys button {
+    min-height: 50px;
+  }
+}
