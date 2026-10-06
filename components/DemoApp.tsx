@@ -250,7 +250,7 @@ export default function DemoApp() {
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [selectedGame, setSelectedGame] = useState<GameMeta>(GAMES[0]);
-  const [selectedStake, setSelectedStake] = useState<Stake>(0);
+  const [selectedStake, setSelectedStake] = useState<number>(0);
   const [selectedMode, setSelectedMode] = useState<MatchMode>("create");
   const [ghostEnabled, setGhostEnabled] = useState(true);
   const [activeGame, setActiveGame] = useState(false);
@@ -701,7 +701,7 @@ export default function DemoApp() {
   function startMatch(gameOverride?: GameMeta) {
     const game = gameOverride ?? selectedGame;
     const stake = selectedStake;
-    const mode = modeForStake(game, stake, nextTurn);
+    const mode = modeForStake(game, stake as Stake, nextTurn);
 
     if (matchStartLockRef.current || stake > balance) return;
 
@@ -873,7 +873,7 @@ export default function DemoApp() {
     setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
   }
 
-  function createClosedGroup(name: string, stake: Stake) {
+  function createClosedGroup(name: string, stake: number) {
     const next = createDemoClosedGroup({
       name,
       stake,
@@ -885,7 +885,7 @@ export default function DemoApp() {
     haptic(8);
   }
 
-  function setClosedGroupStake(stake: Stake) {
+  function setClosedGroupStake(stake: number) {
     setGroup((current) => current ? { ...current, stake } : current);
     haptic(4);
   }
@@ -955,9 +955,18 @@ export default function DemoApp() {
       return;
     }
 
-    startGroupCompetition(selectedGame, groupCompetition, {
+    const nextStage = groupStage + 1;
+    const nextGameId =
+      groupCompetition.type === "league"
+        ? groupCompetition.gameIds[nextStage - 1]
+        : groupCompetition.gameIds[0];
+    const nextGame =
+      GAMES.find((game) => game.id === nextGameId) ??
+      selectedGame;
+
+    startGroupCompetition(nextGame, groupCompetition, {
       chargeEntry: false,
-      nextStage: groupStage + 1,
+      nextStage,
     });
   }
 
@@ -1184,7 +1193,7 @@ export default function DemoApp() {
 
             <div className="gameGrid large playGameGrid">
               {GAMES.map((game) => {
-                const mode = modeForStake(game, selectedStake, nextTurn);
+                const mode = modeForStake(game, selectedStake as Stake, nextTurn);
                 const canPlay = selectedStake <= balance;
 
                 return (
