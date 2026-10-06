@@ -69,6 +69,36 @@ function demoPercentile(score: number, benchmark: number) {
   return Math.max(1, Math.min(99, percentile));
 }
 
+function totalCompetitionStages(
+  config: GroupCompetitionConfig,
+  memberCount: number
+) {
+  if (config.type === "league") return config.rounds;
+  if (config.type === "tournament") {
+    return Math.max(
+      1,
+      Math.ceil(
+        (Math.max(2, memberCount) - 1) /
+          Math.max(1, config.eliminatedPerRound)
+      )
+    );
+  }
+  return 1;
+}
+
+function payoutShare(
+  config: GroupCompetitionConfig,
+  placement: 1 | 2 | 3
+) {
+  if (config.distribution === "top2-70-30") {
+    return placement === 1 ? 0.7 : placement === 2 ? 0.3 : 0;
+  }
+  if (config.distribution === "top3-60-30-10") {
+    return placement === 1 ? 0.6 : placement === 2 ? 0.3 : 0.1;
+  }
+  return placement === 1 ? 1 : 0;
+}
+
 const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "soporte", "support"]);
 
 function isDemoNameAvailable(value: string) {
@@ -237,6 +267,7 @@ export default function DemoApp() {
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   const [groupCompetition, setGroupCompetition] = useState<GroupCompetitionConfig | null>(null);
   const [groupStage, setGroupStage] = useState(1);
+  const [groupCompetitionWins, setGroupCompetitionWins] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -665,9 +696,14 @@ export default function DemoApp() {
     config: GroupCompetitionConfig,
     options?: { chargeEntry?: boolean; nextStage?: number }
   ) {
-    if (!group || matchStartLockRef.current || config.stake > balance) return;
-
     const chargeEntry = options?.chargeEntry ?? true;
+    if (
+      !group ||
+      matchStartLockRef.current ||
+      (chargeEntry && config.stake > balance)
+    ) {
+      return;
+    }
     const nextStage = options?.nextStage ?? 1;
 
     matchStartLockRef.current = true;
@@ -682,6 +718,7 @@ export default function DemoApp() {
     setExitConfirmOpen(false);
     setGroupCompetition(config);
     setGroupStage(nextStage);
+    if (chargeEntry) setGroupCompetitionWins(0);
 
     if (chargeEntry && config.stake > 0) {
       setBalance((value) => Number((value - config.stake).toFixed(2)));
