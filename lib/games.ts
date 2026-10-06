@@ -6,7 +6,6 @@ export type MatchMode = "create" | "existing" | "waiting";
 export type GameMeta = {
   id:
     | "tower-drop"
-    | "helix-dive"
     | "jet-stream"
     | "pulse-runner"
     | "metro-shift"
@@ -42,22 +41,6 @@ export const GAMES: GameMeta[] = [
     rivalAvatar: "/avatars/avatar-7.svg",
     instruction: "Toca cuando el bloque móvil esté encima de la torre.",
     scoring: "Sigue apilando hasta fallar.",
-  },
-  {
-    id: "helix-dive",
-    name: "Helix Dive",
-    cover: "/covers/helix-dive.svg",
-    enabled: true,
-    waitingStakes: [0, 10],
-    category: "CONTROL",
-    tagline: "Abre el hueco. Cae sin tocar rojo.",
-    difficulty: "ALTA",
-    skillLabel: "LECTURA + CONTROL",
-    rivalScore: 5800,
-    rivalName: "NOVA",
-    rivalAvatar: "/avatars/avatar-6.svg",
-    instruction: "Mantén pulsada la mitad izquierda o derecha para girar en esa dirección.",
-    scoring: "Atraviesa pisos; tocar rojo termina la partida.",
   },
   {
     id: "jet-stream",
