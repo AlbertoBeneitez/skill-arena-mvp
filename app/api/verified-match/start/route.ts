@@ -4,6 +4,7 @@ import {
   createTowerDropManifest,
   hashManifest,
   issueAttemptTicket,
+  isAllowedStakeMinor,
 } from "@/lib/server/verifiedMatch";
 
 export const runtime = "nodejs";
@@ -21,6 +22,13 @@ export async function POST(request: Request) {
     Number.isFinite(body.stake_minor)
       ? Math.max(0, Math.floor(body.stake_minor))
       : 0;
+
+  if (!isAllowedStakeMinor(stakeMinor)) {
+    return NextResponse.json(
+      { ok: false, error: "INVALID_STAKE" },
+      { status: 400 }
+    );
+  }
 
   const manifest = createTowerDropManifest({ stakeMinor });
   const ticket = issueAttemptTicket({
