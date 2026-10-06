@@ -19,8 +19,8 @@ export async function POST(request: Request) {
 
   const stakeMinor =
     typeof body.stake_minor === "number" &&
-    Number.isFinite(body.stake_minor)
-      ? Math.max(0, Math.floor(body.stake_minor))
+    Number.isInteger(body.stake_minor)
+      ? body.stake_minor
       : 0;
 
   if (!isAllowedStakeMinor(stakeMinor)) {
