@@ -14,7 +14,11 @@ export type GameMeta = {
     | "mine-grid"
     | "grid-serpent"
     | "brick-relay"
-    | "stack-shift";
+    | "stack-shift"
+    | "maze-rush"
+    | "star-phalanx"
+    | "river-dash"
+    | "orb-burst";
   name: string;
   cover: string;
   enabled: boolean;
@@ -198,6 +202,76 @@ export const GAMES: GameMeta[] = [
     instruction: "Mueve, gira y baja piezas. Ambos reciben la misma secuencia exacta.",
     scoring: "Completa filas y evita alcanzar la parte superior.",
     deterministicSeed: "stack-shift-arena-001",
+  },
+,
+
+  {
+    id: "maze-rush",
+    name: "Maze Rush",
+    cover: "/covers/maze-rush.svg",
+    enabled: true,
+    waitingStakes: [1, 5],
+    category: "LABERINTO",
+    tagline: "Mismo laberinto. Mejor ruta y mejores reflejos.",
+    difficulty: "ALTA",
+    skillLabel: "RUTA + REACCIÓN",
+    rivalScore: 7800,
+    rivalName: "ECHO",
+    rivalAvatar: "/avatars/avatar-6.svg",
+    instruction: "Desliza o usa la cruceta. Recoge nodos y evita a los perseguidores.",
+    scoring: "Todos reciben el mismo mapa y el mismo patrón de perseguidores.",
+    deterministicSeed: "maze-rush-arena-001",
+  },
+  {
+    id: "star-phalanx",
+    name: "Star Phalanx",
+    cover: "/covers/star-phalanx.svg",
+    enabled: true,
+    waitingStakes: [5, 10],
+    category: "SHOOTER",
+    tagline: "Misma formación. Sobrevive y elimina más.",
+    difficulty: "ALTA",
+    skillLabel: "PUNTERÍA + CONTROL",
+    rivalScore: 8200,
+    rivalName: "ION",
+    rivalAvatar: "/avatars/avatar-8.svg",
+    instruction: "Arrastra para moverte y pulsa FIRE para disparar.",
+    scoring: "Las oleadas y disparos enemigos parten del mismo seed competitivo.",
+    deterministicSeed: "star-phalanx-arena-001",
+  },
+  {
+    id: "river-dash",
+    name: "River Dash",
+    cover: "/covers/river-dash.svg",
+    enabled: true,
+    waitingStakes: [1, 10],
+    category: "CRUCE",
+    tagline: "Mismos carriles. El timing decide.",
+    difficulty: "ALTA",
+    skillLabel: "TIMING + LECTURA",
+    rivalScore: 6600,
+    rivalName: "FORD",
+    rivalAvatar: "/avatars/avatar-2.svg",
+    instruction: "Desliza o usa la cruceta para cruzar carretera y río.",
+    scoring: "Ambos jugadores reciben idénticas velocidades, fases y carriles.",
+    deterministicSeed: "river-dash-arena-001",
+  },
+  {
+    id: "orb-burst",
+    name: "Orb Burst",
+    cover: "/covers/orb-burst.svg",
+    enabled: true,
+    waitingStakes: [5, 50],
+    category: "PUZZLE",
+    tagline: "Mismo tablero y misma cola de orbes.",
+    difficulty: "MEDIA",
+    skillLabel: "ÁNGULO + PLANIFICACIÓN",
+    rivalScore: 7600,
+    rivalName: "ORB",
+    rivalAvatar: "/avatars/avatar-5.svg",
+    instruction: "Apunta arrastrando y suelta para lanzar. Junta tres o más.",
+    scoring: "El tablero inicial, la cola de colores y la presión son idénticos.",
+    deterministicSeed: "orb-burst-arena-001",
   },
 
 ];
