@@ -39,7 +39,7 @@ function isScreen(value: unknown): value is Screen {
 
 const AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${i + 1}.svg`);
 const START_BALANCE = 25;
-const APP_ITERATION = "v9";
+const APP_ITERATION = "v10";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
 const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
 
@@ -124,6 +124,8 @@ export default function DemoApp() {
   const [avatarGenerating, setAvatarGenerating] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const matchStartLockRef = useRef(false);
+  const [startingGameId, setStartingGameId] = useState<string | null>(null);
   const [balance, setBalance] = useState(START_BALANCE);
   const [netEarnings, setNetEarnings] = useState(0);
   const [nextTurn, setNextTurn] = useState<Turn>("create");
@@ -436,7 +438,10 @@ export default function DemoApp() {
     const stake = selectedStake;
     const mode = modeForStake(game, stake, nextTurn);
 
-    if (stake > balance) return;
+    if (matchStartLockRef.current || stake > balance) return;
+
+    matchStartLockRef.current = true;
+    setStartingGameId(game.id);
 
     setSelectedGame(game);
     setSelectedStake(stake);
@@ -461,6 +466,8 @@ export default function DemoApp() {
   }
 
   function finishMatch(gameResult: GameResult) {
+    matchStartLockRef.current = false;
+    setStartingGameId(null);
     setActiveGame(false);
 
     if (selectedGame.id === "tower-drop" && gameResult.verified !== true) {
@@ -565,7 +572,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V9 · MOBILE COMPETITIVE BUILD</p>
+          <p className="microcopy">V10 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -741,10 +748,15 @@ export default function DemoApp() {
                       <button
                         className="cardPlayButton"
                         type="button"
-                        disabled={!canPlay}
+                        disabled={!canPlay || startingGameId !== null}
                         onClick={() => startMatch(game)}
+                        aria-busy={startingGameId === game.id}
                       >
-                        {selectedStake === 0 ? "JUGAR" : `JUGAR · ${selectedStake}€`}
+                        {startingGameId === game.id
+                          ? "ENTRANDO…"
+                          : selectedStake === 0
+                            ? "JUGAR"
+                            : `JUGAR · ${selectedStake}€`}
                       </button>
                     </div>
                   </article>
@@ -803,7 +815,6 @@ export default function DemoApp() {
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>
                   <b>{countdown > 0 ? countdown : "GO"}</b>
-                  <span>{selectedGame.tagline}</span>
                 </div>
               )}
             </div>
