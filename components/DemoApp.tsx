@@ -527,6 +527,9 @@ export default function DemoApp() {
     setSelectedStake(stake);
     setSelectedMode(mode);
     setGhostEnabled(mode === "existing");
+    setMatchScope("duel");
+    setMatchTargetScore(game.rivalScore);
+    setShowWinAnimation(false);
 
     setBalance((b) => Number((b - stake).toFixed(2)));
     if (stake > 0) {
@@ -567,8 +570,9 @@ export default function DemoApp() {
       return;
     }
 
-    const didWin = gameResult.score >= selectedGame.rivalScore;
+    const didWin = gameResult.won || gameResult.score >= matchTargetScore;
     const resolvedResult = { ...gameResult, won: didWin };
+    if (didWin) setShowWinAnimation(true);
     setResult(resolvedResult);
 
     if (selectedStake === 0) {
@@ -589,7 +593,7 @@ export default function DemoApp() {
       haptic(35);
     }
 
-    const prize = prizeForStake(selectedStake);
+    const prize = matchScope === "group" && group ? groupPot(group) : prizeForStake(selectedStake);
     const delta = didWin ? prize - selectedStake : -selectedStake;
 
     if (didWin && prize > 0) {
@@ -601,6 +605,54 @@ export default function DemoApp() {
     setNetEarnings(nextValue);
     setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
     setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
+  }
+
+  function createClosedGroup(name: string, stake: Stake) {
+    const next = createDemoClosedGroup({
+      name,
+      stake,
+      playerName: playerName || "TÚ",
+      avatar: avatarSrc,
+    });
+    setGroup(next);
+    gameTone("good");
+    haptic(8);
+  }
+
+  function setClosedGroupStake(stake: Stake) {
+    setGroup((current) => current ? { ...current, stake } : current);
+    haptic(4);
+  }
+
+  function startGroupMatch(game: GameMeta) {
+    if (!group || matchStartLockRef.current || group.stake > balance) return;
+
+    const stake = group.stake;
+    matchStartLockRef.current = true;
+    setStartingGameId(game.id);
+    setSelectedGame(game);
+    setSelectedStake(stake);
+    setSelectedMode("create");
+    setGhostEnabled(false);
+    setMatchScope("group");
+    setMatchTargetScore(groupTargetScore(group, game));
+    setShowWinAnimation(false);
+
+    setBalance((value) => Number((value - stake).toFixed(2)));
+    if (stake > 0) {
+      setMovements((items) => [
+        { label: `${group.name} · entrada`, amount: -stake },
+        ...items,
+      ].slice(0, 20));
+    }
+
+    setResult(null);
+    setActiveGame(false);
+    setGameKey((key) => key + 1);
+    setCountdown(3);
+    gameTone("countdown");
+    haptic(12);
+    navigate("game");
   }
 
   function resetAvatar() {
@@ -636,6 +688,7 @@ export default function DemoApp() {
     setWins(0);
     setLosses(0);
     setStreak(0);
+    setGroup(null);
     setCountdown(null);
     navigate("welcome", true);
   }
