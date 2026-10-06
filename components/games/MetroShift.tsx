@@ -55,8 +55,9 @@ const GHOST_LANES: Lane[] = [
   3,2,2,3,4,5,6,5,4,3,2,1,0,1,2,3,4,5,6,5,4,3,2,1,2,3,4,4,3,2,
 ]
 
-function speedFor(passed: number) {
-  return Math.min(344, 166 + passed * 3.45);
+function speedFor(ticks: number) {
+  const seconds = ticks / 120;
+  return Math.min(358, 188 + seconds * 1.35);
 }
 
 function depthFor(y: number) {
@@ -263,6 +264,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     jumpY: 0,
     jumpVy: 0,
     laneChanges: 0,
+    travel: 0,
   });
 
   useEffect(() => {
@@ -309,8 +311,9 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     const s = state.current;
     s.ticks += 1;
 
-    const speed = speedFor(s.passed);
-    s.x += (PLAYER_LANES[s.lane] - s.x) * 0.34;
+    const speed = speedFor(s.ticks);
+    s.travel += speed * DT;
+    s.x += (PLAYER_LANES[s.lane] - s.x) * 0.46;
 
     s.jumpVy += 1220 * DT;
     s.jumpY += s.jumpVy * DT;
@@ -410,7 +413,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
 
-    const skylineOffset = (s.ticks * 0.16) % 92;
+    const skylineOffset = (s.travel * 0.18) % 92;
     ctx.fillStyle = "rgba(25,42,57,.44)";
     for (let x = -92 - skylineOffset; x < W + 92; x += 92) {
       const index = Math.floor((x + skylineOffset + 92) / 92);
@@ -420,6 +423,21 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     }
 
     drawRoad(ctx);
+
+    // Cross-road motion markers keep forward velocity visually continuous.
+    ctx.strokeStyle = "rgba(236,245,255,.13)";
+    ctx.lineWidth = 1;
+    const roadPhase = (s.travel * 0.0032) % 1;
+    for (let index = 0; index < 9; index += 1) {
+      const t = (index / 9 + roadPhase) % 1;
+      const eased = t * t;
+      const y = HORIZON_Y + (H - HORIZON_Y) * eased;
+      const halfWidth = 83 + 110 * eased;
+      ctx.beginPath();
+      ctx.moveTo(CX - halfWidth, y);
+      ctx.lineTo(CX + halfWidth, y);
+      ctx.stroke();
+    }
 
     // Lane focus glow: gives immediate spatial feedback without adding UI chrome.
     const activeLaneX = laneX(s.lane, PLAYER_Y);
@@ -593,6 +611,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
       jumpY: 0,
       jumpVy: 0,
       laneChanges: 0,
+      travel: 0,
     };
 
     draw();
@@ -668,14 +687,25 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
           swipeRef.current = localPoint(event.clientX, event.clientY);
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
-        onPointerUp={(event) => {
-          if (!swipeRef.current) return;
-
+        onPointerMove={(event) => {
+          if (!swipeRef.current || !event.buttons) return;
           const point = localPoint(event.clientX, event.clientY);
-          gesture(
-            point.x - swipeRef.current.x,
-            point.y - swipeRef.current.y
-          );
+          const dx = point.x - swipeRef.current.x;
+          const dy = point.y - swipeRef.current.y;
+          if (Math.abs(dx) > 34 || Math.abs(dy) > 34) {
+            gesture(dx, dy);
+            swipeRef.current = point;
+          }
+        }}
+        onPointerUp={(event) => {
+          if (swipeRef.current) {
+            const point = localPoint(event.clientX, event.clientY);
+            const dx = point.x - swipeRef.current.x;
+            const dy = point.y - swipeRef.current.y;
+            if (Math.abs(dx) > 22 || Math.abs(dy) > 22) {
+              gesture(dx, dy);
+            }
+          }
           swipeRef.current = null;
 
           if (event.currentTarget.hasPointerCapture(event.pointerId)) {

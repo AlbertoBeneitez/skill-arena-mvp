@@ -33,7 +33,7 @@ const W = 390;
 const H = 620;
 const BLOCK_H = 44;
 const CRANE_Y = 118;
-const DROP_MS = 230;
+const DROP_MS = 520;
 
 export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -45,6 +45,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
   const loopingRef = useRef(false);
   const verifyingRef = useRef(false);
   const generationRef = useRef(0);
+  const cameraRef = useRef(0);
   const dropFxRef = useRef<{
     x: number;
     width: number;
@@ -71,7 +72,15 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
 
     const s = stateRef.current;
     const ticks = s.tick;
-    const cameraY = Math.max(0, (s.blocks.length - 8) * BLOCK_H);
+    const fallingBlock = dropFxRef.current ? 1 : 0;
+    const stableBlocks = Math.max(1, s.blocks.length - fallingBlock);
+    const highestWorldY = H - 92 - (stableBlocks - 1) * BLOCK_H;
+    const targetCameraY = Math.max(0, CRANE_Y + 96 - highestWorldY);
+    cameraRef.current += (targetCameraY - cameraRef.current) * 0.12;
+    if (Math.abs(targetCameraY - cameraRef.current) < 0.1) {
+      cameraRef.current = targetCameraY;
+    }
+    const cameraY = cameraRef.current;
 
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#6fc7ef");
@@ -172,7 +181,10 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
     if (activeFx) {
       const progress = Math.min(1, (now - activeFx.startedAt) / DROP_MS);
       const eased = 1 - Math.pow(1 - progress, 3);
-      const y = activeFx.fromY + (activeFx.toY - activeFx.fromY) * eased;
+      const screenY =
+        activeFx.fromY +
+        (activeFx.toY + cameraY - activeFx.fromY) * eased;
+      const y = screenY - cameraY;
       ctx.shadowBlur = 16;
       ctx.shadowColor = "#315fae";
       ctx.fillStyle = palette[activeFx.blockIndex % palette.length];
@@ -184,12 +196,13 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       const hangingX = s.movingXMilli / 1000;
       const hangingW = s.movingWMilli / 1000;
 
+      const hangingY = CRANE_Y + 18 - cameraY;
       ctx.shadowBlur = 14;
       ctx.shadowColor = "#315fae";
       ctx.fillStyle = "#315fae";
-      ctx.fillRect(hangingX, CRANE_Y + 18, hangingW, BLOCK_H - 4);
+      ctx.fillRect(hangingX, hangingY, hangingW, BLOCK_H - 4);
       ctx.fillStyle = "rgba(255,255,255,.32)";
-      ctx.fillRect(hangingX + 5, CRANE_Y + 23, Math.max(0, hangingW - 10), 6);
+      ctx.fillRect(hangingX + 5, hangingY + 5, Math.max(0, hangingW - 10), 6);
       ctx.shadowBlur = 0;
     }
 
@@ -345,6 +358,7 @@ export default function TowerDrop({ active, stake, ghostEnabled, onFinish }: Pro
       inputsRef.current = [];
       sessionRef.current = null;
       dropFxRef.current = null;
+      cameraRef.current = 0;
       stateRef.current = createTowerDropState();
       draw();
 
