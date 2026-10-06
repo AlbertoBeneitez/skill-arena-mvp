@@ -4055,3 +4055,195 @@ html, body {
   width: 100%;
   min-width: 0;
 }
+
+
+/* V14.2 — cleaner game chrome and explicit group subtabs */
+
+/* One compact action cluster: no decorative green status dot. */
+.mobileGameHeader {
+  grid-template-columns: 54px minmax(0, 1fr) auto !important;
+  gap: 8px;
+}
+
+.gameHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* The only gameplay instruction is shown during the countdown. */
+.countdownOverlay span {
+  max-width: min(82vw, 320px);
+  margin-top: 8px;
+  color: rgba(255,255,255,.88);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+}
+
+/* Closed group: explicit secondary navigation. */
+.groupSubtabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid rgba(77,100,137,.18);
+  border-radius: 14px;
+  background: rgba(255,250,239,.76);
+  box-shadow: 0 5px 16px rgba(48,64,87,.07);
+}
+
+.groupSubtabs button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #69758c;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .05em;
+  touch-action: manipulation;
+}
+
+.groupSubtabs button.active {
+  background: linear-gradient(180deg,#4778bd,#315fae);
+  color: #fff;
+  box-shadow: 0 3px 0 #244879;
+}
+
+.groupSubtabs button:disabled {
+  color: #a1a9b5;
+  opacity: .68;
+}
+
+.groupMatchSetupHead {
+  padding: 16px;
+  border: 1px solid rgba(151,128,85,.28);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255,219,97,.24), transparent 28%),
+    linear-gradient(145deg,#315fae,#203f79);
+  color: #fff;
+}
+
+.groupMatchSetupHead small {
+  color: #ffe48a;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+
+.groupMatchSetupHead h1 {
+  margin: 5px 0 7px;
+  font-size: 21px;
+}
+
+.groupMatchSetupHead p {
+  margin: 0;
+  color: #dbe6f7;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.groupMatchSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.groupMatchSummary > div {
+  min-height: 70px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  border: 1px solid rgba(128,112,80,.18);
+  border-radius: 14px;
+  background: rgba(255,252,244,.94);
+}
+
+.groupMatchSummary span {
+  color: #81745b;
+  font-size: 7px;
+  font-weight: 950;
+}
+
+.groupMatchSummary strong {
+  color: #315fae;
+  font-size: 17px;
+}
+
+.groupCreateMatchShortcut {
+  width: 100%;
+}
+
+/* Back during a live paid demo now gives a clear escape path. */
+.gameExitOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(6,15,28,.72);
+  backdrop-filter: blur(5px);
+}
+
+.gameExitCard {
+  width: min(100%, 340px);
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 18px;
+  background: #fff8e9;
+  box-shadow: 0 18px 44px rgba(0,0,0,.28);
+  color: #27324a;
+  text-align: center;
+}
+
+.gameExitCard > strong {
+  display: block;
+  font-size: 15px;
+  letter-spacing: .05em;
+}
+
+.gameExitCard > p {
+  margin: 8px 0 16px;
+  color: #66738b;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.gameExitCard > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.gameExitCard button {
+  min-height: 48px;
+  border: 1px solid #cad3df;
+  border-radius: 12px;
+  background: #edf3fb;
+  color: #315fae;
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.gameExitCard button.danger {
+  border-color: #c54f4f;
+  background: #df5c58;
+  color: #fff;
+}
+
+@media (max-width: 430px) {
+  .mobileGameHeader {
+    grid-template-columns: 52px minmax(0, 1fr) auto !important;
+  }
+
+  .groupSubtabs button {
+    min-height: 44px;
+    font-size: 9px;
+  }
+}
