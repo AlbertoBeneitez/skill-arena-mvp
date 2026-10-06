@@ -7,6 +7,7 @@ import { gameTone, haptic } from "@/lib/gameFeedback";
 type Props = {
   active: boolean;
   ghostEnabled: boolean;
+  targetScore: number;
   onFinish: (result: GameResult) => void;
 };
 
@@ -35,7 +36,7 @@ function speedFor(passed: number) {
   return Math.min(3.15, 1.5 + passed * 0.028);
 }
 
-export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
+export default function OrbitShift({ active, ghostEnabled, targetScore, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
@@ -51,6 +52,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
     acc: 0,
     passed: 0,
     combo: 0,
+    score: 0,
     pulse: 0,
     nextHazard: 1.86,
     nextIndex: 0,
@@ -60,7 +62,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
     finishRef.current = onFinish;
   }, [onFinish]);
 
-  const finish = useCallback(() => {
+  const finish = useCallback((won = false) => {
     const s = state.current;
     if (!s.running) return;
 
@@ -68,11 +70,11 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
 
     const timeMs = Math.round((s.ticks * 1000) / 120);
-    const score = s.passed * 420 + Math.round(timeMs / 50);
+    const score = Math.max(s.score, s.passed * 420 + Math.round(timeMs / 50));
 
-    gameTone("bad");
-    haptic([34, 24, 50]);
-    finishRef.current({ won: false, score, timeMs });
+    gameTone(won ? "win" : "bad");
+    haptic(won ? [18, 28, 45] : [34, 24, 50]);
+    finishRef.current({ won, score, timeMs });
   }, []);
 
   const step = useCallback(() => {
@@ -99,6 +101,14 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
       s.combo += 1;
       s.pulse = 18;
       s.nextIndex += 1;
+      s.score =
+        s.passed * 420 +
+        Math.round(((s.ticks * 1000) / 120) / 50);
+
+      if (s.score >= targetScore) {
+        finish(true);
+        return;
+      }
 
       const compression = Math.max(
         0.76,
@@ -113,7 +123,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
         haptic(7);
       }
     }
-  }, [finish]);
+  }, [finish, targetScore]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -269,24 +279,6 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
       ctx.textAlign = "start";
     }
 
-    // Minimal competitive HUD.
-    ctx.fillStyle = "rgba(7,13,32,.84)";
-    ctx.fillRect(14, 14, W - 28, 50);
-    ctx.fillStyle = "#fff";
-    ctx.font = "900 14px system-ui";
-    ctx.textAlign = "left";
-    ctx.fillText(`SUPERADOS ${s.passed}`, 26, 44);
-
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#77e5ff";
-    ctx.fillText(`ÓRBITA ${s.lane + 1}/5`, W - 26, 44);
-
-    if (s.combo > 1) {
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#ffd95a";
-      ctx.fillText(`RACHA ×${s.combo}`, CX, 44);
-    }
-
     ctx.textAlign = "start";
   }, [ghostEnabled]);
 
@@ -318,6 +310,7 @@ export default function OrbitShift({ active, ghostEnabled, onFinish }: Props) {
       acc: 0,
       passed: 0,
       combo: 0,
+      score: 0,
       pulse: 0,
       nextHazard: 1.86,
       nextIndex: 0,

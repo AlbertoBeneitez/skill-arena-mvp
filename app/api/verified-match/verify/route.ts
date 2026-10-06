@@ -61,7 +61,11 @@ export async function POST(request: Request) {
   const ticketCheck = verifyAttemptTicket(ticket, manifest);
   if (!ticketCheck.ok) return reject(ticketCheck.error, 401);
 
-  const replay = replayTowerDrop(inputs, finalTick);
+  const replay = replayTowerDrop(
+    inputs,
+    finalTick,
+    manifest.competition.target_score
+  );
   if (!replay.valid) return reject(replay.error ?? "INVALID_REPLAY");
 
   const elapsedWallMs = Date.now() - ticketCheck.issuedAt;
@@ -94,6 +98,7 @@ export async function POST(request: Request) {
     time_ms: replay.timeMs,
     height: replay.height,
     failure: replay.failure,
+    won: replay.state.status === "won",
     authoritative_source: "SERVER_REPLAY",
     client_score_ignored: true,
   });

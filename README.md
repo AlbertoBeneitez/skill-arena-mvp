@@ -61,3 +61,16 @@ Google/Apple, dinero, matchmaking, ranking y legal son simulaciones de producto.
 - Jet Stream incorpora HUD de puertas, puntos, ritmo y proximidad a la siguiente puerta.
 - Metro Shift mantiene los obstáculos visibles y desplazándose después de superarlos, añade sensación de velocidad continua y sustituye el indicador de carril por un HUD de superados, puntos y ritmo.
 - Se amplían los objetivos táctiles principales: volver, jugar y navegación JUGAR/CUENTA.
+
+
+## V14
+
+- Los nombres de avatar admiten espacios simples, manteniendo validación de 3–18 caracteres.
+- Control de sonido simplificado con botón de altavoz visible en cabecera y durante la partida.
+- SFX arcade originales generados con Web Audio, sin assets de terceros ni costes/licencias.
+- Se eliminan los marcadores internos de puntuación de los cinco juegos para limpiar la superficie de juego.
+- Nueva pestaña GRUPO con sala cerrada, código privado, stake configurable y modo 1 vs todos los integrantes.
+- La lógica de grupo se separa en `lib/groupPlay.ts` y la UI en `components/GroupHub.tsx`.
+- Metro Shift incorpora física lateral con velocidad/inercia y movimiento de obstáculos con aceleración visual por perspectiva.
+- Los cinco juegos terminan al alcanzar la marca objetivo; la victoria muestra una animación común a nivel de producto.
+- Tower Drop v1.1 conserva verificación server-side y admite cierre autoritativo por objetivo alcanzado o primer fallo.

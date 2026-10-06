@@ -7,6 +7,7 @@ import { gameTone, haptic } from "@/lib/gameFeedback";
 type Props = {
   active: boolean;
   ghostEnabled: boolean;
+  targetScore: number;
   onFinish: (result: GameResult) => void;
 };
 
@@ -244,7 +245,7 @@ function polygonHitsRect(polygon: Point[], rect: Rect) {
   return false;
 }
 
-export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
+export default function MetroShift({ active, ghostEnabled, targetScore, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
@@ -253,6 +254,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
   const state = useRef({
     lane: 3 as Lane,
     x: PLAYER_LANES[3] as number,
+    vx: 0,
     groups: [] as ObstacleGroup[],
     nextIndex: 0,
     running: false,
@@ -271,17 +273,17 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     finishRef.current = onFinish;
   }, [onFinish]);
 
-  const finish = useCallback(() => {
+  const finish = useCallback((won = false) => {
     const s = state.current;
     if (!s.running) return;
 
     s.running = false;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    gameTone("bad");
-    haptic([32, 25, 52]);
+    gameTone(won ? "win" : "bad");
+    haptic(won ? [18, 28, 45] : [32, 25, 52]);
 
     finishRef.current({
-      won: false,
+      won,
       score: s.score,
       timeMs: Math.round((s.ticks * 1000) / 120),
     });
@@ -313,7 +315,12 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
 
     const speed = speedFor(s.ticks);
     s.travel += speed * DT;
-    s.x += (PLAYER_LANES[s.lane] - s.x) * 0.46;
+
+    // Critically damped-ish lateral motion: quick, continuous and readable.
+    const targetX = PLAYER_LANES[s.lane];
+    const lateralAcceleration = (targetX - s.x) * 92 - s.vx * 15;
+    s.vx += lateralAcceleration * DT;
+    s.x += s.vx * DT;
 
     s.jumpVy += 1220 * DT;
     s.jumpY += s.jumpVy * DT;
@@ -323,13 +330,14 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     }
 
     const playerAngle = Math.max(
-      -0.17,
-      Math.min(0.17, (PLAYER_LANES[s.lane] - s.x) / 80)
+      -0.22,
+      Math.min(0.22, s.vx / 420)
     );
     const plane = playerPolygon(s.x, PLAYER_Y + s.jumpY, playerAngle);
 
     for (const group of s.groups) {
-      group.y += speed * DT;
+      const perspectiveSpeed = 0.58 + depthFor(group.y) * 0.72;
+      group.y += speed * perspectiveSpeed * DT;
       if (group.passed) continue;
 
       for (const hazard of group.hazards) {
@@ -350,6 +358,12 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
         group.passed = true;
         s.passed += 1;
         s.score += 300 + Math.min(540, s.passed * 18);
+
+        if (s.score >= targetScore) {
+          finish(true);
+          return;
+        }
+
         addGroupAbove();
 
         if (s.passed % 5 === 0) {
@@ -358,7 +372,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
         }
       }
     }
-  }, [addGroupAbove, finish]);
+  }, [addGroupAbove, finish, targetScore]);
 
   const drawRoad = useCallback((ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
@@ -530,8 +544,8 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     }
 
     const playerAngle = Math.max(
-      -0.17,
-      Math.min(0.17, (PLAYER_LANES[s.lane] - s.x) / 80)
+      -0.22,
+      Math.min(0.22, s.vx / 420)
     );
 
     // Ground shadow makes jumping height immediately legible.
@@ -559,35 +573,6 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#315fae";
     ctx.fillRect(-7, -11, 14, 20);
-    ctx.restore();
-
-    const speed = speedFor(s.ticks);
-    ctx.save();
-    ctx.fillStyle = "rgba(12,24,42,.91)";
-    ctx.fillRect(12, 12, W - 24, 68);
-    ctx.fillStyle = "rgba(255,255,255,.08)";
-    ctx.fillRect(134, 20, 1, 52);
-    ctx.fillRect(255, 20, 1, 52);
-
-    ctx.textAlign = "center";
-    ctx.font = "800 8px system-ui";
-    ctx.fillStyle = "#9eb2ce";
-    ctx.fillText("SUPERADOS", 73, 31);
-    ctx.fillText("PUNTOS", 195, 31);
-    ctx.fillText("RITMO", 316, 31);
-
-    ctx.font = "950 20px system-ui";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(String(s.passed), 73, 57);
-    ctx.fillStyle = "#ffd35d";
-    ctx.fillText(String(s.score), 195, 57);
-    ctx.fillStyle = "#74e0ef";
-    ctx.fillText(String(Math.round(speed)), 316, 57);
-
-    ctx.fillStyle = "rgba(255,255,255,.10)";
-    ctx.fillRect(24, 70, W - 48, 4);
-    ctx.fillStyle = "#5ed5e8";
-    ctx.fillRect(24, 70, (W - 48) * Math.min(1, (speed - 188) / 170), 4);
     ctx.restore();
 
     if (s.passed < 4) {
@@ -623,6 +608,7 @@ export default function MetroShift({ active, ghostEnabled, onFinish }: Props) {
     state.current = {
       lane: 3,
       x: PLAYER_LANES[3],
+      vx: 0,
       groups: initial.items,
       nextIndex: initial.nextIndex,
       running: true,

@@ -10,7 +10,7 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  let body: { stake_minor?: number } = {};
+  let body: { stake_minor?: number; target_score?: number } = {};
   try {
     body = await request.json();
   } catch {
@@ -30,7 +30,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const manifest = createTowerDropManifest({ stakeMinor });
+  const targetScore =
+    typeof body.target_score === "number" && Number.isInteger(body.target_score)
+      ? Math.max(1, Math.min(1_000_000_000, body.target_score))
+      : 1;
+
+  const manifest = createTowerDropManifest({ stakeMinor, targetScore });
   const ticket = issueAttemptTicket({
     manifest,
     playerId: `demo-player:${randomUUID()}`,

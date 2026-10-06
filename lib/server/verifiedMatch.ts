@@ -27,7 +27,7 @@ export function isAllowedStakeMinor(value: number) {
 const RULES_V1 = {
   players: 2,
   attemptsPerPlayer: 1,
-  endCondition: "FIRST_FAILURE",
+  endCondition: "FIRST_FAILURE_OR_TARGET",
   tieRule: "EXACT_TIE_REFUND",
   authoritativeResult: "SERVER_REPLAY_ONLY",
   inputClock: "SIMULATION_TICKS",
@@ -60,9 +60,11 @@ export function expectedRulesHash() {
 export function createTowerDropManifest(args?: {
   matchId?: string;
   stakeMinor?: number;
+  targetScore?: number;
 }): MatchManifest {
   const createdAt = new Date().toISOString();
   const stakeMinor = Math.max(0, Math.floor(args?.stakeMinor ?? 0));
+  const targetScore = Math.max(1, Math.floor(args?.targetScore ?? 1));
 
   return {
     manifest_version: 1,
@@ -76,7 +78,7 @@ export function createTowerDropManifest(args?: {
       tick_rate: TOWER_DROP_V1.tickRate,
       coordinate_width: 390,
       coordinate_height: 620,
-      end_condition: "FIRST_FAILURE",
+      end_condition: "FIRST_FAILURE_OR_TARGET",
     },
     competition: {
       players: 2,
@@ -84,6 +86,7 @@ export function createTowerDropManifest(args?: {
       stake_minor: stakeMinor,
       currency: "EUR",
       tie_rule: "EXACT_TIE_REFUND",
+      target_score: targetScore,
     },
     input_protocol: {
       version: TOWER_DROP_V1.inputProtocolVersion,
@@ -202,7 +205,7 @@ export function validateManifest(manifest: MatchManifest) {
     manifest.simulation.coordinate_width !==
       TOWER_DROP_V1.widthMilli / 1000 ||
     manifest.simulation.coordinate_height !== 620 ||
-    manifest.simulation.end_condition !== "FIRST_FAILURE"
+    manifest.simulation.end_condition !== "FIRST_FAILURE_OR_TARGET"
   ) {
     return { ok: false as const, error: "SIMULATION_CONFIG_MISMATCH" };
   }
@@ -221,7 +224,10 @@ export function validateManifest(manifest: MatchManifest) {
     manifest.competition.attempts_per_player !== 1 ||
     manifest.competition.currency !== "EUR" ||
     manifest.competition.tie_rule !== "EXACT_TIE_REFUND" ||
-    !isAllowedStakeMinor(manifest.competition.stake_minor)
+    !isAllowedStakeMinor(manifest.competition.stake_minor) ||
+    !Number.isInteger(manifest.competition.target_score) ||
+    manifest.competition.target_score < 1 ||
+    manifest.competition.target_score > 1_000_000_000
   ) {
     return { ok: false as const, error: "COMPETITION_CONFIG_MISMATCH" };
   }

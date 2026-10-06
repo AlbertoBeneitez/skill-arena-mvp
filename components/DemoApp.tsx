@@ -2,13 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
+import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
+import { createDemoClosedGroup, groupPot, groupTargetScore, type ClosedGroup } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
 
-type Screen = "welcome" | "avatar-setup" | "home" | "game" | "profile" | "legal";
+type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal";
 type Provider = "google" | "apple" | null;
 type Turn = "create" | "existing";
+type MatchScope = "duel" | "group";
 
 type EarningsPoint = { label: string; value: number };
 type Movement = { label: string; amount: number };
@@ -29,9 +32,10 @@ type PersistedState = {
   wins: number;
   losses: number;
   streak: number;
+  group: ClosedGroup | null;
 };
 
-const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "game", "profile", "legal"];
+const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "group", "game", "profile", "legal"];
 
 function isScreen(value: unknown): value is Screen {
   return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
@@ -69,7 +73,7 @@ const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "sopor
 
 function isDemoNameAvailable(value: string) {
   const clean = value.trim();
-  if (!/^[A-Za-z0-9_]{3,18}$/.test(clean)) return false;
+  if (!/^[A-Za-z0-9_ ]{3,18}$/.test(clean) || /\s{2,}/.test(clean)) return false;
   return !BLOCKED_DEMO_NAMES.has(clean.toLowerCase());
 }
 
@@ -226,6 +230,10 @@ export default function DemoApp() {
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [group, setGroup] = useState<ClosedGroup | null>(null);
+  const [matchScope, setMatchScope] = useState<MatchScope>("duel");
+  const [matchTargetScore, setMatchTargetScore] = useState(GAMES[0].rivalScore);
+  const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -244,6 +252,7 @@ export default function DemoApp() {
       setTutorialSeen(false);
       setTutorialOpen(false);
       setTutorialStep(0);
+      setGroup(null);
       setIsLoaded(true);
       return;
     }
@@ -275,6 +284,7 @@ export default function DemoApp() {
         if (typeof data.wins === "number") setWins(data.wins);
         if (typeof data.losses === "number") setLosses(data.losses);
         if (typeof data.streak === "number") setStreak(data.streak);
+        if (data.group && typeof data.group === "object") setGroup(data.group as ClosedGroup);
       } catch {}
     }
     setTutorialSeen(localStorage.getItem(TUTORIAL_KEY) === "1");
@@ -299,17 +309,24 @@ export default function DemoApp() {
       wins,
       losses,
       streak,
+      group,
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group]);
 
   useEffect(() => {
     setGameSoundEnabled(musicOn);
   }, [musicOn]);
+
+  useEffect(() => {
+    if (!showWinAnimation) return;
+    const timer = window.setTimeout(() => setShowWinAnimation(false), 1350);
+    return () => window.clearTimeout(timer);
+  }, [showWinAnimation]);
 
   useEffect(() => {
     if (!cropSource || !cropCanvasRef.current) return;
@@ -481,7 +498,7 @@ export default function DemoApp() {
   }
 
   function completeAvatar() {
-    const clean = playerName.trim().slice(0, 18);
+    const clean = playerName.trim().replace(/\s+/g, " ").slice(0, 18);
     if (!isDemoNameAvailable(clean)) return;
     setPlayerName(clean);
     setOnboarded(true);
@@ -510,6 +527,9 @@ export default function DemoApp() {
     setSelectedStake(stake);
     setSelectedMode(mode);
     setGhostEnabled(mode === "existing");
+    setMatchScope("duel");
+    setMatchTargetScore(game.rivalScore);
+    setShowWinAnimation(false);
 
     setBalance((b) => Number((b - stake).toFixed(2)));
     if (stake > 0) {
@@ -550,8 +570,9 @@ export default function DemoApp() {
       return;
     }
 
-    const didWin = gameResult.score >= selectedGame.rivalScore;
+    const didWin = gameResult.won || gameResult.score >= matchTargetScore;
     const resolvedResult = { ...gameResult, won: didWin };
+    if (didWin) setShowWinAnimation(true);
     setResult(resolvedResult);
 
     if (selectedStake === 0) {
@@ -572,7 +593,7 @@ export default function DemoApp() {
       haptic(35);
     }
 
-    const prize = prizeForStake(selectedStake);
+    const prize = matchScope === "group" && group ? groupPot(group) : prizeForStake(selectedStake);
     const delta = didWin ? prize - selectedStake : -selectedStake;
 
     if (didWin && prize > 0) {
@@ -584,6 +605,54 @@ export default function DemoApp() {
     setNetEarnings(nextValue);
     setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
     setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
+  }
+
+  function createClosedGroup(name: string, stake: Stake) {
+    const next = createDemoClosedGroup({
+      name,
+      stake,
+      playerName: playerName || "TÚ",
+      avatar: avatarSrc,
+    });
+    setGroup(next);
+    gameTone("good");
+    haptic(8);
+  }
+
+  function setClosedGroupStake(stake: Stake) {
+    setGroup((current) => current ? { ...current, stake } : current);
+    haptic(4);
+  }
+
+  function startGroupMatch(game: GameMeta) {
+    if (!group || matchStartLockRef.current || group.stake > balance) return;
+
+    const stake = group.stake;
+    matchStartLockRef.current = true;
+    setStartingGameId(game.id);
+    setSelectedGame(game);
+    setSelectedStake(stake);
+    setSelectedMode("create");
+    setGhostEnabled(false);
+    setMatchScope("group");
+    setMatchTargetScore(groupTargetScore(group, game));
+    setShowWinAnimation(false);
+
+    setBalance((value) => Number((value - stake).toFixed(2)));
+    if (stake > 0) {
+      setMovements((items) => [
+        { label: `${group.name} · entrada`, amount: -stake },
+        ...items,
+      ].slice(0, 20));
+    }
+
+    setResult(null);
+    setActiveGame(false);
+    setGameKey((key) => key + 1);
+    setCountdown(3);
+    gameTone("countdown");
+    haptic(12);
+    navigate("game");
   }
 
   function resetAvatar() {
@@ -619,6 +688,7 @@ export default function DemoApp() {
     setWins(0);
     setLosses(0);
     setStreak(0);
+    setGroup(null);
     setCountdown(null);
     navigate("welcome", true);
   }
@@ -751,7 +821,18 @@ export default function DemoApp() {
       {screen !== "game" && (
         <header className="appHeader">
           <button className="logoButton" onClick={() => navigate("home")}>SKILL ARENA</button>
-          <button className="balanceChip" onClick={() => navigate("profile")}>{euro(balance)}</button>
+          <div className="appHeaderActions">
+            <button
+              className={`soundToggle ${musicOn ? "on" : "off"}`}
+              type="button"
+              aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
+              aria-pressed={musicOn}
+              onClick={() => setMusicOn((value) => !value)}
+            >
+              {musicOn ? "🔊" : "🔇"}
+            </button>
+            <button className="balanceChip" onClick={() => navigate("profile")}>{euro(balance)}</button>
+          </div>
         </header>
       )}
 
@@ -833,6 +914,18 @@ export default function DemoApp() {
           </section>
         )}
 
+        {screen === "group" && (
+          <GroupHub
+            group={group}
+            balance={balance}
+            playerName={playerName}
+            avatarSrc={avatarSrc}
+            onCreateGroup={createClosedGroup}
+            onSetStake={setClosedGroupStake}
+            onPlayGroup={startGroupMatch}
+          />
+        )}
+
         {screen === "game" && (
           <section className="gameScreen">
             <div className="mobileGameHeader">
@@ -847,9 +940,24 @@ export default function DemoApp() {
               </button>
               <div>
                 <strong>{selectedGame.name}</strong>
-                <small>{selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€ · 1 VS 1`}</small>
+                <small>
+                  {matchScope === "group"
+                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€`} · 1 VS ${Math.max(1, (group?.members.length ?? 2) - 1)}`
+                    : selectedStake === 0
+                      ? "ENTRENAMIENTO"
+                      : `${selectedStake}€ · 1 VS 1`}
+                </small>
               </div>
-              {selectedMode === "existing" ? (
+              <button
+                className={`gameSoundToggle ${musicOn ? "on" : "off"}`}
+                type="button"
+                aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
+                aria-pressed={musicOn}
+                onClick={() => setMusicOn((value) => !value)}
+              >
+                {musicOn ? "🔊" : "🔇"}
+              </button>
+              {selectedMode === "existing" && matchScope === "duel" ? (
                 <button
                   className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
                   onClick={() => setGhostEnabled((value) => !value)}
@@ -868,11 +976,22 @@ export default function DemoApp() {
                 <strong>{playerName || "TÚ"}</strong>
               </span>
               <b>VS</b>
-              <span className="matchPlayer matchPlayerRival">
-                <strong>{selectedGame.rivalName}</strong>
-                <img src={selectedGame.rivalAvatar} alt="" />
-              </span>
-              {selectedMode === "existing" && ghostEnabled && <em>👻 fantasma activo</em>}
+              {matchScope === "group" && group ? (
+                <span className="matchPlayer matchPlayerRival groupRivals">
+                  <strong>{group.name}</strong>
+                  <span className="groupAvatarStack">
+                    {group.members.filter((member) => !member.isYou).slice(0, 3).map((member) => (
+                      <img key={member.id} src={member.avatar} alt="" />
+                    ))}
+                  </span>
+                </span>
+              ) : (
+                <span className="matchPlayer matchPlayerRival">
+                  <strong>{selectedGame.rivalName}</strong>
+                  <img src={selectedGame.rivalAvatar} alt="" />
+                </span>
+              )}
+              {selectedMode === "existing" && ghostEnabled && matchScope === "duel" && <em>👻 fantasma activo</em>}
             </div>
 
             <div className="gameArenaWrap">
@@ -882,8 +1001,19 @@ export default function DemoApp() {
                 stake={selectedStake}
                 ghostEnabled={selectedMode === "existing" && ghostEnabled}
                 instanceKey={gameKey}
+                targetScore={matchTargetScore}
                 onFinish={finishMatch}
               />
+              {showWinAnimation && (
+                <div className="winCelebration" aria-live="assertive">
+                  <div className="winBurst" aria-hidden="true">
+                    <i /><i /><i /><i /><i /><i /><i /><i />
+                  </div>
+                  <span>🏆</span>
+                  <strong>VICTORIA</strong>
+                  <small>HAS SUPERADO LA MARCA</small>
+                </div>
+              )}
               {countdown !== null && (
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>
@@ -1023,9 +1153,12 @@ export default function DemoApp() {
       )}
 
       {screen !== "game" && screen !== "legal" && (
-        <nav className="bottomNav bottomNavTwo" aria-label="Navegación principal">
+        <nav className="bottomNav bottomNavThree" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}>
             <span>▶</span>JUGAR
+          </button>
+          <button className={screen === "group" ? "active" : ""} onClick={() => navigate("group")}>
+            <span>◉</span>GRUPO
           </button>
           <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}>
             <img src={avatarSrc} alt="" />CUENTA
