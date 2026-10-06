@@ -39,6 +39,9 @@ function isScreen(value: unknown): value is Screen {
 
 const AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${i + 1}.svg`);
 const START_BALANCE = 25;
+const APP_ITERATION = "v9";
+const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
+const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
 
 function euro(value: number) {
   return `${value.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
@@ -121,7 +124,6 @@ export default function DemoApp() {
   const [avatarGenerating, setAvatarGenerating] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const lastGameTapRef = useRef<{ id: string; at: number } | null>(null);
   const [balance, setBalance] = useState(START_BALANCE);
   const [netEarnings, setNetEarnings] = useState(0);
   const [nextTurn, setNextTurn] = useState<Turn>("create");
@@ -166,7 +168,7 @@ export default function DemoApp() {
       return;
     }
 
-    const raw = localStorage.getItem("skill-arena-v3") ?? localStorage.getItem("skill-arena-v2");
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
         const data = JSON.parse(raw) as Partial<PersistedState>;
@@ -195,7 +197,7 @@ export default function DemoApp() {
         if (typeof data.streak === "number") setStreak(data.streak);
       } catch {}
     }
-    setTutorialSeen(localStorage.getItem("skill-arena-color-tutorial-v1") === "1");
+    setTutorialSeen(localStorage.getItem(TUTORIAL_KEY) === "1");
     setIsLoaded(true);
   }, []);
 
@@ -219,7 +221,7 @@ export default function DemoApp() {
       streak,
     };
     try {
-      localStorage.setItem("skill-arena-v3", JSON.stringify(data));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
@@ -308,7 +310,7 @@ export default function DemoApp() {
       setTutorialStep((step) => step + 1);
       return;
     }
-    localStorage.setItem("skill-arena-color-tutorial-v1", "1");
+    localStorage.setItem(TUTORIAL_KEY, "1");
     setTutorialSeen(true);
     setTutorialOpen(false);
   }
@@ -335,11 +337,10 @@ export default function DemoApp() {
 
   function chooseProvider(nextProvider: Exclude<Provider, null>) {
     setProvider(nextProvider);
-    const nextAvatarId = Math.floor(Math.random() * AVATARS.length);
-    setAvatarId(nextAvatarId);
-    setAvatarSrc(AVATARS[nextAvatarId]);
+    setAvatarId(0);
+    setAvatarSrc(AVATARS[0]);
     setAvatarPrompt("");
-    setAvatarEditorOpen(false);
+    setAvatarEditorOpen(true);
     setAvatarError("");
     navigate("avatar-setup");
   }
@@ -422,22 +423,6 @@ export default function DemoApp() {
     }
   }
 
-  function handleGameTap(game: GameMeta) {
-    const now = performance.now();
-    const previous = lastGameTapRef.current;
-    const isDoubleTap =
-      previous?.id === game.id && now - previous.at <= 520;
-
-    if (isDoubleTap) {
-      lastGameTapRef.current = null;
-      startMatch(game);
-      return;
-    }
-
-    lastGameTapRef.current = { id: game.id, at: now };
-    openGame(game);
-  }
-
   function selectStake(stake: Stake) {
     haptic(4);
     const mode = modeForStake(selectedGame, stake, nextTurn);
@@ -448,11 +433,8 @@ export default function DemoApp() {
 
   function startMatch(gameOverride?: GameMeta) {
     const game = gameOverride ?? selectedGame;
-    const stake = game.id === selectedGame.id ? selectedStake : 0;
-    const mode =
-      game.id === selectedGame.id
-        ? selectedMode
-        : modeForStake(game, stake, nextTurn);
+    const stake = selectedStake;
+    const mode = modeForStake(game, stake, nextTurn);
 
     if (stake > balance) return;
 
@@ -583,7 +565,7 @@ export default function DemoApp() {
             <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
             <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
           </div>
-          <p className="microcopy">V8 · MOBILE COMPETITIVE BUILD</p>
+          <p className="microcopy">V9 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -715,82 +697,59 @@ export default function DemoApp() {
         )}
 
         {screen === "play" && (
-          <section className="catalogScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← INICIO</button><span>JUGAR</span></div>
-            <div className="gameGrid large">
-              {GAMES.map((game) => (
+          <section className="catalogScreen playCatalogSimple">
+            <div className="screenTop">
+              <button className="textBack" onClick={() => window.history.back()}>← INICIO</button>
+              <span>JUGAR</span>
+            </div>
+
+            <div className="quickStakeBar" aria-label="Importe de la partida">
+              {STAKES.map((stake) => (
                 <button
-                  className={`gameCard premiumGameCard ${selectedGame.id === game.id ? "selectedGame" : ""}`}
-                  key={game.id}
-                  onClick={() => handleGameTap(game)}
+                  key={stake}
+                  className={selectedStake === stake ? "selected" : ""}
+                  onClick={() => selectStake(stake)}
+                  disabled={stake > balance}
                 >
-                  <div className="gameCoverWrap">
-                    <img src={game.cover} alt={game.name} />
-                  </div>
-                  <div className="gameCardCopy">
-                    <strong>{game.name}</strong>
-                    <span>{game.tagline}</span>
-                    <div className="gameCardHint">
-                      {selectedGame.id === game.id ? "DOBLE TOQUE PARA JUGAR" : "TOCA PARA SELECCIONAR"}
-                    </div>
-                  </div>
+                  {stake === 0 ? "GRATIS" : `${stake}€`}
                 </button>
               ))}
             </div>
 
-            <div className="gameDetail gameDetailAligned">
-              <img className="detailCover" src={selectedGame.cover} alt={selectedGame.name} />
-              <div className="detailHeader">
-                <div><h2>{selectedGame.name}</h2><p>{selectedGame.tagline}</p></div>
-              </div>
-              <div className="gameBrief">
-                <div><span>CONTROLES</span><p>{selectedGame.instruction}</p></div>
-                <div><span>OBJETIVO</span><p>{selectedGame.scoring}</p></div>
-              </div>
-              <div className="rivalPreview">
-                <div className="rivalIdentity">
-                  <img src={selectedGame.rivalAvatar} alt="" />
-                  <div>
-                    <small>{selectedMode === "existing" ? "RIVAL YA HA JUGADO" : "RIVAL DEMO"}</small>
-                    <strong>{selectedGame.rivalName}</strong>
-                  </div>
-                </div>
-                <b>{selectedMode === "existing" ? "MARCA OCULTA" : "1 VS 1"}</b>
-              </div>
-              {selectedMode === "existing" && (
-                <label className="ghostOption">
-                  <span>
-                    <b>👻 MARCA FANTASMA</b>
-                    <small>Ver una referencia visual del intento del rival sin mostrar su resultado.</small>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={ghostEnabled}
-                    onChange={(event) => setGhostEnabled(event.target.checked)}
-                  />
-                </label>
-              )}
-              <div className="stakesLabel">ELIGE PARTIDA</div>
-              <div className="stakesGrid">
-                {STAKES.map((stake) => {
-                  const mode = modeForStake(selectedGame, stake, nextTurn);
-                  return (
-                    <button
-                      key={stake}
-                      className={`stakeButton ${mode} ${selectedStake === stake ? "selected" : ""}`}
-                      onClick={() => selectStake(stake)}
-                    >
-                      {stake}€
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="modeLegend"><span><i className="dot create" /> inicial</span><span><i className="dot existing" /> existente</span><span><i className="dot waiting" /> sala de espera</span></div>
-              <div className="selectedMatchLine">
-                <span>{selectedMode === "create" ? "PARTIDA INICIAL" : selectedMode === "existing" ? "JUGADA EXISTENTE" : "RIVAL EN SALA"}</span>
-                <strong>{selectedStake === 0 ? "GRATIS" : `PREMIO ${euro(prizeForStake(selectedStake))}`}</strong>
-              </div>
-              <button className="mainAction duelEntryAction" onClick={() => startMatch()} disabled={selectedStake > balance}>{selectedStake === 0 ? "ENTRENAR GRATIS" : `ENTRAR AL DUELO · ${selectedStake}€`}</button>
+            <div className="gameGrid large playGameGrid">
+              {GAMES.map((game) => {
+                const mode = modeForStake(game, selectedStake, nextTurn);
+                const canPlay = selectedStake <= balance;
+
+                return (
+                  <article className="playGameCard" key={game.id}>
+                    <div className="gameCoverWrap">
+                      <img src={game.cover} alt={game.name} />
+                      {mode === "existing" && (
+                        <button
+                          className={`cardGhostToggle ${ghostEnabled ? "active" : ""}`}
+                          onClick={() => setGhostEnabled((value) => !value)}
+                          aria-label="Mostrar u ocultar fantasma"
+                          type="button"
+                        >
+                          👻
+                        </button>
+                      )}
+                    </div>
+                    <div className="playGameCardFooter">
+                      <strong>{game.name}</strong>
+                      <button
+                        className="cardPlayButton"
+                        type="button"
+                        disabled={!canPlay}
+                        onClick={() => startMatch(game)}
+                      >
+                        {selectedStake === 0 ? "JUGAR" : `JUGAR · ${selectedStake}€`}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         )}
