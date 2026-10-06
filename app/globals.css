@@ -3284,3 +3284,80 @@ html, body {
     height: 220px;
   }
 }
+
+
+/* =========================================================
+   V12 — requested gameplay/product refinements
+   ========================================================= */
+
+/* Avatar setup: upload-only for this phase; no paid AI dependency. */
+.avatarActions.singleAvatarAction {
+  grid-template-columns: 1fr;
+  margin: 0;
+}
+
+.avatarActions.singleAvatarAction .secondaryAction {
+  width: 100%;
+}
+
+/* Mobile game surface: remove dead bands between match strip, arena and result card. */
+.gameScreen {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.gameScreen .compactMatchStrip {
+  margin-bottom: 0;
+  border-radius: 11px 11px 0 0;
+}
+
+.gameScreen .gameArenaWrap {
+  margin: 0;
+  padding: 0;
+}
+
+.jetStreamArena {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+}
+
+.jetStreamArena .gameCanvas {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  aspect-ratio: auto !important;
+  object-fit: fill !important;
+}
+
+.gameScreen > .premiumResult {
+  bottom: env(safe-area-inset-bottom);
+}
+
+/* Keep the four active gameplay surfaces edge-to-edge and gesture-safe. */
+.towerDropArena,
+.jetStreamArena,
+.pulseRunnerArena,
+.metroShiftArena,
+.orbitShiftArena {
+  overscroll-behavior: none;
+}
+
+@media (max-width: 430px) {
+  .gameScreen .compactMatchStrip {
+    margin-bottom: 0;
+  }
+
+  .gameScreen > .premiumResult {
+    bottom: env(safe-area-inset-bottom);
+  }
+}
