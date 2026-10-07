@@ -25,6 +25,28 @@ const COMMON_COMPETITION_RULES = {
   authoritativeResult: "SERVER_REPLAY_ONLY",
 } as const;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function isAttemptTicketShape(value: unknown): value is AttemptTicket {
+  if (!isRecord(value)) return false;
+
+  return (
+    typeof value.attempt_id === "string" &&
+    typeof value.match_id === "string" &&
+    typeof value.player_id === "string" &&
+    (value.slot === "A" || value.slot === "B") &&
+    typeof value.manifest_hash === "string" &&
+    typeof value.issued_at === "string" &&
+    typeof value.expires_at === "string" &&
+    typeof value.nonce === "string" &&
+    typeof value.signature === "string" &&
+    (value.security_mode === "demo" ||
+      value.security_mode === "production")
+  );
+}
+
 export function isAllowedStakeMinor(value: number) {
   return Number.isInteger(value) && ALLOWED_STAKES_MINOR.has(value);
 }
@@ -157,11 +179,11 @@ export function verifyAttemptTicket(
   ticket: AttemptTicket,
   manifest: MatchManifest
 ) {
-  const { signature, ...unsigned } = ticket;
-
-  if (!signature || typeof signature !== "string") {
+  if (!isAttemptTicketShape(ticket)) {
     return { ok: false as const, error: "INVALID_TICKET" };
   }
+
+  const { signature, ...unsigned } = ticket;
 
   const expected = ticketSignature(unsigned);
   const actualBuffer = Buffer.from(signature);
@@ -199,10 +221,28 @@ export function verifyAttemptTicket(
 }
 
 export function validateManifest(manifest: MatchManifest) {
+  if (!isRecord(manifest)) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
+  const simulation = manifest.simulation;
+  const competition = manifest.competition;
+  const inputProtocol = manifest.input_protocol;
+
   if (
-    !manifest ||
     manifest.manifest_version !== 2 ||
-    typeof manifest.game_id !== "string"
+    typeof manifest.game_id !== "string" ||
+    typeof manifest.game_version !== "string" ||
+    typeof manifest.engine_version !== "string" ||
+    typeof manifest.rules_hash !== "string" ||
+    typeof manifest.gameplay_content_hash !== "string" ||
+    typeof manifest.seed !== "string" ||
+    manifest.seed.length < 1 ||
+    manifest.seed.length > 128 ||
+    typeof manifest.created_at !== "string" ||
+    !isRecord(simulation) ||
+    !isRecord(competition) ||
+    !isRecord(inputProtocol)
   ) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }
@@ -220,14 +260,6 @@ export function validateManifest(manifest: MatchManifest) {
   }
 
   if (
-    !manifest.seed ||
-    typeof manifest.seed !== "string" ||
-    manifest.seed.length > 128
-  ) {
-    return { ok: false as const, error: "INVALID_MANIFEST" };
-  }
-
-  if (
     manifest.gameplay_content_hash !==
       expectedGameplayContentHash(manifest.game_id) ||
     manifest.rules_hash !== expectedRulesHash(manifest.game_id)
@@ -236,24 +268,24 @@ export function validateManifest(manifest: MatchManifest) {
   }
 
   if (
-    manifest.simulation.tick_rate !== adapter.simulation.tickRate ||
-    manifest.simulation.coordinate_width !==
+    simulation.tick_rate !== adapter.simulation.tickRate ||
+    simulation.coordinate_width !==
       adapter.simulation.coordinateWidth ||
-    manifest.simulation.coordinate_height !==
+    simulation.coordinate_height !==
       adapter.simulation.coordinateHeight ||
-    manifest.simulation.end_condition !==
+    simulation.end_condition !==
       adapter.simulation.endCondition
   ) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }
 
-  const protocol = manifest.input_protocol;
   if (
-    protocol.version !== adapter.inputProtocol.version ||
-    protocol.max_inputs !== adapter.inputProtocol.maxInputs ||
-    protocol.allowed_actions.length !==
+    inputProtocol.version !== adapter.inputProtocol.version ||
+    inputProtocol.max_inputs !== adapter.inputProtocol.maxInputs ||
+    !Array.isArray(inputProtocol.allowed_actions) ||
+    inputProtocol.allowed_actions.length !==
       adapter.inputProtocol.allowedActions.length ||
-    protocol.allowed_actions.some(
+    inputProtocol.allowed_actions.some(
       (action, index) =>
         action !== adapter.inputProtocol.allowedActions[index]
     )
@@ -262,15 +294,20 @@ export function validateManifest(manifest: MatchManifest) {
   }
 
   if (
-    manifest.competition.players !== 2 ||
-    manifest.competition.attempts_per_player !== 1 ||
-    manifest.competition.currency !== "EUR" ||
-    manifest.competition.tie_rule !== "EXACT_TIE_REFUND" ||
-    !isAllowedStakeMinor(manifest.competition.stake_minor) ||
-    !Number.isInteger(manifest.competition.target_score) ||
-    manifest.competition.target_score < 1 ||
-    manifest.competition.target_score > 1_000_000_000
+    competition.players !== 2 ||
+    competition.attempts_per_player !== 1 ||
+    competition.currency !== "EUR" ||
+    competition.tie_rule !== "EXACT_TIE_REFUND" ||
+    typeof competition.stake_minor !== "number" ||
+    !isAllowedStakeMinor(competition.stake_minor) ||
+    !Number.isInteger(competition.target_score) ||
+    (competition.target_score as number) < 1 ||
+    (competition.target_score as number) > 1_000_000_000
   ) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
+  if (!Number.isFinite(Date.parse(manifest.created_at))) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }
 
