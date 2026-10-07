@@ -1,11 +1,13 @@
-# Product evolution from v18-mobile
+# Product evolution — current scope and recoverable versions
 
 ## Baseline and execution
 
 Stable recovery point: `v18-mobile` at
-`6edf319f06a34936ddca7dc84e86b63591c35982`. Product work starts on
-`v19-mobile`. Do not move the stable branch or `mobile-test`, rewrite valid
-history, or apply the quarantined v17-based working copy wholesale.
+`6edf319f06a34936ddca7dc84e86b63591c35982`. Product work started on
+`v19-mobile`; continue from the latest validated published version. Preserve
+all historical vXX-mobile branches. Update `mobile-test` only by normal safe
+fast-forward after tests, CI and a ready Vercel deployment; never force-push or
+rewrite valid history. Do not apply the quarantined v17-based working copy wholesale.
 
 This document records product scope and dependencies. `lib/games.ts` remains
 the runtime registry. Follow `GAME_PROFESSIONALIZATION_CYCLE.md` for each game:
@@ -41,8 +43,10 @@ persisted match for two authenticated participants. Manifest V2 has no
 scenario identifier. Stake/target arrive from the browser. The verify endpoint
 replays the core correctly, but neither consumes an attempt atomically nor
 persists the result; retrying can create another verification id. The shared
-hook can also initiate repeated verification requests. Existing wallet,
-opponents, groups and ranking in `DemoApp` are demonstrations.
+hook now protects verification with single-flight, terminal caching and generation
+cancellation (v20). Durable server attempt consumption is still pending. Wallet,
+opponents and groups remain demonstrations. The ranking now separates an
+unconfigured real-source API from isolated, explicitly selected demo data (v31).
 
 **Decision gate before activating the production match contract:** define
 the authenticated player boundary and the durable match/attempt repository.
@@ -64,8 +68,8 @@ Proposed units, each with its own validation and commit:
 | S4 | Server-issued shared match scenarios | S1–S3; both participants recover the same manifest; no client-selected competitive seed, target or rules; enforce membership |
 | S5 | Single result per attempt and lifecycle protection | S3–S4; atomic replay verification/result persistence, idempotent retry, cancellation/generation checks, double-submit tests |
 | S6 | Integrate current VERIFIED games with shared scenarios | One game per unit; keep frozen cores/adapter archive; fixture and scheduling equivalence |
-| R1 | Server leaderboard read model | S3–S5; agree global ranking metric and tie policy; net profit from settled ledger entries, not local storage |
-| R2 | Global and net-profit ranking UI | R1; pagination, loading/empty/error states; visibly separate demo data module |
+| R1 | PostgreSQL read-only ranking repository staged in v31 | Snapshot-pinned keyset pages, exact cents, EUR, public-key ties; real settled ledger/public-profile projection and activation still pending |
+| R2 | Global net-profit ranking UI implemented in v31 | Visible shortcut/navigation; explicit source selection, bounded pages, no fabricated personal position; demo never replaces real-source data |
 | B1 | Owner-supplied package audited | `RGPD_PACKAGE_AUDIT.md`; useful concepts identified, unsafe/incomplete templates excluded; no source imported |
 | B2 | Integrate selected RGPD/backend parts | B1 and relevant server units; avoid duplicate auth, ledger, repositories or routing |
 
@@ -93,13 +97,26 @@ before publication; published/versioned behavior stays immutable.
 | Stack Shift | F1: piece/support/rotation/settling audit and fixtures; F2: corrected pure core/verifier; F3: space background and landing feedback | Validate support and collisions before visual polish |
 | Orb Burst | O1: trajectory/board/scoring/input audit and pure core; O2: bounded deterministic difficulty/progression; O3: aim/feedback/readability polish | Preserve useful existing mechanics; verify launch inputs and collisions |
 | Sky Hop | Y1: deterministic platform/movement core; Y2: seeded dynamic platform situations/progression; Y3: touch/camera/feedback | Device height and render rate must not determine landing/outcome |
-| Pulse Runner | P1: deterministic running/jump/obstacle core; P2: course variety and difficulty progression; P3: control feel and presentation | Reuse tick inputs and replay infrastructure |
+| Pulse Runner | RETIRED in v28 per latest owner request | No runtime/import/asset/test references; historical branches preserved |
 | Metro Shift | M1: deterministic lane/jump/collision core; M2: variety and progression; M3: orbital setting/presentation | Keep useful lane mechanics; shared scenario and input validation |
 | Mine Grid | I1: board/reveal/flag/scoring audit and pure core; I2: seed-versioned level generation/progression; I3: readable mobile level UI | Test board validity and solvability policy; keep both participants' initial conditions identical |
 | Solitaire Sprint | L1: space background only; L2: separate future pure card/action verifier audit | L1 does not change deck, inputs, scoring, layout or maturity |
 | Brick Relay | E1: pure ball/paddle/collision/scoring core; E2: seeded stage progression/pacing; E3: feedback and touch | Quantized paddle inputs and fixed simulation; avoid device-dependent collision |
 | Maze Rush | Z1: pure map/movement/pursuer core and verifier; Z2: readable seed-generated progression; Z3: mobile navigation/feedback | Validate reachability and pursuer rules before progression |
 | Star Phalanx | W1: pure ship/projectile/enemy core and verifier; W2: enemies enter layer by layer with seeded increasing waves; W3: clarity/feedback | Spawn schedules belong to ticks/rules, never render timers |
+
+New product additions from the latest owner request:
+
+| Game | Units | Acceptance |
+| --- | --- | --- |
+| Billiards | Fast limited-shot variant; integer physics/aim/power inputs and server replay; mobile controls and seeded progressive positions/obstacles | Same scenario/rules for opponents; no full simulator or copied commercial assets |
+| Darts | Skill-based aim/timing; deterministic scoring and server replay; progressively smaller/varied targets and mobile feedback | Fast intuitive first throws; same conditions for opponents |
+
+Current completed units: 2048 retirement (v19); shared client lifecycle and Alien/Solitaire space visuals (v20); Stack V3 perpendicular geometry (v21); Tower V3 swing (v22); Jet V2 windows/lives (v23); Serpent wrap/core (v24); River V1 motion (v25); Orb launch bug (v26); River V2 novice opening/progression (v27); Pulse retirement (v28); Tower composition and Jet terminal feedback (v29); Stack camera/shadows/axis clarity (v30); honest global net-profit ranking preparation (v31). These are unit completions, not blanket claims that every game is commercially frozen.
+
+Still audit and improve every active game for easy learning, progressive depth, fair losses, touch reliability, adequate duration, variety, success/error feedback, original spatial backgrounds and mobile performance. Alien Dash gameplay, Orb authoritative core/progression, Shot Gallery aggregation/recognition, Sky Hop, Metro Shift, Mine Grid, Brick Relay, Stack Shift support, Maze Rush, Star Phalanx layers, billiards and darts remain. Preserve good rules and history; tune already-upgraded games only for concrete measured issues. Human physical-device QA remains pending.
+
+Mine Grid hidden-information fairness requires a separate decision before VERIFIED promotion: public seeded layouts expose all mine positions. Audit hidden-state requirements for Solitaire as well. Keep existing maturity and training behavior while preparing a common proposal; do not silently claim that replay alone protects secret boards.
 
 For vague requests such as “improve professionally”, the audit must produce a
 bounded measurable unit (e.g. input latency, readability, solvable layouts,
