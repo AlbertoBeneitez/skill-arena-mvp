@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2020",
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "outDir": ".det-test",
+    "noEmit": false,
+    "incremental": false
+  },
+  "include": [
+    "scripts/verify-competitive-games.ts",
+    "scripts/verify-match-contracts.ts"
+  ],
+  "exclude": ["node_modules", ".det-test"]
+}

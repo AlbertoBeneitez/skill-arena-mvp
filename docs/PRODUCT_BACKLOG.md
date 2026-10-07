@@ -44,12 +44,14 @@ persists the result; retrying can create another verification id. The shared
 hook can also initiate repeated verification requests. Existing wallet,
 opponents, groups and ranking in `DemoApp` are demonstrations.
 
-**Decision required before changing the production match contract:** define
+**Decision gate before activating the production match contract:** define
 the authenticated player boundary and the durable match/attempt repository.
 The target database is PostgreSQL, never production SQLite or process memory.
 Missing database/auth configuration must fail closed for real competition;
 any in-memory adapter must be explicitly demo/test-only. Confirm the migration
-boundary before changing manifest signatures or acceptance rules.
+boundary before changing acceptance rules. The owner accepted the compatible
+V3 migration by units; see `adr/005-versioned-scenarios.md`. Production identity
+and database service configuration are still required before real matches.
 
 Proposed units, each with its own validation and commit:
 

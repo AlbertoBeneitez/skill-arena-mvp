@@ -1,6 +1,4 @@
 import {
-  createHash,
-  createHmac,
   randomBytes,
   randomUUID,
   timingSafeEqual,
@@ -10,8 +8,12 @@ import { canonicalJson } from "@/lib/verified/canonical";
 import type {
   AttemptTicket,
   MatchManifest,
+  MatchManifestV2,
 } from "@/lib/verified/contracts";
 import { getServerGameAdapter } from "./gameVerifiers";
+import { hashManifest, sha256, signAttemptTicket } from "./matchIntegrity";
+
+export { hashManifest } from "./matchIntegrity";
 
 const DEMO_SIGNING_SECRET =
   "skill-arena-demo-verification-key-not-for-production";
@@ -51,20 +53,12 @@ export function isAllowedStakeMinor(value: number) {
   return Number.isInteger(value) && ALLOWED_STAKES_MINOR.has(value);
 }
 
-function sha256(value: string) {
-  return `sha256:${createHash("sha256").update(value).digest("hex")}`;
-}
-
 function signingSecret() {
   const configured = process.env.MATCH_SIGNING_SECRET;
   return {
     value: configured || DEMO_SIGNING_SECRET,
     mode: configured ? ("production" as const) : ("demo" as const),
   };
-}
-
-export function hashManifest(manifest: MatchManifest) {
-  return sha256(canonicalJson(manifest));
 }
 
 export function expectedGameplayContentHash(
@@ -97,7 +91,7 @@ export function createMatchManifest(args: {
   stakeMinor?: number;
   targetScore?: number;
   seed?: string;
-}): MatchManifest {
+}): MatchManifestV2 {
   const adapter = getServerGameAdapter(args.gameId);
   if (!adapter) {
     throw new Error("UNSUPPORTED_GAME_VERSION");
@@ -154,9 +148,7 @@ export function createMatchManifest(args: {
 type UnsignedTicket = Omit<AttemptTicket, "signature">;
 
 function ticketSignature(ticket: UnsignedTicket) {
-  return createHmac("sha256", signingSecret().value)
-    .update(canonicalJson(ticket))
-    .digest("base64url");
+  return signAttemptTicket(ticket, signingSecret().value);
 }
 
 export function issueAttemptTicket(args: {
