@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Orb Burst follows the bubble-grid, wall-bounce, nearest-cell snap, match-3
+ * flood fill and floating-cluster mechanics of the MIT-licensed Bubble Shooter
+ * example in sausi-7/games. Rendering, assets and deterministic sequencing are
+ * Skill Arena originals.
+ * Source: https://github.com/sausi-7/games
+ */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GameResult } from "@/lib/types";
 import { createRng } from "@/lib/deterministic/seeded";
