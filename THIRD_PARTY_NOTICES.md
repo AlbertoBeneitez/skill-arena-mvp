@@ -138,9 +138,9 @@ Burst and lane-crossing games.
 - **Copyright:** Copyright (c) 2026 Saurabh Singh
 - **License:** MIT
 - **Pinned reference commit:** `c97ef8bec4a4ce3154b4345a79aeda3ea2a6a465`
-- **Source modules consulted:** Balance Stack, Doodle Jump, Bubble Shooter and lane-crossing mechanics under `games/`
+- **Source modules consulted:** `games/arcade/balance-stack/mechanics.js` for Stack; Doodle Jump, Bubble Shooter and lane-crossing examples under `games/` for their respective prototypes
 - **Files reused verbatim:** none in the shipped presentation; gameplay logic is selectively adapted
-- **Modifications:** deterministic cores/sequences, Skill Arena scoring, mobile controls, original renderers and server replay where applicable
+- **Modifications:** Stack keeps only the useful movement/overlap/drop ideas while using a frozen deterministic TypeScript core, server replay, original orbital renderer, mobile input and Skill Arena scoring; other listed prototypes are adapted independently
 - **Asset status:** bundled upstream image/audio assets are not reused
 
 Only permissively licensed gameplay structure is adapted. Skill Arena does not
