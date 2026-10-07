@@ -61,6 +61,22 @@ export function drawJetBackground(
   ctx.fillRect(0, 0, w, h);
 
   const scroll = state.scrollMilli / 1000;
+
+  // Distant planet limb anchors the corridor in the shared orbital universe.
+  const planet = ctx.createRadialGradient(
+    w * 1.02,
+    h * 0.18,
+    18,
+    w * 1.02,
+    h * 0.18,
+    150
+  );
+  planet.addColorStop(0, "rgba(74,121,170,.34)");
+  planet.addColorStop(0.62, "rgba(35,67,112,.18)");
+  planet.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = planet;
+  ctx.fillRect(w - 170, -80, 210, 220);
+
   for (const star of STARS) {
     const x =
       ((star.x - scroll * star.depth * 0.24) %
@@ -73,6 +89,20 @@ export function drawJetBackground(
     ctx.fillRect(x, star.y, star.size, star.size);
   }
   ctx.globalAlpha = 1;
+
+  // Deterministic motion streaks communicate speed without introducing
+  // gameplay noise or allocations tied to random state.
+  const streakPhase = (scroll * 0.9) % 74;
+  ctx.strokeStyle = "rgba(111,220,244,.08)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 8; i += 1) {
+    const y = 58 + i * 69;
+    const x = ((i * 83 - streakPhase) % (w + 90)) - 45;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 34, y);
+    ctx.stroke();
+  }
 
   // Subtle corridor rails make velocity legible without becoming obstacles.
   ctx.strokeStyle = "rgba(84,183,227,.09)";
@@ -197,7 +227,26 @@ export function drawJetShip(
   ctx.fillRect(2, -3, 7, 6);
 
   const exhaustLength =
-    10 + impulseGlow * 10;
+    11 + impulseGlow * 13;
+
+  if (impulseGlow > 0) {
+    ctx.globalAlpha = 0.24 * impulseGlow;
+    ctx.strokeStyle = "#8ff5ff";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(
+      -9,
+      0,
+      12 + impulseGlow * 8,
+      8 + impulseGlow * 4,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
   ctx.fillStyle = impulseGlow > 0.2
     ? "#ffd06f"
     : "#6bc5e7";
