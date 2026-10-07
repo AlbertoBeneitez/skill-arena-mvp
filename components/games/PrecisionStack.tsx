@@ -36,7 +36,7 @@ import {
   type StackCanvasMetrics,
 } from "./precision-stack/presentation";
 
-const DROP_DURATION_MS = 170;
+const DROP_DURATION_MS = 220;
 const FAILURE_DURATION_MS = 520;
 const DT = 1 / PRECISION_STACK_V1.tickRate;
 const CAMERA_RESPONSE = 8.5;
