@@ -65,7 +65,7 @@ Proposed units, each with its own validation and commit:
 | S6 | Integrate current VERIFIED games with shared scenarios | One game per unit; keep frozen cores/adapter archive; fixture and scheduling equivalence |
 | R1 | Server leaderboard read model | S3–S5; agree global ranking metric and tie policy; net profit from settled ledger entries, not local storage |
 | R2 | Global and net-profit ranking UI | R1; pagination, loading/empty/error states; visibly separate demo data module |
-| B1 | Inspect `skill-arena-rgpd-backend-ready` | Source not supplied/available in the checkout; audit before any import; adopt only useful parts, provenance and licences |
+| B1 | Owner-supplied package audited | `RGPD_PACKAGE_AUDIT.md`; useful concepts identified, unsafe/incomplete templates excluded; no source imported |
 | B2 | Integrate selected RGPD/backend parts | B1 and relevant server units; avoid duplicate auth, ledger, repositories or routing |
 
 Global ranking aggregation across different game score scales is a product
