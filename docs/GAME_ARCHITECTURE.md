@@ -1,8 +1,6 @@
 # Skill Arena game architecture
 
-Status: **stable candidate**. The contract is frozen once Tower Drop and
-Precision Stack pass the common registry, server-replay and deterministic
-golden tests.
+Status: **STABLE**. Tower Drop V2 and Precision Stack V1 both pass the common registry, server-replay, deterministic golden fixtures and render-rate equivalence tests. The external game contract is now frozen; changes require a demonstrated architectural need rather than convenience for one game.
 
 ## Boundaries
 
@@ -172,6 +170,13 @@ characters, logos, fonts or trademarks.
   professionalisation.
 - `PRODUCTION-GRADE` remains reserved for games that also pass real-device QA,
   operational security requirements and production settlement integration.
+
+## Freeze rule
+
+The registry/runtime/verified-match contract is the Skill Arena standard from
+this point forward. New games adapt to it. A future change to the common
+contract must document the concrete cross-game requirement in a new ADR and
+must preserve historical replay compatibility.
 
 ## Non-goals
 
