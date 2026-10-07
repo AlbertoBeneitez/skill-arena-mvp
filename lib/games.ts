@@ -280,8 +280,13 @@ export function modeForStake(
   nextTurn: "create" | "existing"
 ): MatchMode {
   if (stake === 0) return "create";
+
+  // A green/create attempt always grants exactly one blue reply.
+  // That earned reply takes priority over the ambient purple queue.
+  if (nextTurn === "existing") return "existing";
+
   if (game.waitingStakes.includes(stake)) return "waiting";
-  return nextTurn;
+  return "create";
 }
 
 export function prizeForStake(stake: number) {
