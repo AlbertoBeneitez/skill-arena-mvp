@@ -8,7 +8,7 @@
  * Source: https://github.com/sausi-7/games
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { createRng } from "@/lib/deterministic/seeded";
 import { gameTone, haptic } from "@/lib/gameFeedback";
@@ -197,8 +197,8 @@ export default function OrbBurst({
   const aimRef = useRef(-Math.PI / 2);
   const queue = useMemo(() => createQueue(seed), [seed]);
 
-  const [nextColor, setNextColor] = useState(queue[1]);
-  const [aimAngle, setAimAngle] = useState(-Math.PI / 2);
+  const nextColorRef = useRef(queue[1]);
+  const pointerRef = useRef<number | null>(null);
 
   const stateRef = useRef({
     bubbles: createInitialBoard(seed),
@@ -242,7 +242,7 @@ export default function OrbBurst({
     const s = stateRef.current;
     s.currentColor = queue[s.queueIndex % queue.length];
     s.queueIndex += 1;
-    setNextColor(queue[s.queueIndex % queue.length]);
+    nextColorRef.current = queue[s.queueIndex % queue.length];
   }
 
   const addPressureRow = useCallback(() => {
@@ -435,8 +435,8 @@ export default function OrbBurst({
     ctx.beginPath();
     ctx.moveTo(SHOOTER_X, SHOOTER_Y);
     ctx.lineTo(
-      SHOOTER_X + Math.cos(aimAngle) * lineLength,
-      SHOOTER_Y + Math.sin(aimAngle) * lineLength
+      SHOOTER_X + Math.cos(aimRef.current) * lineLength,
+      SHOOTER_Y + Math.sin(aimRef.current) * lineLength
     );
     ctx.stroke();
     ctx.setLineDash([]);
@@ -451,11 +451,11 @@ export default function OrbBurst({
     ctx.arc(W - 34, H - 36, 13, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = COLORS[nextColor];
+    ctx.fillStyle = COLORS[nextColorRef.current];
     ctx.beginPath();
     ctx.arc(W - 34, H - 36, 10, 0, Math.PI * 2);
     ctx.fill();
-  }, [aimAngle, nextColor]);
+  }, []);
 
   const loop = useCallback(
     (now: number) => {
@@ -492,9 +492,9 @@ export default function OrbBurst({
       acc: 0,
     };
 
-    setNextColor(queue[1]);
+    nextColorRef.current = queue[1];
     aimRef.current = -Math.PI / 2;
-    setAimAngle(-Math.PI / 2);
+    pointerRef.current = null;
     startRef.current = performance.now();
     draw();
     rafRef.current = requestAnimationFrame(loop);
@@ -515,7 +515,7 @@ export default function OrbBurst({
     let angle = Math.atan2(y - SHOOTER_Y, x - SHOOTER_X);
     angle = Math.max(-Math.PI + 0.22, Math.min(-0.22, angle));
     aimRef.current = angle;
-    setAimAngle(angle);
+    draw();
   }
 
   function shoot() {
@@ -544,13 +544,18 @@ export default function OrbBurst({
         className="gameCanvas deterministicCanvas"
         aria-label="Orb Burst"
         onPointerDown={(event) => {
+          if (!active || !stateRef.current.running || pointerRef.current !== null) return;
+          event.preventDefault();
+          pointerRef.current = event.pointerId;
           aimAt(event.clientX, event.clientY);
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
-          if (event.buttons) aimAt(event.clientX, event.clientY);
+          if (pointerRef.current === event.pointerId) aimAt(event.clientX, event.clientY);
         }}
         onPointerUp={(event) => {
+          if (pointerRef.current !== event.pointerId) return;
+          pointerRef.current = null;
           aimAt(event.clientX, event.clientY);
           shoot();
 
@@ -559,6 +564,12 @@ export default function OrbBurst({
           ) {
             event.currentTarget.releasePointerCapture(event.pointerId);
           }
+        }}
+        onPointerCancel={(event) => {
+          if (pointerRef.current === event.pointerId) pointerRef.current = null;
+        }}
+        onLostPointerCapture={(event) => {
+          if (pointerRef.current === event.pointerId) pointerRef.current = null;
         }}
       />
     </div>
