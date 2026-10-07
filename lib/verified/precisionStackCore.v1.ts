@@ -14,7 +14,7 @@
  * presentation-only tweening, particles, audio and camera live outside it.
  */
 
-import { hashSeed } from "@/lib/deterministic/seeded";
+import { hashSeed } from "../deterministic/seeded";
 import {
   validateInputSequence,
   type ReplayInput,
