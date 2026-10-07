@@ -8,6 +8,11 @@ Tower Drop v2 takes mechanical inspiration from the open-source project:
 - **Repository:** https://github.com/iamkun/tower_game
 - **Copyright:** Copyright (c) 2018 BMQB, Inc
 - **License:** MIT
+- **Pinned reference commit:** `c6fa84afe179b661fa71cf7cc8788d0c47ca2875`
+- **Source modules consulted:** `src/block.js`, `src/hook.js`, `src/utils.js`
+- **Files reused verbatim:** none
+- **Modifications:** mechanics reimplemented as a fixed-timestep deterministic TypeScript core with server replay
+- **Asset status:** no upstream sprites, audio, branding or UI assets are reused
 
 Skill Arena does **not** reuse the original game's branding, image assets, audio
 assets, UI, levels or bundled resources. The Skill Arena implementation is a
@@ -50,6 +55,11 @@ SOFTWARE.
 - **Repository:** https://github.com/gabrielecirulli/2048
 - **Copyright:** Copyright (c) 2014 Gabriele Cirulli
 - **License:** MIT
+- **Pinned reference commit:** `478b6ec346e3787f589e4af751378d06ded4cbbc`
+- **Source modules consulted:** original move/grid/tile implementation
+- **Files reused verbatim:** none
+- **Modifications:** random tile generation replaced by a seeded deterministic event stream and original Skill Arena presentation
+- **Asset status:** no upstream visual or audio assets are reused
 
 Skill Arena adapts the original move/traversal/merge semantics. The original
 random tile generation is intentionally replaced by a seeded event stream so a
@@ -86,6 +96,11 @@ SOFTWARE.
 - **Repository:** https://github.com/digitsensitive/phaser3-typescript
 - **Copyright:** Copyright (c) 2018 - 2026 digitsensitive
 - **License:** MIT
+- **Pinned reference commit:** `05f7c8c7796de8a28a7575d6e0425c1513bbd3a2`
+- **Source modules consulted:** `src/games/flappy-bird/src/objects/bird.ts`, `src/games/flappy-bird/src/scenes/game-scene.ts`
+- **Files reused verbatim:** none
+- **Modifications:** flap/gravity behaviour adapted to deterministic fixed-timestep Skill Arena logic
+- **Asset status:** no upstream sprites, backgrounds, pipes, fonts or audio are reused
 
 Skill Arena adapts the permissive Flappy Bird example's discrete flap impulse
 and gravity model. It does not use the example's sprites, background, pipe
@@ -122,6 +137,11 @@ Burst and lane-crossing games.
 - **Repository:** https://github.com/sausi-7/games
 - **Copyright:** Copyright (c) 2026 Saurabh Singh
 - **License:** MIT
+- **Pinned reference commit:** `c97ef8bec4a4ce3154b4345a79aeda3ea2a6a465`
+- **Source modules consulted:** Balance Stack, Doodle Jump, Bubble Shooter and lane-crossing mechanics under `games/`
+- **Files reused verbatim:** none in the shipped presentation; gameplay logic is selectively adapted
+- **Modifications:** deterministic cores/sequences, Skill Arena scoring, mobile controls, original renderers and server replay where applicable
+- **Asset status:** bundled upstream image/audio assets are not reused
 
 Only permissively licensed gameplay structure is adapted. Skill Arena does not
 reuse third-party branded names or bundled image/audio assets from the example
@@ -158,6 +178,11 @@ SOFTWARE.
 - **Repository:** https://github.com/wayou/t-rex-runner
 - **Copyright:** Copyright (c) 2022, 牛さん
 - **License:** BSD 3-Clause
+- **Pinned reference commit:** `5455bfa408ec6b707c7300ff194b7390733a766d`
+- **Source modules consulted:** browser runner implementation in the repository
+- **Files reused verbatim:** none
+- **Modifications:** deterministic obstacle schedule, original geometry/rendering and Skill Arena scoring
+- **Asset status:** Chrome/T-Rex sprite assets are not copied
 
 Skill Arena uses original geometric artwork and a seeded obstacle schedule; no
 Chrome/Dinosaur sprite assets are copied.
