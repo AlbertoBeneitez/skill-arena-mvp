@@ -34,10 +34,11 @@ export function noteTopForTick(
     (currentTick - spawnTick) / travelTicks
   );
 
-  return (
-    -PIANO_VIEW.noteHeight +
-    progress * PIANO_VIEW.hitY
-  );
+  const startY = -PIANO_VIEW.noteHeight;
+  const renderedHeight = PIANO_VIEW.noteHeight - 8;
+  const targetY = PIANO_VIEW.hitY - renderedHeight;
+
+  return startY + progress * (targetY - startY);
 }
 
 export function noteIsVisible(
