@@ -26,7 +26,7 @@ type Props = {
 
 type Dir = "up" | "right" | "down" | "left";
 type Grid = number[][];
-type SpawnEvent = { value: 2 | 4; selector: number };
+type SpawnEvent = { value: 2 | 4; startCell: number; step: number };
 
 const SIZE = 4;
 
@@ -50,19 +50,35 @@ function available(grid: Grid) {
 
 function buildEvents(seed: string) {
   const rng = createRng(`${seed}:2048-events`);
+  const oddSteps = [1, 3, 5, 7, 9, 11, 13, 15];
+
   return Array.from({ length: 1600 }, () => ({
     value: rng.nextInt(10) < 9 ? 2 : 4,
-    selector: rng.nextInt(1_000_000),
+    startCell: rng.nextInt(SIZE * SIZE),
+    step: oddSteps[rng.nextInt(oddSteps.length)],
   })) as SpawnEvent[];
 }
 
 function addSpawn(grid: Grid, event: SpawnEvent) {
-  const cells = available(grid);
-  if (!cells.length) return false;
-  const index = Math.floor((event.selector / 1_000_000) * cells.length);
-  const cell = cells[Math.min(cells.length - 1, index)];
-  grid[cell.row][cell.col] = event.value;
-  return true;
+  if (!available(grid).length) return false;
+
+  // Each event has an absolute preferred cell plus a complete deterministic
+  // fallback cycle. If the preferred cell is occupied because the player made
+  // different choices, both clients still follow the exact same fallback
+  // order rather than drawing another random position.
+  for (let offset = 0; offset < SIZE * SIZE; offset += 1) {
+    const flatIndex =
+      (event.startCell + offset * event.step) % (SIZE * SIZE);
+    const row = Math.floor(flatIndex / SIZE);
+    const col = flatIndex % SIZE;
+
+    if (!grid[row][col]) {
+      grid[row][col] = event.value;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function collapseLine(values: number[]) {
