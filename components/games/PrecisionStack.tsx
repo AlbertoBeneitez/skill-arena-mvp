@@ -70,6 +70,12 @@ function clamp01(value: number) {
   return Math.max(0, Math.min(1, value));
 }
 
+function currentStatus(
+  state: PrecisionStackState
+): PrecisionStackState["status"] {
+  return state.status;
+}
+
 function configureCanvas(canvas: HTMLCanvasElement) {
   const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
   const width = Math.round(W * dpr);
@@ -561,7 +567,7 @@ export default function PrecisionStack({
     );
 
     const placement = state.lastPlacement;
-    const failed = state.status === "failed";
+    const failed = currentStatus(state) === "failed";
 
     dropFxRef.current = {
       startedAt: performance.now(),
