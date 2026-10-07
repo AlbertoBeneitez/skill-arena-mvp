@@ -1,13 +1,13 @@
-# Skill Arena V12 — demo mobile-first
+# Skill Arena — demo mobile-first
 
-Segunda versión funcional de Skill Arena. Está pensada para probar producto y UX en móvil antes de conectar autenticación real, PostgreSQL, ledger o pagos.
+Skill Arena está pensada para probar producto, arquitectura competitiva y UX móvil antes de conectar autenticación real, PostgreSQL, ledger o pagos.
 
 ## Qué incluye
 
 - Onboarding: Skill Arena → Continuar con Google/Apple (simulado) → configurar avatar.
 - Galería de avatares y subida de foto con recorte local; sin generación de avatar por IA en esta fase.
 - Panel de jugador horizontal: imagen, nombre, ranking y dinero ganado/perdido.
-- 5 juegos demo activos, todos 1 vs 1: Tower Drop, Jet Stream, Pulse Runner, Metro Shift y Orbit Shift.
+- Catálogo modular de juegos 1 vs 1 con carga bajo demanda; Tower Drop V2 y Precision Stack V1 ya usan verificación server-side.
 - Portada/cover de cada juego antes de jugar.
 - Stakes: 0 €, 1 €, 5 €, 10 € y 50 €.
 - Estado de matchmaking por color de todo el botón:
