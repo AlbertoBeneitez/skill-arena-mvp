@@ -506,7 +506,7 @@ export type GameMeta = GameDefinition<GameId>;
 
 export const GAME_REGISTRY = Object.fromEntries(
   GAME_DEFINITIONS.map((game) => [game.id, game])
-) as Record<GameId, GameMeta>;
+) as unknown as Record<GameId, GameMeta>;
 
 const CATALOG_ORDER: GameId[] = [
   "precision-stack",
