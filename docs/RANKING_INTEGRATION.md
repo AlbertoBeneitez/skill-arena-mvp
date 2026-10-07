@@ -4,7 +4,7 @@ This is a read-only, provider-independent preparation. No real users, real funds
 
 ## Current behavior
 
-The visible Ranking entry opens a server query first. `GET /api/rankings/global` returns 503 when the real read model is unavailable. It never substitutes a demo repository. A separate explicit “Ver demo” UI loads fictional fixtures from `lib/demo/globalRanking.ts`; every page is marked demo and all player names include demo. Local demo wallet results never feed the real ranking. Removed the client formula that fabricated a global position from local earnings.
+The visible Ranking entry opens a server query first. `GET /api/rankings/global` returns an explicit not-configured status when the real read model has not been enabled; a configured service failure returns HTTP 503. It never substitutes a demo repository. A separate explicit “Ver demo” UI loads fictional fixtures from `lib/demo/globalRanking.ts`; every page is marked demo and all player names include demo. Local demo wallet results never feed the real ranking. Removed the client formula that fabricated a global position from local earnings.
 
 Limits: 25 entries by default, maximum 100. Read-only keyset cursor pins the financial snapshot and the last benefit/public-player key; ties sort by public key using PostgreSQL C collation. No offset pagination. Positions must be precomputed across the full snapshot, so page reads do not re-rank the entire population. Bigint cents travel as strings and render without float rounding. EUR only; other currencies are not added to EUR totals. `findPlayerPosition` is a server repository port for future authenticated identity mapping, not an unauthenticated personal-data endpoint.
 

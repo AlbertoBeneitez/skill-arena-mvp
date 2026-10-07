@@ -20,6 +20,8 @@ export async function GET(request: Request) {
         { source: "server", error: error.code },
         { status: 400, headers },
       );
+    if (error instanceof RankingRepositoryError && error.code === "RANKING_NOT_CONFIGURED")
+      return Response.json({ source: "server", status: "not-configured" }, { headers });
     // Do not expose database, financial details or silently substitute demo data.
     return Response.json(
       { source: "server", status: "unavailable", error: "RANKING_UNAVAILABLE" },
