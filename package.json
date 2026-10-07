@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "check": "pnpm lint && pnpm test:determinism",
-    "test:determinism": "node -e \"require('fs').rmSync('.det-test',{recursive:true,force:true})\" && tsc --ignoreConfig scripts/verify-tower-drop-determinism.ts lib/verified/towerDropCore.v2.ts --module node16 --moduleResolution node16 --target ES2020 --outDir .det-test --esModuleInterop --skipLibCheck --noEmit false && node .det-test/scripts/verify-tower-drop-determinism.js"
+    "test:determinism": "node -e \"require('fs').rmSync('.det-test',{recursive:true,force:true})\" && tsc --ignoreConfig scripts/verify-tower-drop-determinism.ts lib/verified/towerDropCore.v2.ts --module node16 --moduleResolution node16 --target ES2020 --types node --outDir .det-test --esModuleInterop --skipLibCheck --noEmit false && node .det-test/scripts/verify-tower-drop-determinism.js"
   },
   "dependencies": {
     "next": "16.3.6",
