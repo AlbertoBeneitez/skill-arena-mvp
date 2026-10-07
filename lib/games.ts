@@ -16,6 +16,7 @@ export type GameRuntimeProps = {
   stake: number;
   ghostEnabled: boolean;
   targetScore: number;
+  /** Legacy/demo seed. Verified games must use the server-issued manifest seed. */
   seed: string;
   onFinish: (result: GameResult) => void;
 };
