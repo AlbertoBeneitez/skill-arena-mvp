@@ -126,3 +126,18 @@ must not be treated as a reason to rewrite an otherwise stable core.
   expected server-issued version, no application console errors or failed HTTP
   responses. This is integration smoke coverage, not full gameplay/device QA.
 - Human mobile-device QA remains pending; no maturity promotion is claimed.
+
+## Deployment policy follow-up
+
+GitHub reported Vercel `success` for v18 and the initial v19 commit, but the
+status description was `Canceled by Ignored Build Step`. No ready preview was
+created for those commits. Do not interpret a successful Vercel comment check
+or canceled status as a successful deployment.
+
+`vercel.json` overrides the project's Ignored Build Step for versions containing
+this configuration. The documented `ignoreCommand` exit code **1 continues
+the build** (0 skips it). The explicit `exit 1` therefore allows Git previews
+to build; it does not suppress CI or change the build/install commands,
+authentication or deployment protection. `mobile-test` and v18 remain unchanged.
+
+Reference: https://vercel.com/docs/project-configuration/vercel-json#ignorecommand
