@@ -5385,3 +5385,144 @@ html, body {
     font-size: 11px;
   }
 }
+
+
+/* V16.5 — single-page groups, invite links and hidden random schedules */
+
+.groupEntryTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid rgba(77,100,137,.18);
+  border-radius: 14px;
+  background: rgba(255,250,239,.76);
+  box-shadow: 0 5px 16px rgba(48,64,87,.07);
+}
+
+.groupEntryTabs button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #69758c;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .05em;
+}
+
+.groupEntryTabs button.active {
+  background: linear-gradient(180deg,#4778bd,#315fae);
+  color: #fff;
+  box-shadow: 0 3px 0 #244879;
+}
+
+.groupJoinCard {
+  gap: 12px;
+}
+
+.groupJoinCard input {
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  text-align: center;
+  font-size: 16px;
+}
+
+.groupJoinHint {
+  margin: -2px 0 2px;
+  color: #7c7568;
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.groupJoinCard .groupPrimaryAction:disabled {
+  opacity: .42;
+  box-shadow: none;
+}
+
+.groupHeaderSinglePage {
+  align-items: center;
+}
+
+.groupCodeBadge {
+  min-width: 94px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0 11px;
+  border: 1px solid #315fae;
+  border-radius: 12px;
+  background: #edf4ff;
+  color: #315fae;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.groupShareActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.groupShareActions button {
+  min-height: 46px;
+  border: 1px solid rgba(49,95,174,.28);
+  border-radius: 12px;
+  background: #f2f6fc;
+  color: #315fae;
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.groupShareActions button:last-child {
+  border-color: rgba(47,143,101,.32);
+  background: #edf8f1;
+  color: #2f8f65;
+}
+
+.hiddenGameSchedule {
+  min-height: 128px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px dashed rgba(49,95,174,.30);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(92,145,232,.12), transparent 48%),
+    #f5f8fc;
+  text-align: center;
+}
+
+.hiddenGameSchedule > span {
+  font-size: 25px;
+}
+
+.hiddenGameSchedule strong {
+  color: #315fae;
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+
+.hiddenGameSchedule p {
+  max-width: 280px;
+  margin: 0;
+  color: #69758c;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+@media (max-width: 430px) {
+  .groupEntryTabs button {
+    min-height: 44px;
+    font-size: 9px;
+  }
+
+  .groupShareActions {
+    grid-template-columns: 1fr;
+  }
+}
