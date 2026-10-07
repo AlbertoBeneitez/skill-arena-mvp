@@ -37,6 +37,12 @@ type HitFlash = {
   strong: boolean;
 };
 
+function pianoStatus(
+  state: PianoRushState
+): PianoRushState["status"] {
+  return state.status;
+}
+
 export default function PianoRush({
   active,
   stake,
@@ -370,7 +376,7 @@ export default function PianoRush({
       tapPianoRush(state, action, targetScore);
 
       const now = performance.now();
-      if (state.status === "failed") {
+      if (pianoStatus(state) === "failed") {
         markTerminalFeedback(now);
         draw(now);
         return;
@@ -391,7 +397,7 @@ export default function PianoRush({
       gameTone(strong ? "good" : "tap");
       haptic(strong ? [4, 9, 4] : 3);
 
-      if (state.status === "won") {
+      if (pianoStatus(state) === "won") {
         markTerminalFeedback(now);
       }
 
