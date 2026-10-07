@@ -560,5 +560,6 @@ console.log(
     `height=${precisionFirst.height}`,
     `finalTick=${precisionGolden.finalTick}`,
     `replayHash=${precisionReplayHash}`,
+    `inputs=${JSON.stringify(precisionGolden.inputs)}`,
   ].join(" · ")
 );
