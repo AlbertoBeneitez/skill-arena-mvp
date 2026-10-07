@@ -163,6 +163,17 @@ const SERVER_GAME_ADAPTERS: Partial<Record<GameId, VerifiedGameAdapter>> = {
   "precision-stack": precisionStackAdapter,
 };
 
-export function getServerGameAdapter(gameId: string) {
+export function getServerGameAdapter(
+  gameId: string
+): VerifiedGameAdapter | undefined {
+  if (
+    !Object.prototype.hasOwnProperty.call(
+      SERVER_GAME_ADAPTERS,
+      gameId
+    )
+  ) {
+    return undefined;
+  }
+
   return SERVER_GAME_ADAPTERS[gameId as GameId];
 }
