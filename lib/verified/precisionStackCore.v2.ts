@@ -51,8 +51,9 @@ export const PRECISION_STACK_V2 = {
   minimumStableOverlapMilli: 12_000,
 
   // Presentation uses a short docking animation. Competitive settling is
-  // intentionally brief so the next decision arrives quickly.
-  settleTicks: 16,
+  // intentionally brief but slightly longer than the visual drop, preventing
+  // the next moving module from appearing before docking feedback completes.
+  settleTicks: 24,
   maxIdleTicksPerBlock: 120 * 45,
 
   inputProtocolVersion: 1,
