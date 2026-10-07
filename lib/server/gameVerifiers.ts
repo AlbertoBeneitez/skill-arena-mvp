@@ -1,4 +1,4 @@
-import { getGameDefinition, type GameId } from "@/lib/games";
+import { getGameDefinition, type GameCompetitionDefinition, type GameId, type GameMeta } from "@/lib/games";
 import type { MatchManifest } from "@/lib/verified/contracts";
 import type { ReplayInput } from "@/lib/verified/inputValidation";
 import {
@@ -49,6 +49,11 @@ export type VerifiedGameAdapter = {
   }): ServerReplayResult;
 };
 
+type ServerReplayCompetition = Extract<
+  GameCompetitionDefinition,
+  { verification: "server-replay" }
+>;
+
 function registeredServerReplayGame(gameId: GameId) {
   const definition = getGameDefinition(gameId);
   if (
@@ -57,7 +62,10 @@ function registeredServerReplayGame(gameId: GameId) {
   ) {
     throw new Error(`Game ${gameId} is not registered for server replay`);
   }
-  return definition;
+
+  return definition as GameMeta & {
+    competition: ServerReplayCompetition;
+  };
 }
 
 const towerDropDefinition = registeredServerReplayGame("tower-drop");
