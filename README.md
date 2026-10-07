@@ -23,10 +23,17 @@ Segunda versión funcional de Skill Arena. Está pensada para probar producto y 
 
 ## Arquitectura de juegos
 
-Los metadatos están separados en `lib/games.ts` y cada juego vive en `components/games/`.
-`GameLoader.tsx` utiliza `next/dynamic` para cargar el código del juego bajo demanda.
+`lib/games.ts` es el registro tipado único del catálogo: identidad, versión,
+madurez, metadata, lazy loader y capacidad competitiva. `GameLoader.tsx`
+deriva la carga dinámica desde ese registro y no contiene un switch por juego.
 
-Esto permite ampliar el catálogo sin rehacer la interfaz. Para juegos futuros con assets pesados, la intención es mantener solo metadata/covers ligeras en la app principal y servir sprites, audio, mapas y otros recursos desde object storage/CDN.
+Los juegos competitivos verificados utilizan un core puro y versionado,
+inputs ordenados por tick, seed emitido por servidor, manifest firmado,
+replay server-side y resultado autoritativo. Tower Drop V2 y Precision Stack
+V1 son las implementaciones de referencia.
+
+La especificación estable está en `docs/GAME_ARCHITECTURE.md` y las
+decisiones irreversibles se registran en `docs/adr/`.
 
 ## Desarrollo
 
