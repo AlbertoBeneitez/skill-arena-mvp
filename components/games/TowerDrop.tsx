@@ -57,6 +57,7 @@ export default function TowerDrop({
   const finishRef = useRef(onFinish);
   const stateRef = useRef<TowerDropState>(createTowerDropState());
   const loopingRef = useRef(false);
+  const startFailureReportedRef = useRef(false);
   const cameraRef = useRef(0);
 
   const verifiedAttempt = useVerifiedAttempt<TowerDropInput>({
@@ -398,6 +399,7 @@ export default function TowerDrop({
     }
 
     cameraRef.current = 0;
+    startFailureReportedRef.current = false;
     const state =
       createTowerDropState() as TowerDropState & {
         lastFrame?: number;
@@ -430,8 +432,10 @@ export default function TowerDrop({
     if (
       active &&
       attemptState.status === "rejected" &&
-      stateRef.current.tick === 0
+      stateRef.current.tick === 0 &&
+      !startFailureReportedRef.current
     ) {
+      startFailureReportedRef.current = true;
       finishRef.current({
         won: false,
         score: 0,
