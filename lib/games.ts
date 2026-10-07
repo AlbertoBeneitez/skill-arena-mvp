@@ -375,12 +375,12 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "precision-stack",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PrecisionStack")),
     competition: {
       verification: "server-replay",
-      engineVersion: "skill-core-1",
+      engineVersion: "skill-core-2",
       inputProtocolVersion: 1,
       allowedActions: ["DROP"],
     },
