@@ -71,7 +71,7 @@ export const GAMES: GameMeta[] = [
     rivalScore: 6900,
     rivalName: "AERO",
     rivalAvatar: "/avatars/avatar-2.svg",
-    instruction: "Pulsa la pantalla para subir y suelta para caer.",
+    instruction: "Toca para dar un impulso hacia arriba y atraviesa las puertas.",
     scoring: "Atraviesa puertas hasta chocar.",
   },
   {
@@ -87,7 +87,7 @@ export const GAMES: GameMeta[] = [
     rivalScore: 7200,
     rivalName: "VOLT",
     rivalAvatar: "/avatars/avatar-8.svg",
-    instruction: "Toca para saltar; mantén un instante para alargar el salto.",
+    instruction: "Toca para saltar. Un toque produce siempre el mismo salto.",
     scoring: "Sigue hasta colisionar.",
   },
   {
