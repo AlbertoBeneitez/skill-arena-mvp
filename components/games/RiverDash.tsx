@@ -25,7 +25,7 @@ type Lane = {
 };
 
 const COLS = 9;
-const ROWS = 13;
+const ROWS = 11;
 const W = 360;
 const H = 572;
 const CELL_W = W / COLS;
@@ -37,7 +37,7 @@ function laneConfig(seed: string) {
   const lanes: Lane[] = [];
 
   for (let row = 0; row < ROWS; row += 1) {
-    if (row === 0 || row === 6 || row === ROWS - 1) {
+    if (row === 0 || row === 5 || row === ROWS - 1) {
       lanes.push({
         kind: "safe",
         direction: 1,
@@ -49,22 +49,22 @@ function laneConfig(seed: string) {
       continue;
     }
 
-    const kind: LaneKind = row < 6 ? "river" : "road";
+    const kind: LaneKind = row < 5 ? "river" : "road";
     lanes.push({
       kind,
       direction: rng.nextInt(2) === 0 ? -1 : 1,
       speed:
         kind === "river"
-          ? 26 + rng.nextInt(22)
-          : 42 + rng.nextInt(44),
+          ? 20 + rng.nextInt(15)
+          : 34 + rng.nextInt(25),
       length:
         kind === "river"
-          ? 72 + rng.nextInt(62)
-          : 42 + rng.nextInt(38),
+          ? 104 + rng.nextInt(48)
+          : 38 + rng.nextInt(28),
       gap:
         kind === "river"
-          ? 34 + rng.nextInt(45)
-          : 62 + rng.nextInt(75),
+          ? 24 + rng.nextInt(28)
+          : 92 + rng.nextInt(42),
       phase: rng.nextInt(260),
     });
   }
@@ -124,7 +124,7 @@ export default function RiverDash({
     const lane = lanes[row];
     if (lane.kind === "safe") return [];
 
-    const speedScale = 1 + stateRef.current.crossings * 0.09;
+    const speedScale = 1 + stateRef.current.crossings * 0.055;
     const period = lane.length + lane.gap;
     const travel =
       lane.direction *
@@ -173,7 +173,7 @@ export default function RiverDash({
       return;
     }
 
-    const speedScale = 1 + s.crossings * 0.09;
+    const speedScale = 1 + s.crossings * 0.055;
     s.x +=
       lane.direction *
       lane.speed *
@@ -337,7 +337,7 @@ export default function RiverDash({
 
     if (s.row === 0) {
       s.crossings += 1;
-      s.score += 1400 + s.crossings * 180;
+      s.score += 1250 + s.crossings * 150;
       gameTone("good");
       haptic([4, 14, 4]);
 
