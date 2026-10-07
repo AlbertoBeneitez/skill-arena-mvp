@@ -34,7 +34,6 @@ const TERMINAL_FEEDBACK_MS = 240;
 type HitFlash = {
   lane: number;
   startedAt: number;
-  strong: boolean;
 };
 
 function pianoStatus(
@@ -391,7 +390,6 @@ export default function PianoRush({
       hitFlashRef.current = {
         lane,
         startedAt: now,
-        strong,
       };
 
       gameTone(strong ? "good" : "tap");
