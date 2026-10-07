@@ -1,3 +1,4 @@
+import { ORB_ACTIONS } from "./verified/orbBurstProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -332,10 +333,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orb-burst",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurst")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: ORB_ACTIONS },
     name: "Orb Burst",
     cover: "/covers/orb-burst.svg",
     enabled: true,
@@ -349,7 +350,7 @@ const GAME_DEFINITIONS = [
     rivalAvatar: "/avatars/avatar-5.svg",
     instruction: "Apunta arrastrando y suelta para lanzar. Junta tres o más.",
     scoring: "El tablero inicial, la cola de colores y la presión son idénticos.",
-    deterministicSeed: "orb-burst-arena-001",
+
   },
   {
     id: "precision-stack",

@@ -5880,3 +5880,5 @@ html, body {
 .rankingPagination { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:18px 0; font-size:12px; }
 .rankingPagination button:disabled { opacity:.4; }
 .rankingAccountNote { border-top:1px solid #2d4860; padding-top:16px; }
+
+.orbVerified .coreControls button { min-width: 128px; font-size: 15px; letter-spacing: .06em; }

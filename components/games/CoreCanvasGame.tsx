@@ -15,6 +15,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   instruction: string;
   render(ctx: CanvasRenderingContext2D, state: S): void;
   primaryAction?: string;
+  inputTones?: Readonly<Partial<Record<string, Parameters<typeof gameTone>[0]>>>;
   pointAction?(point: CorePoint, phase: "down" | "move" | "up", state: S): string | null;
   gestureAction?(from: CorePoint, to: CorePoint, state: S): string | null;
   keys?: Readonly<Record<string, string>>;
@@ -76,6 +77,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (!attempt.recordInput({ tick: state.tick, action })) continue;
       lastInputTickRef.current = state.tick;
       applyCoreInput(core, state, action, targetRef.current);
+      const tone = props.inputTones?.[action];
+      if (tone) gameTone(tone);
       if (state.score !== feedbackScoreRef.current) {
         gameTone(state.score > feedbackScoreRef.current ? "good" : "bad");
         haptic(6);
@@ -83,7 +86,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       } else haptic(2);
       return;
     }
-  }, [core, attempt.recordInput]);
+  }, [core, attempt.recordInput, props.inputTones]);
 
   const sync = useCallback((now: number) => {
     if (!runningRef.current) return;
@@ -225,6 +228,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     <canvas ref={canvasRef} className="gameCanvas deterministicCanvas" role="application" aria-label={`${name}. ${instruction}`} tabIndex={0}
       onPointerDown={event => {
         event.preventDefault();
+        if (pointerRef.current !== null) return;
         event.currentTarget.focus({ preventScroll: true });
         event.currentTarget.setPointerCapture(event.pointerId);
         const p = point(event.clientX, event.clientY);
@@ -240,12 +244,13 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         if (action) { send(action); pointer.origin = p; }
       }}
       onPointerUp={event => {
+        if (pointerRef.current?.id !== event.pointerId) return;
         const action = props.pointAction?.(point(event.clientX, event.clientY), "up", stateRef.current);
         if (action) send(action);
         pointerRef.current = null;
         if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
       }}
-      onPointerCancel={() => { pointerRef.current = null; }} onLostPointerCapture={() => { pointerRef.current = null; }} onBlur={releaseHeld}
+      onPointerCancel={event => { if (pointerRef.current?.id === event.pointerId) pointerRef.current = null; }} onLostPointerCapture={event => { if (pointerRef.current?.id === event.pointerId) pointerRef.current = null; }} onBlur={releaseHeld}
       onKeyDown={event => {
         const action = props.keys?.[event.key];
         if (!action) return;
