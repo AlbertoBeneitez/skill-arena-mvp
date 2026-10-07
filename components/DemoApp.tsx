@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
-import { competitionProgressLabel, createDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
+import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
 
@@ -269,6 +269,7 @@ export default function DemoApp() {
   const [groupStage, setGroupStage] = useState(1);
   const [groupCompetitionWins, setGroupCompetitionWins] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [pendingJoinCode, setPendingJoinCode] = useState("");
   const freshOnboardingRef = useRef(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
 
@@ -276,6 +277,12 @@ export default function DemoApp() {
     const params = new URLSearchParams(window.location.search);
     const resetMode = params.get("reset") === "1";
     const freshMode = !resetMode && params.get("fresh") === "1";
+    const joinCode = (params.get("join") ?? "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 12);
+
+    setPendingJoinCode(joinCode);
     freshOnboardingRef.current = freshMode;
 
     if (resetMode) {
@@ -332,13 +339,15 @@ export default function DemoApp() {
       return;
     }
 
+    let restoredOnboarded = false;
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
         const data = JSON.parse(raw) as Partial<PersistedState>;
         if (data.onboarded) {
+          restoredOnboarded = true;
           setOnboarded(true);
-          setScreen("home");
+          setScreen(joinCode ? "group" : "home");
         }
         if (data.provider === "google" || data.provider === "apple") {
           setProvider(data.provider);
@@ -403,6 +412,8 @@ export default function DemoApp() {
       setScreen("welcome");
       setTutorialOpen(false);
       setTutorialStep(0);
+    } else if (joinCode && restoredOnboarded) {
+      setScreen("group");
     }
 
     setIsLoaded(true);
@@ -687,7 +698,7 @@ export default function DemoApp() {
     setPlayerName(clean);
     setOnboarded(true);
     freshOnboardingRef.current = false;
-    navigate("home", true);
+    navigate(pendingJoinCode ? "group" : "home", true);
   }
 
   function selectStake(stake: Stake) {
@@ -885,6 +896,19 @@ export default function DemoApp() {
     haptic(8);
   }
 
+  function joinClosedGroup(code: string) {
+    const next = joinDemoClosedGroup({
+      code,
+      playerName: playerName || "TÚ",
+      avatar: avatarSrc,
+    });
+
+    setGroup(next);
+    setPendingJoinCode("");
+    gameTone("good");
+    haptic(8);
+  }
+
   function setClosedGroupStake(stake: number) {
     setGroup((current) => current ? { ...current, stake } : current);
     haptic(4);
@@ -957,9 +981,8 @@ export default function DemoApp() {
 
     const nextStage = groupStage + 1;
     const nextGameId =
-      groupCompetition.type === "league"
-        ? groupCompetition.gameIds[nextStage - 1]
-        : groupCompetition.gameIds[0];
+      groupCompetition.gameIds[nextStage - 1] ??
+      groupCompetition.gameIds[0];
     const nextGame =
       GAMES.find((game) => game.id === nextGameId) ??
       selectedGame;
@@ -1240,7 +1263,9 @@ export default function DemoApp() {
             balance={balance}
             playerName={playerName}
             avatarSrc={avatarSrc}
+            initialJoinCode={pendingJoinCode}
             onCreateGroup={createClosedGroup}
+            onJoinGroup={joinClosedGroup}
             onSetStake={setClosedGroupStake}
             onStartCompetition={startGroupCompetition}
           />
