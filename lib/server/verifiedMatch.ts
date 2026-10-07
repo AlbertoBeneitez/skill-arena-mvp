@@ -67,14 +67,20 @@ export function hashManifest(manifest: MatchManifest) {
   return sha256(canonicalJson(manifest));
 }
 
-export function expectedGameplayContentHash(gameId: string) {
-  const adapter = getServerGameAdapter(gameId);
+export function expectedGameplayContentHash(
+  gameId: string,
+  gameVersion?: string
+) {
+  const adapter = getServerGameAdapter(gameId, gameVersion);
   if (!adapter) return null;
   return sha256(canonicalJson(adapter.gameplayContentDescriptor));
 }
 
-export function expectedRulesHash(gameId: string) {
-  const adapter = getServerGameAdapter(gameId);
+export function expectedRulesHash(
+  gameId: string,
+  gameVersion?: string
+) {
+  const adapter = getServerGameAdapter(gameId, gameVersion);
   if (!adapter) return null;
 
   return sha256(
@@ -101,8 +107,14 @@ export function createMatchManifest(args: {
   const stakeMinor = Math.max(0, Math.floor(args.stakeMinor ?? 0));
   const targetScore = Math.max(1, Math.floor(args.targetScore ?? 1));
 
-  const rulesHash = expectedRulesHash(args.gameId);
-  const contentHash = expectedGameplayContentHash(args.gameId);
+  const rulesHash = expectedRulesHash(
+    args.gameId,
+    adapter.gameVersion
+  );
+  const contentHash = expectedGameplayContentHash(
+    args.gameId,
+    adapter.gameVersion
+  );
   if (!rulesHash || !contentHash) {
     throw new Error("UNSUPPORTED_GAME_VERSION");
   }
@@ -247,7 +259,10 @@ export function validateManifest(manifest: MatchManifest) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }
 
-  const adapter = getServerGameAdapter(manifest.game_id);
+  const adapter = getServerGameAdapter(
+    manifest.game_id,
+    manifest.game_version
+  );
   if (!adapter) {
     return { ok: false as const, error: "UNSUPPORTED_GAME_VERSION" };
   }
@@ -261,8 +276,15 @@ export function validateManifest(manifest: MatchManifest) {
 
   if (
     manifest.gameplay_content_hash !==
-      expectedGameplayContentHash(manifest.game_id) ||
-    manifest.rules_hash !== expectedRulesHash(manifest.game_id)
+      expectedGameplayContentHash(
+        manifest.game_id,
+        manifest.game_version
+      ) ||
+    manifest.rules_hash !==
+      expectedRulesHash(
+        manifest.game_id,
+        manifest.game_version
+      )
   ) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }
