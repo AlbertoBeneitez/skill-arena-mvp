@@ -20,6 +20,13 @@ import {
   replayPianoRush,
   type PianoRushInput,
 } from "@/lib/verified/pianoRushCore.v1";
+import {
+  JET_STREAM_ACTIONS,
+  JET_STREAM_V1,
+  JET_STREAM_V1_CONTENT,
+  replayJetStream,
+  type JetStreamInput,
+} from "@/lib/verified/jetStreamCore.v1";
 
 export type ServerReplayResult = {
   valid: boolean;
@@ -180,6 +187,47 @@ const pianoRushAdapter: VerifiedGameAdapter = {
   },
 };
 
+const jetStreamAdapter: VerifiedGameAdapter = {
+  gameId: "jet-stream",
+  gameVersion: "1.0.0",
+  engineVersion: "skill-core-1",
+  simulation: {
+    tickRate: JET_STREAM_V1.tickRate,
+    coordinateWidth: JET_STREAM_V1.coordinateWidth,
+    coordinateHeight: JET_STREAM_V1.coordinateHeight,
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    maxFinalTick: JET_STREAM_V1.maxFinalTick,
+  },
+  inputProtocol: {
+    version: JET_STREAM_V1.inputProtocolVersion,
+    allowedActions: JET_STREAM_ACTIONS,
+    maxInputs: JET_STREAM_V1.maxInputs,
+  },
+  rulesDescriptor: {
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    scoringAuthority: "SERVER_REPLAY_ONLY",
+    inputClock: "SIMULATION_TICKS",
+  },
+  gameplayContentDescriptor: JET_STREAM_V1_CONTENT,
+  replay({ inputs, finalTick, manifest }) {
+    const replay = replayJetStream(
+      inputs as JetStreamInput[],
+      finalTick,
+      manifest.seed,
+      manifest.competition.target_score
+    );
+
+    return {
+      valid: replay.valid,
+      error: replay.error,
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.state.status === "won",
+      failure: replay.failure,
+    };
+  },
+};
+
 function adapterKey(gameId: string, gameVersion: string) {
   return `${gameId}@${gameVersion}`;
 }
@@ -198,6 +246,8 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
     precisionStackAdapter,
   [adapterKey(pianoRushAdapter.gameId, pianoRushAdapter.gameVersion)]:
     pianoRushAdapter,
+  [adapterKey(jetStreamAdapter.gameId, jetStreamAdapter.gameVersion)]:
+    jetStreamAdapter,
 };
 
 export function getServerGameAdapter(
