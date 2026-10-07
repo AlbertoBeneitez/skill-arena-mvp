@@ -85,7 +85,18 @@ function createInitialBoard(seed: string) {
 
 function createQueue(seed: string) {
   const rng = createRng(`${seed}:queue`);
-  return Array.from({ length: 500 }, () => rng.nextInt(COLORS.length));
+  const queue: number[] = [];
+
+  for (let bag = 0; bag < 100; bag += 1) {
+    const colors = COLORS.map((_, index) => index);
+    for (let index = colors.length - 1; index > 0; index -= 1) {
+      const target = rng.nextInt(index + 1);
+      [colors[index], colors[target]] = [colors[target], colors[index]];
+    }
+    queue.push(...colors);
+  }
+
+  return queue;
 }
 
 function occupiedMap(bubbles: Bubble[]) {
@@ -175,6 +186,7 @@ export default function OrbBurst({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const startRef = useRef(0);
+  const aimRef = useRef(-Math.PI / 2);
   const queue = useMemo(() => createQueue(seed), [seed]);
 
   const [nextColor, setNextColor] = useState(queue[1]);
@@ -296,9 +308,19 @@ export default function OrbBurst({
         gameTone("good");
         haptic([4, 12, 4]);
 
-        if (s.score >= targetScore || s.bubbles.length === 0) {
+        if (s.score >= targetScore) {
           finish(true);
           return;
+        }
+
+        if (s.bubbles.length === 0) {
+          // A cleared screen advances to another deterministic board instead
+          // of ending a green/create attempt.
+          s.bubbles = createInitialBoard(
+            `${seed}:stage:${s.queueIndex}`
+          );
+          s.misses = 0;
+          gameTone("good");
         }
       } else {
         s.misses += 1;
@@ -463,6 +485,7 @@ export default function OrbBurst({
     };
 
     setNextColor(queue[1]);
+    aimRef.current = -Math.PI / 2;
     setAimAngle(-Math.PI / 2);
     startRef.current = performance.now();
     draw();
@@ -483,6 +506,7 @@ export default function OrbBurst({
 
     let angle = Math.atan2(y - SHOOTER_Y, x - SHOOTER_X);
     angle = Math.max(-Math.PI + 0.22, Math.min(-0.22, angle));
+    aimRef.current = angle;
     setAimAngle(angle);
   }
 
@@ -494,8 +518,8 @@ export default function OrbBurst({
     s.shot = {
       x: SHOOTER_X,
       y: SHOOTER_Y,
-      vx: Math.cos(aimAngle) * speed,
-      vy: Math.sin(aimAngle) * speed,
+      vx: Math.cos(aimRef.current) * speed,
+      vy: Math.sin(aimRef.current) * speed,
       color: s.currentColor,
     };
 
