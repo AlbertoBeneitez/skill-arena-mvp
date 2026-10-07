@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * River Dash uses lane-crossing mechanics informed by the MIT-licensed
+ * crossy-road example in sausi-7/games. Skill Arena uses its own 2D rendering,
+ * seeded lane schedule and mobile controls; no branded art is reused.
+ * Source: https://github.com/sausi-7/games
+ */
+
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { createRng } from "@/lib/deterministic/seeded";
