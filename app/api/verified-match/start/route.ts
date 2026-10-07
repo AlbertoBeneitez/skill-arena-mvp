@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { getGameDefinition, type GameId } from "@/lib/games";
 import {
-  createTowerDropManifest,
+  createMatchManifest,
   hashManifest,
   issueAttemptTicket,
   isAllowedStakeMinor,
@@ -9,12 +10,34 @@ import {
 
 export const runtime = "nodejs";
 
+type StartRequest = {
+  game_id?: string;
+  stake_minor?: number;
+  target_score?: number;
+};
+
+function reject(error: string, status = 400) {
+  return NextResponse.json({ ok: false, error }, { status });
+}
+
 export async function POST(request: Request) {
-  let body: { stake_minor?: number; target_score?: number } = {};
+  let body: StartRequest = {};
   try {
-    body = await request.json();
+    body = (await request.json()) as StartRequest;
   } catch {
     body = {};
+  }
+
+  if (typeof body.game_id !== "string") {
+    return reject("INVALID_MANIFEST");
+  }
+
+  const game = getGameDefinition(body.game_id);
+  if (
+    !game ||
+    game.competition.verification !== "server-replay"
+  ) {
+    return reject("UNSUPPORTED_GAME_VERSION");
   }
 
   const stakeMinor =
@@ -24,18 +47,21 @@ export async function POST(request: Request) {
       : 0;
 
   if (!isAllowedStakeMinor(stakeMinor)) {
-    return NextResponse.json(
-      { ok: false, error: "INVALID_STAKE" },
-      { status: 400 }
-    );
+    return reject("INVALID_STAKE");
   }
 
   const targetScore =
-    typeof body.target_score === "number" && Number.isInteger(body.target_score)
+    typeof body.target_score === "number" &&
+    Number.isInteger(body.target_score)
       ? Math.max(1, Math.min(1_000_000_000, body.target_score))
       : 1;
 
-  const manifest = createTowerDropManifest({ stakeMinor, targetScore });
+  const manifest = createMatchManifest({
+    gameId: game.id as GameId,
+    stakeMinor,
+    targetScore,
+  });
+
   const ticket = issueAttemptTicket({
     manifest,
     playerId: `demo-player:${randomUUID()}`,
