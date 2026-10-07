@@ -15,7 +15,7 @@
 
 export const TOWER_DROP_V2 = {
   gameId: "tower-drop",
-  gameVersion: "2.0.0",
+  gameVersion: "2.1.0",
   engineVersion: "skill-core-2",
   tickRate: 120,
 
@@ -41,6 +41,9 @@ export const TOWER_DROP_V2 = {
   gravityMilliPerSecondSquared: 820_000,
   dropDistanceMilli: 320_000,
   fallOutExtraMilli: 210_000,
+  releaseMomentumPerMille: 620,
+  horizontalDragPerMillePerSecond: 70,
+  wallRestitutionPerMille: 420,
 
   // Support / tipping.
   stabilityMarginMilli: 3_000,
@@ -92,9 +95,12 @@ export type TowerDropState = {
   swingPhase: number;
   movingXMilli: number;
   movingWMilli: number;
+  movingVXMilliPerSecond: number;
 
   fallXMilli: number;
   fallYMilli: number;
+  fallVXMilliPerSecond: number;
+  fallXPositionRemainder: number;
   fallVYMilliPerSecond: number;
   fallVelocityRemainder: number;
   fallPositionRemainder: number;
@@ -173,6 +179,7 @@ function swingAmplitudeFor(state: TowerDropState) {
 
 function updateMovingBlockFromSwing(state: TowerDropState) {
   const cfg = TOWER_DROP_V2;
+  const previousX = state.movingXMilli;
   const wave = pendulumWavePerMille(state.swingPhase);
   const center =
     Math.floor(cfg.widthMilli / 2) +
@@ -184,6 +191,9 @@ function updateMovingBlockFromSwing(state: TowerDropState) {
     cfg.edgePaddingMilli,
     cfg.widthMilli - cfg.edgePaddingMilli - state.movingWMilli
   );
+
+  state.movingVXMilliPerSecond =
+    (state.movingXMilli - previousX) * cfg.tickRate;
 }
 
 export function createTowerDropState(): TowerDropState {
@@ -206,9 +216,12 @@ export function createTowerDropState(): TowerDropState {
     swingPhase: 420,
     movingXMilli: 0,
     movingWMilli: cfg.blockWidthMilli,
+    movingVXMilliPerSecond: 0,
 
     fallXMilli: 0,
     fallYMilli: 0,
+    fallVXMilliPerSecond: 0,
+    fallXPositionRemainder: 0,
     fallVYMilliPerSecond: 0,
     fallVelocityRemainder: 0,
     fallPositionRemainder: 0,
@@ -321,6 +334,56 @@ function resolveContact(
 
 function stepFalling(state: TowerDropState, targetScore: number) {
   const cfg = TOWER_DROP_V2;
+
+  // Preserve part of the pendulum's horizontal velocity after release. This
+  // removes the old "teleport into a vertical rail" feel and makes timing
+  // depend on both position and direction of travel.
+  state.fallXPositionRemainder += state.fallVXMilliPerSecond;
+  const deltaX = Math.trunc(
+    state.fallXPositionRemainder / cfg.tickRate
+  );
+  state.fallXPositionRemainder -= deltaX * cfg.tickRate;
+  state.fallXMilli += deltaX;
+
+  const minX = cfg.edgePaddingMilli;
+  const maxX =
+    cfg.widthMilli -
+    cfg.edgePaddingMilli -
+    state.movingWMilli;
+
+  if (state.fallXMilli < minX) {
+    state.fallXMilli = minX;
+    state.fallVXMilliPerSecond = Math.abs(
+      roundDiv(
+        state.fallVXMilliPerSecond *
+          cfg.wallRestitutionPerMille,
+        1000
+      )
+    );
+    state.fallXPositionRemainder = 0;
+  } else if (state.fallXMilli > maxX) {
+    state.fallXMilli = maxX;
+    state.fallVXMilliPerSecond = -Math.abs(
+      roundDiv(
+        state.fallVXMilliPerSecond *
+          cfg.wallRestitutionPerMille,
+        1000
+      )
+    );
+    state.fallXPositionRemainder = 0;
+  }
+
+  const dragPerTick = roundDiv(
+    cfg.horizontalDragPerMillePerSecond,
+    cfg.tickRate
+  );
+  if (dragPerTick > 0) {
+    state.fallVXMilliPerSecond = roundDiv(
+      state.fallVXMilliPerSecond *
+        Math.max(0, 1000 - dragPerTick),
+      1000
+    );
+  }
 
   state.fallVelocityRemainder +=
     cfg.gravityMilliPerSecondSquared;
@@ -444,6 +507,12 @@ export function dropTowerBlock(
   state.idleTicks = 0;
   state.fallXMilli = state.movingXMilli;
   state.fallYMilli = 0;
+  state.fallVXMilliPerSecond = roundDiv(
+    state.movingVXMilliPerSecond *
+      TOWER_DROP_V2.releaseMomentumPerMille,
+    1000
+  );
+  state.fallXPositionRemainder = 0;
   state.fallVYMilliPerSecond = 0;
   state.fallVelocityRemainder = 0;
   state.fallPositionRemainder = 0;
@@ -611,6 +680,8 @@ export const TOWER_DROP_V2_CONTENT = {
     centerOfMassStability: true,
     edgePivotAndTip: true,
     progressiveSwingDifficulty: true,
+    inheritedHorizontalMomentum: true,
+    deterministicWallBounce: true,
   },
   scoring: {
     base: 360,
