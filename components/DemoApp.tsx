@@ -6,7 +6,7 @@ import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
-import { gameTone, haptic, setGameSoundEnabled } from "@/lib/gameFeedback";
+import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 
 type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal";
 type Provider = "google" | "apple" | null;
@@ -456,6 +456,16 @@ export default function DemoApp() {
   }, [musicOn]);
 
   useEffect(() => {
+    if (screen === "game" && activeGame && musicOn) {
+      startGameMusic(selectedGame.id);
+      return () => stopGameMusic();
+    }
+
+    stopGameMusic();
+    return undefined;
+  }, [screen, activeGame, musicOn, selectedGame.id]);
+
+  useEffect(() => {
     if (!showWinAnimation) return;
     const timer = window.setTimeout(() => setShowWinAnimation(false), 1350);
     return () => window.clearTimeout(timer);
@@ -776,7 +786,16 @@ export default function DemoApp() {
       return;
     }
 
-    const didWin = gameResult.won || gameResult.score >= matchTargetScore;
+    const replyAttempt =
+      matchScope === "duel" &&
+      (selectedMode === "existing" || selectedMode === "waiting");
+
+    const didWin =
+      matchScope === "group"
+        ? gameResult.won || gameResult.score >= matchTargetScore
+        : replyAttempt
+          ? gameResult.won || gameResult.score >= matchTargetScore
+          : false;
     const resolvedResult = { ...gameResult, won: didWin };
     if (didWin) setShowWinAnimation(true);
     setResult(resolvedResult);
@@ -881,7 +900,9 @@ export default function DemoApp() {
       ...points,
       { label: `P${points.length}`, value: nextValue },
     ].slice(-20));
-    setNextTurn((turn) => (turn === "create" ? "existing" : "create"));
+    // One green attempt creates exactly one reply opportunity.
+    // A blue/purple reply consumes it; purple never generates an extra blue.
+    setNextTurn(selectedMode === "create" ? "existing" : "create");
   }
 
   function createClosedGroup(name: string, stake: number) {
@@ -1322,6 +1343,11 @@ export default function DemoApp() {
                 ghostEnabled={selectedMode === "existing" && ghostEnabled}
                 instanceKey={gameKey}
                 targetScore={matchTargetScore}
+                stopOnTarget={
+                  matchScope === "duel" &&
+                  (selectedMode === "existing" ||
+                    selectedMode === "waiting")
+                }
                 onFinish={finishMatch}
               />
               {showWinAnimation && (
