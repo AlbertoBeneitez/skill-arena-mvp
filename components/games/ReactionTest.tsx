@@ -17,7 +17,7 @@ type Phase = "waiting" | "ready" | "result";
 const ROUNDS = 5;
 
 function buildWaits(seed: string) {
-  const rng = createRng(\`\${seed}:reaction-waits\`);
+  const rng = createRng(`${seed}:reaction-waits`);
   return Array.from({ length: ROUNDS }, () => 1350 + rng.nextInt(2100));
 }
 
@@ -175,7 +175,7 @@ export default function ReactionTest({
   return (
     <button
       type="button"
-      className={\`reactionTestGame phase-\${phase}\`}
+      className={`reactionTestGame phase-${phase}`}
       onPointerDown={(event) => {
         event.preventDefault();
         tap();
@@ -186,7 +186,7 @@ export default function ReactionTest({
         {phase === "waiting" && (
           <>
             <strong>{falseStart ? "DEMASIADO PRONTO" : "ESPERA"}</strong>
-            <span>{falseStart ? "No anticipes" : \`Ronda \${round}/\${ROUNDS}\`}</span>
+            <span>{falseStart ? "No anticipes" : `Ronda ${round}/${ROUNDS}`}</span>
           </>
         )}
 
