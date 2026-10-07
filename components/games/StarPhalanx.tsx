@@ -33,16 +33,19 @@ const DT = 1 / 120;
 
 function makeWave(seed: string, wave: number) {
   const rng = createRng(`${seed}:wave:${wave}`);
-  const rows = Math.min(6, 4 + Math.floor((wave - 1) / 2));
+  const rows = Math.min(7, 4 + Math.floor((wave - 1) / 2));
   const cols = 8;
   const enemies: Enemy[] = [];
+  // Each new wave compresses the rows. From the middle waves onward the
+  // silhouettes visibly overlap, creating the "phalanx closing in" effect.
+  const rowSpacing = Math.max(18, 36 - (wave - 1) * 2.6);
 
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
-      if (wave > 1 && rng.nextInt(12) === 0) continue;
+      if (wave > 1 && rng.nextInt(14) === 0) continue;
       enemies.push({
-        x: 50 + col * 41,
-        y: 70 + row * 36,
+        x: 50 + col * 41 + (row % 2 ? 7 : -4),
+        y: 70 + row * rowSpacing,
         alive: true,
         row,
         col,
