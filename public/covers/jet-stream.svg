@@ -1,1 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6bc8f0"/><stop offset=".72" stop-color="#dff6ff"/><stop offset="1" stop-color="#e1d7a6"/></linearGradient></defs><rect width="800" height="600" fill="url(#g)"/><g fill="#315fae"><rect x="410" y="0" width="58" height="205"/><rect x="410" y="365" width="58" height="235"/><rect x="625" y="0" width="58" height="300"/><rect x="625" y="455" width="58" height="145"/></g><g fill="#efc64d"><rect x="404" y="198" width="70" height="10"/><rect x="404" y="365" width="70" height="10"/><rect x="619" y="293" width="70" height="10"/><rect x="619" y="455" width="70" height="10"/></g><path d="M140 305 180 327 151 337 137 363 122 337 93 327Z" fill="#ffd34f"/><rect x="87" y="321" width="24" height="10" fill="#315fae"/><text x="54" y="95" font-family="Arial" font-size="58" font-weight="900" fill="#2a5288">JET</text><text x="54" y="153" font-family="Arial" font-size="58" font-weight="900" fill="#2a5288">STREAM</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="space" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#040814"/>
+      <stop offset=".55" stop-color="#0b1830"/>
+      <stop offset="1" stop-color="#060b16"/>
+    </linearGradient>
+    <linearGradient id="pylon" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#1e304e"/>
+      <stop offset=".52" stop-color="#45698f"/>
+      <stop offset="1" stop-color="#1b2a45"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#space)"/>
+  <g fill="#d8efff" opacity=".7">
+    <circle cx="90" cy="88" r="2"/><circle cx="220" cy="166" r="1.5"/>
+    <circle cx="356" cy="74" r="1.2"/><circle cx="715" cy="120" r="1.7"/>
+    <circle cx="652" cy="302" r="1.3"/><circle cx="520" cy="498" r="1.7"/>
+  </g>
+  <g fill="url(#pylon)">
+    <rect x="402" y="0" width="58" height="212"/>
+    <rect x="402" y="375" width="58" height="225"/>
+    <rect x="620" y="0" width="58" height="296"/>
+    <rect x="620" y="456" width="58" height="144"/>
+  </g>
+  <g fill="#68dce8">
+    <rect x="396" y="205" width="70" height="8"/>
+    <rect x="396" y="375" width="70" height="8"/>
+    <rect x="614" y="289" width="70" height="8"/>
+    <rect x="614" y="456" width="70" height="8"/>
+  </g>
+  <g stroke="#78e6ee" stroke-width="2" stroke-dasharray="8 10" opacity=".3">
+    <path d="M365 294h135"/><path d="M580 376h140"/>
+  </g>
+  <g transform="translate(154 312)">
+    <path d="M38 0 -17 -24 -5 0 -17 24Z" fill="#edf7ff"/>
+    <rect x="-8" y="-8" width="22" height="16" fill="#3c75aa"/>
+    <rect x="6" y="-4" width="13" height="8" fill="#79e8ef"/>
+    <path d="M-18 -7 -44 0 -18 7Z" fill="#ffd270"/>
+  </g>
+  <text x="54" y="105" font-family="system-ui,sans-serif" font-size="58" font-weight="900" fill="#edf6ff">JET</text>
+  <text x="54" y="163" font-family="system-ui,sans-serif" font-size="58" font-weight="900" fill="#edf6ff">STREAM</text>
+  <text x="58" y="194" font-family="system-ui,sans-serif" font-size="15" font-weight="700" letter-spacing="5" fill="#69d8e8">ORBITAL CORRIDOR</text>
+</svg>
