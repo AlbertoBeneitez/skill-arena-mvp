@@ -1,6 +1,6 @@
 # Skill Arena game architecture
 
-Status: **STABLE**. Tower Drop V2 and Precision Stack V1 both pass the common registry, server-replay, deterministic golden fixtures and render-rate equivalence tests. The external game contract is now frozen; changes require a demonstrated architectural need rather than convenience for one game.
+Status: **STABLE**. Tower Drop V2, Precision Stack V1, Piano Rush V1 and Jet Stream V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
 
 ## Boundaries
 
@@ -118,10 +118,7 @@ complexity justifies it:
 
 Presentation and feedback never decide competitive outcomes.
 
-Tower Drop and Precision Stack demonstrate this split: their pure cores live
-under `lib/verified/`; their React/Canvas adapters live under
-`components/games/`; server replay dispatch lives in
-`lib/server/gameVerifiers.ts`.
+Tower Drop, Precision Stack, Piano Rush and Jet Stream demonstrate this split: pure outcome-affecting cores live under `lib/verified/`; React/Canvas adapters and optional presentation helpers live under `components/games/`; server replay dispatch remains in `lib/server/gameVerifiers.ts`.
 
 ## Adding a game
 
@@ -142,8 +139,7 @@ under `lib/verified/`; their React/Canvas adapters live under
 ## Legacy migration
 
 Do not mass-migrate. Existing games may stay `INTEGRATED` and client-result
-based. Recommended order after this architecture: Piano Rush, Dino Dash, 2048,
-then the remaining catalogue one at a time.
+based. Piano Rush and Jet Stream have now migrated. Recommended next order is Dino Dash → Pulse Runner → Metro Shift → 2048 → Orbit Shift, one game at a time.
 
 ## Open-source import rule
 
@@ -164,12 +160,25 @@ characters, logos, fonts or trademarks.
 
 ## Current maturity
 
-- Tower Drop: **VERIFIED** reference core.
-- Precision Stack: **VERIFIED** reference core after common replay migration.
-- Remaining catalogue: **INTEGRATED** legacy games pending one-by-one
-  professionalisation.
+- Tower Drop: **VERIFIED** competitive reference core.
+- Precision Stack: **VERIFIED**, with separated orbital presentation and frozen V1 core.
+- Piano Rush: **VERIFIED**, with seeded timing chart and typed lane protocol.
+- Jet Stream: **VERIFIED**, with seeded gate course and typed FLAP protocol.
+- Remaining catalogue: **INTEGRATED** legacy games pending one-by-one professionalisation.
 - `PRODUCTION-GRADE` remains reserved for games that also pass real-device QA,
   operational security requirements and production settlement integration.
+
+## Professionalisation gate
+
+`VERIFIED` means server-authoritative replay and deterministic outcome; it does
+not by itself claim commercial-grade game feel. A game is only a finished
+quality pass when its input, responsive rendering, lifecycle cleanup,
+presentation, feedback, difficulty curve and relevant open-source provenance
+have also been reviewed.
+
+Competitive rules stay in a pure versioned core. Camera, particles, decorative
+animation and haptics remain presentation/feedback unless changing them would
+alter input semantics.
 
 ## Freeze rule
 
