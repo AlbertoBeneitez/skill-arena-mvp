@@ -141,7 +141,7 @@ Tower Drop, Precision Stack, Piano Rush and Jet Stream demonstrate this split: p
 ## Legacy migration
 
 Do not mass-migrate. Existing games may stay `INTEGRATED` and client-result
-based. Piano Rush and Jet Stream have now migrated. Recommended next order is Dino Dash → Pulse Runner → Metro Shift → 2048 → Orbit Shift, one game at a time.
+based. Piano Rush and Jet Stream have now migrated. Dino Dash is also verified. The current product roadmap is in `docs/PRODUCT_BACKLOG.md`; 2048 is retired from the v19 catalogue. Remaining migrations proceed one game at a time, after the shared competitive match prerequisites.
 
 ## Open-source import rule
 

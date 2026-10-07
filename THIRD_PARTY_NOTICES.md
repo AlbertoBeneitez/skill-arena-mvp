@@ -49,7 +49,7 @@ SOFTWARE.
 
 ## 2048
 
-**Used by:** 2048 / Merge 2048 deterministic arena.
+**Historical use:** retired 2048 / Merge 2048 deterministic arena. Removed from the current catalogue in v19; this notice is retained for source history and earlier releases.
 
 - **Project:** 2048
 - **Repository:** https://github.com/gabrielecirulli/2048
