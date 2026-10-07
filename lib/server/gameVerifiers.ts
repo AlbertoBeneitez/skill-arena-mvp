@@ -1,4 +1,4 @@
-import { getGameDefinition, type GameCompetitionDefinition, type GameId, type GameMeta } from "@/lib/games";
+import { getGameDefinition, type GameId } from "@/lib/games";
 import type { MatchManifest } from "@/lib/verified/contracts";
 import type { ReplayInput } from "@/lib/verified/inputValidation";
 import {
@@ -49,31 +49,10 @@ export type VerifiedGameAdapter = {
   }): ServerReplayResult;
 };
 
-type ServerReplayCompetition = Extract<
-  GameCompetitionDefinition,
-  { verification: "server-replay" }
->;
-
-function registeredServerReplayGame(gameId: GameId) {
-  const definition = getGameDefinition(gameId);
-  if (
-    !definition ||
-    definition.competition.verification !== "server-replay"
-  ) {
-    throw new Error(`Game ${gameId} is not registered for server replay`);
-  }
-
-  return definition as GameMeta & {
-    competition: ServerReplayCompetition;
-  };
-}
-
-const towerDropDefinition = registeredServerReplayGame("tower-drop");
-
 const towerDropAdapter: VerifiedGameAdapter = {
   gameId: "tower-drop",
-  gameVersion: towerDropDefinition.version,
-  engineVersion: towerDropDefinition.competition.engineVersion,
+  gameVersion: "2.1.0",
+  engineVersion: "skill-core-2",
   simulation: {
     tickRate: TOWER_DROP_V2.tickRate,
     coordinateWidth: TOWER_DROP_V2.widthMilli / 1000,
@@ -82,8 +61,8 @@ const towerDropAdapter: VerifiedGameAdapter = {
     maxFinalTick: TOWER_DROP_V2.tickRate * 60 * 15,
   },
   inputProtocol: {
-    version: towerDropDefinition.competition.inputProtocolVersion,
-    allowedActions: towerDropDefinition.competition.allowedActions,
+    version: 2,
+    allowedActions: ["DROP"],
     maxInputs: 500,
   },
   rulesDescriptor: {
@@ -111,13 +90,10 @@ const towerDropAdapter: VerifiedGameAdapter = {
   },
 };
 
-const precisionStackDefinition =
-  registeredServerReplayGame("precision-stack");
-
 const precisionStackAdapter: VerifiedGameAdapter = {
   gameId: "precision-stack",
-  gameVersion: precisionStackDefinition.version,
-  engineVersion: precisionStackDefinition.competition.engineVersion,
+  gameVersion: "1.0.0",
+  engineVersion: "skill-core-1",
   simulation: {
     tickRate: PRECISION_STACK_V1.tickRate,
     coordinateWidth: PRECISION_STACK_V1.widthMilli / 1000,
@@ -126,10 +102,8 @@ const precisionStackAdapter: VerifiedGameAdapter = {
     maxFinalTick: PRECISION_STACK_V1.tickRate * 60 * 15,
   },
   inputProtocol: {
-    version:
-      precisionStackDefinition.competition.inputProtocolVersion,
-    allowedActions:
-      precisionStackDefinition.competition.allowedActions,
+    version: 1,
+    allowedActions: ["DROP"],
     maxInputs: PRECISION_STACK_V1.maxInputs,
   },
   rulesDescriptor: {
@@ -158,22 +132,31 @@ const precisionStackAdapter: VerifiedGameAdapter = {
   },
 };
 
-const SERVER_GAME_ADAPTERS: Partial<Record<GameId, VerifiedGameAdapter>> = {
-  "tower-drop": towerDropAdapter,
-  "precision-stack": precisionStackAdapter,
+function adapterKey(gameId: string, gameVersion: string) {
+  return `${gameId}@${gameVersion}`;
+}
+
+/**
+ * Historical competitive adapters are append-only.
+ *
+ * The public registry exposes the current version of a game. This server-only
+ * archive keeps every frozen competitive version required to reproduce old
+ * manifests after the current version advances.
+ */
+const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(towerDropAdapter.gameId, towerDropAdapter.gameVersion)]:
+    towerDropAdapter,
+  [adapterKey(precisionStackAdapter.gameId, precisionStackAdapter.gameVersion)]:
+    precisionStackAdapter,
 };
 
 export function getServerGameAdapter(
-  gameId: string
+  gameId: string,
+  gameVersion?: string
 ): VerifiedGameAdapter | undefined {
-  if (
-    !Object.prototype.hasOwnProperty.call(
-      SERVER_GAME_ADAPTERS,
-      gameId
-    )
-  ) {
-    return undefined;
-  }
+  const version =
+    gameVersion ?? getGameDefinition(gameId)?.version;
+  if (!version) return undefined;
 
-  return SERVER_GAME_ADAPTERS[gameId as GameId];
+  return SERVER_GAME_ADAPTERS[adapterKey(gameId, version)];
 }
