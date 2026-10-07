@@ -760,7 +760,7 @@ export default function DemoApp() {
     setStartingGameId(null);
     setActiveGame(false);
 
-    if (selectedGame.id === "tower-drop" && gameResult.verified !== true) {
+    if (selectedGame.competition.verification === "server-replay" && gameResult.verified !== true) {
       const entryWasCharged =
         matchScope !== "group" ||
         !groupCompetition ||
