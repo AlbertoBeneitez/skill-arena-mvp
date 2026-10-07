@@ -24,3 +24,21 @@ cancellation before transport and an aborted transport resolving late. Chromium
 QA mounts/unmounts all 19 games at portrait/landscape dimensions without console
 errors; delayed server verification cannot finish a newly started Dino session.
 No new dependency, copied code/assets or competitive rule change.
+
+## A1 — Alien Dash presentation, historical Dino V1 retained
+
+Audit: `DinoDash.tsx` already adapts the pure 120 Hz V1 core, shared attempt
+hook, canvas letterboxing and server replay. Keep those mechanics, input
+protocol, score, internal `dino-dash` id, version 1.0.0 and licence notices.
+Registry display name/accessibility/cover become Alien Dash. Original canvas
+art depicts a colony, alien runner, drones and plasma barriers; the old cover
+remains available for historical references. `drawSpaceBackdrop` is a small
+presentation helper with no game-state mutations or simulation RNG consumption.
+Focus/visibility loss records a reproducible duck release; listeners clean up.
+
+New enemies, platforms/heights and life pickups are NOT claimed by A1; those
+require a later versioned core. Existing V1 obstacle positions/hitboxes and
+results are unchanged. Validation: typecheck, deterministic/golden tests,
+production build and 19-game smoke pass; portrait/landscape screenshots reviewed.
+Browser replay verifies normal V2 completion and the DUCK_DOWN/DUCK_UP sequence
+after blur. No important console errors or new third-party dependency/asset.

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Dino Dash presentation/input adapter.
+ * Alien Dash presentation/input adapter; historical dino-dash identity retained.
  *
  * Competitive physics, obstacle generation, collision, scoring and replay live
  * in dinoDashCore.v1.ts. This component owns presentation, feedback and input.
@@ -15,12 +15,14 @@ import {
   type CanvasViewportMetrics,
 } from "@/lib/gameCanvas";
 import { gameTone, haptic } from "@/lib/gameFeedback";
+import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
 import {
   applyDinoDashAction,
   createDinoDashState,
   DINO_DASH_V1,
   dinoDashIsGrounded,
+  dinoDashScore,
   stepDinoDash,
   type DinoDashAction,
   type DinoDashInput,
@@ -90,120 +92,67 @@ export default function DinoDash({
     beginLogicalCanvasFrame(ctx, canvas, metrics);
 
     const state = stateRef.current;
-    const phase = (state.tick / DINO_DASH_V1.tickRate) % 46;
-    const night = phase > 31;
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-
-    if (night) {
-      sky.addColorStop(0, "#0b1329");
-      sky.addColorStop(0.62, "#182943");
-      sky.addColorStop(1, "#30445b");
-    } else {
-      sky.addColorStop(0, "#d9eff7");
-      sky.addColorStop(0.68, "#edf0dd");
-      sky.addColorStop(1, "#f3d8a8");
+    drawSpaceBackdrop(ctx, W, H, state.scroll, state.tick);
+    const floor = ctx.createLinearGradient(0, GROUND, 0, H);
+    floor.addColorStop(0, "#142c42");
+    floor.addColorStop(1, "#060f20");
+    ctx.fillStyle = floor;
+    ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.fillStyle = "#5acddb";
+    ctx.fillRect(0, GROUND, W, 2);
+    ctx.strokeStyle = "rgba(95,185,215,.16)";
+    for (let x = -(state.scroll % 55); x < W; x += 55) {
+      ctx.beginPath(); ctx.moveTo(x, GROUND); ctx.lineTo(x - 30, H); ctx.stroke();
     }
-
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, W, H);
-
-    if (night) {
-      ctx.fillStyle = "rgba(255,255,255,.72)";
-      for (let index = 0; index < 22; index += 1) {
-        const x =
-          (index * 71 - state.scroll * 0.03 + W * 4) % W;
-        const y = 38 + ((index * 47) % 210);
-        ctx.fillRect(x, y, 2, 2);
-      }
-    } else {
-      const sun = ctx.createRadialGradient(318, 92, 8, 318, 92, 74);
-      sun.addColorStop(0, "rgba(255,247,205,.92)");
-      sun.addColorStop(1, "rgba(255,247,205,0)");
-      ctx.fillStyle = sun;
-      ctx.fillRect(240, 14, 150, 150);
-    }
-
-    ctx.fillStyle = night ? "#283447" : "#65685f";
-    ctx.fillRect(0, GROUND, W, 4);
-
-    ctx.fillStyle = night
-      ? "rgba(255,255,255,.18)"
-      : "rgba(38,44,42,.16)";
-    for (let x = -((state.scroll * 0.7) % 34); x < W; x += 34) {
-      ctx.fillRect(x, GROUND + 18, 20, 2);
+    for (let y = GROUND + 20; y < H; y += 25) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
     }
 
     for (const obstacle of state.obstacles) {
       const x = obstacle.worldX - state.scroll;
       if (x < -80 || x > W + 80) continue;
-
       if (obstacle.kind === "flyer") {
-        const wing = Math.sin(state.tick * 0.18) * 5;
-        ctx.fillStyle = night ? "#c46a8d" : "#b35d75";
+        ctx.fillStyle = "#ba80e9";
         ctx.beginPath();
-        ctx.moveTo(x, obstacle.y);
-        ctx.lineTo(x + 18, obstacle.y - 12 - wing);
-        ctx.lineTo(x + obstacle.w, obstacle.y);
-        ctx.lineTo(x + 18, obstacle.y + 10 + wing * 0.3);
-        ctx.closePath();
+        ctx.ellipse(x + obstacle.w / 2, obstacle.y, obstacle.w / 2, obstacle.h / 2, 0, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.fillStyle = "#f4d27c";
-        ctx.fillRect(x + obstacle.w - 6, obstacle.y - 2, 7, 4);
+        ctx.fillStyle = "#ffce82";
+        ctx.fillRect(x + 10, obstacle.y - 2, obstacle.w - 20, 4);
       } else {
-        ctx.fillStyle =
-          obstacle.kind === "double" ? "#3d8c62" : "#4f9d6b";
-        const count = obstacle.kind === "double" ? 2 : 1;
-
-        for (let part = 0; part < count; part += 1) {
-          const cx = x + part * 21;
-          ctx.fillRect(cx + 7, GROUND - obstacle.h, 12, obstacle.h);
-          ctx.fillRect(cx, GROUND - obstacle.h + 16, 8, 8);
-          ctx.fillRect(cx + 18, GROUND - obstacle.h + 24, 8, 8);
-        }
+        const top = obstacle.y - obstacle.h;
+        const plasma = ctx.createLinearGradient(0, top, 0, obstacle.y);
+        plasma.addColorStop(0, "#d99af6"); plasma.addColorStop(1, "#694797");
+        ctx.fillStyle = plasma;
+        ctx.fillRect(x, top, obstacle.w, obstacle.h);
+        ctx.strokeStyle = "#eed3ff"; ctx.lineWidth = 2;
+        ctx.strokeRect(x + 1, top + 1, obstacle.w - 2, obstacle.h - 2);
+        ctx.fillStyle = "rgba(255,255,255,.65)";
+        ctx.fillRect(x + 5, top + 8, obstacle.w - 10, 3);
       }
     }
 
     const grounded = dinoDashIsGrounded(state);
-    const playerHeight =
-      state.ducking && grounded
-        ? DINO_DASH_V1.playerDuckHeight
-        : DINO_DASH_V1.playerStandingHeight;
-    const playerY =
-      state.ducking && grounded
-        ? GROUND - playerHeight
-        : state.y;
+    const playerHeight = state.ducking && grounded ? DINO_DASH_V1.playerDuckHeight : DINO_DASH_V1.playerStandingHeight;
+    const playerY = state.ducking && grounded ? GROUND - playerHeight : state.y;
+    const headHeight = Math.min(20, playerHeight - 8);
+    ctx.fillStyle = "#40bcae";
+    ctx.fillRect(PLAYER_X + 9, playerY + headHeight - 2, 23, playerHeight - headHeight);
+    ctx.fillStyle = "#9cf9dd";
+    ctx.beginPath(); ctx.ellipse(PLAYER_X + 21, playerY + headHeight / 2 + 2, 15, headHeight / 2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#12383f";
+    ctx.beginPath(); ctx.ellipse(PLAYER_X + 15, playerY + headHeight / 2 + 2, 3, 5, -.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(PLAYER_X + 28, playerY + headHeight / 2 + 2, 3, 5, .2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#73dccf";
+    const stride = grounded ? Math.floor(state.tick / 8) % 2 * 3 : 0;
+    ctx.fillRect(PLAYER_X + 10, playerY + playerHeight - 6, 7, 6 - stride);
+    ctx.fillRect(PLAYER_X + 24, playerY + playerHeight - 6, 7, 3 + stride);
 
-    ctx.fillStyle = night ? "#91a8c7" : "#243a58";
-    ctx.fillRect(
-      PLAYER_X + 7,
-      playerY + 10,
-      24,
-      Math.max(8, playerHeight - 10)
-    );
-
-    ctx.fillStyle = "#f0c95c";
-    ctx.fillRect(PLAYER_X + 22, playerY + 3, 17, 13);
-
-    ctx.fillStyle = "#0d1423";
-    ctx.fillRect(PLAYER_X + 33, playerY + 7, 3, 3);
-
-    if (!(state.ducking && grounded)) {
-      const legPhase = Math.floor(state.tick / 8) % 2;
-      ctx.fillStyle = night ? "#91a8c7" : "#243a58";
-      ctx.fillRect(
-        PLAYER_X + 11,
-        playerY + playerHeight - 2,
-        5,
-        legPhase ? 8 : 4
-      );
-      ctx.fillRect(
-        PLAYER_X + 25,
-        playerY + playerHeight - 2,
-        5,
-        legPhase ? 4 : 8
-      );
-    }
+    ctx.fillStyle = "#d7f4ff"; ctx.font = "bold 12px system-ui";
+    ctx.fillText("COLONIA ORBITAL", 20, 38);
+    ctx.font = "bold 20px system-ui";
+    ctx.textAlign = "right"; ctx.fillText(String(dinoDashScore(state)), W - 20, 39); ctx.textAlign = "left";
+    ctx.fillStyle = "#97bacf"; ctx.font = "11px system-ui";
+    ctx.fillText("TOCA · SALTA  /  ↓ · ESQUIVA", 18, H - 32);
 
     if (now < failureFlashUntilRef.current) {
       const remaining =
@@ -517,14 +466,26 @@ export default function DinoDash({
     pendingDuckActionRef.current = "DUCK_UP";
   }, [attemptState.status, draw, recordInput]);
 
+  useEffect(() => {
+    const release = () => duckUp();
+    const visibility = () => { if (document.hidden) release(); };
+    window.addEventListener("blur", release);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      window.removeEventListener("blur", release);
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [duckUp]);
+
   return (
     <div className="detGameSurface dinoDashGame verifiedArena">
       <canvas
         ref={canvasRef}
         className="gameCanvas deterministicCanvas"
-        aria-label="Dino Dash: toca para saltar"
+        aria-label="Alien Dash: toca para saltar"
         role="button"
         tabIndex={0}
+        onBlur={duckUp}
         onPointerDown={(event) => {
           event.preventDefault();
           jump();
