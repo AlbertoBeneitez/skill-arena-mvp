@@ -30,9 +30,12 @@ export const TOWER_DROP_V2 = {
   swingStepEveryFloors: 4,
   swingStepIncrement: 2,
   maxSwingStepPerTick: 25,
-  baseSwingAmplitudeMilli: 100_000,
-  swingAmplitudeStepMilli: 3_500,
-  maxSwingAmplitudeMilli: 146_000,
+  // Keep the whole pendulum arc inside the playable width. The previous
+  // amplitude could hit the x clamp on tall towers, making the block appear
+  // to freeze for part of its swing.
+  baseSwingAmplitudeMilli: 96_000,
+  swingAmplitudeStepMilli: 2_000,
+  maxSwingAmplitudeMilli: 116_000,
 
   // Falling physics.
   gravityMilliPerSecondSquared: 820_000,
