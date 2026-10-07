@@ -1,3 +1,8 @@
+import {
+  beginLogicalCanvasFrame,
+  configureLogicalCanvas,
+  type CanvasViewportMetrics,
+} from "@/lib/gameCanvas";
 import type { PrecisionStackState } from "@/lib/verified/precisionStackCore.v1";
 
 export const STACK_VIEW = {
@@ -8,14 +13,7 @@ export const STACK_VIEW = {
   dropDistance: 68,
 } as const;
 
-export type StackCanvasMetrics = {
-  dpr: number;
-  scale: number;
-  offsetX: number;
-  offsetY: number;
-  cssWidth: number;
-  cssHeight: number;
-};
+export type StackCanvasMetrics = CanvasViewportMetrics;
 
 export type StationModuleOptions = {
   moving?: boolean;
@@ -51,31 +49,11 @@ const STAR_FIELD: readonly Star[] = Array.from({ length: 76 }, (_, index) => ({
 export function configureStackCanvas(
   canvas: HTMLCanvasElement
 ): StackCanvasMetrics {
-  const rect = canvas.getBoundingClientRect();
-  const cssWidth = Math.max(1, rect.width || STACK_VIEW.width);
-  const cssHeight = Math.max(1, rect.height || STACK_VIEW.height);
-  const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-  const pixelWidth = Math.max(1, Math.round(cssWidth * dpr));
-  const pixelHeight = Math.max(1, Math.round(cssHeight * dpr));
-
-  if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-    canvas.width = pixelWidth;
-    canvas.height = pixelHeight;
-  }
-
-  const scale = Math.min(
-    cssWidth / STACK_VIEW.width,
-    cssHeight / STACK_VIEW.height
+  return configureLogicalCanvas(
+    canvas,
+    STACK_VIEW.width,
+    STACK_VIEW.height
   );
-
-  return {
-    dpr,
-    scale,
-    offsetX: (cssWidth - STACK_VIEW.width * scale) / 2,
-    offsetY: (cssHeight - STACK_VIEW.height * scale) / 2,
-    cssWidth,
-    cssHeight,
-  };
 }
 
 export function beginStackFrame(
@@ -83,16 +61,7 @@ export function beginStackFrame(
   canvas: HTMLCanvasElement,
   metrics: StackCanvasMetrics
 ) {
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.setTransform(
-    metrics.dpr * metrics.scale,
-    0,
-    0,
-    metrics.dpr * metrics.scale,
-    metrics.dpr * metrics.offsetX,
-    metrics.dpr * metrics.offsetY
-  );
+  beginLogicalCanvasFrame(ctx, canvas, metrics);
 }
 
 export function worldYForStackBlock(index: number) {
