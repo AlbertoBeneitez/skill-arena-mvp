@@ -198,8 +198,14 @@ assert(
 
 // Mechanical invariant: zero support falls away instead of snapping to tower.
 const noSupport = createTowerDropState();
+// Use a narrow left-side support so a physically valid in-bounds falling
+// block can have zero overlap even with wall collision enabled.
+noSupport.blocks = [{ xMilli: 8_000, wMilli: 82_000 }];
 noSupport.phase = "falling";
-noSupport.fallXMilli = 330_000;
+noSupport.fallXMilli =
+  TOWER_DROP_V2.widthMilli -
+  TOWER_DROP_V2.edgePaddingMilli -
+  noSupport.movingWMilli;
 noSupport.fallYMilli = TOWER_DROP_V2.dropDistanceMilli - 1;
 noSupport.fallVYMilliPerSecond = 200_000;
 stepTowerDrop(noSupport);
