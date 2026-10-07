@@ -3,9 +3,9 @@
 /**
  * Precision Stack presentation/input adapter.
  *
- * Competitive rules, movement, overlap, scoring and terminal state live in
- * precisionStackCore.v1.ts. This component owns only Canvas presentation,
- * camera, effects, audio/haptics and translation of pointer input into DROP.
+ * Competitive movement, overlap, scoring and terminal state remain isolated in
+ * precisionStackCore.v1.ts. This component owns only presentation, feedback,
+ * lifecycle and translation of user input into the versioned DROP protocol.
  *
  * Gameplay provenance:
  * - Balance Stack, sausi-7/games, MIT
@@ -24,15 +24,22 @@ import {
   type PrecisionStackInput,
   type PrecisionStackState,
 } from "@/lib/verified/precisionStackCore.v1";
+import {
+  beginStackFrame,
+  configureStackCanvas,
+  drawDockingBase,
+  drawDockingPreview,
+  drawOrbitalBackground,
+  drawStationModule,
+  STACK_VIEW,
+  worldYForStackBlock,
+  type StackCanvasMetrics,
+} from "./precision-stack/presentation";
 
-const W = 390;
-const H = 620;
-const BLOCK_H = 38;
-const BASE_Y = H - 72;
-const DROP_DISTANCE = 78;
-const DROP_DURATION_MS = 250;
+const DROP_DURATION_MS = 170;
 const FAILURE_DURATION_MS = 520;
 const DT = 1 / PRECISION_STACK_V1.tickRate;
+const CAMERA_RESPONSE = 8.5;
 
 type DropFx = {
   startedAt: number;
@@ -55,15 +62,17 @@ type Particle = {
   y: number;
   vx: number;
   vy: number;
-  life: number;
+  ageMs: number;
+  lifeMs: number;
 };
-
-function worldYForBlock(index: number) {
-  return BASE_Y - index * BLOCK_H;
-}
 
 function cubicIn(value: number) {
   return value * value * value;
+}
+
+function easeOutCubic(value: number) {
+  const inv = 1 - value;
+  return 1 - inv * inv * inv;
 }
 
 function clamp01(value: number) {
@@ -76,20 +85,6 @@ function currentStatus(
   return state.status;
 }
 
-function configureCanvas(canvas: HTMLCanvasElement) {
-  const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-  const width = Math.round(W * dpr);
-  const height = Math.round(H * dpr);
-
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-  }
-
-  canvas.style.aspectRatio = `${W} / ${H}`;
-  return dpr;
-}
-
 export default function PrecisionStack({
   active,
   stake,
@@ -97,18 +92,25 @@ export default function PrecisionStack({
   onFinish,
 }: GameRuntimeProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const metricsRef = useRef<StackCanvasMetrics | null>(null);
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
+
+  const stateRef = useRef<PrecisionStackState>(
+    createPrecisionStackState("preview")
+  );
   const loopingRef = useRef(false);
   const terminalSubmittedRef = useRef(false);
   const startFailureReportedRef = useRef(false);
+
+  const lastFrameTimeRef = useRef(0);
+  const accumulatorRef = useRef(0);
+  const lastDrawTimeRef = useRef(0);
+
   const cameraRef = useRef(0);
   const dropFxRef = useRef<DropFx | null>(null);
   const particlesRef = useRef<Particle[]>([]);
   const shakeUntilRef = useRef(0);
-  const stateRef = useRef<PrecisionStackState>(
-    createPrecisionStackState("preview")
-  );
 
   const verifiedAttempt = useVerifiedAttempt<PrecisionStackInput>({
     active,
@@ -126,241 +128,284 @@ export default function PrecisionStack({
     finishRef.current = onFinish;
   }, [onFinish]);
 
-  const drawBlock = useCallback(
-    (
-      ctx: CanvasRenderingContext2D,
-      x: number,
-      y: number,
-      width: number,
-      level: number,
-      alpha = 1
-    ) => {
-      const hue = (205 + level * 17) % 360;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = `hsla(${hue} 85% 65% / .28)`;
-      ctx.fillStyle = `hsl(${hue} 70% 60%)`;
-      ctx.fillRect(x, y, width, BLOCK_H - 4);
-      ctx.shadowBlur = 0;
+  const draw = useCallback((now = performance.now()) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      ctx.fillStyle = "rgba(255,255,255,.22)";
-      ctx.fillRect(x + 4, y + 4, Math.max(0, width - 8), 4);
-      ctx.fillStyle = "rgba(0,0,0,.10)";
-      ctx.fillRect(x, y + BLOCK_H - 9, width, 5);
-      ctx.restore();
-    },
-    []
-  );
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  const draw = useCallback(
-    (now = performance.now()) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const dpr = configureCanvas(canvas);
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+    const metrics =
+      metricsRef.current ?? configureStackCanvas(canvas);
+    metricsRef.current = metrics;
+    beginStackFrame(ctx, canvas, metrics);
 
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
+    const state = stateRef.current;
+    const drawDeltaMs =
+      lastDrawTimeRef.current > 0
+        ? Math.min(50, Math.max(0, now - lastDrawTimeRef.current))
+        : 16.67;
+    lastDrawTimeRef.current = now;
 
-      const state = stateRef.current;
-      const highestY = worldYForBlock(
-        Math.max(0, state.blocks.length - 1)
+    const highestY = worldYForStackBlock(
+      Math.max(0, state.blocks.length - 1)
+    );
+    const targetCamera = Math.max(0, 208 - highestY);
+    const cameraEase =
+      1 - Math.exp(-CAMERA_RESPONSE * (drawDeltaMs / 1000));
+    cameraRef.current +=
+      (targetCamera - cameraRef.current) * cameraEase;
+
+    drawOrbitalBackground(ctx, state, cameraRef.current);
+
+    const shakeActive = now < shakeUntilRef.current;
+    const shakeStrength = shakeActive
+      ? clamp01((shakeUntilRef.current - now) / 240)
+      : 0;
+    const shakeX =
+      Math.sin(now * 0.075) * 2.4 * shakeStrength;
+    const shakeY =
+      Math.cos(now * 0.091) * 1.7 * shakeStrength;
+
+    ctx.save();
+    ctx.translate(
+      shakeX,
+      cameraRef.current + shakeY
+    );
+
+    drawDockingBase(ctx);
+
+    const fx = dropFxRef.current;
+    const fxProgress = fx
+      ? clamp01((now - fx.startedAt) / fx.durationMs)
+      : 1;
+
+    const hideLastPlaced =
+      fx &&
+      !fx.failed &&
+      fxProgress < 1 &&
+      state.blocks.length > 1;
+    const stableLimit = hideLastPlaced
+      ? state.blocks.length - 1
+      : state.blocks.length;
+
+    for (let index = 0; index < stableLimit; index += 1) {
+      const block = state.blocks[index];
+      drawStationModule(
+        ctx,
+        block.xMilli / 1000,
+        worldYForStackBlock(index),
+        block.wMilli / 1000,
+        index
       );
-      const targetCamera = Math.max(0, 208 - highestY);
-      cameraRef.current +=
-        (targetCamera - cameraRef.current) * 0.1;
+    }
 
-      const bg = ctx.createLinearGradient(0, 0, 0, H);
-      bg.addColorStop(0, "#171b3d");
-      bg.addColorStop(0.58, "#202a50");
-      bg.addColorStop(1, "#0a0f22");
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, W, H);
+    if (fx && fxProgress < 1) {
+      if (fx.failed) {
+        const t = cubicIn(fxProgress);
+        const y =
+          fx.startWorldY +
+          (STACK_VIEW.height + 110 - fx.startWorldY) * t;
 
-      const gridOffset =
-        (state.tick * 0.18 + cameraRef.current * 0.25) % 42;
-      ctx.strokeStyle = "rgba(125,155,255,.055)";
-      ctx.lineWidth = 1;
-      for (let y = -42 + gridOffset; y < H; y += 42) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(W, y);
-        ctx.stroke();
-      }
-
-      const shakeActive = now < shakeUntilRef.current;
-      const shakeX = shakeActive ? Math.sin(now * 0.09) * 2.2 : 0;
-      const shakeY = shakeActive ? Math.cos(now * 0.11) * 1.6 : 0;
-
-      ctx.save();
-      ctx.translate(
-        shakeX,
-        cameraRef.current + shakeY
-      );
-
-      ctx.fillStyle = "#263754";
-      ctx.fillRect(34, BASE_Y + 3, W - 68, 20);
-      ctx.fillStyle = "rgba(255,255,255,.10)";
-      ctx.fillRect(43, BASE_Y + 6, W - 86, 3);
-
-      const fx = dropFxRef.current;
-      const fxProgress = fx
-        ? clamp01((now - fx.startedAt) / fx.durationMs)
-        : 1;
-      const hideLastPlaced =
-        fx &&
-        !fx.failed &&
-        fxProgress < 1 &&
-        state.blocks.length > 1;
-      const stableLimit = hideLastPlaced
-        ? state.blocks.length - 1
-        : state.blocks.length;
-
-      for (let index = 0; index < stableLimit; index += 1) {
-        const block = state.blocks[index];
-        drawBlock(
-          ctx,
-          block.xMilli / 1000,
-          worldYForBlock(index),
-          block.wMilli / 1000,
-          index
+        ctx.save();
+        ctx.translate(
+          fx.sourceX + fx.sourceW / 2,
+          y + STACK_VIEW.blockHeight / 2
         );
-      }
+        ctx.rotate(fxProgress * 0.78);
+        drawStationModule(
+          ctx,
+          -fx.sourceW / 2,
+          -STACK_VIEW.blockHeight / 2,
+          fx.sourceW,
+          fx.level,
+          {
+            danger: true,
+            alpha: 1 - fxProgress * 0.42,
+          }
+        );
+        ctx.restore();
+      } else {
+        const fallProgress = clamp01(fxProgress / 0.58);
+        const contactProgress = clamp01(
+          (fxProgress - 0.58) / 0.42
+        );
+        const y =
+          fx.startWorldY +
+          (fx.targetWorldY - fx.startWorldY) *
+            cubicIn(fallProgress);
 
-      if (fx && fxProgress < 1) {
-        if (fx.failed) {
-          const t = cubicIn(fxProgress);
-          const y =
-            fx.startWorldY +
-            (H + 120 - fx.startWorldY) * t;
-          ctx.save();
-          ctx.translate(
-            fx.sourceX + fx.sourceW / 2,
-            y + BLOCK_H / 2
-          );
-          ctx.rotate(fxProgress * 0.62);
-          drawBlock(
+        if (fallProgress < 1) {
+          drawStationModule(
             ctx,
-            -fx.sourceW / 2,
-            -BLOCK_H / 2,
+            fx.sourceX,
+            y,
             fx.sourceW,
             fx.level,
-            1 - fxProgress * 0.35
+            { moving: true }
           );
-          ctx.restore();
         } else {
-          const fallProgress = clamp01(fxProgress / 0.68);
-          const contactProgress = clamp01(
-            (fxProgress - 0.68) / 0.32
+          drawStationModule(
+            ctx,
+            fx.targetX,
+            fx.targetWorldY,
+            fx.targetW,
+            fx.level,
+            { perfect: fx.perfect }
           );
-          const y =
-            fx.startWorldY +
-            (fx.targetWorldY - fx.startWorldY) *
-              cubicIn(fallProgress);
 
-          if (fallProgress < 1) {
-            drawBlock(
+          const fragmentFall =
+            5 + 96 * cubicIn(contactProgress);
+          const fragmentAlpha =
+            1 - contactProgress * 0.82;
+          const rotation =
+            easeOutCubic(contactProgress) * 0.34;
+
+          if (fx.overhangLeft > 0) {
+            ctx.save();
+            const cx = fx.sourceX + fx.overhangLeft / 2;
+            const cy =
+              fx.targetWorldY +
+              fragmentFall +
+              STACK_VIEW.blockHeight / 2;
+            ctx.translate(cx, cy);
+            ctx.rotate(-rotation);
+            drawStationModule(
               ctx,
-              fx.sourceX,
-              y,
-              fx.sourceW,
-              fx.level
+              -fx.overhangLeft / 2,
+              -STACK_VIEW.blockHeight / 2,
+              fx.overhangLeft,
+              fx.level,
+              { alpha: fragmentAlpha }
             );
-          } else {
-            drawBlock(
+            ctx.restore();
+          }
+
+          if (fx.overhangRight > 0) {
+            ctx.save();
+            const cx =
+              fx.sourceX +
+              fx.sourceW -
+              fx.overhangRight / 2;
+            const cy =
+              fx.targetWorldY +
+              fragmentFall +
+              STACK_VIEW.blockHeight / 2;
+            ctx.translate(cx, cy);
+            ctx.rotate(rotation);
+            drawStationModule(
               ctx,
-              fx.targetX,
-              fx.targetWorldY,
-              fx.targetW,
-              fx.level
+              -fx.overhangRight / 2,
+              -STACK_VIEW.blockHeight / 2,
+              fx.overhangRight,
+              fx.level,
+              { alpha: fragmentAlpha }
             );
+            ctx.restore();
+          }
 
-            const fragmentFall =
-              8 + 88 * cubicIn(contactProgress);
-            const fragmentAlpha =
-              1 - contactProgress * 0.72;
+          if (fx.perfect) {
+            const pulse = Math.sin(contactProgress * Math.PI);
+            const centerX = fx.targetX + fx.targetW / 2;
 
-            if (fx.overhangLeft > 0) {
-              drawBlock(
-                ctx,
-                fx.sourceX,
-                fx.targetWorldY + fragmentFall,
-                fx.overhangLeft,
-                fx.level,
-                fragmentAlpha
-              );
-            }
+            ctx.save();
+            ctx.globalAlpha = 0.72 * pulse;
+            ctx.strokeStyle = "#8ff6f4";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(
+              centerX,
+              fx.targetWorldY + STACK_VIEW.blockHeight / 2,
+              24 + contactProgress * 34,
+              8 + contactProgress * 10,
+              0,
+              0,
+              Math.PI * 2
+            );
+            ctx.stroke();
 
-            if (fx.overhangRight > 0) {
-              drawBlock(
-                ctx,
-                fx.sourceX +
-                  fx.sourceW -
-                  fx.overhangRight,
-                fx.targetWorldY + fragmentFall,
-                fx.overhangRight,
-                fx.level,
-                fragmentAlpha
-              );
-            }
+            ctx.fillStyle = "#c8ffff";
+            ctx.font =
+              "700 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+            ctx.textAlign = "center";
+            ctx.fillText(
+              "SYNC",
+              centerX,
+              fx.targetWorldY - 8 - contactProgress * 5
+            );
+            ctx.restore();
           }
         }
       }
+    }
 
-      if (
-        state.status === "running" &&
-        state.phase === "moving"
-      ) {
-        const nextIndex = state.blocks.length;
-        const targetWorldY = worldYForBlock(nextIndex);
-        drawBlock(
-          ctx,
-          state.movingXMilli / 1000,
-          targetWorldY - DROP_DISTANCE,
-          state.movingWMilli / 1000,
-          nextIndex
-        );
+    if (
+      state.status === "running" &&
+      state.phase === "moving"
+    ) {
+      const nextIndex = state.blocks.length;
+      const targetWorldY = worldYForStackBlock(nextIndex);
 
-        ctx.strokeStyle = "rgba(180,205,255,.16)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 7]);
-        ctx.beginPath();
-        ctx.moveTo(16, targetWorldY);
-        ctx.lineTo(W - 16, targetWorldY);
-        ctx.stroke();
-        ctx.setLineDash([]);
+      drawDockingPreview(ctx, state, targetWorldY);
+
+      const movingX = state.movingXMilli / 1000;
+      const movingW = state.movingWMilli / 1000;
+      const movingY =
+        targetWorldY - STACK_VIEW.dropDistance;
+
+      // Magnetic guide: presentation only. It makes the eventual landing
+      // plane unambiguous without changing the competitive tolerance.
+      ctx.strokeStyle = "rgba(96,208,231,.13)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 7]);
+      ctx.beginPath();
+      ctx.moveTo(movingX + movingW / 2, movingY + 34);
+      ctx.lineTo(movingX + movingW / 2, targetWorldY + 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawStationModule(
+        ctx,
+        movingX,
+        movingY,
+        movingW,
+        nextIndex,
+        { moving: true }
+      );
+    }
+
+    const dtSeconds = drawDeltaMs / 1000;
+    for (let index = particlesRef.current.length - 1; index >= 0; index -= 1) {
+      const particle = particlesRef.current[index];
+      particle.ageMs += drawDeltaMs;
+
+      if (particle.ageMs >= particle.lifeMs) {
+        particlesRef.current.splice(index, 1);
+        continue;
       }
 
-      const nextParticles: Particle[] = [];
-      for (const particle of particlesRef.current) {
-        const next = {
-          ...particle,
-          x: particle.x + particle.vx,
-          y: particle.y + particle.vy,
-          vy: particle.vy + 0.06,
-          life: particle.life - 0.045,
-        };
+      particle.x += particle.vx * dtSeconds;
+      particle.y += particle.vy * dtSeconds;
+      particle.vy += 125 * dtSeconds;
 
-        if (next.life <= 0) continue;
-        nextParticles.push(next);
+      const life = 1 - particle.ageMs / particle.lifeMs;
+      ctx.globalAlpha = life;
+      ctx.fillStyle = life > 0.45 ? "#a8fbf5" : "#f0d582";
+      ctx.fillRect(
+        particle.x - 1.5,
+        particle.y - 1.5,
+        3,
+        3
+      );
+    }
+    ctx.globalAlpha = 1;
 
-        ctx.globalAlpha = next.life;
-        ctx.fillStyle = "#f4d36b";
-        ctx.fillRect(next.x, next.y, 3, 3);
-      }
-      ctx.globalAlpha = 1;
-      particlesRef.current = nextParticles;
+    ctx.restore();
 
-      ctx.restore();
-
-      if (fx && fxProgress >= 1) {
-        dropFxRef.current = null;
-      }
-    },
-    [drawBlock]
-  );
+    if (fx && fxProgress >= 1) {
+      dropFxRef.current = null;
+    }
+  }, []);
 
   const submitTerminal = useCallback(
     async (state: PrecisionStackState) => {
@@ -370,6 +415,7 @@ export default function PrecisionStack({
 
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
 
       const result = await verifyAttempt(state.tick);
@@ -417,28 +463,28 @@ export default function PrecisionStack({
     (now: number) => {
       if (!loopingRef.current) return;
 
-      const state = stateRef.current as PrecisionStackState & {
-        lastFrame?: number;
-        accumulator?: number;
-      };
+      if (lastFrameTimeRef.current <= 0) {
+        lastFrameTimeRef.current = now;
+      }
 
-      if (!state.lastFrame) state.lastFrame = now;
-      state.accumulator =
-        (state.accumulator ?? 0) +
-        Math.min(0.05, (now - state.lastFrame) / 1000);
-      state.lastFrame = now;
+      const frameSeconds = Math.min(
+        0.05,
+        Math.max(0, (now - lastFrameTimeRef.current) / 1000)
+      );
+      lastFrameTimeRef.current = now;
+      accumulatorRef.current += frameSeconds;
 
       while (
-        state.status === "running" &&
-        (state.accumulator ?? 0) >= DT
+        stateRef.current.status === "running" &&
+        accumulatorRef.current >= DT
       ) {
         step();
-        state.accumulator =
-          (state.accumulator ?? 0) - DT;
+        accumulatorRef.current -= DT;
       }
 
       draw(now);
 
+      const state = stateRef.current;
       if (state.status !== "running") {
         const fx = dropFxRef.current;
         if (
@@ -462,16 +508,22 @@ export default function PrecisionStack({
     if (!canvas) return;
 
     const resize = () => {
-      configureCanvas(canvas);
+      metricsRef.current = configureStackCanvas(canvas);
       draw();
     };
 
     resize();
-    window.addEventListener("resize", resize);
+
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(resize)
+        : null;
+    observer?.observe(canvas);
+
     window.addEventListener("orientationchange", resize);
 
     return () => {
-      window.removeEventListener("resize", resize);
+      observer?.disconnect();
       window.removeEventListener("orientationchange", resize);
     };
   }, [draw]);
@@ -481,20 +533,15 @@ export default function PrecisionStack({
       return;
     }
 
-    const state =
-      createPrecisionStackState(
-        attemptState.manifest.seed
-      ) as PrecisionStackState & {
-        lastFrame?: number;
-        accumulator?: number;
-      };
-
-    state.lastFrame = 0;
-    state.accumulator = 0;
-    stateRef.current = state;
+    stateRef.current = createPrecisionStackState(
+      attemptState.manifest.seed
+    );
 
     terminalSubmittedRef.current = false;
     startFailureReportedRef.current = false;
+    lastFrameTimeRef.current = 0;
+    accumulatorRef.current = 0;
+    lastDrawTimeRef.current = 0;
     cameraRef.current = 0;
     dropFxRef.current = null;
     particlesRef.current = [];
@@ -508,7 +555,10 @@ export default function PrecisionStack({
       loopingRef.current = false;
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
+      particlesRef.current = [];
+      dropFxRef.current = null;
     };
   }, [
     active,
@@ -558,7 +608,7 @@ export default function PrecisionStack({
     const sourceX = state.movingXMilli / 1000;
     const sourceW = state.movingWMilli / 1000;
     const level = state.blocks.length;
-    const targetWorldY = worldYForBlock(level);
+    const targetWorldY = worldYForStackBlock(level);
 
     dropPrecisionStack(
       state,
@@ -568,9 +618,10 @@ export default function PrecisionStack({
 
     const placement = state.lastPlacement;
     const failed = currentStatus(state) === "failed";
+    const now = performance.now();
 
     dropFxRef.current = {
-      startedAt: performance.now(),
+      startedAt: now,
       durationMs: failed
         ? FAILURE_DURATION_MS
         : DROP_DURATION_MS,
@@ -584,7 +635,8 @@ export default function PrecisionStack({
         placement?.wMilli !== undefined
           ? placement.wMilli / 1000
           : sourceW,
-      startWorldY: targetWorldY - DROP_DISTANCE,
+      startWorldY:
+        targetWorldY - STACK_VIEW.dropDistance,
       targetWorldY,
       level,
       failed,
@@ -598,8 +650,8 @@ export default function PrecisionStack({
     if (failed) {
       gameTone("bad");
       haptic([24, 18, 42]);
-      shakeUntilRef.current =
-        performance.now() + 240;
+      shakeUntilRef.current = now + 240;
+      draw(now);
       return;
     }
 
@@ -609,26 +661,56 @@ export default function PrecisionStack({
       const centerX =
         (placement.xMilli + placement.wMilli / 2) / 1000;
       const y = targetWorldY + 5;
+      const count = 12;
+
       particlesRef.current = Array.from(
-        { length: 10 },
+        { length: count },
         (_, index) => {
           const angle =
-            (Math.PI * 2 * index) / 10;
+            (Math.PI * 2 * index) / count;
+          const speed = 58 + (index % 3) * 18;
           return {
             x: centerX,
             y,
-            vx: Math.cos(angle) * 1.6,
-            vy: Math.sin(angle) * 1.2 - 0.8,
-            life: 1,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 24,
+            ageMs: 0,
+            lifeMs: 360 + (index % 4) * 35,
           };
         }
       );
     } else {
       gameTone("tap");
       haptic(4);
+
+      if (placement) {
+        const centerX =
+          (placement.xMilli + placement.wMilli / 2) / 1000;
+        particlesRef.current.push(
+          {
+            x: centerX - 8,
+            y: targetWorldY + 7,
+            vx: -24,
+            vy: -42,
+            ageMs: 0,
+            lifeMs: 240,
+          },
+          {
+            x: centerX + 8,
+            y: targetWorldY + 7,
+            vx: 24,
+            vy: -42,
+            ageMs: 0,
+            lifeMs: 240,
+          }
+        );
+      }
     }
+
+    draw(now);
   }, [
     attemptState,
+    draw,
     recordInput,
     targetScore,
   ]);
@@ -638,10 +720,18 @@ export default function PrecisionStack({
       <canvas
         ref={canvasRef}
         className="gameCanvas deterministicCanvas"
-        aria-label="Stack"
+        aria-label="Stack: toca para acoplar el módulo"
+        role="button"
+        tabIndex={0}
         onPointerDown={(event) => {
           event.preventDefault();
           drop();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === " " || event.key === "Enter") {
+            event.preventDefault();
+            drop();
+          }
         }}
       />
 
