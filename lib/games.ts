@@ -1,34 +1,52 @@
+import type { ComponentType } from "react";
+import type { GameResult } from "./types";
+
 export const STAKES = [0, 1, 5, 10, 50] as const;
 
 export type Stake = (typeof STAKES)[number];
 export type MatchMode = "create" | "existing" | "waiting";
+export type GameMaturity =
+  | "DEMO"
+  | "INTEGRATED"
+  | "VERIFIED"
+  | "PRODUCTION-GRADE";
 
-export type GameMeta = {
-  id:
-    | "tower-drop"
-    | "jet-stream"
-    | "pulse-runner"
-    | "metro-shift"
-    | "orbit-shift"
-    | "solitaire-sprint"
-    | "mine-grid"
-    | "grid-serpent"
-    | "brick-relay"
-    | "stack-shift"
-    | "maze-rush"
-    | "star-phalanx"
-    | "river-dash"
-    | "orb-burst"
-    | "precision-stack"
-    | "merge-2048"
-    | "piano-rush"
-    | "dino-dash"
-    | "reaction-test"
-    | "sky-hop";
+export type GameRuntimeProps = {
+  active: boolean;
+  stake: number;
+  ghostEnabled: boolean;
+  targetScore: number;
+  seed: string;
+  onFinish: (result: GameResult) => void;
+};
+
+type GameComponentModule = {
+  default: ComponentType<GameRuntimeProps>;
+};
+
+export type GameComponentLoader = () => Promise<GameComponentModule>;
+
+export type GameCompetitionDefinition =
+  | {
+      verification: "client-result";
+    }
+  | {
+      verification: "server-replay";
+      engineVersion: string;
+      inputProtocolVersion: number;
+      allowedActions: readonly string[];
+    };
+
+export type GameDefinition<TId extends string = string> = {
+  id: TId;
+  version: string;
+  status: GameMaturity;
+  loadComponent: GameComponentLoader;
+  competition: GameCompetitionDefinition;
   name: string;
   cover: string;
   enabled: boolean;
-  waitingStakes: Stake[];
+  waitingStakes: readonly Stake[];
   category: string;
   tagline: string;
   difficulty: "MEDIA" | "ALTA";
@@ -41,9 +59,29 @@ export type GameMeta = {
   deterministicSeed?: string;
 };
 
-export const GAMES: GameMeta[] = [
+/**
+ * Legacy components intentionally keep their narrow prop types while the
+ * platform migrates them one by one. This is the only compatibility cast.
+ * New games should accept GameRuntimeProps directly.
+ */
+function adaptGameComponent<TProps extends object>(
+  loader: () => Promise<{ default: ComponentType<TProps> }>
+): GameComponentLoader {
+  return loader as unknown as GameComponentLoader;
+}
+
+const GAME_DEFINITIONS = [
   {
     id: "tower-drop",
+    version: "2.1.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/TowerDrop")),
+    competition: {
+      verification: "server-replay",
+      engineVersion: "skill-core-2",
+      inputProtocolVersion: 2,
+      allowedActions: ["DROP"],
+    },
     name: "Tower Drop",
     cover: "/covers/tower-drop.svg",
     enabled: true,
@@ -60,6 +98,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "jet-stream",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/JetStream")),
+    competition: { verification: "client-result" },
     name: "Jet Stream",
     cover: "/covers/jet-stream.svg",
     enabled: true,
@@ -76,6 +118,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "pulse-runner",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/PulseRunner")),
+    competition: { verification: "client-result" },
     name: "Pulse Runner",
     cover: "/covers/pulse-runner.svg",
     enabled: true,
@@ -92,6 +138,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "metro-shift",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/MetroShift")),
+    competition: { verification: "client-result" },
     name: "Metro Shift",
     cover: "/covers/metro-shift.svg",
     enabled: true,
@@ -108,6 +158,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "orbit-shift",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/OrbitShift")),
+    competition: { verification: "client-result" },
     name: "Orbit Shift",
     cover: "/covers/orbit-rush.svg",
     enabled: true,
@@ -124,6 +178,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "solitaire-sprint",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/SolitaireSprint")),
+    competition: { verification: "client-result" },
     name: "Solitaire Sprint",
     cover: "/covers/solitaire-sprint.svg",
     enabled: true,
@@ -141,6 +199,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "mine-grid",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/MineGrid")),
+    competition: { verification: "client-result" },
     name: "Mine Grid",
     cover: "/covers/mine-grid.svg",
     enabled: true,
@@ -158,6 +220,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "grid-serpent",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/GridSerpent")),
+    competition: { verification: "client-result" },
     name: "Grid Serpent",
     cover: "/covers/grid-serpent.svg",
     enabled: true,
@@ -177,6 +243,10 @@ export const GAMES: GameMeta[] = [
 
   {
     id: "brick-relay",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/BrickRelay")),
+    competition: { verification: "client-result" },
     name: "Brick Relay",
     cover: "/covers/brick-relay.svg",
     enabled: true,
@@ -194,6 +264,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "stack-shift",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/StackShift")),
+    competition: { verification: "client-result" },
     name: "Stack Shift",
     cover: "/covers/stack-shift.svg",
     enabled: true,
@@ -211,6 +285,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "maze-rush",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/MazeRush")),
+    competition: { verification: "client-result" },
     name: "Maze Rush",
     cover: "/covers/maze-rush.svg",
     enabled: true,
@@ -228,6 +306,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "star-phalanx",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/StarPhalanx")),
+    competition: { verification: "client-result" },
     name: "Star Phalanx",
     cover: "/covers/star-phalanx.svg",
     enabled: true,
@@ -245,6 +327,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "river-dash",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/RiverDash")),
+    competition: { verification: "client-result" },
     name: "River Dash",
     cover: "/covers/river-dash.svg",
     enabled: true,
@@ -262,6 +348,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "orb-burst",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurst")),
+    competition: { verification: "client-result" },
     name: "Orb Burst",
     cover: "/covers/orb-burst.svg",
     enabled: true,
@@ -279,6 +369,15 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "precision-stack",
+    version: "1.0.0",
+    status: "INTEGRATED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/PrecisionStack")),
+    competition: {
+      verification: "server-replay",
+      engineVersion: "skill-core-1",
+      inputProtocolVersion: 1,
+      allowedActions: ["DROP"],
+    },
     name: "Stack",
     cover: "/covers/precision-stack.svg",
     enabled: true,
@@ -296,6 +395,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "merge-2048",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/Merge2048")),
+    competition: { verification: "client-result" },
     name: "2048",
     cover: "/covers/merge-2048.svg",
     enabled: true,
@@ -313,6 +416,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "piano-rush",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/PianoRush")),
+    competition: { verification: "client-result" },
     name: "Piano Rush",
     cover: "/covers/piano-rush.svg",
     enabled: true,
@@ -330,6 +437,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "dino-dash",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/DinoDash")),
+    competition: { verification: "client-result" },
     name: "Dino Dash",
     cover: "/covers/dino-dash.svg",
     enabled: true,
@@ -347,6 +458,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "reaction-test",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/ReactionTest")),
+    competition: { verification: "client-result" },
     name: "Reaction Test",
     cover: "/covers/reaction-test.svg",
     enabled: true,
@@ -364,6 +479,10 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: "sky-hop",
+    version: "0.1.0",
+    status: "DEMO",
+    loadComponent: adaptGameComponent(() => import("@/components/games/SkyHop")),
+    competition: { verification: "client-result" },
     name: "Sky Hop",
     cover: "/covers/sky-hop.svg",
     enabled: true,
@@ -380,10 +499,16 @@ export const GAMES: GameMeta[] = [
     deterministicSeed: "sky-hop-arena-001",
   },
 
-];
+] as const satisfies readonly GameDefinition[];
 
+export type GameId = (typeof GAME_DEFINITIONS)[number]["id"];
+export type GameMeta = GameDefinition<GameId>;
 
-const CATALOG_ORDER: GameMeta["id"][] = [
+export const GAME_REGISTRY = Object.fromEntries(
+  GAME_DEFINITIONS.map((game) => [game.id, game])
+) as Record<GameId, GameMeta>;
+
+const CATALOG_ORDER: GameId[] = [
   "precision-stack",
   "tower-drop",
   "merge-2048",
@@ -406,11 +531,13 @@ const CATALOG_ORDER: GameMeta["id"][] = [
   "star-phalanx",
 ];
 
-GAMES.sort(
-  (a, b) =>
-    CATALOG_ORDER.indexOf(a.id) -
-    CATALOG_ORDER.indexOf(b.id)
+export const GAMES: GameMeta[] = CATALOG_ORDER.map(
+  (id) => GAME_REGISTRY[id]
 );
+
+export function getGameDefinition(gameId: string) {
+  return GAME_REGISTRY[gameId as GameId];
+}
 
 export function modeForStake(
   game: GameMeta,
