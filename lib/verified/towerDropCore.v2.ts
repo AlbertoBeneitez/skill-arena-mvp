@@ -16,9 +16,6 @@
 import { validateInputSequence } from "./inputValidation";
 
 export const TOWER_DROP_V2 = {
-  gameId: "tower-drop",
-  gameVersion: "2.1.0",
-  engineVersion: "skill-core-2",
   tickRate: 120,
 
   widthMilli: 390_000,
@@ -653,9 +650,6 @@ export function replayTowerDrop(
 }
 
 export const TOWER_DROP_V2_CONTENT = {
-  gameId: TOWER_DROP_V2.gameId,
-  gameVersion: TOWER_DROP_V2.gameVersion,
-  engineVersion: TOWER_DROP_V2.engineVersion,
   tickRate: TOWER_DROP_V2.tickRate,
   mechanics: {
     pendulumDelivery: true,
