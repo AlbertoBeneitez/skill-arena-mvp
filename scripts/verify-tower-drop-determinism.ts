@@ -9,6 +9,15 @@ import {
   type PrecisionStackInput,
   type PrecisionStackState,
 } from "../lib/verified/precisionStackCore.v1";
+import {
+  createPianoRushState,
+  PIANO_RUSH_V1,
+  replayPianoRush,
+  stepPianoRush,
+  tapPianoRush,
+  type PianoRushInput,
+  type PianoRushState,
+} from "../lib/verified/pianoRushCore.v1";
 import { validateInputSequence } from "../lib/verified/inputValidation";
 import {
   createTowerDropState,
@@ -590,5 +599,220 @@ console.log(
     `height=${precisionFirst.height}`,
     `finalTick=${precisionGolden.finalTick}`,
     `replayHash=${precisionReplayHash}`,
+  ].join(" · ")
+);
+
+
+function pianoStatus(
+  state: PianoRushState
+): PianoRushState["status"] {
+  return state.status;
+}
+
+const pianoGoldenSeed = "piano-rush-golden-v1";
+const pianoGoldenTarget = 8_800;
+const pianoBuilder = createPianoRushState(pianoGoldenSeed);
+const pianoInputs: PianoRushInput[] = [];
+
+while (
+  pianoStatus(pianoBuilder) === "running" &&
+  pianoBuilder.score < pianoGoldenTarget
+) {
+  const note =
+    pianoBuilder.schedule[pianoBuilder.nextNoteIndex];
+  assert(!!note, "piano golden schedule exhausted");
+
+  while (
+    pianoStatus(pianoBuilder) === "running" &&
+    pianoBuilder.tick < note.targetTick
+  ) {
+    stepPianoRush(
+      pianoBuilder,
+      pianoGoldenTarget
+    );
+  }
+
+  assert(
+    pianoBuilder.tick === note.targetTick,
+    "piano golden builder missed target tick"
+  );
+
+  const action = (`LANE_${note.lane}`) as PianoRushInput["action"];
+  pianoInputs.push({
+    seq: pianoInputs.length,
+    tick: pianoBuilder.tick,
+    action,
+  });
+  tapPianoRush(
+    pianoBuilder,
+    action,
+    pianoGoldenTarget
+  );
+}
+
+assert(
+  pianoStatus(pianoBuilder) === "won",
+  "piano golden builder did not reach target"
+);
+
+const pianoFinalTick = pianoBuilder.tick;
+const pianoFirst = replayPianoRush(
+  pianoInputs,
+  pianoFinalTick,
+  pianoGoldenSeed,
+  pianoGoldenTarget
+);
+const pianoSecond = replayPianoRush(
+  pianoInputs,
+  pianoFinalTick,
+  pianoGoldenSeed,
+  pianoGoldenTarget
+);
+
+assert(
+  pianoFirst.valid && pianoSecond.valid,
+  "piano golden replay rejected"
+);
+assert(
+  JSON.stringify(pianoFirst.state) ===
+    JSON.stringify(pianoSecond.state),
+  "piano replay diverged across identical runs"
+);
+assert(
+  pianoFirst.score === pianoBuilder.score &&
+    pianoFirst.timeMs ===
+      Math.round(
+        (pianoFinalTick * 1000) /
+          PIANO_RUSH_V1.tickRate
+      ),
+  "piano golden result changed during replay"
+);
+
+function simulatePianoRenderRate(frameHz: number) {
+  const state = createPianoRushState(pianoGoldenSeed);
+  let inputIndex = 0;
+  let accumulator = 0;
+  const frameSeconds = 1 / frameHz;
+  const tickSeconds = 1 / PIANO_RUSH_V1.tickRate;
+  let guard = 0;
+
+  while (
+    pianoStatus(state) === "running" &&
+    guard < 1_000_000
+  ) {
+    accumulator += frameSeconds;
+
+    while (
+      accumulator + 1e-12 >= tickSeconds &&
+      pianoStatus(state) === "running"
+    ) {
+      while (
+        inputIndex < pianoInputs.length &&
+        pianoInputs[inputIndex].tick === state.tick
+      ) {
+        tapPianoRush(
+          state,
+          pianoInputs[inputIndex].action,
+          pianoGoldenTarget
+        );
+        inputIndex += 1;
+      }
+
+      if (pianoStatus(state) !== "running") break;
+      stepPianoRush(state, pianoGoldenTarget);
+      accumulator -= tickSeconds;
+    }
+
+    guard += 1;
+  }
+
+  return {
+    tick: state.tick,
+    score: state.score,
+    combo: state.combo,
+    nextNoteIndex: state.nextNoteIndex,
+    failure: state.failure,
+    status: state.status,
+  };
+}
+
+const piano60 = simulatePianoRenderRate(60);
+const piano120 = simulatePianoRenderRate(120);
+const piano144 = simulatePianoRenderRate(144);
+
+assert(
+  JSON.stringify(piano60) === JSON.stringify(piano120) &&
+    JSON.stringify(piano120) === JSON.stringify(piano144),
+  "piano render-rate equivalence failed"
+);
+
+const pianoWrongLane = createPianoRushState("piano-wrong-lane-v1");
+const wrongFirst = pianoWrongLane.schedule[0];
+while (pianoWrongLane.tick < wrongFirst.targetTick) {
+  stepPianoRush(pianoWrongLane);
+}
+tapPianoRush(
+  pianoWrongLane,
+  (`LANE_${(wrongFirst.lane + 1) % 4}`) as PianoRushInput["action"]
+);
+assert(
+  pianoStatus(pianoWrongLane) === "failed" &&
+    pianoWrongLane.failure === "WRONG_LANE",
+  "piano wrong-lane input was not rejected"
+);
+
+const pianoEarly = createPianoRushState("piano-early-v1");
+tapPianoRush(
+  pianoEarly,
+  (`LANE_${pianoEarly.schedule[0].lane}`) as PianoRushInput["action"]
+);
+assert(
+  pianoStatus(pianoEarly) === "failed" &&
+    pianoEarly.failure === "EARLY_TAP",
+  "piano early tap was not rejected"
+);
+
+const pianoMiss = createPianoRushState("piano-miss-v1");
+const missTick =
+  pianoMiss.schedule[0].targetTick +
+  PIANO_RUSH_V1.maxTimingErrorTicks +
+  1;
+while (
+  pianoStatus(pianoMiss) === "running" &&
+  pianoMiss.tick < missTick
+) {
+  stepPianoRush(pianoMiss);
+}
+assert(
+  pianoStatus(pianoMiss) === "failed" &&
+    pianoMiss.failure === "MISSED_NOTE",
+  "piano missed note did not terminate"
+);
+
+const pianoReplayFixture = {
+  manifestHash: "sha256:piano-rush-golden-manifest",
+  attemptId: "piano-rush-golden-attempt",
+  inputs: pianoInputs,
+  finalTick: pianoFinalTick,
+  result: {
+    score: pianoFirst.score,
+    timeMs: pianoFirst.timeMs,
+    won: pianoFirst.state.status === "won",
+    failure: pianoFirst.failure,
+  },
+};
+const pianoReplayHash =
+  "sha256:" +
+  createHash("sha256")
+    .update(canonicalJson(pianoReplayFixture))
+    .digest("hex");
+
+console.log(
+  [
+    "Piano Rush v1 deterministic replay OK",
+    `score=${pianoFirst.score}`,
+    `notes=${pianoInputs.length}`,
+    `finalTick=${pianoFinalTick}`,
+    `replayHash=${pianoReplayHash}`,
   ].join(" · ")
 );
