@@ -141,6 +141,32 @@ assert(
   "falling block did not accelerate under gravity"
 );
 
+
+// Mechanical invariant: release inherits horizontal pendulum momentum.
+const momentum = createTowerDropState();
+for (let index = 0; index < 24; index += 1) {
+  stepTowerDrop(momentum);
+}
+const releaseX = momentum.movingXMilli;
+const releaseVX = momentum.movingVXMilliPerSecond;
+assert(
+  Math.abs(releaseVX) > 0,
+  "pendulum did not develop horizontal velocity"
+);
+dropTowerBlock(momentum);
+const inheritedVX = momentum.fallVXMilliPerSecond;
+assert(
+  Math.abs(inheritedVX) > 0,
+  "released block did not inherit pendulum momentum"
+);
+for (let index = 0; index < 12; index += 1) {
+  stepTowerDrop(momentum);
+}
+assert(
+  momentum.fallXMilli !== releaseX,
+  "released block did not travel horizontally during fall"
+);
+
 // Mechanical invariant: partial support with centre of mass outside the
 // support polygon must tip around the edge before failing.
 const tipping = createTowerDropState();
@@ -258,6 +284,6 @@ console.log(
     `score=${first.score}`,
     `height=${first.height}`,
     `finalTick=${golden.finalTick}`,
-    "mechanics=pendulum+gravity+support+tip",
+    "mechanics=pendulum+momentum+gravity+support+tip",
   ].join(" · ")
 );
