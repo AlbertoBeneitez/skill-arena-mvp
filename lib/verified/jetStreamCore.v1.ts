@@ -182,13 +182,17 @@ function trimAndFillGates(
   state: JetStreamState,
   seed: string
 ) {
-  state.gates = state.gates.filter(
-    (gate) =>
-      gate.worldXMilli -
-        state.scrollMilli +
-        JET_STREAM_V1.gateWidth >
+  // Keep the 120 Hz core allocation-light. Gates are ordered by world X, so
+  // only the leading items can leave the active corridor.
+  while (
+    state.gates.length > 0 &&
+    state.gates[0].worldXMilli -
+      state.scrollMilli +
+      JET_STREAM_V1.gateWidth <=
       -80_000
-  );
+  ) {
+    state.gates.shift();
+  }
 
   while (
     state.lastGeneratedXMilli - state.scrollMilli <
