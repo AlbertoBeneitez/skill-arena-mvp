@@ -54,7 +54,7 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV2State) {
   ctx.save();
   if (state.tick < state.shieldUntilTick && Math.floor(state.tick / 8) % 2)
     ctx.globalAlpha = 0.45;
-  drawJetShip(
+  if (state.status !== "failed") drawJetShip(
     ctx,
     state,
     Math.max(0, 1 - (state.tick - state.lastFlapTick) / 16),
@@ -70,6 +70,28 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV2State) {
   );
   ctx.textAlign = "left";
 }
+const failureFinale = {
+  durationMs: 720,
+  render(ctx: CanvasRenderingContext2D, state: JetStreamV2State, elapsedMs: number) {
+    const t = Math.min(1, elapsedMs / 720), x = 92, y = state.yMilli / 1000;
+    ctx.save();
+    ctx.globalAlpha = 1 - t;
+    const glow = ctx.createRadialGradient(x,y,0,x,y,18+t*68);
+    glow.addColorStop(0,"rgba(255,244,196,.95)");
+    glow.addColorStop(.3,"rgba(255,147,78,.7)");
+    glow.addColorStop(1,"rgba(255,80,120,0)");
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,y,18+t*68,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#ffe8a8";ctx.lineWidth=3*(1-t)+1;
+    ctx.beginPath();ctx.arc(x,y,8+t*82,0,Math.PI*2);ctx.stroke();
+    for(let i=0;i<24;i++) {
+      const angle=i*Math.PI*2/24, distance=t*(30+(i%5)*13);
+      ctx.fillStyle=i%2 ? "#ffad77" : "#fff4ce";
+      const px=x+Math.cos(angle)*distance,py=y+Math.sin(angle)*distance+t*t*18;
+      ctx.fillRect(px-2,py-2,4*(1-t)+1,4*(1-t)+1);
+    }
+    ctx.restore();
+  },
+};
 const keys = { " ": "FLAP", ArrowUp: "FLAP" } as const;
 export default function JetStreamV2(props: GameRuntimeProps) {
   return (
@@ -77,6 +99,8 @@ export default function JetStreamV2(props: GameRuntimeProps) {
       {...props}
       core={JET_STREAM_CORE_V2}
       name="Jet Stream"
+      hideHudLabel
+      failureFinale={failureFinale}
       render={render}
       primaryAction="FLAP"
       keys={keys}

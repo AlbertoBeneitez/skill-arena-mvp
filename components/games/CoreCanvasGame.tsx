@@ -22,6 +22,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   controls?: readonly Control[];
   hideHudLabel?: boolean;
   hideHudScore?: boolean;
+  failureFinale?: { durationMs: number; render(ctx: CanvasRenderingContext2D, state: S, elapsedMs: number): void };
 };
 
 /** Presentation/input adapter. The core and shared server replay own outcomes. */
@@ -36,6 +37,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const epochRef = useRef(0);
   const runningRef = useRef(false);
   const finishedRef = useRef(false);
+  const terminalStartedRef = useRef<number | null>(null);
+  const terminalElapsedRef = useRef(0);
   const generationRef = useRef(0);
   const finishRef = useRef(props.onFinish);
   const targetRef = useRef(targetScore);
@@ -60,7 +63,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     metricsRef.current ??= configureLogicalCanvas(canvas, core.width, core.height);
     beginLogicalCanvasFrame(ctx, canvas, metricsRef.current);
     render(ctx, stateRef.current);
-  }, [core, render]);
+    if (stateRef.current.status === "failed") props.failureFinale?.render(ctx, stateRef.current, terminalElapsedRef.current);
+  }, [core, render, props.failureFinale]);
 
   const flush = useCallback(() => {
     const state = stateRef.current;
@@ -143,21 +147,36 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     lastInputTickRef.current = -1;
     finishedRef.current = false;
     runningRef.current = true;
+    terminalStartedRef.current = null;
+    terminalElapsedRef.current = 0;
     let lastHudTick = -core.tickRate;
     const frame = (now: number) => {
       if (!runningRef.current) return;
       sync(now);
+      if (terminalStartedRef.current !== null) terminalElapsedRef.current = now - terminalStartedRef.current;
       draw();
       const state = stateRef.current;
-      if (state.tick - lastHudTick >= core.tickRate / 8 || state.status !== "running") {
+      if (state.tick !== lastHudTick && (state.tick - lastHudTick >= core.tickRate / 8 || state.status !== "running")) {
         setHud({ tick: state.tick, score: state.score, height: state.height, lives: state.lives });
         lastHudTick = state.tick;
       }
-      if (state.status !== "running" && !finishedRef.current) {
-        finishedRef.current = true;
+      if (state.status !== "running") {
+        if (!finishedRef.current) {
+          finishedRef.current = true;
+          terminalStartedRef.current = now;
+          pendingRef.current = [];
+          heldRef.current.clear();
+          gameTone(state.status === "won" ? "win" : "bad");
+          if (state.status === "failed") haptic([12, 18, 28]);
+        }
+        // Only presentation time advances: terminal state and replay tick are frozen.
+        const duration = state.status === "failed" ? Math.min(3000, Math.max(0, props.failureFinale?.durationMs ?? 0)) : 0;
+        if (terminalElapsedRef.current < duration) {
+          rafRef.current = requestAnimationFrame(frame);
+          return;
+        }
         runningRef.current = false;
         const generation = generationRef.current;
-        gameTone(state.status === "won" ? "win" : "bad");
         void attempt.verifyAttempt(state.tick).then(result => {
           if (generation !== generationRef.current || result.error === "VERIFICATION_ABORTED") return;
           finishRef.current({
@@ -176,6 +195,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     rafRef.current = requestAnimationFrame(frame);
     return () => {
       runningRef.current = false;
+      terminalStartedRef.current = null;
+      terminalElapsedRef.current = 0;
       pendingRef.current = [];
       heldRef.current.clear();
       const pointer = pointerRef.current;
