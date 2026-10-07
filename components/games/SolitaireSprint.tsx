@@ -112,7 +112,7 @@ function formatTimer(ms: number) {
 
 export default function SolitaireSprint({
   active,
-  targetScore: _targetScore,
+  targetScore,
   seed,
   onFinish,
 }: Props) {
@@ -171,7 +171,30 @@ export default function SolitaireSprint({
     scoreRef.current = next;
     setScore(next);
 
+    if (next >= targetScore) {
+      finish(true, next);
+    }
+
     return next;
+  }
+
+  function allTableauRevealed(nextTableau: Card[][]) {
+    return nextTableau.every((column) =>
+      column.every((item) => item.faceUp)
+    );
+  }
+
+  function finishWhenTableauIsOpen(nextTableau: Card[][]) {
+    if (
+      runningRef.current &&
+      allTableauRevealed(nextTableau)
+    ) {
+      // Natural end condition for a score-setting attempt: once there are no
+      // hidden tableau cards left, the challenge has produced its result.
+      finish(false, scoreRef.current);
+      return true;
+    }
+    return false;
   }
 
   function revealTop(nextTableau: Card[][], column: number) {
@@ -250,8 +273,10 @@ export default function SolitaireSprint({
     setTableau(nextTableau);
     setSelected(null);
     addScore(40);
-    gameTone("tap");
-    haptic(3);
+    if (!finishWhenTableauIsOpen(nextTableau)) {
+      gameTone("tap");
+      haptic(3);
+    }
     return true;
   }
 
@@ -299,7 +324,9 @@ export default function SolitaireSprint({
     );
 
     if (foundationCount === 52) {
-      finish(true, finalScore);
+      finish(false, finalScore);
+    } else {
+      finishWhenTableauIsOpen(nextTableau);
     }
 
     return true;
