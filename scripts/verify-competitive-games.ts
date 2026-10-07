@@ -620,6 +620,13 @@ function pianoStatus(
 
 const pianoGoldenSeed = "piano-rush-golden-v1";
 const pianoGoldenTarget = 8_800;
+const pianoGoldenExpected = {
+  score: 9_592,
+  notes: 11,
+  finalTick: 910,
+  replayHash:
+    "sha256:ba11f9f7d9f0bc5b01643df40e194fdc6d7c95a9e14fc2439a49c570e93651f8",
+} as const;
 const pianoBuilder = createPianoRushState(pianoGoldenSeed);
 const pianoInputs: PianoRushInput[] = [];
 
@@ -689,6 +696,9 @@ assert(
 );
 assert(
   pianoFirst.score === pianoBuilder.score &&
+    pianoFirst.score === pianoGoldenExpected.score &&
+    pianoInputs.length === pianoGoldenExpected.notes &&
+    pianoFinalTick === pianoGoldenExpected.finalTick &&
     pianoFirst.timeMs ===
       Math.round(
         (pianoFinalTick * 1000) /
@@ -817,7 +827,7 @@ const pianoReplayHash =
     .digest("hex");
 
 assert(
-  pianoReplayHash === pianoGolden.expected.replayHash,
+  pianoReplayHash === pianoGoldenExpected.replayHash,
   "piano golden replay hash changed"
 );
 
