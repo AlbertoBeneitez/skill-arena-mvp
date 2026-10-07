@@ -5526,3 +5526,128 @@ html, body {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V16.6 — game feel, touch controls and visual refinements */
+
+/* Solitaire: centred monospace timer and a more distinctive arena surface. */
+.solitaireSprint {
+  padding-top: 8px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(107,144,235,.25), transparent 34%),
+    radial-gradient(circle at 82% 24%, rgba(177,105,209,.20), transparent 32%),
+    linear-gradient(155deg,#17264b 0%,#263f72 48%,#352e61 100%);
+}
+
+.solitaireTimer {
+  width: 108px;
+  min-width: 108px;
+  margin: 0 auto 9px;
+  padding: 7px 0;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .08em;
+  background: rgba(12,22,49,.58);
+  border-color: rgba(215,228,255,.26);
+}
+
+/* Mine Grid timer stays clear of the first row. */
+.mineGridAdvanced {
+  padding-top: 54px;
+}
+
+.mineGridAdvanced .mineTimerChip {
+  top: 10px;
+}
+
+/* Metro Shift keeps swipes but also has explicit low-latency touch steering. */
+.metroShiftArena {
+  position: relative;
+}
+
+.metroTouchControls {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 8;
+  width: min(86%, 330px);
+  display: grid;
+  grid-template-columns: 1fr .72fr 1fr;
+  gap: 8px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.metroTouchControls button {
+  pointer-events: auto;
+  min-height: 58px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 16px;
+  background: rgba(17,33,55,.76);
+  color: #eef8ff;
+  font-size: 26px;
+  font-weight: 950;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  backdrop-filter: blur(5px);
+  touch-action: manipulation;
+}
+
+.metroTouchControls button.jump {
+  background: rgba(49,95,174,.82);
+  color: #ffe27a;
+}
+
+.metroTouchControls button:active {
+  transform: translateY(2px) scale(.97);
+  background: rgba(72,128,207,.94);
+}
+
+/* Stack Shift board ends immediately at the control deck. */
+.stackForgeGame {
+  grid-template-rows: minmax(0,1fr) auto !important;
+  gap: 0 !important;
+}
+
+.stackForgeGame .deterministicCanvas {
+  display: block;
+  min-height: 0;
+  border-bottom: 3px solid rgba(95,212,232,.32);
+}
+
+.stackForgeControls {
+  margin: 0 !important;
+  padding-top: 4px !important;
+  border-top: 0 !important;
+}
+
+/* Orb Burst gets a slightly clearer launch area after the aiming fix. */
+.orbBurstGame::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 21px;
+  width: 112px;
+  height: 42px;
+  transform: translateX(-50%);
+  border-radius: 60% 60% 18px 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.025);
+  pointer-events: none;
+}
+
+@media (max-width: 430px) {
+  .metroTouchControls {
+    bottom: 9px;
+    gap: 6px;
+  }
+
+  .metroTouchControls button {
+    min-height: 54px;
+    font-size: 23px;
+  }
+
+  .mineGridAdvanced {
+    padding-top: 50px;
+  }
+}
