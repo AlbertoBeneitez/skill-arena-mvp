@@ -41,7 +41,9 @@ export const TOWER_DROP_V2 = {
   gravityMilliPerSecondSquared: 820_000,
   dropDistanceMilli: 320_000,
   fallOutExtraMilli: 210_000,
-  releaseMomentumPerMille: 620,
+  // Preserve noticeable lateral momentum without making a visually centred
+  // release miss by an entire block width during the ~0.9 s fall.
+  releaseMomentumPerMille: 200,
   horizontalDragPerMillePerSecond: 70,
   wallRestitutionPerMille: 420,
 
