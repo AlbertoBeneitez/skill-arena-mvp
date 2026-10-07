@@ -1,13 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic } from "@/lib/gameFeedback";
-import type {
-  AttemptTicket,
-  MatchManifest,
-  VerifiedAttemptResult,
-} from "@/lib/verified/contracts";
+import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
 import {
   createTowerDropState,
   dropTowerBlock,
@@ -23,11 +19,6 @@ type Props = {
   ghostEnabled: boolean;
   targetScore: number;
   onFinish: (result: GameResult) => void;
-};
-
-type Session = {
-  manifest: MatchManifest;
-  ticket: AttemptTicket;
 };
 
 const W = 390;
@@ -65,16 +56,20 @@ export default function TowerDrop({
   const rafRef = useRef<number | null>(null);
   const finishRef = useRef(onFinish);
   const stateRef = useRef<TowerDropState>(createTowerDropState());
-  const sessionRef = useRef<Session | null>(null);
-  const inputsRef = useRef<TowerDropInput[]>([]);
   const loopingRef = useRef(false);
-  const verifyingRef = useRef(false);
-  const generationRef = useRef(0);
   const cameraRef = useRef(0);
 
-  const [verificationState, setVerificationState] = useState<
-    "idle" | "starting" | "playing" | "verifying" | "error"
-  >("idle");
+  const verifiedAttempt = useVerifiedAttempt<TowerDropInput>({
+    active,
+    gameId: "tower-drop",
+    stakeMinor: Math.round(stake * 100),
+    targetScore,
+  });
+  const {
+    state: attemptState,
+    recordInput,
+    verifyAttempt,
+  } = verifiedAttempt;
 
   useEffect(() => {
     finishRef.current = onFinish;
@@ -292,70 +287,15 @@ export default function TowerDrop({
 
   const submitReplay = useCallback(
     async (state: TowerDropState) => {
-      if (verifyingRef.current) return;
-      verifyingRef.current = true;
       loopingRef.current = false;
 
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
 
-      setVerificationState("verifying");
+      const data = await verifyAttempt(state.tick);
 
-      const session = sessionRef.current;
-      if (!session) {
-        setVerificationState("error");
-        finishRef.current({
-          won: false,
-          score: 0,
-          timeMs: 0,
-          verified: false,
-          verificationError: "MISSING_ATTEMPT_TICKET",
-        });
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/verified-match/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            manifest: session.manifest,
-            ticket: session.ticket,
-            inputs: inputsRef.current,
-            final_tick: state.tick,
-          }),
-        });
-
-        const data =
-          (await response.json()) as VerifiedAttemptResult;
-
-        if (!response.ok || !data.ok || !data.verified) {
-          const error =
-            data.error || "SERVER_REPLAY_REJECTED";
-          setVerificationState("error");
-          finishRef.current({
-            won: false,
-            score: 0,
-            timeMs: Math.round(
-              (state.tick * 1000) /
-                TOWER_DROP_V2.tickRate
-            ),
-            verified: false,
-            verificationError: error,
-          });
-          return;
-        }
-
-        finishRef.current({
-          won: data.won === true,
-          score: data.score ?? 0,
-          timeMs: data.time_ms ?? 0,
-          verified: true,
-          failureReason: data.failure ?? null,
-        });
-      } catch {
-        setVerificationState("error");
+      if (!data.ok || !data.verified) {
         finishRef.current({
           won: false,
           score: 0,
@@ -364,11 +304,21 @@ export default function TowerDrop({
               TOWER_DROP_V2.tickRate
           ),
           verified: false,
-          verificationError: "VERIFIER_UNAVAILABLE",
+          verificationError:
+            data.error ?? "REPLAY_MISMATCH",
         });
+        return;
       }
+
+      finishRef.current({
+        won: data.won === true,
+        score: data.score ?? 0,
+        timeMs: data.time_ms ?? 0,
+        verified: true,
+        failureReason: data.failure ?? null,
+      });
     },
-    []
+    [verifyAttempt]
   );
 
   const step = useCallback(() => {
@@ -442,103 +392,61 @@ export default function TowerDrop({
     [draw, step]
   );
 
-  const beginVerifiedAttempt = useCallback(
-    async (generation: number) => {
-      setVerificationState("starting");
-      verifyingRef.current = false;
-      loopingRef.current = false;
-      inputsRef.current = [];
-      sessionRef.current = null;
-      cameraRef.current = 0;
-      stateRef.current = createTowerDropState();
-      draw();
-
-      try {
-        const response = await fetch(
-          "/api/verified-match/start",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              stake_minor: Math.round(stake * 100),
-              target_score: targetScore,
-            }),
-          }
-        );
-        const data = await response.json();
-
-        if (
-          generation !== generationRef.current ||
-          !active
-        ) {
-          return;
-        }
-
-        if (
-          !response.ok ||
-          !data?.ok ||
-          !data.manifest ||
-          !data.ticket
-        ) {
-          throw new Error("MATCH_START_REJECTED");
-        }
-
-        sessionRef.current = {
-          manifest: data.manifest as MatchManifest,
-          ticket: data.ticket as AttemptTicket,
-        };
-
-        const state =
-          createTowerDropState() as TowerDropState & {
-            lastFrame?: number;
-            accumulator?: number;
-          };
-        state.lastFrame = 0;
-        state.accumulator = 0;
-        stateRef.current = state;
-
-        setVerificationState("playing");
-        loopingRef.current = true;
-        draw();
-        rafRef.current = requestAnimationFrame(loop);
-      } catch {
-        if (generation !== generationRef.current) return;
-        setVerificationState("error");
-        finishRef.current({
-          won: false,
-          score: 0,
-          timeMs: 0,
-          verified: false,
-          verificationError: "MATCH_START_FAILED",
-        });
-      }
-    },
-    [active, draw, loop, stake, targetScore]
-  );
-
   useEffect(() => {
-    generationRef.current += 1;
-    const generation = generationRef.current;
-
-    if (active) {
-      void beginVerifiedAttempt(generation);
+    if (!active || attemptState.status !== "ready") {
+      return;
     }
 
+    cameraRef.current = 0;
+    const state =
+      createTowerDropState() as TowerDropState & {
+        lastFrame?: number;
+        accumulator?: number;
+      };
+    state.lastFrame = 0;
+    state.accumulator = 0;
+    stateRef.current = state;
+    loopingRef.current = true;
+    draw();
+    rafRef.current = requestAnimationFrame(loop);
+
     return () => {
-      generationRef.current += 1;
       loopingRef.current = false;
-      stateRef.current.status = "failed";
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [active, beginVerifiedAttempt]);
+  }, [
+    active,
+    attemptState.status,
+    attemptState.status === "ready"
+      ? attemptState.manifest.match_id
+      : "",
+    draw,
+    loop,
+  ]);
+
+  useEffect(() => {
+    if (
+      active &&
+      attemptState.status === "rejected" &&
+      stateRef.current.tick === 0
+    ) {
+      finishRef.current({
+        won: false,
+        score: 0,
+        timeMs: 0,
+        verified: false,
+        verificationError: attemptState.reason,
+      });
+    }
+  }, [active, attemptState]);
 
   const place = useCallback(() => {
     const s = stateRef.current;
 
     if (
-      verificationState !== "playing" ||
+      attemptState.status !== "ready" ||
       !loopingRef.current ||
       s.status !== "running" ||
       s.phase !== "swing"
@@ -546,20 +454,16 @@ export default function TowerDrop({
       return;
     }
 
-    const previous =
-      inputsRef.current[inputsRef.current.length - 1];
-    if (previous?.tick === s.tick) return;
-
-    inputsRef.current.push({
-      seq: inputsRef.current.length,
+    const accepted = recordInput({
       tick: s.tick,
       action: "DROP",
     });
+    if (!accepted) return;
 
     dropTowerBlock(s, targetScore);
     gameTone("tap");
     haptic(4);
-  }, [targetScore, verificationState]);
+  }, [attemptState.status, recordInput, targetScore]);
 
   return (
     <div className="gameStage skillGameStage towerDropArena verifiedArena">
@@ -572,11 +476,11 @@ export default function TowerDrop({
         aria-label="Tower Drop"
       />
 
-      {(verificationState === "starting" ||
-        verificationState === "verifying") && (
+      {(attemptState.status === "starting" ||
+        attemptState.status === "verifying") && (
         <div className="verificationOverlay">
           <span>
-            {verificationState === "starting"
+            {attemptState.status === "starting"
               ? "PREPARANDO PARTIDA"
               : "COMPROBANDO RESULTADO"}
           </span>
