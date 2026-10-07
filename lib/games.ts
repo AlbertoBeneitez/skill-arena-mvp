@@ -535,8 +535,19 @@ export const GAMES: GameMeta[] = CATALOG_ORDER.map(
   (id) => GAME_REGISTRY[id]
 );
 
-export function getGameDefinition(gameId: string) {
-  return GAME_REGISTRY[gameId as GameId];
+export function isGameId(value: string): value is GameId {
+  return Object.prototype.hasOwnProperty.call(
+    GAME_REGISTRY,
+    value
+  );
+}
+
+export function getGameDefinition(
+  gameId: string
+): GameMeta | undefined {
+  return isGameId(gameId)
+    ? GAME_REGISTRY[gameId]
+    : undefined;
 }
 
 export function modeForStake(
