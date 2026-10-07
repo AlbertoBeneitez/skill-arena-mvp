@@ -382,6 +382,36 @@ export const GAMES: GameMeta[] = [
 
 ];
 
+
+const CATALOG_ORDER: GameMeta["id"][] = [
+  "precision-stack",
+  "tower-drop",
+  "merge-2048",
+  "jet-stream",
+  "piano-rush",
+  "dino-dash",
+  "orb-burst",
+  "reaction-test",
+  "river-dash",
+  "sky-hop",
+  "pulse-runner",
+  "metro-shift",
+  "orbit-shift",
+  "solitaire-sprint",
+  "mine-grid",
+  "grid-serpent",
+  "brick-relay",
+  "stack-shift",
+  "maze-rush",
+  "star-phalanx",
+];
+
+GAMES.sort(
+  (a, b) =>
+    CATALOG_ORDER.indexOf(a.id) -
+    CATALOG_ORDER.indexOf(b.id)
+);
+
 export function modeForStake(
   game: GameMeta,
   stake: Stake,
