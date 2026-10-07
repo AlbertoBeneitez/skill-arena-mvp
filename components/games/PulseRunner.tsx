@@ -70,7 +70,7 @@ const PATTERNS: Pattern[] = [
 
 function speedFor(ticks: number) {
   const seconds = ticks / 120;
-  return Math.min(278, 144 + Math.max(0, seconds - 7) * 1.55);
+  return Math.min(236, 126 + Math.max(0, seconds - 10) * 1.05);
 }
 
 function intersectsPlayer(
@@ -172,11 +172,11 @@ export default function PulseRunner({ active, targetScore, onFinish }: Props) {
     }
 
     s.jumpBuffer = Math.max(0, s.jumpBuffer - 1);
-    if (s.grounded) s.coyote = 9;
+    if (s.grounded) s.coyote = 14;
     else s.coyote = Math.max(0, s.coyote - 1);
 
     if (s.jumpBuffer > 0 && s.coyote > 0) {
-      s.vy = -485;
+      s.vy = -445;
       s.grounded = false;
       s.coyote = 0;
       s.jumpBuffer = 0;
@@ -186,16 +186,12 @@ export default function PulseRunner({ active, targetScore, onFinish }: Props) {
     }
 
     if (!s.grounded) {
-      if (jumpHeld.current && s.vy < 0 && s.holdTicks < 16) {
-        s.vy -= 330 * DT;
-        s.holdTicks += 1;
-      } else if (!jumpHeld.current && s.vy < -175) {
-        s.vy += 1150 * DT;
-      }
-
-      s.vy += 1375 * DT;
+      // One tap = one predictable jump. Removing variable hold-height makes
+      // the mobile control substantially easier to learn while preserving
+      // timing skill.
+      s.vy += 1090 * DT;
       s.y += s.vy * DT;
-      s.angle += (speed * DT / 74) * QUARTER_TURN;
+      s.angle += (speed * DT / 86) * QUARTER_TURN;
     }
 
     if (s.y + SIZE >= FLOOR) {
@@ -433,8 +429,8 @@ export default function PulseRunner({ active, targetScore, onFinish }: Props) {
 
   const down = () => {
     if (!state.current.running) return;
-    jumpHeld.current = true;
-    state.current.jumpBuffer = 10;
+    jumpHeld.current = false;
+    state.current.jumpBuffer = 14;
   };
 
   const up = () => {
