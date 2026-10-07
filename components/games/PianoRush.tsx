@@ -29,7 +29,7 @@ const NOTE_H = 116;
 const DT = 1 / 120;
 
 function buildLaneSequence(seed: string) {
-  const rng = createRng(\`\${seed}:piano-sequence\`);
+  const rng = createRng(`${seed}:piano-sequence`);
   const lanes: number[] = [];
   let previous = -1;
   let run = 0;
