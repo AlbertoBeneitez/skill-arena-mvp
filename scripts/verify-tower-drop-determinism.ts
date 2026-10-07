@@ -377,6 +377,56 @@ assert(
     JSON.stringify(precisionSecond.state),
   "precision replay diverged across identical runs"
 );
+
+
+// Precision Stack placement invariants protect the competitive feel from
+// accidental UI-driven rule changes.
+const perfectPlacement = createPrecisionStackState("precision-perfect-v1");
+const perfectTop =
+  perfectPlacement.blocks[perfectPlacement.blocks.length - 1];
+perfectPlacement.movingXMilli = perfectTop.xMilli;
+perfectPlacement.movingWMilli = perfectTop.wMilli;
+dropPrecisionStack(perfectPlacement, "precision-perfect-v1");
+assert(
+  perfectPlacement.lastPlacement?.perfect === true,
+  "centred stack placement was not classified as perfect"
+);
+assert(
+  perfectPlacement.blocks.at(-1)?.wMilli === perfectTop.wMilli,
+  "perfect placement unexpectedly reduced module width"
+);
+assert(
+  perfectPlacement.lastPlacement?.scoreDelta === 1_700,
+  "first perfect placement scoring changed"
+);
+
+const nearPlacement = createPrecisionStackState("precision-near-v1");
+const nearTop = nearPlacement.blocks[nearPlacement.blocks.length - 1];
+nearPlacement.movingXMilli =
+  nearTop.xMilli + PRECISION_STACK_V1.perfectToleranceMilli + 1_000;
+nearPlacement.movingWMilli = nearTop.wMilli;
+dropPrecisionStack(nearPlacement, "precision-near-v1");
+assert(
+  nearPlacement.lastPlacement?.perfect === false,
+  "outside-tolerance placement incorrectly snapped to perfect"
+);
+assert(
+  (nearPlacement.blocks.at(-1)?.wMilli ?? nearTop.wMilli) <
+    nearTop.wMilli,
+  "imperfect placement did not clip the overlapping module"
+);
+
+const missedPlacement = createPrecisionStackState("precision-miss-v1");
+missedPlacement.blocks = [{ xMilli: 170_000, wMilli: 40_000 }];
+missedPlacement.movingXMilli = 10_000;
+missedPlacement.movingWMilli = 60_000;
+missedPlacement.phase = "moving";
+dropPrecisionStack(missedPlacement, "precision-miss-v1");
+assert(
+  precisionStatus(missedPlacement) === "failed" &&
+    missedPlacement.failure === "NO_OVERLAP",
+  "zero-overlap placement did not terminate as a clear miss"
+);
 assert(
   precisionFirst.score === precisionGolden.expected.score &&
     precisionFirst.height === precisionGolden.expected.height &&
