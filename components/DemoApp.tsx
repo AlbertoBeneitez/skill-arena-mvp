@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
+import GlobalRanking from "./GlobalRanking";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 
-type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal";
+type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking";
 type Provider = "google" | "apple" | null;
 type Turn = "create" | "existing";
 type MatchScope = "duel" | "group";
@@ -35,7 +36,7 @@ type PersistedState = {
   group: ClosedGroup | null;
 };
 
-const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "group", "game", "profile", "legal"];
+const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "group", "game", "profile", "legal", "ranking"];
 
 function isScreen(value: unknown): value is Screen {
   return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
@@ -49,17 +50,6 @@ const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
 
 function euro(value: number) {
   return `${value.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
-}
-
-function rankingFromEarnings(value: number) {
-  if (value >= 100) return 12;
-  if (value >= 50) return 48;
-  if (value >= 20) return 133;
-  if (value >= 5) return 241;
-  if (value >= 0) return 417;
-  if (value >= -10) return 612;
-  if (value >= -30) return 819;
-  return 1042;
 }
 
 function demoPercentile(score: number, benchmark: number) {
@@ -608,7 +598,6 @@ export default function DemoApp() {
     setTutorialOpen(false);
   }
 
-  const rank = rankingFromEarnings(netEarnings);
   const nameAvailable = isDemoNameAvailable(playerName);
   const matchesPlayed = wins + losses;
   const winRate = matchesPlayed ? Math.round((wins / matchesPlayed) * 100) : 0;
@@ -1195,23 +1184,25 @@ export default function DemoApp() {
             >
               {musicOn ? "🔊" : "🔇"}
             </button>
-            <button className="balanceChip" onClick={() => navigate("profile")}>{euro(balance)}</button>
+            <button className="balanceChip" aria-label={`Saldo demo ${euro(balance)}`} onClick={() => navigate("profile")}>DEMO · {euro(balance)}</button>
           </div>
         </header>
       )}
 
       <div className={`appBody ${screen === "game" ? "gameBody" : ""}`}>
+        {screen === "ranking" && <GlobalRanking />}
         {screen === "home" && (
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <button className="playerStrip mergedPlayerStrip" onClick={() => navigate("profile")}>
               <img src={avatarSrc} alt="Avatar" />
               <strong>{playerName}</strong>
-              <span className="rankNumber">#{rank}</span>
+              <span className="rankNumber">DEMO</span>
               <span className={`moneyNumber ${netEarnings < 0 ? "negative" : ""}`}>
                 {netEarnings > 0 ? "+" : ""}{euro(netEarnings)}
               </span>
             </button>
 
+            <button type="button" className="globalRankingShortcut" onClick={()=>navigate("ranking")}>Ranking global · Beneficio neto</button>
             <div className="homePlayHeading">
               <div>
                 <small>SKILL ARENA</small>
@@ -1306,10 +1297,10 @@ export default function DemoApp() {
                 <strong>{selectedGame.name}</strong>
                 <small>
                   {matchScope === "group" && groupCompetition && group
-                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
+                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `DEMO · ${selectedStake}€`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
                     : selectedStake === 0
                       ? "ENTRENAMIENTO"
-                      : `${selectedStake}€ · 1 VS 1`}
+                      : `DEMO · ${selectedStake}€ · 1 VS 1`}
                 </small>
               </div>
               <div className="gameHeaderActions">
@@ -1461,7 +1452,7 @@ export default function DemoApp() {
         {screen === "profile" && (
           <section className="simpleScreen">
             <div className="screenTop"><span>{playerName || "PERFIL"}</span></div>
-            <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>#{rank}</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>Cuenta demo · sin posición real</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 
             <section className="accountWalletCard">
               <div>
@@ -1508,7 +1499,7 @@ export default function DemoApp() {
               <button onClick={() => navigate("legal")}><span>LEGAL</span><b>→</b></button>
               <button onClick={logoutDemo}><span>CERRAR SESIÓN DEMO</span><b>×</b></button>
             </div>
-            <p className="resetNote">Resetear avatar reinicia ranking y resultado competitivo visible. El saldo de wallet no se borra.</p>
+            <p className="resetNote">Resetear avatar reinicia las estadísticas de demostración. El saldo demo no se borra.</p>
           </section>
         )}
 
@@ -1554,13 +1545,14 @@ export default function DemoApp() {
       )}
 
       {screen !== "game" && screen !== "legal" && (
-        <nav className="bottomNav bottomNavThree" aria-label="Navegación principal">
+        <nav className="bottomNav bottomNavFour" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}>
             <span>▶</span>JUGAR
           </button>
           <button className={screen === "group" ? "active" : ""} onClick={() => navigate("group")}>
             <span>◉</span>GRUPO
           </button>
+          <button className={screen === "ranking" ? "active" : ""} onClick={() => navigate("ranking")}><span aria-hidden="true">≡</span>RANKING</button>
           <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}>
             <img src={avatarSrc} alt="" />CUENTA
           </button>
