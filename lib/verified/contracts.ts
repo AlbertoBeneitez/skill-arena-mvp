@@ -1,18 +1,20 @@
-import type { TowerDropInput } from "./towerDropCore.v2";
+import type { GameId } from "@/lib/games";
+import type { ReplayInput } from "./inputValidation";
 
 export type MatchManifest = {
-  manifest_version: 1;
+  manifest_version: 2;
   match_id: string;
-  game_id: "tower-drop";
-  game_version: "2.1.0";
-  engine_version: "skill-core-2";
+  game_id: GameId;
+  game_version: string;
+  engine_version: string;
   rules_hash: string;
   gameplay_content_hash: string;
+  seed: string;
   simulation: {
-    tick_rate: 120;
-    coordinate_width: 390;
-    coordinate_height: 620;
-    end_condition: "FIRST_FAILURE_OR_TARGET";
+    tick_rate: number;
+    coordinate_width: number;
+    coordinate_height: number;
+    end_condition: string;
   };
   competition: {
     players: 2;
@@ -23,8 +25,9 @@ export type MatchManifest = {
     target_score: number;
   };
   input_protocol: {
-    version: 2;
-    allowed_actions: ["DROP"];
+    version: number;
+    allowed_actions: string[];
+    max_inputs: number;
   };
   created_at: string;
 };
@@ -42,10 +45,12 @@ export type AttemptTicket = {
   security_mode: "demo" | "production";
 };
 
-export type VerifiedAttemptPayload = {
+export type VerifiedAttemptPayload<
+  TInput extends ReplayInput = ReplayInput,
+> = {
   manifest: MatchManifest;
   ticket: AttemptTicket;
-  inputs: TowerDropInput[];
+  inputs: TInput[];
   final_tick: number;
 };
 
@@ -58,6 +63,8 @@ export type VerifiedAttemptResult = {
   score?: number;
   time_ms?: number;
   height?: number;
-  failure?: "NO_SUPPORT" | "CENTER_OF_MASS" | "TIMEOUT_IDLE" | null;
+  failure?: string | null;
   won?: boolean;
+  authoritative_source?: "SERVER_REPLAY";
+  client_score_ignored?: true;
 };
