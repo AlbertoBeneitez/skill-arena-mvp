@@ -31,7 +31,7 @@ export const PRECISION_STACK_V1 = {
   speedIncreaseMilliPerSecond: 10_500,
   maxSpeedMilliPerSecond: 330_000,
   perfectToleranceMilli: 3_500,
-  settleTicks: 22,
+  settleTicks: 30,
   maxIdleTicksPerBlock: 120 * 60 * 5,
   inputProtocolVersion: 1,
   maxInputs: 500,
