@@ -816,6 +816,11 @@ const pianoReplayHash =
     .update(canonicalJson(pianoReplayFixture))
     .digest("hex");
 
+assert(
+  pianoReplayHash === pianoGolden.expected.replayHash,
+  "piano golden replay hash changed"
+);
+
 console.log(
   [
     "Piano Rush v1 deterministic replay OK",
@@ -839,6 +844,13 @@ function nextJetGate(state: JetStreamState) {
 
 const jetGoldenSeed = "jet-stream-golden-v1";
 const jetGoldenTarget = 2_400;
+const jetGoldenExpected = {
+  score: 2_760,
+  passed: 7,
+  finalTick: 1_390,
+  replayHash:
+    "sha256:c253e737f32e51506b66d2a7bc78e93d8b281a03d29ae3c88a93b8bfddc7a648",
+} as const;
 const jetBuilder = createJetStreamState(jetGoldenSeed);
 const jetInputs: JetStreamInput[] = [];
 let jetGuard = 0;
@@ -913,6 +925,12 @@ assert(
           JET_STREAM_V1.tickRate
       ),
   "jet golden result changed during replay"
+);
+assert(
+  jetFirst.score === jetGoldenExpected.score &&
+    jetFirst.state.passed === jetGoldenExpected.passed &&
+    jetFinalTick === jetGoldenExpected.finalTick,
+  "jet frozen golden result changed"
 );
 
 function simulateJetRenderRate(frameHz: number) {
@@ -1007,6 +1025,11 @@ const jetReplayHash =
   createHash("sha256")
     .update(canonicalJson(jetReplayFixture))
     .digest("hex");
+
+assert(
+  jetReplayHash === jetGoldenExpected.replayHash,
+  "jet golden replay hash changed"
+);
 
 console.log(
   [
