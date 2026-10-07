@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="Serpent, orbital portals">
+ <defs><radialGradient id="nebula"><stop stop-color="#263e69"/><stop offset="1" stop-color="#071421"/></radialGradient><linearGradient id="body"><stop stop-color="#29b4b0"/><stop offset="1" stop-color="#b5ffee"/></linearGradient><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#8af9ee" stroke-opacity=".1"/></pattern></defs>
+ <rect width="640" height="400" rx="32" fill="url(#nebula)"/>
+ <circle cx="525" cy="95" r="64" fill="#33566d" opacity=".45"/><ellipse cx="525" cy="95" rx="97" ry="20" fill="none" stroke="#93d5df" stroke-opacity=".25" transform="rotate(-20 525 95)"/>
+ <rect x="42" y="30" width="556" height="276" rx="12" fill="url(#grid)" stroke="#54c5ca" stroke-opacity=".3"/>
+ <path d="M62 117H44V208H62M578 117H596V208H578" fill="none" stroke="#96fff0" stroke-width="5"/>
+ <path d="M120 235H252V105H355V206H455" fill="none" stroke="url(#body)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+ <rect x="433" y="184" width="45" height="43" rx="12" fill="#c4fff0"/><circle cx="464" cy="194" r="4" fill="#0d4551"/><circle cx="464" cy="214" r="4" fill="#0d4551"/>
+ <circle cx="504" cy="166" r="24" fill="#ffe69a" opacity=".14"/><circle cx="504" cy="166" r="12" fill="#ffe69a"/>
+ <text x="42" y="362" font-family="system-ui,sans-serif" font-size="44" font-weight="900" fill="#f0fffa">SERPENT</text><text x="598" y="357" text-anchor="end" font-family="system-ui,sans-serif" font-size="14" letter-spacing="3" fill="#9bd9e3">ORBITAL PORTALS</text>
+</svg>
