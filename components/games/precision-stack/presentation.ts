@@ -3,7 +3,7 @@ import {
   configureLogicalCanvas,
   type CanvasViewportMetrics,
 } from "@/lib/gameCanvas";
-import type { PrecisionStackState } from "@/lib/verified/precisionStackCore.v1";
+import type { PrecisionStackState } from "@/lib/verified/precisionStackCore.v2";
 
 export const STACK_VIEW = {
   width: 390,
@@ -107,6 +107,23 @@ export function drawOrbitalBackground(
     ctx.fill();
   }
   ctx.globalAlpha = 1;
+
+  // Distant orbital arc: visual identity only, deliberately below gameplay
+  // contrast so alignment remains the dominant visual task.
+  ctx.save();
+  ctx.translate(w * 0.72, h * 0.27);
+  ctx.rotate(-0.28);
+  ctx.strokeStyle = "rgba(92,210,238,.10)";
+  ctx.lineWidth = 9;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 142, 42, 0, Math.PI * 0.12, Math.PI * 1.05);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(185,133,255,.07)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 158, 48, 0, Math.PI * 0.08, Math.PI * 1.1);
+  ctx.stroke();
+  ctx.restore();
 
   // Planet limb: intentionally low contrast so the playfield remains primary.
   const planet = ctx.createRadialGradient(
@@ -218,6 +235,13 @@ export function drawStationModule(
   ctx.fillStyle = "rgba(255,255,255,.12)";
   ctx.fillRect(x + 4, y + 7, Math.max(0, width - 8), 2);
 
+  // Mechanical seam and docking rail improve perceived material weight while
+  // remaining presentation-only.
+  ctx.fillStyle = "rgba(4,12,24,.24)";
+  ctx.fillRect(x + 5, y + Math.floor(h * 0.52), Math.max(0, width - 10), 2);
+  ctx.fillStyle = "rgba(120,235,245,.18)";
+  ctx.fillRect(x + 7, y + Math.floor(h * 0.52) + 2, Math.max(0, width - 14), 1);
+
   ctx.fillStyle = "rgba(0,0,0,.16)";
   ctx.fillRect(x, y + h - 7, width, 7);
 
@@ -283,10 +307,15 @@ export function drawDockingPreview(
   }
 
   const topCenter = (top.xMilli + top.wMilli / 2) / 1000;
-  ctx.strokeStyle = "rgba(121,235,241,.42)";
+  ctx.strokeStyle = "rgba(121,235,241,.46)";
   ctx.beginPath();
-  ctx.moveTo(topCenter, targetWorldY - 5);
-  ctx.lineTo(topCenter, targetWorldY + 9);
+  ctx.moveTo(topCenter, targetWorldY - 7);
+  ctx.lineTo(topCenter, targetWorldY + 11);
   ctx.stroke();
+
+  ctx.fillStyle = "rgba(111,239,241,.16)";
+  ctx.beginPath();
+  ctx.arc(topCenter, targetWorldY + 2, 6, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
