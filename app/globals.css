@@ -5924,3 +5924,21 @@ html, body {
     min-height: 56px;
   }
 }
+
+
+/* Professional competitive games: full-surface verification and keyboard focus.
+   The game-specific renderers own their visual world; the platform overlay must
+   cover the whole interactive area while a server attempt starts/verifies. */
+.precisionStackGame .verificationOverlay,
+.pianoRushGame .verificationOverlay,
+.jetStreamArena .verificationOverlay {
+  inset: 0;
+  border-radius: 0;
+}
+
+.precisionStackGame canvas:focus-visible,
+.pianoRushGame canvas:focus-visible,
+.jetStreamArena canvas:focus-visible {
+  outline: 2px solid rgba(104, 226, 244, .72);
+  outline-offset: -2px;
+}
