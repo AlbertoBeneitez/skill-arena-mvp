@@ -4,7 +4,7 @@
  * Precision Stack presentation/input adapter.
  *
  * Competitive movement, overlap, scoring and terminal state remain isolated in
- * precisionStackCore.v1.ts. This component owns only presentation, feedback,
+ * precisionStackCore.v2.ts. This component owns only presentation, feedback,
  * lifecycle and translation of user input into the versioned DROP protocol.
  *
  * Gameplay provenance:
@@ -19,11 +19,11 @@ import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
 import {
   createPrecisionStackState,
   dropPrecisionStack,
-  PRECISION_STACK_V1,
+  PRECISION_STACK_V2,
   stepPrecisionStack,
   type PrecisionStackInput,
   type PrecisionStackState,
-} from "@/lib/verified/precisionStackCore.v1";
+} from "@/lib/verified/precisionStackCore.v2";
 import {
   beginStackFrame,
   configureStackCanvas,
@@ -36,10 +36,10 @@ import {
   type StackCanvasMetrics,
 } from "./precision-stack/presentation";
 
-const DROP_DURATION_MS = 220;
+const DROP_DURATION_MS = 180;
 const FAILURE_DURATION_MS = 520;
-const DT = 1 / PRECISION_STACK_V1.tickRate;
-const CAMERA_RESPONSE = 8.5;
+const DT = 1 / PRECISION_STACK_V2.tickRate;
+const CAMERA_RESPONSE = 10.5;
 
 type DropFx = {
   startedAt: number;
@@ -426,7 +426,7 @@ export default function PrecisionStack({
           score: 0,
           timeMs: Math.round(
             (state.tick * 1000) /
-              PRECISION_STACK_V1.tickRate
+              PRECISION_STACK_V2.tickRate
           ),
           verified: false,
           verificationError:
