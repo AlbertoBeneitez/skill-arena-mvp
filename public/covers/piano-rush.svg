@@ -1,1 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400"><rect width="640" height="400" rx="32" fill="#0f1321"/><g><rect x="110" y="46" width="100" height="270" rx="10" fill="#eceef4"/><rect x="220" y="46" width="100" height="270" rx="10" fill="#d9dce7"/><rect x="330" y="46" width="100" height="270" rx="10" fill="#eceef4"/><rect x="440" y="46" width="100" height="270" rx="10" fill="#d9dce7"/><rect x="226" y="98" width="88" height="116" rx="8" fill="#171b2d"/><rect x="446" y="170" width="88" height="116" rx="8" fill="#171b2d"/></g><text x="38" y="360" fill="#fff" font-size="46" font-family="system-ui" font-weight="900">PIANO RUSH</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="space" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#050713"/>
+      <stop offset=".6" stop-color="#111a35"/>
+      <stop offset="1" stop-color="#070b17"/>
+    </linearGradient>
+    <linearGradient id="pulse" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#eef8ff"/>
+      <stop offset="1" stop-color="#cbd8e8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="400" rx="32" fill="url(#space)"/>
+  <circle cx="320" cy="38" r="170" fill="#5368c5" opacity=".08"/>
+  <g opacity=".28" stroke="#9bb8e7">
+    <path d="M115 35v286M218 35v286M320 35v286M423 35v286M526 35v286"/>
+    <path d="M95 100h450M95 168h450M95 236h450"/>
+  </g>
+  <g>
+    <rect x="102" y="55" width="98" height="262" fill="#ffffff" opacity=".025"/>
+    <rect x="205" y="55" width="98" height="262" fill="#ffffff" opacity=".05"/>
+    <rect x="308" y="55" width="98" height="262" fill="#ffffff" opacity=".025"/>
+    <rect x="411" y="55" width="98" height="262" fill="#ffffff" opacity=".05"/>
+    <rect x="108" y="112" width="86" height="82" rx="7" fill="url(#pulse)"/>
+    <rect x="108" y="112" width="86" height="5" fill="#69d8ef"/>
+    <rect x="314" y="176" width="86" height="82" rx="7" fill="url(#pulse)"/>
+    <rect x="314" y="176" width="86" height="5" fill="#b98bf0"/>
+    <rect x="417" y="76" width="86" height="82" rx="7" fill="url(#pulse)"/>
+    <rect x="417" y="76" width="86" height="5" fill="#6ce0bf"/>
+    <rect x="95" y="286" width="450" height="10" rx="5" fill="#6fdfe9" opacity=".36"/>
+    <rect x="95" y="290" width="450" height="2" fill="#e8ffff"/>
+  </g>
+  <text x="38" y="360" fill="#f2f7ff" font-size="46" font-family="system-ui,sans-serif" font-weight="900">PIANO RUSH</text>
+  <text x="40" y="384" fill="#83dbe8" font-size="12" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="4">REACTOR SEQUENCE</text>
+</svg>
