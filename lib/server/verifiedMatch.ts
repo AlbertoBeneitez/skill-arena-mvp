@@ -5,33 +5,29 @@ import {
   randomUUID,
   timingSafeEqual,
 } from "node:crypto";
+import type { GameId } from "@/lib/games";
 import { canonicalJson } from "@/lib/verified/canonical";
 import type {
   AttemptTicket,
   MatchManifest,
 } from "@/lib/verified/contracts";
-import {
-  TOWER_DROP_V2,
-  TOWER_DROP_V2_CONTENT,
-} from "@/lib/verified/towerDropCore.v2";
+import { getServerGameAdapter } from "./gameVerifiers";
 
 const DEMO_SIGNING_SECRET =
   "skill-arena-demo-verification-key-not-for-production";
 
 const ALLOWED_STAKES_MINOR = new Set([0, 100, 500, 1000, 5000]);
 
+const COMMON_COMPETITION_RULES = {
+  players: 2,
+  attemptsPerPlayer: 1,
+  tieRule: "EXACT_TIE_REFUND",
+  authoritativeResult: "SERVER_REPLAY_ONLY",
+} as const;
+
 export function isAllowedStakeMinor(value: number) {
   return Number.isInteger(value) && ALLOWED_STAKES_MINOR.has(value);
 }
-
-const RULES_V1 = {
-  players: 2,
-  attemptsPerPlayer: 1,
-  endCondition: "FIRST_FAILURE_OR_TARGET",
-  tieRule: "EXACT_TIE_REFUND",
-  authoritativeResult: "SERVER_REPLAY_ONLY",
-  inputClock: "SIMULATION_TICKS",
-} as const;
 
 function sha256(value: string) {
   return `sha256:${createHash("sha256").update(value).digest("hex")}`;
@@ -49,36 +45,60 @@ export function hashManifest(manifest: MatchManifest) {
   return sha256(canonicalJson(manifest));
 }
 
-export function expectedTowerDropContentHash() {
-  return sha256(canonicalJson(TOWER_DROP_V2_CONTENT));
+export function expectedGameplayContentHash(gameId: string) {
+  const adapter = getServerGameAdapter(gameId);
+  if (!adapter) return null;
+  return sha256(canonicalJson(adapter.gameplayContentDescriptor));
 }
 
-export function expectedRulesHash() {
-  return sha256(canonicalJson(RULES_V1));
+export function expectedRulesHash(gameId: string) {
+  const adapter = getServerGameAdapter(gameId);
+  if (!adapter) return null;
+
+  return sha256(
+    canonicalJson({
+      common: COMMON_COMPETITION_RULES,
+      game: adapter.rulesDescriptor,
+    })
+  );
 }
 
-export function createTowerDropManifest(args?: {
+export function createMatchManifest(args: {
+  gameId: GameId;
   matchId?: string;
   stakeMinor?: number;
   targetScore?: number;
+  seed?: string;
 }): MatchManifest {
+  const adapter = getServerGameAdapter(args.gameId);
+  if (!adapter) {
+    throw new Error("UNSUPPORTED_GAME_VERSION");
+  }
+
   const createdAt = new Date().toISOString();
-  const stakeMinor = Math.max(0, Math.floor(args?.stakeMinor ?? 0));
-  const targetScore = Math.max(1, Math.floor(args?.targetScore ?? 1));
+  const stakeMinor = Math.max(0, Math.floor(args.stakeMinor ?? 0));
+  const targetScore = Math.max(1, Math.floor(args.targetScore ?? 1));
+
+  const rulesHash = expectedRulesHash(args.gameId);
+  const contentHash = expectedGameplayContentHash(args.gameId);
+  if (!rulesHash || !contentHash) {
+    throw new Error("UNSUPPORTED_GAME_VERSION");
+  }
 
   return {
-    manifest_version: 1,
-    match_id: args?.matchId ?? randomUUID(),
-    game_id: "tower-drop",
-    game_version: TOWER_DROP_V2.gameVersion,
-    engine_version: TOWER_DROP_V2.engineVersion,
-    rules_hash: expectedRulesHash(),
-    gameplay_content_hash: expectedTowerDropContentHash(),
+    manifest_version: 2,
+    match_id: args.matchId ?? randomUUID(),
+    game_id: adapter.gameId,
+    game_version: adapter.gameVersion,
+    engine_version: adapter.engineVersion,
+    rules_hash: rulesHash,
+    gameplay_content_hash: contentHash,
+    seed: args.seed ?? randomBytes(16).toString("hex"),
     simulation: {
-      tick_rate: TOWER_DROP_V2.tickRate,
-      coordinate_width: 390,
-      coordinate_height: 620,
-      end_condition: "FIRST_FAILURE_OR_TARGET",
+      tick_rate: adapter.simulation.tickRate,
+      coordinate_width: adapter.simulation.coordinateWidth,
+      coordinate_height: adapter.simulation.coordinateHeight,
+      end_condition: adapter.simulation.endCondition,
     },
     competition: {
       players: 2,
@@ -89,8 +109,9 @@ export function createTowerDropManifest(args?: {
       target_score: targetScore,
     },
     input_protocol: {
-      version: TOWER_DROP_V2.inputProtocolVersion,
-      allowed_actions: ["DROP"],
+      version: adapter.inputProtocol.version,
+      allowed_actions: [...adapter.inputProtocol.allowedActions],
+      max_inputs: adapter.inputProtocol.maxInputs,
     },
     created_at: createdAt,
   };
@@ -99,8 +120,7 @@ export function createTowerDropManifest(args?: {
 type UnsignedTicket = Omit<AttemptTicket, "signature">;
 
 function ticketSignature(ticket: UnsignedTicket) {
-  const secret = signingSecret().value;
-  return createHmac("sha256", secret)
+  return createHmac("sha256", signingSecret().value)
     .update(canonicalJson(ticket))
     .digest("base64url");
 }
@@ -137,13 +157,10 @@ export function verifyAttemptTicket(
   ticket: AttemptTicket,
   manifest: MatchManifest
 ) {
-  const {
-    signature,
-    ...unsigned
-  } = ticket;
+  const { signature, ...unsigned } = ticket;
 
   if (!signature || typeof signature !== "string") {
-    return { ok: false as const, error: "MISSING_SIGNATURE" };
+    return { ok: false as const, error: "INVALID_TICKET" };
   }
 
   const expected = ticketSignature(unsigned);
@@ -154,25 +171,24 @@ export function verifyAttemptTicket(
     actualBuffer.length !== expectedBuffer.length ||
     !timingSafeEqual(actualBuffer, expectedBuffer)
   ) {
-    return { ok: false as const, error: "INVALID_TICKET_SIGNATURE" };
+    return { ok: false as const, error: "INVALID_TICKET" };
   }
 
-  if (ticket.match_id !== manifest.match_id) {
-    return { ok: false as const, error: "MATCH_ID_MISMATCH" };
-  }
-
-  if (ticket.manifest_hash !== hashManifest(manifest)) {
-    return { ok: false as const, error: "MANIFEST_HASH_MISMATCH" };
+  if (
+    ticket.match_id !== manifest.match_id ||
+    ticket.manifest_hash !== hashManifest(manifest)
+  ) {
+    return { ok: false as const, error: "INVALID_TICKET" };
   }
 
   const expiresAt = Date.parse(ticket.expires_at);
   const issuedAt = Date.parse(ticket.issued_at);
   if (!Number.isFinite(expiresAt) || !Number.isFinite(issuedAt)) {
-    return { ok: false as const, error: "INVALID_TICKET_TIME" };
+    return { ok: false as const, error: "INVALID_TICKET" };
   }
 
   if (Date.now() > expiresAt) {
-    return { ok: false as const, error: "ATTEMPT_TICKET_EXPIRED" };
+    return { ok: false as const, error: "ATTEMPT_EXPIRED" };
   }
 
   return {
@@ -184,39 +200,65 @@ export function verifyAttemptTicket(
 
 export function validateManifest(manifest: MatchManifest) {
   if (
-    manifest.manifest_version !== 1 ||
-    manifest.game_id !== "tower-drop" ||
-    manifest.game_version !== TOWER_DROP_V2.gameVersion ||
-    manifest.engine_version !== TOWER_DROP_V2.engineVersion
+    !manifest ||
+    manifest.manifest_version !== 2 ||
+    typeof manifest.game_id !== "string"
+  ) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
+  const adapter = getServerGameAdapter(manifest.game_id);
+  if (!adapter) {
+    return { ok: false as const, error: "UNSUPPORTED_GAME_VERSION" };
+  }
+
+  if (
+    manifest.game_version !== adapter.gameVersion ||
+    manifest.engine_version !== adapter.engineVersion
   ) {
     return { ok: false as const, error: "UNSUPPORTED_GAME_VERSION" };
   }
 
-  if (manifest.gameplay_content_hash !== expectedTowerDropContentHash()) {
-    return { ok: false as const, error: "CONTENT_HASH_MISMATCH" };
-  }
-
-  if (manifest.rules_hash !== expectedRulesHash()) {
-    return { ok: false as const, error: "RULES_HASH_MISMATCH" };
+  if (
+    !manifest.seed ||
+    typeof manifest.seed !== "string" ||
+    manifest.seed.length > 128
+  ) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
   }
 
   if (
-    manifest.simulation.tick_rate !== TOWER_DROP_V2.tickRate ||
+    manifest.gameplay_content_hash !==
+      expectedGameplayContentHash(manifest.game_id) ||
+    manifest.rules_hash !== expectedRulesHash(manifest.game_id)
+  ) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
+  if (
+    manifest.simulation.tick_rate !== adapter.simulation.tickRate ||
     manifest.simulation.coordinate_width !==
-      TOWER_DROP_V2.widthMilli / 1000 ||
-    manifest.simulation.coordinate_height !== 620 ||
-    manifest.simulation.end_condition !== "FIRST_FAILURE_OR_TARGET"
+      adapter.simulation.coordinateWidth ||
+    manifest.simulation.coordinate_height !==
+      adapter.simulation.coordinateHeight ||
+    manifest.simulation.end_condition !==
+      adapter.simulation.endCondition
   ) {
-    return { ok: false as const, error: "SIMULATION_CONFIG_MISMATCH" };
+    return { ok: false as const, error: "INVALID_MANIFEST" };
   }
 
+  const protocol = manifest.input_protocol;
   if (
-    manifest.input_protocol.version !==
-      TOWER_DROP_V2.inputProtocolVersion ||
-    manifest.input_protocol.allowed_actions.length !== 1 ||
-    manifest.input_protocol.allowed_actions[0] !== "DROP"
+    protocol.version !== adapter.inputProtocol.version ||
+    protocol.max_inputs !== adapter.inputProtocol.maxInputs ||
+    protocol.allowed_actions.length !==
+      adapter.inputProtocol.allowedActions.length ||
+    protocol.allowed_actions.some(
+      (action, index) =>
+        action !== adapter.inputProtocol.allowedActions[index]
+    )
   ) {
-    return { ok: false as const, error: "INPUT_PROTOCOL_MISMATCH" };
+    return { ok: false as const, error: "INVALID_MANIFEST" };
   }
 
   if (
@@ -229,10 +271,10 @@ export function validateManifest(manifest: MatchManifest) {
     manifest.competition.target_score < 1 ||
     manifest.competition.target_score > 1_000_000_000
   ) {
-    return { ok: false as const, error: "COMPETITION_CONFIG_MISMATCH" };
+    return { ok: false as const, error: "INVALID_MANIFEST" };
   }
 
-  return { ok: true as const };
+  return { ok: true as const, adapter };
 }
 
 export function hashReplay(args: {
@@ -240,9 +282,13 @@ export function hashReplay(args: {
   attemptId: string;
   inputs: unknown;
   finalTick: number;
-  score: number;
-  height: number;
-  failure: unknown;
+  result: {
+    score: number;
+    timeMs: number;
+    won: boolean;
+    height?: number;
+    failure?: string | null;
+  };
 }) {
   return sha256(canonicalJson(args));
 }
