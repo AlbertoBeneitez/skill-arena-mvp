@@ -99,13 +99,13 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "jet-stream",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/JetStream")),
+    loadComponent: adaptGameComponent(() => import("@/components/games/JetStreamV2")),
     competition: {
       verification: "server-replay",
-      engineVersion: "skill-core-1",
-      inputProtocolVersion: 1,
+      engineVersion: "skill-core-3",
+      inputProtocolVersion: 2,
       allowedActions: ["FLAP"],
     },
     name: "Jet Stream",
@@ -119,7 +119,7 @@ const GAME_DEFINITIONS = [
     rivalScore: 6900,
     rivalName: "AERO",
     rivalAvatar: "/avatars/avatar-2.svg",
-    instruction: "Toca para impulsar la nave y atraviesa el centro de cada compuerta.",
+    instruction: "Toca para subir, elige un paso y recoge recargas de vida.",
     scoring: "La ruta, los huecos y la dificultad proceden del mismo seed competitivo.",
   },
   {
