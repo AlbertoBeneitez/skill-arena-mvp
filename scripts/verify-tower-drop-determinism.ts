@@ -392,7 +392,7 @@ assert(
   "centred stack placement was not classified as perfect"
 );
 assert(
-  perfectPlacement.blocks.at(-1)?.wMilli === perfectTop.wMilli,
+  perfectPlacement.blocks[perfectPlacement.blocks.length - 1]?.wMilli === perfectTop.wMilli,
   "perfect placement unexpectedly reduced module width"
 );
 assert(
@@ -411,7 +411,7 @@ assert(
   "outside-tolerance placement incorrectly snapped to perfect"
 );
 assert(
-  (nearPlacement.blocks.at(-1)?.wMilli ?? nearTop.wMilli) <
+  (nearPlacement.blocks[nearPlacement.blocks.length - 1]?.wMilli ?? nearTop.wMilli) <
     nearTop.wMilli,
   "imperfect placement did not clip the overlapping module"
 );
