@@ -1,15 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import type {
-  MatchManifest,
   AttemptTicket,
+  MatchManifest,
   VerifiedAttemptPayload,
 } from "@/lib/verified/contracts";
-import type { TowerDropInput } from "@/lib/verified/towerDropCore.v2";
 import {
-  replayTowerDrop,
-  TOWER_DROP_V2,
-} from "@/lib/verified/towerDropCore.v2";
+  validateInputSequence,
+  type ReplayInput,
+} from "@/lib/verified/inputValidation";
 import {
   hashManifest,
   hashReplay,
@@ -49,33 +48,43 @@ export async function POST(request: Request) {
 
   if (!isPayload(raw)) return reject("INVALID_PAYLOAD");
 
-  const payload = raw;
-  const manifest = payload.manifest as MatchManifest;
-  const ticket = payload.ticket as AttemptTicket;
-  const inputs = payload.inputs as TowerDropInput[];
-  const finalTick = payload.final_tick;
+  const manifest = raw.manifest as MatchManifest;
+  const ticket = raw.ticket as AttemptTicket;
+  const inputs = raw.inputs as ReplayInput[];
+  const finalTick = raw.final_tick;
 
   const manifestCheck = validateManifest(manifest);
   if (!manifestCheck.ok) return reject(manifestCheck.error);
 
   const ticketCheck = verifyAttemptTicket(ticket, manifest);
-  if (!ticketCheck.ok) return reject(ticketCheck.error, 401);
+  if (!ticketCheck.ok) {
+    return reject(ticketCheck.error, 401);
+  }
 
-  const replay = replayTowerDrop(
+  const adapter = manifestCheck.adapter;
+  const inputError = validateInputSequence(inputs, finalTick, {
+    version: adapter.inputProtocol.version,
+    allowedActions: adapter.inputProtocol.allowedActions,
+    maxInputs: adapter.inputProtocol.maxInputs,
+    maxFinalTick: adapter.simulation.maxFinalTick,
+  });
+
+  if (inputError) return reject(inputError);
+
+  const replay = adapter.replay({
     inputs,
     finalTick,
-    manifest.competition.target_score
-  );
-  if (!replay.valid) return reject(replay.error ?? "INVALID_REPLAY");
+    manifest,
+  });
+
+  if (!replay.valid) {
+    return reject(replay.error ?? "REPLAY_MISMATCH");
+  }
 
   const elapsedWallMs = Date.now() - ticketCheck.issuedAt;
   const maxClockLeadMs = 2_500;
   if (replay.timeMs > elapsedWallMs + maxClockLeadMs) {
     return reject("SIMULATION_FASTER_THAN_REAL_TIME", 409);
-  }
-
-  if (replay.state.tick > TOWER_DROP_V2.tickRate * 60 * 15) {
-    return reject("ATTEMPT_TOO_LONG");
   }
 
   const manifestHash = hashManifest(manifest);
@@ -84,9 +93,13 @@ export async function POST(request: Request) {
     attemptId: ticket.attempt_id,
     inputs,
     finalTick,
-    score: replay.score,
-    height: replay.height,
-    failure: replay.failure,
+    result: {
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.won,
+      height: replay.height,
+      failure: replay.failure,
+    },
   });
 
   return NextResponse.json({
@@ -97,8 +110,8 @@ export async function POST(request: Request) {
     score: replay.score,
     time_ms: replay.timeMs,
     height: replay.height,
-    failure: replay.failure,
-    won: replay.state.status === "won",
+    failure: replay.failure ?? null,
+    won: replay.won,
     authoritative_source: "SERVER_REPLAY",
     client_score_ignored: true,
   });
