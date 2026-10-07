@@ -250,6 +250,43 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
     jetStreamAdapter,
 };
 
+function assertCurrentAdapterContract(
+  adapter: VerifiedGameAdapter
+) {
+  const definition = getGameDefinition(adapter.gameId);
+
+  // Historical adapters intentionally outlive the current catalogue version.
+  if (!definition || definition.version !== adapter.gameVersion) {
+    return;
+  }
+
+  const competition = definition.competition;
+  const sameActions =
+    competition.verification === "server-replay" &&
+    competition.allowedActions.length ===
+      adapter.inputProtocol.allowedActions.length &&
+    competition.allowedActions.every(
+      (action, index) =>
+        action === adapter.inputProtocol.allowedActions[index]
+    );
+
+  if (
+    competition.verification !== "server-replay" ||
+    competition.engineVersion !== adapter.engineVersion ||
+    competition.inputProtocolVersion !==
+      adapter.inputProtocol.version ||
+    !sameActions
+  ) {
+    throw new Error(
+      `Verified adapter contract drift: ${adapter.gameId}@${adapter.gameVersion}`
+    );
+  }
+}
+
+Object.values(SERVER_GAME_ADAPTERS).forEach(
+  assertCurrentAdapterContract
+);
+
 export function getServerGameAdapter(
   gameId: string,
   gameVersion?: string
