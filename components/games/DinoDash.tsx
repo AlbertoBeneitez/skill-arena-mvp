@@ -322,9 +322,12 @@ export default function DinoDash({
         lastFrameTimeRef.current = now;
       }
 
-      accumulatorRef.current += Math.min(
-        0.05,
-        Math.max(0, (now - lastFrameTimeRef.current) / 1000)
+      // Do not discard elapsed simulation time on a late frame. Competitive
+      // time must advance independently of render cadence; after throttling,
+      // the fixed-step loop catches up before accepting a different outcome.
+      accumulatorRef.current += Math.max(
+        0,
+        (now - lastFrameTimeRef.current) / 1000
       );
       lastFrameTimeRef.current = now;
 
