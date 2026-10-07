@@ -1,10 +1,17 @@
 let audioContext: AudioContext | null = null;
 let soundEnabled = true;
+let musicTimer: ReturnType<typeof setInterval> | null = null;
+let musicGameId: string | null = null;
+let musicStep = 0;
 
 export function setGameSoundEnabled(enabled: boolean) {
   soundEnabled = enabled;
-  if (!enabled && audioContext?.state === "running") {
-    void audioContext.suspend();
+
+  if (!enabled) {
+    stopGameMusic();
+    if (audioContext?.state === "running") {
+      void audioContext.suspend();
+    }
   }
 }
 
@@ -78,6 +85,107 @@ function noiseBurst(ctx: AudioContext, duration = 0.07, volume = 0.025) {
   gain.connect(ctx.destination);
   source.start(now);
   source.stop(now + duration);
+}
+
+
+
+type MusicProfile = {
+  bpm: number;
+  root: number;
+  scale: number[];
+  bassEvery: number;
+};
+
+function profileFor(gameId: string): MusicProfile {
+  const profiles: MusicProfile[] = [
+    { bpm: 112, root: 220, scale: [0, 3, 5, 7, 10, 12], bassEvery: 4 },
+    { bpm: 120, root: 196, scale: [0, 2, 5, 7, 9, 12], bassEvery: 4 },
+    { bpm: 104, root: 246.94, scale: [0, 3, 5, 8, 10, 12], bassEvery: 6 },
+    { bpm: 126, root: 174.61, scale: [0, 2, 4, 7, 9, 12], bassEvery: 4 },
+  ];
+
+  let hash = 0;
+  for (let index = 0; index < gameId.length; index += 1) {
+    hash = (hash * 31 + gameId.charCodeAt(index)) >>> 0;
+  }
+
+  return profiles[hash % profiles.length];
+}
+
+function semitone(base: number, offset: number) {
+  return base * Math.pow(2, offset / 12);
+}
+
+function scheduleMusicStep(gameId: string) {
+  if (!soundEnabled || musicGameId !== gameId) return;
+
+  const ctx = context();
+  if (!ctx) return;
+
+  const profile = profileFor(gameId);
+  const phrase = [0, 2, 4, 2, 3, 5, 4, 1, 0, 3, 4, 2, 5, 3, 1, 2];
+  const degree = phrase[musicStep % phrase.length] % profile.scale.length;
+  const offset = profile.scale[degree];
+  const beatSeconds = 60 / profile.bpm;
+
+  tone(ctx, {
+    frequency: semitone(profile.root, offset),
+    duration: beatSeconds * 0.72,
+    volume: 0.011,
+    type: "sine",
+  });
+
+  if (musicStep % 2 === 0) {
+    tone(ctx, {
+      frequency: semitone(profile.root / 2, profile.scale[(degree + 2) % profile.scale.length]),
+      start: beatSeconds * 0.04,
+      duration: beatSeconds * 0.58,
+      volume: 0.006,
+      type: "triangle",
+    });
+  }
+
+  if (musicStep % profile.bassEvery === 0) {
+    tone(ctx, {
+      frequency: profile.root / 2,
+      duration: beatSeconds * 1.15,
+      volume: 0.008,
+      type: "sine",
+    });
+  }
+
+  musicStep += 1;
+}
+
+/**
+ * Soft synthesized background loop. It deliberately stays quiet under SFX,
+ * uses only Web Audio primitives, and needs no licensed audio assets.
+ */
+export function startGameMusic(gameId: string) {
+  if (!soundEnabled || typeof window === "undefined") return;
+
+  if (musicGameId === gameId && musicTimer !== null) return;
+
+  stopGameMusic();
+  musicGameId = gameId;
+  musicStep = 0;
+
+  const profile = profileFor(gameId);
+  const beatMs = Math.round((60_000 / profile.bpm) / 2);
+
+  scheduleMusicStep(gameId);
+  musicTimer = setInterval(() => {
+    scheduleMusicStep(gameId);
+  }, beatMs);
+}
+
+export function stopGameMusic() {
+  if (musicTimer !== null) {
+    clearInterval(musicTimer);
+    musicTimer = null;
+  }
+  musicGameId = null;
+  musicStep = 0;
 }
 
 /**
