@@ -296,6 +296,25 @@ assert(
   `render-rate equivalence failed: 60=${JSON.stringify(render60)} 120=${JSON.stringify(render120)} 144=${JSON.stringify(render144)}`
 );
 
+const towerReplayFixture = {
+  manifestHash: "sha256:tower-drop-golden-manifest",
+  attemptId: "tower-drop-golden-attempt",
+  inputs: golden.inputs,
+  finalTick: golden.finalTick,
+  result: {
+    score: first.score,
+    timeMs: first.timeMs,
+    won: first.state.status === "won",
+    height: first.height,
+    failure: first.failure,
+  },
+};
+const towerReplayHash =
+  "sha256:" +
+  createHash("sha256")
+    .update(canonicalJson(towerReplayFixture))
+    .digest("hex");
+
 console.log(
   [
     "Tower Drop v2 deterministic replay OK",
@@ -303,6 +322,8 @@ console.log(
     `height=${first.height}`,
     `finalTick=${golden.finalTick}`,
     "mechanics=pendulum+momentum+gravity+support+tip",
+    `replayHash=${towerReplayHash}`,
+    `inputs=${JSON.stringify(golden.inputs)}`,
   ].join(" · ")
 );
 
@@ -313,73 +334,27 @@ function precisionStatus(
   return state.status;
 }
 
-function precisionCentre(block: { xMilli: number; wMilli: number }) {
-  return block.xMilli + Math.floor(block.wMilli / 2);
-}
+const precisionGolden = {
+  seed: "precision-stack-golden-v1",
+  targetScore: 6_000,
+  inputs: [
+    { seq: 0, tick: 59, action: "DROP" },
+    { seq: 1, tick: 144, action: "DROP" },
+    { seq: 2, tick: 224, action: "DROP" },
+    { seq: 3, tick: 301, action: "DROP" },
+  ] satisfies PrecisionStackInput[],
+  finalTick: 301,
+  expected: {
+    score: 7_029,
+    height: 4,
+    failure: null,
+    timeMs: 2_508,
+    status: "won" as const,
+    replayHash:
+      "sha256:829fb3340aed7dd8b5b00f7b47f5096bd319988527833edb895fc19734126e3d",
+  },
+};
 
-function buildPrecisionGolden() {
-  const seed = "precision-stack-golden-v1";
-  const targetScore = 6_000;
-  const state = createPrecisionStackState(seed);
-  const inputs: PrecisionStackInput[] = [];
-  let guard = 0;
-
-  while (
-    precisionStatus(state) === "running" &&
-    guard < 100_000
-  ) {
-    if (state.phase === "moving") {
-      const top = state.blocks[state.blocks.length - 1];
-      const moving = {
-        xMilli: state.movingXMilli,
-        wMilli: state.movingWMilli,
-      };
-
-      if (
-        Math.abs(
-          precisionCentre(moving) -
-            precisionCentre(top)
-        ) <= 1_500
-      ) {
-        inputs.push({
-          seq: inputs.length,
-          tick: state.tick,
-          action: "DROP",
-        });
-        dropPrecisionStack(state, seed, targetScore);
-      }
-    }
-
-    if (precisionStatus(state) === "running") {
-      stepPrecisionStack(state, seed, targetScore);
-    }
-
-    guard += 1;
-  }
-
-  assert(
-    precisionStatus(state) === "won",
-    "precision golden did not reach target"
-  );
-
-  return {
-    seed,
-    targetScore,
-    inputs,
-    finalTick: state.tick,
-    expected: {
-      score: state.score,
-      height: state.blocks.length - 1,
-      failure: state.failure,
-      timeMs: Math.round(
-        (state.tick * 1000) / PRECISION_STACK_V1.tickRate
-      ),
-      status: state.status,
-    },
-  };
-}
-
-const precisionGolden = buildPrecisionGolden();
 const precisionFirst = replayPrecisionStack(
   precisionGolden.inputs,
   precisionGolden.finalTick,
@@ -553,6 +528,11 @@ const precisionReplayHash =
     .update(canonicalJson(precisionReplayFixture))
     .digest("hex");
 
+assert(
+  precisionReplayHash === precisionGolden.expected.replayHash,
+  "precision golden replay hash changed"
+);
+
 console.log(
   [
     "Precision Stack v1 deterministic replay OK",
@@ -560,6 +540,5 @@ console.log(
     `height=${precisionFirst.height}`,
     `finalTick=${precisionGolden.finalTick}`,
     `replayHash=${precisionReplayHash}`,
-    `inputs=${JSON.stringify(precisionGolden.inputs)}`,
   ].join(" · ")
 );
