@@ -277,8 +277,6 @@ export const GAMES: GameMeta[] = [
     scoring: "El tablero inicial, la cola de colores y la presión son idénticos.",
     deterministicSeed: "orb-burst-arena-001",
   },
-,
-
   {
     id: "precision-stack",
     name: "Stack",
