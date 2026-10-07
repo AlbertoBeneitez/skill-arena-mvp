@@ -682,7 +682,7 @@ function buildPrecisionV2Golden() {
       finalTick: 330,
       inputCount: 5,
       replayHash:
-        "sha256:52960d2423298f17c00545a5a0e3157e6ecc7bf0a56c030f3f6ec1793dfa2f2c",
+        "sha256:296213a185ec8e6de17ae4305913dbe94d070d4f37851f6be48d54c85f2bf472",
     },
   };
 }
@@ -863,6 +863,12 @@ const precisionV2ReplayHash =
   createHash("sha256")
     .update(canonicalJson(precisionV2ReplayFixture))
     .digest("hex");
+
+assert(
+  precisionV2ReplayHash ===
+    precisionV2Golden.expected.replayHash,
+  "precision v2 golden replay hash changed"
+);
 
 console.log(
   [
