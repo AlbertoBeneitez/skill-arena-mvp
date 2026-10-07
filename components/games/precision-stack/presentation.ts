@@ -156,14 +156,17 @@ export function drawDockingBase(ctx: CanvasRenderingContext2D) {
   ctx.restore();
 }
 
+const MODULE_PALETTE = [
+  { body: "#315887", edge: "#6ed7e9", dark: "#203a5e" },
+  { body: "#4a4f8f", edge: "#a6a9ff", dark: "#303461" },
+  { body: "#315f72", edge: "#73e6db", dark: "#20404d" },
+  { body: "#55457f", edge: "#c7a9ff", dark: "#382d58" },
+] as const;
+
 function modulePalette(level: number) {
-  const palette = [
-    { body: "#315887", edge: "#6ed7e9", dark: "#203a5e" },
-    { body: "#4a4f8f", edge: "#a6a9ff", dark: "#303461" },
-    { body: "#315f72", edge: "#73e6db", dark: "#20404d" },
-    { body: "#55457f", edge: "#c7a9ff", dark: "#382d58" },
-  ] as const;
-  return palette[Math.abs(level) % palette.length];
+  return MODULE_PALETTE[
+    Math.abs(level) % MODULE_PALETTE.length
+  ];
 }
 
 export function drawStationModule(
