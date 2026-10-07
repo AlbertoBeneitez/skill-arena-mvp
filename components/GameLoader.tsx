@@ -18,6 +18,12 @@ const MazeRush = dynamic(() => import("./games/MazeRush"), { ssr: false, loading
 const StarPhalanx = dynamic(() => import("./games/StarPhalanx"), { ssr: false, loading: () => <GameLoading /> });
 const RiverDash = dynamic(() => import("./games/RiverDash"), { ssr: false, loading: () => <GameLoading /> });
 const OrbBurst = dynamic(() => import("./games/OrbBurst"), { ssr: false, loading: () => <GameLoading /> });
+const PrecisionStack = dynamic(() => import("./games/PrecisionStack"), { ssr: false, loading: () => <GameLoading /> });
+const Merge2048 = dynamic(() => import("./games/Merge2048"), { ssr: false, loading: () => <GameLoading /> });
+const PianoRush = dynamic(() => import("./games/PianoRush"), { ssr: false, loading: () => <GameLoading /> });
+const DinoDash = dynamic(() => import("./games/DinoDash"), { ssr: false, loading: () => <GameLoading /> });
+const ReactionTest = dynamic(() => import("./games/ReactionTest"), { ssr: false, loading: () => <GameLoading /> });
+const SkyHop = dynamic(() => import("./games/SkyHop"), { ssr: false, loading: () => <GameLoading /> });
 
 function GameLoading() {
   return <div className="gameLoading">PREPARANDO ARENA…</div>;
@@ -81,5 +87,17 @@ export default function GameLoader({
       return <RiverDash key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "orb-burst":
       return <OrbBurst key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "precision-stack":
+      return <PrecisionStack key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "merge-2048":
+      return <Merge2048 key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "piano-rush":
+      return <PianoRush key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "dino-dash":
+      return <DinoDash key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "reaction-test":
+      return <ReactionTest key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+    case "sky-hop":
+      return <SkyHop key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
   }
 }
