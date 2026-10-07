@@ -675,12 +675,14 @@ function buildPrecisionV2Golden() {
     inputs,
     finalTick: state.tick,
     expected: {
-      score: state.score,
-      height: state.blocks.length - 1,
-      failure: state.failure,
-      timeMs: Math.round(
-        (state.tick * 1000) / PRECISION_STACK_V2.tickRate
-      ),
+      score: 8_742,
+      height: 5,
+      failure: null,
+      timeMs: 2_483,
+      finalTick: 298,
+      inputCount: 5,
+      replayHash:
+        "sha256:52960d2423298f17c00545a5a0e3157e6ecc7bf0a56c030f3f6ec1793dfa2f2c",
     },
   };
 }
@@ -712,7 +714,10 @@ assert(
   precisionV2First.score === precisionV2Golden.expected.score &&
     precisionV2First.height === precisionV2Golden.expected.height &&
     precisionV2First.failure === precisionV2Golden.expected.failure &&
-    precisionV2First.timeMs === precisionV2Golden.expected.timeMs,
+    precisionV2First.timeMs === precisionV2Golden.expected.timeMs &&
+    precisionV2Golden.finalTick === precisionV2Golden.expected.finalTick &&
+    precisionV2Golden.inputs.length ===
+      precisionV2Golden.expected.inputCount,
   "precision v2 golden result changed during replay"
 );
 
@@ -858,6 +863,12 @@ const precisionV2ReplayHash =
   createHash("sha256")
     .update(canonicalJson(precisionV2ReplayFixture))
     .digest("hex");
+
+assert(
+  precisionV2ReplayHash ===
+    precisionV2Golden.expected.replayHash,
+  "precision v2 golden replay hash changed"
+);
 
 console.log(
   [
