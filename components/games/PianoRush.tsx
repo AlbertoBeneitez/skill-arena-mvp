@@ -431,10 +431,17 @@ export default function PianoRush({
               rect.left -
               metrics.offsetX) /
             metrics.scale;
+          const localY =
+            (event.clientY -
+              rect.top -
+              metrics.offsetY) /
+            metrics.scale;
 
           if (
             localX < 0 ||
-            localX >= PIANO_VIEW.width
+            localX >= PIANO_VIEW.width ||
+            localY < 0 ||
+            localY >= PIANO_VIEW.height
           ) {
             return;
           }
