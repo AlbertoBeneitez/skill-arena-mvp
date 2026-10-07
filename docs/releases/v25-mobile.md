@@ -54,5 +54,4 @@ Metro Shift, Mine Grid, Brick Relay, Stack Shift, Maze Rush, Star Phalanx, ranki
 and staged production scenario/persistence integration.
 
 Two browser play-throughs won at 1400 with thirteen inputs each, verified against
-the server's authoritative replay. Final orbital cover loads and displays at its
-native 640-pixel width; the older cover remains as a historical asset.
+the server's authoritative replay. Final orbital vector cover loads and displays without image errors; the older cover remains as a historical asset.
