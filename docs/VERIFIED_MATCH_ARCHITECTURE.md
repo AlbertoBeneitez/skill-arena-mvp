@@ -1,8 +1,7 @@
 # Verified match architecture
 
 This document describes the shared competitive verification path used by
-Skill Arena. Tower Drop V2 and Precision Stack V1 are the two reference
-implementations.
+Skill Arena. Tower Drop V2, Precision Stack V1, Piano Rush V1 and Jet Stream V1 are current reference implementations.
 
 ## Authority boundary
 
@@ -92,7 +91,11 @@ Game-specific physics, collision and scoring stay inside each versioned core.
 Current adapters:
 
 - Tower Drop `2.1.0` → `towerDropCore.v2.ts`;
-- Precision Stack `1.0.0` → `precisionStackCore.v1.ts`.
+- Precision Stack `1.0.0` → `precisionStackCore.v1.ts`;
+- Piano Rush `1.0.0` → `pianoRushCore.v1.ts`;
+- Jet Stream `1.0.0` → `jetStreamCore.v1.ts`.
+
+The server adapter archive is keyed by `game_id + game_version`, not only by the current catalogue version. Old adapters remain registered while historical replays must be reproducible; advancing the public registry therefore does not invalidate persisted manifests.
 
 ## Input protocol
 
@@ -149,7 +152,7 @@ not alter input semantics.
 
 ## Determinism tests
 
-Both reference games have permanent deterministic fixtures.
+Verified reference games have permanent deterministic fixtures.
 
 Tests cover:
 
@@ -158,7 +161,7 @@ Tests cover:
 - invalid sequence/action/tick/payload cases;
 - permanent golden score/failure/time/replay hash fixtures.
 
-`pnpm test:determinism` runs these regressions in CI.
+`pnpm test:determinism` runs the shared `scripts/verify-competitive-games.ts` suite in CI.
 
 ## Security scope still outside this MVP
 
