@@ -1,336 +1,476 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { GameResult } from "@/lib/types";
-import { createRng } from "@/lib/deterministic/seeded";
+import { useCallback, useEffect, useRef } from "react";
+import type { GameRuntimeProps } from "@/lib/games";
+import {
+  beginLogicalCanvasFrame,
+  configureLogicalCanvas,
+  type CanvasViewportMetrics,
+} from "@/lib/gameCanvas";
 import { gameTone, haptic } from "@/lib/gameFeedback";
+import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
+import {
+  createPianoRushState,
+  pianoRushActionForLane,
+  PIANO_RUSH_V1,
+  stepPianoRush,
+  tapPianoRush,
+  type PianoRushInput,
+  type PianoRushState,
+} from "@/lib/verified/pianoRushCore.v1";
+import {
+  drawPianoRushBackground,
+  drawPianoRushHitZone,
+  drawPianoRushNote,
+  noteIsVisible,
+  noteTopForTick,
+  PIANO_VIEW,
+} from "./piano-rush/presentation";
 
-type Props = {
-  active: boolean;
-  targetScore: number;
-  seed: string;
-  onFinish: (result: GameResult) => void;
-};
+const DT = 1 / PIANO_RUSH_V1.tickRate;
+const HIT_FLASH_MS = 180;
+const TERMINAL_FEEDBACK_MS = 240;
 
-type Note = {
+type HitFlash = {
   lane: number;
-  y: number;
-  hit: boolean;
-  missed: boolean;
-  id: number;
+  startedAt: number;
+  strong: boolean;
 };
-
-const W = 390;
-const H = 620;
-const LANES = 4;
-const LANE_W = W / LANES;
-const HIT_Y = 538;
-const NOTE_H = 116;
-const DT = 1 / 120;
-
-function buildLaneSequence(seed: string) {
-  const rng = createRng(`${seed}:piano-sequence`);
-  const lanes: number[] = [];
-  let previous = -1;
-  let run = 0;
-
-  for (let index = 0; index < 1000; index += 1) {
-    let lane = rng.nextInt(LANES);
-
-    if (lane === previous) {
-      run += 1;
-      if (run >= 2) {
-        lane = (lane + 1 + rng.nextInt(LANES - 1)) % LANES;
-        run = 0;
-      }
-    } else {
-      previous = lane;
-      run = 0;
-    }
-
-    lanes.push(lane);
-    previous = lane;
-  }
-
-  return lanes;
-}
 
 export default function PianoRush({
   active,
+  stake,
   targetScore,
-  seed,
   onFinish,
-}: Props) {
+}: GameRuntimeProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const metricsRef = useRef<CanvasViewportMetrics | null>(null);
   const rafRef = useRef<number | null>(null);
-  const startRef = useRef(0);
-  const sequence = useMemo(() => buildLaneSequence(seed), [seed]);
+  const finishRef = useRef(onFinish);
 
-  const stateRef = useRef({
-    notes: [] as Note[],
-    sequenceIndex: 0,
-    score: 0,
-    combo: 0,
-    running: false,
-    ticks: 0,
-    last: 0,
-    acc: 0,
-    spawnAccumulator: 0,
-    flashLane: -1,
-    flashTicks: 0,
-  });
-
-  const speedFor = (score: number) =>
-    Math.min(425, 220 + Math.floor(score / 2500) * 18);
-
-  const spawnEveryFor = (score: number) =>
-    Math.max(0.44, 0.68 - Math.floor(score / 4200) * 0.035);
-
-  const finish = useCallback(
-    (won: boolean) => {
-      const s = stateRef.current;
-      if (!s.running) return;
-
-      s.running = false;
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-
-      gameTone(won ? "win" : "bad");
-      haptic(won ? [18, 30, 46] : 30);
-
-      onFinish({
-        won,
-        score: s.score,
-        timeMs: Math.round(performance.now() - startRef.current),
-      });
-    },
-    [onFinish]
+  const stateRef = useRef<PianoRushState>(
+    createPianoRushState("preview")
   );
+  const loopingRef = useRef(false);
+  const terminalSubmittedRef = useRef(false);
+  const startFailureReportedRef = useRef(false);
+  const terminalStartedAtRef = useRef(0);
 
-  const spawnNote = useCallback(() => {
-    const s = stateRef.current;
-    const lane = sequence[s.sequenceIndex % sequence.length];
+  const lastFrameTimeRef = useRef(0);
+  const accumulatorRef = useRef(0);
+  const hitFlashRef = useRef<HitFlash | null>(null);
+  const failureFlashUntilRef = useRef(0);
 
-    s.notes.push({
-      lane,
-      y: -NOTE_H,
-      hit: false,
-      missed: false,
-      id: s.sequenceIndex,
-    });
-    s.sequenceIndex += 1;
-  }, [sequence]);
+  const verifiedAttempt = useVerifiedAttempt<PianoRushInput>({
+    active,
+    gameId: "piano-rush",
+    stakeMinor: Math.round(stake * 100),
+    targetScore,
+  });
+  const {
+    state: attemptState,
+    recordInput,
+    verifyAttempt,
+  } = verifiedAttempt;
 
-  const step = useCallback(() => {
-    const s = stateRef.current;
-    s.ticks += 1;
-    s.flashTicks = Math.max(0, s.flashTicks - 1);
+  useEffect(() => {
+    finishRef.current = onFinish;
+  }, [onFinish]);
 
-    const speed = speedFor(s.score);
-    s.spawnAccumulator += DT;
-
-    if (s.spawnAccumulator >= spawnEveryFor(s.score)) {
-      s.spawnAccumulator = 0;
-      spawnNote();
-    }
-
-    for (const note of s.notes) {
-      if (!note.hit) note.y += speed * DT;
-
-      if (
-        !note.hit &&
-        !note.missed &&
-        note.y > HIT_Y + 38
-      ) {
-        note.missed = true;
-        finish(false);
-        return;
-      }
-    }
-
-    s.notes = s.notes.filter(
-      (note) => !note.hit && note.y < H + NOTE_H
-    );
-  }, [finish, spawnNote]);
-
-  const draw = useCallback(() => {
+  const draw = useCallback((now = performance.now()) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const s = stateRef.current;
+    const metrics =
+      metricsRef.current ??
+      configureLogicalCanvas(
+        canvas,
+        PIANO_VIEW.width,
+        PIANO_VIEW.height
+      );
+    metricsRef.current = metrics;
+    beginLogicalCanvasFrame(ctx, canvas, metrics);
 
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, "#101322");
-    bg.addColorStop(0.72, "#181d32");
-    bg.addColorStop(1, "#090b12");
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
+    const state = stateRef.current;
+    const flash = hitFlashRef.current;
+    const flashAge = flash ? now - flash.startedAt : HIT_FLASH_MS;
+    const flashStrength =
+      flash && flashAge < HIT_FLASH_MS
+        ? 1 - flashAge / HIT_FLASH_MS
+        : 0;
 
-    for (let lane = 0; lane < LANES; lane += 1) {
-      const x = lane * LANE_W;
-
-      ctx.fillStyle =
-        lane % 2 === 0
-          ? "rgba(255,255,255,.028)"
-          : "rgba(255,255,255,.052)";
-      ctx.fillRect(x, 0, LANE_W, H);
-
-      if (lane > 0) {
-        ctx.strokeStyle = "rgba(255,255,255,.13)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, H);
-        ctx.stroke();
-      }
-
-      if (s.flashTicks > 0 && s.flashLane === lane) {
-        ctx.fillStyle = "rgba(99,226,196,.18)";
-        ctx.fillRect(x + 2, HIT_Y - NOTE_H + 4, LANE_W - 4, NOTE_H - 8);
-      }
+    if (flash && flashStrength <= 0) {
+      hitFlashRef.current = null;
     }
 
-    ctx.fillStyle = "rgba(255,255,255,.10)";
-    ctx.fillRect(0, HIT_Y, W, 4);
+    drawPianoRushBackground(
+      ctx,
+      state,
+      flash?.lane ?? -1,
+      flashStrength
+    );
 
-    for (const note of s.notes) {
-      if (note.hit) continue;
-      const x = note.lane * LANE_W + 7;
-      const width = LANE_W - 14;
-      const y = note.y;
+    const startIndex = state.nextNoteIndex;
+    const maxIndex = Math.min(
+      state.schedule.length,
+      startIndex + 12
+    );
 
-      const nearHit = Math.abs(y + NOTE_H - HIT_Y) < 44;
-      ctx.fillStyle = nearHit ? "#f5f2e8" : "#d9dce7";
-      ctx.shadowBlur = nearHit ? 16 : 6;
-      ctx.shadowColor = nearHit
-        ? "rgba(255,220,120,.55)"
-        : "rgba(90,120,220,.18)";
-      ctx.fillRect(x, y, width, NOTE_H - 7);
-      ctx.shadowBlur = 0;
+    for (let index = maxIndex - 1; index >= startIndex; index -= 1) {
+      const note = state.schedule[index];
+      if (!noteIsVisible(note, state.tick)) continue;
 
-      ctx.fillStyle = "#151b2e";
-      ctx.fillRect(x + 7, y + NOTE_H - 26, width - 14, 8);
+      drawPianoRushNote(
+        ctx,
+        note,
+        noteTopForTick(note, state.tick),
+        index === startIndex
+      );
+    }
+
+    drawPianoRushHitZone(
+      ctx,
+      flash?.lane ?? -1,
+      flashStrength
+    );
+
+    if (now < failureFlashUntilRef.current) {
+      const remaining =
+        (failureFlashUntilRef.current - now) / TERMINAL_FEEDBACK_MS;
+      ctx.fillStyle = `rgba(255,73,91,${0.08 + remaining * 0.14})`;
+      ctx.fillRect(
+        0,
+        0,
+        PIANO_VIEW.width,
+        PIANO_VIEW.height
+      );
     }
   }, []);
 
-  const loop = useCallback(
-    (now: number) => {
-      const s = stateRef.current;
-      if (!s.running) return;
+  const submitTerminal = useCallback(
+    async (state: PianoRushState) => {
+      if (terminalSubmittedRef.current) return;
+      terminalSubmittedRef.current = true;
+      loopingRef.current = false;
 
-      if (!s.last) s.last = now;
-      s.acc += Math.min(0.05, (now - s.last) / 1000);
-      s.last = now;
-
-      while (s.acc >= DT && s.running) {
-        step();
-        s.acc -= DT;
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
 
-      draw();
+      const result = await verifyAttempt(state.tick);
 
-      if (s.running) {
+      if (!result.ok || !result.verified) {
+        finishRef.current({
+          won: false,
+          score: 0,
+          timeMs: Math.round(
+            (state.tick * 1000) /
+              PIANO_RUSH_V1.tickRate
+          ),
+          verified: false,
+          verificationError:
+            result.error ?? "REPLAY_MISMATCH",
+        });
+        return;
+      }
+
+      finishRef.current({
+        won: result.won === true,
+        score: result.score ?? 0,
+        timeMs: result.time_ms ?? 0,
+        verified: true,
+        failureReason: result.failure ?? null,
+      });
+    },
+    [verifyAttempt]
+  );
+
+  const markTerminalFeedback = useCallback(
+    (now: number) => {
+      if (terminalStartedAtRef.current > 0) return;
+      terminalStartedAtRef.current = now;
+
+      if (stateRef.current.status === "won") {
+        gameTone("win");
+        haptic([16, 28, 44]);
+      } else {
+        failureFlashUntilRef.current =
+          now + TERMINAL_FEEDBACK_MS;
+        gameTone("bad");
+        haptic([24, 18, 42]);
+      }
+    },
+    []
+  );
+
+  const step = useCallback(() => {
+    const state = stateRef.current;
+    if (state.status !== "running") return;
+
+    stepPianoRush(state, targetScore);
+
+    if (state.status !== "running") {
+      markTerminalFeedback(performance.now());
+    }
+  }, [markTerminalFeedback, targetScore]);
+
+  const loop = useCallback(
+    (now: number) => {
+      if (!loopingRef.current) return;
+
+      if (lastFrameTimeRef.current <= 0) {
+        lastFrameTimeRef.current = now;
+      }
+
+      accumulatorRef.current += Math.min(
+        0.05,
+        Math.max(
+          0,
+          (now - lastFrameTimeRef.current) / 1000
+        )
+      );
+      lastFrameTimeRef.current = now;
+
+      while (
+        stateRef.current.status === "running" &&
+        accumulatorRef.current >= DT
+      ) {
+        step();
+        accumulatorRef.current -= DT;
+      }
+
+      draw(now);
+
+      const state = stateRef.current;
+      if (state.status !== "running") {
+        markTerminalFeedback(now);
+
+        if (
+          now - terminalStartedAtRef.current >=
+          TERMINAL_FEEDBACK_MS
+        ) {
+          void submitTerminal(state);
+          return;
+        }
+      }
+
+      if (loopingRef.current) {
         rafRef.current = requestAnimationFrame(loop);
       }
     },
-    [draw, step]
+    [draw, markTerminalFeedback, step, submitTerminal]
   );
 
   useEffect(() => {
-    if (!active) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    stateRef.current = {
-      notes: [],
-      sequenceIndex: 0,
-      score: 0,
-      combo: 0,
-      running: true,
-      ticks: 0,
-      last: 0,
-      acc: 0,
-      spawnAccumulator: 0,
-      flashLane: -1,
-      flashTicks: 0,
+    const resize = () => {
+      metricsRef.current = configureLogicalCanvas(
+        canvas,
+        PIANO_VIEW.width,
+        PIANO_VIEW.height
+      );
+      draw();
     };
 
-    startRef.current = performance.now();
+    resize();
 
-    for (let index = 0; index < 3; index += 1) {
-      spawnNote();
-      stateRef.current.notes[index].y = -NOTE_H - index * 150;
-    }
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(resize)
+        : null;
+    observer?.observe(canvas);
+    window.addEventListener("orientationchange", resize);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("orientationchange", resize);
+    };
+  }, [draw]);
+
+  useEffect(() => {
+    if (!active || attemptState.status !== "ready") return;
+
+    stateRef.current = createPianoRushState(
+      attemptState.manifest.seed
+    );
+    loopingRef.current = true;
+    terminalSubmittedRef.current = false;
+    startFailureReportedRef.current = false;
+    terminalStartedAtRef.current = 0;
+    lastFrameTimeRef.current = 0;
+    accumulatorRef.current = 0;
+    hitFlashRef.current = null;
+    failureFlashUntilRef.current = 0;
 
     draw();
     rafRef.current = requestAnimationFrame(loop);
 
     return () => {
-      stateRef.current.running = false;
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      loopingRef.current = false;
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      hitFlashRef.current = null;
     };
-  }, [active, draw, loop, spawnNote]);
+  }, [
+    active,
+    attemptState.status,
+    attemptState.status === "ready"
+      ? attemptState.manifest.match_id
+      : "",
+    draw,
+    loop,
+  ]);
 
-  function tapLane(lane: number) {
-    const s = stateRef.current;
-    if (!s.running) return;
-
-    const candidates = s.notes
-      .filter((note) => !note.hit && !note.missed && note.lane === lane)
-      .sort((a, b) => b.y - a.y);
-
-    const note = candidates[0];
-    if (!note) {
-      finish(false);
-      return;
+  useEffect(() => {
+    if (
+      active &&
+      attemptState.status === "rejected" &&
+      stateRef.current.tick === 0 &&
+      !startFailureReportedRef.current
+    ) {
+      startFailureReportedRef.current = true;
+      finishRef.current({
+        won: false,
+        score: 0,
+        timeMs: 0,
+        verified: false,
+        verificationError: attemptState.reason,
+      });
     }
+  }, [active, attemptState]);
 
-    const noteBottom = note.y + NOTE_H;
-    const error = Math.abs(noteBottom - HIT_Y);
-    const tolerance = 54;
+  const tapLane = useCallback(
+    (lane: number) => {
+      const state = stateRef.current;
+      if (
+        attemptState.status !== "ready" ||
+        !loopingRef.current ||
+        state.status !== "running"
+      ) {
+        return;
+      }
 
-    if (error > tolerance) {
-      finish(false);
-      return;
-    }
+      const action = pianoRushActionForLane(lane);
+      if (!action) return;
 
-    note.hit = true;
-    s.combo += 1;
-    const precision = Math.max(0, 1 - error / tolerance);
-    s.score +=
-      350 +
-      Math.round(precision * 450) +
-      Math.min(400, s.combo * 12);
+      const accepted = recordInput({
+        tick: state.tick,
+        action,
+      });
+      if (!accepted) return;
 
-    s.flashLane = lane;
-    s.flashTicks = 10;
+      tapPianoRush(state, action, targetScore);
 
-    gameTone(precision > 0.72 ? "good" : "tap");
-    haptic(precision > 0.72 ? 5 : 2);
+      const now = performance.now();
+      if (state.status === "failed") {
+        markTerminalFeedback(now);
+        draw(now);
+        return;
+      }
 
-    if (s.score >= targetScore) {
-      finish(true);
-    }
-  }
+      const error =
+        state.lastHitErrorTicks ??
+        PIANO_RUSH_V1.maxTimingErrorTicks;
+      const strong =
+        error <= PIANO_RUSH_V1.perfectTimingErrorTicks;
+
+      hitFlashRef.current = {
+        lane,
+        startedAt: now,
+        strong,
+      };
+
+      gameTone(strong ? "good" : "tap");
+      haptic(strong ? [4, 9, 4] : 3);
+
+      if (state.status === "won") {
+        markTerminalFeedback(now);
+      }
+
+      draw(now);
+    },
+    [
+      attemptState.status,
+      draw,
+      markTerminalFeedback,
+      recordInput,
+      targetScore,
+    ]
+  );
 
   return (
     <div className="detGameSurface pianoRushGame">
       <canvas
         ref={canvasRef}
-        width={W}
-        height={H}
         className="gameCanvas deterministicCanvas"
-        aria-label="Piano Rush"
+        aria-label="Piano Rush: toca el carril cuando el pulso llegue a la zona inferior"
+        role="application"
+        tabIndex={0}
         onPointerDown={(event) => {
-          const rect = event.currentTarget.getBoundingClientRect();
+          event.preventDefault();
+
+          const metrics = metricsRef.current;
+          if (!metrics) return;
+
+          const rect =
+            event.currentTarget.getBoundingClientRect();
           const localX =
-            ((event.clientX - rect.left) / rect.width) * W;
-          const lane = Math.max(
-            0,
-            Math.min(LANES - 1, Math.floor(localX / LANE_W))
+            (event.clientX -
+              rect.left -
+              metrics.offsetX) /
+            metrics.scale;
+
+          if (
+            localX < 0 ||
+            localX >= PIANO_VIEW.width
+          ) {
+            return;
+          }
+
+          const lane = Math.floor(
+            localX /
+              (PIANO_VIEW.width /
+                PIANO_VIEW.laneCount)
           );
           tapLane(lane);
         }}
+        onKeyDown={(event) => {
+          const keyToLane: Record<string, number> = {
+            "1": 0,
+            "2": 1,
+            "3": 2,
+            "4": 3,
+            a: 0,
+            s: 1,
+            d: 2,
+            f: 3,
+          };
+          const lane = keyToLane[event.key.toLowerCase()];
+          if (lane !== undefined) {
+            event.preventDefault();
+            tapLane(lane);
+          }
+        }}
       />
+
+      {(attemptState.status === "starting" ||
+        attemptState.status === "verifying") && (
+        <div className="verificationOverlay">
+          <span>
+            {attemptState.status === "starting"
+              ? "PREPARANDO PARTIDA"
+              : "COMPROBANDO RESULTADO"}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
