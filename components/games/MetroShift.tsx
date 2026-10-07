@@ -719,6 +719,11 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
         }}
         aria-label="Metro Shift"
       />
+      <div className="metroTouchControls" aria-label="Controles táctiles">
+        <button type="button" onPointerDown={(event) => { event.preventDefault(); move(-1); }}>←</button>
+        <button type="button" className="jump" onPointerDown={(event) => { event.preventDefault(); jump(); }}>↑</button>
+        <button type="button" onPointerDown={(event) => { event.preventDefault(); move(1); }}>→</button>
+      </div>
     </div>
   );
 }
