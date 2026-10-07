@@ -39,6 +39,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const targetRef = useRef(targetScore);
   const pendingRef = useRef<string[]>([]);
   const lastInputTickRef = useRef(-1);
+  const feedbackScoreRef = useRef(0);
   const heldRef = useRef(new Set<string>());
   const pointerRef = useRef<{ id: number; origin: CorePoint } | null>(null);
   const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined });
@@ -69,18 +70,24 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (!attempt.recordInput({ tick: state.tick, action })) continue;
       lastInputTickRef.current = state.tick;
       applyCoreInput(core, state, action, targetRef.current);
-      haptic(2);
+      if (state.score !== feedbackScoreRef.current) {
+        gameTone(state.score > feedbackScoreRef.current ? "good" : "bad");
+        haptic(6);
+        feedbackScoreRef.current = state.score;
+      } else haptic(2);
       return;
     }
   }, [core, attempt.recordInput]);
 
   const sync = useCallback((now: number) => {
     if (!runningRef.current) return;
-    const before = stateRef.current.score;
     const tick = Math.floor(Math.max(0, now - epochRef.current) * core.tickRate / 1000);
     advanceCoreToTick(core, stateRef.current, tick, targetRef.current, flush);
     flush();
-    if (stateRef.current.score > before) gameTone("good");
+    if (stateRef.current.score !== feedbackScoreRef.current) {
+      gameTone(stateRef.current.score > feedbackScoreRef.current ? "good" : "bad");
+      feedbackScoreRef.current = stateRef.current.score;
+    }
   }, [core, flush]);
 
   const send = useCallback((action: string) => {
@@ -126,6 +133,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       return;
     }
     stateRef.current = core.create(manifest.seed);
+    feedbackScoreRef.current = 0;
+    setHud({tick:0,score:stateRef.current.score,height:stateRef.current.height,lives:stateRef.current.lives});
     targetRef.current = manifest.competition.target_score;
     epochRef.current = performance.now();
     pendingRef.current = [];
