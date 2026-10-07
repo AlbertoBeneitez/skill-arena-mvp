@@ -4,7 +4,7 @@ export type MatchManifest = {
   manifest_version: 1;
   match_id: string;
   game_id: "tower-drop";
-  game_version: "2.0.0";
+  game_version: "2.1.0";
   engine_version: "skill-core-2";
   rules_hash: string;
   gameplay_content_hash: string;
