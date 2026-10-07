@@ -18,7 +18,13 @@ export type GameMeta = {
     | "maze-rush"
     | "star-phalanx"
     | "river-dash"
-    | "orb-burst";
+    | "orb-burst"
+    | "precision-stack"
+    | "merge-2048"
+    | "piano-rush"
+    | "dino-dash"
+    | "reaction-test"
+    | "sky-hop";
   name: string;
   cover: string;
   enabled: boolean;
@@ -270,6 +276,110 @@ export const GAMES: GameMeta[] = [
     instruction: "Apunta arrastrando y suelta para lanzar. Junta tres o más.",
     scoring: "El tablero inicial, la cola de colores y la presión son idénticos.",
     deterministicSeed: "orb-burst-arena-001",
+  },
+,
+
+  {
+    id: "precision-stack",
+    name: "Stack",
+    cover: "/covers/precision-stack.svg",
+    enabled: true,
+    waitingStakes: [1, 10],
+    category: "PRECISIÓN",
+    tagline: "Corta menos. Apila más.",
+    difficulty: "MEDIA",
+    skillLabel: "TIMING + PRECISIÓN",
+    rivalScore: 7600,
+    rivalName: "EDGE",
+    rivalAvatar: "/avatars/avatar-2.svg",
+    instruction: "Toca para soltar el bloque móvil sobre el anterior.",
+    scoring: "El solape conservado determina la dificultad de los siguientes bloques.",
+    deterministicSeed: "precision-stack-arena-001",
+  },
+  {
+    id: "merge-2048",
+    name: "2048",
+    cover: "/covers/merge-2048.svg",
+    enabled: true,
+    waitingStakes: [1, 5],
+    category: "PUZZLE",
+    tagline: "Misma secuencia. Mejores decisiones.",
+    difficulty: "ALTA",
+    skillLabel: "PLANIFICACIÓN + EFICIENCIA",
+    rivalScore: 6200,
+    rivalName: "MERGE",
+    rivalAvatar: "/avatars/avatar-4.svg",
+    instruction: "Desliza o usa las flechas para fusionar valores iguales.",
+    scoring: "La secuencia de valores y selectores de aparición es idéntica para ambos.",
+    deterministicSeed: "merge-2048-arena-001",
+  },
+  {
+    id: "piano-rush",
+    name: "Piano Rush",
+    cover: "/covers/piano-rush.svg",
+    enabled: true,
+    waitingStakes: [5, 10],
+    category: "RITMO",
+    tagline: "Cuatro carriles. Cero errores.",
+    difficulty: "ALTA",
+    skillLabel: "RITMO + REACCIÓN",
+    rivalScore: 8800,
+    rivalName: "KEY",
+    rivalAvatar: "/avatars/avatar-7.svg",
+    instruction: "Toca el carril cuando la ficha llegue a la línea inferior.",
+    scoring: "Misma secuencia de carriles y progresión de velocidad.",
+    deterministicSeed: "piano-rush-arena-001",
+  },
+  {
+    id: "dino-dash",
+    name: "Dino Dash",
+    cover: "/covers/dino-dash.svg",
+    enabled: true,
+    waitingStakes: [1, 5],
+    category: "RUNNER",
+    tagline: "Corre. Salta. Agáchate. Sigue.",
+    difficulty: "MEDIA",
+    skillLabel: "TIMING + LECTURA",
+    rivalScore: 7200,
+    rivalName: "REX",
+    rivalAvatar: "/avatars/avatar-8.svg",
+    instruction: "Toca para saltar y usa ↓ para agacharte bajo obstáculos altos.",
+    scoring: "Ambos reciben la misma secuencia exacta de obstáculos.",
+    deterministicSeed: "dino-dash-arena-001",
+  },
+  {
+    id: "reaction-test",
+    name: "Reaction Test",
+    cover: "/covers/reaction-test.svg",
+    enabled: true,
+    waitingStakes: [1, 50],
+    category: "REACCIÓN",
+    tagline: "No adivines. Reacciona.",
+    difficulty: "ALTA",
+    skillLabel: "REACCIÓN PURA",
+    rivalScore: 4300,
+    rivalName: "FLASH",
+    rivalAvatar: "/avatars/avatar-1.svg",
+    instruction: "Espera a que cambie la señal y toca lo más rápido posible.",
+    scoring: "Cinco rondas con esperas deterministas; anticiparse penaliza.",
+    deterministicSeed: "reaction-test-arena-001",
+  },
+  {
+    id: "sky-hop",
+    name: "Sky Hop",
+    cover: "/covers/sky-hop.svg",
+    enabled: true,
+    waitingStakes: [5, 10],
+    category: "PLATAFORMAS",
+    tagline: "Rebota y sigue subiendo.",
+    difficulty: "ALTA",
+    skillLabel: "CONTROL + ANTICIPACIÓN",
+    rivalScore: 7600,
+    rivalName: "HOP",
+    rivalAvatar: "/avatars/avatar-3.svg",
+    instruction: "Mantén izquierda o derecha para dirigir el salto automático.",
+    scoring: "Mismas plataformas, movimientos y distancias para ambos.",
+    deterministicSeed: "sky-hop-arena-001",
   },
 
 ];
