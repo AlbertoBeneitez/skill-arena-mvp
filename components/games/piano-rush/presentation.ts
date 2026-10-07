@@ -83,6 +83,22 @@ export function drawPianoRushBackground(
   ctx.fillStyle = reactor;
   ctx.fillRect(0, 0, w, h * 0.58);
 
+  // Orbital timing ring gives the chart a clear focal point without adding
+  // another HUD. It is presentation-only and derives from simulation tick.
+  ctx.save();
+  ctx.translate(w / 2, 48);
+  ctx.rotate(state.tick * 0.0012);
+  ctx.strokeStyle = "rgba(112,210,244,.10)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 118, 26, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(190,137,255,.07)";
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 151, 36, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
   for (let lane = 0; lane < laneCount; lane += 1) {
     const x = lane * laneWidth;
     const lanePulse =
@@ -138,8 +154,11 @@ export function drawPianoRushHitZone(
   ctx.fillRect(0, hitY - 6, w, 12);
   ctx.shadowBlur = 0;
 
-  ctx.fillStyle = "rgba(255,255,255,.55)";
+  ctx.fillStyle = "rgba(255,255,255,.68)";
   ctx.fillRect(0, hitY - 1, w, 2);
+
+  ctx.fillStyle = "rgba(105,223,236,.06)";
+  ctx.fillRect(0, hitY - 18, w, 36);
 
   for (let lane = 0; lane < laneCount; lane += 1) {
     const x = lane * laneWidth;
@@ -207,6 +226,13 @@ export function drawPianoRushNote(
 
   ctx.fillStyle = color;
   ctx.fillRect(x, y, width, 5);
+
+  const core = ctx.createLinearGradient(x, y, x + width, y);
+  core.addColorStop(0, "rgba(255,255,255,.04)");
+  core.addColorStop(0.5, isNext ? "rgba(255,255,255,.26)" : "rgba(255,255,255,.14)");
+  core.addColorStop(1, "rgba(255,255,255,.04)");
+  ctx.fillStyle = core;
+  ctx.fillRect(x + 7, y + 9, Math.max(0, width - 14), 9);
 
   ctx.fillStyle = "#10182b";
   ctx.fillRect(x + 8, y + height - 27, width - 16, 9);
