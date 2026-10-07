@@ -94,7 +94,7 @@ const GAME_DEFINITIONS = [
     rivalScore: 6200,
     rivalName: "ATLAS",
     rivalAvatar: "/avatars/avatar-7.svg",
-    instruction: "Suelta anticipando el impulso y el apoyo de la torre.",
+    instruction: "Toca para soltar. Alinea el apoyo sobre la torre.",
     scoring: "Sigue apilando hasta fallar.",
   },
   {
