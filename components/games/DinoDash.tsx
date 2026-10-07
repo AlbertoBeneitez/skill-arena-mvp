@@ -38,7 +38,7 @@ const GROUND = 508;
 const PLAYER_X = 72;
 
 function makeSchedule(seed: string) {
-  const rng = createRng(\`\${seed}:dino-obstacles\`);
+  const rng = createRng(`${seed}:dino-obstacles`);
   const items: Array<{
     gap: number;
     kind: Obstacle["kind"];
