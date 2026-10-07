@@ -12,7 +12,8 @@
   },
   "include": [
     "scripts/verify-competitive-games.ts",
-    "scripts/verify-match-contracts.ts"
+    "scripts/verify-match-contracts.ts",
+    "scripts/verify-scenarios.ts"
   ],
   "exclude": ["node_modules", ".det-test"]
 }

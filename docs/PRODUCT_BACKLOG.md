@@ -57,8 +57,8 @@ Proposed units, each with its own validation and commit:
 
 | Unit | Scope | Dependency / acceptance |
 | --- | --- | --- |
-| S1 | ADR for versioned scenario descriptor and manifest compatibility | Owner decision; preserve signed V2 replays; do not silently add fields to V2 |
-| S2 | Shared seed-based scenario generation descriptors | `gameId + gameVersion + scenarioId + seed`; pinned generator revision; bounded scenario parameters; reproducibility tests; no hundreds of handwritten files |
+| S1 | Contract and compatibility fixtures implemented in `6a75815` | V2 still issued/accepted; signed V2 hashes and frozen cores preserved; ADR 005 accepted |
+| S2 | Shared seed-based scenario mapping implemented | `SCENARIO_CATALOGUE.md`; 65,536 identifiers, pinned generator and tested bounds; selection helper not yet connected to real matches |
 | S3 | Match/attempt repository and PostgreSQL schema | Decide auth boundary first; transactions, immutable manifests, participant slots, migration/retention policy; demo adapter isolated |
 | S4 | Server-issued shared match scenarios | S1–S3; both participants recover the same manifest; no client-selected competitive seed, target or rules; enforce membership |
 | S5 | Single result per attempt and lifecycle protection | S3–S4; atomic replay verification/result persistence, idempotent retry, cancellation/generation checks, double-submit tests |
