@@ -159,6 +159,8 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
     if (
       !Number.isInteger(tick) ||
       typeof action !== "string" ||
+      inputsRef.current.length >=
+        session.manifest.input_protocol.max_inputs ||
       (previous && (tick as number) <= previous.tick) ||
       !session.manifest.input_protocol.allowed_actions.includes(action)
     ) {
