@@ -55,6 +55,9 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
   targetScore,
 }: Options) {
   const [state, setState] = useState<AttemptState>({ status: "idle" });
+  const optionsKey = JSON.stringify([active, gameId, stakeMinor, targetScore]);
+  const [stateKey, setStateKey] = useState(optionsKey);
+  const currentState: AttemptState = stateKey === optionsKey ? state : { status: "idle" };
   const sessionRef = useRef<Session | null>(null);
   const inputsRef = useRef<TInput[]>([]);
   const requestRef = useRef<AbortController | null>(null);
@@ -65,6 +68,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
   useEffect(() => {
     generationRef.current += 1;
     const generation = generationRef.current;
+    setStateKey(optionsKey);
     submissionRef.current.reset();
     closedRef.current = false;
 
@@ -152,7 +156,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
         requestRef.current = null;
       }
     };
-  }, [active, gameId, stakeMinor, targetScore]);
+  }, [active, gameId, stakeMinor, targetScore, optionsKey]);
 
   const recordInput = useCallback((input: Omit<TInput, "seq">) => {
     const session = sessionRef.current;
@@ -257,12 +261,12 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
   }, []);
 
   return {
-    state,
+    state: currentState,
     manifest:
-      state.status === "ready" ||
-      state.status === "verifying" ||
-      state.status === "verified"
-        ? state.manifest
+      currentState.status === "ready" ||
+      currentState.status === "verifying" ||
+      currentState.status === "verified"
+        ? currentState.manifest
         : undefined,
     recordInput,
     verifyAttempt,

@@ -10,4 +10,5 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-match-contracts.js");
   await import("../.det-test/scripts/verify-scenarios.js");
   await import("../.det-test/scripts/verify-submission-lifecycle.js");
+  await import("../.det-test/scripts/verify-core-runtime.js");
 }

@@ -5684,6 +5684,16 @@ html, body {
   background: #071426;
 }
 
+/* Shared presentation shell for new deterministic core versions. */
+.coreGameSurface { position: absolute; inset: 0; background: #071426; touch-action: none; }
+.coreGameSurface .deterministicCanvas { width: 100% !important; height: 100% !important; }
+.coreHud { position: absolute; top: 14px; left: 18px; right: 18px; display: flex; align-items: center; gap: 12px; color: #ccefff; pointer-events: none; font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+.coreHud strong { margin-left: auto; color: #ecfcff; font-size: 23px; font-variant-numeric: tabular-nums; }
+.coreHint { position: absolute; left: 18px; right: 18px; bottom: 20px; color: #a8c4d7; text-align: center; font-size: 11px; line-height: 1.45; pointer-events: none; }
+.coreControls { position: absolute; bottom: 42px; left: 12px; right: 12px; display: flex; justify-content: center; gap: 14px; pointer-events: none; }
+.coreControls button { pointer-events: auto; width: 60px; height: 54px; border: 1px solid #447587; border-radius: 16px; background: rgba(11,39,57,.9); color: #baffef; font-size: 23px; font-weight: 900; touch-action: none; }
+.coreControls button:active { background: #214960; transform: scale(.96); }
+
 .dinoDuckButton {
   position: absolute;
   right: 14px;
