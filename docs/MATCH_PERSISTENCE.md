@@ -96,3 +96,10 @@ unmounted all 19 lazy games and started all five verified adapters correctly.
 It also found a pre-existing missing `/favicon.ico` on a fresh origin; this
 minor presentation issue is tracked for a separate follow-up. No gameplay or
 server errors were detected. Human mobile-device QA remains pending.
+
+The follow-up adds an original `app/icon.svg` through Next's existing metadata
+convention, so a fresh browser requests the supplied icon. It changes no game
+rules, contracts, loaders or competitive code and imports no third-party asset.
+Typecheck/deterministic fixtures, build and browser QA passed for this follow-up:
+all 19 games loaded/unmounted, both mobile orientations were checked, and a
+fresh origin produced no console errors or failed requests.
