@@ -848,7 +848,9 @@ while (
   jetGuard < 200_000
 ) {
   const gate = nextJetGate(jetBuilder);
-  assert(!!gate, "jet golden builder has no upcoming gate");
+  if (!gate) {
+    throw new Error("jet golden builder has no upcoming gate");
+  }
 
   const desiredY = gate.centerYMilli;
   const shouldFlap =
