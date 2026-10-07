@@ -1,4 +1,5 @@
-import { Pool, type QueryResultRow } from "pg";
+import { type Pool, type QueryResultRow } from "pg";
+import { getProductionPostgresPool } from "./postgresPool";
 import type { MatchManifest } from "../verified/contracts";
 import { hashManifest, validateManifest } from "./verifiedMatch";
 import {
@@ -92,11 +93,6 @@ let productionRepository: MatchRepository | undefined;
 export function getProductionMatchRepository(): MatchRepository {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new MatchRepositoryError("DATABASE_NOT_CONFIGURED");
-  productionRepository ??= new PostgresMatchRepository(new Pool({
-    connectionString,
-    max: 2,
-    connectionTimeoutMillis: 5000,
-    idleTimeoutMillis: 10000,
-  }));
+  productionRepository ??= new PostgresMatchRepository(getProductionPostgresPool());
   return productionRepository;
 }

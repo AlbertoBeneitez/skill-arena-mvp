@@ -22,7 +22,9 @@
     "scripts/verify-jet-v2.ts",
     "scripts/verify-serpent-v1.ts",
     "scripts/verify-river-v1.ts",
-    "scripts/verify-river-v2.ts"
+    "scripts/verify-river-v2.ts",
+    "scripts/verify-ranking.ts",
+    "scripts/verify-ranking-repository.ts"
   ],
   "exclude": ["node_modules", ".det-test"]
 }
