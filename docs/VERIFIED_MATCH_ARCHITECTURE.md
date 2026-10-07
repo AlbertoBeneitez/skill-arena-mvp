@@ -168,6 +168,10 @@ Tests cover:
 Before real-money production, the platform still needs:
 
 - authenticated player identity instead of demo ids;
+- a persisted match service that issues one immutable seed/config to both
+  competitors instead of creating isolated demo attempts;
+- server-owned stake, opponent result/target and settlement configuration
+  rather than accepting those competition values from the browser;
 - durable attempt/match/replay storage;
 - production signing secret management;
 - rate limiting and abuse controls;
