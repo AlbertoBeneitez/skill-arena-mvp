@@ -13,6 +13,8 @@
  * See THIRD_PARTY_NOTICES.md for the MIT notice.
  */
 
+import { validateInputSequence } from "./inputValidation";
+
 export const TOWER_DROP_V2 = {
   gameId: "tower-drop",
   gameVersion: "2.1.0",
@@ -532,35 +534,12 @@ export function validateTowerDropInputs(
   inputs: TowerDropInput[],
   finalTick: number
 ) {
-  if (
-    !Number.isInteger(finalTick) ||
-    finalTick < 0 ||
-    finalTick > TOWER_DROP_V2.tickRate * 60 * 15
-  ) {
-    return "INVALID_FINAL_TICK";
-  }
-
-  if (!Array.isArray(inputs) || inputs.length > 500) {
-    return "TOO_MANY_INPUTS";
-  }
-
-  let previousTick = -1;
-  for (let index = 0; index < inputs.length; index += 1) {
-    const input = inputs[index];
-    if (
-      input?.action !== "DROP" ||
-      input.seq !== index ||
-      !Number.isInteger(input.tick) ||
-      input.tick < 0 ||
-      input.tick > finalTick ||
-      input.tick <= previousTick
-    ) {
-      return "INVALID_INPUT_STREAM";
-    }
-    previousTick = input.tick;
-  }
-
-  return null;
+  return validateInputSequence(inputs, finalTick, {
+    version: TOWER_DROP_V2.inputProtocolVersion,
+    allowedActions: ["DROP"],
+    maxInputs: 500,
+    maxFinalTick: TOWER_DROP_V2.tickRate * 60 * 15,
+  });
 }
 
 export function replayTowerDrop(
