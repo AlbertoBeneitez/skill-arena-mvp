@@ -3,6 +3,11 @@ name: Build Skill Arena
 on:
   push:
     branches:
+      - main
+      - develop
+      - "feature/**"
+      - "fix/**"
+      - "refactor/**"
       - "v*-mobile"
   workflow_dispatch:
 
