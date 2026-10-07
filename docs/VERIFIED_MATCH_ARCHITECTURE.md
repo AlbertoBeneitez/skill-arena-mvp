@@ -1,121 +1,176 @@
-# Verified Match Architecture — V6
+# Verified match architecture
 
-V6 introduces the first server-authoritative competitive path for Skill Arena. Tower Drop is the reference implementation.
+This document describes the shared competitive verification path used by
+Skill Arena. Tower Drop V2 and Precision Stack V1 are the two reference
+implementations.
 
 ## Authority boundary
 
-The browser renders the game and records user actions. It is **not** authoritative for score, elapsed competitive time, height, failure reason, or winner.
+The browser is responsible for presentation and collecting player input. It is
+not authoritative for competitive score, elapsed simulation time, winner or
+failure reason.
 
-The server accepts only:
+The server issues:
 
-- the immutable `MatchManifest`,
-- the signed `AttemptTicket`,
-- the ordered tick-indexed input stream,
-- the claimed final simulation tick.
+- an immutable `MatchManifest`;
+- a signed `AttemptTicket`;
+- the competitive seed.
 
-The server replays the frozen game core and derives the authoritative result itself. No client score is submitted or trusted.
+The client returns:
 
-## Frozen game core
+- the same manifest and ticket;
+- the ordered tick-indexed input stream;
+- the final simulation tick.
 
-Tower Drop competitive logic lives in:
+The server validates the payload, resolves the registered verifier for
+`game_id + game_version`, replays the frozen core and derives the result.
 
-`lib/verified/towerDropCore.v1.ts`
+## Shared contracts
 
-Do not change the behavior of this file after production matches exist for version `1.0.0`. Any behavior change must create a new frozen version such as `towerDropCore.v2.ts` and a new `game_version`.
+The common contracts live in:
 
-The core:
+- `lib/verified/contracts.ts`;
+- `lib/verified/inputValidation.ts`;
+- `lib/verified/useVerifiedAttempt.ts`;
+- `lib/server/verifiedMatch.ts`;
+- `lib/server/gameVerifiers.ts`.
 
-- has no React, DOM, Canvas, device APIs, or wall-clock time,
-- runs at exactly 120 simulation ticks per second,
-- uses integer milli-pixel state for competitive movement,
-- accepts discrete `DROP` inputs indexed by simulation tick,
-- ends only on the first defined failure.
+`useVerifiedAttempt` owns the repeated client session mechanics: start,
+manifest/ticket storage, ordered input capture, request cancellation and replay
+submission. Games do not duplicate the verified-match HTTP protocol.
 
 ## MatchManifest
 
-The server creates the manifest. It binds:
+Manifest version 2 binds:
 
-- `match_id`,
-- game and engine versions,
-- gameplay-content hash,
-- rules hash,
-- tick rate and coordinate space,
-- first-failure end condition,
-- player count and attempts per player,
-- stake/currency,
-- tie rule,
-- allowed input protocol.
+- game id and explicit game version;
+- engine version;
+- rules hash;
+- gameplay-content hash;
+- server-issued seed;
+- simulation tick rate and coordinate space;
+- end condition;
+- stake/currency/tie rule/target;
+- input protocol version, allowed actions and maximum input count;
+- creation timestamp.
 
-The manifest is shared by both players in a real 1v1 and must be byte-equivalent after canonical serialization.
+A competitive seed is created by the server. Demo-only fixed seeds may still
+exist in catalogue metadata for legacy games, but verified games use the
+manifest seed.
 
 ## AttemptTicket
 
-Each player gets a different ticket. It binds one attempt to:
+A ticket binds one player attempt to one manifest hash and contains:
 
-- `attempt_id`,
-- `match_id`,
-- `player_id`,
-- player slot A/B,
-- manifest hash,
-- issue/expiry time,
-- nonce.
+- attempt id;
+- match id;
+- player id;
+- player slot;
+- manifest hash;
+- issue/expiry time;
+- nonce;
+- HMAC signature;
+- demo/production signing mode.
 
-The server HMAC-signs the ticket and verifies it with a timing-safe comparison before replay.
+Malformed, expired, mismatched or incorrectly signed tickets are rejected.
 
-For development, a clearly marked demo signing key is used when `MATCH_SIGNING_SECRET` is absent. Production must configure a secret outside the repository.
+## Game verifier registry
+
+`lib/server/gameVerifiers.ts` is the server-only dispatch boundary.
+
+Each verified game adapter declares only the data the shared infrastructure
+needs:
+
+- game/version/engine identity;
+- simulation configuration;
+- typed input protocol constraints;
+- rules/content descriptors used for hashing;
+- authoritative replay adapter.
+
+Game-specific physics, collision and scoring stay inside each versioned core.
+
+Current adapters:
+
+- Tower Drop `2.1.0` → `towerDropCore.v2.ts`;
+- Precision Stack `1.0.0` → `precisionStackCore.v1.ts`.
 
 ## Input protocol
 
-Tower Drop V1 accepts only:
+Inputs are closed action sets, not arbitrary strings at the game boundary.
 
-`{ seq, tick, action: "DROP" }`
+Examples:
 
-Rules:
+```ts
+{ seq: 0, tick: 139, action: "DROP" }
+```
 
-- `seq` must start at zero and increase by one,
-- ticks must be integer and strictly increasing,
-- inputs cannot occur after `final_tick`,
-- input count and attempt duration are bounded,
-- game state is reconstructed exclusively from the initial state + ordered inputs.
+Shared validation rejects:
 
-## Verification flow
+- malformed inputs;
+- wrong sequence numbers;
+- repeated or descending ticks;
+- actions outside the manifest protocol;
+- inputs after the final tick;
+- excessive input counts;
+- invalid final ticks.
 
-1. Client requests `POST /api/verified-match/start`.
-2. Server returns manifest + signed attempt ticket.
-3. Client starts the frozen core only after receiving them.
-4. Client records `DROP` events by simulation tick.
-5. First failure stops the client simulation.
-6. Client sends manifest + ticket + inputs + final tick to `POST /api/verified-match/verify`.
-7. Server validates manifest hashes/version and ticket signature/expiry.
-8. Server replays Tower Drop V1 from tick zero.
-9. If replay does not end in the same valid first-failure state, the attempt is rejected.
-10. Server returns score/time/height/failure plus a replay hash and verification ID.
-11. The UI uses only this server result for the competitive outcome.
+The verify endpoint also rejects request bodies above its configured byte
+limit before replay.
 
-## Anti-tamper scope
+## Replay and result
 
-Implemented in V6:
+The verification flow is:
 
-- signed attempt ticket,
-- immutable manifest hash,
-- frozen content/rules hashes,
-- strict input schema/order,
-- server replay,
-- client score ignored,
-- attempt expiry,
-- rough real-time sanity check,
-- replay hash,
-- golden deterministic test,
-- 60/120/144 Hz render-rate equivalence test.
+1. client requests `POST /api/verified-match/start` with `game_id`, stake
+   and target;
+2. server resolves the registered competitive game;
+3. server creates manifest + seed + signed ticket;
+4. client runs the pure core and records inputs by simulation tick;
+5. client submits manifest + ticket + inputs + final tick to
+   `POST /api/verified-match/verify`;
+6. server validates manifest, ticket and input protocol;
+7. server replays the frozen core;
+8. server performs real-time sanity checks;
+9. server returns authoritative score/time/outcome plus replay hash and
+   verification id;
+10. platform accepts competitive results only when `verified === true`.
 
-Still required before real money:
+Client-reported score is never trusted.
 
-- authenticated player identity instead of demo player IDs,
-- durable match/attempt storage,
-- incremental input commitments or chunks,
-- replay retention policy and dispute window,
-- production `MATCH_SIGNING_SECRET`,
-- rate limiting and abuse controls,
-- automated mobile/browser device matrix,
-- bot/automation detection,
-- two-player settlement wired to the authoritative ledger.
+## Frozen cores and versioning
+
+Once a competitive version has produced persistent matches, outcome-affecting
+behaviour is frozen. Changes to physics, hitboxes, movement, tolerances,
+scoring, generation or rules require a new game version.
+
+Historical replay support therefore identifies the exact core used by the
+manifest. Presentation-only changes may evolve independently provided they do
+not alter input semantics.
+
+## Determinism tests
+
+Both reference games have permanent deterministic fixtures.
+
+Tests cover:
+
+- same seed + same ordered inputs → identical state/result;
+- 60/120/144 Hz render scheduling → identical competitive outcome;
+- invalid sequence/action/tick/payload cases;
+- permanent golden score/failure/time/replay hash fixtures.
+
+`pnpm test:determinism` runs these regressions in CI.
+
+## Security scope still outside this MVP
+
+Before real-money production, the platform still needs:
+
+- authenticated player identity instead of demo ids;
+- durable attempt/match/replay storage;
+- production signing secret management;
+- rate limiting and abuse controls;
+- replay retention/dispute policy;
+- bot/automation controls;
+- authoritative two-player settlement wired to the ledger.
+
+Those concerns extend this verified-match layer; they do not change the game
+core contract.
