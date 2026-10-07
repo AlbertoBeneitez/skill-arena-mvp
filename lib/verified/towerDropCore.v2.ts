@@ -235,6 +235,9 @@ export function createTowerDropState(): TowerDropState {
   };
 
   updateMovingBlockFromSwing(state);
+  // Initial placement is not a physical swing step, so it must not inject an
+  // artificial release velocity before the first simulation tick.
+  state.movingVXMilliPerSecond = 0;
   return state;
 }
 
