@@ -1,3 +1,15 @@
+import { createHash } from "node:crypto";
+import { canonicalJson } from "../lib/verified/canonical";
+import {
+  createPrecisionStackState,
+  dropPrecisionStack,
+  PRECISION_STACK_V1,
+  replayPrecisionStack,
+  stepPrecisionStack,
+  type PrecisionStackInput,
+  type PrecisionStackState,
+} from "../lib/verified/precisionStackCore.v1";
+import { validateInputSequence } from "../lib/verified/inputValidation";
 import {
   createTowerDropState,
   dropTowerBlock,
@@ -291,5 +303,262 @@ console.log(
     `height=${first.height}`,
     `finalTick=${golden.finalTick}`,
     "mechanics=pendulum+momentum+gravity+support+tip",
+  ].join(" · ")
+);
+
+
+function precisionStatus(
+  state: PrecisionStackState
+): PrecisionStackState["status"] {
+  return state.status;
+}
+
+function precisionCentre(block: { xMilli: number; wMilli: number }) {
+  return block.xMilli + Math.floor(block.wMilli / 2);
+}
+
+function buildPrecisionGolden() {
+  const seed = "precision-stack-golden-v1";
+  const targetScore = 6_000;
+  const state = createPrecisionStackState(seed);
+  const inputs: PrecisionStackInput[] = [];
+  let guard = 0;
+
+  while (
+    precisionStatus(state) === "running" &&
+    guard < 100_000
+  ) {
+    if (state.phase === "moving") {
+      const top = state.blocks[state.blocks.length - 1];
+      const moving = {
+        xMilli: state.movingXMilli,
+        wMilli: state.movingWMilli,
+      };
+
+      if (
+        Math.abs(
+          precisionCentre(moving) -
+            precisionCentre(top)
+        ) <= 1_500
+      ) {
+        inputs.push({
+          seq: inputs.length,
+          tick: state.tick,
+          action: "DROP",
+        });
+        dropPrecisionStack(state, seed, targetScore);
+      }
+    }
+
+    if (precisionStatus(state) === "running") {
+      stepPrecisionStack(state, seed, targetScore);
+    }
+
+    guard += 1;
+  }
+
+  assert(
+    precisionStatus(state) === "won",
+    "precision golden did not reach target"
+  );
+
+  return {
+    seed,
+    targetScore,
+    inputs,
+    finalTick: state.tick,
+    expected: {
+      score: state.score,
+      height: state.blocks.length - 1,
+      failure: state.failure,
+      timeMs: Math.round(
+        (state.tick * 1000) / PRECISION_STACK_V1.tickRate
+      ),
+      status: state.status,
+    },
+  };
+}
+
+const precisionGolden = buildPrecisionGolden();
+const precisionFirst = replayPrecisionStack(
+  precisionGolden.inputs,
+  precisionGolden.finalTick,
+  precisionGolden.seed,
+  precisionGolden.targetScore
+);
+const precisionSecond = replayPrecisionStack(
+  precisionGolden.inputs,
+  precisionGolden.finalTick,
+  precisionGolden.seed,
+  precisionGolden.targetScore
+);
+
+assert(
+  precisionFirst.valid && precisionSecond.valid,
+  "precision golden replay rejected"
+);
+assert(
+  JSON.stringify(precisionFirst.state) ===
+    JSON.stringify(precisionSecond.state),
+  "precision replay diverged across identical runs"
+);
+assert(
+  precisionFirst.score === precisionGolden.expected.score &&
+    precisionFirst.height === precisionGolden.expected.height &&
+    precisionFirst.failure === precisionGolden.expected.failure &&
+    precisionFirst.timeMs === precisionGolden.expected.timeMs,
+  "precision golden result changed during replay"
+);
+
+function simulatePrecisionRenderRate(frameHz: number) {
+  const state = createPrecisionStackState(
+    precisionGolden.seed
+  );
+  let inputIndex = 0;
+  let accumulator = 0;
+  const frameSeconds = 1 / frameHz;
+  const tickSeconds = 1 / PRECISION_STACK_V1.tickRate;
+  let guard = 0;
+
+  while (
+    precisionStatus(state) === "running" &&
+    guard < 1_000_000
+  ) {
+    accumulator += frameSeconds;
+
+    while (
+      accumulator + 1e-12 >= tickSeconds &&
+      precisionStatus(state) === "running"
+    ) {
+      while (
+        inputIndex < precisionGolden.inputs.length &&
+        precisionGolden.inputs[inputIndex].tick === state.tick
+      ) {
+        assert(
+          state.phase === "moving",
+          "precision render-rate replay dropped while settling"
+        );
+        dropPrecisionStack(
+          state,
+          precisionGolden.seed,
+          precisionGolden.targetScore
+        );
+        inputIndex += 1;
+      }
+
+      if (precisionStatus(state) !== "running") break;
+      stepPrecisionStack(
+        state,
+        precisionGolden.seed,
+        precisionGolden.targetScore
+      );
+      accumulator -= tickSeconds;
+    }
+
+    guard += 1;
+  }
+
+  return {
+    tick: state.tick,
+    score: state.score,
+    height: state.blocks.length - 1,
+    failure: state.failure,
+    status: state.status,
+  };
+}
+
+const precision60 = simulatePrecisionRenderRate(60);
+const precision120 = simulatePrecisionRenderRate(120);
+const precision144 = simulatePrecisionRenderRate(144);
+
+assert(
+  JSON.stringify(precision60) === JSON.stringify(precision120) &&
+    JSON.stringify(precision120) === JSON.stringify(precision144),
+  "precision render-rate equivalence failed"
+);
+
+// Shared input protocol regression cases.
+const protocol = {
+  version: 1,
+  allowedActions: ["DROP"] as const,
+  maxInputs: 3,
+  maxFinalTick: 100,
+};
+
+assert(
+  validateInputSequence(
+    [{ seq: 1, tick: 2, action: "DROP" }],
+    10,
+    protocol
+  ) === "INVALID_INPUT",
+  "invalid seq was accepted"
+);
+assert(
+  validateInputSequence(
+    [
+      { seq: 0, tick: 2, action: "DROP" },
+      { seq: 1, tick: 2, action: "DROP" },
+    ],
+    10,
+    protocol
+  ) === "INVALID_INPUT_SEQUENCE",
+  "repeated tick was accepted"
+);
+assert(
+  validateInputSequence(
+    [{ seq: 0, tick: 11, action: "DROP" }],
+    10,
+    protocol
+  ) === "INPUT_AFTER_FINAL",
+  "input after final tick was accepted"
+);
+assert(
+  validateInputSequence(
+    [{ seq: 0, tick: 2, action: "JUMP" }],
+    10,
+    protocol
+  ) === "INVALID_INPUT",
+  "invalid action was accepted"
+);
+assert(
+  validateInputSequence(
+    [
+      { seq: 0, tick: 1, action: "DROP" },
+      { seq: 1, tick: 2, action: "DROP" },
+      { seq: 2, tick: 3, action: "DROP" },
+      { seq: 3, tick: 4, action: "DROP" },
+    ],
+    10,
+    protocol
+  ) === "PAYLOAD_TOO_LARGE",
+  "oversized input stream was accepted"
+);
+
+const precisionReplayFixture = {
+  manifestHash: "sha256:precision-stack-golden-manifest",
+  attemptId: "precision-stack-golden-attempt",
+  inputs: precisionGolden.inputs,
+  finalTick: precisionGolden.finalTick,
+  result: {
+    score: precisionFirst.score,
+    timeMs: precisionFirst.timeMs,
+    won: precisionFirst.state.status === "won",
+    height: precisionFirst.height,
+    failure: precisionFirst.failure,
+  },
+};
+const precisionReplayHash =
+  "sha256:" +
+  createHash("sha256")
+    .update(canonicalJson(precisionReplayFixture))
+    .digest("hex");
+
+console.log(
+  [
+    "Precision Stack v1 deterministic replay OK",
+    `score=${precisionFirst.score}`,
+    `height=${precisionFirst.height}`,
+    `finalTick=${precisionGolden.finalTick}`,
+    `replayHash=${precisionReplayHash}`,
   ].join(" · ")
 );
