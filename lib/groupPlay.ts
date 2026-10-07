@@ -42,7 +42,7 @@ export type GroupCompetitionConfig =
   | (CompetitionBase & {
       type: "tournament";
       eliminatedPerRound: number;
-      gameIds: [GameMeta["id"]];
+      gameSelectionMode: "manual" | "random";
     });
 
 const DEMO_MEMBERS: Omit<GroupMember, "id">[] = [
@@ -91,6 +91,38 @@ export function createDemoClosedGroup(args: {
     code: randomCode(),
     name: args.name.trim() || "Mi grupo",
     stake: Math.max(0, Number(args.stake ?? 0)),
+    members: [
+      {
+        id: "you",
+        name: args.playerName || "TÚ",
+        avatar: args.avatar,
+        isYou: true,
+        scoreFactor: 1,
+      },
+      ...DEMO_MEMBERS.map((member, index) => ({
+        ...member,
+        id: `demo-${index + 1}`,
+      })),
+    ],
+  };
+}
+
+export function joinDemoClosedGroup(args: {
+  code: string;
+  playerName: string;
+  avatar: string;
+}): ClosedGroup {
+  const code = args.code
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 12);
+
+  return {
+    id: code || randomCode(),
+    code: code || randomCode(),
+    name: code ? `Grupo ${code}` : "Grupo privado",
+    stake: 0,
     members: [
       {
         id: "you",
