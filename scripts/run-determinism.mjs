@@ -12,4 +12,5 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-submission-lifecycle.js");
   await import("../.det-test/scripts/verify-core-runtime.js");
   await import("../.det-test/scripts/verify-stack-v3.js");
+  await import("../.det-test/scripts/verify-tower-v3.js");
 }

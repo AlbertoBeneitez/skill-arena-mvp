@@ -17,7 +17,8 @@
     "scripts/verify-match-repository.ts",
     "scripts/verify-submission-lifecycle.ts",
     "scripts/verify-core-runtime.ts",
-    "scripts/verify-stack-v3.ts"
+    "scripts/verify-stack-v3.ts",
+    "scripts/verify-tower-v3.ts"
   ],
   "exclude": ["node_modules", ".det-test"]
 }

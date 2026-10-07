@@ -74,13 +74,13 @@ function adaptGameComponent<TProps extends object>(
 const GAME_DEFINITIONS = [
   {
     id: "tower-drop",
-    version: "2.1.0",
+    version: "3.0.0",
     status: "VERIFIED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/TowerDrop")),
+    loadComponent: adaptGameComponent(() => import("@/components/games/TowerDropV3")),
     competition: {
       verification: "server-replay",
-      engineVersion: "skill-core-2",
-      inputProtocolVersion: 2,
+      engineVersion: "skill-core-3",
+      inputProtocolVersion: 3,
       allowedActions: ["DROP"],
     },
     name: "Tower Drop",
@@ -94,7 +94,7 @@ const GAME_DEFINITIONS = [
     rivalScore: 6200,
     rivalName: "ATLAS",
     rivalAvatar: "/avatars/avatar-7.svg",
-    instruction: "Toca cuando el bloque móvil esté encima de la torre.",
+    instruction: "Suelta anticipando el impulso y el apoyo de la torre.",
     scoring: "Sigue apilando hasta fallar.",
   },
   {

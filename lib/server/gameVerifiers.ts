@@ -1,5 +1,6 @@
 import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
+import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
 import { STACK_3D_CORE } from "../verified/precisionStackCore.v3";
 import type { MatchManifest } from "@/lib/verified/contracts";
 import type { ReplayInput } from "@/lib/verified/inputValidation";
@@ -339,6 +340,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
   [adapterKey(STACK_3D_CORE.gameId, STACK_3D_CORE.gameVersion)]: coreAdapter(STACK_3D_CORE),
   [adapterKey(towerDropAdapter.gameId, towerDropAdapter.gameVersion)]:
     towerDropAdapter,
