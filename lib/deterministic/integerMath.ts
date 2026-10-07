@@ -19,3 +19,13 @@ export function integerSqrt(value: number) {
   }
   return x;
 }
+
+/** Integer rational sine for new cores. Archived game math stays unchanged. */
+export function sinPhaseMilli(phase: number) {
+  if (!Number.isSafeInteger(phase)) throw new Error("INVALID_PHASE");
+  const p = ((phase % 4096) + 4096) % 4096;
+  const t = p % 2048,
+    u = t * (2048 - t);
+  const wave = roundDiv(16 * u * 1000, 5 * 2048 * 2048 - 4 * u);
+  return p >= 2048 && wave ? -wave : wave;
+}

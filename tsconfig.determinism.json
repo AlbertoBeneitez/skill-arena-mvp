@@ -4,7 +4,9 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "ES2020",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "jsx": "react-jsx",
     "outDir": ".det-test",
     "noEmit": false,
@@ -24,7 +26,11 @@
     "scripts/verify-river-v1.ts",
     "scripts/verify-river-v2.ts",
     "scripts/verify-ranking.ts",
-    "scripts/verify-ranking-repository.ts"
+    "scripts/verify-ranking-repository.ts",
+    "scripts/verify-orb-v1.ts"
   ],
-  "exclude": ["node_modules", ".det-test"]
+  "exclude": [
+    "node_modules",
+    ".det-test"
+  ]
 }
