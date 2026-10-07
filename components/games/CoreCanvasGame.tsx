@@ -20,6 +20,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keys?: Readonly<Record<string, string>>;
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
+  hideHudLabel?: boolean;
+  hideHudScore?: boolean;
 };
 
 /** Presentation/input adapter. The core and shared server replay own outcomes. */
@@ -237,7 +239,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         if (action) { event.preventDefault(); heldRef.current.delete(action); send(action); }
       }}
     />
-    <div className="coreHud" aria-live="off"><span>{hud.height !== undefined ? `ALTURA ${hud.height}` : name}</span><strong>{hud.score.toLocaleString("es-ES")}</strong>{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
+    <div className="coreHud" aria-live="off">{!props.hideHudLabel && <span>{hud.height !== undefined ? `ALTURA ${hud.height}` : name}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     <div className="coreHint">{instruction}</div>
     {!!props.controls?.length && <div className="coreControls">{props.controls.map(control => <button key={control.action} type="button" aria-label={control.label}
       onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); if (control.releaseAction) heldRef.current.add(control.releaseAction); send(control.action); }}

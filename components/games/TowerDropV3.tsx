@@ -10,6 +10,10 @@ import {
 import CoreCanvasGame from "./CoreCanvasGame";
 function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   drawSpaceBackdrop(ctx, 390, 620, 1, state.tick);
+  // Uniform projection keeps the rope arc and block proportions coherent.
+  ctx.save();
+  ctx.translate(33, 68);
+  ctx.scale(0.83, 0.83);
   const floor = 540,
     blockH = 30;
   const block = (x: number, y: number, w: number, level: number) => {
@@ -23,6 +27,17 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
     ctx.fillStyle = "rgba(0,15,50,.2)";
     for (let n = x + 12; n < x + w - 8; n += 24) ctx.fillRect(n, y + 10, 10, 8);
   };
+  const groundY = floor + state.blocks.length * blockH;
+  if (groundY < 655) {
+    ctx.fillStyle = "#173949";
+    ctx.fillRect(45, groundY, 300, 14);
+    ctx.fillStyle = "#65b5bb";
+    ctx.fillRect(45, groundY, 300, 3);
+    for (let x = 55; x < 335; x += 40) {
+      ctx.fillStyle = "#8fffe1";
+      ctx.fillRect(x, groundY + 7, 12, 3);
+    }
+  }
   state.blocks.forEach((b, index) => {
     const y = floor + (state.blocks.length - 1 - index) * blockH;
     if (y < 620) block(b.xMilli / 1000, y, b.wMilli / 1000, index);
@@ -93,12 +108,9 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   ctx.font = "bold 13px system-ui";
   ctx.textAlign = "center";
   ctx.fillStyle = "#c4f1fa";
-  ctx.fillText(
-    state.combo > 1 ? `PERFECTO ×${state.combo}` : "ANTICIPA EL IMPULSO",
-    195,
-    112,
-  );
+  if (state.combo > 1) ctx.fillText(`PERFECTO ×${state.combo}`, 195, 112);
   ctx.textAlign = "left";
+  ctx.restore();
 }
 const keys = { " ": "DROP", Enter: "DROP" } as const;
 export default function TowerDropV3(props: GameRuntimeProps) {
@@ -107,10 +119,11 @@ export default function TowerDropV3(props: GameRuntimeProps) {
       {...props}
       core={TOWER_DROP_CORE_V3}
       name="Tower Drop"
+      hideHudScore
       render={render}
       primaryAction="DROP"
       keys={keys}
-      instruction="Suelta anticipando el impulso. La guía muestra el apoyo previsto."
+      instruction="Toca para soltar. Alinea el apoyo sobre la torre."
     />
   );
 }
