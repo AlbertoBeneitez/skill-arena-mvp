@@ -8,6 +8,7 @@ import type {
   VerifiedAttemptResult,
 } from "./contracts";
 import type { ReplayInput } from "./inputValidation";
+import { SubmissionGate } from "./submissionGate";
 
 type AttemptState =
   | { status: "idle" }
@@ -58,10 +59,14 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
   const inputsRef = useRef<TInput[]>([]);
   const requestRef = useRef<AbortController | null>(null);
   const generationRef = useRef(0);
+  const submissionRef = useRef(new SubmissionGate<VerifiedAttemptResult>());
+  const closedRef = useRef(false);
 
   useEffect(() => {
     generationRef.current += 1;
     const generation = generationRef.current;
+    submissionRef.current.reset();
+    closedRef.current = false;
 
     requestRef.current?.abort();
     requestRef.current = null;
@@ -141,6 +146,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
 
     return () => {
       generationRef.current += 1;
+      submissionRef.current.reset();
       controller.abort();
       if (requestRef.current === controller) {
         requestRef.current = null;
@@ -150,7 +156,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
 
   const recordInput = useCallback((input: Omit<TInput, "seq">) => {
     const session = sessionRef.current;
-    if (!session) return false;
+    if (!session || closedRef.current) return false;
 
     const previous = inputsRef.current[inputsRef.current.length - 1];
     const tick = (input as { tick?: unknown }).tick;
@@ -158,6 +164,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
 
     if (
       !Number.isInteger(tick) ||
+      (tick as number) < 0 ||
       typeof action !== "string" ||
       inputsRef.current.length >=
         session.manifest.input_protocol.max_inputs ||
@@ -176,7 +183,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
     return true;
   }, []);
 
-  const verifyAttempt = useCallback(async (finalTick: number) => {
+  const verifyAttempt = useCallback((finalTick: number): Promise<VerifiedAttemptResult> => {
     const session = sessionRef.current;
     if (!session) {
       const result: VerifiedAttemptResult = {
@@ -185,68 +192,68 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
         error: "INVALID_TICKET",
       };
       setState({ status: "rejected", reason: "INVALID_TICKET" });
-      return result;
+      return Promise.resolve(result);
     }
 
-    requestRef.current?.abort();
-    const controller = new AbortController();
-    requestRef.current = controller;
-    setState({ status: "verifying", ...session });
+    const generation = generationRef.current;
+    closedRef.current = true;
+    const inputs = inputsRef.current.map(input => ({ ...input }));
+    const cancelled = (): VerifiedAttemptResult => ({ ok: false, verified: false, error: "VERIFICATION_ABORTED" });
+    return submissionRef.current.run(session.ticket.attempt_id, async (signal) => {
+      if (generation !== generationRef.current || signal.aborted) return cancelled();
+      setState({ status: "verifying", ...session });
 
-    try {
-      const response = await fetch("/api/verified-match/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          manifest: session.manifest,
-          ticket: session.ticket,
-          inputs: inputsRef.current,
-          final_tick: finalTick,
-        }),
-        signal: controller.signal,
-      });
-
-      const result = (await response.json()) as VerifiedAttemptResult;
-
-      if (!response.ok || !result.ok || !result.verified) {
-        setState({
-          status: "rejected",
-          reason: result.error ?? "REPLAY_MISMATCH",
-          ...session,
+      try {
+        const response = await fetch("/api/verified-match/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            manifest: session.manifest,
+            ticket: session.ticket,
+            inputs,
+            final_tick: finalTick,
+          }),
+          signal,
         });
+
+        const result = (await response.json()) as VerifiedAttemptResult;
+        if (generation !== generationRef.current || signal.aborted) return cancelled();
+
+        if (!response.ok || !result.ok || !result.verified) {
+          setState({
+            status: "rejected",
+            reason: result.error ?? "REPLAY_MISMATCH",
+            ...session,
+          });
+          return {
+            ...result,
+            ok: false,
+            verified: false,
+            error: result.error ?? "REPLAY_MISMATCH",
+          };
+        }
+
+        setState({
+          status: "verified",
+          ...session,
+          result,
+        });
+        return result;
+      } catch (error) {
+        if (generation !== generationRef.current || signal.aborted) return cancelled();
+        const reason =
+          error instanceof Error
+              ? error.message
+              : "VERIFIER_UNAVAILABLE";
+
+        setState({ status: "rejected", reason, ...session });
         return {
-          ...result,
           ok: false,
           verified: false,
-          error: result.error ?? "REPLAY_MISMATCH",
-        };
+          error: reason,
+        } satisfies VerifiedAttemptResult;
       }
-
-      setState({
-        status: "verified",
-        ...session,
-        result,
-      });
-      return result;
-    } catch (error) {
-      const reason =
-        controller.signal.aborted
-          ? "VERIFICATION_ABORTED"
-          : error instanceof Error
-            ? error.message
-            : "VERIFIER_UNAVAILABLE";
-
-      setState({ status: "rejected", reason, ...session });
-      return {
-        ok: false,
-        verified: false,
-        error: reason,
-      } satisfies VerifiedAttemptResult;
-    } finally {
-      if (requestRef.current === controller) {
-        requestRef.current = null;
-      }
-    }
+    }).catch(() => cancelled());
   }, []);
 
   return {

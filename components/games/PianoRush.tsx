@@ -167,6 +167,7 @@ export default function PianoRush({
       }
 
       const result = await verifyAttempt(state.tick);
+      if (result.error === "VERIFICATION_ABORTED") return;
 
       if (!result.ok || !result.verified) {
         finishRef.current({

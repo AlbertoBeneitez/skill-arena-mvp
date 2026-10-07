@@ -357,6 +357,7 @@ export default function TowerDrop({
       }
 
       const data = await verifyAttempt(state.tick);
+      if (data.error === "VERIFICATION_ABORTED") return;
 
       if (!data.ok || !data.verified) {
         finishRef.current({

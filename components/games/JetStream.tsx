@@ -142,6 +142,7 @@ export default function JetStream({
       }
 
       const result = await verifyAttempt(state.tick);
+      if (result.error === "VERIFICATION_ABORTED") return;
 
       if (!result.ok || !result.verified) {
         finishRef.current({

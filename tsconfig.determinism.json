@@ -14,7 +14,8 @@
     "scripts/verify-competitive-games.ts",
     "scripts/verify-match-contracts.ts",
     "scripts/verify-scenarios.ts",
-    "scripts/verify-match-repository.ts"
+    "scripts/verify-match-repository.ts",
+    "scripts/verify-submission-lifecycle.ts"
   ],
   "exclude": ["node_modules", ".det-test"]
 }
