@@ -41,7 +41,7 @@ const PLAYER_W = 30;
 const PLAYER_H = 38;
 
 function makePlatforms(seed: string) {
-  const rng = createRng(\`\${seed}:skyhop-platforms\`);
+  const rng = createRng(`${seed}:skyhop-platforms`);
   const items: Platform[] = [];
   let y = H - 54;
   let lastX = W / 2 - 48;
