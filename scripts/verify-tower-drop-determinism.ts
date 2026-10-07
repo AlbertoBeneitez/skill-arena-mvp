@@ -18,6 +18,15 @@ import {
   type PianoRushInput,
   type PianoRushState,
 } from "../lib/verified/pianoRushCore.v1";
+import {
+  createJetStreamState,
+  flapJetStream,
+  JET_STREAM_V1,
+  replayJetStream,
+  stepJetStream,
+  type JetStreamInput,
+  type JetStreamState,
+} from "../lib/verified/jetStreamCore.v1";
 import { validateInputSequence } from "../lib/verified/inputValidation";
 import {
   createTowerDropState,
@@ -814,5 +823,196 @@ console.log(
     `notes=${pianoInputs.length}`,
     `finalTick=${pianoFinalTick}`,
     `replayHash=${pianoReplayHash}`,
+  ].join(" · ")
+);
+
+
+function jetStatus(
+  state: JetStreamState
+): JetStreamState["status"] {
+  return state.status;
+}
+
+function nextJetGate(state: JetStreamState) {
+  return state.gates.find((gate) => !gate.passed);
+}
+
+const jetGoldenSeed = "jet-stream-golden-v1";
+const jetGoldenTarget = 2_400;
+const jetBuilder = createJetStreamState(jetGoldenSeed);
+const jetInputs: JetStreamInput[] = [];
+let jetGuard = 0;
+
+while (
+  jetStatus(jetBuilder) === "running" &&
+  jetGuard < 200_000
+) {
+  const gate = nextJetGate(jetBuilder);
+  assert(!!gate, "jet golden builder has no upcoming gate");
+
+  const desiredY = gate.centerYMilli;
+  const shouldFlap =
+    jetBuilder.yMilli > desiredY + 8_000 &&
+    jetBuilder.vyMilliPerSecond > -120_000;
+
+  if (shouldFlap) {
+    jetInputs.push({
+      seq: jetInputs.length,
+      tick: jetBuilder.tick,
+      action: "FLAP",
+    });
+    flapJetStream(jetBuilder);
+  }
+
+  if (jetStatus(jetBuilder) === "running") {
+    stepJetStream(
+      jetBuilder,
+      jetGoldenSeed,
+      jetGoldenTarget
+    );
+  }
+
+  jetGuard += 1;
+}
+
+assert(
+  jetStatus(jetBuilder) === "won",
+  `jet golden builder failed: status=${jetBuilder.status} failure=${jetBuilder.failure} score=${jetBuilder.score} passed=${jetBuilder.passed}`
+);
+
+const jetFinalTick = jetBuilder.tick;
+const jetFirst = replayJetStream(
+  jetInputs,
+  jetFinalTick,
+  jetGoldenSeed,
+  jetGoldenTarget
+);
+const jetSecond = replayJetStream(
+  jetInputs,
+  jetFinalTick,
+  jetGoldenSeed,
+  jetGoldenTarget
+);
+
+assert(
+  jetFirst.valid && jetSecond.valid,
+  "jet golden replay rejected"
+);
+assert(
+  JSON.stringify(jetFirst.state) ===
+    JSON.stringify(jetSecond.state),
+  "jet replay diverged across identical runs"
+);
+assert(
+  jetFirst.score === jetBuilder.score &&
+    jetFirst.timeMs ===
+      Math.round(
+        (jetFinalTick * 1000) /
+          JET_STREAM_V1.tickRate
+      ),
+  "jet golden result changed during replay"
+);
+
+function simulateJetRenderRate(frameHz: number) {
+  const state = createJetStreamState(jetGoldenSeed);
+  let inputIndex = 0;
+  let accumulator = 0;
+  const frameSeconds = 1 / frameHz;
+  const tickSeconds = 1 / JET_STREAM_V1.tickRate;
+  let guard = 0;
+
+  while (
+    jetStatus(state) === "running" &&
+    guard < 1_000_000
+  ) {
+    accumulator += frameSeconds;
+
+    while (
+      accumulator + 1e-12 >= tickSeconds &&
+      jetStatus(state) === "running"
+    ) {
+      while (
+        inputIndex < jetInputs.length &&
+        jetInputs[inputIndex].tick === state.tick
+      ) {
+        flapJetStream(state);
+        inputIndex += 1;
+      }
+
+      if (jetStatus(state) !== "running") break;
+      stepJetStream(
+        state,
+        jetGoldenSeed,
+        jetGoldenTarget
+      );
+      accumulator -= tickSeconds;
+    }
+
+    guard += 1;
+  }
+
+  return {
+    tick: state.tick,
+    yMilli: state.yMilli,
+    vyMilliPerSecond: state.vyMilliPerSecond,
+    scrollMilli: state.scrollMilli,
+    score: state.score,
+    passed: state.passed,
+    failure: state.failure,
+    status: state.status,
+  };
+}
+
+const jet60 = simulateJetRenderRate(60);
+const jet120 = simulateJetRenderRate(120);
+const jet144 = simulateJetRenderRate(144);
+
+assert(
+  JSON.stringify(jet60) === JSON.stringify(jet120) &&
+    JSON.stringify(jet120) === JSON.stringify(jet144),
+  "jet render-rate equivalence failed"
+);
+
+const jetFall = createJetStreamState("jet-fall-v1");
+let jetFallGuard = 0;
+while (
+  jetStatus(jetFall) === "running" &&
+  jetFallGuard < 5_000
+) {
+  stepJetStream(jetFall, "jet-fall-v1");
+  jetFallGuard += 1;
+}
+assert(
+  jetStatus(jetFall) === "failed" &&
+    jetFall.failure === "OUT_OF_BOUNDS",
+  "jet no-input fall did not resolve out of bounds"
+);
+
+const jetReplayFixture = {
+  manifestHash: "sha256:jet-stream-golden-manifest",
+  attemptId: "jet-stream-golden-attempt",
+  inputs: jetInputs,
+  finalTick: jetFinalTick,
+  result: {
+    score: jetFirst.score,
+    timeMs: jetFirst.timeMs,
+    won: jetFirst.state.status === "won",
+    failure: jetFirst.failure,
+  },
+};
+const jetReplayHash =
+  "sha256:" +
+  createHash("sha256")
+    .update(canonicalJson(jetReplayFixture))
+    .digest("hex");
+
+console.log(
+  [
+    "Jet Stream v1 deterministic replay OK",
+    `score=${jetFirst.score}`,
+    `passed=${jetFirst.state.passed}`,
+    `finalTick=${jetFinalTick}`,
+    `inputs=${jetInputs.length}`,
+    `replayHash=${jetReplayHash}`,
   ].join(" · ")
 );
