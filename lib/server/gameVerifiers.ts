@@ -13,6 +13,13 @@ import {
   replayPrecisionStack,
   type PrecisionStackInput,
 } from "@/lib/verified/precisionStackCore.v1";
+import {
+  PIANO_RUSH_ACTIONS,
+  PIANO_RUSH_V1,
+  PIANO_RUSH_V1_CONTENT,
+  replayPianoRush,
+  type PianoRushInput,
+} from "@/lib/verified/pianoRushCore.v1";
 
 export type ServerReplayResult = {
   valid: boolean;
@@ -132,6 +139,47 @@ const precisionStackAdapter: VerifiedGameAdapter = {
   },
 };
 
+const pianoRushAdapter: VerifiedGameAdapter = {
+  gameId: "piano-rush",
+  gameVersion: "1.0.0",
+  engineVersion: "skill-core-1",
+  simulation: {
+    tickRate: PIANO_RUSH_V1.tickRate,
+    coordinateWidth: PIANO_RUSH_V1.coordinateWidth,
+    coordinateHeight: PIANO_RUSH_V1.coordinateHeight,
+    endCondition: "FIRST_MISTAKE_OR_TARGET",
+    maxFinalTick: PIANO_RUSH_V1.maxFinalTick,
+  },
+  inputProtocol: {
+    version: PIANO_RUSH_V1.inputProtocolVersion,
+    allowedActions: PIANO_RUSH_ACTIONS,
+    maxInputs: PIANO_RUSH_V1.maxInputs,
+  },
+  rulesDescriptor: {
+    endCondition: "FIRST_MISTAKE_OR_TARGET",
+    scoringAuthority: "SERVER_REPLAY_ONLY",
+    inputClock: "SIMULATION_TICKS",
+  },
+  gameplayContentDescriptor: PIANO_RUSH_V1_CONTENT,
+  replay({ inputs, finalTick, manifest }) {
+    const replay = replayPianoRush(
+      inputs as PianoRushInput[],
+      finalTick,
+      manifest.seed,
+      manifest.competition.target_score
+    );
+
+    return {
+      valid: replay.valid,
+      error: replay.error,
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.state.status === "won",
+      failure: replay.failure,
+    };
+  },
+};
+
 function adapterKey(gameId: string, gameVersion: string) {
   return `${gameId}@${gameVersion}`;
 }
@@ -148,6 +196,8 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
     towerDropAdapter,
   [adapterKey(precisionStackAdapter.gameId, precisionStackAdapter.gameVersion)]:
     precisionStackAdapter,
+  [adapterKey(pianoRushAdapter.gameId, pianoRushAdapter.gameVersion)]:
+    pianoRushAdapter,
 };
 
 export function getServerGameAdapter(
