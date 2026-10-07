@@ -92,7 +92,7 @@ function revealFlood(
 
 export default function MineGrid({
   active,
-  targetScore: _targetScore,
+  targetScore,
   seed,
   onFinish,
 }: Props) {
@@ -119,6 +119,7 @@ export default function MineGrid({
   );
   const [started, setStarted] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
+  const [elapsedMs, setElapsedMs] = useState(0);
 
   const runningRef = useRef(false);
   const startRef = useRef(0);
@@ -128,6 +129,7 @@ export default function MineGrid({
     setFlagged(new Set());
     setStarted(false);
     setFlagMode(false);
+    setElapsedMs(0);
 
     runningRef.current = active;
 
@@ -135,7 +137,16 @@ export default function MineGrid({
       startRef.current = performance.now();
     }
 
+    const timer = window.setInterval(() => {
+      if (runningRef.current) {
+        setElapsedMs(
+          Math.round(performance.now() - startRef.current)
+        );
+      }
+    }, 200);
+
     return () => {
+      window.clearInterval(timer);
       runningRef.current = false;
     };
   }, [active, seed]);
@@ -212,13 +223,21 @@ export default function MineGrid({
       (cell) => board[cell] !== -1
     ).length;
 
-    // Do not end early when a benchmark score is beaten. Mine Grid only
-    // finishes when the player actually clears the complete board.
+    const currentScore =
+      safeCount * 160 +
+      flagged.size * 18 +
+      challenge.deductionRounds * 40;
+
+    if (currentScore >= targetScore) {
+      finish(true, next);
+      return;
+    }
+
     if (
       safeCount ===
       challenge.cols * challenge.rows - MINES
     ) {
-      finish(true, next);
+      finish(false, next);
       return;
     }
 
@@ -268,6 +287,10 @@ export default function MineGrid({
       className="detGameSurface mineGridGame mineGridAdvanced"
       aria-label="Mine Grid"
     >
+      <div className="gameTimerChip mineTimerChip">
+        {String(Math.floor(elapsedMs / 60000)).padStart(2, "0")}:
+        {String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0")}
+      </div>
       <div
         className="mineGridBoard"
         style={{
@@ -332,7 +355,7 @@ export default function MineGrid({
               className={flagMode ? "active" : ""}
               onClick={() => setFlagMode(true)}
             >
-              MARCAR {flagged.size}/{MINES}
+              MARCAR
             </button>
           </>
         )}
