@@ -373,7 +373,7 @@ const GAME_DEFINITIONS = [
     rivalScore: 7600,
     rivalName: "EDGE",
     rivalAvatar: "/avatars/avatar-2.svg",
-    instruction: "Toca para acoplar módulos 3D. Cada bloque alterna entre los ejes X y Z.",
+    instruction: "Toca al alinear las caras. La siguiente pieza cruza por el otro eje.",
     scoring: "Se conserva la intersección real en X/Z; precisión de superficie y combos perfectos.",
     deterministicSeed: "precision-stack-arena-001",
   },
