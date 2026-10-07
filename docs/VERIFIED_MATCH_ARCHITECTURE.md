@@ -1,7 +1,7 @@
 # Verified match architecture
 
 This document describes the shared competitive verification path used by
-Skill Arena. Tower Drop V2, Precision Stack V1, Piano Rush V1 and Jet Stream V1 are current reference implementations.
+Skill Arena. Tower Drop V2, Precision Stack V2, Piano Rush V1 and Jet Stream V1 are current reference implementations.
 
 ## Authority boundary
 
@@ -91,7 +91,8 @@ Game-specific physics, collision and scoring stay inside each versioned core.
 Current adapters:
 
 - Tower Drop `2.1.0` → `towerDropCore.v2.ts`;
-- Precision Stack `1.0.0` → `precisionStackCore.v1.ts`;
+- Precision Stack current `2.0.0` → `precisionStackCore.v2.ts`;
+- Precision Stack historical `1.0.0` → `precisionStackCore.v1.ts`;
 - Piano Rush `1.0.0` → `pianoRushCore.v1.ts`;
 - Jet Stream `1.0.0` → `jetStreamCore.v1.ts`.
 
