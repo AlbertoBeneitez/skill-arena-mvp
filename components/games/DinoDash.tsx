@@ -1,236 +1,107 @@
 "use client";
 
 /**
- * Dino Dash.
+ * Dino Dash presentation/input adapter.
  *
- * Endless-runner timing is adapted from the permissively licensed Chrome
- * T-Rex runner port by wayou (BSD-3-Clause). Skill Arena uses original
- * geometry, deterministic obstacle schedules and its own rendering.
- *
- * Source: https://github.com/wayou/t-rex-runner
+ * Competitive physics, obstacle generation, collision, scoring and replay live
+ * in dinoDashCore.v1.ts. This component owns presentation, feedback and input.
  */
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { GameResult } from "@/lib/types";
-import { createRng } from "@/lib/deterministic/seeded";
+import { useCallback, useEffect, useRef } from "react";
+import type { GameRuntimeProps } from "@/lib/games";
+import {
+  beginLogicalCanvasFrame,
+  configureLogicalCanvas,
+  type CanvasViewportMetrics,
+} from "@/lib/gameCanvas";
 import { gameTone, haptic } from "@/lib/gameFeedback";
+import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
+import {
+  applyDinoDashAction,
+  createDinoDashState,
+  DINO_DASH_V1,
+  dinoDashIsGrounded,
+  stepDinoDash,
+  type DinoDashAction,
+  type DinoDashInput,
+  type DinoDashState,
+} from "@/lib/verified/dinoDashCore.v1";
 
-type Props = {
-  active: boolean;
-  targetScore: number;
-  seed: string;
-  onFinish: (result: GameResult) => void;
-};
+const DT = 1 / DINO_DASH_V1.tickRate;
+const TERMINAL_FEEDBACK_MS = 260;
+const W = DINO_DASH_V1.coordinateWidth;
+const H = DINO_DASH_V1.coordinateHeight;
+const GROUND = DINO_DASH_V1.groundY;
+const PLAYER_X = DINO_DASH_V1.playerX;
 
-type Obstacle = {
-  x: number;
-  kind: "cactus" | "double" | "flyer";
-  y: number;
-  w: number;
-  h: number;
-  passed: boolean;
-};
-
-const W = 390;
-const H = 620;
-const DT = 1 / 120;
-const GROUND = 508;
-const PLAYER_X = 72;
-
-function makeSchedule(seed: string) {
-  const rng = createRng(`${seed}:dino-obstacles`);
-  const items: Array<{
-    gap: number;
-    kind: Obstacle["kind"];
-    y: number;
-    w: number;
-    h: number;
-  }> = [];
-
-  for (let index = 0; index < 600; index += 1) {
-    const roll = rng.nextInt(10);
-    const kind: Obstacle["kind"] =
-      index < 5
-        ? "cactus"
-        : roll < 5
-          ? "cactus"
-          : roll < 8
-            ? "double"
-            : "flyer";
-
-    items.push({
-      gap: 250 + rng.nextInt(170),
-      kind,
-      y:
-        kind === "flyer"
-          ? GROUND - (rng.nextInt(2) === 0 ? 74 : 116)
-          : GROUND,
-      w: kind === "double" ? 48 : kind === "flyer" ? 40 : 27,
-      h: kind === "flyer" ? 23 : kind === "double" ? 48 : 44,
-    });
-  }
-
-  return items;
-}
+type DuckAction = Extract<
+  DinoDashAction,
+  "DUCK_DOWN" | "DUCK_UP"
+>;
 
 export default function DinoDash({
   active,
+  stake,
   targetScore,
-  seed,
   onFinish,
-}: Props) {
+}: GameRuntimeProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const metricsRef = useRef<CanvasViewportMetrics | null>(null);
   const rafRef = useRef<number | null>(null);
-  const startRef = useRef(0);
-  const schedule = useMemo(() => makeSchedule(seed), [seed]);
-  const jumpHeld = useRef(false);
+  const finishRef = useRef(onFinish);
 
-  const stateRef = useRef({
-    y: GROUND - 46,
-    vy: 0,
-    ducking: false,
-    obstacles: [] as Obstacle[],
-    scheduleIndex: 0,
-    nextSpawnX: 520,
-    scroll: 0,
-    score: 0,
-    ticks: 0,
-    running: false,
-    last: 0,
-    acc: 0,
-  });
-
-  const speedFor = (ticks: number) =>
-    Math.min(390, 178 + (ticks / 120) * 1.85);
-
-  const finish = useCallback(
-    (won: boolean) => {
-      const s = stateRef.current;
-      if (!s.running) return;
-      s.running = false;
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-
-      gameTone(won ? "win" : "bad");
-      haptic(won ? [18, 30, 48] : 30);
-
-      onFinish({
-        won,
-        score: Math.round(s.score),
-        timeMs: Math.round(performance.now() - startRef.current),
-      });
-    },
-    [onFinish]
+  const stateRef = useRef<DinoDashState>(
+    createDinoDashState("preview")
   );
+  const loopingRef = useRef(false);
+  const terminalSubmittedRef = useRef(false);
+  const startFailureReportedRef = useRef(false);
+  const terminalStartedAtRef = useRef(0);
+  const lastFrameTimeRef = useRef(0);
+  const accumulatorRef = useRef(0);
+  const failureFlashUntilRef = useRef(0);
+  const pendingDuckActionRef = useRef<DuckAction | null>(null);
 
-  const spawnUntilFilled = useCallback(() => {
-    const s = stateRef.current;
+  const verifiedAttempt = useVerifiedAttempt<DinoDashInput>({
+    active,
+    gameId: "dino-dash",
+    stakeMinor: Math.round(stake * 100),
+    targetScore,
+  });
+  const {
+    state: attemptState,
+    recordInput,
+    verifyAttempt,
+  } = verifiedAttempt;
 
-    while (s.nextSpawnX - s.scroll < W + 700) {
-      const item = schedule[s.scheduleIndex % schedule.length];
-      s.nextSpawnX += item.gap;
+  useEffect(() => {
+    finishRef.current = onFinish;
+  }, [onFinish]);
 
-      s.obstacles.push({
-        x: s.nextSpawnX,
-        kind: item.kind,
-        y: item.y,
-        w: item.w,
-        h: item.h,
-        passed: false,
-      });
-
-      s.scheduleIndex += 1;
-    }
-  }, [schedule]);
-
-  const step = useCallback(() => {
-    const s = stateRef.current;
-    s.ticks += 1;
-
-    const speed = speedFor(s.ticks);
-    s.scroll += speed * DT;
-    s.score += speed * DT * 0.42;
-
-    spawnUntilFilled();
-
-    const grounded = s.y >= GROUND - 46 - 0.1;
-
-    if (!grounded) {
-      if (jumpHeld.current && s.vy < 0) {
-        s.vy -= 90 * DT;
-      }
-      s.vy += 1150 * DT;
-      s.y += s.vy * DT;
-
-      if (s.y >= GROUND - 46) {
-        s.y = GROUND - 46;
-        s.vy = 0;
-      }
-    }
-
-    const playerH = s.ducking && grounded ? 29 : 46;
-    const playerY = s.ducking && grounded ? GROUND - playerH : s.y;
-    const px1 = PLAYER_X + 5;
-    const px2 = PLAYER_X + 36;
-    const py1 = playerY + 4;
-    const py2 = playerY + playerH - 2;
-
-    for (const obstacle of s.obstacles) {
-      const x = obstacle.x - s.scroll;
-      const y1 =
-        obstacle.kind === "flyer"
-          ? obstacle.y - obstacle.h / 2
-          : obstacle.y - obstacle.h;
-      const y2 =
-        obstacle.kind === "flyer"
-          ? obstacle.y + obstacle.h / 2
-          : obstacle.y;
-
-      if (
-        x + obstacle.w > px1 &&
-        x < px2 &&
-        y2 > py1 &&
-        y1 < py2
-      ) {
-        finish(false);
-        return;
-      }
-
-      if (!obstacle.passed && x + obstacle.w < PLAYER_X) {
-        obstacle.passed = true;
-        s.score += obstacle.kind === "flyer" ? 360 : obstacle.kind === "double" ? 300 : 240;
-        gameTone("tap");
-      }
-    }
-
-    if (s.score >= targetScore) {
-      finish(true);
-      return;
-    }
-
-    if (s.obstacles.length > 60) {
-      s.obstacles = s.obstacles.filter(
-        (obstacle) => obstacle.x - s.scroll > -100
-      );
-    }
-  }, [finish, spawnUntilFilled, targetScore]);
-
-  const draw = useCallback(() => {
+  const draw = useCallback((now = performance.now()) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const s = stateRef.current;
-    const phase = (s.ticks / 120) % 46;
+    const metrics =
+      metricsRef.current ?? configureLogicalCanvas(canvas, W, H);
+    metricsRef.current = metrics;
+    beginLogicalCanvasFrame(ctx, canvas, metrics);
+
+    const state = stateRef.current;
+    const phase = (state.tick / DINO_DASH_V1.tickRate) % 46;
     const night = phase > 31;
     const sky = ctx.createLinearGradient(0, 0, 0, H);
 
     if (night) {
-      sky.addColorStop(0, "#18223f");
-      sky.addColorStop(1, "#495b78");
+      sky.addColorStop(0, "#0b1329");
+      sky.addColorStop(0.62, "#182943");
+      sky.addColorStop(1, "#30445b");
     } else {
       sky.addColorStop(0, "#d9eff7");
-      sky.addColorStop(1, "#f5e5bf");
+      sky.addColorStop(0.68, "#edf0dd");
+      sky.addColorStop(1, "#f3d8a8");
     }
 
     ctx.fillStyle = sky;
@@ -238,41 +109,50 @@ export default function DinoDash({
 
     if (night) {
       ctx.fillStyle = "rgba(255,255,255,.72)";
-      for (let i = 0; i < 22; i += 1) {
-        const x = (i * 71 - s.scroll * 0.03) % W;
-        const y = 38 + ((i * 47) % 210);
-        ctx.fillRect((x + W) % W, y, 2, 2);
+      for (let index = 0; index < 22; index += 1) {
+        const x =
+          (index * 71 - state.scroll * 0.03 + W * 4) % W;
+        const y = 38 + ((index * 47) % 210);
+        ctx.fillRect(x, y, 2, 2);
       }
+    } else {
+      const sun = ctx.createRadialGradient(318, 92, 8, 318, 92, 74);
+      sun.addColorStop(0, "rgba(255,247,205,.92)");
+      sun.addColorStop(1, "rgba(255,247,205,0)");
+      ctx.fillStyle = sun;
+      ctx.fillRect(240, 14, 150, 150);
     }
 
-    ctx.fillStyle = night ? "#27303f" : "#66685f";
+    ctx.fillStyle = night ? "#283447" : "#65685f";
     ctx.fillRect(0, GROUND, W, 4);
 
     ctx.fillStyle = night
-      ? "rgba(255,255,255,.20)"
-      : "rgba(50,50,50,.18)";
-    for (let x = -((s.scroll * 0.7) % 34); x < W; x += 34) {
+      ? "rgba(255,255,255,.18)"
+      : "rgba(38,44,42,.16)";
+    for (let x = -((state.scroll * 0.7) % 34); x < W; x += 34) {
       ctx.fillRect(x, GROUND + 18, 20, 2);
     }
 
-    for (const obstacle of s.obstacles) {
-      const x = obstacle.x - s.scroll;
+    for (const obstacle of state.obstacles) {
+      const x = obstacle.worldX - state.scroll;
       if (x < -80 || x > W + 80) continue;
 
       if (obstacle.kind === "flyer") {
-        ctx.fillStyle = "#b35d75";
+        const wing = Math.sin(state.tick * 0.18) * 5;
+        ctx.fillStyle = night ? "#c46a8d" : "#b35d75";
         ctx.beginPath();
         ctx.moveTo(x, obstacle.y);
-        ctx.lineTo(x + 18, obstacle.y - 12);
+        ctx.lineTo(x + 18, obstacle.y - 12 - wing);
         ctx.lineTo(x + obstacle.w, obstacle.y);
-        ctx.lineTo(x + 18, obstacle.y + 10);
+        ctx.lineTo(x + 18, obstacle.y + 10 + wing * 0.3);
         ctx.closePath();
         ctx.fill();
 
         ctx.fillStyle = "#f4d27c";
         ctx.fillRect(x + obstacle.w - 6, obstacle.y - 2, 7, 4);
       } else {
-        ctx.fillStyle = obstacle.kind === "double" ? "#3d8c62" : "#4f9d6b";
+        ctx.fillStyle =
+          obstacle.kind === "double" ? "#3d8c62" : "#4f9d6b";
         const count = obstacle.kind === "double" ? 2 : 1;
 
         for (let part = 0; part < count; part += 1) {
@@ -284,12 +164,23 @@ export default function DinoDash({
       }
     }
 
-    const grounded = s.y >= GROUND - 46 - 0.1;
-    const playerH = s.ducking && grounded ? 29 : 46;
-    const playerY = s.ducking && grounded ? GROUND - playerH : s.y;
+    const grounded = dinoDashIsGrounded(state);
+    const playerHeight =
+      state.ducking && grounded
+        ? DINO_DASH_V1.playerDuckHeight
+        : DINO_DASH_V1.playerStandingHeight;
+    const playerY =
+      state.ducking && grounded
+        ? GROUND - playerHeight
+        : state.y;
 
-    ctx.fillStyle = "#243a58";
-    ctx.fillRect(PLAYER_X + 7, playerY + 10, 24, playerH - 10);
+    ctx.fillStyle = night ? "#91a8c7" : "#243a58";
+    ctx.fillRect(
+      PLAYER_X + 7,
+      playerY + 10,
+      24,
+      Math.max(8, playerHeight - 10)
+    );
 
     ctx.fillStyle = "#f0c95c";
     ctx.fillRect(PLAYER_X + 22, playerY + 3, 17, 13);
@@ -297,117 +188,395 @@ export default function DinoDash({
     ctx.fillStyle = "#0d1423";
     ctx.fillRect(PLAYER_X + 33, playerY + 7, 3, 3);
 
-    ctx.fillStyle = "#243a58";
-    const legPhase = Math.floor(s.ticks / 8) % 2;
-    ctx.fillRect(PLAYER_X + 11, playerY + playerH - 2, 5, legPhase ? 8 : 4);
-    ctx.fillRect(PLAYER_X + 25, playerY + playerH - 2, 5, legPhase ? 4 : 8);
+    if (!(state.ducking && grounded)) {
+      const legPhase = Math.floor(state.tick / 8) % 2;
+      ctx.fillStyle = night ? "#91a8c7" : "#243a58";
+      ctx.fillRect(
+        PLAYER_X + 11,
+        playerY + playerHeight - 2,
+        5,
+        legPhase ? 8 : 4
+      );
+      ctx.fillRect(
+        PLAYER_X + 25,
+        playerY + playerHeight - 2,
+        5,
+        legPhase ? 4 : 8
+      );
+    }
+
+    if (now < failureFlashUntilRef.current) {
+      const remaining =
+        (failureFlashUntilRef.current - now) / TERMINAL_FEEDBACK_MS;
+      ctx.fillStyle = `rgba(255,76,93,${0.06 + remaining * 0.12})`;
+      ctx.fillRect(0, 0, W, H);
+    }
   }, []);
+
+  const submitTerminal = useCallback(
+    async (state: DinoDashState) => {
+      if (terminalSubmittedRef.current) return;
+      terminalSubmittedRef.current = true;
+      loopingRef.current = false;
+
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+
+      const result = await verifyAttempt(state.tick);
+
+      if (!result.ok || !result.verified) {
+        finishRef.current({
+          won: false,
+          score: 0,
+          timeMs: Math.round(
+            (state.tick * 1000) / DINO_DASH_V1.tickRate
+          ),
+          verified: false,
+          verificationError: result.error ?? "REPLAY_MISMATCH",
+        });
+        return;
+      }
+
+      finishRef.current({
+        won: result.won === true,
+        score: result.score ?? 0,
+        timeMs: result.time_ms ?? 0,
+        verified: true,
+        failureReason: result.failure ?? null,
+      });
+    },
+    [verifyAttempt]
+  );
+
+  const markTerminalFeedback = useCallback((now: number) => {
+    if (terminalStartedAtRef.current > 0) return;
+    terminalStartedAtRef.current = now;
+
+    if (stateRef.current.status === "won") {
+      gameTone("win");
+      haptic([16, 28, 46]);
+    } else {
+      failureFlashUntilRef.current = now + TERMINAL_FEEDBACK_MS;
+      gameTone("bad");
+      haptic([28, 20, 48]);
+    }
+  }, []);
+
+  const flushPendingDuckAction = useCallback(() => {
+    const action = pendingDuckActionRef.current;
+    const state = stateRef.current;
+
+    if (
+      !action ||
+      attemptState.status !== "ready" ||
+      state.status !== "running"
+    ) {
+      return;
+    }
+
+    const accepted = recordInput({
+      tick: state.tick,
+      action,
+    });
+    if (!accepted) return;
+
+    applyDinoDashAction(state, action);
+    pendingDuckActionRef.current = null;
+  }, [attemptState.status, recordInput]);
+
+  const step = useCallback(() => {
+    const state = stateRef.current;
+    if (
+      state.status !== "running" ||
+      attemptState.status !== "ready"
+    ) {
+      return;
+    }
+
+    flushPendingDuckAction();
+    const beforePassed = state.passedCount;
+    stepDinoDash(state, targetScore);
+
+    if (state.passedCount > beforePassed) {
+      gameTone("good");
+      haptic(3);
+    }
+
+    if (state.status !== "running") {
+      markTerminalFeedback(performance.now());
+    }
+  }, [
+    attemptState.status,
+    flushPendingDuckAction,
+    markTerminalFeedback,
+    targetScore,
+  ]);
 
   const loop = useCallback(
     (now: number) => {
-      const s = stateRef.current;
-      if (!s.running) return;
-      if (!s.last) s.last = now;
+      if (!loopingRef.current) return;
 
-      s.acc += Math.min(0.05, (now - s.last) / 1000);
-      s.last = now;
-
-      while (s.acc >= DT && s.running) {
-        step();
-        s.acc -= DT;
+      if (lastFrameTimeRef.current <= 0) {
+        lastFrameTimeRef.current = now;
       }
 
-      draw();
-      if (s.running) rafRef.current = requestAnimationFrame(loop);
+      accumulatorRef.current += Math.min(
+        0.05,
+        Math.max(0, (now - lastFrameTimeRef.current) / 1000)
+      );
+      lastFrameTimeRef.current = now;
+
+      while (
+        stateRef.current.status === "running" &&
+        accumulatorRef.current >= DT
+      ) {
+        step();
+        accumulatorRef.current -= DT;
+      }
+
+      draw(now);
+
+      const state = stateRef.current;
+      if (state.status !== "running") {
+        markTerminalFeedback(now);
+
+        if (
+          now - terminalStartedAtRef.current >= TERMINAL_FEEDBACK_MS
+        ) {
+          void submitTerminal(state);
+          return;
+        }
+      }
+
+      if (loopingRef.current) {
+        rafRef.current = requestAnimationFrame(loop);
+      }
     },
-    [draw, step]
+    [draw, markTerminalFeedback, step, submitTerminal]
   );
 
   useEffect(() => {
-    if (!active) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    stateRef.current = {
-      y: GROUND - 46,
-      vy: 0,
-      ducking: false,
-      obstacles: [],
-      scheduleIndex: 0,
-      nextSpawnX: 390,
-      scroll: 0,
-      score: 0,
-      ticks: 0,
-      running: true,
-      last: 0,
-      acc: 0,
+    const resize = () => {
+      metricsRef.current = configureLogicalCanvas(canvas, W, H);
+      draw();
     };
 
-    jumpHeld.current = false;
-    startRef.current = performance.now();
-    spawnUntilFilled();
+    resize();
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(resize)
+        : null;
+    observer?.observe(canvas);
+    window.addEventListener("orientationchange", resize);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("orientationchange", resize);
+    };
+  }, [draw]);
+
+  useEffect(() => {
+    if (!active || attemptState.status !== "ready") return;
+
+    stateRef.current = createDinoDashState(attemptState.manifest.seed);
+    loopingRef.current = true;
+    terminalSubmittedRef.current = false;
+    startFailureReportedRef.current = false;
+    terminalStartedAtRef.current = 0;
+    lastFrameTimeRef.current = 0;
+    accumulatorRef.current = 0;
+    failureFlashUntilRef.current = 0;
+    pendingDuckActionRef.current = null;
+
     draw();
     rafRef.current = requestAnimationFrame(loop);
 
     return () => {
-      stateRef.current.running = false;
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      loopingRef.current = false;
+      pendingDuckActionRef.current = null;
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     };
-  }, [active, draw, loop, spawnUntilFilled]);
+  }, [
+    active,
+    attemptState.status,
+    attemptState.status === "ready"
+      ? attemptState.manifest.match_id
+      : "",
+    draw,
+    loop,
+  ]);
 
-  function jump() {
-    const s = stateRef.current;
-    if (!s.running) return;
+  useEffect(() => {
+    if (
+      active &&
+      attemptState.status === "rejected" &&
+      stateRef.current.tick === 0 &&
+      !startFailureReportedRef.current
+    ) {
+      startFailureReportedRef.current = true;
+      finishRef.current({
+        won: false,
+        score: 0,
+        timeMs: 0,
+        verified: false,
+        verificationError: attemptState.reason,
+      });
+    }
+  }, [active, attemptState]);
 
-    const grounded = s.y >= GROUND - 46 - 0.1;
-    if (!grounded) return;
+  const jump = useCallback(() => {
+    const state = stateRef.current;
+    if (
+      attemptState.status !== "ready" ||
+      !loopingRef.current ||
+      state.status !== "running" ||
+      !dinoDashIsGrounded(state)
+    ) {
+      return;
+    }
 
-    s.ducking = false;
-    s.vy = -455;
-    s.y -= 1;
-    jumpHeld.current = true;
+    pendingDuckActionRef.current = null;
+    const accepted = recordInput({
+      tick: state.tick,
+      action: "JUMP",
+    });
+    if (!accepted) return;
+
+    applyDinoDashAction(state, "JUMP");
     gameTone("tap");
     haptic(3);
-  }
+    draw();
+  }, [attemptState.status, draw, recordInput]);
+
+  const duckDown = useCallback(() => {
+    const state = stateRef.current;
+    if (
+      attemptState.status !== "ready" ||
+      !loopingRef.current ||
+      state.status !== "running" ||
+      state.ducking
+    ) {
+      return;
+    }
+
+    const accepted = recordInput({
+      tick: state.tick,
+      action: "DUCK_DOWN",
+    });
+    if (accepted) {
+      applyDinoDashAction(state, "DUCK_DOWN");
+      pendingDuckActionRef.current = null;
+      haptic(2);
+      draw();
+      return;
+    }
+
+    pendingDuckActionRef.current = "DUCK_DOWN";
+  }, [attemptState.status, draw, recordInput]);
+
+  const duckUp = useCallback(() => {
+    const state = stateRef.current;
+
+    if (pendingDuckActionRef.current === "DUCK_DOWN" && !state.ducking) {
+      pendingDuckActionRef.current = null;
+      return;
+    }
+
+    if (
+      attemptState.status !== "ready" ||
+      !loopingRef.current ||
+      state.status !== "running" ||
+      !state.ducking
+    ) {
+      return;
+    }
+
+    const accepted = recordInput({
+      tick: state.tick,
+      action: "DUCK_UP",
+    });
+    if (accepted) {
+      applyDinoDashAction(state, "DUCK_UP");
+      pendingDuckActionRef.current = null;
+      draw();
+      return;
+    }
+
+    pendingDuckActionRef.current = "DUCK_UP";
+  }, [attemptState.status, draw, recordInput]);
 
   return (
-    <div className="detGameSurface dinoDashGame">
+    <div className="detGameSurface dinoDashGame verifiedArena">
       <canvas
         ref={canvasRef}
-        width={W}
-        height={H}
         className="gameCanvas deterministicCanvas"
-        aria-label="Dino Dash"
+        aria-label="Dino Dash: toca para saltar"
+        role="button"
+        tabIndex={0}
         onPointerDown={(event) => {
-          event.currentTarget.setPointerCapture(event.pointerId);
+          event.preventDefault();
           jump();
         }}
-        onPointerUp={(event) => {
-          jumpHeld.current = false;
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            event.currentTarget.releasePointerCapture(event.pointerId);
+        onKeyDown={(event) => {
+          if (
+            event.key === " " ||
+            event.key === "Enter" ||
+            event.key === "ArrowUp"
+          ) {
+            event.preventDefault();
+            jump();
+          } else if (event.key === "ArrowDown" && !event.repeat) {
+            event.preventDefault();
+            duckDown();
           }
         }}
-        onPointerCancel={() => {
-          jumpHeld.current = false;
+        onKeyUp={(event) => {
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            duckUp();
+          }
         }}
       />
 
       <button
         type="button"
         className="dinoDuckButton"
+        aria-label="Agacharse"
         onPointerDown={(event) => {
           event.preventDefault();
-          stateRef.current.ducking = true;
-          haptic(2);
+          event.currentTarget.setPointerCapture(event.pointerId);
+          duckDown();
         }}
-        onPointerUp={() => {
-          stateRef.current.ducking = false;
+        onPointerUp={(event) => {
+          duckUp();
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+          }
         }}
-        onPointerCancel={() => {
-          stateRef.current.ducking = false;
-        }}
+        onPointerCancel={duckUp}
+        onLostPointerCapture={duckUp}
       >
         ↓
       </button>
+
+      {(attemptState.status === "starting" ||
+        attemptState.status === "verifying") && (
+        <div className="verificationOverlay">
+          <span>
+            {attemptState.status === "starting"
+              ? "PREPARANDO PARTIDA"
+              : "COMPROBANDO RESULTADO"}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

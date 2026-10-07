@@ -447,10 +447,15 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "dino-dash",
-    version: "0.1.0",
-    status: "INTEGRATED",
+    version: "1.0.0",
+    status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/DinoDash")),
-    competition: { verification: "client-result" },
+    competition: {
+      verification: "server-replay",
+      engineVersion: "skill-core-1",
+      inputProtocolVersion: 1,
+      allowedActions: ["JUMP", "DUCK_DOWN", "DUCK_UP"],
+    },
     name: "Dino Dash",
     cover: "/covers/dino-dash.svg",
     enabled: true,

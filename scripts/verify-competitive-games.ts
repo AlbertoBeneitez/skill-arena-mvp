@@ -49,6 +49,16 @@ import {
   type TowerDropState,
 } from "../lib/verified/towerDropCore.v2";
 
+import {
+  applyDinoDashAction,
+  createDinoDashState,
+  DINO_DASH_V1,
+  dinoDashScore,
+  replayDinoDash,
+  stepDinoDash,
+  type DinoDashInput,
+} from "../lib/verified/dinoDashCore.v1";
+
 function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(message);
 }
@@ -1321,3 +1331,174 @@ console.log(
     `replayHash=${jetReplayHash}`,
   ].join(" · ")
 );
+
+function dinoStatus(state: ReturnType<typeof createDinoDashState>) {
+  return state.status;
+}
+
+const dinoGolden = {
+  seed: "dino-dash-golden-v1",
+  targetScore: 1_000,
+  inputs: [
+    { seq: 0, tick: 253, action: "JUMP" },
+    { seq: 1, tick: 348, action: "JUMP" },
+    { seq: 2, tick: 470, action: "JUMP" },
+    { seq: 3, tick: 565, action: "JUMP" },
+    { seq: 4, tick: 735, action: "JUMP" },
+  ] satisfies DinoDashInput[],
+  finalTick: 807,
+  expected: {
+    score: 1_000,
+    timeMs: 6_725,
+    status: "won" as const,
+    replayHash:
+      "sha256:690fe781447479095d22bb289558648d9cc358f93be4b1fdbc9ad359ba656bf0",
+  },
+};
+
+const dinoFirst = replayDinoDash(
+  dinoGolden.inputs,
+  dinoGolden.finalTick,
+  dinoGolden.seed,
+  dinoGolden.targetScore
+);
+const dinoSecond = replayDinoDash(
+  dinoGolden.inputs,
+  dinoGolden.finalTick,
+  dinoGolden.seed,
+  dinoGolden.targetScore
+);
+
+assert(dinoFirst.valid && dinoSecond.valid, "dino golden replay rejected");
+assert(
+  JSON.stringify(dinoFirst.state) === JSON.stringify(dinoSecond.state),
+  "dino replay diverged across identical runs"
+);
+assert(
+  dinoFirst.score === dinoGolden.expected.score &&
+    dinoFirst.timeMs === dinoGolden.expected.timeMs &&
+    dinoFirst.state.status === dinoGolden.expected.status,
+  "dino frozen golden result changed"
+);
+
+function simulateDinoRenderRate(frameHz: number) {
+  const state = createDinoDashState(dinoGolden.seed);
+  let inputIndex = 0;
+  let accumulator = 0;
+  const frameSeconds = 1 / frameHz;
+  const tickSeconds = 1 / DINO_DASH_V1.tickRate;
+  let guard = 0;
+
+  while (dinoStatus(state) === "running" && guard < 1_000_000) {
+    accumulator += frameSeconds;
+
+    while (
+      accumulator + 1e-12 >= tickSeconds &&
+      dinoStatus(state) === "running"
+    ) {
+      while (
+        inputIndex < dinoGolden.inputs.length &&
+        dinoGolden.inputs[inputIndex].tick === state.tick
+      ) {
+        applyDinoDashAction(state, dinoGolden.inputs[inputIndex].action);
+        inputIndex += 1;
+      }
+
+      if (dinoStatus(state) !== "running") break;
+      stepDinoDash(state, dinoGolden.targetScore);
+      accumulator -= tickSeconds;
+    }
+
+    guard += 1;
+  }
+
+  return {
+    tick: state.tick,
+    status: state.status,
+    failure: state.failure,
+    score: dinoDashScore(state),
+    passed: state.passedCount,
+    y: state.y,
+    scroll: state.scroll,
+  };
+}
+
+const dino60 = simulateDinoRenderRate(60);
+const dino120 = simulateDinoRenderRate(120);
+const dino144 = simulateDinoRenderRate(144);
+
+assert(
+  JSON.stringify(dino60) === JSON.stringify(dino120) &&
+    JSON.stringify(dino120) === JSON.stringify(dino144),
+  "dino render-rate equivalence failed"
+);
+
+const dinoNoInput = createDinoDashState("dino-no-input-v1");
+let dinoNoInputGuard = 0;
+while (
+  dinoStatus(dinoNoInput) === "running" &&
+  dinoNoInputGuard < 10_000
+) {
+  stepDinoDash(dinoNoInput);
+  dinoNoInputGuard += 1;
+}
+assert(
+  dinoStatus(dinoNoInput) === "failed" &&
+    dinoNoInput.failure === "OBSTACLE_COLLISION",
+  "dino no-input run did not terminate by collision"
+);
+
+const dinoDuck = createDinoDashState("dino-duck-toggle-v1");
+applyDinoDashAction(dinoDuck, "DUCK_DOWN");
+assert(dinoDuck.ducking === true, "dino duck-down action was lost");
+applyDinoDashAction(dinoDuck, "DUCK_UP");
+assert(dinoDuck.ducking === false, "dino duck-up action was lost");
+
+const dinoDuplicateInput = replayDinoDash(
+  [
+    { seq: 0, tick: 10, action: "JUMP" },
+    { seq: 1, tick: 10, action: "DUCK_DOWN" },
+  ],
+  20,
+  "dino-duplicate-input-v1",
+  1_000
+);
+assert(
+  !dinoDuplicateInput.valid &&
+    dinoDuplicateInput.error === "INVALID_INPUT_SEQUENCE",
+  "dino repeated-tick input was accepted"
+);
+
+const dinoReplayFixture = {
+  manifestHash: "sha256:dino-dash-golden-manifest",
+  attemptId: "dino-dash-golden-attempt",
+  inputs: dinoGolden.inputs,
+  finalTick: dinoGolden.finalTick,
+  result: {
+    score: dinoFirst.score,
+    timeMs: dinoFirst.timeMs,
+    won: dinoFirst.state.status === "won",
+    failure: dinoFirst.failure,
+  },
+};
+const dinoReplayHash =
+  "sha256:" +
+  createHash("sha256")
+    .update(canonicalJson(dinoReplayFixture))
+    .digest("hex");
+
+assert(
+  dinoReplayHash === dinoGolden.expected.replayHash,
+  "dino golden replay hash changed"
+);
+
+console.log(
+  [
+    "Dino Dash v1 deterministic replay OK",
+    `score=${dinoFirst.score}`,
+    `finalTick=${dinoGolden.finalTick}`,
+    `inputs=${dinoGolden.inputs.length}`,
+    `replayHash=${dinoReplayHash}`,
+  ].join(" · ")
+);
+

@@ -7,7 +7,7 @@ Skill Arena está pensada para probar producto, arquitectura competitiva y UX m�
 - Onboarding: Skill Arena → Google/Apple/continuar sin proveedor (simulado) → configurar avatar.
 - Galería de avatares y subida de foto con recorte local; sin generación de avatar por IA en esta fase.
 - Panel de jugador horizontal: imagen, nombre, ranking y dinero ganado/perdido.
-- Catálogo modular de juegos 1 vs 1 con carga bajo demanda; Tower Drop V2, Precision Stack V1, Piano Rush V1 y Jet Stream V1 usan verificación server-side.
+- Catálogo modular de juegos 1 vs 1 con carga bajo demanda; Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1 y Dino Dash V1 usan verificación server-side.
 - Portada/cover de cada juego antes de jugar.
 - Stakes: 0 €, 1 €, 5 €, 10 € y 50 €.
 - Estado de matchmaking por color de todo el botón:
@@ -29,11 +29,9 @@ deriva la carga dinámica desde ese registro y no contiene un switch por juego.
 
 Los juegos competitivos verificados utilizan un core puro y versionado,
 inputs ordenados por tick, seed emitido por servidor, manifest firmado,
-replay server-side y resultado autoritativo. Tower Drop V2, Precision Stack V1,
-Piano Rush V1 y Jet Stream V1 son las implementaciones de referencia.
+replay server-side y resultado autoritativo. Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1 y Dino Dash V1 son las implementaciones de referencia.
 
-La especificación estable está en `docs/GAME_ARCHITECTURE.md` y las
-decisiones irreversibles se registran en `docs/adr/`.
+La especificación estable está en `docs/GAME_ARCHITECTURE.md`, el ciclo obligatorio de calidad en `docs/GAME_PROFESSIONALIZATION_CYCLE.md` y las decisiones irreversibles se registran en `docs/adr/`.
 
 ## Desarrollo
 

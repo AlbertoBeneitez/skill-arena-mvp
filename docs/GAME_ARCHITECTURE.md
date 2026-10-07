@@ -1,6 +1,8 @@
 # Skill Arena game architecture
 
-Status: **STABLE**. Tower Drop V2, Precision Stack V2, Piano Rush V1 and Jet Stream V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
+Status: **STABLE**. Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1 and Dino Dash V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
+
+Promotion beyond `INTEGRATED` follows the mandatory cycle in `docs/GAME_PROFESSIONALIZATION_CYCLE.md`.
 
 ## Boundaries
 

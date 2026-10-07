@@ -34,6 +34,14 @@ import {
   type JetStreamInput,
 } from "@/lib/verified/jetStreamCore.v1";
 
+import {
+  DINO_DASH_ACTIONS,
+  DINO_DASH_V1,
+  DINO_DASH_V1_CONTENT,
+  replayDinoDash,
+  type DinoDashInput,
+} from "@/lib/verified/dinoDashCore.v1";
+
 export type ServerReplayResult = {
   valid: boolean;
   error?: string;
@@ -276,6 +284,47 @@ const jetStreamAdapter: VerifiedGameAdapter = {
   },
 };
 
+const dinoDashAdapter: VerifiedGameAdapter = {
+  gameId: "dino-dash",
+  gameVersion: "1.0.0",
+  engineVersion: "skill-core-1",
+  simulation: {
+    tickRate: DINO_DASH_V1.tickRate,
+    coordinateWidth: DINO_DASH_V1.coordinateWidth,
+    coordinateHeight: DINO_DASH_V1.coordinateHeight,
+    endCondition: "FIRST_COLLISION_OR_TARGET",
+    maxFinalTick: DINO_DASH_V1.maxFinalTick,
+  },
+  inputProtocol: {
+    version: DINO_DASH_V1.inputProtocolVersion,
+    allowedActions: DINO_DASH_ACTIONS,
+    maxInputs: DINO_DASH_V1.maxInputs,
+  },
+  rulesDescriptor: {
+    endCondition: "FIRST_COLLISION_OR_TARGET",
+    scoringAuthority: "SERVER_REPLAY_ONLY",
+    inputClock: "SIMULATION_TICKS",
+  },
+  gameplayContentDescriptor: DINO_DASH_V1_CONTENT,
+  replay({ inputs, finalTick, manifest }) {
+    const replay = replayDinoDash(
+      inputs as DinoDashInput[],
+      finalTick,
+      manifest.seed,
+      manifest.competition.target_score
+    );
+
+    return {
+      valid: replay.valid,
+      error: replay.error,
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.state.status === "won",
+      failure: replay.failure,
+    };
+  },
+};
+
 function adapterKey(gameId: string, gameVersion: string) {
   return `${gameId}@${gameVersion}`;
 }
@@ -298,6 +347,8 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
     pianoRushAdapter,
   [adapterKey(jetStreamAdapter.gameId, jetStreamAdapter.gameVersion)]:
     jetStreamAdapter,
+  [adapterKey(dinoDashAdapter.gameId, dinoDashAdapter.gameVersion)]:
+    dinoDashAdapter,
 };
 
 function assertCurrentAdapterContract(
