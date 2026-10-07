@@ -203,24 +203,29 @@ export default function TowerDrop({
     if (s.status === "running" && s.phase === "swing") {
       const x = s.movingXMilli / 1000;
       const centerX = x + blockWidth / 2;
-      const startWorldY = SWING_BLOCK_Y - cameraY;
+      const dx = centerX - W / 2;
+      const ropeLength = 132;
+      const ropeDrop = Math.sqrt(
+        Math.max(12, ropeLength * ropeLength - dx * dx)
+      );
+      const hookWorldY = CRANE_PIVOT_Y + ropeDrop - cameraY;
 
       ctx.strokeStyle = "#344760";
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(W / 2, CRANE_PIVOT_Y - cameraY);
-      ctx.lineTo(centerX, startWorldY);
+      ctx.lineTo(centerX, hookWorldY);
       ctx.stroke();
 
       ctx.fillStyle = "#344760";
       ctx.beginPath();
-      ctx.arc(centerX, startWorldY, 6, 0, Math.PI * 2);
+      ctx.arc(centerX, hookWorldY, 6, 0, Math.PI * 2);
       ctx.fill();
 
       drawBlock(
         ctx,
         x,
-        startWorldY + 5,
+        hookWorldY + 5,
         blockWidth,
         nextIndex
       );
@@ -230,10 +235,24 @@ export default function TowerDrop({
     ) {
       const progress =
         s.fallYMilli / TOWER_DROP_V2.dropDistanceMilli;
-      const startWorldY = SWING_BLOCK_Y + 5 - cameraY;
+      const releaseCenterX =
+        s.fallXMilli / 1000 + blockWidth / 2;
+      const releaseDx = releaseCenterX - W / 2;
+      const ropeLength = 132;
+      const releaseY =
+        CRANE_PIVOT_Y +
+        Math.sqrt(
+          Math.max(
+            12,
+            ropeLength * ropeLength -
+              releaseDx * releaseDx
+          )
+        ) +
+        5 -
+        cameraY;
       const y =
-        startWorldY +
-        (targetY - startWorldY) * progress;
+        releaseY +
+        (targetY - releaseY) * progress;
 
       drawBlock(
         ctx,
