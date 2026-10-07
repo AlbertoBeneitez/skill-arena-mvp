@@ -10,9 +10,15 @@ import {
 import {
   PRECISION_STACK_V1,
   PRECISION_STACK_V1_CONTENT,
-  replayPrecisionStack,
-  type PrecisionStackInput,
+  replayPrecisionStack as replayPrecisionStackV1,
+  type PrecisionStackInput as PrecisionStackInputV1,
 } from "@/lib/verified/precisionStackCore.v1";
+import {
+  PRECISION_STACK_V2,
+  PRECISION_STACK_V2_CONTENT,
+  replayPrecisionStack as replayPrecisionStackV2,
+  type PrecisionStackInput as PrecisionStackInputV2,
+} from "@/lib/verified/precisionStackCore.v2";
 import {
   PIANO_RUSH_ACTIONS,
   PIANO_RUSH_V1,
@@ -104,7 +110,7 @@ const towerDropAdapter: VerifiedGameAdapter = {
   },
 };
 
-const precisionStackAdapter: VerifiedGameAdapter = {
+const precisionStackV1Adapter: VerifiedGameAdapter = {
   gameId: "precision-stack",
   gameVersion: "1.0.0",
   engineVersion: "skill-core-1",
@@ -127,8 +133,50 @@ const precisionStackAdapter: VerifiedGameAdapter = {
   },
   gameplayContentDescriptor: PRECISION_STACK_V1_CONTENT,
   replay({ inputs, finalTick, manifest }) {
-    const replay = replayPrecisionStack(
-      inputs as PrecisionStackInput[],
+    const replay = replayPrecisionStackV1(
+      inputs as PrecisionStackInputV1[],
+      finalTick,
+      manifest.seed,
+      manifest.competition.target_score
+    );
+
+    return {
+      valid: replay.valid,
+      error: replay.error,
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.state.status === "won",
+      height: replay.height,
+      failure: replay.failure,
+    };
+  },
+};
+
+const precisionStackV2Adapter: VerifiedGameAdapter = {
+  gameId: "precision-stack",
+  gameVersion: "2.0.0",
+  engineVersion: "skill-core-2",
+  simulation: {
+    tickRate: PRECISION_STACK_V2.tickRate,
+    coordinateWidth: PRECISION_STACK_V2.widthMilli / 1000,
+    coordinateHeight: PRECISION_STACK_V2.coordinateHeight,
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    maxFinalTick: PRECISION_STACK_V2.tickRate * 60 * 15,
+  },
+  inputProtocol: {
+    version: PRECISION_STACK_V2.inputProtocolVersion,
+    allowedActions: ["DROP"],
+    maxInputs: PRECISION_STACK_V2.maxInputs,
+  },
+  rulesDescriptor: {
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    scoringAuthority: "SERVER_REPLAY_ONLY",
+    inputClock: "SIMULATION_TICKS",
+  },
+  gameplayContentDescriptor: PRECISION_STACK_V2_CONTENT,
+  replay({ inputs, finalTick, manifest }) {
+    const replay = replayPrecisionStackV2(
+      inputs as PrecisionStackInputV2[],
       finalTick,
       manifest.seed,
       manifest.competition.target_score
@@ -242,8 +290,10 @@ function adapterKey(gameId: string, gameVersion: string) {
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(towerDropAdapter.gameId, towerDropAdapter.gameVersion)]:
     towerDropAdapter,
-  [adapterKey(precisionStackAdapter.gameId, precisionStackAdapter.gameVersion)]:
-    precisionStackAdapter,
+  [adapterKey(precisionStackV1Adapter.gameId, precisionStackV1Adapter.gameVersion)]:
+    precisionStackV1Adapter,
+  [adapterKey(precisionStackV2Adapter.gameId, precisionStackV2Adapter.gameVersion)]:
+    precisionStackV2Adapter,
   [adapterKey(pianoRushAdapter.gameId, pianoRushAdapter.gameVersion)]:
     pianoRushAdapter,
   [adapterKey(jetStreamAdapter.gameId, jetStreamAdapter.gameVersion)]:
