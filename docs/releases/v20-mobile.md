@@ -42,3 +42,23 @@ results are unchanged. Validation: typecheck, deterministic/golden tests,
 production build and 19-game smoke pass; portrait/landscape screenshots reviewed.
 Browser replay verifies normal V2 completion and the DUCK_DOWN/DUCK_UP sequence
 after blur. No important console errors or new third-party dependency/asset.
+
+## L1 — Solitaire orbital backdrop
+
+Audit: retain the solver-curated deck selector, Klondike moves, scoring, card
+layout, selected destinations and cleaned-up timer. This unit changes only the
+effective `.solitaireSprint` background, using original CSS starfields/nebulae.
+The game remains INTEGRATED; a visual change does not claim server verification.
+Typecheck, deterministic tests and production build pass. Chromium mobile QA
+checks 28 tableau cards/7 face-up cards, drawing stock, unchanged visible card
+identities after orientation, scrolling/layout and clean unmount without console
+errors. Portrait/landscape presentation reviewed; no new dependency/assets.
+
+## Remaining after this batch
+
+Stack 3D, new Tower physics, Jet widths/dual passages/lives, Alien's new enemy/
+height/platform/life rules, Shot Gallery, Serpent and the other gameplay units
+remain pending. S3b atomic attempt/results, authenticated shared matchmaking,
+ranking read model/UI and production integration also remain pending. No real
+competition or money is enabled by this batch. Do not label the full backlog
+complete. Publish v20 and advance mobile-test only after green CI and preview.

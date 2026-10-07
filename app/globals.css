@@ -5534,9 +5534,11 @@ html, body {
 .solitaireSprint {
   padding-top: 8px;
   background:
-    radial-gradient(circle at 18% 12%, rgba(107,144,235,.25), transparent 34%),
-    radial-gradient(circle at 82% 24%, rgba(177,105,209,.20), transparent 32%),
-    linear-gradient(155deg,#17264b 0%,#263f72 48%,#352e61 100%);
+    radial-gradient(circle at 17px 23px, rgba(225,243,255,.65) 0 1px, transparent 1.5px) 0 0 / 103px 89px,
+    radial-gradient(circle at 61px 47px, rgba(133,210,244,.5) 0 1px, transparent 1.5px) 0 0 / 151px 127px,
+    radial-gradient(ellipse at 85% 18%, rgba(96,125,211,.26), transparent 32%),
+    radial-gradient(ellipse at 12% 72%, rgba(123,65,181,.22), transparent 44%),
+    linear-gradient(155deg,#050e22 0%,#112644 48%,#0e142d 100%);
 }
 
 .solitaireTimer {
