@@ -16,4 +16,5 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-jet-v2.js");
   await import("../.det-test/scripts/verify-serpent-v1.js");
   await import("../.det-test/scripts/verify-river-v1.js");
+  await import("../.det-test/scripts/verify-river-v2.js");
 }

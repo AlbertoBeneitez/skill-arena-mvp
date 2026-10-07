@@ -2,10 +2,10 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  RIVER_DASH_CORE,
   riverLaneRects,
   type RiverState,
 } from "@/lib/verified/riverDashCore.v1";
+import { RIVER_DASH_CORE_V2 } from "@/lib/verified/riverDashCore.v2";
 import CoreCanvasGame from "./CoreCanvasGame";
 function render(ctx: CanvasRenderingContext2D, state: RiverState) {
   drawSpaceBackdrop(ctx, 390, 620, 3, state.tick);
@@ -75,7 +75,7 @@ function render(ctx: CanvasRenderingContext2D, state: RiverState) {
   ctx.fillText(
     state.tick - state.lastCrossTick < 60
       ? `CRUCE ${state.crossings} COMPLETADO`
-      : `SECTOR ${state.crossings + 1} · ANTICIPA EL FLUJO`,
+      : state.crossings === 0 ? "AVANZA FILA A FILA · ↑" : `SECTOR ${state.crossings + 1} · ANTICIPA EL FLUJO`,
     195,
     42,
   );
@@ -102,7 +102,7 @@ export default function RiverDashVerified(props: GameRuntimeProps) {
     <div className="riverVerified">
       <CoreCanvasGame
         {...props}
-        core={RIVER_DASH_CORE}
+        core={RIVER_DASH_CORE_V2}
         name="River Dash"
         render={render}
         keys={keys}

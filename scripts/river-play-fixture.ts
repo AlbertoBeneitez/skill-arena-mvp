@@ -1,4 +1,4 @@
-import { applyCoreInput, stepCore } from "../lib/verified/coreRuntime.v1";
+import { applyCoreInput, stepCore, type GameCore } from "../lib/verified/coreRuntime.v1";
 import {
   RIVER_DASH_CORE as core,
   RIVER_ACTIONS,
@@ -7,7 +7,7 @@ import {
 } from "../lib/verified/riverDashCore.v1";
 import type { ReplayInput } from "../lib/verified/inputValidation";
 /** Test/QA beam search. No solver is shipped in the game/client core. */
-export function planRiverCrossing(initial: RiverState, padding = 0) {
+export function planRiverCrossing(initial: RiverState, padding = 0, driver: GameCore<RiverState> = core) {
   const safe = (state: RiverState) => {
     if (!padding) return true;
     const left = state.xMilli - 11000 - padding, right = state.xMilli + 11000 + padding;
@@ -32,17 +32,17 @@ export function planRiverCrossing(initial: RiverState, padding = 0) {
         };
         let inputs = node.inputs;
         if (action) {
-          if (!core.canApply(state, action)) continue;
+          if (!driver.canApply(state, action)) continue;
           inputs = [
             ...inputs,
             { seq: inputs.length, tick: state.tick, action },
           ];
-          applyCoreInput(core, state, action, target);
+          applyCoreInput(driver, state, action, target);
         }
         if (state.status === "won") return { state, inputs };
         if (!safe(state)) continue;
         for (let step = 0; step < 16 && state.status === "running"; step++)
-          stepCore(core, state, target);
+          stepCore(driver, state, target);
         if (state.status !== "running" || !safe(state)) continue;
         const key = `${state.row}:${Math.round(state.xMilli / 1000)}`;
         if (seen.has(key)) continue;
