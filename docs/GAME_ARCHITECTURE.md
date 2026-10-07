@@ -1,6 +1,6 @@
 # Skill Arena game architecture
 
-Status: **STABLE**. Tower Drop V2, Precision Stack V1, Piano Rush V1 and Jet Stream V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
+Status: **STABLE**. Tower Drop V2, Precision Stack V2, Piano Rush V1 and Jet Stream V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
 
 ## Boundaries
 
@@ -161,7 +161,7 @@ characters, logos, fonts or trademarks.
 ## Current maturity
 
 - Tower Drop: **VERIFIED** competitive reference core.
-- Precision Stack: **VERIFIED**, with separated orbital presentation and frozen V1 core.
+- Precision Stack: **VERIFIED**, current V2 core with faster cadence, adaptive perfect window and minimum-stable-overlap rule; frozen V1 remains replayable for historical manifests.
 - Piano Rush: **VERIFIED**, with seeded timing chart and typed lane protocol.
 - Jet Stream: **VERIFIED**, with seeded gate course and typed FLAP protocol.
 - Remaining catalogue: **INTEGRATED** legacy games pending one-by-one professionalisation.
