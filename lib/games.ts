@@ -99,7 +99,7 @@ const GAME_DEFINITIONS = [
   {
     id: "jet-stream",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/JetStream")),
     competition: { verification: "client-result" },
     name: "Jet Stream",
@@ -119,7 +119,7 @@ const GAME_DEFINITIONS = [
   {
     id: "pulse-runner",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PulseRunner")),
     competition: { verification: "client-result" },
     name: "Pulse Runner",
@@ -139,7 +139,7 @@ const GAME_DEFINITIONS = [
   {
     id: "metro-shift",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/MetroShift")),
     competition: { verification: "client-result" },
     name: "Metro Shift",
@@ -159,7 +159,7 @@ const GAME_DEFINITIONS = [
   {
     id: "orbit-shift",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbitShift")),
     competition: { verification: "client-result" },
     name: "Orbit Shift",
@@ -179,7 +179,7 @@ const GAME_DEFINITIONS = [
   {
     id: "solitaire-sprint",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/SolitaireSprint")),
     competition: { verification: "client-result" },
     name: "Solitaire Sprint",
@@ -200,7 +200,7 @@ const GAME_DEFINITIONS = [
   {
     id: "mine-grid",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/MineGrid")),
     competition: { verification: "client-result" },
     name: "Mine Grid",
@@ -221,7 +221,7 @@ const GAME_DEFINITIONS = [
   {
     id: "grid-serpent",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GridSerpent")),
     competition: { verification: "client-result" },
     name: "Grid Serpent",
@@ -244,7 +244,7 @@ const GAME_DEFINITIONS = [
   {
     id: "brick-relay",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/BrickRelay")),
     competition: { verification: "client-result" },
     name: "Brick Relay",
@@ -265,7 +265,7 @@ const GAME_DEFINITIONS = [
   {
     id: "stack-shift",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/StackShift")),
     competition: { verification: "client-result" },
     name: "Stack Shift",
@@ -286,7 +286,7 @@ const GAME_DEFINITIONS = [
   {
     id: "maze-rush",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/MazeRush")),
     competition: { verification: "client-result" },
     name: "Maze Rush",
@@ -307,7 +307,7 @@ const GAME_DEFINITIONS = [
   {
     id: "star-phalanx",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/StarPhalanx")),
     competition: { verification: "client-result" },
     name: "Star Phalanx",
@@ -328,7 +328,7 @@ const GAME_DEFINITIONS = [
   {
     id: "river-dash",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/RiverDash")),
     competition: { verification: "client-result" },
     name: "River Dash",
@@ -349,7 +349,7 @@ const GAME_DEFINITIONS = [
   {
     id: "orb-burst",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurst")),
     competition: { verification: "client-result" },
     name: "Orb Burst",
@@ -370,7 +370,7 @@ const GAME_DEFINITIONS = [
   {
     id: "precision-stack",
     version: "1.0.0",
-    status: "INTEGRATED",
+    status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PrecisionStack")),
     competition: {
       verification: "server-replay",
@@ -396,7 +396,7 @@ const GAME_DEFINITIONS = [
   {
     id: "merge-2048",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Merge2048")),
     competition: { verification: "client-result" },
     name: "2048",
@@ -417,7 +417,7 @@ const GAME_DEFINITIONS = [
   {
     id: "piano-rush",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PianoRush")),
     competition: { verification: "client-result" },
     name: "Piano Rush",
@@ -438,7 +438,7 @@ const GAME_DEFINITIONS = [
   {
     id: "dino-dash",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/DinoDash")),
     competition: { verification: "client-result" },
     name: "Dino Dash",
@@ -459,7 +459,7 @@ const GAME_DEFINITIONS = [
   {
     id: "reaction-test",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ReactionTest")),
     competition: { verification: "client-result" },
     name: "Reaction Test",
@@ -480,7 +480,7 @@ const GAME_DEFINITIONS = [
   {
     id: "sky-hop",
     version: "0.1.0",
-    status: "DEMO",
+    status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/SkyHop")),
     competition: { verification: "client-result" },
     name: "Sky Hop",
