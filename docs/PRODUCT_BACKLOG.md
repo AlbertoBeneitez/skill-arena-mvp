@@ -59,7 +59,8 @@ Proposed units, each with its own validation and commit:
 | --- | --- | --- |
 | S1 | Contract and compatibility fixtures implemented in `6a75815` | V2 still issued/accepted; signed V2 hashes and frozen cores preserved; ADR 005 accepted |
 | S2 | Shared seed-based scenario mapping implemented | `SCENARIO_CATALOGUE.md`; 65,536 identifiers, pinned generator and tested bounds; selection helper not yet connected to real matches |
-| S3 | Match/attempt repository and PostgreSQL schema | Decide auth boundary first; transactions, immutable manifests, participant slots, migration/retention policy; demo adapter isolated |
+| S3a | Staged immutable match repository and PostgreSQL schema | `MATCH_PERSISTENCE.md`; trusted opaque identities, both slots, local/CI DB tests; no HTTP activation or production configuration |
+| S3b | Atomic attempt/result persistence | S3a; idempotent consumption and retries, same manifest binding; independent of auth/DB vendors, no real competition activation |
 | S4 | Server-issued shared match scenarios | S1–S3; both participants recover the same manifest; no client-selected competitive seed, target or rules; enforce membership |
 | S5 | Single result per attempt and lifecycle protection | S3–S4; atomic replay verification/result persistence, idempotent retry, cancellation/generation checks, double-submit tests |
 | S6 | Integrate current VERIFIED games with shared scenarios | One game per unit; keep frozen cores/adapter archive; fixture and scheduling equivalence |

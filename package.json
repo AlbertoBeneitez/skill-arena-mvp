@@ -8,15 +8,18 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "check": "pnpm lint && pnpm test:determinism",
-    "test:determinism": "node -e \"require('fs').rmSync('.det-test',{recursive:true,force:true})\" && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs"
+    "test:determinism": "node -e \"require('fs').rmSync('.det-test',{recursive:true,force:true})\" && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs",
+    "test:repository": "tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs repository"
   },
   "dependencies": {
     "next": "16.3.6",
+    "pg": "8.23.1",
     "react": "latest",
     "react-dom": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/pg": "8.23.1",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "typescript": "latest"

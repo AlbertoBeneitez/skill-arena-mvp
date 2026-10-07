@@ -12,6 +12,7 @@ import type {
 } from "@/lib/verified/contracts";
 import { getServerGameAdapter } from "./gameVerifiers";
 import { hashManifest, sha256, signAttemptTicket } from "./matchIntegrity";
+import { resolveScenario } from "./scenarios";
 
 export { hashManifest } from "./matchIntegrity";
 
@@ -224,7 +225,11 @@ export function verifyAttemptTicket(
   };
 }
 
-export function validateManifest(manifest: MatchManifest) {
+/** V3 is staged for trusted storage; existing HTTP callers remain V2-only. */
+export function validateManifest(
+  manifest: MatchManifest,
+  options: { allowV3?: boolean } = {}
+) {
   if (!isRecord(manifest)) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }
@@ -234,7 +239,8 @@ export function validateManifest(manifest: MatchManifest) {
   const inputProtocol = manifest.input_protocol;
 
   if (
-    manifest.manifest_version !== 2 ||
+    (manifest.manifest_version !== 2 &&
+      !(options.allowV3 === true && manifest.manifest_version === 3)) ||
     typeof manifest.game_id !== "string" ||
     typeof manifest.game_version !== "string" ||
     typeof manifest.engine_version !== "string" ||
@@ -323,6 +329,20 @@ export function validateManifest(manifest: MatchManifest) {
 
   if (!Number.isFinite(Date.parse(manifest.created_at))) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
+  if (manifest.manifest_version === 3) {
+    try {
+      const generated = resolveScenario(
+        { game_id: manifest.game_id, game_version: manifest.game_version },
+        manifest.scenario
+      );
+      if (generated.seed !== manifest.seed) {
+        return { ok: false as const, error: "INVALID_MANIFEST" };
+      }
+    } catch {
+      return { ok: false as const, error: "INVALID_MANIFEST" };
+    }
   }
 
   return { ok: true as const, adapter };
