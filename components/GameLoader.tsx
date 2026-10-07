@@ -30,6 +30,7 @@ type Props = {
   ghostEnabled: boolean;
   instanceKey: number;
   targetScore: number;
+  stopOnTarget: boolean;
   onFinish: (result: GameResult) => void;
 };
 
@@ -40,38 +41,45 @@ export default function GameLoader({
   ghostEnabled,
   instanceKey,
   targetScore,
+  stopOnTarget,
   onFinish,
 }: Props) {
   const key = `${game.id}-${instanceKey}`;
+  // Green/create attempts establish a score and must not stop when the
+  // benchmark is crossed. Blue/purple reply attempts end immediately once
+  // the stored mark is beaten.
+  const effectiveTarget = stopOnTarget
+    ? targetScore
+    : 1_000_000_000;
 
   switch (game.id) {
     case "tower-drop":
-      return <TowerDrop key={key} active={active} stake={stake} ghostEnabled={ghostEnabled} targetScore={targetScore} onFinish={onFinish} />;
+      return <TowerDrop key={key} active={active} stake={stake} ghostEnabled={ghostEnabled} targetScore={effectiveTarget} onFinish={onFinish} />;
     case "jet-stream":
-      return <JetStream key={key} active={active} targetScore={targetScore} onFinish={onFinish} />;
+      return <JetStream key={key} active={active} targetScore={effectiveTarget} onFinish={onFinish} />;
     case "pulse-runner":
-      return <PulseRunner key={key} active={active} targetScore={targetScore} onFinish={onFinish} />;
+      return <PulseRunner key={key} active={active} targetScore={effectiveTarget} onFinish={onFinish} />;
     case "metro-shift":
-      return <MetroShift key={key} active={active} ghostEnabled={ghostEnabled} targetScore={targetScore} onFinish={onFinish} />;
+      return <MetroShift key={key} active={active} ghostEnabled={ghostEnabled} targetScore={effectiveTarget} onFinish={onFinish} />;
     case "orbit-shift":
-      return <OrbitShift key={key} active={active} ghostEnabled={ghostEnabled} targetScore={targetScore} onFinish={onFinish} />;
+      return <OrbitShift key={key} active={active} ghostEnabled={ghostEnabled} targetScore={effectiveTarget} onFinish={onFinish} />;
     case "solitaire-sprint":
-      return <SolitaireSprint key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <SolitaireSprint key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "mine-grid":
-      return <MineGrid key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <MineGrid key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "grid-serpent":
-      return <GridSerpent key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <GridSerpent key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "brick-relay":
-      return <BrickRelay key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <BrickRelay key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "stack-shift":
-      return <StackShift key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <StackShift key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "maze-rush":
-      return <MazeRush key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <MazeRush key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "star-phalanx":
-      return <StarPhalanx key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <StarPhalanx key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "river-dash":
-      return <RiverDash key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <RiverDash key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
     case "orb-burst":
-      return <OrbBurst key={key} active={active} targetScore={targetScore} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
+      return <OrbBurst key={key} active={active} targetScore={effectiveTarget} seed={game.deterministicSeed ?? game.id} onFinish={onFinish} />;
   }
 }
