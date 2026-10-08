@@ -1,0 +1,208 @@
+{
+  "seed": "38e249fe936832e08bbdc7802dcd21e433f7c9044c98e5baba145eac8009d44a",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 30,
+      "action": "AIM_Y_31"
+    },
+    {
+      "seq": 1,
+      "tick": 31,
+      "action": "THROW"
+    },
+    {
+      "seq": 2,
+      "tick": 114,
+      "action": "AIM_Y_30"
+    },
+    {
+      "seq": 3,
+      "tick": 115,
+      "action": "THROW"
+    },
+    {
+      "seq": 4,
+      "tick": 203,
+      "action": "AIM_X_29"
+    },
+    {
+      "seq": 5,
+      "tick": 204,
+      "action": "THROW"
+    },
+    {
+      "seq": 6,
+      "tick": 297,
+      "action": "AIM_X_30"
+    },
+    {
+      "seq": 7,
+      "tick": 298,
+      "action": "AIM_Y_52"
+    },
+    {
+      "seq": 8,
+      "tick": 299,
+      "action": "THROW"
+    },
+    {
+      "seq": 9,
+      "tick": 397,
+      "action": "AIM_X_09"
+    },
+    {
+      "seq": 10,
+      "tick": 398,
+      "action": "AIM_Y_24"
+    },
+    {
+      "seq": 11,
+      "tick": 399,
+      "action": "THROW"
+    },
+    {
+      "seq": 12,
+      "tick": 502,
+      "action": "AIM_X_24"
+    },
+    {
+      "seq": 13,
+      "tick": 503,
+      "action": "AIM_Y_11"
+    },
+    {
+      "seq": 14,
+      "tick": 504,
+      "action": "THROW"
+    },
+    {
+      "seq": 15,
+      "tick": 612,
+      "action": "AIM_X_56"
+    },
+    {
+      "seq": 16,
+      "tick": 613,
+      "action": "AIM_Y_23"
+    },
+    {
+      "seq": 17,
+      "tick": 614,
+      "action": "THROW"
+    },
+    {
+      "seq": 18,
+      "tick": 727,
+      "action": "AIM_X_40"
+    },
+    {
+      "seq": 19,
+      "tick": 728,
+      "action": "AIM_Y_03"
+    },
+    {
+      "seq": 20,
+      "tick": 729,
+      "action": "THROW"
+    },
+    {
+      "seq": 21,
+      "tick": 847,
+      "action": "AIM_X_55"
+    },
+    {
+      "seq": 22,
+      "tick": 848,
+      "action": "AIM_Y_23"
+    },
+    {
+      "seq": 23,
+      "tick": 849,
+      "action": "THROW"
+    },
+    {
+      "seq": 24,
+      "tick": 972,
+      "action": "AIM_X_37"
+    },
+    {
+      "seq": 25,
+      "tick": 973,
+      "action": "AIM_Y_18"
+    },
+    {
+      "seq": 26,
+      "tick": 974,
+      "action": "THROW"
+    },
+    {
+      "seq": 27,
+      "tick": 1102,
+      "action": "AIM_X_46"
+    },
+    {
+      "seq": 28,
+      "tick": 1103,
+      "action": "AIM_Y_19"
+    },
+    {
+      "seq": 29,
+      "tick": 1104,
+      "action": "THROW"
+    },
+    {
+      "seq": 30,
+      "tick": 1237,
+      "action": "AIM_X_45"
+    },
+    {
+      "seq": 31,
+      "tick": 1238,
+      "action": "AIM_Y_37"
+    },
+    {
+      "seq": 32,
+      "tick": 1239,
+      "action": "THROW"
+    },
+    {
+      "seq": 33,
+      "tick": 1377,
+      "action": "AIM_X_33"
+    },
+    {
+      "seq": 34,
+      "tick": 1378,
+      "action": "AIM_Y_01"
+    },
+    {
+      "seq": 35,
+      "tick": 1379,
+      "action": "THROW"
+    },
+    {
+      "seq": 36,
+      "tick": 1522,
+      "action": "AIM_Y_14"
+    },
+    {
+      "seq": 37,
+      "tick": 1523,
+      "action": "THROW"
+    },
+    {
+      "seq": 38,
+      "tick": 1671,
+      "action": "AIM_Y_30"
+    },
+    {
+      "seq": 39,
+      "tick": 1672,
+      "action": "THROW"
+    }
+  ],
+  "finalTick": 1720,
+  "score": 11801,
+  "hash": "sha256:0af389375bccad389185cd76ac45c2a563b238d1b143408a6c79adfb91b5af49"
+}

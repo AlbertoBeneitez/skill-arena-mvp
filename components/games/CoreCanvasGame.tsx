@@ -16,7 +16,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   render(ctx: CanvasRenderingContext2D, state: S): void;
   primaryAction?: string;
   inputTones?: Readonly<Partial<Record<string, Parameters<typeof gameTone>[0]>>>;
-  pointAction?(point: CorePoint, phase: "down" | "move" | "up", state: S): string | null;
+  pointAction?(point: CorePoint, phase: "down" | "move" | "up", state: S): string | readonly string[] | null;
   gestureAction?(from: CorePoint, to: CorePoint, state: S): string | null;
   keys?: Readonly<Record<string, string>>;
   keyReleases?: Readonly<Record<string, string>>;
@@ -107,6 +107,11 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     flush();
     draw();
   }, [active, attempt.state.status, core, sync, flush, draw]);
+
+  // Some touch gestures update two quantized axes; each remains a distinct recorded tick.
+  function sendPointActions(actions: string | readonly string[]) {
+    for (const action of typeof actions === "string" ? [actions] : actions) send(action);
+  }
 
   const releaseHeld = useCallback(() => {
     for (const action of heldRef.current) send(action);
@@ -234,19 +239,19 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         const p = point(event.clientX, event.clientY);
         pointerRef.current = { id: event.pointerId, origin: p };
         const action = props.pointAction?.(p, "down", stateRef.current) ?? props.primaryAction;
-        if (action) send(action);
+        if (action) sendPointActions(action);
       }}
       onPointerMove={event => {
         const pointer = pointerRef.current;
         if (!pointer || pointer.id !== event.pointerId) return;
         const p = point(event.clientX, event.clientY);
         const action = props.gestureAction?.(pointer.origin, p, stateRef.current) ?? props.pointAction?.(p, "move", stateRef.current);
-        if (action) { send(action); pointer.origin = p; }
+        if (action) { sendPointActions(action); pointer.origin = p; }
       }}
       onPointerUp={event => {
         if (pointerRef.current?.id !== event.pointerId) return;
         const action = props.pointAction?.(point(event.clientX, event.clientY), "up", stateRef.current);
-        if (action) send(action);
+        if (action) sendPointActions(action);
         pointerRef.current = null;
         if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
       }}

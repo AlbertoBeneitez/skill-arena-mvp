@@ -5952,3 +5952,12 @@ html, body {
  .billiardsVerified .coreControls {left:auto;right:20px;top:50%;bottom:auto;transform:translateY(-50%);width:90px;grid-template-columns:1fr;}
  .billiardsVerified .coreHint {left:18px;right:auto;width:155px;bottom:18px;}
 }
+
+.dartsVerified {width:100%;height:100%;}
+.dartsVerified .coreControls button {width:140px;font-size:15px;background:#9cead7;color:#0c2930;}
+.dartsVerified .coreHint {max-width:310px;margin:0 auto;bottom:5px;font-size:10px;line-height:1.3;}
+@media (orientation:landscape) {
+ .dartsVerified .coreControls {left:auto;right:22px;top:50%;bottom:auto;transform:translateY(-50%);}
+ .dartsVerified .coreControls button {width:105px;}
+ .dartsVerified .coreHint {left:18px;right:auto;width:155px;bottom:22px;}
+}

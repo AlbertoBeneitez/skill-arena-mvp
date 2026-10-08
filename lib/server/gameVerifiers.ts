@@ -1,3 +1,4 @@
+import { DARTS_CORE } from "../verified/dartsCore.v1";
 import { BILLIARDS_CORE } from "../verified/billiardsCore.v1";
 import { MINE_GRID_CORE } from "../verified/mineGridCore.v1";
 import { ORB_BURST_CORE } from "../verified/orbBurstCore.v1";
@@ -347,6 +348,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(BILLIARDS_CORE.gameId,BILLIARDS_CORE.gameVersion)]: coreAdapter(BILLIARDS_CORE),
   [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(ORB_BURST_CORE.gameId,ORB_BURST_CORE.gameVersion)]: coreAdapter(ORB_BURST_CORE),
