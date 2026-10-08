@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ClosedGroup,
   CompetitionType,
@@ -84,9 +84,18 @@ export default function GroupHub({
     initialJoinCode ? "join" : "create"
   );
   const [draftName, setDraftName] = useState("Mi grupo");
-  const [joinCode, setJoinCode] = useState(
-    normalizeJoinCode(initialJoinCode)
-  );
+  const [joinCode, setJoinCode] = useState(normalizeJoinCode(initialJoinCode));
+  const mountedRef = useRef(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [shareError, setShareError] = useState("");
+  const [shareFallback, setShareFallback] = useState("");
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -173,9 +182,23 @@ export default function GroupHub({
     (tournamentRounds >= 1 &&
       tournamentGameIds.length === tournamentRounds);
 
+  const rawPrice = Number(entryPrice.replace(",", "."));
   const priceValid =
-    entryPriceNumber >= 0 &&
-    entryPriceNumber <= balance;
+    entryPrice.trim() !== "" &&
+    Number.isFinite(rawPrice) &&
+    rawPrice >= 0 &&
+    rawPrice <= balance;
+  const configurationHint = !priceValid
+    ? `Introduce una entrada demo entre 0 y ${balance.toFixed(2)} €.`
+    : !leagueRulesValid
+      ? "Elige entre 1 y 50 jornadas."
+      : !leagueScheduleComplete
+        ? `Faltan ${Math.max(0, leagueRounds - leagueGameIds.length)} juegos para completar la liga.`
+        : !tournamentRulesValid
+          ? `Elige entre 1 y ${maxEliminated} eliminados por ronda.`
+          : !tournamentScheduleComplete
+            ? `Faltan ${Math.max(0, tournamentRounds - tournamentGameIds.length)} juegos para completar el torneo.`
+            : "Configuración completa. Marca que estás listo para empezar.";
 
   const allMembersReady = Boolean(
     group &&
@@ -230,33 +253,42 @@ export default function GroupHub({
     });
   }
 
-  async function copyCode() {
-    if (!group) return;
-
+  async function copyShare(value: string, kind: "code" | "link") {
+    setShareError("");
+    setShareFallback("");
+    setCopiedCode(false);
+    setCopiedLink(false);
+    if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
     try {
-      await navigator.clipboard.writeText(group.code);
-      setCopiedCode(true);
-      window.setTimeout(() => setCopiedCode(false), 1200);
+      await navigator.clipboard.writeText(value);
+      if (!mountedRef.current) return;
+      setCopiedCode(kind === "code");
+      setCopiedLink(kind === "link");
+      copyTimerRef.current = setTimeout(() => {
+        setCopiedCode(false);
+        setCopiedLink(false);
+        copyTimerRef.current = null;
+      }, 2000);
     } catch {
-      setCopiedCode(false);
+      if (!mountedRef.current) return;
+      setShareError(
+        "No se pudo copiar. Selecciona el texto y cópialo manualmente.",
+      );
+      setShareFallback(value);
     }
   }
 
-  async function copyInviteLink() {
+  function copyCode() {
+    if (group) void copyShare(group.code, "code");
+  }
+
+  function copyInviteLink() {
     if (!group) return;
-
-    try {
-      const url = new URL(window.location.href);
-      url.search = "";
-      url.searchParams.set("join", group.code);
-      url.hash = "group";
-
-      await navigator.clipboard.writeText(url.toString());
-      setCopiedLink(true);
-      window.setTimeout(() => setCopiedLink(false), 1200);
-    } catch {
-      setCopiedLink(false);
-    }
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.searchParams.set("join", group.code);
+    url.hash = "group";
+    void copyShare(url.toString(), "link");
   }
 
   function submitJoin() {
@@ -373,11 +405,11 @@ export default function GroupHub({
     return (
       <section className="groupScreen">
         <div className="groupHero">
-          <span>GRUPO CERRADO</span>
+          <span>GRUPOS · DEMO LOCAL</span>
           <h1>Compite con tu gente</h1>
           <p>
-            Crea un grupo privado o entra directamente con
-            el código que te hayan compartido.
+            Prueba partidas, ligas y torneos con rivales simulados. Los códigos
+            no conectan jugadores reales todavía.
           </p>
         </div>
 
@@ -426,7 +458,7 @@ export default function GroupHub({
                 <small>CREADOR</small>
                 <strong>{playerName || "TÚ"}</strong>
               </div>
-              <b>PRIVADO</b>
+              <b>DEMO</b>
             </div>
 
             <button
@@ -436,7 +468,7 @@ export default function GroupHub({
                 onCreateGroup(draftName, 0)
               }
             >
-              CREAR GRUPO
+              CREAR GRUPO DEMO
             </button>
           </div>
         ) : (
@@ -470,8 +502,8 @@ export default function GroupHub({
             </label>
 
             <p className="groupJoinHint">
-              No hace falta buscar el grupo: pega el código
-              recibido y entra.
+              Pega un código o enlace para abrir un grupo demo local. No se
+              consulta ni se une a una sala real.
             </p>
 
             <button
@@ -480,7 +512,7 @@ export default function GroupHub({
               disabled={joinCode.length < 4}
               onClick={submitJoin}
             >
-              UNIRME AL GRUPO
+              ABRIR GRUPO DEMO
             </button>
           </div>
         )}
@@ -492,12 +524,16 @@ export default function GroupHub({
     <section className="groupScreen">
       <div className="groupHeaderCard groupHeaderSinglePage">
         <div>
-          <small>GRUPO CERRADO</small>
+          <small>GRUPO DEMO LOCAL</small>
           <h1>{group.name}</h1>
         </div>
         <span className="groupCodeBadge">{group.code}</span>
       </div>
 
+      <p className="groupDemoNotice">
+        Rivales simulados · saldo ficticio. Este enlace abre una demo; no
+        sincroniza partidas ni invitaciones reales.
+      </p>
       <div className="groupShareActions">
         <button
           type="button"
@@ -513,6 +549,22 @@ export default function GroupHub({
         </button>
       </div>
 
+      <div className="groupShareFeedback" role="status" aria-live="polite">
+        {shareError ||
+          (copiedCode
+            ? "Código copiado."
+            : copiedLink
+              ? "Enlace demo copiado."
+              : "")}
+        {shareFallback && (
+          <input
+            aria-label="Texto para copiar manualmente"
+            value={shareFallback}
+            readOnly
+            onFocus={(event) => event.target.select()}
+          />
+        )}
+      </div>
       <div className="groupMembersCard">
         <div className="groupSectionTitle">
           <span>INTEGRANTES</span>
@@ -527,7 +579,7 @@ export default function GroupHub({
             >
               <img src={member.avatar} alt="" />
               <span>{member.name}</span>
-              {member.isYou && <b>TÚ</b>}
+              <b>{member.isYou ? "TÚ" : "SIMULADO"}</b>
             </div>
           ))}
         </div>
@@ -581,7 +633,7 @@ export default function GroupHub({
 
       <div className="competitionConfigCard numericConfigCard">
         <label>
-          <span>PRECIO DE ENTRADA POR JUGADOR</span>
+          <span>ENTRADA DEMO POR JUGADOR</span>
           <div className="numberInputWithUnit">
             <input
               type="number"
@@ -597,9 +649,7 @@ export default function GroupHub({
             <b>€</b>
           </div>
         </label>
-        <small>
-          Máximo disponible: {balance.toFixed(2)}€
-        </small>
+        <small>Saldo ficticio disponible: {balance.toFixed(2)}€</small>
       </div>
 
       {competitionType === "league" && (
@@ -918,7 +968,7 @@ export default function GroupHub({
 
       {competitionType !== "quick" && (
         <div className="competitionConfigCard">
-          <span>REPARTO DEL BOTE</span>
+          <span>REPARTO DEL BOTE DEMO</span>
 
           <div className="payoutOptionList">
             {payoutOptions.map((option) => (
@@ -948,16 +998,14 @@ export default function GroupHub({
           <strong>{group.members.length}</strong>
         </div>
         <div>
-          <span>BOTE</span>
-          <strong>
-            {pot === 0 ? "—" : `${pot.toFixed(2)}€`}
-          </strong>
+          <span>BOTE DEMO</span>
+          <strong>{pot === 0 ? "—" : `${pot.toFixed(2)}€`}</strong>
         </div>
       </div>
 
       <div className="readyRoomCard">
         <div className="groupSectionTitle">
-          <span>SALA DE ESPERA</span>
+          <span>PREPARACIÓN DEMO</span>
           <small>
             {ready
               ? `${group.members.length}/${group.members.length} LISTOS`
@@ -973,18 +1021,21 @@ export default function GroupHub({
               <div key={member.id}>
                 <img src={member.avatar} alt="" />
                 <strong>{member.name}</strong>
-                <span
-                  className={
-                    memberReady ? "ready" : ""
-                  }
-                >
-                  {memberReady ? "LISTO" : "PENDIENTE"}
+                <span className={memberReady ? "ready" : ""}>
+                  {memberReady
+                    ? member.isYou
+                      ? "LISTO"
+                      : "SIMULADO"
+                    : "PENDIENTE"}
                 </span>
               </div>
             );
           })}
         </div>
 
+        <p className="groupConfigurationHint" role="status" aria-live="polite">
+          {configurationHint}
+        </p>
         <button
           className={`readyToggle ${ready ? "ready" : ""}`}
           type="button"
@@ -1009,10 +1060,10 @@ export default function GroupHub({
           onClick={startCompetition}
         >
           {competitionType === "quick"
-            ? "EMPEZAR PARTIDA"
+            ? "EMPEZAR PARTIDA DEMO"
             : competitionType === "league"
-              ? "EMPEZAR LIGA"
-              : "EMPEZAR TORNEO"}
+              ? "EMPEZAR LIGA DEMO"
+              : "EMPEZAR TORNEO DEMO"}
         </button>
       </div>
     </section>

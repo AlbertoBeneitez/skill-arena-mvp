@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento tras v51-mobile
+# GALACTIC GAMES · Seguimiento tras v52-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -15,7 +15,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Billar | v35: cinco mesas, física/potencia, escenario, replay, partidas móviles | QA humana física |
 | Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | QA humana física |
 | Mine Grid | v34: candidato privado 1.0, cinco sectores resolubles, autoridad común/PG y QA local | Integración pública segura; catálogo todavía 0.1 |
-| Solitaire Sprint | Fondo espacial preservado | Auditoría/pulido de jugabilidad y autoridad si corresponde |
+| Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Cierre prematuro al revelar tablero, victoria de 52 bases marcada como derrota y score repetible en traslados; nuevo core versionado y autoridad privada común antes de promoción |
 | Sky Hop | v44: score farming reparado; core 1.0, 75 apoyos, tres sectores, balizas/móviles/impulsos/crumble, replay y touch QA | QA humana física |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | QA humana física |
 | Brick Relay | v47: core 1.0 VERIFIED, cuatro sectores/69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay; QA táctil completa | QA humana física |
@@ -27,7 +27,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
 | Login/onboarding | Entrada demo honesta, avatar/nombre, corto y sin tutorial obligatorio | QA humana; OAuth/auth real requiere proveedor, sin simularlo |
-| UI global | v38 resultados fieles; v45 catálogo/navegación; v48 perfil y secciones demo legibles, saldos/acciones explícitos, eje de beneficio corregido, preferencias/reset/logout QA | Pulido de grupos y restantes layouts; revisión jurídica de producción al configurar servicio; QA humana |
+| UI global | v38 resultados fieles; v45 catálogo/navegación; v48 perfil y secciones demo legibles, saldos/acciones explícitos, eje de beneficio corregido, preferencias/reset/logout QA | v52 grupos demo explícitos, formularios/feedback/portapapeles y QA vertical/horizontal; quedan restantes layouts y grupos reales con identidad/persistencia; revisión jurídica de producción al configurar servicio; QA humana |
 | Ranking | Beneficio neto exacto, paginación/snapshot/PG, demo aislada y sección visible | v38 avatar/top UX validados; quedan posición propia autenticada y activar read model solo con datos reales |
 | Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |

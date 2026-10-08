@@ -6096,3 +6096,20 @@ html, body {
  .pianoRushVerified .coreControls button {width:64px;height:44px;min-height:44px;}
  .pianoRushVerified .coreHint {display:none;}
 }
+
+/* Group demo: honest local scope, actionable feedback and readable touch forms. */
+.groupDemoNotice { margin: 0; padding: 12px 14px; border: 1px solid #cbd8e9; border-radius: 12px; background: #eef4fc; color: #334765; font-size: 12px; line-height: 1.5; }
+.groupShareFeedback { color: #334765; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.groupShareFeedback:empty { display: none; }
+.groupShareFeedback input { width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: 1px solid #b3c4db; border-radius: 10px; font-size: 16px; }
+.groupConfigurationHint { margin: 8px 0; font-size: 12px; color: #425472; line-height: 1.5; }
+.groupScreen input { min-height: 44px; font-size: 16px; }
+.groupScreen .groupHeaderCard h1 { overflow-wrap: anywhere; }
+.groupScreen .groupHeaderCard > div { min-width: 0; }
+.groupScreen .groupGameGrid.selectionMode strong { font-size: 12px; }
+.groupScreen .groupMembers b { font-size: 9px; white-space: nowrap; }
+.groupScreen .readyToggle, .groupScreen .payoutOptionList button, .groupScreen .leagueModeToggle button, .groupScreen .secondaryScheduleAction { min-height: 44px; }
+.groupScreen .groupGameGrid.selectionMode > button { grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 72px; padding: 6px; }
+.groupScreen .groupGameGrid.selectionMode img { width: 48px; height: 56px; aspect-ratio: auto; object-fit: contain; background: #0c172a; border-radius: 8px; }
+.groupScreen .groupGameGrid.selectionMode strong { padding: 0; line-height: 1.35; overflow-wrap: anywhere; }
+@media (min-width: 680px) { .groupScreen .groupGameGrid.selectionMode { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
