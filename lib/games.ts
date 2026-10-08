@@ -1,3 +1,4 @@
+import { PIANO_V2_ACTIONS } from "./verified/pianoRushProtocol.v2";
 import { ORBIT_ACTIONS } from "./verified/orbitShiftProtocol.v1";
 import { MAZE_ACTIONS } from "./verified/mazeRushProtocol.v1";
 import { BRICK_ACTIONS } from "./verified/brickRelayProtocol.v1";
@@ -399,28 +400,28 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "piano-rush",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/PianoRush")),
+    loadComponent: adaptGameComponent(() => import("@/components/games/PianoRushVerified")),
     competition: {
       verification: "server-replay",
-      engineVersion: "skill-core-1",
+      engineVersion: "skill-core-3",
       inputProtocolVersion: 1,
-      allowedActions: ["LANE_0", "LANE_1", "LANE_2", "LANE_3"],
+      allowedActions: PIANO_V2_ACTIONS,
     },
     name: "Piano Rush",
     cover: "/covers/piano-rush.svg",
     enabled: true,
     waitingStakes: [5, 10],
     category: "RITMO",
-    tagline: "Cuatro carriles. Una señal. Cero margen.",
+    tagline: "Aprende el pulso. Encadena precisión y domina el ritmo.",
     difficulty: "ALTA",
     skillLabel: "RITMO + REACCIÓN",
-    rivalScore: 8800,
+    rivalScore: 39000,
     rivalName: "KEY",
     rivalAvatar: "/avatars/avatar-7.svg",
     instruction: "Toca el carril correcto cuando el pulso alcance la zona inferior.",
-    scoring: "La secuencia y el calendario de pulsos proceden del mismo seed competitivo.",
+    scoring: "48 notas por tres sectores, calentamiento/escudos, precisión y combos; replay de servidor.",
   },
   {
     id: "dino-dash",

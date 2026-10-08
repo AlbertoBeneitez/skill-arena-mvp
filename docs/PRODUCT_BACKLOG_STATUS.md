@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento tras v50-mobile
+# GALACTIC GAMES · Seguimiento tras v51-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -23,7 +23,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Maze Rush | v49: inicio en muro reparado; core 1.0 VERIFIED, tres sectores conectados, nodos/pulsos, perseguidores BFS, escudos, turn buffering/STOP y replay; partidas táctiles completas | Seguimiento en móviles físicos |
 | Star Phalanx | v42: 16 capas en cinco oleadas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | QA humana física |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
-| Piano Rush | Core/verificador histórico preservado | Auditoría/QA de calidad general, conservar reglas estables |
+| Piano Rush | v51: V2 VERIFIED, 48 notas/tres sectores, ocho notas de aprendizaje, ventanas progresivas, escudos/combo/precisión, reloj común y replay; partidas táctiles completas | Seguimiento en móviles físicos |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
 | Login/onboarding | Entrada demo honesta, avatar/nombre, corto y sin tutorial obligatorio | QA humana; OAuth/auth real requiere proveedor, sin simularlo |

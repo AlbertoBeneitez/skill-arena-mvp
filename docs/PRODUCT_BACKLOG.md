@@ -115,7 +115,7 @@ New product additions from the latest owner request:
 Current completed units: 2048 retirement (v19); shared client lifecycle and Alien/Solitaire space visuals (v20); Stack V3 perpendicular geometry (v21); Tower V3 swing (v22); Jet V2 windows/lives (v23); Serpent wrap/core (v24); River V1 motion (v25); Orb launch bug (v26); River V2 novice opening/progression (v27); Pulse retirement (v28); Tower composition and Jet terminal feedback (v29); Stack camera/shadows/axis clarity (v30); honest global net-profit ranking preparation (v31); Orb V1 authoritative core, sector progression, original presentation and touch regression (v32). These are unit completions, not blanket claims that every game is commercially frozen.
 
 The current completion/partial-work ledger is [PRODUCT_BACKLOG_STATUS.md](PRODUCT_BACKLOG_STATUS.md).
-It includes the validated v33–v50 units without repeating their implementation
+It includes the validated v33–v51 units without repeating their implementation
 records here. Sky Hop Y1–Y3 are implemented in v44 with a new integer core,
 server replay, bounded progressive platforms, checkpoints and touch QA.
 v45 adds registry-derived searchable game discovery, readable instructions and
@@ -178,3 +178,7 @@ to build; it does not suppress CI or change the build/install commands,
 authentication or deployment protection. `mobile-test` and v18 remain unchanged.
 
 Reference: https://vercel.com/docs/project-configuration/vercel-json#ignorecommand
+
+Piano Rush follows in v51 with a finite 48-note V2, protected learning phase,
+three precision sectors, shields, common clock and authoritative replay. V1 stays
+frozen; native touch wins/losses/restarts pass in both orientations.

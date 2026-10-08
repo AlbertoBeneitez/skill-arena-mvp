@@ -9,6 +9,8 @@ const causes: Readonly<Record<string, string>> = {
   BOARD_OVERFLOW: "Los orbes han alcanzado la línea límite.",
   SELF_COLLISION: "La cabeza ha tocado tu propio recorrido.",
   AIM_TIMEOUT: "Se agotó el tiempo para preparar el tiro.",
+  MISSED_NOTES: "Se agotaron los escudos. Espera a que la nota llegue a la línea y pulsa su carril.",
+  NOTES_INCOMPLETE: "Faltaron aciertos para completar el reto. Usa el calentamiento para encontrar el ritmo.",
   ORBIT_COLLISION: "Se agotaron los escudos. Cambia de órbita antes del arco y busca las recargas verdes.",
   PURSUER_COLLISION: "Se agotaron los escudos. Anticipa los giros y usa los pulsos verdes para protegerte.",
   BALL_LOST: "Se agotaron las vidas. Anticipa el regreso y orienta el rebote con los bordes de la pala.",
