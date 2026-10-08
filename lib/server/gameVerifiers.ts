@@ -1,3 +1,4 @@
+import { PHALANX_CORE } from "../verified/starPhalanxCore.v1";
 import { STACK_SHIFT_CORE } from "../verified/stackShiftCore.v1";
 import { JET_STREAM_CORE_V3 } from "../verified/jetStreamCore.v3";
 import { ALIEN_DASH_CORE } from "../verified/alienDashCore.v2";
@@ -352,6 +353,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(PHALANX_CORE.gameId, PHALANX_CORE.gameVersion)]: coreAdapter(PHALANX_CORE),
   [adapterKey(STACK_SHIFT_CORE.gameId, STACK_SHIFT_CORE.gameVersion)]: coreAdapter(STACK_SHIFT_CORE),
   [adapterKey(JET_STREAM_CORE_V3.gameId, JET_STREAM_CORE_V3.gameVersion)]: coreAdapter(JET_STREAM_CORE_V3),
   [adapterKey(ALIEN_DASH_CORE.gameId, ALIEN_DASH_CORE.gameVersion)]: coreAdapter(ALIEN_DASH_CORE),

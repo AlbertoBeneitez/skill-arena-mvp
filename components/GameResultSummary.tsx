@@ -11,7 +11,7 @@ const causes: Readonly<Record<string, string>> = {
   AIM_TIMEOUT: "Se agotó el tiempo para preparar el tiro.",
   TIME_LIMIT: "Has llegado al límite de tiempo del reto.",
   TOP_OUT: "Deja espacio para las siguientes piezas. Usa la silueta de apoyo y completa filas.",
-  HULL_EXHAUSTED: "Se agotaron los escudos. Anticipa las rocas y los disparos.",
+  HULL_EXHAUSTED: "Se agotaron los escudos. Lee las amenazas y busca una ruta segura.",
   MINES: "Se han agotado los escudos del campo.",
 };
 export default function GameResultSummary({

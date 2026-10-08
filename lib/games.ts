@@ -1,3 +1,4 @@
+import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
 import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
 import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
 import { SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v1";
@@ -308,10 +309,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "star-phalanx",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/StarPhalanx")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/StarPhalanxVerified")),
+    competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:1,allowedActions:PHALANX_ACTIONS},
     name: "Star Phalanx",
     cover: "/covers/star-phalanx.svg",
     enabled: true,
@@ -320,12 +321,11 @@ const GAME_DEFINITIONS = [
     tagline: "Misma formación. Sobrevive y elimina más.",
     difficulty: "ALTA",
     skillLabel: "PUNTERÍA + CONTROL",
-    rivalScore: 8200,
+    rivalScore: 42000,
     rivalName: "ION",
     rivalAvatar: "/avatars/avatar-8.svg",
-    instruction: "Arrastra para moverte y pulsa FIRE para disparar.",
-    scoring: "Las oleadas y disparos enemigos parten del mismo seed competitivo.",
-    deterministicSeed: "star-phalanx-arena-001",
+    instruction: "Mantén y arrastra para moverte y disparar; las capas llegan progresivamente.",
+    scoring: "Cinco oleadas por capas, disparos anunciados, blindaje y tres escudos; replay de servidor.",
   },
   {
     id: "river-dash",

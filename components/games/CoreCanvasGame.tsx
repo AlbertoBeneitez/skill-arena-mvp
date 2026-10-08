@@ -15,6 +15,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   instruction: string;
   render(ctx: CanvasRenderingContext2D, state: S): void;
   primaryAction?: string;
+  /** Held canvas gestures release through the same blur/cancel lifecycle as keys/buttons. */
+  pointerReleaseAction?: string;
   /** Presentation-only reward signal; HUD/replay keep the complete authoritative score. */
   feedbackScore?(state: S): number;
   inputTones?: Readonly<Partial<Record<string, Parameters<typeof gameTone>[0]>>>;
@@ -244,6 +246,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         event.currentTarget.setPointerCapture(event.pointerId);
         const p = point(event.clientX, event.clientY);
         pointerRef.current = { id: event.pointerId, origin: p };
+        if (props.pointerReleaseAction) heldRef.current.add(props.pointerReleaseAction);
         const action = props.pointAction?.(p, "down", stateRef.current) ?? props.primaryAction;
         if (action) sendPointActions(action);
       }}
@@ -256,12 +259,13 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       }}
       onPointerUp={event => {
         if (pointerRef.current?.id !== event.pointerId) return;
+        if (props.pointerReleaseAction && heldRef.current.delete(props.pointerReleaseAction)) send(props.pointerReleaseAction);
         const action = props.pointAction?.(point(event.clientX, event.clientY), "up", stateRef.current);
         if (action) sendPointActions(action);
         pointerRef.current = null;
         if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
       }}
-      onPointerCancel={event => { if (pointerRef.current?.id === event.pointerId) pointerRef.current = null; }} onLostPointerCapture={event => { if (pointerRef.current?.id === event.pointerId) pointerRef.current = null; }} onBlur={releaseHeld}
+      onPointerCancel={event => { if (pointerRef.current?.id === event.pointerId) { pointerRef.current = null; if (props.pointerReleaseAction && heldRef.current.delete(props.pointerReleaseAction)) send(props.pointerReleaseAction); } }} onLostPointerCapture={event => { if (pointerRef.current?.id === event.pointerId) { pointerRef.current = null; if (props.pointerReleaseAction && heldRef.current.delete(props.pointerReleaseAction)) send(props.pointerReleaseAction); } }} onBlur={releaseHeld}
       onKeyDown={event => {
         const action = props.keys?.[event.key];
         if (!action) return;
