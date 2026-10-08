@@ -5918,3 +5918,25 @@ html, body {
 @media(prefers-reduced-motion:reduce) { .galacticWelcomeMark { animation:none; } }
 
 .galacticHelpButton { min-height:44px; background:transparent; border:0; color:#a8c9d9; font-size:12px; padding:8px 0; text-align:left; text-decoration:underline; text-underline-offset:3px; }
+
+/* Private-information game presentation. No hidden state is included in markup. */
+.mineAuthorityQA { min-height:100dvh; max-width:580px; margin:auto; background:#0a1828; color:#dcecf8; padding:12px; }
+.mineAuthorityQA > header { display:flex; flex-direction:column; gap:8px; font-size:14px; margin-bottom:22px; }
+.mineAuthorityQA > header span { color:#91bbc9; font-size:10px; }
+.mineAuthoritySurface { position:relative; background:radial-gradient(ellipse at 80% 15%,#233451,transparent 60%),#0a1828; border:1px solid #344f66; border-radius:20px; padding:18px 12px; }
+.mineAuthorityHud { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:10px; color:#afd2dd; }.mineAuthorityHud strong { font-size:20px; color:#e4faff; }
+.mineAuthorityGuide { min-height:42px; font-size:13px; line-height:1.5; color:#bbd2e2; margin:18px 0; }
+.mineAuthorityBoard { display:grid; gap:4px; }
+.mineAuthorityCell { min-width:0; min-height:44px; aspect-ratio:1; border:1px solid #456681; border-radius:7px; background:linear-gradient(150deg,#2b4763,#17304b); color:#c1eeff; font-size:clamp(13px,4vw,19px); font-weight:800; touch-action:manipulation; }
+.mineAuthorityCell.open { background:#0d2335; border-color:#1d3548; opacity:1; color:#a8ddf3; }.mineAuthorityCell.bomb { color:#ffb3aa; background:#543242; }.mineAuthorityCell.flagged { color:#f9dc91; }.mineAuthorityCell.opening { color:#ccfff0; background:#326d70; border:2px solid #b1eadf; box-shadow:0 0 15px #8edac933; }
+.mineAuthorityCell:disabled:not(.open) { opacity:.75; }.mineAuthorityCell:active { transform:scale(.94); }
+.mineAuthorityModes { display:flex; gap:12px; margin:18px 0 12px; }.mineAuthorityModes button { flex:1; min-height:48px; border:1px solid #50677c; border-radius:12px; background:#152e44; color:#c6dfed; font-size:13px; font-weight:800; }.mineAuthorityModes button[aria-pressed="true"] { background:#a2e2d5; color:#16313a; }.mineAuthorityModes button:disabled { opacity:.5; }
+.mineAuthorityLegend { display:flex; flex-wrap:wrap; gap:12px; color:#9cb7cc; font-size:10px; }.mineAuthorityDemo { font-size:9px; color:#8fa8ba; margin:16px 0 0; }
+.mineAuthorityTransition { position:absolute; inset:0; background:#071421e8; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; border-radius:20px; color:#abeee0; }.mineAuthorityTransition span { font-size:12px; }
+.hiddenMineEmpty { padding:24px; font-size:14px; line-height:1.6; color:#c0d7e7; }.mineAuthorityQAResult { margin-top:20px; border:1px solid #648680; background:#153636; border-radius:16px; padding:20px; }.mineAuthorityQAResult h2 { font-size:20px; }.mineAuthorityQAResult button { min-height:48px; padding:12px 20px; border:0; background:#a2e2d5; color:#15333b; border-radius:12px; }
+
+.mineAuthorityBoardViewport { overflow-x:auto; scrollbar-color:#486c82 #0a1828; }
+
+.mineAuthorityCell[data-clue="1"] { color:#a9e9b4; }.mineAuthorityCell[data-clue="2"] { color:#8ddbea; }.mineAuthorityCell[data-clue="3"] { color:#bea9f4; }.mineAuthorityCell[data-clue="4"] { color:#f1c489; }.mineAuthorityCell[data-clue="5"],.mineAuthorityCell[data-clue="6"],.mineAuthorityCell[data-clue="7"],.mineAuthorityCell[data-clue="8"] { color:#f4a9b5; }
+
+.mineAuthorityEfficiency { color:#b3d0d9; font-size:11px; margin:12px 0 0; }
