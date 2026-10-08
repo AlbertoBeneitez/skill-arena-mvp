@@ -1,4 +1,4 @@
-# Skill Arena game architecture
+# GALACTIC GAMES game architecture
 
 Status: **STABLE**. Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1 and Dino Dash V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
 
@@ -7,7 +7,7 @@ Promotion beyond `INTEGRATED` follows the mandatory cycle in `docs/GAME_PROFESSI
 ## Boundaries
 
 ```text
-Skill Arena platform
+GALACTIC GAMES platform
   auth · wallet · matchmaking · stakes · ranking · groups · global UI
         |
         v
@@ -153,7 +153,7 @@ run original
 → identify the gameplay-producing modules
 → extract only useful mechanics/code
 → replace unclear assets
-→ adapt to Skill Arena deterministic core
+→ adapt to GALACTIC GAMES deterministic core
 → add tests and notices
 ```
 
@@ -184,7 +184,7 @@ alter input semantics.
 
 ## Freeze rule
 
-The registry/runtime/verified-match contract is the Skill Arena standard from
+The registry/runtime/verified-match contract is the GALACTIC GAMES standard from
 this point forward. New games adapt to it. A future change to the common
 contract must document the concrete cross-game requirement in a new ADR and
 must preserve historical replay compatibility.

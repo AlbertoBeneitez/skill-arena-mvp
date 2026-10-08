@@ -2,7 +2,7 @@
 
 Status: **MANDATORY** for games promoted beyond `INTEGRATED`.
 
-Skill Arena improves one game at a time. A game is not considered finished because it renders or can be played; it is frozen only after its competitive core, mobile lifecycle and replay contract have been validated together.
+GALACTIC GAMES improves one game at a time. A game is not considered finished because it renders or can be played; it is frozen only after its competitive core, mobile lifecycle and replay contract have been validated together.
 
 ## 1. Audit before editing
 

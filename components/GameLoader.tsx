@@ -11,7 +11,7 @@ import {
 } from "@/lib/games";
 
 function GameLoading() {
-  return <div className="gameLoading">PREPARANDO ARENA…</div>;
+  return <div className="gameLoading">PREPARANDO JUEGO…</div>;
 }
 
 type Props = {

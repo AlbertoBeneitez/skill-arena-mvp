@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import GalacticMark from "./GalacticMark";
+import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import GlobalRanking from "./GlobalRanking";
 import GroupHub from "./GroupHub";
@@ -495,12 +497,6 @@ export default function DemoApp() {
     return () => window.removeEventListener("popstate", onPopState);
   }, [isLoaded, onboarded, screen, activeGame, countdown]);
 
-  useEffect(() => {
-    if (isLoaded && onboarded && screen === "home" && !tutorialSeen) {
-      setTutorialStep(0);
-      setTutorialOpen(true);
-    }
-  }, [isLoaded, onboarded, screen, tutorialSeen]);
 
   useEffect(() => {
     if (screen !== "game") return;
@@ -629,20 +625,11 @@ export default function DemoApp() {
       .join(" ");
   }, [earnings]);
 
-  function chooseProvider(nextProvider: Exclude<Provider, null>) {
-    setProvider(nextProvider);
-    setAvatarId(0);
-    setAvatarSrc(AVATARS[0]);
-    setAvatarEditorOpen(true);
-    setAvatarError("");
-    navigate("avatar-setup");
-  }
-
   function continueWithoutProvider() {
     setProvider(null);
     setAvatarId(0);
     setAvatarSrc(AVATARS[0]);
-    setAvatarEditorOpen(true);
+    setAvatarEditorOpen(false);
     setAvatarError("");
     navigate("avatar-setup");
   }
@@ -1045,18 +1032,20 @@ export default function DemoApp() {
     return (
       <main className="onboarding arenaOnboarding">
         <section className="welcomeCard welcomeCardCompact">
-          <div className="arenaBadge">SA</div>
-          <div className="wordmark">SKILL ARENA</div>
+          <GalacticMark className="galacticWelcomeMark" />
+          <div className="wordmark">{PRODUCT_NAME}</div>
+          <p className="galacticEntryTagline">Tu próxima mejor marca.</p>
+          <p className="galacticEntryCopy">Juegos rápidos. Nuevos desafíos. Una galaxia por dominar.</p>
+          <div className="galacticEntryPreview" aria-hidden="true"><span>PRECISIÓN</span><span>REFLEJOS</span><span>ESTRATEGIA</span></div>
           <div className="authStack">
-            <button className="authButton google" onClick={() => chooseProvider("google")}><span>G</span>Continuar con Google</button>
-            <button className="authButton apple" onClick={() => chooseProvider("apple")}><span className="appleMark" aria-hidden="true"></span>Continuar con Apple</button>
-            <div className="authDivider"><span>o</span></div>
-            <button className="authButton guest" onClick={continueWithoutProvider}>
-              <span aria-hidden="true">→</span>
-              Continuar sin cuenta
-            </button>
+            <button className="authButton guest galacticEntryAction" onClick={continueWithoutProvider}>EMPEZAR A JUGAR</button>
+            <p className="galacticDemoEntry">Modo demo · sin cuenta ni dinero real</p>
+            <div className="galacticProviderRow">
+              <button className="authButton google" disabled aria-label="Google, próximamente"><span aria-hidden="true">G</span>Google</button>
+              <button className="authButton apple" disabled aria-label="Apple, próximamente"><span aria-hidden="true">●</span>Apple</button>
+            </div>
+            <p className="galacticProviderNote">Acceso con Google y Apple próximamente.</p>
           </div>
-          <p className="microcopy">V13 · MOBILE COMPETITIVE BUILD</p>
         </section>
       </main>
     );
@@ -1065,7 +1054,10 @@ export default function DemoApp() {
   if (screen === "avatar-setup") {
     return (
       <main className="onboarding arenaOnboarding">
-        <section className="setupCard avatarSetupCard avatarSetupMinimal">
+        <section className="setupCard avatarSetupCard avatarSetupMinimal galacticAvatarSetup">
+          <small className="galacticSetupBrand">{PRODUCT_NAME}</small>
+          <h1>Elige tu identidad</h1>
+          <p>Un nombre, un avatar. Y a jugar.</p>
           <div className="avatarPortraitWrap">
             <div className="avatarPortrait">
               <img src={avatarSrc} alt="Propuesta de avatar" />
@@ -1088,7 +1080,10 @@ export default function DemoApp() {
             />
           </div>
 
+          <div className="galacticAvatarChoices" aria-label="Avatares disponibles">{AVATARS.map((src,index)=><button key={src} type="button" aria-label={`Avatar ${index+1}`} aria-pressed={avatarSrc===src} onClick={()=>{setAvatarId(index);setAvatarSrc(src);}}><img src={src} alt=""/></button>)}</div>
+          <label className="galacticNameLabel" htmlFor="avatar-name">Nombre de jugador</label>
           <input
+            autoComplete="nickname"
             id="avatar-name"
             className="nameInput"
             value={playerName}
@@ -1098,7 +1093,7 @@ export default function DemoApp() {
             aria-label="Nombre de avatar"
           />
           <div className={`nameAvailability ${nameAvailable ? "available" : "unavailable"}`}>
-            {playerName.trim().length === 0 ? "" : nameAvailable ? "Disponible" : "No disponible"}
+            {playerName.trim().length === 0 ? "" : nameAvailable ? "Nombre válido para esta demo" : "Elige otro nombre"}
           </div>
 
           {avatarEditorOpen && (
@@ -1112,7 +1107,7 @@ export default function DemoApp() {
             </div>
           )}
 
-          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>CONTINUAR</button>
+          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>ENTRAR EN LA GALAXIA</button>
 
           {cropSource && (
             <div className="avatarCropOverlay" role="dialog" aria-modal="true" aria-label="Ajustar foto de avatar">
@@ -1173,7 +1168,7 @@ export default function DemoApp() {
     <main className="appShell">
       {screen !== "game" && (
         <header className="appHeader">
-          <button className="logoButton" onClick={() => navigate("home")}>SKILL ARENA</button>
+          <button className="logoButton" onClick={() => navigate("home")}>{PRODUCT_NAME}</button>
           <div className="appHeaderActions">
             <button
               className={`soundToggle ${musicOn ? "on" : "off"}`}
@@ -1205,14 +1200,15 @@ export default function DemoApp() {
             <button type="button" className="globalRankingShortcut" onClick={()=>navigate("ranking")}>Ranking global · Beneficio neto</button>
             <div className="homePlayHeading">
               <div>
-                <small>SKILL ARENA</small>
-                <h1>Elige arena</h1>
+                <small>{PRODUCT_NAME}</small>
+                <h1>Elige un juego</h1>
               </div>
               <button type="button" onClick={() => navigate("profile")}>
                 SALDO {euro(balance)}
               </button>
             </div>
 
+            <button className="galacticHelpButton" type="button" onClick={()=>{setTutorialStep(0);setTutorialOpen(true);}}>Cómo funcionan los retos demo</button>
             <div className="quickStakeBar" aria-label="Importe de la partida">
               {STAKES.map((stake) => (
                 <button

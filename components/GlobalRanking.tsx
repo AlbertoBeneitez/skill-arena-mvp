@@ -1,4 +1,5 @@
 "use client";
+import { PRODUCT_NAME } from "@/lib/productIdentity";
 import { useEffect, useState } from "react";
 import {
   formatNetProfit,
@@ -81,7 +82,7 @@ export default function GlobalRanking() {
   return (
     <section className="globalRankingScreen" aria-label="Ranking global">
       <header className="rankingHeading">
-        <small>SKILL ARENA</small>
+        <small>{PRODUCT_NAME}</small>
         <h1>Ranking global</h1>
         <p>Jugadores ordenados por beneficio neto acumulado.</p>
       </header>

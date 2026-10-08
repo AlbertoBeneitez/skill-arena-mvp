@@ -1,10 +1,10 @@
-# Skill Arena — demo mobile-first
+# GALACTIC GAMES — demo mobile-first
 
-Skill Arena está pensada para probar producto, arquitectura competitiva y UX móvil antes de conectar autenticación real, PostgreSQL, ledger o pagos.
+GALACTIC GAMES está pensada para probar producto, arquitectura competitiva y UX móvil antes de conectar autenticación real, PostgreSQL, ledger o pagos.
 
 ## Qué incluye
 
-- Onboarding: Skill Arena → Google/Apple/continuar sin proveedor (simulado) → configurar avatar.
+- Onboarding: GALACTIC GAMES → entrar en modo demo → elegir nombre/avatar → jugar. Google y Apple se muestran como próximos, sin autenticación simulada.
 - Galería de avatares y subida de foto con recorte local; sin generación de avatar por IA en esta fase.
 - Panel de jugador horizontal: imagen, nombre, ranking y dinero ganado/perdido.
 - Catálogo modular de juegos 1 vs 1 con carga bajo demanda; Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1 y Dino Dash V1 usan verificación server-side.
@@ -102,7 +102,7 @@ La demo admite dos modos de QA mediante query string:
   cuenta local. Conserva saldo, historial, estadísticas y grupo. Si se cierra
   la pestaña antes de terminar el onboarding, no sobrescribe el perfil
   guardado.
-- `?reset=1`: elimina todos los datos locales de Skill Arena en ese navegador
+- `?reset=1`: elimina todos los datos locales de GALACTIC GAMES en ese navegador
   y simula una instalación completamente nueva.
 
 La query se conserva al cambiar de pantalla mediante hash, por lo que al

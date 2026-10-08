@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { PRODUCT_NAME, PRODUCT_DESCRIPTION } from "@/lib/productIdentity";
 
 export const metadata: Metadata = {
-  title: "Skill Arena",
-  description: "Skill Arena — duelos móviles de habilidad.",
+  title: PRODUCT_NAME,
+  applicationName: PRODUCT_NAME,
+  description: PRODUCT_DESCRIPTION,
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  themeColor: "#081522",
   viewportFit: "cover",
 };
 
