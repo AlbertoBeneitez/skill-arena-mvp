@@ -6025,3 +6025,16 @@ html, body {
 
 .stackShiftVerified .coreControls button {-webkit-tap-highlight-color:transparent;}
 .stackShiftVerified .coreHud {font-size:12px;}
+
+/* Sky Hop keeps touch controls outside the full logical climb surface. */
+.skyHopVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 104px) !important;}
+.skyHopVerified .coreControls {bottom:38px;gap:18px;}
+.skyHopVerified .coreControls button {width:112px;min-height:50px;-webkit-tap-highlight-color:transparent;}
+.skyHopVerified .coreHint {bottom:12px;}
+.skyHopVerified .coreHud {font-size:12px;}
+@media (orientation:landscape) and (max-height:600px) {
+ .skyHopVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 100px) !important;height:100% !important;}
+ .skyHopVerified .coreControls {left:auto;right:15px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:14px;}
+ .skyHopVerified .coreControls button {width:70px;height:52px;min-height:52px;}
+ .skyHopVerified .coreHint {left:12px;right:112px;bottom:7px;}
+}

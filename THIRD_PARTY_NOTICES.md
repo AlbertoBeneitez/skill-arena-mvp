@@ -217,3 +217,12 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+## Sky Hop 1.0 (v44)
+
+Retains the MIT-attributed auto-bounce, downward-crossing support and horizontal
+wrap mechanics from the Sky Hop adaptation described above. Original fixed-point
+TypeScript implementation replaces UI-owned scoring/physics with the shared
+server replay. New versioned generation adds bounded shifts, three sectors,
+moving/boost/crumbling platforms, recovery checkpoints and unique pickups.
+No upstream assets, sound files or new third-party code are imported.

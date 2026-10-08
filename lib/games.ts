@@ -1,3 +1,4 @@
+import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
 import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
 import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
 import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
@@ -466,10 +467,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "sky-hop",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/SkyHop")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/SkyHopVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SKY_HOP_ACTIONS },
     name: "Sky Hop",
     cover: "/covers/sky-hop.svg",
     enabled: true,
@@ -478,12 +479,11 @@ const GAME_DEFINITIONS = [
     tagline: "Rebota y sigue subiendo.",
     difficulty: "ALTA",
     skillLabel: "CONTROL + ANTICIPACIÓN",
-    rivalScore: 7600,
+    rivalScore: 43000,
     rivalName: "HOP",
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Mantén izquierda o derecha para dirigir el salto automático.",
-    scoring: "Mismas plataformas, movimientos y distancias para ambos.",
-    deterministicSeed: "sky-hop-arena-001",
+    scoring: "75 apoyos por sectores, balizas y recogibles. Solo la altura nueva puntúa; replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];

@@ -114,7 +114,12 @@ New product additions from the latest owner request:
 
 Current completed units: 2048 retirement (v19); shared client lifecycle and Alien/Solitaire space visuals (v20); Stack V3 perpendicular geometry (v21); Tower V3 swing (v22); Jet V2 windows/lives (v23); Serpent wrap/core (v24); River V1 motion (v25); Orb launch bug (v26); River V2 novice opening/progression (v27); Pulse retirement (v28); Tower composition and Jet terminal feedback (v29); Stack camera/shadows/axis clarity (v30); honest global net-profit ranking preparation (v31); Orb V1 authoritative core, sector progression, original presentation and touch regression (v32). These are unit completions, not blanket claims that every game is commercially frozen.
 
-Still audit and improve every active game for easy learning, progressive depth, fair losses, touch reliability, adequate duration, variety, success/error feedback, original spatial backgrounds and mobile performance. Alien Dash gameplay, Shot Gallery aggregation/recognition, Sky Hop, Metro Shift, Mine Grid, Brick Relay, Stack Shift support, Maze Rush, Star Phalanx layers, billiards and darts remain. Preserve good rules and history; tune already-upgraded games only for concrete measured issues. Human physical-device QA remains pending.
+The current completion/partial-work ledger is [PRODUCT_BACKLOG_STATUS.md](PRODUCT_BACKLOG_STATUS.md).
+It includes the validated v33–v44 units without repeating their implementation
+records here. Sky Hop Y1–Y3 are implemented in v44 with a new integer core,
+server replay, bounded progressive platforms, checkpoints and touch QA.
+Continue only with outstanding rows in that ledger. Human physical-device QA
+and unconfigured production identity/ledger integration remain explicit limits.
 
 Mine Grid hidden-information fairness requires a separate decision before VERIFIED promotion: public seeded layouts expose all mine positions. Audit hidden-state requirements for Solitaire as well. Keep existing maturity and training behavior while preparing a common proposal; do not silently claim that replay alone protects secret boards.
 
