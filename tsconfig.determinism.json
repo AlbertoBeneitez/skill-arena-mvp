@@ -27,7 +27,8 @@
     "scripts/verify-river-v2.ts",
     "scripts/verify-ranking.ts",
     "scripts/verify-ranking-repository.ts",
-    "scripts/verify-orb-v1.ts"
+    "scripts/verify-orb-v1.ts",
+    "scripts/verify-mine-v1.ts"
   ],
   "exclude": [
     "node_modules",

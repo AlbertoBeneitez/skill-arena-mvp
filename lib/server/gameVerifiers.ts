@@ -1,3 +1,4 @@
+import { MINE_GRID_CORE } from "../verified/mineGridCore.v1";
 import { ORB_BURST_CORE } from "../verified/orbBurstCore.v1";
 import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
@@ -345,6 +346,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(ORB_BURST_CORE.gameId,ORB_BURST_CORE.gameVersion)]: coreAdapter(ORB_BURST_CORE),
   [adapterKey(RIVER_DASH_CORE_V2.gameId,RIVER_DASH_CORE_V2.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V2),
   [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
