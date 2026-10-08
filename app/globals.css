@@ -6038,3 +6038,17 @@ html, body {
  .skyHopVerified .coreControls button {width:70px;height:52px;min-height:52px;}
  .skyHopVerified .coreHint {left:12px;right:112px;bottom:7px;}
 }
+
+/* Metro Shift retains the full logical track above physical touch controls. */
+.metroShiftVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 104px) !important;}
+.metroShiftVerified .coreControls {bottom:38px;gap:12px;}
+.metroShiftVerified .coreControls button {width:78px;min-height:50px;-webkit-tap-highlight-color:transparent;}
+.metroShiftVerified .coreControls button:nth-child(2) {width:104px;font-size:12px;}
+.metroShiftVerified .coreHint {bottom:12px;}
+.metroShiftVerified .coreHud {font-size:12px;}
+@media (orientation:landscape) and (max-height:600px) {
+ .metroShiftVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 100px) !important;height:100% !important;}
+ .metroShiftVerified .coreControls {left:auto;right:15px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:8px;}
+ .metroShiftVerified .coreControls button,.metroShiftVerified .coreControls button:nth-child(2) {width:70px;height:44px;min-height:44px;}
+ .metroShiftVerified .coreHint {left:12px;right:112px;bottom:7px;}
+}

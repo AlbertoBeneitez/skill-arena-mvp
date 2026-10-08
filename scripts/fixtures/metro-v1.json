@@ -1,0 +1,273 @@
+{
+  "seed": "231217bc10c6554bcaa72bda8d2df265d0fbc7ff49f023bc16909bbec9262ccb",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 968,
+      "action": "JUMP"
+    },
+    {
+      "seq": 1,
+      "tick": 1065,
+      "action": "LEFT"
+    },
+    {
+      "seq": 2,
+      "tick": 1789,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 3,
+      "tick": 1935,
+      "action": "JUMP"
+    },
+    {
+      "seq": 4,
+      "tick": 2266,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 5,
+      "tick": 2657,
+      "action": "JUMP"
+    },
+    {
+      "seq": 6,
+      "tick": 2748,
+      "action": "LEFT"
+    },
+    {
+      "seq": 7,
+      "tick": 3137,
+      "action": "JUMP"
+    },
+    {
+      "seq": 8,
+      "tick": 3464,
+      "action": "LEFT"
+    },
+    {
+      "seq": 9,
+      "tick": 3705,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 10,
+      "tick": 3721,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 11,
+      "tick": 4343,
+      "action": "JUMP"
+    },
+    {
+      "seq": 12,
+      "tick": 4583,
+      "action": "JUMP"
+    },
+    {
+      "seq": 13,
+      "tick": 4680,
+      "action": "LEFT"
+    },
+    {
+      "seq": 14,
+      "tick": 5069,
+      "action": "JUMP"
+    },
+    {
+      "seq": 15,
+      "tick": 5433,
+      "action": "JUMP"
+    },
+    {
+      "seq": 16,
+      "tick": 5601,
+      "action": "JUMP"
+    },
+    {
+      "seq": 17,
+      "tick": 5771,
+      "action": "JUMP"
+    },
+    {
+      "seq": 18,
+      "tick": 5841,
+      "action": "LEFT"
+    },
+    {
+      "seq": 19,
+      "tick": 6018,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 20,
+      "tick": 6034,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 21,
+      "tick": 6297,
+      "action": "JUMP"
+    },
+    {
+      "seq": 22,
+      "tick": 6465,
+      "action": "JUMP"
+    },
+    {
+      "seq": 23,
+      "tick": 6639,
+      "action": "JUMP"
+    },
+    {
+      "seq": 24,
+      "tick": 6700,
+      "action": "LEFT"
+    },
+    {
+      "seq": 25,
+      "tick": 6868,
+      "action": "LEFT"
+    },
+    {
+      "seq": 26,
+      "tick": 6884,
+      "action": "LEFT"
+    },
+    {
+      "seq": 27,
+      "tick": 6900,
+      "action": "LEFT"
+    },
+    {
+      "seq": 28,
+      "tick": 7215,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 29,
+      "tick": 7231,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 30,
+      "tick": 7490,
+      "action": "JUMP"
+    },
+    {
+      "seq": 31,
+      "tick": 8240,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 32,
+      "tick": 8256,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 33,
+      "tick": 8272,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 34,
+      "tick": 8288,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 35,
+      "tick": 8583,
+      "action": "LEFT"
+    },
+    {
+      "seq": 36,
+      "tick": 8599,
+      "action": "LEFT"
+    },
+    {
+      "seq": 37,
+      "tick": 8795,
+      "action": "JUMP"
+    },
+    {
+      "seq": 38,
+      "tick": 9353,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 39,
+      "tick": 9477,
+      "action": "LEFT"
+    },
+    {
+      "seq": 40,
+      "tick": 9551,
+      "action": "JUMP"
+    },
+    {
+      "seq": 41,
+      "tick": 9677,
+      "action": "JUMP"
+    },
+    {
+      "seq": 42,
+      "tick": 9933,
+      "action": "JUMP"
+    },
+    {
+      "seq": 43,
+      "tick": 10061,
+      "action": "JUMP"
+    },
+    {
+      "seq": 44,
+      "tick": 10192,
+      "action": "JUMP"
+    },
+    {
+      "seq": 45,
+      "tick": 10369,
+      "action": "LEFT"
+    },
+    {
+      "seq": 46,
+      "tick": 10385,
+      "action": "LEFT"
+    },
+    {
+      "seq": 47,
+      "tick": 10401,
+      "action": "LEFT"
+    },
+    {
+      "seq": 48,
+      "tick": 10417,
+      "action": "LEFT"
+    },
+    {
+      "seq": 49,
+      "tick": 10827,
+      "action": "JUMP"
+    },
+    {
+      "seq": 50,
+      "tick": 10879,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 51,
+      "tick": 10955,
+      "action": "JUMP"
+    },
+    {
+      "seq": 52,
+      "tick": 11007,
+      "action": "RIGHT"
+    }
+  ],
+  "finalTick": 11133,
+  "score": 43320,
+  "hash": "sha256:0ef385d90980e60dfdb35041ee5c0a247008b57037c448f42d57f7d41e9c4a8c"
+}

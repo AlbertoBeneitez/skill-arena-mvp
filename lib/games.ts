@@ -1,3 +1,4 @@
+import { METRO_ACTIONS } from "./verified/metroShiftProtocol.v1";
 import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
 import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
 import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
@@ -143,10 +144,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "metro-shift",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/MetroShift")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/MetroShiftVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: METRO_ACTIONS },
     name: "Metro Shift",
     cover: "/covers/metro-shift.svg",
     enabled: true,
@@ -155,11 +156,11 @@ const GAME_DEFINITIONS = [
     tagline: "Siete carriles. Decide antes de que llegue la ola.",
     difficulty: "ALTA",
     skillLabel: "LECTURA + REACCIÓN",
-    rivalScore: 6100,
+    rivalScore: 42000,
     rivalName: "MIRA",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Desliza a izquierda o derecha entre siete carriles y hacia arriba para saltar.",
-    scoring: "Esquiva obstáculos hasta la primera colisión.",
+    scoring: "60 formaciones en tres sectores reproducibles, saltos, recargas y tres escudos; score por replay de servidor.",
   },
   {
     id: "orbit-shift",

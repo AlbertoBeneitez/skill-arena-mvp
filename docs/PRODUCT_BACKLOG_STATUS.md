@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento tras v45-mobile
+# GALACTIC GAMES · Seguimiento tras v46-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -17,7 +17,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Mine Grid | v34: candidato privado 1.0, cinco sectores resolubles, autoridad común/PG y QA local | Integración pública segura; catálogo todavía 0.1 |
 | Solitaire Sprint | Fondo espacial preservado | Auditoría/pulido de jugabilidad y autoridad si corresponde |
 | Sky Hop | v44: score farming reparado; core 1.0, 75 apoyos, tres sectores, balizas/móviles/impulsos/crumble, replay y touch QA | QA humana física |
-| Metro Shift | Versión integrada existente preservada | Espacio, gameplay, progresión, core/replay |
+| Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | QA humana física |
 | Brick Relay | Versión integrada existente preservada | Ritmo, profundidad, feedback, progresión, core/replay |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | QA humana física |
 | Maze Rush | Versión integrada existente preservada | Gameplay móvil, progresión, mapas/core/replay |
@@ -32,4 +32,4 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 
-Los 20 juegos activos incluyen 14 VERIFIED por replay y seis INTEGRATED. Mine 1.0 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
+Los 20 juegos activos incluyen 15 VERIFIED por replay y cinco INTEGRATED. Mine 1.0 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.

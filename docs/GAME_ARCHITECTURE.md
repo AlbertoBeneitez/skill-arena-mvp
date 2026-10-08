@@ -162,13 +162,14 @@ characters, logos, fonts or trademarks.
 
 ## Current maturity
 
-- Tower Drop: **VERIFIED** competitive reference core.
-- Precision Stack: **VERIFIED**, current V2 core with faster cadence, adaptive perfect window and minimum-stable-overlap rule; frozen V1 remains replayable for historical manifests.
-- Piano Rush: **VERIFIED**, with seeded timing chart and typed lane protocol.
-- Jet Stream: **VERIFIED**, with seeded gate course and typed FLAP protocol.
-- Remaining catalogue: **INTEGRATED** legacy games pending one-by-one professionalisation.
-- `PRODUCTION-GRADE` remains reserved for games that also pass real-device QA,
-  operational security requirements and production settlement integration.
+`lib/games.ts` is authoritative for runtime versions and maturity. Current
+validated work and remaining quality/integration limits are maintained in
+[PRODUCT_BACKLOG_STATUS.md](PRODUCT_BACKLOG_STATUS.md); do not infer current
+catalogue versions from the historical examples above.
+
+`PRODUCTION-GRADE` remains reserved for games that also pass real-device QA,
+operational security and production settlement integration. VERIFIED means
+server replay, not activation of production money or identity.
 
 ## Professionalisation gate
 
