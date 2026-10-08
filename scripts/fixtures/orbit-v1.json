@@ -1,0 +1,139 @@
+{
+  "seed": "835e016c4e04fbabe362cc5f9e5d2c734a94486d8a0445d66fb48945aaa3d95c",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 1644,
+      "action": "IN"
+    },
+    {
+      "seq": 1,
+      "tick": 1787,
+      "action": "IN"
+    },
+    {
+      "seq": 2,
+      "tick": 3376,
+      "action": "OUT"
+    },
+    {
+      "seq": 3,
+      "tick": 3388,
+      "action": "OUT"
+    },
+    {
+      "seq": 4,
+      "tick": 3488,
+      "action": "IN"
+    },
+    {
+      "seq": 5,
+      "tick": 3700,
+      "action": "OUT"
+    },
+    {
+      "seq": 6,
+      "tick": 3915,
+      "action": "OUT"
+    },
+    {
+      "seq": 7,
+      "tick": 4235,
+      "action": "IN"
+    },
+    {
+      "seq": 8,
+      "tick": 4556,
+      "action": "OUT"
+    },
+    {
+      "seq": 9,
+      "tick": 4767,
+      "action": "OUT"
+    },
+    {
+      "seq": 10,
+      "tick": 4867,
+      "action": "IN"
+    },
+    {
+      "seq": 11,
+      "tick": 4879,
+      "action": "IN"
+    },
+    {
+      "seq": 12,
+      "tick": 4976,
+      "action": "IN"
+    },
+    {
+      "seq": 13,
+      "tick": 5073,
+      "action": "OUT"
+    },
+    {
+      "seq": 14,
+      "tick": 5178,
+      "action": "OUT"
+    },
+    {
+      "seq": 15,
+      "tick": 5271,
+      "action": "IN"
+    },
+    {
+      "seq": 16,
+      "tick": 5283,
+      "action": "IN"
+    },
+    {
+      "seq": 17,
+      "tick": 5354,
+      "action": "IN"
+    },
+    {
+      "seq": 18,
+      "tick": 5765,
+      "action": "OUT"
+    },
+    {
+      "seq": 19,
+      "tick": 5777,
+      "action": "OUT"
+    },
+    {
+      "seq": 20,
+      "tick": 6072,
+      "action": "IN"
+    },
+    {
+      "seq": 21,
+      "tick": 6303,
+      "action": "IN"
+    },
+    {
+      "seq": 22,
+      "tick": 6385,
+      "action": "OUT"
+    },
+    {
+      "seq": 23,
+      "tick": 6471,
+      "action": "OUT"
+    },
+    {
+      "seq": 24,
+      "tick": 6725,
+      "action": "IN"
+    },
+    {
+      "seq": 25,
+      "tick": 6737,
+      "action": "IN"
+    }
+  ],
+  "finalTick": 6811,
+  "score": 38130,
+  "status": "won",
+  "hash": "sha256:1ed06158361cb8ec585373bc69d0431c78e8b0c617293fb4693aedcfe4a6352e"
+}

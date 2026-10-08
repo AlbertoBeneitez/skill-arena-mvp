@@ -1,3 +1,4 @@
+import { ORBIT_ACTIONS } from "./verified/orbitShiftProtocol.v1";
 import { MAZE_ACTIONS } from "./verified/mazeRushProtocol.v1";
 import { BRICK_ACTIONS } from "./verified/brickRelayProtocol.v1";
 import { METRO_ACTIONS } from "./verified/metroShiftProtocol.v1";
@@ -166,10 +167,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orbit-shift",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/OrbitShift")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/OrbitShiftVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: ORBIT_ACTIONS },
     name: "Orbit Shift",
     cover: "/covers/orbit-rush.svg",
     enabled: true,
@@ -178,11 +179,11 @@ const GAME_DEFINITIONS = [
     tagline: "Sube o baja de órbita antes del impacto.",
     difficulty: "ALTA",
     skillLabel: "LECTURA + TIMING",
-    rivalScore: 6400,
+    rivalScore: 33000,
     rivalName: "ORBIT",
     rivalAvatar: "/avatars/avatar-3.svg",
-    instruction: "Usa los controles inferiores para subir o bajar de órbita.",
-    scoring: "Supera obstáculos hasta el primer impacto.",
+    instruction: "Interior acerca al centro; exterior aleja. Evita arcos rosas y recoge recargas verdes.",
+    scoring: "60 pasos por tres sectores, arcos combinados, recargas y tres escudos; replay de servidor.",
   },
   {
     id: "solitaire-sprint",

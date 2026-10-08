@@ -1,3 +1,4 @@
+import { ORBIT_CORE } from "../verified/orbitShiftCore.v1";
 import { MAZE_CORE } from "../verified/mazeRushCore.v1";
 import { BRICK_RELAY_CORE } from "../verified/brickRelayCore.v1";
 import { METRO_CORE } from "../verified/metroShiftCore.v1";
@@ -357,6 +358,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(ORBIT_CORE.gameId, ORBIT_CORE.gameVersion)]: coreAdapter(ORBIT_CORE),
   [adapterKey(MAZE_CORE.gameId, MAZE_CORE.gameVersion)]: coreAdapter(MAZE_CORE),
   [adapterKey(BRICK_RELAY_CORE.gameId, BRICK_RELAY_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_CORE),
   [adapterKey(METRO_CORE.gameId, METRO_CORE.gameVersion)]: coreAdapter(METRO_CORE),
