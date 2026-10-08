@@ -44,7 +44,9 @@
     "scripts/verify-sky-hop-v1.ts",
     "scripts/sky-hop-play-fixture.ts",
     "scripts/verify-metro-v1.ts",
-    "scripts/metro-play-fixture.ts"
+    "scripts/metro-play-fixture.ts",
+    "scripts/verify-brick-v1.ts",
+    "scripts/brick-play-fixture.ts"
   ],
   "exclude": [
     "node_modules",

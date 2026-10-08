@@ -1,3 +1,4 @@
+import { BRICK_RELAY_CORE } from "../verified/brickRelayCore.v1";
 import { METRO_CORE } from "../verified/metroShiftCore.v1";
 import { SKY_HOP_CORE } from "../verified/skyHopCore.v1";
 import { PHALANX_CORE } from "../verified/starPhalanxCore.v1";
@@ -355,6 +356,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(BRICK_RELAY_CORE.gameId, BRICK_RELAY_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_CORE),
   [adapterKey(METRO_CORE.gameId, METRO_CORE.gameVersion)]: coreAdapter(METRO_CORE),
   [adapterKey(SKY_HOP_CORE.gameId, SKY_HOP_CORE.gameVersion)]: coreAdapter(SKY_HOP_CORE),
   [adapterKey(PHALANX_CORE.gameId, PHALANX_CORE.gameVersion)]: coreAdapter(PHALANX_CORE),

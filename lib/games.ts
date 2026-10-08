@@ -1,3 +1,4 @@
+import { BRICK_ACTIONS } from "./verified/brickRelayProtocol.v1";
 import { METRO_ACTIONS } from "./verified/metroShiftProtocol.v1";
 import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
 import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
@@ -248,10 +249,10 @@ const GAME_DEFINITIONS = [
 
   {
     id: "brick-relay",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/BrickRelay")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/BrickRelayVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BRICK_ACTIONS },
     name: "Brick Relay",
     cover: "/covers/brick-relay.svg",
     enabled: true,
@@ -260,12 +261,11 @@ const GAME_DEFINITIONS = [
     tagline: "Mismo muro y misma física. Devuelve cada bola.",
     difficulty: "ALTA",
     skillLabel: "PRECISIÓN + CONTROL",
-    rivalScore: 6800,
+    rivalScore: 30000,
     rivalName: "RICO",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Arrastra para mover la pala. El mapa y el lanzamiento inicial son idénticos.",
-    scoring: "Rompe bloques sin dejar caer la bola.",
-    deterministicSeed: "brick-relay-arena-001",
+    scoring: "Cuatro sectores con blindaje, movimiento y explosivos; tres vidas, rebotes dirigidos y replay de servidor.",
   },
   {
     id: "stack-shift",
