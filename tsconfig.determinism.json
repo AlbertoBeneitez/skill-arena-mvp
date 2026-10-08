@@ -32,7 +32,8 @@
     "scripts/verify-hidden-commands.ts",
     "scripts/verify-command-repository.ts",
     "scripts/verify-billiards-v1.ts",
-    "scripts/verify-darts-v1.ts"
+    "scripts/verify-darts-v1.ts",
+    "scripts/verify-gallery-v1.ts"
   ],
   "exclude": [
     "node_modules",

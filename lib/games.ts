@@ -1,3 +1,4 @@
+import { SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v1";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS } from "./verified/billiardsProtocol.v1";
 import { ORB_ACTIONS } from "./verified/orbBurstProtocol.v1";
@@ -444,24 +445,23 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/ReactionTest")),
-    competition: { verification: "client-result" },
-    name: "Reaction Test",
-    cover: "/covers/reaction-test.svg",
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SHOT_GALLERY_ACTIONS },
+    name: "Shot Gallery",
+    cover: "/covers/shot-gallery.svg",
     enabled: true,
     waitingStakes: [1, 50],
     category: "REACCIÓN",
-    tagline: "No adivines. Reacciona.",
+    tagline: "Reconoce el objetivo. Reacciona con precisión.",
     difficulty: "ALTA",
-    skillLabel: "REACCIÓN PURA",
-    rivalScore: 4300,
+    skillLabel: "REACCIÓN + RECONOCIMIENTO",
+    rivalScore: 12000,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Espera a que cambie la señal y toca lo más rápido posible.",
-    scoring: "Cinco rondas con esperas deterministas; anticiparse penaliza.",
-    deterministicSeed: "reaction-test-arena-001",
+    instruction: "Lee la regla. Espera a la activación y toca el objetivo correcto.",
+    scoring: "Suma de doce pruebas: colores, formas, números y combinaciones. Anticiparse y fallar penaliza.",
   },
   {
     id: "sky-hop",

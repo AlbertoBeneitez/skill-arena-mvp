@@ -5961,3 +5961,6 @@ html, body {
  .dartsVerified .coreControls button {width:105px;}
  .dartsVerified .coreHint {left:18px;right:auto;width:155px;bottom:22px;}
 }
+
+.shotGalleryVerified {width:100%;height:100%;}
+.shotGalleryVerified .coreHint {bottom:5px;font-size:10px;}
