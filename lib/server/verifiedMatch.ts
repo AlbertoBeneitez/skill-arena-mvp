@@ -12,7 +12,7 @@ import type {
 } from "@/lib/verified/contracts";
 import { getServerGameAdapter } from "./gameVerifiers";
 import { hashManifest, sha256, signAttemptTicket } from "./matchIntegrity";
-import { resolveScenario } from "./scenarios";
+import { resolveScenario, isPrivateScenario } from "./scenarios";
 
 export { hashManifest } from "./matchIntegrity";
 
@@ -88,12 +88,13 @@ export function expectedRulesHash(
 
 export function createMatchManifest(args: {
   gameId: GameId;
+  gameVersion?: string;
   matchId?: string;
   stakeMinor?: number;
   targetScore?: number;
   seed?: string;
 }): MatchManifestV2 {
-  const adapter = getServerGameAdapter(args.gameId);
+  const adapter = getServerGameAdapter(args.gameId,args.gameVersion);
   if (!adapter) {
     throw new Error("UNSUPPORTED_GAME_VERSION");
   }
@@ -228,7 +229,7 @@ export function verifyAttemptTicket(
 /** V3 is staged for trusted storage; existing HTTP callers remain V2-only. */
 export function validateManifest(
   manifest: MatchManifest,
-  options: { allowV3?: boolean } = {}
+  options: { allowV3?: boolean; allowPrivateScenario?: boolean } = {}
 ) {
   if (!isRecord(manifest)) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
@@ -332,7 +333,9 @@ export function validateManifest(
   }
 
   if (manifest.manifest_version === 3) {
-    try {
+    if (options.allowPrivateScenario === true && isPrivateScenario(manifest.scenario)) {
+      if (!/^[0-9a-f]{64}$/.test(manifest.seed)) return { ok: false as const, error: "INVALID_MANIFEST" };
+    } else try {
       const generated = resolveScenario(
         { game_id: manifest.game_id, game_version: manifest.game_version },
         manifest.scenario

@@ -28,7 +28,9 @@
     "scripts/verify-ranking.ts",
     "scripts/verify-ranking-repository.ts",
     "scripts/verify-orb-v1.ts",
-    "scripts/verify-mine-v1.ts"
+    "scripts/verify-mine-v1.ts",
+    "scripts/verify-hidden-commands.ts",
+    "scripts/verify-command-repository.ts"
   ],
   "exclude": [
     "node_modules",

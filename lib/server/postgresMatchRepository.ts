@@ -41,7 +41,7 @@ export class PostgresMatchRepository implements MatchRepository {
     if (
       !manifest || typeof manifest.match_id !== "string" ||
       manifest.match_id.length < 1 || manifest.match_id.length > 128 ||
-      !validateManifest(manifest, { allowV3: true }).ok
+      !validateManifest(manifest, { allowV3: true, allowPrivateScenario: true }).ok
     ) throw new MatchRepositoryError("INVALID_MATCH");
     if (!participants || !validPlayerId(participants.A) ||
       !validPlayerId(participants.B) || participants.A === participants.B) {

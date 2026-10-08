@@ -104,3 +104,16 @@ export function resolveScenario(
 export function selectScenario(identity: ScenarioIdentity): GeneratedScenario {
   return generateScenario(identity, randomInt(SCENARIO_CATALOG_V1.count));
 }
+
+/** Hidden games retain entropy/seed exclusively server-side. Public V1 mappings are unchanged. */
+export function generatePrivateScenario(identity:ScenarioIdentity,entropy:string,scenarioId:string):GeneratedScenario {
+ validateIdentity(identity);
+ if(!/^[0-9a-f]{64}$/.test(entropy)||!/^private-seed-v1:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(scenarioId))throw new Error('INVALID_PRIVATE_SCENARIO');
+ const scenario=Object.freeze({scenario_id:scenarioId,generator_version:'private-1.0.0'});
+ return Object.freeze({...identity,scenario,seed:sha256(canonicalJson({domain:'skill-arena/private-scenarios/v1',...identity,...scenario,entropy})).slice(7)});
+}
+export function isPrivateScenario(descriptor:unknown):descriptor is ScenarioDescriptor {
+ if(!descriptor||typeof descriptor!=='object'||Array.isArray(descriptor))return false;
+ const record=descriptor as Record<string,unknown>;
+ return Object.keys(record).sort().join(',')==='generator_version,scenario_id'&&record.generator_version==='private-1.0.0'&&typeof record.scenario_id==='string'&&/^private-seed-v1:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(record.scenario_id);
+}
