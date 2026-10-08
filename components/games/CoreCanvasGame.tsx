@@ -15,6 +15,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   instruction: string;
   render(ctx: CanvasRenderingContext2D, state: S): void;
   primaryAction?: string;
+  /** Presentation-only reward signal; HUD/replay keep the complete authoritative score. */
+  feedbackScore?(state: S): number;
   inputTones?: Readonly<Partial<Record<string, Parameters<typeof gameTone>[0]>>>;
   pointAction?(point: CorePoint, phase: "down" | "move" | "up", state: S): string | readonly string[] | null;
   gestureAction?(from: CorePoint, to: CorePoint, state: S): string | null;
@@ -79,25 +81,27 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       applyCoreInput(core, state, action, targetRef.current);
       const tone = props.inputTones?.[action];
       if (tone) gameTone(tone);
-      if (state.score !== feedbackScoreRef.current) {
-        gameTone(state.score > feedbackScoreRef.current ? "good" : "bad");
+      const feedbackScore = props.feedbackScore?.(state) ?? state.score;
+      if (feedbackScore !== feedbackScoreRef.current) {
+        gameTone(feedbackScore > feedbackScoreRef.current ? "good" : "bad");
         haptic(6);
-        feedbackScoreRef.current = state.score;
+        feedbackScoreRef.current = feedbackScore;
       } else haptic(2);
       return;
     }
-  }, [core, attempt.recordInput, props.inputTones]);
+  }, [core, attempt.recordInput, props.inputTones, props.feedbackScore]);
 
   const sync = useCallback((now: number) => {
     if (!runningRef.current) return;
     const tick = Math.floor(Math.max(0, now - epochRef.current) * core.tickRate / 1000);
     advanceCoreToTick(core, stateRef.current, tick, targetRef.current, flush);
     flush();
-    if (stateRef.current.score !== feedbackScoreRef.current) {
-      gameTone(stateRef.current.score > feedbackScoreRef.current ? "good" : "bad");
-      feedbackScoreRef.current = stateRef.current.score;
+    const feedbackScore = props.feedbackScore?.(stateRef.current) ?? stateRef.current.score;
+    if (feedbackScore !== feedbackScoreRef.current) {
+      gameTone(feedbackScore > feedbackScoreRef.current ? "good" : "bad");
+      feedbackScoreRef.current = feedbackScore;
     }
-  }, [core, flush]);
+  }, [core, flush, props.feedbackScore]);
 
   const send = useCallback((action: string) => {
     if (!active || attempt.state.status !== "ready" || !runningRef.current || finishedRef.current || !core.actions.includes(action)) return;

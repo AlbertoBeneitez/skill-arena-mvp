@@ -1,3 +1,4 @@
+import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
 import { SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v1";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS } from "./verified/billiardsProtocol.v1";
@@ -419,14 +420,14 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "dino-dash",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/DinoDash")),
+    loadComponent: adaptGameComponent(() => import("@/components/games/AlienDash")),
     competition: {
       verification: "server-replay",
-      engineVersion: "skill-core-1",
-      inputProtocolVersion: 1,
-      allowedActions: ["JUMP", "DUCK_DOWN", "DUCK_UP"],
+      engineVersion: "skill-core-3",
+      inputProtocolVersion: 2,
+      allowedActions: ALIEN_ACTIONS,
     },
     name: "Alien Dash",
     cover: "/covers/alien-dash.svg",
@@ -436,12 +437,11 @@ const GAME_DEFINITIONS = [
     tagline: "Cruza la colonia orbital. Salta. Esquiva. Sobrevive.",
     difficulty: "MEDIA",
     skillLabel: "TIMING + LECTURA",
-    rivalScore: 7200,
+    rivalScore: 22000,
     rivalName: "REX",
     rivalAvatar: "/avatars/avatar-8.svg",
-    instruction: "Toca para saltar barreras de plasma y usa ↓ para pasar bajo drones.",
-    scoring: "Ambos reciben la misma secuencia exacta de obstáculos.",
-    deterministicSeed: "dino-dash-arena-001",
+    instruction: "Salta rocas y plataformas. Mantén AGACHAR bajo drones; salta los rayos rojos.",
+    scoring: "Tres escudos, plataformas, recogibles y centinelas. Sobrevive dos minutos o supera el objetivo.",
   },
   {
     id: "reaction-test",

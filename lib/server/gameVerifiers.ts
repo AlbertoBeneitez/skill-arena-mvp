@@ -1,3 +1,4 @@
+import { ALIEN_DASH_CORE } from "../verified/alienDashCore.v2";
 import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
 import { BILLIARDS_CORE } from "../verified/billiardsCore.v1";
@@ -349,6 +350,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(ALIEN_DASH_CORE.gameId, ALIEN_DASH_CORE.gameVersion)]: coreAdapter(ALIEN_DASH_CORE),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(BILLIARDS_CORE.gameId,BILLIARDS_CORE.gameVersion)]: coreAdapter(BILLIARDS_CORE),

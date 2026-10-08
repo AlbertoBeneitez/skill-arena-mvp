@@ -5999,3 +5999,12 @@ html, body {
 
 .gameScreen > .premiumResult .resultLearningNote {font-size:12px!important;}
 .gameScreen > .premiumResult .resultActions button {font-size:12px!important;}
+
+.alienDashVerified {width:100%;height:100%;}
+.alienDashVerified .coreControls button {width:126px;font-size:13px;}
+.alienDashVerified .coreHint {max-width:320px;margin:0 auto;bottom:5px;font-size:10px;line-height:1.3;}
+@media (orientation:landscape) {
+ .alienDashVerified .coreControls {left:auto;right:18px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:9px;}
+ .alienDashVerified .coreControls button {width:90px;height:48px;}
+ .alienDashVerified .coreHint {left:15px;right:auto;width:145px;bottom:18px;}
+}

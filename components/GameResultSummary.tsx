@@ -10,6 +10,7 @@ const causes: Readonly<Record<string, string>> = {
   SELF_COLLISION: "La cabeza ha tocado tu propio recorrido.",
   AIM_TIMEOUT: "Se agotó el tiempo para preparar el tiro.",
   TIME_LIMIT: "Has llegado al límite de tiempo del reto.",
+  HULL_EXHAUSTED: "Se agotaron los escudos. Anticipa las rocas y los disparos.",
   MINES: "Se han agotado los escudos del campo.",
 };
 export default function GameResultSummary({
