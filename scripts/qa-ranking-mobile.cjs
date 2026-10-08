@@ -42,7 +42,7 @@ const assert = require("node:assert/strict");
     localStorage.setItem("skill-arena-color-tutorial-v12", "1");
   });
   await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
-  assert.equal(await page.locator(".rankNumber").innerText(), "DEMO");
+  assert.ok((await page.locator(".balanceChip").innerText()).startsWith("DEMO"));
   await page
     .getByRole("button", {
       name: "Ranking global · Beneficio neto",

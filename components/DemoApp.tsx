@@ -1,5 +1,7 @@
 "use client";
 import GameResultSummary from "./GameResultSummary";
+import CatalogBrowser from "./CatalogBrowser";
+import shellStyles from "./ProductShell.module.css";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import GalacticMark from "./GalacticMark";
@@ -731,6 +733,7 @@ export default function DemoApp() {
   }
 
   function finishMatch(gameResult: GameResult) {
+    resultPointerReadyRef.current = false;
     matchStartLockRef.current = false;
     setStartingGameId(null);
     setActiveGame(false);
@@ -777,7 +780,6 @@ export default function DemoApp() {
             : false;
     const resolvedResult = { ...gameResult, won: didWin };
     if (didWin) setShowWinAnimation(true);
-    resultPointerReadyRef.current = false;
     setResult(resolvedResult);
 
     const inGroupCompetition =
@@ -1170,7 +1172,7 @@ export default function DemoApp() {
   }
 
   return (
-    <main className="appShell">
+    <main className={`appShell ${shellStyles.shell}`}>
       {screen !== "game" && (
         <header className="appHeader">
           <button className="logoButton" onClick={() => navigate("home")}>{PRODUCT_NAME}</button>
@@ -1193,32 +1195,19 @@ export default function DemoApp() {
         {screen === "ranking" && <GlobalRanking />}
         {screen === "home" && (
           <section className="catalogScreen playCatalogSimple homePlayMerged">
-            <button className="playerStrip mergedPlayerStrip" onClick={() => navigate("profile")}>
-              <img src={avatarSrc} alt="Avatar" />
-              <strong>{playerName}</strong>
-              <span className="rankNumber">DEMO</span>
-              <span className={`moneyNumber ${netEarnings < 0 ? "negative" : ""}`}>
-                {netEarnings > 0 ? "+" : ""}{euro(netEarnings)}
-              </span>
-            </button>
-
-            <button type="button" className="globalRankingShortcut" onClick={()=>navigate("ranking")}>Ranking global · Beneficio neto</button>
             <div className="homePlayHeading">
-              <div>
-                <small>{PRODUCT_NAME}</small>
-                <h1>Elige un juego</h1>
-              </div>
-              <button type="button" onClick={() => navigate("profile")}>
-                SALDO {euro(balance)}
-              </button>
+              <h1>Elige tu reto</h1>
+              <button type="button" className="globalRankingShortcut" aria-label="Ranking global · Beneficio neto" onClick={()=>navigate("ranking")}>Ranking global →</button>
             </div>
 
-            <button className="galacticHelpButton" type="button" onClick={()=>{setTutorialStep(0);setTutorialOpen(true);}}>Cómo funcionan los retos demo</button>
+            <div className={shellStyles.modeHeading}><strong>Modo de juego</strong><span>{selectedStake===0?"Entrenamiento gratis":"Saldo y premios ficticios"}</span></div>
             <div className="quickStakeBar" aria-label="Importe de la partida">
               {STAKES.map((stake) => (
                 <button
                   key={stake}
                   className={selectedStake === stake ? "selected" : ""}
+                  aria-pressed={selectedStake === stake}
+                  aria-label={stake===0?"Entrenamiento gratis":`Reto demo de ${stake} euros`}
                   onClick={() => selectStake(stake)}
                   disabled={stake > balance}
                 >
@@ -1227,46 +1216,8 @@ export default function DemoApp() {
               ))}
             </div>
 
-            <div className="gameGrid large playGameGrid">
-              {GAMES.map((game) => {
-                const mode = modeForStake(game, selectedStake as Stake, nextTurn);
-                const canPlay = selectedStake <= balance;
-
-                return (
-                  <article className="playGameCard" key={game.id}>
-                    <div className="gameCoverWrap">
-                      <img src={game.cover} alt={game.name} />
-                      {mode === "existing" && (
-                        <button
-                          className={`cardGhostToggle ${ghostEnabled ? "active" : ""}`}
-                          onClick={() => setGhostEnabled((value) => !value)}
-                          aria-label="Mostrar u ocultar fantasma"
-                          type="button"
-                        >
-                          👻
-                        </button>
-                      )}
-                    </div>
-                    <div className="playGameCardFooter playGameCardFooterOnlyAction">
-                      <button
-                        className="cardPlayButton"
-                        type="button"
-                        disabled={!canPlay || startingGameId !== null}
-                        onClick={() => startMatch(game)}
-                        aria-label={`Jugar a ${game.name}`}
-                        aria-busy={startingGameId === game.id}
-                      >
-                        {startingGameId === game.id
-                          ? "ENTRANDO…"
-                          : selectedStake === 0
-                            ? "JUGAR"
-                            : `JUGAR · ${selectedStake}€`}
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+            <CatalogBrowser stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
+            <button className="galacticHelpButton" type="button" onClick={()=>{setTutorialStep(0);setTutorialOpen(true);}}>Cómo funcionan los retos demo</button>
           </section>
         )}
 
@@ -1555,14 +1506,14 @@ export default function DemoApp() {
 
       {screen !== "game" && screen !== "legal" && (
         <nav className="bottomNav bottomNavFour" aria-label="Navegación principal">
-          <button className={screen === "home" ? "active" : ""} onClick={() => navigate("home")}>
+          <button className={screen === "home" ? "active" : ""} aria-current={screen === "home" ? "page" : undefined} onClick={() => navigate("home")}>
             <span>▶</span>JUGAR
           </button>
-          <button className={screen === "group" ? "active" : ""} onClick={() => navigate("group")}>
+          <button className={screen === "group" ? "active" : ""} aria-current={screen === "group" ? "page" : undefined} onClick={() => navigate("group")}>
             <span>◉</span>GRUPO
           </button>
-          <button className={screen === "ranking" ? "active" : ""} onClick={() => navigate("ranking")}><span aria-hidden="true">≡</span>RANKING</button>
-          <button className={screen === "profile" ? "active" : ""} onClick={() => navigate("profile")}>
+          <button className={screen === "ranking" ? "active" : ""} aria-current={screen === "ranking" ? "page" : undefined} onClick={() => navigate("ranking")}><span aria-hidden="true">≡</span>RANKING</button>
+          <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
             <img src={avatarSrc} alt="" />CUENTA
           </button>
         </nav>

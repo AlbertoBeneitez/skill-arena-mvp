@@ -1,0 +1,155 @@
+/* Scoped product chrome; game simulation, onboarding and individual views stay independent. */
+.shell:global(.appShell) {
+  background:
+    radial-gradient(ellipse at 80% 0, rgba(67, 72, 126, 0.18), transparent 50%),
+    #080f1e;
+  color: #e8f0fb;
+}
+.shell :global(.appHeader) {
+  background: #0b1526;
+  border-bottom: 1px solid #293d54;
+  box-shadow: none;
+  min-height: 64px;
+  height: auto;
+  gap: 10px;
+  padding: 8px 14px;
+}
+.shell :global(.logoButton) {
+  min-height: 44px;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-shadow: none;
+  color: #e9f4ff;
+}
+.shell :global(.balanceChip) {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #35526b;
+  border-radius: 12px;
+  background: #172a3e;
+  box-shadow: none;
+  color: #bdddeb;
+  font-size: 11px;
+}
+.shell :global(.soundToggle) {
+  min-height: 44px;
+  min-width: 44px;
+  background: #14243a;
+  border: 1px solid #30455d;
+}
+.shell :global(.bottomNav) {
+  background: #0d182a;
+  border-top: 1px solid #30425a;
+  box-shadow: none;
+}
+.shell :global(.bottomNav) button {
+  min-height: 52px;
+  color: #a7bad0;
+  font-size: 10px;
+  gap: 5px;
+}
+.shell :global(.bottomNav) button:global(.active) {
+  color: #a5eff2;
+  background: #182c41;
+}
+.shell :global(.bottomNav) img {
+  width: 24px;
+  height: 24px;
+}
+.shell :global(.bottomNav) button:focus-visible {
+  outline: 2px solid #a5eff2;
+  outline-offset: -5px;
+  border-radius: 10px;
+}
+.shell :global(.homePlayMerged) {
+  gap: 16px;
+  padding-bottom: 20px;
+}
+.shell :global(.homePlayHeading) {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shell :global(.homePlayHeading) h1 {
+  margin: 0;
+  color: #edf6ff;
+  font-size: 24px;
+  line-height: 1.2;
+}
+.shell :global(.globalRankingShortcut) {
+  width: auto;
+  margin: 0;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  box-shadow: none;
+  border: 1px solid #375069;
+  border-radius: 12px;
+  background: #142a3e;
+  color: #d9f3fc;
+  font-size: 11px;
+}
+.shell :global(.galacticHelpButton) {
+  min-height: 44px;
+  color: #b8d6e9;
+  text-align: left;
+  font-size: 12px;
+}
+.shell :global(.quickStakeBar) {
+  position: static;
+  border: 1px solid #33475e;
+  background: #101e31;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 6px;
+  gap: 5px;
+}
+.shell :global(.quickStakeBar) button {
+  min-height: 44px;
+  border: 1px solid #3a4d65;
+  border-radius: 9px;
+  background: #17273c;
+  color: #b7cbe0;
+  box-shadow: none;
+}
+.shell :global(.quickStakeBar) button:global(.selected) {
+  background: #a5e8ec;
+  border-color: #a5e8ec;
+  color: #112b37;
+  box-shadow: none;
+}
+.shell :global(.quickStakeBar) button:focus-visible {
+  outline: 3px solid #e5b5ff;
+  outline-offset: 2px;
+}
+.modeHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #c7d8e9;
+  font-size: 12px;
+}
+.modeHeading span {
+  color: #a3b8ce;
+}
+@media (max-width: 360px) {
+  .shell :global(.appHeader) {
+    padding-inline: 10px;
+    gap: 4px;
+  }
+  .shell :global(.logoButton) {
+    font-size: 12px;
+    letter-spacing: 0.01em;
+  }
+  .shell :global(.balanceChip) {
+    font-size: 10px;
+    padding-inline: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell * {
+    scroll-behavior: auto;
+  }
+}
