@@ -24,6 +24,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
   hideHudLabel?: boolean;
+  /** Presentation text refreshed with the common HUD cadence, never authoritative state. */
+  hudLabel?(state: Readonly<S>): string;
   hideHudScore?: boolean;
   failureFinale?: { durationMs: number; render(ctx: CanvasRenderingContext2D, state: S, elapsedMs: number): void };
 };
@@ -50,7 +52,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const feedbackScoreRef = useRef(0);
   const heldRef = useRef(new Set<string>());
   const pointerRef = useRef<{ id: number; origin: CorePoint } | null>(null);
-  const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined });
+  const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined, label: undefined as string | undefined });
 
   useEffect(() => { finishRef.current = props.onFinish; }, [props.onFinish]);
   useEffect(() => {
@@ -152,7 +154,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     }
     stateRef.current = core.create(manifest.seed);
     feedbackScoreRef.current = 0;
-    setHud({tick:0,score:stateRef.current.score,height:stateRef.current.height,lives:stateRef.current.lives});
+    setHud({tick:0,score:stateRef.current.score,height:stateRef.current.height,lives:stateRef.current.lives,label:props.hudLabel?.(stateRef.current)});
     targetRef.current = manifest.competition.target_score;
     epochRef.current = performance.now();
     pendingRef.current = [];
@@ -169,7 +171,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       draw();
       const state = stateRef.current;
       if (state.tick !== lastHudTick && (state.tick - lastHudTick >= core.tickRate / 8 || state.status !== "running")) {
-        setHud({ tick: state.tick, score: state.score, height: state.height, lives: state.lives });
+        setHud({ tick: state.tick, score: state.score, height: state.height, lives: state.lives, label: props.hudLabel?.(state) });
         lastHudTick = state.tick;
       }
       if (state.status !== "running") {
@@ -217,7 +219,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [active, core, attempt.state.status, attempt.manifest?.match_id, attempt.verifyAttempt, sync, draw]);
+  }, [active, core, attempt.state.status, attempt.manifest?.match_id, attempt.verifyAttempt, sync, draw, props.hudLabel]);
 
   useEffect(() => {
     if (active && attempt.state.status === "rejected" && !finishedRef.current) {
@@ -274,7 +276,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         if (action) { event.preventDefault(); heldRef.current.delete(action); send(action); }
       }}
     />
-    <div className="coreHud" aria-live="off">{!props.hideHudLabel && <span>{hud.height !== undefined ? `ALTURA ${hud.height}` : name}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
+    <div className="coreHud" aria-live="off">{!props.hideHudLabel && <span>{hud.label ?? (hud.height !== undefined ? `ALTURA ${hud.height}` : name)}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     <div className="coreHint">{instruction}</div>
     {!!props.controls?.length && <div className="coreControls">{props.controls.map(control => <button key={control.action} type="button" aria-label={control.label}
       onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); if (control.releaseAction) heldRef.current.add(control.releaseAction); send(control.action); }}

@@ -1,3 +1,4 @@
+import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
 import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
 import { SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v1";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
@@ -265,24 +266,24 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "stack-shift",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/StackShift")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/StackShiftVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: STACK_SHIFT_ACTIONS },
     name: "Stack Shift",
     cover: "/covers/stack-shift.svg",
     enabled: true,
     waitingStakes: [10, 50],
     category: "PUZZLE",
     tagline: "Misma secuencia. Construye mejor bajo presión.",
-    difficulty: "ALTA",
+    difficulty: "MEDIA",
     skillLabel: "ESPACIO + VELOCIDAD",
-    rivalScore: 7400,
+    rivalScore: 16000,
     rivalName: "STACK",
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Mueve, gira y baja piezas. Ambos reciben la misma secuencia exacta.",
     scoring: "Completa filas y evita alcanzar la parte superior.",
-    deterministicSeed: "stack-shift-arena-001",
+
   },
   {
     id: "maze-rush",
