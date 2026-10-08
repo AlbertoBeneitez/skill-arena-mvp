@@ -1,3 +1,4 @@
+import { BILLIARDS_ACTIONS } from "./verified/billiardsProtocol.v1";
 import { ORB_ACTIONS } from "./verified/orbBurstProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
@@ -73,6 +74,12 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
+  {
+    id: "billiards", version: "1.0.0", status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/Billiards")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BILLIARDS_ACTIONS },
+    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 22000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Arrastra para apuntar. Elige potencia y toca TIRAR.", scoring: "Emboca las bolas de color. Cinco mesas, siete tiros por mesa; la blanca resta puntos.",
+  },
   {
     id: "tower-drop",
     version: "3.0.0",
@@ -482,6 +489,7 @@ export const GAME_REGISTRY = Object.fromEntries(
 ) as unknown as Record<GameId, GameMeta>;
 
 const CATALOG_ORDER: GameId[] = [
+  "billiards",
   "precision-stack",
   "tower-drop",
   "jet-stream",

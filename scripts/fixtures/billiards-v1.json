@@ -1,0 +1,153 @@
+{
+  "seed": "16410a89f295ab4e7b766e7fdf883b762d82724a4a73de3ca7ce60b754aea163",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 1,
+      "tick": 230,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 2,
+      "tick": 382,
+      "action": "AIM_001"
+    },
+    {
+      "seq": 3,
+      "tick": 383,
+      "action": "POWER_HIGH"
+    },
+    {
+      "seq": 4,
+      "tick": 384,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 5,
+      "tick": 997,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 6,
+      "tick": 1155,
+      "action": "AIM_134"
+    },
+    {
+      "seq": 7,
+      "tick": 1156,
+      "action": "POWER_HIGH"
+    },
+    {
+      "seq": 8,
+      "tick": 1157,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 9,
+      "tick": 1619,
+      "action": "AIM_034"
+    },
+    {
+      "seq": 10,
+      "tick": 1620,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 11,
+      "tick": 2071,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 12,
+      "tick": 2223,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 13,
+      "tick": 2224,
+      "action": "POWER_HIGH"
+    },
+    {
+      "seq": 14,
+      "tick": 2225,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 15,
+      "tick": 2575,
+      "action": "AIM_109"
+    },
+    {
+      "seq": 16,
+      "tick": 2576,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 17,
+      "tick": 3109,
+      "action": "AIM_082"
+    },
+    {
+      "seq": 18,
+      "tick": 3110,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 19,
+      "tick": 3633,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 20,
+      "tick": 3790,
+      "action": "AIM_136"
+    },
+    {
+      "seq": 21,
+      "tick": 3791,
+      "action": "POWER_HIGH"
+    },
+    {
+      "seq": 22,
+      "tick": 3792,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 23,
+      "tick": 4256,
+      "action": "AIM_072"
+    },
+    {
+      "seq": 24,
+      "tick": 4257,
+      "action": "POWER_MEDIUM"
+    },
+    {
+      "seq": 25,
+      "tick": 4258,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 26,
+      "tick": 4670,
+      "action": "AIM_051"
+    },
+    {
+      "seq": 27,
+      "tick": 4671,
+      "action": "POWER_HIGH"
+    },
+    {
+      "seq": 28,
+      "tick": 4672,
+      "action": "SHOOT"
+    }
+  ],
+  "finalTick": 5224,
+  "score": 21730,
+  "hash": "sha256:1e6c6c052ce51f767bb3eee9281bd5f44f7ff104ab5fdb2c06981bbd8681db61"
+}
