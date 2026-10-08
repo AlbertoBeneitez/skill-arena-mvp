@@ -2,6 +2,7 @@ import type { Pool, QueryResultRow } from "pg";
 import {
   isRankingPage,
   validMinorAmount,
+  validRankingAvatar,
   type RankingEntry,
   type RankingPage,
 } from "../ranking";
@@ -23,6 +24,7 @@ type Row = QueryResultRow & {
   display_name: string;
   net_profit_minor: string;
   position: string;
+  avatar_key?: string | null;
 };
 const identifier = (value: unknown): value is string =>
   typeof value === "string" && /^[A-Za-z0-9_-]{1,100}$/.test(value);
@@ -49,6 +51,7 @@ function entry(row: Row): RankingEntry {
     playerId: row.player_id,
     playerName: row.display_name,
     netProfitMinor: row.net_profit_minor,
+    ...(row.avatar_key != null ? { avatarKey: row.avatar_key } : {}),
   };
   if (
     !identifier(mapped.playerId) ||
@@ -57,14 +60,16 @@ function entry(row: Row): RankingEntry {
     typeof mapped.playerName !== "string" ||
     !mapped.playerName.trim() ||
     mapped.playerName.length > 80 ||
+    (mapped.avatarKey !== undefined && !validRankingAvatar(mapped.avatarKey)) ||
     !validMinorAmount(mapped.netProfitMinor)
   )
     throw new RankingRepositoryError("CORRUPT_RANKING");
   return mapped;
 }
 const rankedSql = `SELECT position::text AS position,
- player_id,display_name,net_profit_minor::text AS net_profit_minor
- FROM skill_arena_global_profit_ranking WHERE snapshot_id=$1 AND currency='EUR'`;
+ player_id,display_name,net_profit_minor::text AS net_profit_minor,
+ to_jsonb(public_row)->>'avatar_key' AS avatar_key
+ FROM skill_arena_global_profit_ranking AS public_row WHERE snapshot_id=$1 AND currency='EUR'`;
 
 /** Read-only adapter. The view must contain immutable snapshots of settled real ledger data. */
 export class PostgresRankingRepository implements RankingRepository {

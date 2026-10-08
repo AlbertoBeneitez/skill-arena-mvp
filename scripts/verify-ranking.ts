@@ -80,3 +80,22 @@ try {
 console.log(
   "Ranking contract: exact cents, limits, pagination, source isolation and unavailable production passed",
 );
+
+const avatarPage = readDemoRankingPage(1);
+assert.equal(isRankingPage(avatarPage, "demo"), true);
+for (const avatarKey of [
+  "avatar-0",
+  "avatar-9",
+  "https://tracker.invalid/a",
+  "../avatar-1",
+  null,
+  7,
+]) {
+  assert.equal(
+    isRankingPage(
+      { ...avatarPage, entries: [{ ...avatarPage.entries[0], avatarKey }] },
+      "demo",
+    ),
+    false,
+  );
+}

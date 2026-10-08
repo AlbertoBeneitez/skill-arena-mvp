@@ -37,3 +37,9 @@ Target indexes on the underlying read model: (currency, as_of DESC, snapshot_id)
 ## Local tests
 
 PostgreSQL tests create only an owned schema in a loopback database named skill_arena_test. Explicitly fictional fixtures verify SQL sorting, equal profits, bigint precision, cursor continuity after a new snapshot, EUR filtering, personal-position lookup and corrupt/invalid data. They drop only their owned schema. Existing match-repository tests remain part of CI. No SQLite production path or provider-specific auth/payment/KYC adapter is added.
+
+## Avatares y posición propia (v38)
+
+El read model puede añadir `avatar_key` nullable con valores `avatar-1`..`avatar-8`, assets originales locales. La lectura es compatible con una vista anterior que no tenga esa columna; null/missing produce monograma de nombre. El contrato público añade `avatarKey` opcional y rechaza keys inválidas/URLs externas. No se ejecuta una migración de producción ni se consulta una tabla privada de identidad. El publicador de snapshots debe aplicar el mismo consentimiento de publicación y mantener metadata coherente con el snapshot. No admite tracking de imágenes de terceros.
+
+Top jugadores usa las primeras tres filas del snapshot de la primera página, sin otro dataset o beneficio calculado en cliente. `findPlayerPosition` ya existe como puerto de servidor; conectar esa operación al actor autenticado sigue pendiente. La UI no asocia el perfil demo a un jugador real ni inventa su posición.

@@ -1,4 +1,5 @@
 "use client";
+import RankingAvatar from "./RankingAvatar";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import { useEffect, useState } from "react";
 import {
@@ -147,6 +148,26 @@ export default function GlobalRanking() {
       )}
       {visible.status === "ready" && page && (
         <>
+          {!cursor && page.entries.length > 0 && (
+            <section className="rankingLeaders" aria-label="Top jugadores">
+              <h2>Top jugadores{source === "demo" ? " · demo" : ""}</h2>
+              <div>
+                {page.entries.slice(0, 3).map((row) => (
+                  <article key={row.playerId}>
+                    <span className="rankingLeaderPosition">
+                      #{row.position}
+                    </span>
+                    <RankingAvatar
+                      name={row.playerName}
+                      avatarKey={row.avatarKey}
+                    />
+                    <strong title={row.playerName}>{row.playerName}</strong>
+                    <span>{formatNetProfit(row.netProfitMinor)}</span>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
           {page.entries.length === 0 ? (
             <p role="status">Aún no hay jugadores en este ranking.</p>
           ) : (
@@ -169,7 +190,13 @@ export default function GlobalRanking() {
                     <tr key={row.playerId}>
                       <td>#{row.position}</td>
                       <td>
-                        <span title={row.playerName}>{row.playerName}</span>
+                        <span className="rankingPlayer">
+                          <RankingAvatar
+                            name={row.playerName}
+                            avatarKey={row.avatarKey}
+                          />
+                          <span title={row.playerName}>{row.playerName}</span>
+                        </span>
                       </td>
                       <td
                         className={
@@ -213,14 +240,21 @@ export default function GlobalRanking() {
           </nav>
           {source === "server" && page.asOf && (
             <p className="rankingTimestamp">
-              Actualizado: {new Date(page.asOf).toLocaleString("es-ES")}
+              Actualizado:{" "}
+              {new Date(page.asOf).toLocaleString("es-ES", {
+                timeZone: "Europe/Madrid",
+              })}
             </p>
           )}
         </>
       )}
-      <p className="rankingAccountNote">
-        Tu cuenta de demostración todavía no tiene una posición real.
-      </p>
+      <section className="rankingOwnPosition" aria-label="Tu posición">
+        <h2>Tu posición</h2>
+        <p>
+          Tu cuenta de demostración todavía no tiene una posición real.
+          Aparecerá aquí al conectar identidad autenticada y resultados reales.
+        </p>
+      </section>
     </section>
   );
 }

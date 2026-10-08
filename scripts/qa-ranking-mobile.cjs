@@ -66,6 +66,18 @@ const assert = require("node:assert/strict");
       .innerText(),
     "#1",
   );
+  assert.equal(
+    await page.locator(".rankingTable .rankingAvatar img").count(),
+    25,
+  );
+  assert.equal(await page.locator(".rankingLeaders article").count(), 3);
+  assert.ok(
+    (await page.locator(".rankingOwnPosition").innerText()).includes(
+      "todavía no tiene una posición real",
+    ),
+  );
+  if (process.env.QA_SCREENSHOT)
+    await page.screenshot({ path: process.env.QA_SCREENSHOT });
   await page.getByRole("button", { name: "Siguiente", exact: true }).tap();
   await page.getByText("#26", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Siguiente", exact: true }).tap();
@@ -109,7 +121,10 @@ const assert = require("node:assert/strict");
   assert.equal(await page.locator(".rankingTable").count(), 0);
   await page.setViewportSize({ width: 844, height: 390 });
   await page.getByRole("button", { name: "Ver demo", exact: true }).tap();
-  await page.getByText("#1", { exact: true }).waitFor();
+  await page
+    .locator(".rankingTable")
+    .getByText("#1", { exact: true })
+    .waitFor();
   assert.equal(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

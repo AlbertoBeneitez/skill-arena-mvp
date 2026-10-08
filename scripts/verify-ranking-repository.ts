@@ -144,6 +144,33 @@ try {
     () => repository.readGlobalNetProfit({ limit: 2, cursor: null }),
     (e) => e instanceof RankingRepositoryError && e.code === "CORRUPT_RANKING",
   );
+  // Optional avatar metadata is backwards compatible with the original public view.
+  await pool.query(
+    "UPDATE ranking_fixture SET display_name='Fixture new' WHERE player_id='p-new'",
+  );
+  await pool.query("ALTER TABLE ranking_fixture ADD COLUMN avatar_key text");
+  await pool.query(`DROP VIEW skill_arena_global_profit_ranking;
+   CREATE VIEW skill_arena_global_profit_ranking AS SELECT *,row_number() OVER(PARTITION BY snapshot_id,currency ORDER BY net_profit_minor DESC,player_id COLLATE "C" ASC)::bigint AS position FROM ranking_fixture`);
+  await pool.query(
+    "UPDATE ranking_fixture SET avatar_key='avatar-3' WHERE player_id='p-new'",
+  );
+  assert.equal(
+    (await repository.readGlobalNetProfit({ limit: 2, cursor: null }))
+      .entries[0].avatarKey,
+    "avatar-3",
+  );
+  assert.equal(
+    (await repository.findPlayerPosition("p-new"))?.avatarKey,
+    "avatar-3",
+  );
+  await pool.query(
+    "UPDATE ranking_fixture SET avatar_key=$1 WHERE player_id='p-new'",
+    ["https://tracker.invalid/avatar"],
+  );
+  await assert.rejects(
+    () => repository.readGlobalNetProfit({ limit: 2, cursor: null }),
+    (e) => e instanceof RankingRepositoryError && e.code === "CORRUPT_RANKING",
+  );
   console.log(
     "PostgreSQL ranking: exact bigint ordering/ties, immutable-cursor pages, currency separation, player position and invalid data passed",
   );

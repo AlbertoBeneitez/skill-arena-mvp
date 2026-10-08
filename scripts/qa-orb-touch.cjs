@@ -170,6 +170,25 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(result.authoritative_source, "SERVER_REPLAY");
     assert.equal(payload.inputs.filter((i) => i.action === "SHOOT").length, 1);
     assert.equal(submits, 1);
+    await page.locator(".gameResultSummary").waitFor({ state: "visible" });
+    await page
+      .getByRole("heading", { name: "Reto superado", exact: true })
+      .waitFor();
+    await page.waitForFunction(
+      () => JSON.parse(localStorage.getItem("skill-arena-v12")).wins === 1,
+    );
+    assert.equal(
+      await page
+        .getByLabel("Puntuación del intento", { exact: true })
+        .innerText(),
+      result.score.toLocaleString("es-ES"),
+    );
+    assert.equal(await page.getByText("MEJOR QUE", { exact: true }).count(), 0);
+    assert.ok(
+      (await page.locator(".resultSourceBadge").innerText()).includes(
+        "REPLAY DE SERVIDOR",
+      ),
+    );
     const replay = replayCore(
       core,
       payload.inputs,
@@ -184,6 +203,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     console.log(
       JSON.stringify({ changed, result, inputs: payload.inputs, errors }),
     );
+    if (process.env.QA_RESULT_SCREENSHOT)
+      await page.screenshot({ path: process.env.QA_RESULT_SCREENSHOT });
     await page.getByRole("button", { name: "OTRO JUEGO", exact: true }).click();
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),

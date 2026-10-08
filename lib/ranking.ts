@@ -4,6 +4,8 @@ export type RankingEntry = Readonly<{
   playerId: string;
   playerName: string;
   netProfitMinor: string;
+  /** Optional original local avatar, never a third-party tracking URL. */
+  avatarKey?: string;
 }>;
 export type RankingPage = Readonly<{
   source: "server" | "demo";
@@ -14,6 +16,9 @@ export type RankingPage = Readonly<{
   entries: readonly RankingEntry[];
   nextCursor: string | null;
 }>;
+export function validRankingAvatar(value: unknown): value is string {
+  return typeof value === "string" && /^avatar-[1-8]$/.test(value);
+}
 export const RANKING_PAGE_LIMIT = 25;
 export const RANKING_MAX_LIMIT = 100;
 export function validMinorAmount(value: unknown): value is string {
@@ -81,6 +86,7 @@ export function isRankingPage(
       typeof row.playerName !== "string" ||
       !row.playerName.trim() ||
       row.playerName.length > 80 ||
+      (row.avatarKey !== undefined && !validRankingAvatar(row.avatarKey)) ||
       !validMinorAmount(row.netProfitMinor)
     )
       return false;

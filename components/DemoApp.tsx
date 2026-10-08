@@ -1,4 +1,5 @@
 "use client";
+import GameResultSummary from "./GameResultSummary";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import GalacticMark from "./GalacticMark";
@@ -52,13 +53,6 @@ const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
 
 function euro(value: number) {
   return `${value.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
-}
-
-function demoPercentile(score: number, benchmark: number) {
-  if (score <= 0) return 1;
-  const ratio = score / Math.max(1, benchmark);
-  const percentile = Math.round(100 / (1 + Math.exp(-3.2 * (ratio - 0.78))));
-  return Math.max(1, Math.min(99, percentile));
 }
 
 function totalCompetitionStages(
@@ -248,6 +242,7 @@ export default function DemoApp() {
   const [activeGame, setActiveGame] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const [result, setResult] = useState<GameResult | null>(null);
+  const [attemptSummary, setAttemptSummary] = useState<GameResult | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
@@ -489,6 +484,7 @@ export default function DemoApp() {
       setActiveGame(false);
       setCountdown(null);
       setResult(null);
+      setAttemptSummary(null);
       setTutorialOpen(false);
       setScreen(isScreen(target) ? target : onboarded ? "home" : "welcome");
     };
@@ -566,6 +562,7 @@ export default function DemoApp() {
     setActiveGame(false);
     setCountdown(null);
     setResult(null);
+    setAttemptSummary(null);
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
     navigate(matchScope === "group" ? "group" : "home", true);
@@ -723,6 +720,7 @@ export default function DemoApp() {
     }
 
     setResult(null);
+    setAttemptSummary(null);
     setActiveGame(false);
     setGameKey((k) => k + 1);
     setCountdown(3);
@@ -762,16 +760,20 @@ export default function DemoApp() {
       return;
     }
 
+    setAttemptSummary(gameResult);
+
     const replyAttempt =
       matchScope === "duel" &&
       (selectedMode === "existing" || selectedMode === "waiting");
 
     const didWin =
-      matchScope === "group"
-        ? gameResult.won || gameResult.score >= matchTargetScore
-        : replyAttempt
+      selectedStake === 0
+        ? gameResult.won
+        : matchScope === "group"
           ? gameResult.won || gameResult.score >= matchTargetScore
-          : false;
+          : replyAttempt
+            ? gameResult.won || gameResult.score >= matchTargetScore
+            : false;
     const resolvedResult = { ...gameResult, won: didWin };
     if (didWin) setShowWinAnimation(true);
     setResult(resolvedResult);
@@ -957,6 +959,7 @@ export default function DemoApp() {
     }
 
     setResult(null);
+    setAttemptSummary(null);
     setActiveGame(false);
     setGameKey((key) => key + 1);
     setCountdown(3);
@@ -1343,8 +1346,8 @@ export default function DemoApp() {
                     <i /><i /><i /><i /><i /><i /><i /><i />
                   </div>
                   <span>🏆</span>
-                  <strong>VICTORIA</strong>
-                  <small>HAS SUPERADO LA MARCA</small>
+                  <strong>RETO SUPERADO</strong>
+                  <small>BUEN TRABAJO</small>
                 </div>
               )}
               {countdown !== null && (
@@ -1383,11 +1386,7 @@ export default function DemoApp() {
                   </>
                 ) : (
                   <>
-                    <div className="demoPercentileBlock resultOnlyPercentile">
-                      <span>MEJOR QUE</span>
-                      <strong>{demoPercentile(result.score, matchTargetScore)}%</strong>
-                      <small>DE LOS INTENTOS DEMO</small>
-                    </div>
+                    <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} waitingForRival={selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
                   </>
                 )}
                 <div className="resultActions">
