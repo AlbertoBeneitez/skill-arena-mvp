@@ -46,7 +46,9 @@
     "scripts/verify-metro-v1.ts",
     "scripts/metro-play-fixture.ts",
     "scripts/verify-brick-v1.ts",
-    "scripts/brick-play-fixture.ts"
+    "scripts/brick-play-fixture.ts",
+    "scripts/verify-maze-v1.ts",
+    "scripts/maze-play-fixture.ts"
   ],
   "exclude": [
     "node_modules",

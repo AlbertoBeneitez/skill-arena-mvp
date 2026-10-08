@@ -9,6 +9,7 @@ const causes: Readonly<Record<string, string>> = {
   BOARD_OVERFLOW: "Los orbes han alcanzado la línea límite.",
   SELF_COLLISION: "La cabeza ha tocado tu propio recorrido.",
   AIM_TIMEOUT: "Se agotó el tiempo para preparar el tiro.",
+  PURSUER_COLLISION: "Se agotaron los escudos. Anticipa los giros y usa los pulsos verdes para protegerte.",
   BALL_LOST: "Se agotaron las vidas. Anticipa el regreso y orienta el rebote con los bordes de la pala.",
   FALLEN: "Se agotaron las recuperaciones. Anticipa el siguiente apoyo y usa las balizas.",
   TIME_LIMIT: "Has llegado al límite de tiempo del reto.",

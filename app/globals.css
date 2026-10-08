@@ -6052,3 +6052,17 @@ html, body {
  .metroShiftVerified .coreControls button,.metroShiftVerified .coreControls button:nth-child(2) {width:70px;height:44px;min-height:44px;}
  .metroShiftVerified .coreHint {left:12px;right:112px;bottom:7px;}
 }
+
+/* Maze controls remain outside the visible board in both orientations. */
+.mazeRushVerified {width:100%;height:100%;}
+.mazeRushVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 104px) !important;}
+.mazeRushVerified .coreControls {bottom:38px;gap:6px;}
+.mazeRushVerified .coreControls button {width:52px;height:50px;min-height:50px;-webkit-tap-highlight-color:transparent;}
+.mazeRushVerified .coreHint {bottom:12px;font-size:11px;}
+.mazeRushVerified .coreHud {font-size:11px;}
+@media (orientation:landscape) and (max-height:600px) {
+ .mazeRushVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 96px) !important;height:100% !important;}
+ .mazeRushVerified .coreControls {left:auto;right:14px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:5px;}
+ .mazeRushVerified .coreControls button {width:64px;height:44px;min-height:44px;}
+ .mazeRushVerified .coreHint {display:none;}
+}

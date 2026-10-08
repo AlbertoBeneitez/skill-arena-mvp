@@ -1,3 +1,4 @@
+import { MAZE_ACTIONS } from "./verified/mazeRushProtocol.v1";
 import { BRICK_ACTIONS } from "./verified/brickRelayProtocol.v1";
 import { METRO_ACTIONS } from "./verified/metroShiftProtocol.v1";
 import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
@@ -290,10 +291,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "maze-rush",
-    version: "0.1.0",
-    status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/MazeRush")),
-    competition: { verification: "client-result" },
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/MazeRushVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: MAZE_ACTIONS },
     name: "Maze Rush",
     cover: "/covers/maze-rush.svg",
     enabled: true,
@@ -302,12 +303,11 @@ const GAME_DEFINITIONS = [
     tagline: "Mismo laberinto. Mejor ruta y mejores reflejos.",
     difficulty: "ALTA",
     skillLabel: "RUTA + REACCIÓN",
-    rivalScore: 7800,
+    rivalScore: 26000,
     rivalName: "ECHO",
     rivalAvatar: "/avatars/avatar-6.svg",
     instruction: "Desliza o usa la cruceta. Recoge nodos y evita a los perseguidores.",
-    scoring: "Todos reciben el mismo mapa y el mismo patrón de perseguidores.",
-    deterministicSeed: "maze-rush-arena-001",
+    scoring: "Tres sectores conectados, nodos únicos, pulsos y tres escudos; replay de servidor.",
   },
   {
     id: "star-phalanx",
