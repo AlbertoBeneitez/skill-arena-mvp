@@ -1,3 +1,4 @@
+import { JET_STREAM_CORE_V3 } from "../verified/jetStreamCore.v3";
 import { ALIEN_DASH_CORE } from "../verified/alienDashCore.v2";
 import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
@@ -350,6 +351,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(JET_STREAM_CORE_V3.gameId, JET_STREAM_CORE_V3.gameVersion)]: coreAdapter(JET_STREAM_CORE_V3),
   [adapterKey(ALIEN_DASH_CORE.gameId, ALIEN_DASH_CORE.gameVersion)]: coreAdapter(ALIEN_DASH_CORE),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),

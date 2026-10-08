@@ -60,7 +60,7 @@ const assert = require("node:assert/strict");
     .getByRole("button", { name: "Jugar a Jet Stream", exact: true })
     .click();
   const manifest = await (await start).json();
-  assert.equal(manifest.manifest.game_version, "2.0.0");
+  assert.equal(manifest.manifest.game_version, process.env.QA_GAME_VERSION || "3.0.0");
   await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
   await page.waitForTimeout(1200);
   const cancel = Boolean(process.env.QA_CANCEL_FINALE);

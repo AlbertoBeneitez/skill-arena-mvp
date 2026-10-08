@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento tras v39-mobile
+# GALACTIC GAMES · Seguimiento tras v40-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -6,7 +6,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | --- | --- | --- |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles | QA humana y pulido según prueba real |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor | QA humana |
-| Jet Stream | Anchuras, dobles pasos, vidas, replay, explosión y finalización única | Opening demasiado severo sin flap; progresión/enseñanza adicional |
+| Jet Stream | v40: V3, despegue asistido, apertura amplia, vuelo suave y progresión; V1/V2/replay/explosión preservados | QA humana física |
 | Alien Dash | v39: V2, plataformas, centinelas anticipados, recogibles, escudos, dos minutos, replay y QA táctil | QA humana física y pulido según prueba real |
 | Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | QA humana física |
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | QA humana física |
