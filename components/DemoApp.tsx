@@ -236,6 +236,7 @@ export default function DemoApp() {
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [selectedGame, setSelectedGame] = useState<GameMeta>(GAMES[0]);
+  const resultPointerReadyRef = useRef(false);
   const [selectedStake, setSelectedStake] = useState<number>(0);
   const [selectedMode, setSelectedMode] = useState<MatchMode>("create");
   const [ghostEnabled, setGhostEnabled] = useState(true);
@@ -776,6 +777,7 @@ export default function DemoApp() {
             : false;
     const resolvedResult = { ...gameResult, won: didWin };
     if (didWin) setShowWinAnimation(true);
+    resultPointerReadyRef.current = false;
     setResult(resolvedResult);
 
     const inGroupCompetition =
@@ -1377,7 +1379,19 @@ export default function DemoApp() {
             )}
 
             {result && (
-              <div className="resultPanel premiumResult neutralResult">
+              <div className="resultPanel premiumResult neutralResult"
+                onPointerDownCapture={() => { resultPointerReadyRef.current = true; }}
+                onPointerCancelCapture={() => { resultPointerReadyRef.current = false; }}
+                onClickCapture={event => {
+                  // A held game gesture must not click through to a newly shown
+                  // result action. Keyboard/assistive clicks (detail 0) still work.
+                  if (event.detail !== 0 && !resultPointerReadyRef.current) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }
+                  resultPointerReadyRef.current = false;
+                }}
+              >
                 {result.verified === false ? (
                   <>
                     <div className="resultIcon">⚠</div>
