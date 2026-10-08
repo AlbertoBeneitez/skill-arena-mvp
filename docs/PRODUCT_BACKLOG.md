@@ -115,7 +115,7 @@ New product additions from the latest owner request:
 Current completed units: 2048 retirement (v19); shared client lifecycle and Alien/Solitaire space visuals (v20); Stack V3 perpendicular geometry (v21); Tower V3 swing (v22); Jet V2 windows/lives (v23); Serpent wrap/core (v24); River V1 motion (v25); Orb launch bug (v26); River V2 novice opening/progression (v27); Pulse retirement (v28); Tower composition and Jet terminal feedback (v29); Stack camera/shadows/axis clarity (v30); honest global net-profit ranking preparation (v31); Orb V1 authoritative core, sector progression, original presentation and touch regression (v32). These are unit completions, not blanket claims that every game is commercially frozen.
 
 The current completion/partial-work ledger is [PRODUCT_BACKLOG_STATUS.md](PRODUCT_BACKLOG_STATUS.md).
-It includes the validated v33–v47 units without repeating their implementation
+It includes the validated v33–v48 units without repeating their implementation
 records here. Sky Hop Y1–Y3 are implemented in v44 with a new integer core,
 server replay, bounded progressive platforms, checkpoints and touch QA.
 v45 adds registry-derived searchable game discovery, readable instructions and
@@ -124,6 +124,8 @@ Metro Shift M1–M3 follow in v46 using the same runtime and server verifier,
 with a seeded 60-group course and three progressive sectors.
 Brick Relay E1–E3 follow in v47 with four progressive sectors, directed rebounds,
 three lives, armored/blast/moving bricks, authoritative replay and full touch QA.
+v48 improves local-demo account readability, explicit fictitious money/actions,
+empty states and information sections; the profit chart now aligns zero correctly.
 Continue only with outstanding rows in that ledger. Human physical-device QA
 and unconfigured production identity/ledger integration remain explicit limits.
 

@@ -611,15 +611,12 @@ export default function DemoApp() {
     (groupCompetition.type !== "tournament" || result?.won === true);
 
   const chartPoints = useMemo(() => {
-    if (earnings.length === 1) return "0,74 100,74";
-    const values = earnings.map((p) => p.value);
-    const min = Math.min(...values, 0);
-    const max = Math.max(...values, 0);
-    const span = Math.max(1, max - min);
+    if (earnings.length < 2) return "0,50 100,50";
+    const extent = Math.max(1, ...earnings.map((point) => Math.abs(point.value)));
     return earnings
       .map((point, index) => {
         const x = (index / (earnings.length - 1)) * 100;
-        const y = 92 - ((point.value - min) / span) * 76;
+        const y = 50 - (point.value / extent) * 40;
         return `${x.toFixed(2)},${y.toFixed(2)}`;
       })
       .join(" ");
@@ -1410,29 +1407,31 @@ export default function DemoApp() {
         )}
 
         {screen === "profile" && (
-          <section className="simpleScreen">
-            <div className="screenTop"><span>{playerName || "PERFIL"}</span></div>
+          <section className={`simpleScreen ${shellStyles.accountView}`} aria-label="Perfil demo">
+            <h1>Tu perfil</h1>
+            <p className={shellStyles.demoNote}>Identidad local · saldo y premios ficticios</p>
             <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>Cuenta demo · sin posición real</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 
             <section className="accountWalletCard">
               <div>
-                <small>SALDO</small>
+                <small>SALDO DEMO</small>
                 <strong>{euro(balance)}</strong>
               </div>
               <div className="walletActions">
                 <button onClick={() => {
                   setBalance((b) => b + 10);
                   setMovements((m) => [{ label: "Ingreso demo", amount: 10 }, ...m]);
-                }}>INGRESAR</button>
+                }}>Añadir 10 € demo</button>
                 <button
                   disabled={balance < 10}
                   onClick={() => {
                     setBalance((b) => Number((b - 10).toFixed(2)));
                     setMovements((m) => [{ label: "Retirada demo", amount: -10 }, ...m]);
                   }}
-                >RETIRAR</button>
+                >Retirar 10 € demo</button>
               </div>
-              <div className="miniMovementList">
+              <div className="miniMovementList" aria-live="polite">
+                {movements.length === 0 && <p className={shellStyles.emptyNote}>Todavía no hay movimientos. Este saldo solo sirve para probar partidas demo.</p>}
                 {movements.slice(0, 3).map((movement, index) => (
                   <div key={`${movement.label}-${index}`}>
                     <span>{movement.label}</span>
@@ -1445,37 +1444,55 @@ export default function DemoApp() {
             </section>
 
             <div className="chartPanel">
-              <div className="chartHead"><span>DINERO GANADO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
-              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Dinero ganado en función del tiempo">
+              <div className="chartHead"><span>BENEFICIO NETO DEMO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
+              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Beneficio neto de partidas demo a lo largo del tiempo">
                 <line x1="0" y1="50" x2="100" y2="50" className="zeroLine" />
                 <polyline points={chartPoints} className="profitLine" />
               </svg>
               <div className="chartAxis"><span>INICIO</span><span>AHORA</span></div>
             </div>
             <div className="settingsList">
-              <button onClick={() => setMusicOn((v) => !v)}><span>SONIDO</span><b>{musicOn ? "ON" : "OFF"}</b></button>
-              <button onClick={() => { setAvatarEditorOpen(true); setAvatarError(""); navigate("avatar-setup"); }}><span>CAMBIAR NOMBRE / AVATAR</span><b>→</b></button>
-              <button onClick={resetAvatar}><span>RESETEAR AVATAR</span><b>0 €</b></button>
-              <button onClick={() => navigate("legal")}><span>LEGAL</span><b>→</b></button>
-              <button onClick={logoutDemo}><span>CERRAR SESIÓN DEMO</span><b>×</b></button>
+              <button aria-pressed={musicOn} onClick={() => setMusicOn((v) => !v)}><span>Sonido</span><b>{musicOn ? "ON" : "OFF"}</b></button>
+              <button onClick={() => { setAvatarEditorOpen(true); setAvatarError(""); navigate("avatar-setup"); }}><span>Nombre y avatar</span><b>→</b></button>
+              <button onClick={resetAvatar}><span>Reiniciar perfil demo</span><b aria-hidden="true">↺</b></button>
+              <button onClick={() => navigate("legal")}><span>Información de la demo</span><b aria-hidden="true">→</b></button>
+              <button onClick={logoutDemo}><span>Cerrar sesión demo</span><b>×</b></button>
             </div>
-            <p className="resetNote">Resetear avatar reinicia las estadísticas de demostración. El saldo demo no se borra.</p>
+            <p className="resetNote">Reiniciar perfil cambia tu nombre y avatar y borra las estadísticas demo. Conserva el saldo y los movimientos. Cerrar sesión elimina el perfil local y vuelve a la entrada.</p>
           </section>
         )}
 
         {screen === "legal" && (
-          <section className="simpleScreen">
-            <div className="screenTop"><button className="textBack" onClick={() => window.history.back()}>← {playerName || "PERFIL"}</button><span>LEGAL</span></div>
+          <section className={`simpleScreen ${shellStyles.legalView}`}>
+            <button className="textBack" aria-label="Volver al perfil" onClick={() => navigate("profile")}>← Tu perfil</button>
+            <h1>Información de la demo</h1>
+            <p className={shellStyles.demoNote}>GALACTIC GAMES · sin dinero real</p>
             <div className="legalTabs">
-              <button className={legalTab === "terms" ? "active" : ""} onClick={() => setLegalTab("terms")}>TÉRMINOS</button>
-              <button className={legalTab === "privacy" ? "active" : ""} onClick={() => setLegalTab("privacy")}>PRIVACIDAD</button>
-              <button className={legalTab === "cookies" ? "active" : ""} onClick={() => setLegalTab("cookies")}>COOKIES</button>
-              <button className={legalTab === "rules" ? "active" : ""} onClick={() => setLegalTab("rules")}>REGLAS</button>
+              <button aria-pressed={legalTab === "terms"} className={legalTab === "terms" ? "active" : ""} onClick={() => setLegalTab("terms")}>Términos</button>
+              <button aria-pressed={legalTab === "privacy"} className={legalTab === "privacy" ? "active" : ""} onClick={() => setLegalTab("privacy")}>Privacidad</button>
+              <button aria-pressed={legalTab === "cookies"} className={legalTab === "cookies" ? "active" : ""} onClick={() => setLegalTab("cookies")}>Cookies</button>
+              <button aria-pressed={legalTab === "rules"} className={legalTab === "rules" ? "active" : ""} onClick={() => setLegalTab("rules")}>Reglas</button>
             </div>
             <article className="legalCopy">
               <h2>{legalTab === "terms" ? "Términos y condiciones" : legalTab === "privacy" ? "Privacidad" : legalTab === "cookies" ? "Cookies" : "Reglas de competición"}</h2>
-              <p>Contenido de demostración. Antes de operar con dinero real esta sección deberá sustituirse por documentación jurídica revisada y aplicable al servicio definitivo.</p>
-              <p>La arquitectura reserva esta pantalla para que las condiciones sean accesibles desde la aplicación móvil sin depender de una web externa.</p>
+              {legalTab === "terms" && <>
+                <p>Esta versión permite entrenar y probar partidas con saldo ficticio. Añadir o retirar saldo demo no mueve dinero real ni genera pagos.</p>
+                <p>La competición con dinero real no está disponible. Esta información describe la demo; no sustituye los términos jurídicos revisados que necesitará el servicio definitivo.</p>
+              </>}
+              {legalTab === "privacy" && <>
+                <p>Tu nombre, avatar, preferencias y estadísticas demo se guardan en este navegador. Las partidas verificadas envían sus inputs al servidor para reconstruir el resultado.</p>
+                <p>La demo no solicita documentos de identidad ni datos de pago. Cerrar sesión elimina el perfil local de este navegador; no equivale a una solicitud de borrado de registros del servidor.</p>
+                <p>Antes de crear cuentas reales, se publicarán la política de privacidad, los plazos de conservación y los medios para ejercer tus derechos.</p>
+              </>}
+              {legalTab === "cookies" && <>
+                <p>La aplicación utiliza almacenamiento local del navegador para recordar el perfil demo y las preferencias. Si lo borras, tendrás que configurar la entrada de nuevo.</p>
+                <p>La información definitiva sobre cookies y servicios de alojamiento estará disponible antes de activar cuentas reales. Esta demo no presenta un consentimiento de producción.</p>
+              </>}
+              {legalTab === "rules" && <>
+                <p>Entrenamiento gratis te permite aprender cada juego sin usar saldo demo. Las otras modalidades utilizan importes y resultados de demostración.</p>
+                <p>En juegos con verificación, el servidor reconstruye la partida a partir del escenario y los inputs y calcula el resultado. Si la verificación falla, no se confirma una victoria.</p>
+                <p>El ranking demo es una muestra independiente: sus jugadores y beneficios son ficticios. El ranking real solo mostrará datos de servidor cuando el servicio esté configurado.</p>
+              </>}
             </article>
           </section>
         )}

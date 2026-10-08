@@ -153,3 +153,144 @@
     scroll-behavior: auto;
   }
 }
+
+/* Account/legal remain local-demo presentation, never production identity. */
+.accountView h1,
+.legalView h1 {
+  font-size: 25px;
+  line-height: 1.2;
+  margin: 4px 0 8px;
+}
+.demoNote,
+.emptyNote {
+  font:
+    13px/1.5 system-ui,
+    sans-serif;
+  color: #b3c7db;
+  margin: 0 0 16px;
+}
+.accountView :global(.profileStrip),
+.accountView :global(.chartPanel),
+.accountView :global(.settingsList),
+.accountView :global(.accountWalletCard),
+.legalView :global(.legalCopy) {
+  background: #111e31;
+  border: 1px solid #30465f;
+  color: #e7eff9;
+  box-shadow: none;
+  border-radius: 16px;
+}
+.accountView :global(.profileStrip) {
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+.accountView :global(.profileStrip) img {
+  width: 52px;
+  height: 52px;
+  box-shadow: 0 0 0 2px #47647f;
+}
+.accountView :global(.profileStrip) strong {
+  overflow-wrap: anywhere;
+}
+.accountView :global(.profileStrip) > b {
+  grid-column: 2;
+}
+.accountView :global(.profileStrip) span {
+  color: #b3c7db;
+}
+.accountView :global(.profileStrip) > b,
+.accountView :global(.chartHead) strong,
+.accountView :global(.miniMovementList) b {
+  color: #97e5d4;
+}
+.accountView :global(.accountWalletCard) small,
+.accountView :global(.chartHead) span,
+.accountView :global(.chartAxis),
+.accountView :global(.miniMovementList) > div {
+  color: #b3c7db;
+}
+.accountView :global(.accountWalletCard) strong {
+  color: #e7f4ff;
+  font-size: 28px;
+}
+.accountView :global(.walletActions) {
+  margin: 0;
+}
+.accountView :global(.walletActions) button {
+  background: #19384b;
+  border: 1px solid #507188;
+  color: #d9f3fc;
+  border-radius: 10px;
+  padding: 6px;
+  font:
+    12px/1.4 system-ui,
+    sans-serif;
+  min-height: 48px;
+}
+.accountView :global(.walletActions) button:disabled {
+  opacity: 0.45;
+}
+.accountView :global(.miniMovementList) {
+  font-size: 12px;
+}
+.accountView :global(.miniMovementList) > div {
+  border-color: #30465f;
+  font-size: 12px;
+}
+.accountView :global(.negative) {
+  color: #ffb3c0 !important;
+}
+.accountView :global(.earningsChart) {
+  height: 120px;
+}
+.accountView :global(.profitLine) {
+  stroke: #97e5d4;
+}
+.accountView :global(.zeroLine) {
+  stroke: #657d97;
+}
+.accountView :global(.settingsList) button {
+  background: transparent;
+  color: #e7eff9;
+  border-color: #30465f;
+  min-height: 52px;
+  font-size: 13px !important;
+}
+.accountView :global(.settingsList) b {
+  color: #a5e8ec;
+}
+.accountView :global(.resetNote) {
+  color: #b3c7db;
+  font-size: 12px !important;
+}
+.legalView :global(.textBack) {
+  min-height: 44px;
+  padding: 8px 0;
+  color: #a5e8ec;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.legalView :global(.legalTabs) button {
+  background: #14273d;
+  color: #c6d8eb;
+  border: 1px solid #3b5570;
+  border-radius: 10px;
+  min-height: 48px;
+  font-size: 13px !important;
+}
+.legalView :global(.legalTabs) button:global(.active) {
+  background: #a5e8ec;
+  border-color: #a5e8ec;
+  color: #112b37;
+}
+.legalView :global(.legalCopy) p {
+  color: #c6d8eb;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.accountView button:focus-visible,
+.legalView button:focus-visible {
+  outline: 2px solid #a5e8ec;
+  outline-offset: -4px;
+}
