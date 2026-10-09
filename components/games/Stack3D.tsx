@@ -53,7 +53,6 @@ function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
   ctx.save();ctx.translate(110,72);ctx.rotate(state.axis==="x"?Math.PI/6:-Math.PI/6);
   ctx.strokeStyle="#a8dcea";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(10,0);
   ctx.moveTo(-5,-4);ctx.lineTo(-10,0);ctx.lineTo(-5,4);ctx.moveTo(5,-4);ctx.lineTo(10,0);ctx.lineTo(5,4);ctx.stroke();ctx.restore();
-  ctx.fillStyle="#a8dcea";ctx.font="bold 12px system-ui";ctx.textAlign="center";ctx.fillText(state.axis==="x"?"LONGITUDINAL":"TRANSVERSAL",W/2,76);ctx.textAlign="left";
   ctx.restore();
 }
 const keys = { " ": "DROP", Enter: "DROP" } as const;
