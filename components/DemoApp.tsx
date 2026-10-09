@@ -446,6 +446,13 @@ export default function DemoApp() {
     }
   }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group]);
 
+  function toggleSound() {
+    const enabled = !musicOn;
+    // Apply mute/unlock within the click instead of waiting for a React effect.
+    setGameSoundEnabled(enabled, true);
+    setMusicOn(enabled);
+  }
+
   useEffect(() => {
     setGameSoundEnabled(musicOn);
   }, [musicOn]);
@@ -1168,7 +1175,7 @@ export default function DemoApp() {
               type="button"
               aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
               aria-pressed={musicOn}
-              onClick={() => setMusicOn((value) => !value)}
+              onClick={toggleSound}
             >
               {musicOn ? "🔊" : "🔇"}
             </button>
@@ -1246,7 +1253,7 @@ export default function DemoApp() {
                   type="button"
                   aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
                   aria-pressed={musicOn}
-                  onClick={() => setMusicOn((value) => !value)}
+                  onClick={toggleSound}
                 >
                   {musicOn ? "🔊" : "🔇"}
                 </button>
@@ -1439,7 +1446,7 @@ export default function DemoApp() {
               <div className="chartAxis"><span>INICIO</span><span>AHORA</span></div>
             </div>
             <div className="settingsList">
-              <button aria-pressed={musicOn} onClick={() => setMusicOn((v) => !v)}><span>Sonido</span><b>{musicOn ? "ON" : "OFF"}</b></button>
+              <button aria-pressed={musicOn} onClick={toggleSound}><span>Sonido</span><b>{musicOn ? "ON" : "OFF"}</b></button>
               <button onClick={() => { setAvatarEditorOpen(true); setAvatarError(""); navigate("avatar-setup"); }}><span>Nombre y avatar</span><b>→</b></button>
               <button onClick={resetAvatar}><span>Reiniciar perfil local</span><b aria-hidden="true">↺</b></button>
               <button onClick={() => navigate("legal")}><span>Información de la aplicación</span><b aria-hidden="true">→</b></button>

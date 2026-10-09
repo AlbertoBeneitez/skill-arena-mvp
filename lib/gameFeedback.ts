@@ -1,25 +1,74 @@
 let audioContext: AudioContext | null = null;
 let soundEnabled = true;
+let masterGain: GainNode | null = null;
+type VoiceKind = "music" | "effect";
+const voices = new Map<
+  AudioScheduledSourceNode,
+  { gain: GainNode; kind: VoiceKind }
+>();
 let musicTimer: ReturnType<typeof setInterval> | null = null;
 let musicGameId: string | null = null;
 let musicStep = 0;
 
-export function setGameSoundEnabled(enabled: boolean) {
+/** Apply the preference immediately; only a trusted gesture unlocks audio here. */
+export function setGameSoundEnabled(enabled: boolean, fromGesture = false) {
   soundEnabled = enabled;
-
+  if (masterGain && audioContext) {
+    masterGain.gain.cancelScheduledValues(audioContext.currentTime);
+    masterGain.gain.setValueAtTime(enabled ? 1 : 0, audioContext.currentTime);
+  }
   if (!enabled) {
     stopGameMusic();
+    cancelVoices();
+    // The gain gate already makes mute synchronous. A pending resume cannot
+    // bypass it, and stopped voices cannot return on the next activation.
     if (audioContext?.state === "running") {
-      void audioContext.suspend();
+      void audioContext.suspend().catch(() => {});
     }
+  } else if (fromGesture) {
+    context();
   }
 }
 
 function context() {
   if (typeof window === "undefined" || !soundEnabled) return null;
-  if (!audioContext) audioContext = new AudioContext();
-  if (audioContext.state === "suspended") void audioContext.resume();
+  if (!audioContext) {
+    audioContext = new AudioContext();
+    masterGain = audioContext.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(audioContext.destination);
+  }
+  if (audioContext.state === "suspended") {
+    void audioContext.resume().catch(() => {});
+  }
   return audioContext;
+}
+
+function registerVoice(
+  source: AudioScheduledSourceNode,
+  gain: GainNode,
+  kind: VoiceKind,
+) {
+  if (!masterGain) return;
+  source.connect(gain);
+  gain.connect(masterGain);
+  voices.set(source, { gain, kind });
+  source.onended = () => {
+    source.disconnect();
+    gain.disconnect();
+    voices.delete(source);
+  };
+}
+
+function cancelVoices(kind?: VoiceKind) {
+  for (const [source, voice] of voices) {
+    if (kind && voice.kind !== kind) continue;
+    voices.delete(source);
+    source.onended = null;
+    source.stop();
+    source.disconnect();
+    voice.gain.disconnect();
+  }
 }
 
 export function haptic(pattern: number | number[] = 12) {
@@ -37,7 +86,8 @@ function tone(
     duration: number;
     volume: number;
     type?: OscillatorType;
-  }
+    kind?: VoiceKind;
+  },
 ) {
   const start = ctx.currentTime + (args.start ?? 0);
   const stop = start + args.duration;
@@ -47,18 +97,14 @@ function tone(
   oscillator.type = args.type ?? "sine";
   oscillator.frequency.setValueAtTime(args.frequency, start);
   if (args.toFrequency && args.toFrequency > 0) {
-    oscillator.frequency.exponentialRampToValueAtTime(
-      args.toFrequency,
-      stop
-    );
+    oscillator.frequency.exponentialRampToValueAtTime(args.toFrequency, stop);
   }
 
   gain.gain.setValueAtTime(0.0001, start);
   gain.gain.exponentialRampToValueAtTime(args.volume, start + 0.008);
   gain.gain.exponentialRampToValueAtTime(0.0001, stop);
 
-  oscillator.connect(gain);
-  gain.connect(ctx.destination);
+  registerVoice(oscillator, gain, args.kind ?? "effect");
   oscillator.start(start);
   oscillator.stop(stop + 0.01);
 }
@@ -81,13 +127,10 @@ function noiseBurst(ctx: AudioContext, duration = 0.07, volume = 0.025) {
   gain.gain.setValueAtTime(volume, now);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
-  source.connect(gain);
-  gain.connect(ctx.destination);
+  registerVoice(source, gain, "effect");
   source.start(now);
   source.stop(now + duration);
 }
-
-
 
 type MusicProfile = {
   bpm: number;
@@ -133,15 +176,20 @@ function scheduleMusicStep(gameId: string) {
     duration: beatSeconds * 0.72,
     volume: 0.011,
     type: "sine",
+    kind: "music",
   });
 
   if (musicStep % 2 === 0) {
     tone(ctx, {
-      frequency: semitone(profile.root / 2, profile.scale[(degree + 2) % profile.scale.length]),
+      frequency: semitone(
+        profile.root / 2,
+        profile.scale[(degree + 2) % profile.scale.length],
+      ),
       start: beatSeconds * 0.04,
       duration: beatSeconds * 0.58,
       volume: 0.006,
       type: "triangle",
+      kind: "music",
     });
   }
 
@@ -151,6 +199,7 @@ function scheduleMusicStep(gameId: string) {
       duration: beatSeconds * 1.15,
       volume: 0.008,
       type: "sine",
+      kind: "music",
     });
   }
 
@@ -171,7 +220,7 @@ export function startGameMusic(gameId: string) {
   musicStep = 0;
 
   const profile = profileFor(gameId);
-  const beatMs = Math.round((60_000 / profile.bpm) / 2);
+  const beatMs = Math.round(60_000 / profile.bpm / 2);
 
   scheduleMusicStep(gameId);
   musicTimer = setInterval(() => {
@@ -186,6 +235,7 @@ export function stopGameMusic() {
   }
   musicGameId = null;
   musicStep = 0;
+  cancelVoices("music");
 }
 
 /**
