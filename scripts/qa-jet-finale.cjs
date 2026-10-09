@@ -1,6 +1,5 @@
-// Browser regression: visible terminal animation, frozen replay time and safe restart.
-// Browser regression: novice first crossing via real touch, scored by server replay.
-// Only the demo target is lowered to one crossing; the server-issued seed is unchanged.
+// Browser regression: terminal replay is sent immediately, while the explosion
+// remains visible. Leaving its view cannot discard the record or publish a late result.
 const { chromium } = require(
   process.env.PLAYWRIGHT_MODULE_PATH || "playwright-core",
 );
@@ -20,6 +19,7 @@ const assert = require("node:assert/strict");
   });
   const page = await context.newPage();
   const errors = [];
+  const cancel = Boolean(process.env.QA_CANCEL_FINALE);
   let verifyRequests = 0;
   page.on("request", (request) => {
     if (request.url().includes("/verified-match/verify")) verifyRequests++;
@@ -45,28 +45,25 @@ const assert = require("node:assert/strict");
     );
     localStorage.setItem("skill-arena-color-tutorial-v12", "1");
   });
-  await page.route("**/api/verified-match/start", (route) => {
-    const body = route.request().postDataJSON();
-    return route.continue({
-      postData: JSON.stringify({ ...body, target_score: 4000 }),
-    });
+  if (cancel) await page.route("**/api/verified-match/verify", async route => {
+    const response = await route.fetch();
+    // A genuine server response arrives after leaving the terminal animation.
+    await new Promise(resolve => setTimeout(resolve, 1800));
+    await route.fulfill({ response });
   });
   await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
-  await page.locator(".quickStakeBar button").first().click();
+  await page.locator(".quickStakeBar button").first().tap();
   const start = page.waitForResponse((r) =>
     r.url().includes("/verified-match/start"),
   );
   await page
     .getByRole("button", { name: "Jugar a Jet Stream", exact: true })
-    .click();
+    .tap();
   const manifest = await (await start).json();
   assert.equal(manifest.manifest.game_version, process.env.QA_GAME_VERSION || "3.0.0");
   await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
   await page.waitForTimeout(1200);
-  const cancel = Boolean(process.env.QA_CANCEL_FINALE);
-  const verification = cancel
-    ? null
-    : page.waitForResponse((r) => r.url().includes("/verified-match/verify"));
+  const verification = page.waitForResponse((r) => r.url().includes("/verified-match/verify"));
   assert.equal(
     await page
       .locator(".coreHud")
@@ -102,45 +99,45 @@ const assert = require("node:assert/strict");
   await page.waitForTimeout(180);
 
   assert.equal(await page.locator(".resultPanel").isVisible(), false);
+  assert.equal(await page.locator(".verificationOverlay").isVisible(), false,
+    "Verification must not cover the terminal explosion");
+  assert.equal(verifyRequests, 1, "The record must be sent before the explosion ends");
+  const submittedAt = await page.evaluate(() => window.__jetVerifyAt - window.__jetTerminalAt);
+  assert.ok(Math.abs(submittedAt) < 250, `Terminal record delayed by ${submittedAt}ms`);
   if (cancel) {
-    await page.getByRole("button", { name: "Volver", exact: true }).click();
-    await page.waitForTimeout(900);
-    assert.equal(verifyRequests, 0);
-    assert.deepEqual(errors, []);
-    console.log(
-      JSON.stringify({ cancelledDuringFinale: true, verifyRequests, errors }),
-    );
-  } else {
-    const response = await verification;
-    const result = await response.json();
-    assert.equal(result.verified, true);
-    assert.equal(result.won, false);
-    assert.equal(result.failure, "OUT_OF_BOUNDS");
-    const measured = await page.evaluate(
-      () => window.__jetVerifyAt - window.__jetTerminalAt,
-    );
-    assert.ok(measured >= 650, `Finale prematurely verified at ${measured}ms`);
-    const body = response.request().postDataJSON();
-    assert.equal(body.inputs.length, 0);
-    assert.equal(result.time_ms, Math.round((body.final_tick * 1000) / 120));
-    console.log(
-      JSON.stringify({
-        result,
-        finalTick: body.final_tick,
-        explosionDuration: measured,
-        errors,
-      }),
-    );
-    assert.equal(verifyRequests, 1);
+    await page.getByRole("button", { name: "Volver", exact: true }).tap();
   }
+  const response = await verification;
+  const result = await response.json();
+  assert.equal(result.verified, true);
+  assert.equal(result.won, false);
+  assert.equal(result.failure, "OUT_OF_BOUNDS");
+  const body = response.request().postDataJSON();
+  assert.equal(body.inputs.length, 0);
+  assert.equal(body.manifest.match_id, manifest.manifest.match_id);
+  assert.equal(result.time_ms, Math.round((body.final_tick * 1000) / 120));
+  assert.equal(verifyRequests, 1);
+  let explosionDuration = null;
+  if (cancel) {
+    assert.equal(await page.locator(".resultPanel").isVisible(), false,
+      "A detached response must not finish a game on the catalogue");
+    await page.getByRole("region", { name: "Catálogo de juegos" }).waitFor();
+  } else {
+    await page.locator(".resultPanel").waitFor();
+    explosionDuration = await page.evaluate(() => performance.now() - window.__jetTerminalAt);
+    assert.ok(explosionDuration >= 650, `Finale ended too soon at ${explosionDuration}ms`);
+  }
+  assert.deepEqual(errors, []);
+  console.log(JSON.stringify({ cancelledDuringFinale: cancel, result, finalTick: body.final_tick,
+    recordDelay: submittedAt, explosionDuration, verifyRequests, errors }));
   if (!cancel)
-    await page.getByRole("button", { name: "CAMBIAR", exact: true }).click();
+    await page.getByRole("button", { name: "CAMBIAR", exact: true }).tap();
   const restarted = page.waitForResponse((r) =>
     r.url().includes("/verified-match/start"),
   );
   await page
     .getByRole("button", { name: "Jugar a Jet Stream", exact: true })
-    .click();
+    .tap();
   const next = await (await restarted).json();
   assert.notEqual(next.manifest.match_id, manifest.manifest.match_id);
   await page.locator(".countdownOverlay").waitFor({ state: "hidden" });

@@ -54,7 +54,9 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const feedbackScoreRef = useRef(0);
   const heldRef = useRef(new Set<string>());
   const pointerRef = useRef<{ id: number; origin: CorePoint } | null>(null);
+  const [presentingFinale, setPresentingFinale] = useState(false);
   const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined, label: undefined as string | undefined });
+  const attemptMatchId = "manifest" in attempt.state ? attempt.state.manifest?.match_id : undefined;
 
   useEffect(() => { finishRef.current = props.onFinish; }, [props.onFinish]);
   useEffect(() => {
@@ -165,26 +167,33 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     runningRef.current = true;
     terminalStartedRef.current = null;
     terminalElapsedRef.current = 0;
+    setPresentingFinale(false);
+    let terminalVerification: ReturnType<typeof attempt.verifyAttempt> | null = null;
     let lastHudTick = -core.tickRate;
     const frame = (now: number) => {
       if (!runningRef.current) return;
       sync(now);
+      const state = stateRef.current;
+      if (state.status !== "running" && !finishedRef.current) {
+        finishedRef.current = true;
+        terminalStartedRef.current = now;
+        pendingRef.current = [];
+        heldRef.current.clear();
+        // Commit the frozen replay before rendering, feedback or any
+        // presentation delay. A presentation failure cannot discard the
+        // record, and leaving this view only invalidates its result callback.
+        terminalVerification = attempt.verifyAttempt(state.tick);
+        setPresentingFinale(state.status === "failed" && (props.failureFinale?.durationMs ?? 0) > 0);
+        gameTone(state.status === "won" ? "win" : "bad");
+        if (state.status === "failed") haptic([12, 18, 28]);
+      }
       if (terminalStartedRef.current !== null) terminalElapsedRef.current = now - terminalStartedRef.current;
       draw();
-      const state = stateRef.current;
       if (state.tick !== lastHudTick && (state.tick - lastHudTick >= core.tickRate / 8 || state.status !== "running")) {
         setHud({ tick: state.tick, score: state.score, height: state.height, lives: state.lives, label: props.hudLabel?.(state) });
         lastHudTick = state.tick;
       }
       if (state.status !== "running") {
-        if (!finishedRef.current) {
-          finishedRef.current = true;
-          terminalStartedRef.current = now;
-          pendingRef.current = [];
-          heldRef.current.clear();
-          gameTone(state.status === "won" ? "win" : "bad");
-          if (state.status === "failed") haptic([12, 18, 28]);
-        }
         // Only presentation time advances: terminal state and replay tick are frozen.
         const duration = state.status === "failed" ? Math.min(3000, Math.max(0, props.failureFinale?.durationMs ?? 0)) : 0;
         if (terminalElapsedRef.current < duration) {
@@ -192,8 +201,9 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
           return;
         }
         runningRef.current = false;
+        setPresentingFinale(false);
         const generation = generationRef.current;
-        void attempt.verifyAttempt(state.tick).then(result => {
+        void terminalVerification?.then(result => {
           if (generation !== generationRef.current || result.error === "VERIFICATION_ABORTED") return;
           finishRef.current({
             won: result.verified && result.won === true,
@@ -221,7 +231,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [active, core, attempt.state.status, attempt.manifest?.match_id, attempt.verifyAttempt, sync, draw, props.hudLabel]);
+  }, [active, core, attemptMatchId, attempt.verifyAttempt, sync, draw, props.hudLabel]);
 
   useEffect(() => {
     if (active && attempt.state.status === "rejected" && !finishedRef.current) {
@@ -291,6 +301,6 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       onKeyUp={event => { if ((event.key === " " || event.key === "Enter") && control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } }}
       onBlur={releaseHeld}
     >{control.symbol}</button>)}</div>}
-    {(attempt.state.status === "starting" || attempt.state.status === "verifying") && <div className="verificationOverlay"><span>{attempt.state.status === "starting" ? "PREPARANDO PARTIDA" : "COMPROBANDO RESULTADO"}</span></div>}
+    {(attempt.state.status === "starting" || (attempt.state.status === "verifying" && !presentingFinale)) && <div className="verificationOverlay"><span>{attempt.state.status === "starting" ? "PREPARANDO PARTIDA" : "COMPROBANDO RESULTADO"}</span></div>}
   </div>;
 }

@@ -1,6 +1,6 @@
 /** One terminal request per attempt, including calls after it has completed. */
 export class SubmissionGate<T> {
-  private current?: { attemptId: string; controller: AbortController; promise: Promise<T> };
+  private current?: { attemptId: string; controller: AbortController; promise: Promise<T>; detached?: boolean };
 
   run(attemptId: string, execute: (signal: AbortSignal) => Promise<T>): Promise<T> {
     if (this.current) {
@@ -22,7 +22,12 @@ export class SubmissionGate<T> {
 
   /** Only a new session/lifecycle generation may reopen submission. */
   reset() {
-    this.current?.controller.abort();
+    if (!this.current?.detached) this.current?.controller.abort();
     this.current = undefined;
+  }
+
+  /** Release lifecycle ownership without cancelling a committed terminal record. */
+  detach() {
+    if (this.current) this.current.detached = true;
   }
 }

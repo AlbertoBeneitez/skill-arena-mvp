@@ -150,7 +150,9 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
 
     return () => {
       generationRef.current += 1;
-      submissionRef.current.reset();
+      // A terminal replay already belongs to the server transport. Leaving the
+      // view invalidates its callbacks, but must not discard that record.
+      submissionRef.current.detach();
       controller.abort();
       if (requestRef.current === controller) {
         requestRef.current = null;
@@ -202,21 +204,24 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
     const generation = generationRef.current;
     closedRef.current = true;
     const inputs = inputsRef.current.map(input => ({ ...input }));
+    // Serialize before yielding: later cleanup or mutation cannot alter the
+    // committed manifest, input sequence or terminal tick.
+    const body = JSON.stringify({
+      manifest: session.manifest,
+      ticket: session.ticket,
+      inputs,
+      final_tick: finalTick,
+    });
     const cancelled = (): VerifiedAttemptResult => ({ ok: false, verified: false, error: "VERIFICATION_ABORTED" });
     return submissionRef.current.run(session.ticket.attempt_id, async (signal) => {
-      if (generation !== generationRef.current || signal.aborted) return cancelled();
-      setState({ status: "verifying", ...session });
+      if (signal.aborted) return cancelled();
+      if (generation === generationRef.current) setState({ status: "verifying", ...session });
 
       try {
         const response = await fetch("/api/verified-match/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            manifest: session.manifest,
-            ticket: session.ticket,
-            inputs,
-            final_tick: finalTick,
-          }),
+          body,
           signal,
         });
 

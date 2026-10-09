@@ -37,4 +37,42 @@ const cancelledBeforeStart = neverStarted.run("a", async () => { called = true; 
 neverStarted.reset();
 await assert.rejects(cancelledBeforeStart, { name: "AbortError" });
 assert.equal(called, false);
-console.log("Submission lifecycle OK · single flight · terminal cache · cancellation · late transport · generation reset");
+
+// A committed terminal record outlives its view, including a detach before the
+// transport microtask begins. A later lifecycle can start its own submission.
+const detachedGate = new SubmissionGate<number>();
+let detachedCalls = 0;
+let detachedSignal!: AbortSignal;
+let detachedResolve!: (value: number) => void;
+const committed = detachedGate.run("terminal", async signal => {
+  detachedCalls++;
+  detachedSignal = signal;
+  return new Promise<number>(done => { detachedResolve = done; });
+});
+detachedGate.detach();
+assert.equal(detachedGate.run("terminal", async () => 999), committed,
+  "Detaching must preserve deduplication until the next lifecycle");
+detachedGate.reset();
+const replacement = detachedGate.run("replacement", async () => 37);
+await Promise.resolve();
+assert.equal(detachedCalls, 1, "A terminal record must start even after immediate view cleanup");
+assert.equal(detachedSignal.aborted, false);
+detachedResolve(31);
+assert.equal(await committed, 31);
+assert.equal(await replacement, 37);
+
+const inFlightGate = new SubmissionGate<number>();
+let inFlightSignal!: AbortSignal;
+let inFlightResolve!: (value: number) => void;
+const inFlight = inFlightGate.run("finished", async signal => {
+  inFlightSignal = signal;
+  return new Promise<number>(done => { inFlightResolve = done; });
+});
+await Promise.resolve();
+inFlightGate.detach();
+inFlightGate.detach();
+inFlightGate.reset();
+assert.equal(inFlightSignal.aborted, false);
+inFlightResolve(41);
+assert.equal(await inFlight, 41, "Leaving a view must not abort a submitted terminal record");
+console.log("Submission lifecycle OK · single flight · terminal cache · cancellation · late transport · generation reset · committed detach before/after transport");
