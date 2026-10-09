@@ -6010,8 +6010,8 @@ html, body {
 }
 
 /* Reserve physical control space: all sixteen rows and the floor stay visible. */
-.stackShiftVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 104px) !important;}
-.stackShiftVerified .coreControls {bottom:38px;gap:8px;}
+.stackShiftVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 78px) !important;}
+.stackShiftVerified .coreControls {bottom:12px;gap:8px;}
 .stackShiftVerified .coreControls button {width:60px;min-height:50px;}
 .stackShiftVerified .coreControls button:last-child {width:84px;font-size:12px;background:#a7eadc;color:#12302e;}
 .stackShiftVerified .coreHint {bottom:12px;}

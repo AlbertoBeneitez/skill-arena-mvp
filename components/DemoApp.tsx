@@ -235,8 +235,6 @@ export default function DemoApp() {
   const [earnings, setEarnings] = useState<EarningsPoint[]>([{ label: "Inicio", value: 0 }]);
   const [movements, setMovements] = useState<Movement[]>([]);
   const [tutorialSeen, setTutorialSeen] = useState(false);
-  const [tutorialOpen, setTutorialOpen] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
   const [selectedGame, setSelectedGame] = useState<GameMeta>(GAMES[0]);
   const resultPointerReadyRef = useRef(false);
   const [selectedStake, setSelectedStake] = useState<number>(0);
@@ -306,8 +304,8 @@ export default function DemoApp() {
       setEarnings([{ label: "Inicio", value: 0 }]);
       setMovements([]);
       setTutorialSeen(false);
-      setTutorialOpen(false);
-      setTutorialStep(0);
+
+
       setWins(0);
       setLosses(0);
       setStreak(0);
@@ -329,8 +327,8 @@ export default function DemoApp() {
       setAvatarError("");
       setScreen("welcome");
       setTutorialSeen(false);
-      setTutorialOpen(false);
-      setTutorialStep(0);
+
+
       setGroup(null);
       setIsLoaded(true);
       return;
@@ -407,8 +405,8 @@ export default function DemoApp() {
       setAvatarEditorOpen(true);
       setAvatarError("");
       setScreen("welcome");
-      setTutorialOpen(false);
-      setTutorialStep(0);
+
+
     } else if (joinCode && restoredOnboarded) {
       setScreen("group");
     }
@@ -495,7 +493,7 @@ export default function DemoApp() {
       setCountdown(null);
       setResult(null);
       setAttemptSummary(null);
-      setTutorialOpen(false);
+
       setScreen(isScreen(target) ? target : onboarded ? "home" : "welcome");
     };
 
@@ -589,16 +587,6 @@ export default function DemoApp() {
     }
 
     leaveGameNow();
-  }
-
-  function advanceTutorial() {
-    if (tutorialStep < 2) {
-      setTutorialStep((step) => step + 1);
-      return;
-    }
-    localStorage.setItem(TUTORIAL_KEY, "1");
-    setTutorialSeen(true);
-    setTutorialOpen(false);
   }
 
   const nameAvailable = isDemoNameAvailable(playerName);
@@ -1120,7 +1108,6 @@ export default function DemoApp() {
               <div className="avatarCropCard">
                 <div className="cropTitle">
                   <strong>AJUSTA TU FOTO</strong>
-                  <small>Arrastra la imagen dentro del círculo.</small>
                 </div>
                 <div
                   className="avatarCropViewport"
@@ -1216,7 +1203,6 @@ export default function DemoApp() {
             </div>
 
             <CatalogBrowser stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
-            <button className="galacticHelpButton" type="button" onClick={()=>{setTutorialStep(0);setTutorialOpen(true);}}>Cómo funcionan los retos</button>
           </section>
         )}
 
@@ -1306,7 +1292,6 @@ export default function DemoApp() {
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>
                   <b>{countdown > 0 ? countdown : "GO"}</b>
-                  <span>{selectedGame.instruction}</span>
                 </div>
               )}
             </div>
@@ -1346,7 +1331,6 @@ export default function DemoApp() {
                   <>
                     <div className="resultIcon">⚠</div>
                     <b>RESULTADO NO VERIFICADO</b>
-                    <p>No se registra este intento competitivo.</p>
                   </>
                 ) : (
                   <>
@@ -1434,7 +1418,7 @@ export default function DemoApp() {
                 >Retirar 10 € ficticios</button>
               </div>
               <div className="miniMovementList" aria-live="polite">
-                {movements.length === 0 && <p className={shellStyles.emptyNote}>Todavía no hay movimientos. Este saldo ficticio solo sirve para practicar.</p>}
+                {movements.length === 0 && <p className={shellStyles.emptyNote}>Sin movimientos</p>}
                 {movements.slice(0, 3).map((movement, index) => (
                   <div key={`${movement.label}-${index}`}>
                     <span>{movement.label.replace(/\bdemo\b/gi, "ficticio")}</span>
@@ -1461,7 +1445,6 @@ export default function DemoApp() {
               <button onClick={() => navigate("legal")}><span>Información de la aplicación</span><b aria-hidden="true">→</b></button>
               <button onClick={logoutDemo}><span>Cerrar sesión local</span><b>×</b></button>
             </div>
-            <p className="resetNote">Reiniciar perfil cambia tu nombre y avatar y borra las estadísticas locales. Conserva el saldo y los movimientos. Cerrar sesión elimina el perfil local y vuelve a la entrada.</p>
           </section>
         )}
 
@@ -1501,33 +1484,10 @@ export default function DemoApp() {
         )}
       </div>
 
-      {tutorialOpen && screen === "home" && (
-        <div className="tutorialOverlay" role="dialog" aria-modal="true" aria-label="Tutorial de tipos de partida">
-          <div className="tutorialCard">
-            <div className="tutorialProgress">PRIMERA VEZ · {tutorialStep + 1}/3</div>
-            <h2>{tutorialStep === 0 ? "VERDE · TÚ CREAS" : tutorialStep === 1 ? "AZUL · YA EXISTE UNA JUGADA" : "MORADO · HAY ALGUIEN ESPERANDO"}</h2>
-            <button className={`tutorialStake ${tutorialStep === 0 ? "create" : tutorialStep === 1 ? "existing" : "waiting"}`} disabled>
-              5€
-            </button>
-            <p>
-              {tutorialStep === 0
-                ? "Juegas primero y tu resultado queda guardado. En esta sesión los rivales son simulados."
-                : tutorialStep === 1
-                  ? "Un rival simulado ya dejó su marca. Tú juegas ahora para intentar superarla."
-                  : "Este color representa una partida pendiente con un rival simulado. No conecta una cola de jugadores reales."}
-            </p>
-            <div className={`tutorialActions ${tutorialStep === 0 ? "single" : ""}`}>
-              {tutorialStep > 0 && <button className="tutorialBack" onClick={() => setTutorialStep((step) => Math.max(0, step - 1))}>ATRÁS</button>}
-              <button className="mainAction" onClick={advanceTutorial}>{tutorialStep < 2 ? "SIGUIENTE" : "ENTENDIDO"}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {screen !== "game" && screen !== "legal" && (
         <nav className="bottomNav bottomNavFour" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} aria-current={screen === "home" ? "page" : undefined} onClick={() => navigate("home")}>
-            <span>▶</span>JUGAR
+            <span>▶</span>JUEGOS
           </button>
           <button className={screen === "group" ? "active" : ""} aria-current={screen === "group" ? "page" : undefined} onClick={() => navigate("group")}>
             <span>◉</span>GRUPO

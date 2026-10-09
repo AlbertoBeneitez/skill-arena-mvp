@@ -62,7 +62,7 @@ const assert = require("node:assert/strict");
     );
     assert.match(
       await page.locator(".miniMovementList").innerText(),
-      /Todavía no hay movimientos/,
+      /Sin movimientos/,
     );
     await page
       .getByRole("button", { name: "Añadir 10 € ficticios", exact: true })

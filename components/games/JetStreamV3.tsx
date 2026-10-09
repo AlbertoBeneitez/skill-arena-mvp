@@ -69,29 +69,6 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV3State) {
     195,
     82,
   );
-  if (state.launchedAtTick === null) {
-    ctx.fillStyle = "rgba(5,18,38,.9)";
-    ctx.fillRect(105, 228, 250, 84);
-    ctx.font = "bold 17px system-ui";
-    ctx.fillStyle = "#eff8ff";
-    ctx.fillText("TOCA PARA DESPEGAR", 230, 258);
-    ctx.font = "12px system-ui";
-    ctx.fillStyle = "#a8cce2";
-    ctx.fillText("Toques cortos mantienen la altura", 230, 280);
-    ctx.fillText("3 escudos · primero, pasos amplios", 230, 299);
-  } else if (state.passed < 4) {
-    ctx.font = "bold 13px system-ui";
-    ctx.fillStyle = "#aaf2df";
-    ctx.fillText("PRÁCTICA DE VUELO · PASOS AMPLIOS", 195, 106);
-  } else {
-    ctx.font = "bold 12px system-ui";
-    ctx.fillStyle = "#a8cce2";
-    ctx.fillText(
-      "PRECISIÓN CRECIENTE",
-      195,
-      106,
-    );
-  }
   ctx.textAlign = "left";
 }
 const failureFinale = {

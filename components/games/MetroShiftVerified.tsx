@@ -135,14 +135,6 @@ function render(ctx: CanvasRenderingContext2D, s: MetroState) {
   ctx.textAlign = "center";
   ctx.fillStyle = "#c6ddec";
   ctx.font = "12px system-ui";
-  if (s.passed < 4)
-    ctx.fillText(
-      s.passed < 2
-        ? "← → cambia de carril · SALTAR supera vallas"
-        : "Ámbar: salta · muros rosas: cambia de carril",
-      195,
-      80,
-    );
   const hit = s.tick - s.lastDamageTick;
   if (hit >= 0 && hit < 50) {
     ctx.fillStyle = `rgba(225,82,123,${0.2 * (1 - hit / 50)})`;

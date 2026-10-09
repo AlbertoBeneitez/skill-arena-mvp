@@ -43,13 +43,6 @@ function render(ctx: CanvasRenderingContext2D, s: RhythmState) {
   ctx.font = "13px system-ui";
   ctx.fillStyle = "#d4e5f4";
   const note = s.notes[s.nextNoteIndex];
-  ctx.fillText(
-    s.nextNoteIndex < 8
-      ? "Calentamiento: 8 notas sin perder escudos"
-      : "Toca el carril al llegar a la línea · encadena aciertos",
-    195,
-    75,
-  );
   if (note && note.targetTick - s.tick > 280 && s.nextNoteIndex > 0)
     ctx.fillText(
       "SECTOR COMPLETADO · RESPIRA Y PREPARA EL SIGUIENTE",
@@ -66,7 +59,7 @@ function render(ctx: CanvasRenderingContext2D, s: RhythmState) {
     const label = {
       PERFECT: "PERFECTO",
       GOOD: "BIEN",
-      EARLY: "ESPERA A LA LÍNEA",
+      EARLY: "ANTICIPADO",
       WRONG: "OTRO CARRIL",
       MISS: "NOTA PERDIDA",
     }[s.lastJudgement];

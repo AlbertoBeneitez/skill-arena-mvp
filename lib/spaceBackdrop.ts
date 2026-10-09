@@ -18,6 +18,12 @@ export function drawSpaceBackdrop(
   nebula.addColorStop(1, "rgba(125,65,209,0)");
   ctx.fillStyle = nebula;
   ctx.fillRect(0, 0, width, height);
+  const haze = ctx.createRadialGradient(width * .85, height * .17, 0, width * .85, height * .17, width * .65);
+  haze.addColorStop(0, "rgba(76,133,165,.15)");
+  haze.addColorStop(.5, "rgba(55,91,131,.06)");
+  haze.addColorStop(1, "rgba(55,91,131,0)");
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, 0, width, height);
   for (let index = 0; index < 65; index += 1) {
     const depth = index % 3 + 1;
     const x = ((index * 97 - scroll * depth * 0.018) % width + width) % width;
@@ -28,6 +34,24 @@ export function drawSpaceBackdrop(
   }
   ctx.globalAlpha = 1;
   const x = width * 0.79, y = height * 0.23, radius = width * 0.115;
+  // Faint orbital depth stays behind the opaque, high-contrast playfield.
+  ctx.strokeStyle = "rgba(167,186,207,.07)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(x, y, width * .49, height * .16, -.3, 0, Math.PI * 2);
+  ctx.stroke();
+  const halo = ctx.createRadialGradient(x, y, radius * .6, x, y, radius * 2.3);
+  halo.addColorStop(0, "rgba(191,169,130,.08)");
+  halo.addColorStop(1, "rgba(191,169,130,0)");
+  ctx.fillStyle = halo;
+  ctx.fillRect(x - radius * 2.3, y - radius * 2.3, radius * 4.6, radius * 4.6);
+  const moon = ctx.createRadialGradient(width * .117, height * .135, 0, width * .14, height * .16, width * .05);
+  moon.addColorStop(0, "#46536b");
+  moon.addColorStop(1, "#0a1529");
+  ctx.fillStyle = moon;
+  ctx.beginPath();
+  ctx.arc(width * .13, height * .15, width * .029, 0, Math.PI * 2);
+  ctx.fill();
   drawSaturn(ctx, x, y, radius);
   ctx.restore();
 }

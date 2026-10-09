@@ -132,11 +132,6 @@ function renderer() {
       ctx.font = "10px system-ui";
       ctx.fillText(String(i + 1), slot.x + 14, slot.y + slot.height - 11);
     });
-    if (trial.cards.length === 2) {
-      ctx.fillStyle = "#94b6c9";
-      ctx.font = "12px system-ui";
-      ctx.fillText("Lee el color. Espera. Toca la opción.", 195, 390);
-    }
     ctx.fillStyle = "#adcbdc";
     ctx.font = "bold 12px system-ui";
     ctx.fillText(`${s.correct} ACIERTOS · SUMA ${s.score}`, 195, 522);

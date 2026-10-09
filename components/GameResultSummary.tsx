@@ -1,25 +1,4 @@
 import type { GameResult } from "@/lib/types";
-const causes: Readonly<Record<string, string>> = {
-  OUT_OF_BOUNDS: "Has salido del corredor. Ajusta el ritmo de los impulsos.",
-  SHOTS_EXHAUSTED:
-    "Se han agotado los tiros. Busca una trayectoria más precisa.",
-  LOW_SCORE: "Practica los objetivos y el timing para mejorar tu puntuación.",
-  RECOGNITION_SCORE:
-    "Necesitas al menos seis aciertos y 2500 puntos. Cada prueba cuenta.",
-  BOARD_OVERFLOW: "Los orbes han alcanzado la línea límite.",
-  SELF_COLLISION: "La cabeza ha tocado tu propio recorrido.",
-  AIM_TIMEOUT: "Se agotó el tiempo para preparar el tiro.",
-  MISSED_NOTES: "Se agotaron los escudos. Espera a que la nota llegue a la línea y pulsa su carril.",
-  NOTES_INCOMPLETE: "Faltaron aciertos para completar el reto. Usa el calentamiento para encontrar el ritmo.",
-  ORBIT_COLLISION: "Se agotaron los escudos. Cambia de órbita antes del arco y busca las recargas verdes.",
-  PURSUER_COLLISION: "Se agotaron los escudos. Anticipa los giros y usa los pulsos verdes para protegerte.",
-  BALL_LOST: "Se agotaron las vidas. Anticipa el regreso y orienta el rebote con los bordes de la pala.",
-  FALLEN: "Se agotaron las recuperaciones. Anticipa el siguiente apoyo y usa las balizas.",
-  TIME_LIMIT: "Has llegado al límite de tiempo del reto.",
-  TOP_OUT: "Deja espacio para las siguientes piezas. Usa la silueta de apoyo y completa filas.",
-  HULL_EXHAUSTED: "Se agotaron los escudos. Lee las amenazas y busca una ruta segura.",
-  MINES: "Se han agotado los escudos del campo.",
-};
 export default function GameResultSummary({
   result,
   gameName,
@@ -29,11 +8,13 @@ export default function GameResultSummary({
   gameName: string;
   waitingForRival?: boolean;
 }) {
-  const seconds = Math.max(0, Math.round(result.timeMs / 1000)),
-    duration =
-      seconds < 60
-        ? `${seconds} s`
-        : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+  const duration = `${(Math.max(0, result.timeMs) / 1000).toLocaleString(
+    "es-ES",
+    {
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
+    },
+  )} s`;
   return (
     <section className="gameResultSummary" aria-label="Resumen del intento">
       <span className="resultSourceBadge">
@@ -61,14 +42,6 @@ export default function GameResultSummary({
           <dd>{duration}</dd>
         </div>
       </dl>
-      <p className="resultLearningNote">
-        {waitingForRival
-          ? "Marca guardada. El duelo todavía espera a un rival."
-          : result.won
-            ? "Buen trabajo. Prueba otro escenario o mejora tu marca."
-            : (result.failureReason && causes[result.failureReason]) ||
-              ""}
-      </p>
     </section>
   );
 }

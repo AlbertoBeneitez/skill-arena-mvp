@@ -119,10 +119,6 @@ function render(ctx: CanvasRenderingContext2D, s: BrickState) {
   ctx.fillStyle = "#d3e4f6";
   if (s.waveUntil !== null)
     ctx.fillText("SECTOR COMPLETADO · RECUPERAS UNA VIDA", 195, 310);
-  else if (s.tick < s.serveUntil)
-    ctx.fillText("Arrastra la pala · los bordes orientan el rebote", 195, 480);
-  else if (s.tick < 960)
-    ctx.fillText("Apunta con el rebote · no solo sigas la bola", 195, 84);
 }
 const pointAction = (p: { x: number }, phase: "down" | "move" | "up") =>
   phase === "up"

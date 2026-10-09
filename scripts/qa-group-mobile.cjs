@@ -89,7 +89,7 @@ const assert = require("node:assert/strict");
       );
       assert.match(
         await page.locator(".groupDemoNotice").innerText(),
-        /no sincroniza/,
+        /Grupo local · rivales simulados · saldo ficticio/,
       );
       await page
         .getByRole("button", { name: "COPIAR CÓDIGO", exact: true })

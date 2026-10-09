@@ -2,8 +2,6 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import {
   MAZE_CORE_V2,
-  MAZE_V2_RULES,
-  mazeEnemiesAwakeV2,
   mazeEnemyAwakeV2,
   mazeEnemyPreparingV2,
   mazeChasingV2,
@@ -115,18 +113,11 @@ function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
   ctx.textAlign = "center";
   ctx.font = "12px system-ui";
   const message =
-    s.tick < MAZE_V2_RULES.initialReadyTicks
-      ? "Desliza o usa las flechas · ■ para planear"
-      : s.tick < s.poweredUntil
-        ? `PULSO · ${Math.ceil((s.poweredUntil - s.tick) / 120)} s DE PROTECCIÓN`
-        : b.enemies.some((_, i) => mazeEnemyPreparingV2(s, i))
-          ? "Se activa un perseguidor · aléjate de su base"
-          : mazeEnemiesAwakeV2(s)
-            ? "Anticipa los giros · busca los pulsos verdes"
-            : s.collected >= MAZE_V2_RULES.firstPursuerNodes &&
-                s.tick >= MAZE_V2_RULES.firstPursuerTicks - 360
-              ? "Los perseguidores se están activando"
-              : "Recoge nodos · los verdes activan protección";
+    s.tick < s.poweredUntil
+      ? `PULSO · ${Math.ceil((s.poweredUntil - s.tick) / 120)} s`
+      : b.enemies.some((_, i) => mazeEnemyPreparingV2(s, i))
+        ? "PERSEGUIDOR ACTIVÁNDOSE"
+        : "";
   ctx.fillText(message, 195, 64);
   if (s.tick - s.lastDamageTick < 60) {
     ctx.fillStyle = `rgba(224,72,113,${0.22 * (1 - (s.tick - s.lastDamageTick) / 60)})`;

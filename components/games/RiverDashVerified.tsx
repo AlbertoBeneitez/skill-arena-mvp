@@ -75,7 +75,7 @@ function render(ctx: CanvasRenderingContext2D, state: RiverState) {
   ctx.fillText(
     state.tick - state.lastCrossTick < 60
       ? `CRUCE ${state.crossings} COMPLETADO`
-      : state.crossings === 0 ? "AVANZA FILA A FILA · ↑" : `SECTOR ${state.crossings + 1} · ANTICIPA EL FLUJO`,
+      : `${state.crossings} CRUCES`,
     195,
     42,
   );

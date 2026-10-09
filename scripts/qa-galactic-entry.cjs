@@ -24,7 +24,7 @@ await page.reload();await page.getByRole('button',{name:'Jugar a Stack',exact:tr
 assert.equal(await page.getByRole('button',{name:'Iniciar sesión local',exact:true}).count(),0);
 assert.equal(/Skill Arena/i.test(await page.locator('body').innerText()),false);
 const manifest=await(await page.request.get(new URL('/manifest.webmanifest',page.url()).href)).json();assert.equal(manifest.name,'GALACTIC GAMES');assert.equal(manifest.display,'standalone');
-await page.getByRole('button',{name:'Cómo funcionan los retos',exact:true}).tap();assert.equal(await page.locator('.tutorialOverlay').isVisible(),true);
+assert.equal(await page.getByRole('button',{name:'Cómo funcionan los retos',exact:true}).count(),0);assert.equal(await page.locator('.tutorialOverlay').count(),0);
 assert.deepEqual(errors,[]);
     assert.doesNotMatch(await page.locator("body").innerText(), /\bdemo\b|\bdemostración\b/iu, "frontend copy must identify local/sample scope without demo wording");console.log(JSON.stringify({title:await page.title(),storedIdentity:{provider:stored.provider,avatarId:stored.avatarId},manifest:manifest.name,errors}));
 }finally{await browser.close();}

@@ -74,11 +74,16 @@
 }
 .cover {
   position: relative;
-  background: #081322;
+  overflow: hidden;
+  aspect-ratio: 16/11;
+  background:
+    radial-gradient(ellipse at 75% 12%, #374162 0, transparent 46%),
+    radial-gradient(ellipse at 12% 72%, #1c344a 0, transparent 60%),
+    #0b1729;
 }
 .cover img {
   width: 100%;
-  height: auto;
+  height: 100%;
   aspect-ratio: 16/11;
   object-fit: cover;
   display: block;

@@ -73,7 +73,7 @@ const assert = require("node:assert/strict");
   assert.equal(await page.locator(".rankingLeaders article").count(), 3);
   assert.ok(
     (await page.locator(".rankingOwnPosition").innerText()).includes(
-      "todavía no tiene una posición real",
+      "Sesión local · sin posición real",
     ),
   );
   if (process.env.QA_SCREENSHOT)

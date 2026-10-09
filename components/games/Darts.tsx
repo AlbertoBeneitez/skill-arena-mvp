@@ -183,9 +183,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsState) {
       ? last?.timeout
         ? "TIEMPO AGOTADO"
         : `${last?.goal ? "OBJETIVO · " : ""}+${last?.award ?? 0}`
-      : s.throwIndex === 0
-        ? "DESLIZA HACIA ARRIBA PARA LANZAR"
-        : "Espera al centro de la zona marcada",
+      : "",
     cx,
     492,
   );

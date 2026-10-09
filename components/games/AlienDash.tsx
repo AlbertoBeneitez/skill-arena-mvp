@@ -205,18 +205,14 @@ function render(ctx: CanvasRenderingContext2D, s: AlienState) {
   );
   ctx.font = "11px system-ui";
   ctx.fillText(`${Math.floor(s.tick / 120)} s / 120 s`, 195, 85);
-  if (s.tick < 120 * 8) {
-    ctx.fillStyle = "#e0edf6";
-    ctx.font = "bold 14px system-ui";
-    ctx.fillText("SALTA LAS ROCAS · SUBE A LAS PLATAFORMAS", 195, 192);
-  } else if (
+  if (
     s.actors.some(
       (a) => a.chargeTick !== null && !a.fired && a.x - s.scroll < 390000,
     )
   ) {
     ctx.fillStyle = "#f4c5a0";
     ctx.font = "bold 13px system-ui";
-    ctx.fillText("CENTINELA CARGANDO · SALTA AL DISPARO", 195, 192);
+    ctx.fillText("CENTINELA CARGANDO", 195, 192);
   }
   ctx.textAlign = "left";
 }

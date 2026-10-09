@@ -407,10 +407,6 @@ export default function GroupHub({
         <div className="groupHero">
           <span>GRUPOS · RIVALES SIMULADOS</span>
           <h1>Compite con tu gente</h1>
-          <p>
-            Prueba partidas, ligas y torneos con rivales simulados. Los códigos
-            no conectan jugadores reales todavía.
-          </p>
         </div>
 
         <div
@@ -502,8 +498,7 @@ export default function GroupHub({
             </label>
 
             <p className="groupJoinHint">
-              Pega un código o enlace para abrir un grupo local. No se
-              consulta ni se une a una sala real.
+              Grupo local · sin conexión a salas reales
             </p>
 
             <button
@@ -531,8 +526,7 @@ export default function GroupHub({
       </div>
 
       <p className="groupDemoNotice">
-        Rivales simulados · saldo ficticio. Este enlace abre un grupo local; no
-        sincroniza partidas ni invitaciones reales.
+        Grupo local · rivales simulados · saldo ficticio
       </p>
       <div className="groupShareActions">
         <button
@@ -588,10 +582,6 @@ export default function GroupHub({
       <div className="groupMatchSetupHead">
         <small>NUEVA COMPETICIÓN</small>
         <h1>Define las reglas</h1>
-        <p>
-          Todo se configura desde esta misma pantalla del
-          grupo.
-        </p>
       </div>
 
       <div className="competitionTypeGrid">
@@ -782,10 +772,6 @@ export default function GroupHub({
               <div className="hiddenGameSchedule">
                 <span>🎲</span>
                 <strong>JUEGOS OCULTOS</strong>
-                <p>
-                  Los juegos se sortean al empezar y se
-                  revelan jornada a jornada.
-                </p>
               </div>
             )}
           </div>
@@ -927,10 +913,6 @@ export default function GroupHub({
               <div className="hiddenGameSchedule">
                 <span>🎲</span>
                 <strong>JUEGOS OCULTOS</strong>
-                <p>
-                  El juego de cada ronda se revela solo
-                  cuando comienza esa ronda.
-                </p>
               </div>
             )}
           </div>

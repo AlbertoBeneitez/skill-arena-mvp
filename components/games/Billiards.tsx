@@ -163,9 +163,7 @@ function renderer() {
           : "TIRO EN CURSO"
         : s.phase === "settle"
           ? "MESA DESPEJADA"
-          : s.totalShots === 0
-            ? "APUNTA · ELIGE POTENCIA · TIRA"
-            : "Busca el ángulo. Usa las bandas.",
+          : "",
       195,
       579,
     );

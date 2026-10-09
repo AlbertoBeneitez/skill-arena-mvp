@@ -338,9 +338,7 @@ export default function MineGrid({
 
       <div className="mineModeControl">
         {!started ? (
-          <span>
-            EMPIEZA EN EL PUNTO MARCADO
-          </span>
+          <span aria-hidden="true">◆</span>
         ) : (
           <>
             <button

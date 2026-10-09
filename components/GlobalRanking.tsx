@@ -85,7 +85,6 @@ export default function GlobalRanking() {
       <header className="rankingHeading">
         <small>{PRODUCT_NAME}</small>
         <h1>Ranking global</h1>
-        <p>Jugadores ordenados por beneficio neto acumulado.</p>
       </header>
       <div className="rankingSourceControls" aria-label="Origen del ranking">
         <button
@@ -106,26 +105,17 @@ export default function GlobalRanking() {
       {source === "demo" && (
         <div className="rankingDemoNotice" role="note">
           <strong>DATOS DE EJEMPLO · IMPORTES FICTICIOS</strong>
-          <p>
-            Estos jugadores y beneficios son ejemplos. No representan dinero
-            ganado.
-          </p>
         </div>
       )}
       {visible.status === "loading" && <p role="status">Cargando ranking…</p>}
       {visible.status === "not-configured" && (
         <div className="rankingEmpty" role="status">
           <h2>El ranking real aún no está disponible</h2>
-          <p>
-            Todavía no hay beneficios reales publicados. Puedes consultar el
-            ranking de ejemplo.
-          </p>
         </div>
       )}
       {visible.status === "unavailable" && (
         <div className="rankingEmpty" role="status">
           <h2>No se puede cargar el ranking ahora</h2>
-          <p>Vuelve a intentarlo en unos instantes.</p>
           <button type="button" onClick={() => setRetry((n) => n + 1)}>
             Reintentar
           </button>
@@ -250,10 +240,7 @@ export default function GlobalRanking() {
       )}
       <section className="rankingOwnPosition" aria-label="Tu posición">
         <h2>Tu posición</h2>
-        <p>
-          Tu cuenta local todavía no tiene una posición real.
-          Aparecerá aquí al conectar identidad autenticada y resultados reales.
-        </p>
+        <p>Sesión local · sin posición real</p>
       </section>
     </section>
   );

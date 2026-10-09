@@ -51,6 +51,11 @@ the same run. Physical dartboard sectors and tower height are not levels.
 
 Do not raise difficulty only by increasing speed.
 
+Do not render tutorials, coaching or procedural instructions inside games.
+Catalogue access displays each game's name once. Preserve accessible input
+labels, meaningful state/error feedback and explicit fictitious/sample scope.
+Privacy information and destructive-action consequences remain available.
+
 ## Product identity
 Visible brand: **GALACTIC GAMES**
 

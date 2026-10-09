@@ -170,11 +170,6 @@ function renderer() {
       250,
       538,
     );
-    if (state.tick < 120 * 7 && state.shotOrdinal < 2) {
-      ctx.fillStyle = "#e4f6ff";
-      ctx.font = "bold 13px system-ui";
-      ctx.fillText("APUNTA · SUELTA · JUNTA 3", 195, 470);
-    }
     if (state.tick - state.lastStageTick < 100) {
       ctx.fillStyle = "#affff1";
       ctx.font = "bold 22px system-ui";

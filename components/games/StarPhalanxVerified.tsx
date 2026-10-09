@@ -24,9 +24,7 @@ function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
   ctx.fillText(
     s.nextLayerTick !== null
       ? "SIGUIENTE CAPA EN APROXIMACIÓN"
-      : s.wave === 1
-        ? "MANTÉN Y ARRASTRA · MUEVE Y DISPARA"
-        : "CORTA LA CARGA · ESQUIVA LOS RAYOS",
+      : "",
     195,
     82,
   );

@@ -18,17 +18,18 @@ const colors = [
   "#6f96ed",
 ];
 export const STACK_SHIFT_VIEW = {
-  x: 67,
-  y: 80,
-  cell: 32,
+  x: 35,
+  y: 36,
+  cell: 36,
   columns: 8,
   rows: 16,
-  bottom: 592,
+  bottom: 612,
 } as const;
 function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
   drawSpaceBackdrop(ctx, 390, 620, s.tick * 0.05, s.tick);
   const { x: bx, y: by, cell, columns, rows } = STACK_SHIFT_VIEW;
-  const width = columns * cell, height = rows * cell;
+  const width = columns * cell,
+    height = rows * cell;
   ctx.fillStyle = "rgba(4,12,25,.94)";
   ctx.fillRect(bx - 4, by - 4, width + 8, height + 8);
   ctx.strokeStyle = "#335e79";
@@ -94,37 +95,20 @@ function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
   ctx.fillStyle = "#8edbda";
   ctx.fillRect(bx - 5, by + height, width + 10, 4);
   ctx.textAlign = "left";
-  ctx.font = "bold 13px system-ui";
-  ctx.fillStyle = "#e6f5ff";
-  ctx.fillText(
-    `${s.lines}/18 FILAS`,
-    bx,
-    44,
-  );
-  ctx.font = "11px system-ui";
   ctx.fillStyle = "#9bc1d5";
-  ctx.fillText(
-    s.pieces < 4
-      ? "Completa filas · la silueta muestra el apoyo"
-      : "Gira y encaja · la base siempre queda visible",
-    bx,
-    64,
-  );
-  ctx.fillStyle = "#9bc1d5";
-  ctx.font = "10px system-ui";
-  ctx.fillText("SIGUIENTE", 326, 103);
+  ctx.font = "9px system-ui";
+  ctx.fillText("SIGUIENTE", 334, 64);
   const next = stackPiece(s.seed, s.pieceIndex + 1);
   for (const [x, y] of stackCells(next)) {
     ctx.fillStyle = colors[next];
-    ctx.fillRect(328 + x * 12, 112 + y * 12, 10, 10);
+    ctx.fillRect(336 + x * 12, 74 + y * 12, 10, 10);
   }
   if (s.status === "failed") {
     ctx.fillStyle = "rgba(216,81,109,.17)";
     ctx.fillRect(bx, by, width, height);
   }
 }
-const hudLabel = (s: Readonly<StackShiftState>) =>
-  `${s.lines}/18 FILAS`;
+const hudLabel = (s: Readonly<StackShiftState>) => `${s.lines}/18 FILAS`;
 const keys = {
   ArrowLeft: "LEFT",
   ArrowRight: "RIGHT",

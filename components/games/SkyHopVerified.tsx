@@ -142,12 +142,6 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopState) {
   ctx.textAlign = "center";
   ctx.font = "12px system-ui";
   ctx.fillStyle = "#dceaf7";
-  if (s.highest < 4)
-    ctx.fillText("Rebotas automáticamente · dirige con ← →", 195, 86);
-  else if (s.lastLandingIndex >= 7 && s.lastLandingIndex < 11)
-    ctx.fillText("Violeta impulsa · verde guarda tu avance", 195, 86);
-  else if (s.lastLandingIndex >= 12 && s.lastLandingIndex < 16)
-    ctx.fillText("Rosa se deshace · busca el siguiente apoyo", 195, 86);
   const hit = s.tick - s.lastDamageTick;
   if (hit >= 0 && hit < 60) {
     ctx.fillStyle = `rgba(219,88,119,${0.15 * (1 - hit / 60)})`;

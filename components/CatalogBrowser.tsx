@@ -31,7 +31,7 @@ export default function CatalogBrowser(props: Props) {
     <section className={styles.browser} aria-label="Catálogo de juegos">
       <div className={styles.searchRow}>
         <label className={styles.searchLabel} htmlFor="catalog-search">
-          Encuentra tu próximo reto
+          Buscar juegos
         </label>
         <div className={styles.searchField}>
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
@@ -44,7 +44,7 @@ export default function CatalogBrowser(props: Props) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             maxLength={80}
-            placeholder="Buscar juego o habilidad"
+            placeholder="Buscar"
             autoComplete="off"
             aria-describedby="catalog-count"
           />
@@ -60,13 +60,12 @@ export default function CatalogBrowser(props: Props) {
         </div>
         <p id="catalog-count" className={styles.count} role="status">
           {games.length} {games.length === 1 ? "juego" : "juegos"}
-          {query ? " encontrados" : " para explorar"}
+          {query ? " encontrados" : ""}
         </p>
       </div>
       {games.length === 0 ? (
         <div className={styles.empty}>
           <strong>No encontramos ese reto</strong>
-          <p>Prueba con «billar», «puntería» o el nombre de otro juego.</p>
           <button type="button" onClick={() => setQuery("")}>
             Ver todos los juegos
           </button>
@@ -74,7 +73,11 @@ export default function CatalogBrowser(props: Props) {
       ) : (
         <div className={styles.grid}>
           {games.map((game) => (
-            <article key={game.id} className={styles.card} aria-label={game.name}>
+            <article
+              key={game.id}
+              className={styles.card}
+              aria-label={game.name}
+            >
               <div className={styles.cover}>
                 <img
                   src={game.cover}
@@ -110,8 +113,8 @@ export default function CatalogBrowser(props: Props) {
                 {props.startingGameId === game.id
                   ? "ENTRANDO…"
                   : props.stake === 0
-                    ? "JUGAR"
-                    : `JUGAR · ${props.stake}€ FICTICIOS`}
+                    ? game.name
+                    : `${game.name} · ${props.stake}€ FICTICIOS`}
               </button>
             </article>
           ))}

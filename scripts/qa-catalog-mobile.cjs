@@ -42,9 +42,15 @@ const { chromium } = require(
     );
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3042");
     const catalog = page.getByRole("region", { name: "Catálogo de juegos" }),
-      search = page.getByLabel("Encuentra tu próximo reto", { exact: true });
+      search = page.getByLabel("Buscar juegos", { exact: true });
     await catalog.waitFor();
     assert.equal(await catalog.locator("article").count(), 20);
+    for (const card of await catalog.locator("article").all()) {
+      const name = await card.getAttribute("aria-label");
+      assert.equal(await card.getByRole("button", { name: `Jugar a ${name}`, exact: true }).innerText(), name,
+        "the access action carries the game name");
+    }
+
     assert.equal(
       await catalog.getByRole("heading").count(),
       0,
@@ -58,7 +64,7 @@ const { chromium } = require(
     );
     assert.equal(
       await page.locator('.bottomNav button[aria-current="page"]').innerText(),
-      "▶\nJUGAR",
+      "▶\nJUEGOS",
     );
     assert.equal(
       await page.evaluate(
@@ -114,7 +120,7 @@ const { chromium } = require(
       "first game action fits above navigation at 320 px",
     );
     await page.screenshot({
-      path: "/workspace/.cloud-setup/v45-catalog-320.png",
+      path: process.env.QA_SCREENSHOT || "/workspace/.cloud-setup/catalog-320.png",
       fullPage: false,
     });
     await page
@@ -144,7 +150,7 @@ const { chromium } = require(
       false,
     );
     await page.screenshot({
-      path: "/workspace/.cloud-setup/v45-catalog-landscape.png",
+      path: process.env.QA_LANDSCAPE_SCREENSHOT || "/workspace/.cloud-setup/catalog-landscape.png",
     });
     await search.fill("Sky Hop");
     let starts = 0;
@@ -175,6 +181,8 @@ const { chromium } = require(
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     assert.equal(starts, 1);
+    assert.equal(await page.locator(".coreHint").count(), 0, "no instructions inside play");
+
     assert.ok((await page.locator(".coreHud").innerText()).includes("/75"));
     await page.getByRole("button", { name: "Volver", exact: true }).tap();
     await catalog.waitFor();

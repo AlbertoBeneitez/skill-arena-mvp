@@ -103,13 +103,6 @@ function render(ctx: CanvasRenderingContext2D, s: OrbitState) {
   ctx.fillStyle = "#c7dfef";
   ctx.textAlign = "center";
   ctx.font = "13px system-ui";
-  ctx.fillText(
-    s.passed < 8
-      ? "Interior acerca · exterior aleja · evita los arcos rosas"
-      : "Anticipa el siguiente arco · verde recarga escudos",
-    195,
-    82,
-  );
 }
 const keys = {
   ArrowDown: "IN",
