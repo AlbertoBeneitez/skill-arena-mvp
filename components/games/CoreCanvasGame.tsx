@@ -57,6 +57,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const [presentingFinale, setPresentingFinale] = useState(false);
   const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined, label: undefined as string | undefined });
   const attemptMatchId = "manifest" in attempt.state ? attempt.state.manifest?.match_id : undefined;
+  const attemptId = "ticket" in attempt.state ? attempt.state.ticket?.attempt_id : undefined;
 
   useEffect(() => { finishRef.current = props.onFinish; }, [props.onFinish]);
   useEffect(() => {
@@ -82,9 +83,10 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (!core.canApply(state, action)) { pendingRef.current.shift(); continue; }
       if (lastInputTickRef.current === state.tick) return;
       pendingRef.current.shift();
-      if (!attempt.recordInput({ tick: state.tick, action })) continue;
+      if (!attempt.recordInput({ tick: state.tick, action }, attemptId)) continue;
       lastInputTickRef.current = state.tick;
       applyCoreInput(core, state, action, targetRef.current);
+      attempt.recordCheckpoint(state.tick, state.status, attemptId);
       const tone = props.inputTones?.[action];
       if (tone) gameTone(tone);
       const feedbackScore = props.feedbackScore?.(state) ?? state.score;
@@ -95,19 +97,20 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       } else haptic(2);
       return;
     }
-  }, [core, attempt.recordInput, props.inputTones, props.feedbackScore]);
+  }, [core, attemptId, attempt.recordInput, attempt.recordCheckpoint, props.inputTones, props.feedbackScore]);
 
   const sync = useCallback((now: number) => {
     if (!runningRef.current) return;
     const tick = Math.floor(Math.max(0, now - epochRef.current) * core.tickRate / 1000);
     advanceCoreToTick(core, stateRef.current, tick, targetRef.current, flush);
     flush();
+    attempt.recordCheckpoint(stateRef.current.tick, stateRef.current.status, attemptId);
     const feedbackScore = props.feedbackScore?.(stateRef.current) ?? stateRef.current.score;
     if (feedbackScore !== feedbackScoreRef.current) {
       gameTone(feedbackScore > feedbackScoreRef.current ? "good" : "bad");
       feedbackScoreRef.current = feedbackScore;
     }
-  }, [core, flush, props.feedbackScore]);
+  }, [core, flush, attemptId, attempt.recordCheckpoint, props.feedbackScore]);
 
   const send = useCallback((action: string) => {
     if (!active || attempt.state.status !== "ready" || !runningRef.current || finishedRef.current || !core.actions.includes(action)) return;
@@ -158,13 +161,14 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     }
     stateRef.current = core.create(manifest.seed);
     feedbackScoreRef.current = 0;
-    setHud({tick:0,score:stateRef.current.score,height:stateRef.current.height,lives:stateRef.current.lives,label:props.hudLabel?.(stateRef.current)});
     targetRef.current = manifest.competition.target_score;
     epochRef.current = performance.now();
     pendingRef.current = [];
     lastInputTickRef.current = -1;
     finishedRef.current = false;
     runningRef.current = true;
+    attempt.recordCheckpoint(stateRef.current.tick, stateRef.current.status, attemptId);
+    setHud({tick:0,score:stateRef.current.score,height:stateRef.current.height,lives:stateRef.current.lives,label:props.hudLabel?.(stateRef.current)});
     terminalStartedRef.current = null;
     terminalElapsedRef.current = 0;
     setPresentingFinale(false);
@@ -231,7 +235,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [active, core, attemptMatchId, attempt.verifyAttempt, sync, draw, props.hudLabel]);
+  }, [active, core, attemptId, attemptMatchId, attempt.verifyAttempt, sync, draw, props.hudLabel]);
 
   useEffect(() => {
     if (active && attempt.state.status === "rejected" && !finishedRef.current) {

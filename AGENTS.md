@@ -89,6 +89,9 @@ Send the ordered match record at the deterministic terminal immediately, before
 presentation animations finish. Leaving that screen must not cancel a committed
 terminal upload or publish a stale result in a later session. Document incomplete
 legacy coverage and delivery limitations instead of claiming universal recording.
+On exit, send the last actually simulated unfinished prefix through the same
+endpoint as an explicit abandoned record. Its processing receipt is separate
+from verification and must never adjudicate a winner, ranking or settlement.
 
 Never downgrade a `VERIFIED` game to client-trusted scoring.
 

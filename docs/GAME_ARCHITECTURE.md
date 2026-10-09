@@ -60,9 +60,11 @@ manifest/ticket/input sequence, replays the registered core and derives the
 authoritative result. Client score is ignored.
 
 The shared client lifecycle is `useVerifiedAttempt`. It starts an attempt,
-owns the ticket/manifest, records ordered inputs, aborts pending requests on
-unmount and submits the replay. Game components do not duplicate the verified
-match HTTP protocol.
+owns the ticket/manifest and records ordered inputs. Start requests are cancelled
+when their view leaves; committed record uploads survive that cleanup. Terminal
+replay and unfinished-prefix receipts share the endpoint, with distinct meanings
+described in [ADR 006](adr/006-attempt-record-receipts.md). Game components do not
+duplicate the verified match HTTP protocol.
 
 ## Determinism
 

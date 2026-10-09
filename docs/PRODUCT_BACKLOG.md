@@ -251,3 +251,10 @@ v58 convierte Maze Rush en un solo laberinto continuo: V2 con apertura segura,
 conserva posición y nodos; no hay cambio de tablero, pausa ni nivel nuevo. V1 y
 su golden quedan archivados. Validación/replays/QA en release v58; siguiente
 unidad: envío común de registros de abandono, sin resultados ficticios.
+
+
+v59 registra también abandonos mediante un prefijo reconstruido por el mismo
+verificador. Receipt explícito sin resultado/durabilidad; terminal histórico sin
+cambios. Checkpoint real por intento, transporte preservado, keepalive acotado y
+renovación tras BFCache; ver ADR 006/release v59. Nuevas prioridades de producto
+y garantías aún pendientes se mantienen en PRODUCT_BACKLOG_STATUS.md.

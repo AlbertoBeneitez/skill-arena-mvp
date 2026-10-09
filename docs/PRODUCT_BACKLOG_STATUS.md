@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v58-mobile
+# GALACTIC GAMES · Seguimiento de v59-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -6,24 +6,24 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | --- | --- | --- |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles | QA humana y pulido según prueba real |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor | QA humana |
-| Jet Stream | v40: V3, despegue asistido, apertura amplia, vuelo suave y progresión; V1/V2/replay/explosión preservados | QA humana física |
+| Jet Stream | V3, despegue asistido, apertura amplia, vuelo suave, ventanas/vidas/dobles pasos y replay; explosión con registro inmediato | Separar más los pasos que todavía están alineados; QA física |
 | Alien Dash | v39: V2, plataformas, centinelas anticipados, recogibles, escudos, dos minutos, replay y QA táctil | QA humana física y pulido según prueba real |
-| Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | QA humana física |
+| Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | V2 para eliminar cambios de etapa y conservar progresión continua; QA física |
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | QA humana física |
-| River Dash | V2: primera línea superable, carry/colisiones, sectores progresivos y QA | QA humana física |
+| River Dash | V2: primera línea superable, carry/colisiones y replay/QA | V3 con recorrido continuo sin teletransporte tras cruzar; filas más fluidas; QA física |
 | Serpent | Wrap cuatro bordes, nueva estética, core/replay y QA | QA humana física |
-| Billar | v35: cinco mesas, física/potencia, escenario, replay, partidas móviles | QA humana física |
+| Billar | Cinco mesas V1, física/potencia, escenario, replay, partidas móviles | V2 sin reinicios de mesa/niveles; conservar profundidad/precisión; QA física |
 | Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | QA humana física |
-| Mine Grid | v34: candidato privado 1.0, cinco sectores resolubles, autoridad común/PG y QA local | Integración pública segura; catálogo todavía 0.1 |
+| Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo y datasets versionados; integración pública segura y registro; catálogo todavía 0.1 |
 | Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Cierre prematuro al revelar tablero, victoria de 52 bases marcada como derrota y score repetible en traslados; nuevo core versionado y autoridad privada común antes de promoción |
-| Sky Hop | v44: score farming reparado; core 1.0, 75 apoyos, tres sectores, balizas/móviles/impulsos/crumble, replay y touch QA | QA humana física |
+| Sky Hop | V2: recuperación tras baliza rota sin farming; 75 apoyos continuos, balizas/móviles/impulsos/crumble y replay/touch | Añadir enemigo marciano determinista; QA física |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | QA humana física |
-| Brick Relay | v47: core 1.0 VERIFIED, cuatro sectores/69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay; QA táctil completa | QA humana física |
+| Brick Relay | V1 VERIFIED, 69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay/touch | V2 sin cambios de tablero ni pausas de sector; QA física |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | QA humana física |
 | Maze Rush | v58: V2 VERIFIED, un laberinto continuo de 70 nodos, giros anticipados/STOP, pulsos y tres escudos; perseguidores progresivos con aviso previo y replay. V1 archivada | Seguimiento en móviles físicos |
-| Star Phalanx | v42: 16 capas en cinco oleadas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | QA humana física |
+| Star Phalanx | V1: 16 capas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | V2 con capas continuas sin cortes/limpieza intermedia; QA física |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
-| Piano Rush | v51: V2 VERIFIED, 48 notas/tres sectores, ocho notas de aprendizaje, ventanas progresivas, escudos/combo/precisión, reloj común y replay; partidas táctiles completas | Seguimiento en móviles físicos |
+| Piano Rush | V2 VERIFIED, 48 notas, ocho de aprendizaje, ventanas progresivas, escudos/combo/precisión, reloj común y replay/touch | V3 sin pausas ni sectores; revisión incremental preparada; QA física |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
 | Login/onboarding | Entrada demo honesta, avatar/nombre, corto y sin tutorial obligatorio | QA humana; OAuth/auth real requiere proveedor, sin simularlo |
@@ -97,3 +97,37 @@ Prioridad siguiente: registro de abandonos anterior al terminal en el endpoint
 común, como recepción de un prefijo reproducible sin adjudicación. Después Piano
 sin pausas y restantes niveles reales en nuevas versiones. Persistencia durable,
 legacy Mine/Solitaire y cierre offline siguen sin garantía universal.
+
+### v59 · Registros de abandono
+
+Los 18 VERIFIED activos envían también prefijos al salir, recargar o pagehide,
+usando el último tick/estado realmente simulado y el endpoint común. Receipt
+procesado no equivale a resultado ni almacenamiento durable; sin score/winner.
+Terminal causado por input se compromete antes del feedback y comparte dedupe
+con RAF/cleanup. Checkpoints/inputs ligados al attempt_id; BFCache pide intento
+nuevo. Keepalive limitado por bytes; no se abandona por blur/rotación.
+
+29 versiones actuales/históricas y sobres terminales pasan tests. QA táctil en
+ambas orientaciones: ocho recibos reales por recorrido, salida con/sin inputs,
+respuesta tardía, guardia back, recarga y handlers BFCache (no se afirma cache
+real). Start pendiente cancelado no crea registros ficticios. Jet/Dardos
+terminales siguen verificados; detalles en release v59.
+
+Siguen pendientes registro legacy Mine/Solitaire, almacenamiento durable,
+reintentos/offline y autoridad pública privada con identidad/configuración.
+La recepción de prefijos no adjudica abandonos ni activa dinero real.
+
+### Prioridades vigentes de producto
+
+Retirar instrucciones/coaching y explicaciones de las superficies de juego;
+nombres como acción de acceso, portadas acordes a la identidad y fondos Saturno
+más cuidados. Conservar labels de estado/error/accesibilidad y la identificación
+de importes ficticios. Dar más espacio al tablero Stack Shift.
+
+Mejorar dinamismo River y entretenimiento Maze sin volver a niveles. Sustituir
+comparación por puntos con avance real y tiempo decimal: requiere métricas
+autoritativas/versionadas por juego, sin cambiar históricos ni renombrar score.
+Solicitados 1000 escenarios distintos por juego y experiencias que no se repitan;
+reutilizar catálogo/generadores comunes, conservar mismo escenario entre rivales
+y definir rotación auditable/consumo con la persistencia desacoplada existente.
+No declarar unicidad de experiencia por simplemente cambiar un texto o seed.
