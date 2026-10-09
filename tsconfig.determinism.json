@@ -43,6 +43,7 @@
     "scripts/verify-phalanx-v1.ts",
     "scripts/phalanx-play-fixture.ts",
     "scripts/verify-sky-hop-v1.ts",
+    "scripts/verify-sky-hop-v2.ts",
     "scripts/sky-hop-play-fixture.ts",
     "scripts/verify-metro-v1.ts",
     "scripts/metro-play-fixture.ts",

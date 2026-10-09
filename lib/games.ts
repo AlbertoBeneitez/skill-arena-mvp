@@ -470,7 +470,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "sky-hop",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/SkyHopVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SKY_HOP_ACTIONS },

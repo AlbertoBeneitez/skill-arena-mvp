@@ -2,10 +2,10 @@
 /** Original GALACTIC GAMES presentation; MIT mechanic lineage is documented in THIRD_PARTY_NOTICES. */
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  SKY_HOP_CORE,
   hopPlatformX,
   type SkyHopState,
 } from "@/lib/verified/skyHopCore.v1";
+import { SKY_HOP_CORE_V2 } from "@/lib/verified/skyHopCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
 function render(ctx: CanvasRenderingContext2D, s: SkyHopState) {
@@ -187,7 +187,7 @@ export default function SkyHopVerified(props: GameRuntimeProps) {
     <div className="skyHopVerified">
       <CoreCanvasGame
         {...props}
-        core={SKY_HOP_CORE}
+        core={SKY_HOP_CORE_V2}
         name="Sky Hop"
         render={render}
         hudLabel={hudLabel}

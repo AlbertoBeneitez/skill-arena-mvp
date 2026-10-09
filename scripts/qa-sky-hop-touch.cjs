@@ -10,7 +10,7 @@ const { chromium } = require(
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const b = pathToFileURL(path.join(__dirname, "../.det-test/")).href,
-    { SKY_HOP_CORE: core } = await import(b + "lib/verified/skyHopCore.v1.js"),
+    { SKY_HOP_CORE_V2: core } = await import(b + "lib/verified/skyHopCore.v2.js"),
     { replayCore } = await import(b + "lib/verified/coreRuntime.v1.js");
   const browser = await chromium.launch({
     executablePath: "/usr/bin/chromium",
@@ -102,15 +102,15 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       };
     });
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3040");
-    await page.locator(".quickStakeBar button").first().click();
+    await page.locator(".quickStakeBar button").first().tap();
     const start = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Sky Hop", exact: true })
-      .click();
+      .tap();
     const issued = await (await start).json();
-    assert.equal(issued.manifest.game_version, "1.0.0");
+    assert.equal(issued.manifest.game_version, "2.0.0");
     const s = core.create(issued.manifest.seed),
       target = issued.manifest.competition.target_score;
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
@@ -183,6 +183,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       lastSample = null,
       lastRising = true,
       lastLanded = 0;
+    let forcingFall = false, recovered = false, recoveryLives = null;
     const palette = {
       normal: "#7fcde5",
       boost: "#a999fa",
@@ -263,9 +264,18 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       const error = tx - (x + vx * 7),
         direction =
           error > 14000 ? "RIGHT_DOWN" : error < -14000 ? "LEFT_DOWN" : null;
+      if (process.env.QA_RECOVERY && lastLanded === 13 && recoveryLives === null) {
+        recoveryLives = Number((await page.locator(".coreHud").innerText()).match(/VIDAS (\d+)/)[1]);
+        forcingFall = true;
+      }
+      if (forcingFall) {
+        const lives = Number((await page.locator(".coreHud").innerText()).match(/VIDAS (\d+)/)[1]);
+        if (lives < recoveryLives) { forcingFall = false; recovered = true; }
+      }
+      const steering = forcingFall ? "LEFT_DOWN" : direction;
       if (!process.env.QA_LOSS) {
-        if (held && held !== direction) await up();
-        if (direction && held !== direction) await down(direction);
+        if (held && held !== steering) await up();
+        if (steering && held !== steering) await down(steering);
       }
       if (turns % 300 === 0)
         console.log(
@@ -295,6 +305,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(result.score, replay.score);
     assert.equal(result.won, !process.env.QA_LOSS);
     assert.equal(submits, 1);
+    if (process.env.QA_RECOVERY) assert.equal(recovered, true, "a broken-support fall must recover and finish");
     assert.ok(
       body.inputs.some((i) => i.action === "LEFT_UP"),
       "pointer cancel releases left",
@@ -323,15 +334,16 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     );
     const other = page.getByRole("button", { name: "CAMBIAR", exact: true });
     if (process.env.QA_LOSS) {
+      await page.waitForFunction(() => document.querySelector(".resultActions")?.matches(":enabled"));
       await other.focus();
       await page.keyboard.press("Enter");
-    } else await other.click();
+    } else await other.tap();
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Sky Hop", exact: true })
-      .click();
+      .tap();
     const again = await (await restart).json();
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });

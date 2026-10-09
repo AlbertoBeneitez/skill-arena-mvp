@@ -4,6 +4,7 @@ import { MAZE_CORE } from "../verified/mazeRushCore.v1";
 import { BRICK_RELAY_CORE } from "../verified/brickRelayCore.v1";
 import { METRO_CORE } from "../verified/metroShiftCore.v1";
 import { SKY_HOP_CORE } from "../verified/skyHopCore.v1";
+import { SKY_HOP_CORE_V2 } from "../verified/skyHopCore.v2";
 import { PHALANX_CORE } from "../verified/starPhalanxCore.v1";
 import { STACK_SHIFT_CORE } from "../verified/stackShiftCore.v1";
 import { JET_STREAM_CORE_V3 } from "../verified/jetStreamCore.v3";
@@ -366,6 +367,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BRICK_RELAY_CORE.gameId, BRICK_RELAY_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_CORE),
   [adapterKey(METRO_CORE.gameId, METRO_CORE.gameVersion)]: coreAdapter(METRO_CORE),
   [adapterKey(SKY_HOP_CORE.gameId, SKY_HOP_CORE.gameVersion)]: coreAdapter(SKY_HOP_CORE),
+  [adapterKey(SKY_HOP_CORE_V2.gameId, SKY_HOP_CORE_V2.gameVersion)]: coreAdapter(SKY_HOP_CORE_V2),
   [adapterKey(PHALANX_CORE.gameId, PHALANX_CORE.gameVersion)]: coreAdapter(PHALANX_CORE),
   [adapterKey(STACK_SHIFT_CORE.gameId, STACK_SHIFT_CORE.gameVersion)]: coreAdapter(STACK_SHIFT_CORE),
   [adapterKey(JET_STREAM_CORE_V3.gameId, JET_STREAM_CORE_V3.gameVersion)]: coreAdapter(JET_STREAM_CORE_V3),
