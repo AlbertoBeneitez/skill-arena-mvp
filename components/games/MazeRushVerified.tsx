@@ -1,21 +1,77 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  MAZE_CORE_V2,
+  MAZE_V2_RULES,
   mazeEnemyAwakeV2,
   mazeEnemyPreparingV2,
   mazeChasingV2,
-  mazeMovePeriodV2,
   type MazeV2State,
 } from "@/lib/verified/mazeRushCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
-  drawSpaceBackdrop(ctx, 390, 620, s.tick * 0.02, s.tick);
+import { MAZE_CORE_V3, mazeMovePeriodV3 } from "@/lib/verified/mazeRushCore.v3";
+// Heading is an icon on the current player, never a projected route.
+function drawDirection(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  direction: MazeV2State["direction"],
+  color: string,
+) {
+  ctx.save();
+  ctx.translate(x, y);
+  // Keep decoration distinct from the existing player/node observation colors.
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = "round";
+  if (direction === "STOP") {
+    ctx.fillRect(-size * 0.55, -size * 0.55, size * 0.35, size * 1.1);
+    ctx.fillRect(size * 0.2, -size * 0.55, size * 0.35, size * 1.1);
+  } else {
+    const angle =
+      direction === "UP"
+        ? -Math.PI / 2
+        : direction === "DOWN"
+          ? Math.PI / 2
+          : direction === "LEFT"
+            ? Math.PI
+            : 0;
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.65, 0);
+    ctx.lineTo(size * 0.65, 0);
+    ctx.moveTo(size * 0.15, -size * 0.5);
+    ctx.lineTo(size * 0.65, 0);
+    ctx.lineTo(size * 0.15, size * 0.5);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function render(
+  ctx: CanvasRenderingContext2D,
+  s: MazeV2State,
+  viewport: LogicalCanvasViewport,
+) {
+  drawSpaceBackdrop(
+    ctx,
+    viewport.width,
+    viewport.height,
+    s.tick * 0.02,
+    s.tick,
+  );
   const b = s.board,
-    cell = Math.floor(Math.min(346 / b.width, 442 / b.height)),
-    ox = (390 - b.width * cell) / 2,
-    oy = 88;
+    horizontal = viewport.width > viewport.height,
+    baseCell = Math.floor(Math.min(346 / b.width, 442 / b.height)),
+    cell = horizontal
+      ? Math.floor(Math.min((viewport.width - 24) / b.width, 550 / b.height))
+      : baseCell,
+    nodeScale = cell / baseCell,
+    pulseRadius = 8 * nodeScale,
+    ox = (viewport.width - b.width * cell) / 2,
+    oy = horizontal ? 48 : 88;
   ctx.fillStyle = "rgba(6,15,31,.93)";
   ctx.fillRect(ox - 4, oy - 4, b.width * cell + 8, b.height * cell + 8);
   for (let i = 0; i < b.walls.length; i++) {
@@ -35,14 +91,19 @@ function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
         ctx.arc(
           x + cell / 2,
           y + cell / 2,
-          b.pulses[i] ? 8 : 6,
+          b.pulses[i] ? pulseRadius : 6 * nodeScale,
           0,
           Math.PI * 2,
         );
         ctx.fill();
         if (b.pulses[i]) {
           ctx.strokeStyle = "#90cfc4";
-          ctx.strokeRect(x + cell / 2 - 8, y + cell / 2 - 8, 16, 16);
+          ctx.strokeRect(
+            x + cell / 2 - pulseRadius,
+            y + cell / 2 - pulseRadius,
+            pulseRadius * 2,
+            pulseRadius * 2,
+          );
         }
       }
     }
@@ -56,7 +117,7 @@ function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
     age = s.tick - s.lastMoveTick;
   // Interpolate only adjacent visual positions; contact/inputs use integer cells.
   // A short ease-out smooths arrival without projecting into an unvisited tile.
-  const progress = Math.min(1, age / Math.floor(mazeMovePeriodV2(s) / 2)),
+  const progress = Math.min(1, age / Math.floor(mazeMovePeriodV3(s) / 2)),
     t = 1 - (1 - progress) ** 3;
   const adjacent = Math.abs(old.x - p.x) + Math.abs(old.y - p.y) === cell;
   const x = adjacent ? old.x + (p.x - old.x) * t : p.x,
@@ -69,12 +130,82 @@ function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
   ctx.lineTo(x - cell * 0.31, y);
   ctx.closePath();
   ctx.fill();
+  drawDirection(ctx, x, y, cell * 0.18, s.direction, "#123449");
+  const inputAge = s.tick - s.lastInputTick;
+  if (s.lastInputTick >= 0 && inputAge >= 0 && inputAge < 18) {
+    ctx.save();
+    ctx.fillStyle = "#213e4e";
+    ctx.strokeStyle = "#c4e7ed";
+    ctx.globalAlpha = 0.65 * (1 - inputAge / 18);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x, y, cell * (0.35 + (0.06 * inputAge) / 18), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  if (s.queued !== s.direction) {
+    // A small badge stays within this cell and confirms the buffered turn.
+    const badgeX = x + cell * 0.27,
+      badgeY = y - cell * 0.27;
+    ctx.save();
+    ctx.fillStyle = "#14273f";
+    ctx.beginPath();
+    ctx.arc(badgeX, badgeY, cell * 0.17, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    drawDirection(ctx, badgeX, badgeY, cell * 0.12, s.queued, "#f0d694");
+  }
   if (s.tick < s.poweredUntil || s.tick < s.protectedUntil) {
-    ctx.strokeStyle = s.tick < s.poweredUntil ? "#9cf0d6" : "#efdb8c";
-    ctx.lineWidth = 2;
+    const powered = s.tick < s.poweredUntil,
+      until = powered ? s.poweredUntil : s.protectedUntil,
+      duration = powered
+        ? MAZE_V2_RULES.pulseTicks
+        : MAZE_V2_RULES.protectionTicks,
+      remaining = Math.min(1, Math.max(0, (until - s.tick) / duration));
+    ctx.save();
+    ctx.strokeStyle = powered ? "#9cf0d6" : "#efdb8c";
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.2;
     ctx.beginPath();
     ctx.arc(x, y, cell * 0.43, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(
+      x,
+      y,
+      cell * 0.43,
+      -Math.PI / 2,
+      -Math.PI / 2 + remaining * Math.PI * 2,
+    );
+    ctx.stroke();
+    ctx.restore();
+  }
+  const pickupAge = s.tick - s.lastPickupTick;
+  if (s.lastPickupTick >= 0 && pickupAge >= 0 && pickupAge < 48) {
+    const progress = pickupAge / 48,
+      radius = cell * (0.38 + progress * 0.12);
+    ctx.save();
+    ctx.fillStyle = "#143b38";
+    ctx.strokeStyle = "#b8efde";
+    ctx.globalAlpha = 0.7 * (1 - progress);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    for (const [dx, dy] of [
+      [1, 0],
+      [0, 1],
+      [-1, 0],
+      [0, -1],
+    ]) {
+      ctx.beginPath();
+      ctx.moveTo(x + dx * radius * 0.82, y + dy * radius * 0.82);
+      ctx.lineTo(x + dx * radius, y + dy * radius);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
   for (const [i, e] of b.enemies.entries()) {
     const p = center(e.cell),
@@ -95,6 +226,27 @@ function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
     ctx.fillStyle = "#122238";
     ctx.fillRect(p.x - 5, p.y - 2, 3, 3);
     ctx.fillRect(p.x + 2, p.y - 2, 3, 3);
+    // Antennae make the existing threat silhouette distinct from a pickup.
+    // Preserve its authoritative center and the original colored body arc.
+    ctx.save();
+    ctx.fillStyle = "#122238";
+    ctx.strokeStyle = preparing ? "#f0d694" : awake ? "#d6e1e9" : "#8398ad";
+    ctx.lineWidth = 1.3;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(p.x - cell * 0.12, p.y - cell * 0.24);
+    ctx.lineTo(p.x - cell * 0.22, p.y - cell * 0.36);
+    ctx.moveTo(p.x + cell * 0.12, p.y - cell * 0.24);
+    ctx.lineTo(p.x + cell * 0.22, p.y - cell * 0.36);
+    ctx.stroke();
+    if (awake) {
+      ctx.strokeStyle = "#122238";
+      ctx.beginPath();
+      ctx.moveTo(p.x - cell * 0.1, p.y + cell * 0.13);
+      ctx.lineTo(p.x + cell * 0.1, p.y + cell * 0.13);
+      ctx.stroke();
+    }
+    ctx.restore();
     if (preparing) {
       ctx.strokeStyle = "#efdba0";
       ctx.lineWidth = 2;
@@ -118,10 +270,10 @@ function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
       : b.enemies.some((_, i) => mazeEnemyPreparingV2(s, i))
         ? "PERSEGUIDOR ACTIVÁNDOSE"
         : "";
-  ctx.fillText(message, 195, 64);
+  ctx.fillText(message, viewport.width / 2, horizontal ? 24 : 64);
   if (s.tick - s.lastDamageTick < 60) {
     ctx.fillStyle = `rgba(224,72,113,${0.22 * (1 - (s.tick - s.lastDamageTick) / 60)})`;
-    ctx.fillRect(0, 0, 390, 620);
+    ctx.fillRect(0, 0, viewport.width, viewport.height);
   }
 }
 const keys = {
@@ -160,7 +312,9 @@ export default function MazeRushVerified(props: GameRuntimeProps) {
     <div className="mazeRushVerified">
       <CoreCanvasGame
         {...props}
-        core={MAZE_CORE_V2}
+        core={MAZE_CORE_V3}
+        hideHudScore
+        expandHorizontalViewport
         name="Maze Rush"
         render={render}
         keys={keys}

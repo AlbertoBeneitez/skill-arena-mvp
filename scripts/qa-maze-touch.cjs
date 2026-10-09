@@ -9,8 +9,8 @@ const { chromium } = require(
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const base = pathToFileURL(path.join(__dirname, "../.det-test/")).href;
-  const { MAZE_CORE_V2: core } = await import(
-      base + "lib/verified/mazeRushCore.v2.js"
+  const { MAZE_CORE_V3: core } = await import(
+      base + "lib/verified/mazeRushCore.v3.js"
     ),
     { chooseMazeRoute } = await import(base + "scripts/maze-route-fixture.js"),
     { replayCore } = await import(base + "lib/verified/coreRuntime.v1.js");
@@ -74,6 +74,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
             enemies: [],
             player: null,
             pulseSeconds: 0,
+            pulseTicks: 0,
           };
         return clear.apply(this, a);
       };
@@ -84,9 +85,17 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       };
       p.arc = function (x, y, r, ...a) {
         if (match(this) && window.__mazeView) {
-          if (r === 6 && this.fillStyle === "#d2e2f4")
+          if (
+            this.strokeStyle === "#9cf0d6" &&
+            a[0] === -Math.PI / 2 &&
+            this.globalAlpha === 1
+          )
+            window.__mazeView.pulseTicks = Math.round(
+              ((a[1] - a[0]) / (Math.PI * 2)) * 960,
+            );
+          if (this.fillStyle === "#d2e2f4")
             window.__mazeView.nodes.push({ x, y, pulse: false });
-          if (r === 8 && this.fillStyle === "#9cf0d6")
+          if (this.fillStyle === "#9cf0d6")
             window.__mazeView.nodes.push({ x, y, pulse: true });
           if (
             ["#536782", "#b29c61", "#a281dc", "#ed8a91", "#efb876"].includes(
@@ -131,9 +140,15 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Maze Rush", exact: true })
       .tap();
     const issued = await (await started).json();
-    assert.equal(issued.manifest.game_version, "2.0.0");
+    assert.equal(issued.manifest.game_version, "3.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
+    await page.waitForFunction(
+      () => window.__mazeView?.nodes.length === 70 && window.__mazeView?.player,
+    );
+    const initialNodeCount = await page.evaluate(
+      () => window.__mazeView.nodes.length,
+    );
     const names = {
       LEFT: "Girar izquierda",
       UP: "Girar arriba",
@@ -167,14 +182,34 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       type: "touchCancel",
       touchPoints: [],
     });
-    await page.getByRole("button", { name: names.STOP, exact: true }).tap();
+    await page.waitForTimeout(80); // Respect the real 6-tick input cooldown after the swipe.
+    const stopBox = await page
+      .getByRole("button", { name: names.STOP, exact: true })
+      .boundingBox();
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [
+        { x: stopBox.x + stopBox.width / 2, y: stopBox.y + stopBox.height / 2 },
+      ],
+    });
+    const activeStop = await page
+      .getByRole("button", { name: names.STOP, exact: true })
+      .boundingBox();
+    assert.ok(
+      activeStop.height >= 46 && activeStop.width >= 44,
+      "held control keeps its full touch area",
+    );
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
     await page
       .getByRole("button", { name: "Activar sonido", exact: true })
       .tap();
     let previousCell = null,
       changedAt = Date.now(),
       geometry = null,
-      initialNodes = null,
+      initialNodes = initialNodeCount,
       previousNodes = Infinity;
     let done = false,
       last = "STOP",
@@ -249,8 +284,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           board,
           player: observedCell,
           tick,
-          poweredUntil: tick + view.pulseSeconds * 120,
+          poweredUntil: tick + view.pulseTicks,
           awake,
+          pulseReserveTicks: 600, // Slower V3 traversal: seek protection before it expires.
           activeEnemyCells: view.enemies
             .filter((e) => e.awake)
             .map((e) => index(e)),
@@ -320,6 +356,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(result.verified, true);
     assert.equal(replay.valid, true, replay.error);
     assert.equal(result.score, replay.score);
+    assert.equal(result.height, replay.state.collected);
     assert.equal(result.time_ms, replay.timeMs);
     assert.equal(replay.state.tick, body.final_tick);
     assert.equal(result.won, !loss);
@@ -338,6 +375,18 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       false,
     );
     await page.locator(".resultPanel").waitFor({ state: "visible" });
+    assert.equal(
+      Number(
+        await page
+          .getByLabel("Avance del intento", { exact: true })
+          .innerText(),
+      ),
+      replay.state.collected,
+    );
+    assert.equal(
+      (await page.locator(".resultPanel").innerText()).includes("Puntos"),
+      false,
+    );
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );

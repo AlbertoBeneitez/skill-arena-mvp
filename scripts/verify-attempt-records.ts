@@ -80,6 +80,7 @@ try {
     ["river-dash", "2.0.0"],
     ["sky-hop", "1.0.0"],
     ["maze-rush", "1.0.0"],
+    ["maze-rush", "2.0.0"],
   ];
   const current: [GameId, string][] = GAMES
     .filter(game => game.competition.verification === "server-replay")

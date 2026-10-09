@@ -14,6 +14,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-submission-lifecycle.js");
   await import("../.det-test/scripts/verify-attempt-records.js");
   await import("../.det-test/scripts/verify-core-runtime.js");
+  await import("../.det-test/scripts/verify-canvas-viewport.js");
   await import("../.det-test/scripts/verify-stack-v3.js");
   await import("../.det-test/scripts/verify-stack-shift-v1.js");
   await import("../.det-test/scripts/verify-phalanx-v1.js");
@@ -23,6 +24,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-brick-v1.js");
   await import("../.det-test/scripts/verify-maze-v1.js");
   await import("../.det-test/scripts/verify-maze-v2.js");
+  await import("../.det-test/scripts/verify-maze-v3.js");
   await import("../.det-test/scripts/verify-orbit-v1.js");
   await import("../.det-test/scripts/verify-piano-v2.js");
   await import("../.det-test/scripts/verify-piano-v3.js");

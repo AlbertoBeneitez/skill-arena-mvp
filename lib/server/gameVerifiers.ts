@@ -2,6 +2,7 @@ import { PIANO_V2_CORE } from "../verified/pianoRushCore.v2";
 import { PIANO_V3_CORE } from "../verified/pianoRushCore.v3";
 import { ORBIT_CORE } from "../verified/orbitShiftCore.v1";
 import { MAZE_CORE } from "../verified/mazeRushCore.v1";
+import { MAZE_CORE_V3 } from "../verified/mazeRushCore.v3";
 import { MAZE_CORE_V2 } from "../verified/mazeRushCore.v2";
 import { BRICK_RELAY_CORE } from "../verified/brickRelayCore.v1";
 import { METRO_CORE } from "../verified/metroShiftCore.v1";
@@ -369,6 +370,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PIANO_V2_CORE.gameId, PIANO_V2_CORE.gameVersion)]: coreAdapter(PIANO_V2_CORE),
   [adapterKey(ORBIT_CORE.gameId, ORBIT_CORE.gameVersion)]: coreAdapter(ORBIT_CORE),
   [adapterKey(MAZE_CORE.gameId, MAZE_CORE.gameVersion)]: coreAdapter(MAZE_CORE),
+  [adapterKey(MAZE_CORE_V3.gameId, MAZE_CORE_V3.gameVersion)]: coreAdapter(MAZE_CORE_V3),
   [adapterKey(MAZE_CORE_V2.gameId, MAZE_CORE_V2.gameVersion)]: coreAdapter(MAZE_CORE_V2),
   [adapterKey(BRICK_RELAY_CORE.gameId, BRICK_RELAY_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_CORE),
   [adapterKey(METRO_CORE.gameId, METRO_CORE.gameVersion)]: coreAdapter(METRO_CORE),

@@ -1,3 +1,6 @@
+export type CanvasViewportPolicy = "contain" | "expand-horizontal";
+export type LogicalCanvasViewport = { width: number; height: number };
+
 export type CanvasViewportMetrics = {
   dpr: number;
   scale: number;
@@ -5,6 +8,8 @@ export type CanvasViewportMetrics = {
   offsetY: number;
   cssWidth: number;
   cssHeight: number;
+  logicalWidth: number;
+  logicalHeight: number;
 };
 
 /**
@@ -18,14 +23,15 @@ export function configureLogicalCanvas(
   canvas: HTMLCanvasElement,
   logicalWidth: number,
   logicalHeight: number,
-  maxDevicePixelRatio = 2
+  maxDevicePixelRatio = 2,
+  policy: CanvasViewportPolicy = "contain",
 ): CanvasViewportMetrics {
   const rect = canvas.getBoundingClientRect();
   const cssWidth = Math.max(1, rect.width || logicalWidth);
   const cssHeight = Math.max(1, rect.height || logicalHeight);
   const dpr = Math.min(
     maxDevicePixelRatio,
-    Math.max(1, window.devicePixelRatio || 1)
+    Math.max(1, window.devicePixelRatio || 1),
   );
 
   const pixelWidth = Math.max(1, Math.round(cssWidth * dpr));
@@ -36,25 +42,30 @@ export function configureLogicalCanvas(
     canvas.height = pixelHeight;
   }
 
-  const scale = Math.min(
-    cssWidth / logicalWidth,
-    cssHeight / logicalHeight
-  );
+  // Opt-in visual space only: signed core dimensions and simulation stay fixed.
+  // Wider canvases keep the same vertical scale instead of adding side bars.
+  const renderWidth =
+    policy === "expand-horizontal"
+      ? Math.max(logicalWidth, (cssWidth / cssHeight) * logicalHeight)
+      : logicalWidth;
+  const scale = Math.min(cssWidth / renderWidth, cssHeight / logicalHeight);
 
   return {
     dpr,
     scale,
-    offsetX: (cssWidth - logicalWidth * scale) / 2,
+    offsetX: (cssWidth - renderWidth * scale) / 2,
     offsetY: (cssHeight - logicalHeight * scale) / 2,
     cssWidth,
     cssHeight,
+    logicalWidth: renderWidth,
+    logicalHeight,
   };
 }
 
 export function beginLogicalCanvasFrame(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  metrics: CanvasViewportMetrics
+  metrics: CanvasViewportMetrics,
 ) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -64,6 +75,6 @@ export function beginLogicalCanvasFrame(
     0,
     metrics.dpr * metrics.scale,
     metrics.dpr * metrics.offsetX,
-    metrics.dpr * metrics.offsetY
+    metrics.dpr * metrics.offsetY,
   );
 }

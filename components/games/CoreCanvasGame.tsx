@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
-import { configureLogicalCanvas, beginLogicalCanvasFrame, type CanvasViewportMetrics } from "@/lib/gameCanvas";
+import { configureLogicalCanvas, beginLogicalCanvasFrame, type CanvasViewportMetrics, type LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
 import { advanceCoreToTick, applyCoreInput, type CoreState, type GameCore } from "@/lib/verified/coreRuntime.v1";
@@ -13,7 +13,9 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   core: GameCore<S>;
   name: string;
   instruction: string;
-  render(ctx: CanvasRenderingContext2D, state: S): void;
+  render(ctx: CanvasRenderingContext2D, state: S, viewport: LogicalCanvasViewport): void;
+  /** Visual space only; opt in when input coordinates are independent of width. */
+  expandHorizontalViewport?: boolean;
   primaryAction?: string;
   /** Held canvas gestures release through the same blur/cancel lifecycle as keys/buttons. */
   pointerReleaseAction?: string;
@@ -35,6 +37,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
 /** Presentation/input adapter. The core and shared server replay own outcomes. */
 export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const { core, active, stake, targetScore, name, instruction, render } = props;
+  const viewportPolicy = props.expandHorizontalViewport ? "expand-horizontal" : "contain";
   const attempt = useVerifiedAttempt({ active, gameId: core.gameId, stakeMinor: Math.round(stake * 100), targetScore });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const metricsRef = useRef<CanvasViewportMetrics | null>(null);
@@ -70,11 +73,14 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
-    metricsRef.current ??= configureLogicalCanvas(canvas, core.width, core.height);
+    metricsRef.current ??= configureLogicalCanvas(canvas, core.width, core.height, 2, viewportPolicy);
     beginLogicalCanvasFrame(ctx, canvas, metricsRef.current);
-    render(ctx, stateRef.current);
+    render(ctx, stateRef.current, {
+      width: metricsRef.current.logicalWidth,
+      height: metricsRef.current.logicalHeight,
+    });
     if (stateRef.current.status === "failed") props.failureFinale?.render(ctx, stateRef.current, terminalElapsedRef.current);
-  }, [core, render, props.failureFinale]);
+  }, [core, render, props.failureFinale, viewportPolicy]);
 
   const flush = useCallback(() => {
     const state = stateRef.current;
@@ -135,13 +141,13 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const resize = () => { metricsRef.current = configureLogicalCanvas(canvas, core.width, core.height); draw(); };
+    const resize = () => { metricsRef.current = configureLogicalCanvas(canvas, core.width, core.height, 2, viewportPolicy); draw(); };
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
     window.addEventListener("orientationchange", resize);
     return () => { observer.disconnect(); window.removeEventListener("orientationchange", resize); };
-  }, [core, draw]);
+  }, [core, draw, viewportPolicy]);
 
   useEffect(() => {
     const release = releaseHeld;

@@ -11,6 +11,8 @@ export type MazePlanningView = {
   poweredUntil: number;
   awake: boolean;
   activeEnemyCells: readonly number[];
+  /** Test-player route preference; never changes simulation. */
+  pulseReserveTicks?: number;
 };
 /** Test-only planner based solely on public geometry and visible active pursuers. */
 export function chooseMazeRoute(s: MazePlanningView) {
@@ -20,7 +22,7 @@ export function chooseMazeRoute(s: MazePlanningView) {
     .filter((i) => i >= 0);
   if (
     s.awake &&
-    s.poweredUntil - s.tick < 240 &&
+    s.poweredUntil - s.tick < (s.pulseReserveTicks ?? 240) &&
     candidates.some((i) => s.board.pulses[i])
   )
     candidates = candidates.filter((i) => s.board.pulses[i]);
