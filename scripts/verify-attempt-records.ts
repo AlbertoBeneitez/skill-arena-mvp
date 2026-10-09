@@ -15,6 +15,7 @@ import {
 import { signAttemptTicket } from "../lib/server/matchIntegrity";
 import { getServerGameAdapter } from "../lib/server/gameVerifiers";
 import { createPrivateMatchManifest } from "../lib/server/privateMatchIssuer";
+import alienFixture from "./fixtures/alien-v3.json" with { type: "json" };
 
 const TEST_SECRET = "attempt-record-test-key-not-for-production";
 const START_TIME = Date.parse("2026-10-09T12:00:00.000Z");
@@ -28,9 +29,9 @@ function sign(ticket: Omit<AttemptTicket, "signature">): AttemptTicket {
   return { ...ticket, signature: signAttemptTicket(ticket, TEST_SECRET) };
 }
 
-function payload(gameId: GameId, gameVersion?: string): VerifiedAttemptPayload {
+function payload(gameId: GameId, gameVersion?: string, seed = "attempt-record-fixture-v1"): VerifiedAttemptPayload {
   const manifest = {
-    ...createMatchManifest({ gameId, gameVersion, seed: "attempt-record-fixture-v1", targetScore: 1e9 }),
+    ...createMatchManifest({ gameId, gameVersion, seed, targetScore: 1e9 }),
     match_id: `record-${gameId}-${gameVersion ?? "current"}`,
     created_at: new Date(START_TIME).toISOString(),
   };
@@ -73,6 +74,7 @@ try {
     ["piano-rush", "2.0.0"],
     ["jet-stream", "1.0.0"],
     ["dino-dash", "1.0.0"],
+    ["dino-dash", "2.0.0"],
     ["jet-stream", "2.0.0"],
     ["jet-stream", "3.0.0"],
     ["darts", "1.0.0"],
@@ -179,6 +181,20 @@ try {
   assert.equal(reachedResult.body.height, 0, "Jet V4 reach must come from replay, never client");
   assert.equal(reachedResult.body.score, 0);
   assert.equal(reachedResult.body.won, false);
+  const alien = {
+    ...payload("dino-dash", "3.0.0", alienFixture.seed),
+    inputs: alienFixture.inputs,
+    final_tick: alienFixture.finalTick,
+  };
+  now += 130_000;
+  const alienResult = processAttemptRecord({ ...alien, client_score: 1e9, won: false, height: 999999 });
+  assert.equal(alienResult.status, 200);
+  assert.equal(alienResult.body.verified, true);
+  if (!alienResult.body.verified) throw new Error("Alien V3 terminal did not verify");
+  assert.equal(alienResult.body.height, alienFixture.height, "Alien reach must be replayed, never supplied by the browser");
+  assert.equal(alienResult.body.score, alienFixture.score);
+  assert.equal(alienResult.body.time_ms, 120_000);
+  assert.equal(alienResult.body.won, true);
   reject(abandon(terminal), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
   reject({ ...abandon(terminal), final_tick: 791 }, "FINAL_TICK_AFTER_RESOLUTION");
   reject({ ...abandon(terminal), inputs: [{ seq: 0, tick: 790, action: "FLAP" }] }, "UNCONSUMED_INPUTS");

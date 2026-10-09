@@ -39,6 +39,8 @@
     "scripts/verify-darts-v2.ts",
     "scripts/verify-gallery-v1.ts",
     "scripts/verify-alien-v2.ts",
+    "scripts/verify-alien-v3.ts",
+    "components/games/alien-dash/presentation.ts",
     "scripts/verify-jet-v3.ts",
     "scripts/verify-jet-v4.ts",
     "scripts/jet-v3-play-fixture.ts",

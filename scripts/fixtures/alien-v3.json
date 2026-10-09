@@ -1,0 +1,365 @@
+{
+  "seed": "4f67311a5420b42b908feeb546f849e984a4af8a146b1a1d8057cd8d654acb98",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 470,
+      "action": "JUMP"
+    },
+    {
+      "seq": 1,
+      "tick": 740,
+      "action": "JUMP"
+    },
+    {
+      "seq": 2,
+      "tick": 1021,
+      "action": "JUMP"
+    },
+    {
+      "seq": 3,
+      "tick": 1459,
+      "action": "JUMP"
+    },
+    {
+      "seq": 4,
+      "tick": 1757,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 5,
+      "tick": 1838,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 6,
+      "tick": 1984,
+      "action": "JUMP"
+    },
+    {
+      "seq": 7,
+      "tick": 2448,
+      "action": "JUMP"
+    },
+    {
+      "seq": 8,
+      "tick": 2603,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 9,
+      "tick": 2679,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 10,
+      "tick": 2820,
+      "action": "JUMP"
+    },
+    {
+      "seq": 11,
+      "tick": 2932,
+      "action": "JUMP"
+    },
+    {
+      "seq": 12,
+      "tick": 3375,
+      "action": "JUMP"
+    },
+    {
+      "seq": 13,
+      "tick": 3828,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 14,
+      "tick": 3897,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 15,
+      "tick": 4063,
+      "action": "JUMP"
+    },
+    {
+      "seq": 16,
+      "tick": 4224,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 17,
+      "tick": 4297,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 18,
+      "tick": 4476,
+      "action": "JUMP"
+    },
+    {
+      "seq": 19,
+      "tick": 5012,
+      "action": "JUMP"
+    },
+    {
+      "seq": 20,
+      "tick": 5153,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 21,
+      "tick": 5225,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 22,
+      "tick": 5405,
+      "action": "JUMP"
+    },
+    {
+      "seq": 23,
+      "tick": 5608,
+      "action": "JUMP"
+    },
+    {
+      "seq": 24,
+      "tick": 5993,
+      "action": "JUMP"
+    },
+    {
+      "seq": 25,
+      "tick": 6145,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 26,
+      "tick": 6216,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 27,
+      "tick": 6384,
+      "action": "JUMP"
+    },
+    {
+      "seq": 28,
+      "tick": 6491,
+      "action": "JUMP"
+    },
+    {
+      "seq": 29,
+      "tick": 6905,
+      "action": "JUMP"
+    },
+    {
+      "seq": 30,
+      "tick": 7040,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 31,
+      "tick": 7108,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 32,
+      "tick": 7321,
+      "action": "JUMP"
+    },
+    {
+      "seq": 33,
+      "tick": 7474,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 34,
+      "tick": 7542,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 35,
+      "tick": 7656,
+      "action": "JUMP"
+    },
+    {
+      "seq": 36,
+      "tick": 7961,
+      "action": "JUMP"
+    },
+    {
+      "seq": 37,
+      "tick": 8195,
+      "action": "JUMP"
+    },
+    {
+      "seq": 38,
+      "tick": 8333,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 39,
+      "tick": 8400,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 40,
+      "tick": 8506,
+      "action": "JUMP"
+    },
+    {
+      "seq": 41,
+      "tick": 8844,
+      "action": "JUMP"
+    },
+    {
+      "seq": 42,
+      "tick": 9196,
+      "action": "JUMP"
+    },
+    {
+      "seq": 43,
+      "tick": 9340,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 44,
+      "tick": 9406,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 45,
+      "tick": 9519,
+      "action": "JUMP"
+    },
+    {
+      "seq": 46,
+      "tick": 9806,
+      "action": "JUMP"
+    },
+    {
+      "seq": 47,
+      "tick": 10090,
+      "action": "JUMP"
+    },
+    {
+      "seq": 48,
+      "tick": 10376,
+      "action": "JUMP"
+    },
+    {
+      "seq": 49,
+      "tick": 10554,
+      "action": "JUMP"
+    },
+    {
+      "seq": 50,
+      "tick": 10905,
+      "action": "JUMP"
+    },
+    {
+      "seq": 51,
+      "tick": 11027,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 52,
+      "tick": 11092,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 53,
+      "tick": 11282,
+      "action": "JUMP"
+    },
+    {
+      "seq": 54,
+      "tick": 11608,
+      "action": "JUMP"
+    },
+    {
+      "seq": 55,
+      "tick": 11773,
+      "action": "JUMP"
+    },
+    {
+      "seq": 56,
+      "tick": 12225,
+      "action": "JUMP"
+    },
+    {
+      "seq": 57,
+      "tick": 12535,
+      "action": "JUMP"
+    },
+    {
+      "seq": 58,
+      "tick": 12670,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 59,
+      "tick": 12733,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 60,
+      "tick": 12830,
+      "action": "JUMP"
+    },
+    {
+      "seq": 61,
+      "tick": 13013,
+      "action": "JUMP"
+    },
+    {
+      "seq": 62,
+      "tick": 13114,
+      "action": "JUMP"
+    },
+    {
+      "seq": 63,
+      "tick": 13360,
+      "action": "JUMP"
+    },
+    {
+      "seq": 64,
+      "tick": 13490,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 65,
+      "tick": 13552,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 66,
+      "tick": 13798,
+      "action": "JUMP"
+    },
+    {
+      "seq": 67,
+      "tick": 13912,
+      "action": "DUCK_DOWN"
+    },
+    {
+      "seq": 68,
+      "tick": 13973,
+      "action": "DUCK_UP"
+    },
+    {
+      "seq": 69,
+      "tick": 14137,
+      "action": "JUMP"
+    },
+    {
+      "seq": 70,
+      "tick": 14292,
+      "action": "JUMP"
+    }
+  ],
+  "finalTick": 14400,
+  "score": 26400,
+  "height": 56,
+  "status": "won",
+  "hash": "sha256:8edb707e573a53e379530e87eac5744c3facace29e6d4ebd73915e80c073f736"
+}

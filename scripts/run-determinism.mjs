@@ -41,6 +41,8 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-ranking.js");
   await import("../.det-test/scripts/verify-orb-v1.js");
   await import("../.det-test/scripts/verify-alien-v2.js");
+  await import("../.det-test/scripts/verify-alien-v3.js");
+  await (await import("./verify-alien-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-gallery-v1.js");
   await import("../.det-test/scripts/verify-darts-v1.js");
   await import("../.det-test/scripts/verify-darts-v2.js");

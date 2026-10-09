@@ -1,13 +1,42 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import {
-  ALIEN_DASH_CORE,
-  type AlienState,
-} from "@/lib/verified/alienDashCore.v2";
+  withAlienCamera,
+  alienCssScale,
+  alienCanvasViewport,
+} from "./alien-dash/presentation";
+import {
+  ALIEN_DASH_CORE_V3,
+  type AlienStateV3,
+} from "@/lib/verified/alienDashCore.v3";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, s: AlienState) {
-  drawSpaceBackdrop(ctx, 390, 620, s.scroll / 1000, s.tick);
+function render(
+  ctx: CanvasRenderingContext2D,
+  s: AlienStateV3,
+  viewport: LogicalCanvasViewport,
+) {
+  drawSpaceBackdrop(
+    ctx,
+    viewport.width,
+    viewport.height,
+    s.scroll / 1000,
+    s.tick,
+  );
+  const camera = withAlienCamera(ctx, viewport, () => renderWorld(ctx, s));
+  const cssScale = alienCssScale(ctx);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#adcadd";
+  ctx.font = `${camera.horizontal ? 11 / cssScale : 11}px system-ui`;
+  ctx.fillText(
+    `${Math.floor(s.tick / 120)} s / 120 s`,
+    camera.left + 195 * camera.scale,
+    camera.horizontal ? 35 / cssScale : 65,
+  );
+  ctx.textAlign = "left";
+}
+function renderWorld(ctx: CanvasRenderingContext2D, s: AlienStateV3) {
   // Distant colony silhouettes and foreground transport deck provide depth, never hitboxes.
   ctx.fillStyle = "rgba(48,74,101,.48)";
   for (let i = 0; i < 8; i++) {
@@ -84,12 +113,6 @@ function render(ctx: CanvasRenderingContext2D, s: AlienState) {
       ctx.fillRect(x + w * 0.3, y + h * 0.25, w * 0.4, 4);
       ctx.fillStyle = "#60dbd0";
       ctx.fillRect(x + w * 0.35, y + h, w * 0.3, 3);
-      if (a.bottom === 474000 && x > 125 && x < 330) {
-        ctx.fillStyle = "#c8c3e6";
-        ctx.font = "bold 10px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText("AGACHAR", x + w / 2, y - 11);
-      }
     } else {
       ctx.fillStyle = "#cb977d";
       ctx.beginPath();
@@ -182,47 +205,67 @@ function render(ctx: CanvasRenderingContext2D, s: AlienState) {
     ctx.fill();
   }
   ctx.fillStyle = "#b7d3ed";
-  ctx.fillRect(76, s.feet / 1000 - 5, 11, 5);
-  ctx.fillRect(93, s.feet / 1000 - 5, 11, 5);
+  const stride = s.grounded && !duck ? Math.sin(s.tick * 0.3) * 2.5 : 0;
+  ctx.fillRect(76 + stride, s.feet / 1000 - 5, 11, 5);
+  ctx.fillRect(93 - stride, s.feet / 1000 - 5, 11, 5);
+  if (s.grounded && !duck) {
+    ctx.fillStyle = "rgba(180,217,223,.22)";
+    for (let i = 0; i < 4; i++) {
+      const age = (s.tick + i * 9) % 36;
+      ctx.fillRect(
+        74 - age * 0.8,
+        s.feet / 1000 - 3 - Math.sin((age / 36) * Math.PI) * 6,
+        2,
+        2,
+      );
+    }
+  }
+  if (s.tick < s.shieldUntil || s.tick - s.lastPickupTick < 80) {
+    const pickupAge = s.tick - s.lastPickupTick;
+    ctx.strokeStyle = pickupAge < 80 ? "#a6ffe1" : "rgba(185,226,255,.65)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(
+      90,
+      y + h / 2,
+      24 + (pickupAge < 80 ? pickupAge * 0.05 : 0),
+      h / 2 + 5,
+      0,
+      0,
+      Math.PI * 2,
+    );
+    ctx.stroke();
+  }
   ctx.restore();
   if (s.tick - s.lastDamageTick < 70) {
     ctx.fillStyle = "rgba(255,117,114,.12)";
     ctx.fillRect(0, 0, 390, 620);
   }
-  if (s.tick - s.lastPickupTick < 80) {
+  const pickupAge = s.tick - s.lastPickupTick;
+  if (pickupAge >= 0 && pickupAge < 80) {
+    ctx.save();
+    ctx.globalAlpha = 1 - pickupAge / 80;
     ctx.fillStyle = "#adf5d8";
-    ctx.font = "bold 13px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("ESCUDO RECUPERADO", 195, 126);
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI) / 4,
+        radius = 18 + pickupAge * 0.3;
+      ctx.fillRect(
+        90 + Math.cos(angle) * radius - 1,
+        y + h / 2 + Math.sin(angle) * radius - 1,
+        3,
+        3,
+      );
+    }
+    ctx.restore();
   }
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#adcadd";
-  ctx.font = "bold 12px system-ui";
-  ctx.fillText(
-    "EXPLORACIÓN EN CURSO",
-    195,
-    65,
-  );
-  ctx.font = "11px system-ui";
-  ctx.fillText(`${Math.floor(s.tick / 120)} s / 120 s`, 195, 85);
-  if (
-    s.actors.some(
-      (a) => a.chargeTick !== null && !a.fired && a.x - s.scroll < 390000,
-    )
-  ) {
-    ctx.fillStyle = "#f4c5a0";
-    ctx.font = "bold 13px system-ui";
-    ctx.fillText("CENTINELA CARGANDO", 195, 192);
-  }
-  ctx.textAlign = "left";
 }
 const controls = [
-    { action: "JUMP", label: "Saltar", symbol: "SALTAR" },
+    { action: "JUMP", label: "Saltar", symbol: "↑" },
     {
       action: "DUCK_DOWN",
       releaseAction: "DUCK_UP",
       label: "Mantener agachado",
-      symbol: "AGACHAR",
+      symbol: "↓",
     },
   ],
   keys = { " ": "JUMP", ArrowUp: "JUMP", ArrowDown: "DUCK_DOWN" },
@@ -230,29 +273,54 @@ const controls = [
   tones = { JUMP: "tap" } as const;
 const failureFinale = {
   durationMs: 350,
-  render(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "rgba(115,40,66,.15)";
-    ctx.fillRect(0, 0, 390, 620);
+  render(
+    ctx: CanvasRenderingContext2D,
+    state: AlienStateV3,
+    elapsedMs: number,
+  ) {
+    withAlienCamera(ctx, alienCanvasViewport(ctx), () => {
+      const progress = Math.min(1, elapsedMs / 350);
+      ctx.save();
+      ctx.globalAlpha = 1 - progress;
+      ctx.fillStyle = "rgba(115,40,66,.15)";
+      ctx.fillRect(0, 0, 390, 620);
+      for (let i = 0; i < 10; i++) {
+        const angle = (i * Math.PI) / 5;
+        const radius = 8 + progress * (45 + (i % 3) * 9);
+        ctx.fillStyle = i % 2 ? "#f0b493" : "#a0d5e3";
+        ctx.fillRect(
+          90 + Math.cos(angle) * radius,
+          state.feet / 1000 - 22 + Math.sin(angle) * radius,
+          4,
+          4,
+        );
+      }
+      ctx.restore();
+    });
   },
 };
-const feedbackScore = (state: AlienState) => state.score - state.distancePoints;
+const feedbackScore = (state: AlienStateV3) =>
+  state.score - state.distancePoints;
+const hudLabel = (state: AlienStateV3) => `AVANCE ${state.height}`;
 export default function AlienDash(props: GameRuntimeProps) {
   return (
     <div className="alienDashVerified">
       <CoreCanvasGame
         {...props}
-        core={ALIEN_DASH_CORE}
+        core={ALIEN_DASH_CORE_V3}
         feedbackScore={feedbackScore}
         name="Alien Dash"
         render={render}
+        expandHorizontalViewport
         primaryAction="JUMP"
         controls={controls}
         keys={keys}
         keyReleases={releases}
         inputTones={tones}
-        hideHudLabel
+        hideHudScore
+        hudLabel={hudLabel}
         failureFinale={failureFinale}
-        instruction="Salta rocas y rayos. Mantén AGACHAR bajo drones. Los signos + recuperan escudos."
+        instruction=""
       />
     </div>
   );

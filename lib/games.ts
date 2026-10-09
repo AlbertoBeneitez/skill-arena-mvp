@@ -436,7 +436,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "dino-dash",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/AlienDash")),
     competition: {

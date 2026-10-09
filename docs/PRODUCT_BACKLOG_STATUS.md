@@ -1,13 +1,13 @@
-# GALACTIC GAMES · Seguimiento de v66-mobile
+# GALACTIC GAMES · Seguimiento de v67-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
 | Juego / área | Trabajo preservado y validado | Pendiente |
 | --- | --- | --- |
-| Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles | v65: texto de ejes retirado, orientación visual conservada; seguimiento físico |
-| Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor | v65: base y capas inferiores visibles con cámara/perspectiva compacta; QA táctil/reinicio verificados; seguimiento físico |
+| Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Seguimiento físico |
+| Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Seguimiento físico |
 | Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados | Seguimiento físico; rotación1000 sin repetición entre partidas y comparación común pendientes |
-| Alien Dash | v39: V2, plataformas, centinelas anticipados, recogibles, escudos, dos minutos, replay y QA táctil | Más ritmo/variedad/profundidad en nueva versión; retirar instrucción residual AGACHAR; seguimiento físico |
+| Alien Dash | v67: V3 VERIFIED, patrones encadenados de salto/agachado, tejados/puentes, centinelas y recuperaciones, avance por actores pasados y cámara horizontal con FOV igual; replay/QA táctil120s. V1/V2 archivados | Seguimiento físico; rotación1000 y comparación común pendientes |
 | Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | V2 para eliminar cambios de etapa y conservar progresión continua; QA física |
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | QA humana física |
 | River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
@@ -244,3 +244,22 @@ vertical/horizontal, errores conservan2pares, timeout real14400ticks conserva1;
 cancel/drag/dobletap/rotación/320px/sonido/reinicio/abandono y consola limpias.
 Catálogo crece por registry, tests usan su tamaño. Ver release v66. Próxima
 unidad: Alien V3, más patrones y plataformas útiles sin sustituir kernel V2.
+
+
+### v67 · Alien Dash: decisiones y encuadre
+
+V3 conserva kernel físico/inputs/scoring/terminal120s de V2 y añade generación
+versionada de patrones: plataformas amplias, refugios, techo bajo, saltos de
+puente y combinaciones con atacantes; descanso/recogibles cada cuatro frases.
+Cuatro obstáculos aislados de apertura, sin niveles ni resets. Avance autoritativo
+por actores pasados, HUD sin puntos/coaching, pasos/escudo/impacto y controles↑↓.
+Cámara horizontal amplía el personaje sin cambiar FOV390 ni ocultar la envolvente
+de amenazas/salto; timer legible y controles despejados, DPR/portrait centrados.
+
+32 recorridos sin daño y32 con delay67ms,128 aperturas,1000 geometrías alcanzables
+distintas, igualdad física V2 por tick, golden/invalid/render/replay y35versiones
+de registro pasan. Servidor reconstruye altura frente a campos cliente falsos.
+Typecheck/lint/build y QA táctil de120s vertical/horizontal, muerte/reinicio/
+cancel/blur/dobletap/rotación y registro único se validan; release v67 conserva
+evidencia y límites. V65/V66 permanecen intactas. Siguiente unidad: Billar V2
+continuo; después restantes resets/enemigos, métricas/rotación y privados del ledger.
