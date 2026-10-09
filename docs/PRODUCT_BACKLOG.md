@@ -211,3 +211,8 @@ Siguen pendientes todas las mejoras de recorrido/dificultad/datasets indicadas
 arriba (dardos por swipe ya resuelto). No se declara Maze más fácil por ampliar
 sus nodos. El alcance de altura/avance frente a puntuación requiere aclaración:
 Stack, Stack/Tower o una métrica propia por juego; no se altera scoring histórico.
+
+
+v54 amplía la superficie útil del tablero Stack Shift y sus piezas, conservando
+física/core/replay V1. Victoria, derrota y reinicio táctiles comprobados; suelo y
+botones no se solapan en vertical/horizontal. Solicitud de arena mayor resuelta.

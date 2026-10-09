@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v53-mobile
+# GALACTIC GAMES · Seguimiento de v54-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -44,6 +44,12 @@ protegido contra toques que llegan durante la transición. Evidencia incremental
 
 Esta revisión no cierra las nuevas solicitudes de gameplay: Jet menos alineado,
 River más fluido, reproducir baliza Sky desaparecida y añadir enemigo, obstáculos
-Metro parados, datasets Mine/Solitaire, arena Stack Shift y Maze más fácil/continuo.
+Metro parados, datasets Mine/Solitaire, Maze más fácil/continuo (arena Stack Shift ampliada en v54).
 Portadas congruentes y alcance de métrica altura/avance siguen pendientes. QA
 física del propietario es seguimiento y no bloquea desarrollo.
+
+### v54 · Stack Shift
+
+Tablero y piezas ampliados, suelo visible y controles separados; reglas V1 sin
+cambios. Victoria de 18 filas y derrota TOP_OUT con inputs táctiles, replay,
+submit único, doble tap y reinicio comprobados. Detalles en release v54.
