@@ -84,9 +84,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       };
       p.arc = function (x, y, r, ...a) {
         if (match(this) && window.__mazeView) {
-          if (r === 2.5 && this.fillStyle === "#d2e2f4")
+          if (r === 4.2 && this.fillStyle === "#d2e2f4")
             window.__mazeView.nodes.push({ x, y, pulse: false });
-          if (r === 6 && this.fillStyle === "#9cf0d6")
+          if (r === 6.5 && this.fillStyle === "#9cf0d6")
             window.__mazeView.nodes.push({ x, y, pulse: true });
           if (
             ["#536782", "#a281dc", "#ed8a91", "#efb876"].includes(

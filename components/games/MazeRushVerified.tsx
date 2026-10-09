@@ -34,7 +34,7 @@ function render(ctx: CanvasRenderingContext2D, s: MazeState) {
         ctx.arc(
           x + cell / 2,
           y + cell / 2,
-          b.pulses[i] ? 6 : 2.5,
+          b.pulses[i] ? 6.5 : 4.2,
           0,
           Math.PI * 2,
         );
