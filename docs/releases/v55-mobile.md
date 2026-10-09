@@ -11,7 +11,7 @@ estricto; conserva línea de colisión y recorte fuera del horizonte. Typecheck/
 suite determinista/histórica/autoridad privada y build pasan. QA táctil Chromium:
 victoria portrait de 60 grupos (score 41120, tick 11144, tres vidas), derrota
 landscape HULL_EXHAUSTED (score 0, tick 1478); replay del input real contra
-manifest del servidor, submit único, cambio de carril/salto/cancel/blur, reinicio,
+manifest del servidor, submit único, cambio de carril/salto/cancel, reinicio,
 rotación, botones ≥44 px y sin overflow ni errores de consola. Captura del segundo
 sector inspeccionada; no se cambian targets o seeds en QA.
 
