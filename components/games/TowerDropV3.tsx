@@ -4,7 +4,6 @@ import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
   TOWER_DROP_CORE_V3,
   TOWER_DROP_V3,
-  forecastTowerLanding,
   type TowerDropV3State,
 } from "@/lib/verified/towerDropCore.v3";
 import CoreCanvasGame from "./CoreCanvasGame";
@@ -64,26 +63,6 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   ctx.arc(hookX, hookY, 5, 0, Math.PI * 2);
   ctx.fill();
   if (state.phase === "swing") {
-    const landing = forecastTowerLanding(state),
-      center = (landing.xMilli + state.movingWMilli / 2) / 1000;
-    ctx.save();
-    ctx.setLineDash([4, 7]);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = landing.stable ? "#75efd5" : "#fbaf78";
-    ctx.beginPath();
-    ctx.moveTo(hookX, hookY + blockH);
-    ctx.lineTo(center, floor - 4);
-    ctx.stroke();
-    ctx.restore();
-    ctx.fillStyle = landing.stable
-      ? "rgba(79,238,190,.2)"
-      : "rgba(255,145,91,.15)";
-    ctx.fillRect(
-      landing.xMilli / 1000,
-      floor - 5,
-      state.movingWMilli / 1000,
-      5,
-    );
     block(
       state.movingXMilli / 1000,
       hookY,
