@@ -1,0 +1,233 @@
+{
+  "seed": "e0790217eed8d004a34bacf569937002f9571c3e926112b1cb31921e8069a3af",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "UP"
+    },
+    {
+      "seq": 1,
+      "tick": 396,
+      "action": "LEFT"
+    },
+    {
+      "seq": 2,
+      "tick": 492,
+      "action": "DOWN"
+    },
+    {
+      "seq": 3,
+      "tick": 540,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 4,
+      "tick": 588,
+      "action": "UP"
+    },
+    {
+      "seq": 5,
+      "tick": 612,
+      "action": "DOWN"
+    },
+    {
+      "seq": 6,
+      "tick": 636,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 7,
+      "tick": 728,
+      "action": "UP"
+    },
+    {
+      "seq": 8,
+      "tick": 774,
+      "action": "LEFT"
+    },
+    {
+      "seq": 9,
+      "tick": 797,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 10,
+      "tick": 866,
+      "action": "DOWN"
+    },
+    {
+      "seq": 11,
+      "tick": 912,
+      "action": "LEFT"
+    },
+    {
+      "seq": 12,
+      "tick": 935,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 13,
+      "tick": 958,
+      "action": "DOWN"
+    },
+    {
+      "seq": 14,
+      "tick": 1004,
+      "action": "LEFT"
+    },
+    {
+      "seq": 15,
+      "tick": 1142,
+      "action": "UP"
+    },
+    {
+      "seq": 16,
+      "tick": 1165,
+      "action": "DOWN"
+    },
+    {
+      "seq": 17,
+      "tick": 1187,
+      "action": "LEFT"
+    },
+    {
+      "seq": 18,
+      "tick": 1231,
+      "action": "UP"
+    },
+    {
+      "seq": 19,
+      "tick": 1253,
+      "action": "DOWN"
+    },
+    {
+      "seq": 20,
+      "tick": 1319,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 21,
+      "tick": 1363,
+      "action": "UP"
+    },
+    {
+      "seq": 22,
+      "tick": 1385,
+      "action": "DOWN"
+    },
+    {
+      "seq": 23,
+      "tick": 1451,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 24,
+      "tick": 1539,
+      "action": "UP"
+    },
+    {
+      "seq": 25,
+      "tick": 1605,
+      "action": "DOWN"
+    },
+    {
+      "seq": 26,
+      "tick": 1627,
+      "action": "LEFT"
+    },
+    {
+      "seq": 27,
+      "tick": 1649,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 28,
+      "tick": 1713,
+      "action": "UP"
+    },
+    {
+      "seq": 29,
+      "tick": 1734,
+      "action": "DOWN"
+    },
+    {
+      "seq": 30,
+      "tick": 1797,
+      "action": "LEFT"
+    },
+    {
+      "seq": 31,
+      "tick": 1839,
+      "action": "DOWN"
+    },
+    {
+      "seq": 32,
+      "tick": 1881,
+      "action": "UP"
+    },
+    {
+      "seq": 33,
+      "tick": 1923,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 34,
+      "tick": 1965,
+      "action": "DOWN"
+    },
+    {
+      "seq": 35,
+      "tick": 2007,
+      "action": "UP"
+    },
+    {
+      "seq": 36,
+      "tick": 2049,
+      "action": "LEFT"
+    },
+    {
+      "seq": 37,
+      "tick": 2175,
+      "action": "UP"
+    },
+    {
+      "seq": 38,
+      "tick": 2217,
+      "action": "LEFT"
+    },
+    {
+      "seq": 39,
+      "tick": 2259,
+      "action": "DOWN"
+    },
+    {
+      "seq": 40,
+      "tick": 2322,
+      "action": "UP"
+    },
+    {
+      "seq": 41,
+      "tick": 2385,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 42,
+      "tick": 2427,
+      "action": "DOWN"
+    },
+    {
+      "seq": 43,
+      "tick": 2511,
+      "action": "LEFT"
+    },
+    {
+      "seq": 44,
+      "tick": 2532,
+      "action": "RIGHT"
+    }
+  ],
+  "finalTick": 2574,
+  "score": 8400,
+  "hash": "sha256:5b031e7d2170b8408262ffdadd79847572abcb285cd6c4f1688bedea34786043"
+}

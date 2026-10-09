@@ -50,6 +50,7 @@
     "scripts/verify-brick-v1.ts",
     "scripts/brick-play-fixture.ts",
     "scripts/verify-maze-v1.ts",
+    "scripts/verify-maze-v2.ts",
     "scripts/maze-play-fixture.ts",
     "scripts/verify-orbit-v1.ts",
     "scripts/orbit-play-fixture.ts",
