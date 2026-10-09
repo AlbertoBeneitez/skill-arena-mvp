@@ -9,25 +9,58 @@ import {
 import CoreCanvasGame from "./CoreCanvasGame";
 function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   drawSpaceBackdrop(ctx, 390, 620, 1, state.tick);
-  // Uniform projection keeps the rope arc and block proportions coherent.
-  ctx.save();
-  ctx.translate(33, 68);
-  ctx.scale(0.83, 0.83);
   const floor = 540,
-    blockH = 30;
-  const block = (x: number, y: number, w: number, level: number) => {
+    blockH = 30,
+    groundScreenY = 580,
+    pivotY = floor - blockH - 320 - TOWER_DROP_V3.ropeLengthMilli / 1000,
+    craneTop = pivotY - 24;
+  // Fit the complete tower first. Once zoom would make the landing area too
+  // small, compress only the older settled layers; crane, rope and active
+  // block still share one uniform scale and the foundation remains visible.
+  const scale = Math.max(
+      0.55,
+      Math.min(
+        0.83,
+        (groundScreenY - 80) /
+          (floor - craneTop + state.blocks.length * blockH),
+      ),
+    ),
+    landingScreenY = Math.max(
+      80 + (floor - craneTop) * scale,
+      groundScreenY - state.blocks.length * blockH * scale,
+    ),
+    offsetY = landingScreenY - floor * scale,
+    groundY = (groundScreenY - offsetY) / scale,
+    olderBlockH =
+      state.blocks.length > 1
+        ? (groundY - floor - blockH) / (state.blocks.length - 1)
+        : blockH;
+  ctx.save();
+  ctx.translate(195 * (1 - scale), offsetY);
+  ctx.scale(scale, scale);
+  const block = (
+    x: number,
+    y: number,
+    w: number,
+    level: number,
+    h = blockH,
+  ) => {
     const hue = 180 + ((level * 13) % 105);
     ctx.fillStyle = `hsl(${hue},60%,48%)`;
-    ctx.fillRect(x, y, w, blockH - 2);
+    ctx.fillRect(x, y, w, Math.max(0.5, h - Math.min(2, h / 8)));
     ctx.fillStyle = "rgba(210,255,255,.35)";
-    ctx.fillRect(x, y, w, 4);
-    ctx.strokeStyle = "rgba(205,255,255,.4)";
-    ctx.strokeRect(x + 0.5, y + 0.5, w - 1, blockH - 3);
-    ctx.fillStyle = "rgba(0,15,50,.2)";
-    for (let n = x + 12; n < x + w - 8; n += 24) ctx.fillRect(n, y + 10, 10, 8);
+    ctx.fillRect(x, y, w, Math.min(4, h / 5));
+    if (h >= 5) {
+      ctx.strokeStyle = "rgba(205,255,255,.4)";
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    }
+    if (h >= 18) {
+      ctx.fillStyle = "rgba(0,15,50,.2)";
+      for (let n = x + 12; n < x + w - 8; n += 24)
+        ctx.fillRect(n, y + h / 3, 10, h / 4);
+    }
   };
-  const groundY = floor + state.blocks.length * blockH;
-  if (groundY < 655) {
+  {
     ctx.fillStyle = "#173949";
     ctx.fillRect(45, groundY, 300, 14);
     ctx.fillStyle = "#65b5bb";
@@ -38,10 +71,11 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
     }
   }
   state.blocks.forEach((b, index) => {
-    const y = floor + (state.blocks.length - 1 - index) * blockH;
-    if (y < 620) block(b.xMilli / 1000, y, b.wMilli / 1000, index);
+    const fromTop = state.blocks.length - 1 - index,
+      h = fromTop === 0 ? blockH : olderBlockH,
+      y = fromTop === 0 ? floor : floor + blockH + (fromTop - 1) * olderBlockH;
+    block(b.xMilli / 1000, y, b.wMilli / 1000, index, h);
   });
-  const pivotY = floor - blockH - 320 - TOWER_DROP_V3.ropeLengthMilli / 1000;
   ctx.strokeStyle = "#63869a";
   ctx.lineWidth = 8;
   ctx.beginPath();
