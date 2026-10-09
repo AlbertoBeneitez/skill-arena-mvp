@@ -17,6 +17,7 @@ import { getServerGameAdapter } from "../lib/server/gameVerifiers";
 import { createPrivateMatchManifest } from "../lib/server/privateMatchIssuer";
 import alienFixture from "./fixtures/alien-v3.json" with { type: "json" };
 import billiardsFixture from "./fixtures/billiards-v2.json" with { type: "json" };
+import skyFixture from "./fixtures/sky-hop-v3.json" with { type: "json" };
 
 const TEST_SECRET = "attempt-record-test-key-not-for-production";
 const START_TIME = Date.parse("2026-10-09T12:00:00.000Z");
@@ -83,6 +84,7 @@ try {
     ["river-dash", "1.0.0"],
     ["river-dash", "2.0.0"],
     ["sky-hop", "1.0.0"],
+    ["sky-hop", "2.0.0"],
     ["maze-rush", "1.0.0"],
     ["maze-rush", "2.0.0"],
   ];
@@ -218,6 +220,28 @@ try {
   assert.equal(poolResult.body.score, billiardsFixture.score);
   assert.equal(poolResult.body.time_ms, Math.round(billiardsFixture.finalTick * 1000 / 120));
   assert.equal(poolResult.body.won, true);
+  const ascent = skyFixture.runs[0];
+  const sky = {
+    ...payload("sky-hop", "3.0.0", ascent.seed),
+    inputs: ascent.inputs,
+    final_tick: ascent.finalTick,
+  };
+  now += 60_000;
+  const skyPrefix = {
+    ...sky,
+    inputs: ascent.inputs.filter(input => input.tick <= 330),
+    final_tick: 330,
+  };
+  receipt(skyPrefix);
+  reject(skyPrefix, "CLIENT_ENDED_BEFORE_RESOLUTION");
+  const skyResult = processAttemptRecord({ ...sky, client_score: 1e9, won: false, height: 999999 });
+  assert.equal(skyResult.status, 200);
+  assert.equal(skyResult.body.verified, true);
+  if (!skyResult.body.verified) throw new Error("Sky V3 terminal did not verify");
+  assert.equal(skyResult.body.height, ascent.highest, "Sky height comes from replay including the real stomp, never the browser");
+  assert.equal(skyResult.body.score, ascent.score);
+  assert.equal(skyResult.body.time_ms, Math.round(ascent.finalTick * 1000 / 120));
+  assert.equal(skyResult.body.won, true);
   reject(abandon(terminal), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
   reject({ ...abandon(terminal), final_tick: 791 }, "FINAL_TICK_AFTER_RESOLUTION");
   reject({ ...abandon(terminal), inputs: [{ seq: 0, tick: 790, action: "FLAP" }] }, "UNCONSUMED_INPUTS");

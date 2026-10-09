@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v68-mobile
+# GALACTIC GAMES · Seguimiento de v69-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -16,7 +16,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | QA humana física |
 | Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo y datasets versionados; integración pública segura y registro; catálogo todavía 0.1 |
 | Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Cierre prematuro al revelar tablero, victoria de 52 bases marcada como derrota y score repetible en traslados; nuevo core versionado y autoridad privada común antes de promoción |
-| Sky Hop | V2: recuperación tras baliza rota sin farming; 75 apoyos continuos, balizas/móviles/impulsos/crumble y replay/touch | Añadir enemigo marciano determinista; QA física |
+| Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Seguimiento físico; rotación1000 y comparación común pendientes |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | QA humana física |
 | Brick Relay | V1 VERIFIED, 69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay/touch | V2 sin cambios de tablero ni pausas de sector; QA física |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | QA humana física |
@@ -284,3 +284,24 @@ pierde al consumir18tiros, conserva avance tras scratch y verifica reinicios,
 rotación/cancel/dobletap/registro único/abandono/consola. Evidencia y límites en
 release v68. Siguiente unidad: enemigo anticipable Sky Hop; siguen pendientes
 resets Orb/Brick/Phalanx, métricas/rotación y privados del ledger.
+
+### v69 · Sky Hop: marcianos y recuperación justa
+
+V3 compone literalmente stepV2 y conserva plataformas, gravedad, dirección,
+rebotes, pickups y recuperación de crumbles. Marcianos desde apoyo14, fuera/bajo
+los extremos, ausentes de balizas/boost/crumble y dos apoyos de recuperación;
+patrulla íntegra dentroFOV, aviso120ticks. Despegue/ruta central permanecen libres;
+overshoot permite contacto o stomp-rescate. Daño conserva altura/pickups/held,
+restaura crumbles y rearma enemigos; derrotados persisten, sin bonus/farming.
+V1/V2/protocolo1/adapters/goldens intactos. HUD altura sin puntos, META75 reparada,
+impactos/avisos y audio comunes; registro antes de finale300ms.
+
+1000 geometrías reales distintas,7–16enemigos por curso,96 ascensos con controles
+históricos (32cada66.7ms), golden de stomp/victoria, contacto/recuperación y tres
+contactos/derrota pasan. Apertura5s, bounds/arming/grace, replay/render60/120/144,
+invalidinputs, antifarming y37versiones de registro común se validan. Renderer
+puro/FOV/goal/audio, typecheck/lint/build y QA táctil vertical/horizontal pasan:
+75apoyos tras crumble colapsado/restaurado, stomp real, contacto/caídas, reinicio,
+cancel/blur/dobletap/rotación/320px/registro único/abandono y consola limpia.
+Evidencia y límites en release v69. Siguiente: Orb continuo y restantes resets,
+comparación/rotación comunes e integración privada Mine/Solitaire.

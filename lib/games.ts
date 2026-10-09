@@ -481,7 +481,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "sky-hop",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/SkyHopVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SKY_HOP_ACTIONS },
@@ -497,7 +497,7 @@ const GAME_DEFINITIONS = [
     rivalName: "HOP",
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Mantén izquierda o derecha para dirigir el salto automático.",
-    scoring: "75 apoyos en un recorrido continuo, balizas y recogibles. Solo la altura nueva puntúa; replay de servidor.",
+    scoring: "75 apoyos continuos, balizas, recogibles y marcianos anticipados bajo los bordes. Avance por altura nueva; replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];
