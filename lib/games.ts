@@ -400,7 +400,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "piano-rush",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PianoRushVerified")),
     competition: {
@@ -421,7 +421,7 @@ const GAME_DEFINITIONS = [
     rivalName: "KEY",
     rivalAvatar: "/avatars/avatar-7.svg",
     instruction: "Toca el carril correcto cuando el pulso alcance la zona inferior.",
-    scoring: "48 notas por tres sectores, calentamiento/escudos, precisión y combos; replay de servidor.",
+    scoring: "48 notas continuas, calentamiento/escudos, precisión y combos; replay de servidor.",
   },
   {
     id: "dino-dash",

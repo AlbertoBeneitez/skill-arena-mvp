@@ -70,6 +70,7 @@ try {
     ["precision-stack", "1.0.0"],
     ["precision-stack", "2.0.0"],
     ["piano-rush", "1.0.0"],
+    ["piano-rush", "2.0.0"],
     ["jet-stream", "1.0.0"],
     ["dino-dash", "1.0.0"],
     ["jet-stream", "2.0.0"],

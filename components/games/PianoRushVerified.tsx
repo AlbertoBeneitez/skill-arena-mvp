@@ -1,9 +1,7 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
-import {
-  PIANO_V2_CORE,
-  type RhythmState,
-} from "@/lib/verified/pianoRushCore.v2";
+import { PIANO_V3_CORE } from "@/lib/verified/pianoRushCore.v3";
+import type { RhythmState } from "@/lib/verified/pianoRushCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
 const colors = ["#73cce5", "#8ca8ed", "#b197df", "#79d2bb"];
@@ -42,13 +40,6 @@ function render(ctx: CanvasRenderingContext2D, s: RhythmState) {
   ctx.textAlign = "center";
   ctx.font = "13px system-ui";
   ctx.fillStyle = "#d4e5f4";
-  const note = s.notes[s.nextNoteIndex];
-  if (note && note.targetTick - s.tick > 280 && s.nextNoteIndex > 0)
-    ctx.fillText(
-      "SECTOR COMPLETADO · RESPIRA Y PREPARA EL SIGUIENTE",
-      195,
-      305,
-    );
   const age = s.tick - s.lastJudgementTick;
   if (s.lastJudgement && age < 64) {
     ctx.fillStyle =
@@ -86,13 +77,13 @@ const pointAction = (p: { x: number }, phase: "down" | "move" | "up") =>
     ? `LANE_${Math.max(0, Math.min(3, Math.floor(p.x / 97.5)))}`
     : null;
 const hudLabel = (s: Readonly<RhythmState>) =>
-  `${s.nextNoteIndex}/48 · SECTOR ${Math.min(3, 1 + Math.floor(s.nextNoteIndex / 16))} · COMBO ${s.combo}`;
+  `${s.nextNoteIndex}/48 · COMBO ${s.combo}`;
 export default function PianoRushVerified(props: GameRuntimeProps) {
   return (
     <div className="pianoRushVerified">
       <CoreCanvasGame
         {...props}
-        core={PIANO_V2_CORE}
+        core={PIANO_V3_CORE}
         name="Piano Rush"
         render={render}
         controls={controls}

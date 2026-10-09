@@ -9,8 +9,8 @@ const { chromium } = require(
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const base = pathToFileURL(path.join(__dirname, "../.det-test/")).href,
-    { PIANO_V2_CORE: core } = await import(
-      base + "lib/verified/pianoRushCore.v2.js"
+    { PIANO_V3_CORE: core } = await import(
+      base + "lib/verified/pianoRushCore.v3.js"
     ),
     { replayCore } = await import(base + "lib/verified/coreRuntime.v1.js");
   const browser = await chromium.launch({
@@ -91,9 +91,10 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Piano Rush", exact: true })
       .tap();
     const issued = await (await started).json();
-    assert.equal(issued.manifest.game_version, "2.0.0");
+    assert.equal(issued.manifest.game_version, "3.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
+    assert.doesNotMatch(await page.locator(".coreHud").innerText(), /SECTOR|NIVEL/);
     const cdp = await context.newCDPSession(page),
       box = await page.locator("canvas.gameCanvas").boundingBox(),
       scale = Math.min(box.width / 390, box.height / 620),

@@ -55,7 +55,8 @@
     "scripts/maze-play-fixture.ts",
     "scripts/verify-orbit-v1.ts",
     "scripts/orbit-play-fixture.ts",
-    "scripts/verify-piano-v2.ts"
+    "scripts/verify-piano-v2.ts",
+    "scripts/verify-piano-v3.ts"
   ],
   "exclude": [
     "node_modules",

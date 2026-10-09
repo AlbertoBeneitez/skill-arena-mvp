@@ -1,4 +1,5 @@
 import { PIANO_V2_CORE } from "../verified/pianoRushCore.v2";
+import { PIANO_V3_CORE } from "../verified/pianoRushCore.v3";
 import { ORBIT_CORE } from "../verified/orbitShiftCore.v1";
 import { MAZE_CORE } from "../verified/mazeRushCore.v1";
 import { MAZE_CORE_V2 } from "../verified/mazeRushCore.v2";
@@ -362,6 +363,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(PIANO_V3_CORE.gameId, PIANO_V3_CORE.gameVersion)]: coreAdapter(PIANO_V3_CORE),
   [adapterKey(PIANO_V2_CORE.gameId, PIANO_V2_CORE.gameVersion)]: coreAdapter(PIANO_V2_CORE),
   [adapterKey(ORBIT_CORE.gameId, ORBIT_CORE.gameVersion)]: coreAdapter(ORBIT_CORE),
   [adapterKey(MAZE_CORE.gameId, MAZE_CORE.gameVersion)]: coreAdapter(MAZE_CORE),

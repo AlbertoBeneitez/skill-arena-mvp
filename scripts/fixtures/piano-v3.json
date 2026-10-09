@@ -1,0 +1,249 @@
+{
+  "seed": "0c527c55c337c3f70028ebf44de363a709f80cfff6bd96eee3b6b62711d7dcd1",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 240,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 1,
+      "tick": 348,
+      "action": "LANE_3"
+    },
+    {
+      "seq": 2,
+      "tick": 456,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 3,
+      "tick": 564,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 4,
+      "tick": 672,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 5,
+      "tick": 780,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 6,
+      "tick": 888,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 7,
+      "tick": 996,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 8,
+      "tick": 1104,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 9,
+      "tick": 1211,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 10,
+      "tick": 1318,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 11,
+      "tick": 1424,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 12,
+      "tick": 1530,
+      "action": "LANE_3"
+    },
+    {
+      "seq": 13,
+      "tick": 1635,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 14,
+      "tick": 1739,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 15,
+      "tick": 1843,
+      "action": "LANE_3"
+    },
+    {
+      "seq": 16,
+      "tick": 1946,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 17,
+      "tick": 2049,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 18,
+      "tick": 2151,
+      "action": "LANE_3"
+    },
+    {
+      "seq": 19,
+      "tick": 2252,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 20,
+      "tick": 2353,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 21,
+      "tick": 2453,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 22,
+      "tick": 2553,
+      "action": "LANE_3"
+    },
+    {
+      "seq": 23,
+      "tick": 2652,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 24,
+      "tick": 2750,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 25,
+      "tick": 2848,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 26,
+      "tick": 2945,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 27,
+      "tick": 3042,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 28,
+      "tick": 3138,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 29,
+      "tick": 3233,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 30,
+      "tick": 3328,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 31,
+      "tick": 3422,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 32,
+      "tick": 3516,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 33,
+      "tick": 3609,
+      "action": "LANE_3"
+    },
+    {
+      "seq": 34,
+      "tick": 3701,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 35,
+      "tick": 3793,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 36,
+      "tick": 3884,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 37,
+      "tick": 3975,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 38,
+      "tick": 4065,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 39,
+      "tick": 4154,
+      "action": "LANE_2"
+    },
+    {
+      "seq": 40,
+      "tick": 4243,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 41,
+      "tick": 4331,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 42,
+      "tick": 4419,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 43,
+      "tick": 4506,
+      "action": "LANE_0"
+    },
+    {
+      "seq": 44,
+      "tick": 4592,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 45,
+      "tick": 4678,
+      "action": "LANE_3"
+    },
+    {
+      "seq": 46,
+      "tick": 4763,
+      "action": "LANE_1"
+    },
+    {
+      "seq": 47,
+      "tick": 4848,
+      "action": "LANE_3"
+    }
+  ],
+  "finalTick": 4848,
+  "score": 51960,
+  "status": "won",
+  "hash": "sha256:12317ef9ba309d9eb4916aab23626ba77409b2cf9846e15c75b63736f17c2c01"
+}

@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v60-mobile
+# GALACTIC GAMES · Seguimiento de v61-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -23,7 +23,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Maze Rush | v58: V2 VERIFIED, un laberinto continuo de 70 nodos, giros anticipados/STOP, pulsos y tres escudos; perseguidores progresivos con aviso previo y replay. V1 archivada | Seguimiento en móviles físicos |
 | Star Phalanx | V1: 16 capas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | V2 con capas continuas sin cortes/limpieza intermedia; QA física |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
-| Piano Rush | V2 VERIFIED, 48 notas, ocho de aprendizaje, ventanas progresivas, escudos/combo/precisión, reloj común y replay/touch | V3 sin pausas ni sectores; revisión incremental preparada; QA física |
+| Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Seguimiento físico; métrica autoritativa de avance común pendiente |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
 | Login/onboarding | Entrada demo honesta, avatar/nombre, corto y sin tutorial obligatorio | QA humana; OAuth/auth real requiere proveedor, sin simularlo |
@@ -151,3 +151,12 @@ Persisten métricas autoritativas de avance/desempate, catálogo de 1000 escenar
 y rotación sin repetición, River continuo, enemigos Sky, restantes juegos con
 cortes y migraciones privadas Mine/Solitaire. Estos puntos no se cierran por
 el pulido visual. La siguiente unidad elimina pausas reales de Piano en V3.
+
+### v61 · Piano Rush continuo
+
+Eliminadas las pausas de 240ticks y saltos entre sectores mediante schedule V3;
+generación de carriles/judgements/scoring V2 reutilizados sin efectos deshechos
+ni cambios al histórico. Golden, 64 partidas completas, 128 aperturas/ramps y
+bordes/inputs/render pasan. Victorias/derrotas/reinicio táctiles, audio y rotación
+vertical/horizontal comprobados. Detalles en release v61. Siguiente: River V3
+sin teletransportes, descansos intercalados y recorrido más fluido.
