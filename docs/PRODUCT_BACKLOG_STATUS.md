@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento tras v52-mobile
+# GALACTIC GAMES · Seguimiento de v53-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -33,3 +33,17 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 
 Los 20 juegos activos incluyen 18 VERIFIED por replay y dos INTEGRATED. Mine 1.0 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
+
+## Iteración v53
+
+Entrada/logo/avatar y acceso a ranking simplificados; catálogo sin nombres
+repetidos, Saturno común mejorado, proyecciones Stack/Tower retiradas, nodos Maze
+más grandes. Dardos 2.0 usa swipe ascendente; V1 permanece verificable. Resultado
+protegido contra toques que llegan durante la transición. Evidencia incremental:
+[release v53](releases/v53-mobile.md).
+
+Esta revisión no cierra las nuevas solicitudes de gameplay: Jet menos alineado,
+River más fluido, reproducir baliza Sky desaparecida y añadir enemigo, obstáculos
+Metro parados, datasets Mine/Solitaire, arena Stack Shift y Maze más fácil/continuo.
+Portadas congruentes y alcance de métrica altura/avance siguen pendientes. QA
+física del propietario es seguimiento y no bloquea desarrollo.

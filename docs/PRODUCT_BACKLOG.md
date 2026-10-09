@@ -188,3 +188,26 @@ feedback, with native touch league/tournament/start/exit QA in both orientations
 Solitaire audit identifies premature completion, incorrect natural-win status and
 repeatable move score. Fix in a new version; reuse common hidden authority rather
 than exposing future cards or enabling real competition with local storage.
+
+## Revisión de producto · 9 octubre 2026
+
+Solicitud vigente: un único nivel/recorrido continuo. Comparar altura o avance
+real alcanzado, con menor tiempo autoritativo decimal en empates; NO crear una
+conversión artificial puntos→niveles. Requiere contrato/métricas versionadas.
+
+Tandas pendientes: dardos por swipe ascendente y dinamismo; segmentos Jet menos
+alineados; River con separación fluida; reproducir baliza desaparecida y añadir
+enemigo Sky; reproducir obstáculos parados en Metro; ampliar escenarios Mine y
+Solitaire con generación versionada; arena inicial Stack Shift más grande;
+Maze más fácil y continuo. Portadas deben representar la mecánica actual.
+v53: entrada reducida a identidad/accesos, logo original desarrollado, Avatar con
+ranking, catálogo sin títulos duplicados, CAMBIAR y retirada de coaching genérico.
+Saturno compartido más elaborado, proyecciones Stack/Tower retiradas, nodos Maze
+ampliados. Dardos V2 usa swipe ascendente sin botón, preservando V1. La transición
+a resultados protege los controles 350 ms contra toques de finalización.
+Validación incremental y evidencia en docs/releases/v53-mobile.md.
+
+Siguen pendientes todas las mejoras de recorrido/dificultad/datasets indicadas
+arriba (dardos por swipe ya resuelto). No se declara Maze más fácil por ampliar
+sus nodos. El alcance de altura/avance frente a puntuación requiere aclaración:
+Stack, Stack/Tower o una métrica propia por juego; no se altera scoring histórico.
