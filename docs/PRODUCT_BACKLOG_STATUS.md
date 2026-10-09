@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v57-mobile
+# GALACTIC GAMES · Seguimiento de v58-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -20,7 +20,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | QA humana física |
 | Brick Relay | v47: core 1.0 VERIFIED, cuatro sectores/69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay; QA táctil completa | QA humana física |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | QA humana física |
-| Maze Rush | v49: inicio en muro reparado; core 1.0 VERIFIED, tres sectores conectados, nodos/pulsos, perseguidores BFS, escudos, turn buffering/STOP y replay; partidas táctiles completas | Seguimiento en móviles físicos |
+| Maze Rush | v58: V2 VERIFIED, un laberinto continuo de 70 nodos, giros anticipados/STOP, pulsos y tres escudos; perseguidores progresivos con aviso previo y replay. V1 archivada | Seguimiento en móviles físicos |
 | Star Phalanx | v42: 16 capas en cinco oleadas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | QA humana física |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
 | Piano Rush | v51: V2 VERIFIED, 48 notas/tres sectores, ocho notas de aprendizaje, ventanas progresivas, escudos/combo/precisión, reloj común y replay; partidas táctiles completas | Seguimiento en móviles físicos |
@@ -43,7 +43,7 @@ protegido contra toques que llegan durante la transición. Evidencia incremental
 [release v53](releases/v53-mobile.md).
 
 Esta revisión no cierra las nuevas solicitudes de gameplay: Jet menos alineado,
-River más fluido, añadir enemigo Sky (baliza reparada en v56), datasets Mine/Solitaire, Maze más fácil/continuo (arena Stack Shift ampliada en v54).
+River más fluido, añadir enemigo Sky (baliza reparada en v56), datasets Mine/Solitaire (Maze continuo resuelto en v58; arena Stack Shift ampliada en v54).
 Portadas congruentes y alcance de métrica altura/avance siguen pendientes. QA
 física del propietario es seguimiento y no bloquea desarrollo.
 
@@ -82,3 +82,18 @@ No se afirma universalidad: Mine/Solitaire legacy carecen de registro, abandonos
 anteriores al terminal/offline y persistencia durable quedan pendientes. Niveles
 reales de Maze/Billar/Orb/Brick/River/Piano/Phalanx y Mine privado requieren nuevas
 versiones; no se elimina el histórico. Detalles de validación en release v57.
+
+### v58 · Maze Rush continuo
+
+V2 usa un solo tablero conectado 11×13, sin rebuild, pausas de sector ni
+teletransportes por daño. Nodos mayores, llegada suavizada, dificultad gradual
+y dos perseguidores condicionados por tiempo/avance con 180 ticks de aviso
+antes de movimiento/daño. Regresión de activación junto al jugador corregida.
+Golden, 32 recorridos completos, 128 tableros conectados y replay/render/inputs
+pasan; QA táctil de victorias, derrotas y reinicios en ambas orientaciones.
+Históricos intactos. Evidencia en release v58.
+
+Prioridad siguiente: registro de abandonos anterior al terminal en el endpoint
+común, como recepción de un prefijo reproducible sin adjudicación. Después Piano
+sin pausas y restantes niveles reales en nuevas versiones. Persistencia durable,
+legacy Mine/Solitaire y cierre offline siguen sin garantía universal.

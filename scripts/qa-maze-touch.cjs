@@ -9,10 +9,10 @@ const { chromium } = require(
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const base = pathToFileURL(path.join(__dirname, "../.det-test/")).href;
-  const { MAZE_CORE: core } = await import(
-      base + "lib/verified/mazeRushCore.v1.js"
+  const { MAZE_CORE_V2: core } = await import(
+      base + "lib/verified/mazeRushCore.v2.js"
     ),
-    { chooseMazeAction } = await import(base + "scripts/maze-play-fixture.js"),
+    { chooseMazeRoute } = await import(base + "scripts/maze-route-fixture.js"),
     { replayCore } = await import(base + "lib/verified/coreRuntime.v1.js");
   const browser = await chromium.launch({
     executablePath: "/usr/bin/chromium",
@@ -84,19 +84,19 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       };
       p.arc = function (x, y, r, ...a) {
         if (match(this) && window.__mazeView) {
-          if (r === 4.2 && this.fillStyle === "#d2e2f4")
+          if (r === 6 && this.fillStyle === "#d2e2f4")
             window.__mazeView.nodes.push({ x, y, pulse: false });
-          if (r === 6.5 && this.fillStyle === "#9cf0d6")
+          if (r === 8 && this.fillStyle === "#9cf0d6")
             window.__mazeView.nodes.push({ x, y, pulse: true });
           if (
-            ["#536782", "#a281dc", "#ed8a91", "#efb876"].includes(
+            ["#536782", "#b29c61", "#a281dc", "#ed8a91", "#efb876"].includes(
               this.fillStyle,
             )
           )
             window.__mazeView.enemies.push({
               x,
               y,
-              awake: this.fillStyle !== "#536782",
+              awake: !["#536782", "#b29c61"].includes(this.fillStyle),
             });
         }
         return arc.call(this, x, y, r, ...a);
@@ -131,7 +131,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Maze Rush", exact: true })
       .tap();
     const issued = await (await started).json();
-    assert.equal(issued.manifest.game_version, "1.0.0");
+    assert.equal(issued.manifest.game_version, "2.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     const names = {
@@ -172,7 +172,10 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Activar sonido", exact: true })
       .tap();
     let previousCell = null,
-      changedAt = Date.now();
+      changedAt = Date.now(),
+      geometry = null,
+      initialNodes = null,
+      previousNodes = Infinity;
     let done = false,
       last = "STOP",
       stopped = false,
@@ -222,32 +225,39 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           board.nodes[index(p)] = true;
           board.pulses[index(p)] = p.pulse;
         }
-        const sector = (width - 7) / 2,
-          awake = view.enemies.some((e) => e.awake),
+        const signature = JSON.stringify({ width, height, walls: board.walls });
+        geometry ??= signature;
+        assert.equal(signature, geometry, "same corridors throughout the run");
+        assert.equal(width, 11);
+        assert.equal(height, 13);
+        initialNodes ??= view.nodes.length;
+        assert.equal(
+          initialNodes,
+          70,
+          "all nodes visible before movement begins",
+        );
+        assert.ok(view.nodes.length <= previousNodes, "nodes never refill");
+        previousNodes = view.nodes.length;
+        const awake = view.enemies.some((e) => e.awake),
           tick = awake ? 1200 : 0;
         const observedCell = index(view.player, true);
         if (observedCell !== previousCell) {
           previousCell = observedCell;
           changedAt = Date.now();
         }
-        const publicState = {
+        const planningView = {
           board,
-          player: index(view.player, true),
-          sector,
+          player: observedCell,
           tick,
-          stageStart: 0,
-          stageCollected: 20,
           poweredUntil: tick + view.pulseSeconds * 120,
-          clearUntil: null,
+          awake,
+          activeEnemyCells: view.enemies
+            .filter((e) => e.awake)
+            .map((e) => index(e)),
         };
-        let action = chooseMazeAction(publicState);
+        let action = chooseMazeRoute(planningView);
         if (loss) {
-          if (
-            sector === 1 &&
-            view.nodes.length <
-              core.create(issued.manifest.seed).board.total - 14
-          )
-            stopped = true;
+          if (initialNodes - view.nodes.length >= 24) stopped = true;
           if (stopped) action = "STOP";
         }
         if (
@@ -275,7 +285,11 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           last = action;
           changedAt = Date.now();
         }
-        if (!screenshot && sector === 2 && process.env.QA_SCREENSHOT) {
+        if (
+          !screenshot &&
+          initialNodes - view.nodes.length >= 20 &&
+          process.env.QA_SCREENSHOT
+        ) {
           await page.screenshot({ path: process.env.QA_SCREENSHOT });
           screenshot = true;
         }
@@ -298,19 +312,21 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       "result",
       JSON.stringify({
         result,
-        sector: replay.state.sector,
         nodes: replay.state.collected,
+        total: replay.state.board.total,
         inputs: body.inputs.length,
       }),
     );
     assert.equal(result.verified, true);
     assert.equal(replay.valid, true, replay.error);
     assert.equal(result.score, replay.score);
+    assert.equal(result.time_ms, replay.timeMs);
+    assert.equal(replay.state.tick, body.final_tick);
     assert.equal(result.won, !loss);
     if (loss) assert.equal(replay.failure, "PURSUER_COLLISION");
     else {
-      assert.equal(replay.state.sector, 3);
-      assert.equal(replay.state.stageCollected, replay.state.board.total);
+      assert.equal(replay.state.collected, replay.state.board.total);
+      assert.equal(replay.state.board.nodes.some(Boolean), false);
     }
     assert.equal(starts, 1, "audio/callback changes do not reset play");
     assert.equal(submits, 1);
@@ -346,7 +362,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         won: result.won,
         score: result.score,
         finalTick: body.final_tick,
-        sector: replay.state.sector,
+        nodes: replay.state.collected,
+        total: replay.state.board.total,
         lives: replay.state.lives,
         inputs: body.inputs.length,
         restart: true,

@@ -244,3 +244,10 @@ legacy. No se declara cobertura universal.
 Maze, Billar, Orb, Brick, River, Piano y Phalanx aún requieren eliminar resets o
 pausas reales en versiones nuevas. Mine candidato privado requiere un campo por
 partida antes de integración pública. El siguiente checkpoint aborda Maze.
+
+
+v58 convierte Maze Rush en un solo laberinto continuo: V2 con apertura segura,
+70 nodos grandes, giros anticipados y aviso de activación por perseguidor. Daño
+conserva posición y nodos; no hay cambio de tablero, pausa ni nivel nuevo. V1 y
+su golden quedan archivados. Validación/replays/QA en release v58; siguiente
+unidad: envío común de registros de abandono, sin resultados ficticios.

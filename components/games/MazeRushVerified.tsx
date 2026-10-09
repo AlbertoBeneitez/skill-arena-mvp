@@ -1,15 +1,18 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  MAZE_CORE,
-  mazeEnemiesAwake,
-  mazeChasing,
-  mazeMovePeriod,
-  type MazeState,
-} from "@/lib/verified/mazeRushCore.v1";
+  MAZE_CORE_V2,
+  MAZE_V2_RULES,
+  mazeEnemiesAwakeV2,
+  mazeEnemyAwakeV2,
+  mazeEnemyPreparingV2,
+  mazeChasingV2,
+  mazeMovePeriodV2,
+  type MazeV2State,
+} from "@/lib/verified/mazeRushCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, s: MazeState) {
+function render(ctx: CanvasRenderingContext2D, s: MazeV2State) {
   drawSpaceBackdrop(ctx, 390, 620, s.tick * 0.02, s.tick);
   const b = s.board,
     cell = Math.floor(Math.min(346 / b.width, 442 / b.height)),
@@ -34,7 +37,7 @@ function render(ctx: CanvasRenderingContext2D, s: MazeState) {
         ctx.arc(
           x + cell / 2,
           y + cell / 2,
-          b.pulses[i] ? 6.5 : 4.2,
+          b.pulses[i] ? 8 : 6,
           0,
           Math.PI * 2,
         );
@@ -54,7 +57,9 @@ function render(ctx: CanvasRenderingContext2D, s: MazeState) {
     old = center(s.previousPlayer),
     age = s.tick - s.lastMoveTick;
   // Interpolate only adjacent visual positions; contact/inputs use integer cells.
-  const t = Math.min(1, age / Math.min(6, mazeMovePeriod(s)));
+  // A short ease-out smooths arrival without projecting into an unvisited tile.
+  const progress = Math.min(1, age / Math.floor(mazeMovePeriodV2(s) / 2)),
+    t = 1 - (1 - progress) ** 3;
   const adjacent = Math.abs(old.x - p.x) + Math.abs(old.y - p.y) === cell;
   const x = adjacent ? old.x + (p.x - old.x) * t : p.x,
     y = adjacent ? old.y + (p.y - old.y) * t : p.y;
@@ -73,36 +78,55 @@ function render(ctx: CanvasRenderingContext2D, s: MazeState) {
     ctx.arc(x, y, cell * 0.43, 0, Math.PI * 2);
     ctx.stroke();
   }
-  for (const e of b.enemies) {
+  for (const [i, e] of b.enemies.entries()) {
     const p = center(e.cell),
-      awake = mazeEnemiesAwake(s) && s.tick >= e.dormantUntil;
-    ctx.fillStyle = !awake
-      ? "#536782"
-      : s.tick < s.poweredUntil
-        ? "#a281dc"
-        : mazeChasing(s)
-          ? "#ed8a91"
-          : "#efb876";
+      awake = mazeEnemyAwakeV2(s, i),
+      preparing = mazeEnemyPreparingV2(s, i);
+    ctx.fillStyle = preparing
+      ? "#b29c61"
+      : !awake
+        ? "#536782"
+        : s.tick < s.poweredUntil
+          ? "#a281dc"
+          : mazeChasingV2(s)
+            ? "#ed8a91"
+            : "#efb876";
     ctx.beginPath();
     ctx.arc(p.x, p.y, cell * 0.29, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#122238";
     ctx.fillRect(p.x - 5, p.y - 2, 3, 3);
     ctx.fillRect(p.x + 2, p.y - 2, 3, 3);
+    if (preparing) {
+      ctx.strokeStyle = "#efdba0";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(
+        p.x,
+        p.y,
+        cell * (0.36 + (0.07 * (s.tick % 60)) / 60),
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
+    }
   }
   ctx.fillStyle = "#c9dfef";
   ctx.textAlign = "center";
   ctx.font = "12px system-ui";
   const message =
-    s.clearUntil !== null
-      ? "SECTOR COMPLETADO · RECUPERAS UN ESCUDO"
-      : s.tick < s.readyAt
-        ? "Desliza o usa las flechas · ■ para planear"
-        : s.tick < s.poweredUntil
-          ? `PULSO · ${Math.ceil((s.poweredUntil - s.tick) / 120)} s DE PROTECCIÓN`
-          : mazeEnemiesAwake(s)
+    s.tick < MAZE_V2_RULES.initialReadyTicks
+      ? "Desliza o usa las flechas · ■ para planear"
+      : s.tick < s.poweredUntil
+        ? `PULSO · ${Math.ceil((s.poweredUntil - s.tick) / 120)} s DE PROTECCIÓN`
+        : b.enemies.some((_, i) => mazeEnemyPreparingV2(s, i))
+          ? "Se activa un perseguidor · aléjate de su base"
+          : mazeEnemiesAwakeV2(s)
             ? "Anticipa los giros · busca los pulsos verdes"
-            : "Recoge nodos · los verdes activan protección";
+            : s.collected >= MAZE_V2_RULES.firstPursuerNodes &&
+                s.tick >= MAZE_V2_RULES.firstPursuerTicks - 360
+              ? "Los perseguidores se están activando"
+              : "Recoge nodos · los verdes activan protección";
   ctx.fillText(message, 195, 64);
   if (s.tick - s.lastDamageTick < 60) {
     ctx.fillStyle = `rgba(224,72,113,${0.22 * (1 - (s.tick - s.lastDamageTick) / 60)})`;
@@ -138,14 +162,14 @@ const gestureAction = (
       ? "DOWN"
       : "UP";
 };
-const hudLabel = (s: Readonly<MazeState>) =>
-  `SECTOR ${s.sector}/3 · ${s.stageCollected}/${s.board.total}`;
+const hudLabel = (s: Readonly<MazeV2State>) =>
+  `${s.collected}/${s.board.total} NODOS`;
 export default function MazeRushVerified(props: GameRuntimeProps) {
   return (
     <div className="mazeRushVerified">
       <CoreCanvasGame
         {...props}
-        core={MAZE_CORE}
+        core={MAZE_CORE_V2}
         name="Maze Rush"
         render={render}
         keys={keys}
