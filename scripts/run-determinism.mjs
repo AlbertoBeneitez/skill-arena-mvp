@@ -12,6 +12,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-match-contracts.js");
   await import("../.det-test/scripts/verify-scenarios.js");
   await import("../.det-test/scripts/verify-submission-lifecycle.js");
+  await import("../.det-test/scripts/verify-attempt-records.js");
   await import("../.det-test/scripts/verify-core-runtime.js");
   await import("../.det-test/scripts/verify-stack-v3.js");
   await import("../.det-test/scripts/verify-stack-shift-v1.js");

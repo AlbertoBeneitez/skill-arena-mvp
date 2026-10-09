@@ -18,6 +18,7 @@
     "scripts/verify-scenarios.ts",
     "scripts/verify-match-repository.ts",
     "scripts/verify-submission-lifecycle.ts",
+    "scripts/verify-attempt-records.ts",
     "scripts/verify-core-runtime.ts",
     "scripts/verify-stack-v3.ts",
     "scripts/verify-tower-v3.ts",

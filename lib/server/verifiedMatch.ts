@@ -7,9 +7,15 @@ import type { GameId } from "@/lib/games";
 import { canonicalJson } from "@/lib/verified/canonical";
 import type {
   AttemptTicket,
+  AttemptRecordResponse,
   MatchManifest,
   MatchManifestV2,
+  VerifiedAttemptPayload,
 } from "@/lib/verified/contracts";
+import {
+  validateInputSequence,
+  type ReplayInput,
+} from "@/lib/verified/inputValidation";
 import { getServerGameAdapter } from "./gameVerifiers";
 import { hashManifest, sha256, signAttemptTicket } from "./matchIntegrity";
 import { resolveScenario, isPrivateScenario } from "./scenarios";
@@ -365,4 +371,99 @@ export function hashReplay(args: {
   };
 }) {
   return sha256(canonicalJson(args));
+}
+
+/** Shared bounded HTTP semantics. An unfinished receipt never settles a result. */
+export function processAttemptRecord(raw: unknown): {
+  status: number;
+  body: AttemptRecordResponse;
+} {
+  const reject = (error: string, status = 400) => ({
+    status,
+    body: { ok: false, verified: false, error },
+  });
+
+  if (!isRecord(raw)) return reject("INVALID_PAYLOAD");
+  if (
+    !raw.manifest || typeof raw.manifest !== "object" ||
+    !raw.ticket || typeof raw.ticket !== "object" ||
+    !Array.isArray(raw.inputs) || !Number.isInteger(raw.final_tick) ||
+    (raw.record_kind !== undefined && raw.record_kind !== "abandoned")
+  ) return reject("INVALID_PAYLOAD");
+
+  const payload = raw as unknown as VerifiedAttemptPayload;
+  const { manifest, ticket } = payload;
+  const inputs = payload.inputs as ReplayInput[];
+  const finalTick = payload.final_tick;
+  const abandoned = raw.record_kind === "abandoned";
+
+  const manifestCheck = validateManifest(manifest);
+  if (!manifestCheck.ok) return reject(manifestCheck.error);
+  const ticketCheck = verifyAttemptTicket(ticket, manifest);
+  if (!ticketCheck.ok) return reject(ticketCheck.error, 401);
+
+  const adapter = manifestCheck.adapter;
+  const inputError = validateInputSequence(inputs, finalTick, {
+    version: adapter.inputProtocol.version,
+    allowedActions: adapter.inputProtocol.allowedActions,
+    maxInputs: adapter.inputProtocol.maxInputs,
+    maxFinalTick: adapter.simulation.maxFinalTick,
+  });
+  if (inputError) return reject(inputError);
+
+  const replay = adapter.replay({ inputs, finalTick, manifest });
+  if (abandoned && replay.valid) return reject("TERMINAL_RECORD_REQUIRES_VERIFICATION");
+  if (!replay.valid && !(abandoned && replay.error === "CLIENT_ENDED_BEFORE_RESOLUTION")) {
+    return reject(replay.error ?? "REPLAY_MISMATCH");
+  }
+
+  const elapsedWallMs = Date.now() - ticketCheck.issuedAt;
+  const maxClockLeadMs = 2_500;
+  if (replay.timeMs > elapsedWallMs + maxClockLeadMs) {
+    return reject("SIMULATION_FASTER_THAN_REAL_TIME", 409);
+  }
+
+  if (abandoned) return {
+    status: 200,
+    body: {
+      ok: true,
+      received: true,
+      verified: false,
+      durable: false,
+      attempt_id: ticket.attempt_id,
+      final_tick: finalTick,
+    },
+  };
+
+  // Preserve the historical terminal hash, result fields and random receipt id.
+  const manifestHash = hashManifest(manifest);
+  const replayHash = hashReplay({
+    manifestHash,
+    attemptId: ticket.attempt_id,
+    inputs,
+    finalTick,
+    result: {
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.won,
+      height: replay.height,
+      failure: replay.failure,
+    },
+  });
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      verified: true,
+      verification_id: randomUUID(),
+      replay_hash: replayHash,
+      score: replay.score,
+      time_ms: replay.timeMs,
+      height: replay.height,
+      failure: replay.failure ?? null,
+      won: replay.won,
+      authoritative_source: "SERVER_REPLAY",
+      client_score_ignored: true,
+    },
+  };
 }

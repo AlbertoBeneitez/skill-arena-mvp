@@ -71,6 +71,23 @@ export type VerifiedAttemptPayload<
   final_tick: number;
 };
 
+/** A reproducible unfinished prefix, never a client-declared competitive result. */
+export type AbandonedAttemptPayload<
+  TInput extends ReplayInput = ReplayInput,
+> = VerifiedAttemptPayload<TInput> & {
+  record_kind: "abandoned";
+};
+
+/** Processing acknowledgement only; no durable storage or adjudicated outcome. */
+export type AbandonedAttemptReceipt = {
+  ok: true;
+  received: true;
+  verified: false;
+  durable: false;
+  attempt_id: string;
+  final_tick: number;
+};
+
 export type VerifiedAttemptResult = {
   ok: boolean;
   verified: boolean;
@@ -85,3 +102,5 @@ export type VerifiedAttemptResult = {
   authoritative_source?: "SERVER_REPLAY";
   client_score_ignored?: true;
 };
+
+export type AttemptRecordResponse = VerifiedAttemptResult | AbandonedAttemptReceipt;
