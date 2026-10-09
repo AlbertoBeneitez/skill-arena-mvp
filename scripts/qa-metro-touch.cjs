@@ -81,13 +81,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       if (r.url().includes("/verified-match/start")) starts++;
     });
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3045");
-    await page.locator(".quickStakeBar button").first().click();
+    await page.locator(".quickStakeBar button").first().tap();
     const start = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Metro Shift", exact: true })
-      .click();
+      .tap();
     const issued = await (await start).json();
     assert.equal(issued.manifest.game_version, "1.0.0");
     const s = core.create(issued.manifest.seed),
@@ -251,13 +251,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page.evaluate(() => document.body.scrollWidth > innerWidth),
       false,
     );
-    await page.getByRole("button", { name: "CAMBIAR", exact: true }).click();
+    await page.getByRole("button", { name: "CAMBIAR", exact: true }).tap();
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Metro Shift", exact: true })
-      .click();
+      .tap();
     const again = await (await restart).json();
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });

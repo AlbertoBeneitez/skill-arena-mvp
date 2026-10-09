@@ -7,6 +7,7 @@ import {
 } from "@/lib/verified/metroShiftCore.v1";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
+import { metroObstacleDepth } from "./metro-shift/presentation";
 function render(ctx: CanvasRenderingContext2D, s: MetroState) {
   drawSpaceBackdrop(ctx, 390, 620, s.distance / 15000, s.tick);
   const sector = Math.min(3, 1 + Math.floor(s.passed / 20));
@@ -49,7 +50,7 @@ function render(ctx: CanvasRenderingContext2D, s: MetroState) {
   for (const g of [...s.groups].reverse()) {
     const dz = (g.z - s.distance) / 1000;
     if (g.passed || dz > 1100 || dz < -120) continue;
-    const d = Math.max(0.08, Math.min(1.15, 1 - dz / 1100)),
+    const d = metroObstacleDepth(dz),
       y = 100 + 420 * d;
     for (const h of g.hazards) {
       const x = 195 + (METRO_LANES[h.lane] / 1000 - 195) * (0.34 + 0.66 * d),

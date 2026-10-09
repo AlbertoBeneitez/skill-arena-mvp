@@ -216,3 +216,9 @@ Stack, Stack/Tower o una métrica propia por juego; no se altera scoring histór
 v54 amplía la superficie útil del tablero Stack Shift y sus piezas, conservando
 física/core/replay V1. Victoria, derrota y reinicio táctiles comprobados; suelo y
 botones no se solapan en vertical/horizontal. Solicitud de arena mayor resuelta.
+
+
+v55 corrige el tramo visual inmóvil de los obstáculos Metro al entrar por el
+horizonte: no era una pausa de la simulación. Proyección continua y regresión,
+con reglas/core V1 conservados. Victoria completa, derrota y reinicio táctiles
+con replay comprobados. Los restantes recorridos/datasets/métricas siguen abiertos.

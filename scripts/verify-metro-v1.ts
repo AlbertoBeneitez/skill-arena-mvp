@@ -110,3 +110,17 @@ assert.equal(metroSpeed(core.create("speed")), 1700);
 console.log(
   "Metro: 32 complete courses, 128 safe eight-second openings, route openings, continuous lane movement, jump/wall distinction, no air double jump, shield semantics, unique pickups, common replay",
 );
+
+// Regression: incoming hazards cannot stay fixed at the horizon. The old .08
+// minimum projected 1090..1020 at one position/size despite advancing distance.
+const { metroObstacleDepth } = await import("../components/games/metro-shift/presentation");
+let previousDepth = metroObstacleDepth(1100);
+assert.equal(previousDepth, 0);
+for (let distance = 1090; distance >= -100; distance -= 10) {
+  const depth = metroObstacleDepth(distance);
+  assert.ok(depth > previousDepth, `approaching hazard must move at distance ${distance}`);
+  previousDepth = depth;
+}
+assert.equal(metroObstacleDepth(0), 1, "collision line retains its projection");
+assert.equal(metroObstacleDepth(1200), 0, "offscreen hazards stay beyond the horizon");
+console.log("Metro presentation: continuous horizon approach and unchanged collision-line projection passed");
