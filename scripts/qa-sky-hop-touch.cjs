@@ -321,7 +321,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page.evaluate(() => document.body.scrollWidth > innerWidth),
       false,
     );
-    const other = page.getByRole("button", { name: "OTRO JUEGO", exact: true });
+    const other = page.getByRole("button", { name: "CAMBIAR", exact: true });
     if (process.env.QA_LOSS) {
       await other.focus();
       await page.keyboard.press("Enter");

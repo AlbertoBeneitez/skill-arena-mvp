@@ -274,7 +274,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       false,
     );
     assert.ok((await page.evaluate(() => window.__oscillators)) > 0);
-    await page.getByRole("button", { name: "OTRO JUEGO", exact: true }).tap();
+    await page.getByRole("button", { name: "CAMBIAR", exact: true }).tap();
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );

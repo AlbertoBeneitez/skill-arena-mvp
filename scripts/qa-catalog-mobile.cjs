@@ -47,8 +47,8 @@ const { chromium } = require(
     assert.equal(await catalog.locator("article").count(), 20);
     assert.equal(
       await catalog.getByRole("heading").count(),
-      20,
-      "every cover has a readable game name",
+      0,
+      "cover titles are not repeated below artwork",
     );
     assert.equal(
       await page
@@ -87,7 +87,7 @@ const { chromium } = require(
     await search.tap();
     await page.keyboard.insertText("BILLAR");
     assert.equal(await catalog.locator("article").count(), 1);
-    assert.equal(await catalog.getByRole("heading").innerText(), "Billar");
+    assert.equal(await catalog.locator("article").getAttribute("aria-label"), "Billar");
     await page
       .getByRole("button", { name: "Limpiar búsqueda", exact: true })
       .tap();
@@ -185,12 +185,26 @@ const { chromium } = require(
     );
     await page.unroute("**/api/verified-match/start");
     await page.route("**/api/verified-match/start",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:false,error:"QA_UNAVAILABLE"})}));
+    await page.evaluate(() => {
+      window.__resultTransition = null;
+      const observer = new MutationObserver(() => {
+        const actions = document.querySelector("fieldset.resultActions");
+        if (!actions) return;
+        window.__resultTransition = { disabled: actions.disabled };
+        actions.querySelector("button.mainAction:last-child").click();
+        observer.disconnect();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
     await search.fill("Dardos");
     await page.getByRole("button",{name:"Jugar a Dardos",exact:true}).tap();
     await page.locator(".resultPanel").waitFor({state:"visible"});
     assert.ok((await page.locator(".resultPanel").innerText()).includes("RESULTADO NO VERIFICADO"));
     assert.equal(await page.locator(".gameResultSummary").count(),0,"a start failure must not invent an authoritative result");
-    await page.getByRole("button",{name:"OTRO JUEGO",exact:true}).tap();
+    const change = page.getByRole("button", { name: "CAMBIAR", exact: true });
+    assert.equal(await page.evaluate(() => window.__resultTransition.disabled), true, "result actions start disabled");
+    assert.equal(await page.locator(".resultPanel").isVisible(), true, "an immediate action cannot skip the result");
+    await change.tap();
     await catalog.waitFor();
     assert.deepEqual(errors, []);
     console.log(

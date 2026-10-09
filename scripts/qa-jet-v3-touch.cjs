@@ -180,7 +180,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     );
     if (process.env.QA_SCREENSHOT)
       await page.screenshot({ path: process.env.QA_SCREENSHOT });
-    await page.getByRole("button", { name: "OTRO JUEGO", exact: true }).click();
+    await page.getByRole("button", { name: "CAMBIAR", exact: true }).click();
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );

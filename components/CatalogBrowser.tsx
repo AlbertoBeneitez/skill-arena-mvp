@@ -74,7 +74,7 @@ export default function CatalogBrowser(props: Props) {
       ) : (
         <div className={styles.grid}>
           {games.map((game) => (
-            <article key={game.id} className={styles.card}>
+            <article key={game.id} className={styles.card} aria-label={game.name}>
               <div className={styles.cover}>
                 <img
                   src={game.cover}
@@ -96,10 +96,6 @@ export default function CatalogBrowser(props: Props) {
                     👻
                   </button>
                 )}
-              </div>
-              <div className={styles.copy}>
-                <h2>{game.name}</h2>
-                <p>{game.instruction}</p>
               </div>
               <button
                 className={styles.play}

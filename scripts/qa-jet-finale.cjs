@@ -134,7 +134,7 @@ const assert = require("node:assert/strict");
     assert.equal(verifyRequests, 1);
   }
   if (!cancel)
-    await page.getByRole("button", { name: "OTRO JUEGO", exact: true }).click();
+    await page.getByRole("button", { name: "CAMBIAR", exact: true }).click();
   const restarted = page.waitForResponse((r) =>
     r.url().includes("/verified-match/start"),
   );

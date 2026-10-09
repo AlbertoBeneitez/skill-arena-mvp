@@ -67,7 +67,7 @@ export default function GameResultSummary({
           : result.won
             ? "Buen trabajo. Prueba otro escenario o mejora tu marca."
             : (result.failureReason && causes[result.failureReason]) ||
-              "Cada intento te ayuda a dominar la mecánica."}
+              ""}
       </p>
     </section>
   );

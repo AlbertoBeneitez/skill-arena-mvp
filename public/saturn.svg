@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 192">
+<defs><radialGradient id="planet" cx="30%" cy="25%" r="90%"><stop stop-color="#a69b7e"/><stop offset=".5" stop-color="#706957"/><stop offset="1" stop-color="#12233c"/></radialGradient><clipPath id="body"><circle r="56"/></clipPath></defs>
+<g transform="translate(128 96) rotate(-18)" opacity=".65">
+<ellipse rx="104" ry="28" fill="none" stroke="#bba984" stroke-width="12" opacity=".4"/>
+<ellipse rx="89" ry="24" fill="none" stroke="#d8c79f" stroke-width="5" opacity=".5"/>
+<circle r="56" fill="url(#planet)"/>
+<g clip-path="url(#body)" fill="#cfb98b" opacity=".12"><path d="M-56-32h112v6H-56zM-56-9h112v5H-56zM-56 14h112v6H-56zM-56 37h112v4H-56z"/></g>
+<path d="M104 0a104 28 0 0 1-208 0" fill="none" stroke="#bba984" stroke-width="12" opacity=".5"/>
+<path d="M89 0a89 24 0 0 1-178 0" fill="none" stroke="#d8c79f" stroke-width="5" opacity=".5"/>
+</g></svg>

@@ -84,7 +84,7 @@ const assert = require("node:assert/strict");
   else assert.ok(result.failure);
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ result, inputs, errors }));
-  await page.getByRole('button',{name:'OTRO JUEGO',exact:true}).click();
+  await page.getByRole('button',{name:'CAMBIAR',exact:true}).click();
   const restarted = page.waitForResponse(r=>r.url().includes('/verified-match/start'));
   await page.getByRole('button',{name:'Jugar a River Dash',exact:true}).click();
   const next = await (await restarted).json();

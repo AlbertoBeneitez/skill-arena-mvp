@@ -6113,3 +6113,22 @@ html, body {
 .groupScreen .groupGameGrid.selectionMode img { width: 48px; height: 56px; aspect-ratio: auto; object-fit: contain; background: #0c172a; border-radius: 8px; }
 .groupScreen .groupGameGrid.selectionMode strong { padding: 0; line-height: 1.35; overflow-wrap: anywhere; }
 @media (min-width: 680px) { .groupScreen .groupGameGrid.selectionMode { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Minimal entry: identity and three access choices, no promotional copy. */
+.welcomeCardCompact .galacticWelcomeMark { width: 144px; height: 144px; }
+.welcomeCardCompact .authStack { gap: 18px; margin-top: 24px; }
+.galacticEntryAction { display: grid; place-content: center; gap: 4px; }
+.galacticEntryAction small { font-size: 10px; letter-spacing: .12em; font-weight: 600; }
+.avatarRankingShortcut { min-height: 44px; margin-bottom: 12px; }
+.resultLearningNote:empty { display: none; }
+@media (max-height: 500px) { .welcomeCardCompact .galacticWelcomeMark { width: 84px; height: 84px; } .welcomeCardCompact .authStack { margin-top: 12px; gap: 12px; } }
+
+.galacticEntryAction > span { width: auto; height: auto; display: block; border: 0; border-radius: 0; background: transparent; font: inherit; line-height: 1.2; white-space: nowrap; }
+.solitaireSprint, .mineGridGame { background: url('/saturn.svg') 86% 19% / 170px 128px no-repeat, radial-gradient(circle at 17px 23px, rgba(225,243,255,.5) 0 1px, transparent 1.5px) 0 0 / 103px 89px, radial-gradient(circle at 61px 47px, rgba(133,210,244,.4) 0 1px, transparent 1.5px) 0 0 / 151px 127px, radial-gradient(ellipse at 12% 72%, rgba(123,65,181,.2), transparent 44%), linear-gradient(155deg,#050e22,#112644 48%,#0e142d); }
+
+.dartsVerified .coreControls:empty { display: none; }
+
+.authButton.galacticEntryAction > span { background: transparent; font: 800 14px/1.2 system-ui, sans-serif; }
+
+fieldset.resultActions { border: 0; padding: 0; min-width: 0; }
+fieldset.resultActions:disabled button { opacity: .65; }

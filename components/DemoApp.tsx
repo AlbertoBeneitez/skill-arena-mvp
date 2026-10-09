@@ -245,6 +245,13 @@ export default function DemoApp() {
   const [activeGame, setActiveGame] = useState(false);
   const [gameKey, setGameKey] = useState(0);
   const [result, setResult] = useState<GameResult | null>(null);
+  const [resultActionsReady, setResultActionsReady] = useState(false);
+  useEffect(() => {
+    setResultActionsReady(false);
+    if (!result) return;
+    const timer = window.setTimeout(() => setResultActionsReady(true), 350);
+    return () => window.clearTimeout(timer);
+  }, [result]);
   const [attemptSummary, setAttemptSummary] = useState<GameResult | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [wins, setWins] = useState(0);
@@ -1038,17 +1045,13 @@ export default function DemoApp() {
         <section className="welcomeCard welcomeCardCompact">
           <GalacticMark className="galacticWelcomeMark" />
           <div className="wordmark">{PRODUCT_NAME}</div>
-          <p className="galacticEntryTagline">Tu próxima mejor marca.</p>
-          <p className="galacticEntryCopy">Juegos rápidos. Nuevos desafíos. Una galaxia por dominar.</p>
-          <div className="galacticEntryPreview" aria-hidden="true"><span>PRECISIÓN</span><span>REFLEJOS</span><span>ESTRATEGIA</span></div>
           <div className="authStack">
-            <button className="authButton guest galacticEntryAction" onClick={continueWithoutProvider}>EMPEZAR A JUGAR</button>
-            <p className="galacticDemoEntry">Modo demo · sin cuenta ni dinero real</p>
+
             <div className="galacticProviderRow">
               <button className="authButton google" disabled aria-label="Google, próximamente"><span aria-hidden="true">G</span>Google</button>
               <button className="authButton apple" disabled aria-label="Apple, próximamente"><span aria-hidden="true">●</span>Apple</button>
             </div>
-            <p className="galacticProviderNote">Acceso con Google y Apple próximamente.</p>
+            <button className="authButton guest galacticEntryAction" aria-label="Iniciar sesión demo local" onClick={continueWithoutProvider}><span>INICIAR SESIÓN</span><small>DEMO LOCAL</small></button>
           </div>
         </section>
       </main>
@@ -1061,7 +1064,6 @@ export default function DemoApp() {
         <section className="setupCard avatarSetupCard avatarSetupMinimal galacticAvatarSetup">
           <small className="galacticSetupBrand">{PRODUCT_NAME}</small>
           <h1>Elige tu identidad</h1>
-          <p>Un nombre, un avatar. Y a jugar.</p>
           <div className="avatarPortraitWrap">
             <div className="avatarPortrait">
               <img src={avatarSrc} alt="Propuesta de avatar" />
@@ -1111,7 +1113,7 @@ export default function DemoApp() {
             </div>
           )}
 
-          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>ENTRAR EN LA GALAXIA</button>
+          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>CONTINUAR</button>
 
           {cropSource && (
             <div className="avatarCropOverlay" role="dialog" aria-modal="true" aria-label="Ajustar foto de avatar">
@@ -1328,12 +1330,12 @@ export default function DemoApp() {
 
             {result && (
               <div className="resultPanel premiumResult neutralResult"
-                onPointerDownCapture={() => { resultPointerReadyRef.current = true; }}
+                onPointerDownCapture={() => { resultPointerReadyRef.current = resultActionsReady; }}
                 onPointerCancelCapture={() => { resultPointerReadyRef.current = false; }}
                 onClickCapture={event => {
                   // A held game gesture must not click through to a newly shown
                   // result action. Keyboard/assistive clicks (detail 0) still work.
-                  if (event.detail !== 0 && !resultPointerReadyRef.current) {
+                  if (event.detail !== 0 && (!resultActionsReady || !resultPointerReadyRef.current)) {
                     event.preventDefault();
                     event.stopPropagation();
                   }
@@ -1351,7 +1353,7 @@ export default function DemoApp() {
                     <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} waitingForRival={selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
                   </>
                 )}
-                <div className="resultActions">
+                <fieldset className="resultActions" disabled={!resultActionsReady} aria-label="Acciones del resultado">
                   {matchScope === "group" && groupCompetition ? (
                     <>
                       {groupCompetition.type === "quick" ? (
@@ -1396,11 +1398,11 @@ export default function DemoApp() {
                         OTRA VEZ
                       </button>
                       <button className="mainAction" onClick={() => navigate("home")}>
-                        OTRO JUEGO
+                        CAMBIAR
                       </button>
                     </>
                   )}
-                </div>
+                </fieldset>
               </div>
             )}
           </section>
@@ -1408,7 +1410,8 @@ export default function DemoApp() {
 
         {screen === "profile" && (
           <section className={`simpleScreen ${shellStyles.accountView}`} aria-label="Perfil demo">
-            <h1>Tu perfil</h1>
+            <h1>Tu avatar</h1>
+            <button type="button" className="globalRankingShortcut avatarRankingShortcut" onClick={() => navigate("ranking")} aria-label="Ver ranking global desde avatar">Ranking global →</button>
             <p className={shellStyles.demoNote}>Identidad local · saldo y premios ficticios</p>
             <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>Cuenta demo · sin posición real</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 
@@ -1531,7 +1534,7 @@ export default function DemoApp() {
           </button>
           <button className={screen === "ranking" ? "active" : ""} aria-current={screen === "ranking" ? "page" : undefined} onClick={() => navigate("ranking")}><span aria-hidden="true">≡</span>RANKING</button>
           <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
-            <img src={avatarSrc} alt="" />CUENTA
+            <img src={avatarSrc} alt="" />AVATAR
           </button>
         </nav>
       )}

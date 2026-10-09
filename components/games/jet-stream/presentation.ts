@@ -1,3 +1,4 @@
+import { drawSaturn } from "@/lib/spaceBackdrop";
 import {
   JET_STREAM_V1,
   jetStreamGapMilliForPassed,
@@ -89,6 +90,7 @@ export function drawJetBackground(
     ctx.fillRect(x, star.y, star.size, star.size);
   }
   ctx.globalAlpha = 1;
+  drawSaturn(ctx, w * .81, h * .21, w * .11);
 
   // Deterministic motion streaks communicate speed without introducing
   // gameplay noise or allocations tied to random state.

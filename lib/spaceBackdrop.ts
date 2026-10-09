@@ -28,17 +28,39 @@ export function drawSpaceBackdrop(
   }
   ctx.globalAlpha = 1;
   const x = width * 0.79, y = height * 0.23, radius = width * 0.115;
-  const planet = ctx.createLinearGradient(x - radius, y - radius, x + radius, y + radius);
-  planet.addColorStop(0, "#3c6887");
-  planet.addColorStop(1, "#142744");
+  drawSaturn(ctx, x, y, radius);
+  ctx.restore();
+}
+
+/** Shared foreground/background ring composition; no simulation state. */
+export function drawSaturn(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number) {
+  ctx.save();
+  // Rings behind the globe, clipped cloud bands, then the visible front arc.
+  const rings = (front: boolean) => {
+    for (const [scale, color, line] of [[1.8, "rgba(187,169,132,.24)", 7], [1.58, "rgba(216,199,159,.34)", 3]] as const) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = line;
+      ctx.beginPath();
+      ctx.ellipse(x, y, radius * scale, radius * .43, -.3, 0, front ? Math.PI : Math.PI * 2);
+      ctx.stroke();
+    }
+  };
+  rings(false);
+  const planet = ctx.createRadialGradient(x - radius * .4, y - radius * .4, 0, x + radius * .35, y + radius * .2, radius * 1.65);
+  planet.addColorStop(0, "#a69b7e");
+  planet.addColorStop(.45, "#706957");
+  planet.addColorStop(1, "#12233c");
   ctx.fillStyle = planet;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(120,221,245,.34)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.ellipse(x, y, radius * 1.65, radius * 0.35, -0.3, 0, Math.PI * 2);
-  ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
+  ctx.save(); ctx.clip();
+  ctx.translate(x, y); ctx.rotate(-.16);
+  for (let i = -3; i <= 3; i++) {
+    ctx.fillStyle = i % 2 ? "rgba(207,185,139,.09)" : "rgba(18,32,48,.13)";
+    ctx.fillRect(-radius, i * radius * .23, radius * 2, radius * .1);
+  }
+  ctx.restore();
+  rings(true);
+  ctx.strokeStyle = "rgba(189,204,200,.16)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(x, y, radius, Math.PI * .9, Math.PI * 1.7); ctx.stroke();
   ctx.restore();
 }

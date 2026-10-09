@@ -45,8 +45,12 @@ const assert = require("node:assert/strict");
     await page.goto(process.env.QA_BASE_URL);
     await page.locator(".bottomNav button").last().tap();
     await page
-      .getByRole("heading", { name: "Tu perfil", exact: true })
+      .getByRole("heading", { name: "Tu avatar", exact: true })
       .waitFor();
+    assert.match(await page.locator('.bottomNav button').last().innerText(), /AVATAR/);
+    await page.getByRole('button', {name:'Ver ranking global desde avatar',exact:true}).tap();
+    await page.getByRole('heading', {name:'El ranking real aún no está disponible',exact:true}).waitFor();
+    await page.locator('.bottomNav button').last().tap();
     assert.equal(
       await page.locator(".profitLine").getAttribute("points"),
       "0,50 100,50",
@@ -146,13 +150,13 @@ const assert = require("node:assert/strict");
       .getByRole("button", { name: "Volver al perfil", exact: true })
       .tap();
     await page
-      .getByRole("heading", { name: "Tu perfil", exact: true })
+      .getByRole("heading", { name: "Tu avatar", exact: true })
       .waitFor();
     await page.getByRole("button", { name: /Nombre y avatar/ }).tap();
     await page.getByPlaceholder("Nombre de avatar").fill("QA_Perfil");
     await page.getByRole("button", { name: "Avatar 3", exact: true }).tap();
     await page
-      .getByRole("button", { name: "ENTRAR EN LA GALAXIA", exact: true })
+      .getByRole("button", { name: "CONTINUAR", exact: true })
       .tap();
     await page.locator(".bottomNav button").last().tap();
     assert.equal(
@@ -177,7 +181,7 @@ const assert = require("node:assert/strict");
     );
     await page.getByRole("button", { name: /Cerrar sesión demo/ }).tap();
     await page
-      .getByRole("button", { name: "EMPEZAR A JUGAR", exact: true })
+      .getByRole("button", { name: "Iniciar sesión demo local", exact: true })
       .waitFor();
     const local = await page.evaluate(() =>
       JSON.parse(localStorage.getItem("skill-arena-v12") || "null"),
@@ -212,6 +216,10 @@ const assert = require("node:assert/strict");
     );
     await page.reload();
     await page.locator(".bottomNav button").last().tap();
+    assert.match(await page.locator('.bottomNav button').last().innerText(), /AVATAR/);
+    await page.getByRole('button', {name:'Ver ranking global desde avatar',exact:true}).tap();
+    await page.getByRole('heading', {name:'El ranking real aún no está disponible',exact:true}).waitFor();
+    await page.locator('.bottomNav button').last().tap();
     assert.equal(
       await page.locator(".profitLine").getAttribute("points"),
       "0.00,50.00 50.00,70.00 100.00,10.00",
