@@ -123,7 +123,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "jet-stream",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/JetStreamV3")),
     competition: {

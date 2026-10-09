@@ -9,11 +9,11 @@ const { chromium } = require(
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const base = pathToFileURL(path.join(__dirname, "../.det-test/")).href;
-  const { JET_STREAM_CORE_V3: core } = await import(
-      base + "lib/verified/jetStreamCore.v3.js"
+  const { JET_STREAM_CORE_V4: core } = await import(
+      base + "lib/verified/jetStreamCore.v4.js"
     ),
-    { shouldFlapJet } = await import(base + "scripts/jet-v3-play-fixture.js"),
-    { applyCoreInput, stepCore, replayCore } = await import(
+    { shouldFlapJetV4 } = await import(base + "scripts/jet-v4-play-fixture.js"),
+    { applyCoreInput, advanceCoreToTick, replayCore } = await import(
       base + "lib/verified/coreRuntime.v1.js"
     );
   const browser = await chromium.launch({
@@ -54,6 +54,25 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         }),
       );
       localStorage.setItem("skill-arena-color-tutorial-v12", "1");
+      window.__jetEvents = [];
+      document.addEventListener(
+        "pointerdown",
+        (event) => {
+          if (event.target.matches?.("canvas.gameCanvas"))
+            window.__jetEvents.push({ when: performance.now() });
+        },
+        true,
+      );
+      // Observe the actual rendered ship, forwarding every drawing call unchanged.
+      const translate = CanvasRenderingContext2D.prototype.translate;
+      CanvasRenderingContext2D.prototype.translate = function (x, y) {
+        if (this.canvas.classList.contains("gameCanvas") && x === 92)
+          window.__jetShip = {
+            y: Math.round(y * 1000),
+            when: performance.now(),
+          };
+        return translate.call(this, x, y);
+      };
       const raf = requestAnimationFrame;
       window.requestAnimationFrame = (cb) => {
         if (window.__issued && !window.__epoch)
@@ -69,26 +88,17 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         });
     });
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3034");
-    await page.locator(".quickStakeBar button").first().click();
+    await page.locator(".quickStakeBar button").first().tap();
     const response = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Jet Stream", exact: true })
-      .click();
+      .tap();
     const issued = await (await response).json();
-    assert.equal(issued.manifest.game_version, "3.0.0");
+    assert.equal(issued.manifest.game_version, "4.0.0");
     const target = issued.manifest.competition.target_score;
-    const s = core.create(issued.manifest.seed),
-      inputs = [];
-    while (s.status === "running") {
-      if (shouldFlapJet(s)) {
-        inputs.push(s.tick);
-        applyCoreInput(core, s, "FLAP", target);
-      }
-      stepCore(core, s, target);
-    }
-    assert.equal(s.status, "won");
+    const s = core.create(issued.manifest.seed);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     assert.equal(
@@ -112,38 +122,77 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         finished = true;
       })
       .catch(() => {});
-    // A cancelled gesture releases capture; the actual tap still owns its FLAP.
-    if (!process.env.QA_LOSS)
-      for (const tick of process.env.QA_TAP_LOSS
-        ? inputs.slice(0, 1)
-        : inputs) {
-        if (finished) break;
-        await page.waitForFunction(
-          (t) =>
-            window.__epoch &&
-            performance.now() - window.__epoch >= (t * 1000) / 120,
-          tick,
-          { polling: 4, timeout: 15000 },
+    let eventIndex = 0,
+      firstTap = true,
+      lastDecision = -1;
+    const loss = Boolean(process.env.QA_LOSS || process.env.QA_TAP_LOSS);
+    async function syncPlayer() {
+      const clock = await page.evaluate(() => ({
+        epoch: window.__epoch,
+        now: performance.now(),
+        events: window.__jetEvents,
+        ship: window.__jetShip,
+      }));
+      for (; eventIndex < clock.events.length; eventIndex++) {
+        const tick = Math.max(
+          0,
+          Math.floor(
+            ((clock.events[eventIndex].when - clock.epoch) * 120) / 1000,
+          ),
         );
-        await cdp.send("Input.dispatchTouchEvent", {
-          type: "touchStart",
-          touchPoints: [point],
-        });
-        await cdp.send("Input.dispatchTouchEvent", {
-          type: tick === inputs[0] ? "touchCancel" : "touchEnd",
-          touchPoints: [],
-        });
-        if (tick === inputs[0]) {
+        advanceCoreToTick(core, s, tick, target);
+        applyCoreInput(core, s, "FLAP", target);
+      }
+      if (clock.ship && clock.ship.when >= clock.epoch) {
+        const visualTick = Math.max(
+          0,
+          Math.floor(((clock.ship.when - clock.epoch) * 120) / 1000),
+        );
+        advanceCoreToTick(core, s, visualTick, target);
+        // This is the external test player's estimate, never browser game state.
+        // Actual taps may differ by a tick from CDP transport; visual observation
+        // prevents that estimate drifting across a three-minute native run.
+        s.yMilli = clock.ship.y;
+      }
+      advanceCoreToTick(
+        core,
+        s,
+        Math.floor(((clock.now - clock.epoch) * 120) / 1000),
+        target,
+      );
+    }
+    while (!finished) {
+      if (process.env.QA_LOSS || (process.env.QA_TAP_LOSS && !firstTap)) break;
+      await syncPlayer();
+      if (s.status !== "running") break;
+      if (s.tick !== lastDecision) {
+        lastDecision = s.tick;
+        if (shouldFlapJetV4(s)) {
           await cdp.send("Input.dispatchTouchEvent", {
             type: "touchStart",
             touchPoints: [point],
           });
           await cdp.send("Input.dispatchTouchEvent", {
-            type: "touchEnd",
+            type: firstTap ? "touchCancel" : "touchEnd",
             touchPoints: [],
           });
+          if (firstTap) {
+            await cdp.send("Input.dispatchTouchEvent", {
+              type: "touchStart",
+              touchPoints: [point],
+            });
+            await cdp.send("Input.dispatchTouchEvent", {
+              type: "touchEnd",
+              touchPoints: [],
+            });
+          }
+          if (firstTap && process.env.QA_GAMEPLAY_SCREENSHOT)
+            await page.screenshot({ path: process.env.QA_GAMEPLAY_SCREENSHOT });
+          firstTap = false;
         }
       }
+      await page.waitForTimeout(20);
+    }
     const vr = await verified,
       body = vr.request().postDataJSON(),
       result = await vr.json(),
@@ -157,7 +206,18 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(result.verified, true);
     assert.equal(replay.valid, true, replay.error);
     assert.equal(result.score, replay.score);
-    const loss = Boolean(process.env.QA_LOSS || process.env.QA_TAP_LOSS);
+    assert.equal(result.height, replay.state.passed);
+    assert.equal(result.time_ms, replay.timeMs);
+    if (result.won !== !loss)
+      console.log(
+        JSON.stringify({
+          failure: result.failure,
+          finalTick: body.final_tick,
+          firstActual: body.inputs[0]?.tick,
+          inputs: body.inputs.length,
+          reach: result.height,
+        }),
+      );
     assert.equal(result.won, !loss);
     assert.equal(submits, 1);
     if (!loss) {
@@ -174,23 +234,47 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       assert.equal(replay.state.lives, 0);
     }
     await page.locator(".resultPanel").waitFor({ state: "visible" });
+    const resultText = await page.locator(".resultPanel").innerText();
+    assert.ok(resultText.includes("Avance alcanzado"));
+    assert.equal(resultText.includes("Puntos"), false);
+    assert.equal(
+      Number(
+        await page
+          .getByLabel("Avance del intento", { exact: true })
+          .innerText(),
+      ),
+      replay.state.passed,
+    );
     assert.equal(
       await page.evaluate(() => document.body.scrollWidth > innerWidth),
       false,
     );
     if (process.env.QA_SCREENSHOT)
       await page.screenshot({ path: process.env.QA_SCREENSHOT });
-    await page.getByRole("button", { name: "CAMBIAR", exact: true }).click();
+    await page.getByRole("button", { name: "CAMBIAR", exact: true }).tap();
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Jet Stream", exact: true })
-      .click();
+      .tap();
     const again = await (await restart).json();
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     assert.equal(await page.locator(".resultPanel").isVisible(), false);
+    await page.setViewportSize(
+      process.env.QA_LANDSCAPE
+        ? { width: 320, height: 720 }
+        : { width: 844, height: 390 },
+    );
+    await page.evaluate(() =>
+      window.dispatchEvent(new Event("orientationchange")),
+    );
+    await page.locator("canvas.gameCanvas").waitFor({ state: "visible" });
+    assert.equal(
+      await page.evaluate(() => document.body.scrollWidth > innerWidth),
+      false,
+    );
     assert.deepEqual(errors, []);
     console.log(
       JSON.stringify({

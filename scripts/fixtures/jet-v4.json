@@ -1,0 +1,1553 @@
+{
+  "seed": "61797d9d64a085f8b62ac2732ae93c7fbc4a8f669b18b5ef84b3e890d297b7a8",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 240,
+      "action": "FLAP"
+    },
+    {
+      "seq": 1,
+      "tick": 352,
+      "action": "FLAP"
+    },
+    {
+      "seq": 2,
+      "tick": 452,
+      "action": "FLAP"
+    },
+    {
+      "seq": 3,
+      "tick": 558,
+      "action": "FLAP"
+    },
+    {
+      "seq": 4,
+      "tick": 658,
+      "action": "FLAP"
+    },
+    {
+      "seq": 5,
+      "tick": 752,
+      "action": "FLAP"
+    },
+    {
+      "seq": 6,
+      "tick": 858,
+      "action": "FLAP"
+    },
+    {
+      "seq": 7,
+      "tick": 946,
+      "action": "FLAP"
+    },
+    {
+      "seq": 8,
+      "tick": 1028,
+      "action": "FLAP"
+    },
+    {
+      "seq": 9,
+      "tick": 1110,
+      "action": "FLAP"
+    },
+    {
+      "seq": 10,
+      "tick": 1198,
+      "action": "FLAP"
+    },
+    {
+      "seq": 11,
+      "tick": 1298,
+      "action": "FLAP"
+    },
+    {
+      "seq": 12,
+      "tick": 1382,
+      "action": "FLAP"
+    },
+    {
+      "seq": 13,
+      "tick": 1442,
+      "action": "FLAP"
+    },
+    {
+      "seq": 14,
+      "tick": 1526,
+      "action": "FLAP"
+    },
+    {
+      "seq": 15,
+      "tick": 1616,
+      "action": "FLAP"
+    },
+    {
+      "seq": 16,
+      "tick": 1700,
+      "action": "FLAP"
+    },
+    {
+      "seq": 17,
+      "tick": 1784,
+      "action": "FLAP"
+    },
+    {
+      "seq": 18,
+      "tick": 1796,
+      "action": "FLAP"
+    },
+    {
+      "seq": 19,
+      "tick": 1880,
+      "action": "FLAP"
+    },
+    {
+      "seq": 20,
+      "tick": 1946,
+      "action": "FLAP"
+    },
+    {
+      "seq": 21,
+      "tick": 1982,
+      "action": "FLAP"
+    },
+    {
+      "seq": 22,
+      "tick": 2000,
+      "action": "FLAP"
+    },
+    {
+      "seq": 23,
+      "tick": 2132,
+      "action": "FLAP"
+    },
+    {
+      "seq": 24,
+      "tick": 2210,
+      "action": "FLAP"
+    },
+    {
+      "seq": 25,
+      "tick": 2288,
+      "action": "FLAP"
+    },
+    {
+      "seq": 26,
+      "tick": 2372,
+      "action": "FLAP"
+    },
+    {
+      "seq": 27,
+      "tick": 2384,
+      "action": "FLAP"
+    },
+    {
+      "seq": 28,
+      "tick": 2480,
+      "action": "FLAP"
+    },
+    {
+      "seq": 29,
+      "tick": 2564,
+      "action": "FLAP"
+    },
+    {
+      "seq": 30,
+      "tick": 2618,
+      "action": "FLAP"
+    },
+    {
+      "seq": 31,
+      "tick": 2702,
+      "action": "FLAP"
+    },
+    {
+      "seq": 32,
+      "tick": 2804,
+      "action": "FLAP"
+    },
+    {
+      "seq": 33,
+      "tick": 2882,
+      "action": "FLAP"
+    },
+    {
+      "seq": 34,
+      "tick": 2894,
+      "action": "FLAP"
+    },
+    {
+      "seq": 35,
+      "tick": 2978,
+      "action": "FLAP"
+    },
+    {
+      "seq": 36,
+      "tick": 3086,
+      "action": "FLAP"
+    },
+    {
+      "seq": 37,
+      "tick": 3158,
+      "action": "FLAP"
+    },
+    {
+      "seq": 38,
+      "tick": 3230,
+      "action": "FLAP"
+    },
+    {
+      "seq": 39,
+      "tick": 3326,
+      "action": "FLAP"
+    },
+    {
+      "seq": 40,
+      "tick": 3404,
+      "action": "FLAP"
+    },
+    {
+      "seq": 41,
+      "tick": 3416,
+      "action": "FLAP"
+    },
+    {
+      "seq": 42,
+      "tick": 3476,
+      "action": "FLAP"
+    },
+    {
+      "seq": 43,
+      "tick": 3584,
+      "action": "FLAP"
+    },
+    {
+      "seq": 44,
+      "tick": 3674,
+      "action": "FLAP"
+    },
+    {
+      "seq": 45,
+      "tick": 3758,
+      "action": "FLAP"
+    },
+    {
+      "seq": 46,
+      "tick": 3824,
+      "action": "FLAP"
+    },
+    {
+      "seq": 47,
+      "tick": 3932,
+      "action": "FLAP"
+    },
+    {
+      "seq": 48,
+      "tick": 3998,
+      "action": "FLAP"
+    },
+    {
+      "seq": 49,
+      "tick": 4064,
+      "action": "FLAP"
+    },
+    {
+      "seq": 50,
+      "tick": 4160,
+      "action": "FLAP"
+    },
+    {
+      "seq": 51,
+      "tick": 4226,
+      "action": "FLAP"
+    },
+    {
+      "seq": 52,
+      "tick": 4244,
+      "action": "FLAP"
+    },
+    {
+      "seq": 53,
+      "tick": 4346,
+      "action": "FLAP"
+    },
+    {
+      "seq": 54,
+      "tick": 4424,
+      "action": "FLAP"
+    },
+    {
+      "seq": 55,
+      "tick": 4454,
+      "action": "FLAP"
+    },
+    {
+      "seq": 56,
+      "tick": 4556,
+      "action": "FLAP"
+    },
+    {
+      "seq": 57,
+      "tick": 4628,
+      "action": "FLAP"
+    },
+    {
+      "seq": 58,
+      "tick": 4640,
+      "action": "FLAP"
+    },
+    {
+      "seq": 59,
+      "tick": 4718,
+      "action": "FLAP"
+    },
+    {
+      "seq": 60,
+      "tick": 4790,
+      "action": "FLAP"
+    },
+    {
+      "seq": 61,
+      "tick": 4886,
+      "action": "FLAP"
+    },
+    {
+      "seq": 62,
+      "tick": 4922,
+      "action": "FLAP"
+    },
+    {
+      "seq": 63,
+      "tick": 4934,
+      "action": "FLAP"
+    },
+    {
+      "seq": 64,
+      "tick": 5042,
+      "action": "FLAP"
+    },
+    {
+      "seq": 65,
+      "tick": 5108,
+      "action": "FLAP"
+    },
+    {
+      "seq": 66,
+      "tick": 5120,
+      "action": "FLAP"
+    },
+    {
+      "seq": 67,
+      "tick": 5228,
+      "action": "FLAP"
+    },
+    {
+      "seq": 68,
+      "tick": 5294,
+      "action": "FLAP"
+    },
+    {
+      "seq": 69,
+      "tick": 5390,
+      "action": "FLAP"
+    },
+    {
+      "seq": 70,
+      "tick": 5462,
+      "action": "FLAP"
+    },
+    {
+      "seq": 71,
+      "tick": 5474,
+      "action": "FLAP"
+    },
+    {
+      "seq": 72,
+      "tick": 5576,
+      "action": "FLAP"
+    },
+    {
+      "seq": 73,
+      "tick": 5672,
+      "action": "FLAP"
+    },
+    {
+      "seq": 74,
+      "tick": 5738,
+      "action": "FLAP"
+    },
+    {
+      "seq": 75,
+      "tick": 5846,
+      "action": "FLAP"
+    },
+    {
+      "seq": 76,
+      "tick": 5894,
+      "action": "FLAP"
+    },
+    {
+      "seq": 77,
+      "tick": 5990,
+      "action": "FLAP"
+    },
+    {
+      "seq": 78,
+      "tick": 6050,
+      "action": "FLAP"
+    },
+    {
+      "seq": 79,
+      "tick": 6152,
+      "action": "FLAP"
+    },
+    {
+      "seq": 80,
+      "tick": 6206,
+      "action": "FLAP"
+    },
+    {
+      "seq": 81,
+      "tick": 6218,
+      "action": "FLAP"
+    },
+    {
+      "seq": 82,
+      "tick": 6326,
+      "action": "FLAP"
+    },
+    {
+      "seq": 83,
+      "tick": 6374,
+      "action": "FLAP"
+    },
+    {
+      "seq": 84,
+      "tick": 6440,
+      "action": "FLAP"
+    },
+    {
+      "seq": 85,
+      "tick": 6458,
+      "action": "FLAP"
+    },
+    {
+      "seq": 86,
+      "tick": 6566,
+      "action": "FLAP"
+    },
+    {
+      "seq": 87,
+      "tick": 6620,
+      "action": "FLAP"
+    },
+    {
+      "seq": 88,
+      "tick": 6632,
+      "action": "FLAP"
+    },
+    {
+      "seq": 89,
+      "tick": 6734,
+      "action": "FLAP"
+    },
+    {
+      "seq": 90,
+      "tick": 6788,
+      "action": "FLAP"
+    },
+    {
+      "seq": 91,
+      "tick": 6884,
+      "action": "FLAP"
+    },
+    {
+      "seq": 92,
+      "tick": 6944,
+      "action": "FLAP"
+    },
+    {
+      "seq": 93,
+      "tick": 6956,
+      "action": "FLAP"
+    },
+    {
+      "seq": 94,
+      "tick": 7070,
+      "action": "FLAP"
+    },
+    {
+      "seq": 95,
+      "tick": 7106,
+      "action": "FLAP"
+    },
+    {
+      "seq": 96,
+      "tick": 7214,
+      "action": "FLAP"
+    },
+    {
+      "seq": 97,
+      "tick": 7310,
+      "action": "FLAP"
+    },
+    {
+      "seq": 98,
+      "tick": 7358,
+      "action": "FLAP"
+    },
+    {
+      "seq": 99,
+      "tick": 7460,
+      "action": "FLAP"
+    },
+    {
+      "seq": 100,
+      "tick": 7508,
+      "action": "FLAP"
+    },
+    {
+      "seq": 101,
+      "tick": 7520,
+      "action": "FLAP"
+    },
+    {
+      "seq": 102,
+      "tick": 7628,
+      "action": "FLAP"
+    },
+    {
+      "seq": 103,
+      "tick": 7688,
+      "action": "FLAP"
+    },
+    {
+      "seq": 104,
+      "tick": 7796,
+      "action": "FLAP"
+    },
+    {
+      "seq": 105,
+      "tick": 7850,
+      "action": "FLAP"
+    },
+    {
+      "seq": 106,
+      "tick": 7958,
+      "action": "FLAP"
+    },
+    {
+      "seq": 107,
+      "tick": 8012,
+      "action": "FLAP"
+    },
+    {
+      "seq": 108,
+      "tick": 8078,
+      "action": "FLAP"
+    },
+    {
+      "seq": 109,
+      "tick": 8090,
+      "action": "FLAP"
+    },
+    {
+      "seq": 110,
+      "tick": 8186,
+      "action": "FLAP"
+    },
+    {
+      "seq": 111,
+      "tick": 8246,
+      "action": "FLAP"
+    },
+    {
+      "seq": 112,
+      "tick": 8258,
+      "action": "FLAP"
+    },
+    {
+      "seq": 113,
+      "tick": 8360,
+      "action": "FLAP"
+    },
+    {
+      "seq": 114,
+      "tick": 8420,
+      "action": "FLAP"
+    },
+    {
+      "seq": 115,
+      "tick": 8522,
+      "action": "FLAP"
+    },
+    {
+      "seq": 116,
+      "tick": 8582,
+      "action": "FLAP"
+    },
+    {
+      "seq": 117,
+      "tick": 8690,
+      "action": "FLAP"
+    },
+    {
+      "seq": 118,
+      "tick": 8744,
+      "action": "FLAP"
+    },
+    {
+      "seq": 119,
+      "tick": 8852,
+      "action": "FLAP"
+    },
+    {
+      "seq": 120,
+      "tick": 8900,
+      "action": "FLAP"
+    },
+    {
+      "seq": 121,
+      "tick": 8912,
+      "action": "FLAP"
+    },
+    {
+      "seq": 122,
+      "tick": 9026,
+      "action": "FLAP"
+    },
+    {
+      "seq": 123,
+      "tick": 9068,
+      "action": "FLAP"
+    },
+    {
+      "seq": 124,
+      "tick": 9140,
+      "action": "FLAP"
+    },
+    {
+      "seq": 125,
+      "tick": 9152,
+      "action": "FLAP"
+    },
+    {
+      "seq": 126,
+      "tick": 9254,
+      "action": "FLAP"
+    },
+    {
+      "seq": 127,
+      "tick": 9308,
+      "action": "FLAP"
+    },
+    {
+      "seq": 128,
+      "tick": 9320,
+      "action": "FLAP"
+    },
+    {
+      "seq": 129,
+      "tick": 9428,
+      "action": "FLAP"
+    },
+    {
+      "seq": 130,
+      "tick": 9464,
+      "action": "FLAP"
+    },
+    {
+      "seq": 131,
+      "tick": 9476,
+      "action": "FLAP"
+    },
+    {
+      "seq": 132,
+      "tick": 9572,
+      "action": "FLAP"
+    },
+    {
+      "seq": 133,
+      "tick": 9632,
+      "action": "FLAP"
+    },
+    {
+      "seq": 134,
+      "tick": 9644,
+      "action": "FLAP"
+    },
+    {
+      "seq": 135,
+      "tick": 9758,
+      "action": "FLAP"
+    },
+    {
+      "seq": 136,
+      "tick": 9854,
+      "action": "FLAP"
+    },
+    {
+      "seq": 137,
+      "tick": 9884,
+      "action": "FLAP"
+    },
+    {
+      "seq": 138,
+      "tick": 9986,
+      "action": "FLAP"
+    },
+    {
+      "seq": 139,
+      "tick": 10046,
+      "action": "FLAP"
+    },
+    {
+      "seq": 140,
+      "tick": 10148,
+      "action": "FLAP"
+    },
+    {
+      "seq": 141,
+      "tick": 10208,
+      "action": "FLAP"
+    },
+    {
+      "seq": 142,
+      "tick": 10316,
+      "action": "FLAP"
+    },
+    {
+      "seq": 143,
+      "tick": 10370,
+      "action": "FLAP"
+    },
+    {
+      "seq": 144,
+      "tick": 10472,
+      "action": "FLAP"
+    },
+    {
+      "seq": 145,
+      "tick": 10538,
+      "action": "FLAP"
+    },
+    {
+      "seq": 146,
+      "tick": 10646,
+      "action": "FLAP"
+    },
+    {
+      "seq": 147,
+      "tick": 10700,
+      "action": "FLAP"
+    },
+    {
+      "seq": 148,
+      "tick": 10802,
+      "action": "FLAP"
+    },
+    {
+      "seq": 149,
+      "tick": 10862,
+      "action": "FLAP"
+    },
+    {
+      "seq": 150,
+      "tick": 10958,
+      "action": "FLAP"
+    },
+    {
+      "seq": 151,
+      "tick": 11018,
+      "action": "FLAP"
+    },
+    {
+      "seq": 152,
+      "tick": 11030,
+      "action": "FLAP"
+    },
+    {
+      "seq": 153,
+      "tick": 11132,
+      "action": "FLAP"
+    },
+    {
+      "seq": 154,
+      "tick": 11192,
+      "action": "FLAP"
+    },
+    {
+      "seq": 155,
+      "tick": 11288,
+      "action": "FLAP"
+    },
+    {
+      "seq": 156,
+      "tick": 11342,
+      "action": "FLAP"
+    },
+    {
+      "seq": 157,
+      "tick": 11354,
+      "action": "FLAP"
+    },
+    {
+      "seq": 158,
+      "tick": 11420,
+      "action": "FLAP"
+    },
+    {
+      "seq": 159,
+      "tick": 11432,
+      "action": "FLAP"
+    },
+    {
+      "seq": 160,
+      "tick": 11540,
+      "action": "FLAP"
+    },
+    {
+      "seq": 161,
+      "tick": 11594,
+      "action": "FLAP"
+    },
+    {
+      "seq": 162,
+      "tick": 11690,
+      "action": "FLAP"
+    },
+    {
+      "seq": 163,
+      "tick": 11750,
+      "action": "FLAP"
+    },
+    {
+      "seq": 164,
+      "tick": 11762,
+      "action": "FLAP"
+    },
+    {
+      "seq": 165,
+      "tick": 11864,
+      "action": "FLAP"
+    },
+    {
+      "seq": 166,
+      "tick": 11918,
+      "action": "FLAP"
+    },
+    {
+      "seq": 167,
+      "tick": 12020,
+      "action": "FLAP"
+    },
+    {
+      "seq": 168,
+      "tick": 12074,
+      "action": "FLAP"
+    },
+    {
+      "seq": 169,
+      "tick": 12134,
+      "action": "FLAP"
+    },
+    {
+      "seq": 170,
+      "tick": 12164,
+      "action": "FLAP"
+    },
+    {
+      "seq": 171,
+      "tick": 12266,
+      "action": "FLAP"
+    },
+    {
+      "seq": 172,
+      "tick": 12320,
+      "action": "FLAP"
+    },
+    {
+      "seq": 173,
+      "tick": 12332,
+      "action": "FLAP"
+    },
+    {
+      "seq": 174,
+      "tick": 12434,
+      "action": "FLAP"
+    },
+    {
+      "seq": 175,
+      "tick": 12488,
+      "action": "FLAP"
+    },
+    {
+      "seq": 176,
+      "tick": 12596,
+      "action": "FLAP"
+    },
+    {
+      "seq": 177,
+      "tick": 12644,
+      "action": "FLAP"
+    },
+    {
+      "seq": 178,
+      "tick": 12656,
+      "action": "FLAP"
+    },
+    {
+      "seq": 179,
+      "tick": 12758,
+      "action": "FLAP"
+    },
+    {
+      "seq": 180,
+      "tick": 12812,
+      "action": "FLAP"
+    },
+    {
+      "seq": 181,
+      "tick": 12926,
+      "action": "FLAP"
+    },
+    {
+      "seq": 182,
+      "tick": 13022,
+      "action": "FLAP"
+    },
+    {
+      "seq": 183,
+      "tick": 13064,
+      "action": "FLAP"
+    },
+    {
+      "seq": 184,
+      "tick": 13160,
+      "action": "FLAP"
+    },
+    {
+      "seq": 185,
+      "tick": 13220,
+      "action": "FLAP"
+    },
+    {
+      "seq": 186,
+      "tick": 13322,
+      "action": "FLAP"
+    },
+    {
+      "seq": 187,
+      "tick": 13382,
+      "action": "FLAP"
+    },
+    {
+      "seq": 188,
+      "tick": 13394,
+      "action": "FLAP"
+    },
+    {
+      "seq": 189,
+      "tick": 13502,
+      "action": "FLAP"
+    },
+    {
+      "seq": 190,
+      "tick": 13538,
+      "action": "FLAP"
+    },
+    {
+      "seq": 191,
+      "tick": 13550,
+      "action": "FLAP"
+    },
+    {
+      "seq": 192,
+      "tick": 13652,
+      "action": "FLAP"
+    },
+    {
+      "seq": 193,
+      "tick": 13700,
+      "action": "FLAP"
+    },
+    {
+      "seq": 194,
+      "tick": 13712,
+      "action": "FLAP"
+    },
+    {
+      "seq": 195,
+      "tick": 13826,
+      "action": "FLAP"
+    },
+    {
+      "seq": 196,
+      "tick": 13922,
+      "action": "FLAP"
+    },
+    {
+      "seq": 197,
+      "tick": 13994,
+      "action": "FLAP"
+    },
+    {
+      "seq": 198,
+      "tick": 14096,
+      "action": "FLAP"
+    },
+    {
+      "seq": 199,
+      "tick": 14120,
+      "action": "FLAP"
+    },
+    {
+      "seq": 200,
+      "tick": 14216,
+      "action": "FLAP"
+    },
+    {
+      "seq": 201,
+      "tick": 14276,
+      "action": "FLAP"
+    },
+    {
+      "seq": 202,
+      "tick": 14288,
+      "action": "FLAP"
+    },
+    {
+      "seq": 203,
+      "tick": 14390,
+      "action": "FLAP"
+    },
+    {
+      "seq": 204,
+      "tick": 14444,
+      "action": "FLAP"
+    },
+    {
+      "seq": 205,
+      "tick": 14540,
+      "action": "FLAP"
+    },
+    {
+      "seq": 206,
+      "tick": 14636,
+      "action": "FLAP"
+    },
+    {
+      "seq": 207,
+      "tick": 14690,
+      "action": "FLAP"
+    },
+    {
+      "seq": 208,
+      "tick": 14792,
+      "action": "FLAP"
+    },
+    {
+      "seq": 209,
+      "tick": 14852,
+      "action": "FLAP"
+    },
+    {
+      "seq": 210,
+      "tick": 14960,
+      "action": "FLAP"
+    },
+    {
+      "seq": 211,
+      "tick": 15014,
+      "action": "FLAP"
+    },
+    {
+      "seq": 212,
+      "tick": 15116,
+      "action": "FLAP"
+    },
+    {
+      "seq": 213,
+      "tick": 15176,
+      "action": "FLAP"
+    },
+    {
+      "seq": 214,
+      "tick": 15284,
+      "action": "FLAP"
+    },
+    {
+      "seq": 215,
+      "tick": 15338,
+      "action": "FLAP"
+    },
+    {
+      "seq": 216,
+      "tick": 15410,
+      "action": "FLAP"
+    },
+    {
+      "seq": 217,
+      "tick": 15422,
+      "action": "FLAP"
+    },
+    {
+      "seq": 218,
+      "tick": 15518,
+      "action": "FLAP"
+    },
+    {
+      "seq": 219,
+      "tick": 15578,
+      "action": "FLAP"
+    },
+    {
+      "seq": 220,
+      "tick": 15590,
+      "action": "FLAP"
+    },
+    {
+      "seq": 221,
+      "tick": 15692,
+      "action": "FLAP"
+    },
+    {
+      "seq": 222,
+      "tick": 15746,
+      "action": "FLAP"
+    },
+    {
+      "seq": 223,
+      "tick": 15854,
+      "action": "FLAP"
+    },
+    {
+      "seq": 224,
+      "tick": 15908,
+      "action": "FLAP"
+    },
+    {
+      "seq": 225,
+      "tick": 16010,
+      "action": "FLAP"
+    },
+    {
+      "seq": 226,
+      "tick": 16076,
+      "action": "FLAP"
+    },
+    {
+      "seq": 227,
+      "tick": 16184,
+      "action": "FLAP"
+    },
+    {
+      "seq": 228,
+      "tick": 16280,
+      "action": "FLAP"
+    },
+    {
+      "seq": 229,
+      "tick": 16316,
+      "action": "FLAP"
+    },
+    {
+      "seq": 230,
+      "tick": 16418,
+      "action": "FLAP"
+    },
+    {
+      "seq": 231,
+      "tick": 16472,
+      "action": "FLAP"
+    },
+    {
+      "seq": 232,
+      "tick": 16484,
+      "action": "FLAP"
+    },
+    {
+      "seq": 233,
+      "tick": 16592,
+      "action": "FLAP"
+    },
+    {
+      "seq": 234,
+      "tick": 16634,
+      "action": "FLAP"
+    },
+    {
+      "seq": 235,
+      "tick": 16646,
+      "action": "FLAP"
+    },
+    {
+      "seq": 236,
+      "tick": 16748,
+      "action": "FLAP"
+    },
+    {
+      "seq": 237,
+      "tick": 16808,
+      "action": "FLAP"
+    },
+    {
+      "seq": 238,
+      "tick": 16916,
+      "action": "FLAP"
+    },
+    {
+      "seq": 239,
+      "tick": 16964,
+      "action": "FLAP"
+    },
+    {
+      "seq": 240,
+      "tick": 17042,
+      "action": "FLAP"
+    },
+    {
+      "seq": 241,
+      "tick": 17054,
+      "action": "FLAP"
+    },
+    {
+      "seq": 242,
+      "tick": 17156,
+      "action": "FLAP"
+    },
+    {
+      "seq": 243,
+      "tick": 17216,
+      "action": "FLAP"
+    },
+    {
+      "seq": 244,
+      "tick": 17324,
+      "action": "FLAP"
+    },
+    {
+      "seq": 245,
+      "tick": 17372,
+      "action": "FLAP"
+    },
+    {
+      "seq": 246,
+      "tick": 17444,
+      "action": "FLAP"
+    },
+    {
+      "seq": 247,
+      "tick": 17456,
+      "action": "FLAP"
+    },
+    {
+      "seq": 248,
+      "tick": 17516,
+      "action": "FLAP"
+    },
+    {
+      "seq": 249,
+      "tick": 17540,
+      "action": "FLAP"
+    },
+    {
+      "seq": 250,
+      "tick": 17642,
+      "action": "FLAP"
+    },
+    {
+      "seq": 251,
+      "tick": 17696,
+      "action": "FLAP"
+    },
+    {
+      "seq": 252,
+      "tick": 17708,
+      "action": "FLAP"
+    },
+    {
+      "seq": 253,
+      "tick": 17816,
+      "action": "FLAP"
+    },
+    {
+      "seq": 254,
+      "tick": 17912,
+      "action": "FLAP"
+    },
+    {
+      "seq": 255,
+      "tick": 17948,
+      "action": "FLAP"
+    },
+    {
+      "seq": 256,
+      "tick": 18062,
+      "action": "FLAP"
+    },
+    {
+      "seq": 257,
+      "tick": 18122,
+      "action": "FLAP"
+    },
+    {
+      "seq": 258,
+      "tick": 18218,
+      "action": "FLAP"
+    },
+    {
+      "seq": 259,
+      "tick": 18272,
+      "action": "FLAP"
+    },
+    {
+      "seq": 260,
+      "tick": 18374,
+      "action": "FLAP"
+    },
+    {
+      "seq": 261,
+      "tick": 18434,
+      "action": "FLAP"
+    },
+    {
+      "seq": 262,
+      "tick": 18536,
+      "action": "FLAP"
+    },
+    {
+      "seq": 263,
+      "tick": 18590,
+      "action": "FLAP"
+    },
+    {
+      "seq": 264,
+      "tick": 18602,
+      "action": "FLAP"
+    },
+    {
+      "seq": 265,
+      "tick": 18698,
+      "action": "FLAP"
+    },
+    {
+      "seq": 266,
+      "tick": 18758,
+      "action": "FLAP"
+    },
+    {
+      "seq": 267,
+      "tick": 18854,
+      "action": "FLAP"
+    },
+    {
+      "seq": 268,
+      "tick": 18914,
+      "action": "FLAP"
+    },
+    {
+      "seq": 269,
+      "tick": 18926,
+      "action": "FLAP"
+    },
+    {
+      "seq": 270,
+      "tick": 19034,
+      "action": "FLAP"
+    },
+    {
+      "seq": 271,
+      "tick": 19082,
+      "action": "FLAP"
+    },
+    {
+      "seq": 272,
+      "tick": 19094,
+      "action": "FLAP"
+    },
+    {
+      "seq": 273,
+      "tick": 19196,
+      "action": "FLAP"
+    },
+    {
+      "seq": 274,
+      "tick": 19250,
+      "action": "FLAP"
+    },
+    {
+      "seq": 275,
+      "tick": 19352,
+      "action": "FLAP"
+    },
+    {
+      "seq": 276,
+      "tick": 19400,
+      "action": "FLAP"
+    },
+    {
+      "seq": 277,
+      "tick": 19472,
+      "action": "FLAP"
+    },
+    {
+      "seq": 278,
+      "tick": 19496,
+      "action": "FLAP"
+    },
+    {
+      "seq": 279,
+      "tick": 19598,
+      "action": "FLAP"
+    },
+    {
+      "seq": 280,
+      "tick": 19658,
+      "action": "FLAP"
+    },
+    {
+      "seq": 281,
+      "tick": 19760,
+      "action": "FLAP"
+    },
+    {
+      "seq": 282,
+      "tick": 19820,
+      "action": "FLAP"
+    },
+    {
+      "seq": 283,
+      "tick": 19928,
+      "action": "FLAP"
+    },
+    {
+      "seq": 284,
+      "tick": 19982,
+      "action": "FLAP"
+    },
+    {
+      "seq": 285,
+      "tick": 20090,
+      "action": "FLAP"
+    },
+    {
+      "seq": 286,
+      "tick": 20144,
+      "action": "FLAP"
+    },
+    {
+      "seq": 287,
+      "tick": 20234,
+      "action": "FLAP"
+    },
+    {
+      "seq": 288,
+      "tick": 20342,
+      "action": "FLAP"
+    },
+    {
+      "seq": 289,
+      "tick": 20384,
+      "action": "FLAP"
+    },
+    {
+      "seq": 290,
+      "tick": 20396,
+      "action": "FLAP"
+    },
+    {
+      "seq": 291,
+      "tick": 20498,
+      "action": "FLAP"
+    },
+    {
+      "seq": 292,
+      "tick": 20570,
+      "action": "FLAP"
+    },
+    {
+      "seq": 293,
+      "tick": 20666,
+      "action": "FLAP"
+    },
+    {
+      "seq": 294,
+      "tick": 20714,
+      "action": "FLAP"
+    },
+    {
+      "seq": 295,
+      "tick": 20810,
+      "action": "FLAP"
+    },
+    {
+      "seq": 296,
+      "tick": 20870,
+      "action": "FLAP"
+    },
+    {
+      "seq": 297,
+      "tick": 20882,
+      "action": "FLAP"
+    },
+    {
+      "seq": 298,
+      "tick": 20990,
+      "action": "FLAP"
+    },
+    {
+      "seq": 299,
+      "tick": 21050,
+      "action": "FLAP"
+    },
+    {
+      "seq": 300,
+      "tick": 21110,
+      "action": "FLAP"
+    },
+    {
+      "seq": 301,
+      "tick": 21122,
+      "action": "FLAP"
+    },
+    {
+      "seq": 302,
+      "tick": 21230,
+      "action": "FLAP"
+    },
+    {
+      "seq": 303,
+      "tick": 21272,
+      "action": "FLAP"
+    },
+    {
+      "seq": 304,
+      "tick": 21284,
+      "action": "FLAP"
+    },
+    {
+      "seq": 305,
+      "tick": 21386,
+      "action": "FLAP"
+    },
+    {
+      "seq": 306,
+      "tick": 21440,
+      "action": "FLAP"
+    },
+    {
+      "seq": 307,
+      "tick": 21452,
+      "action": "FLAP"
+    },
+    {
+      "seq": 308,
+      "tick": 21560,
+      "action": "FLAP"
+    }
+  ],
+  "finalTick": 21600,
+  "score": 98046,
+  "hash": "sha256:d8350c2cc8e535ba299d46ab109b89fcbd6ff169b8e07a01bed82a014097ae83"
+}

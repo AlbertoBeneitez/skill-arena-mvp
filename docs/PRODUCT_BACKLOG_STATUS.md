@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v62-mobile
+# GALACTIC GAMES · Seguimiento de v63-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -6,7 +6,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | --- | --- | --- |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles | QA humana y pulido según prueba real |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor | QA humana |
-| Jet Stream | V3, despegue asistido, apertura amplia, vuelo suave, ventanas/vidas/dobles pasos y replay; explosión con registro inmediato | Separar más los pasos que todavía están alineados; QA física |
+| Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados | Seguimiento físico; rotación1000 sin repetición entre partidas y comparación común pendientes |
 | Alien Dash | v39: V2, plataformas, centinelas anticipados, recogibles, escudos, dos minutos, replay y QA táctil | QA humana física y pulido según prueba real |
 | Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | V2 para eliminar cambios de etapa y conservar progresión continua; QA física |
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | QA humana física |
@@ -20,7 +20,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | QA humana física |
 | Brick Relay | V1 VERIFIED, 69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay/touch | V2 sin cambios de tablero ni pausas de sector; QA física |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | QA humana física |
-| Maze Rush | v58: V2 VERIFIED, un laberinto continuo de 70 nodos, giros anticipados/STOP, pulsos y tres escudos; perseguidores progresivos con aviso previo y replay. V1 archivada | Seguimiento en móviles físicos |
+| Maze Rush | v58: V2 VERIFIED, un laberinto continuo de 70 nodos, giros anticipados/STOP, pulsos y tres escudos; perseguidores progresivos con aviso previo y replay. V1 archivada | Pulir confirmación de giro/pulso y lectura horizontal; seguimiento físico |
 | Star Phalanx | V1: 16 capas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | V2 con capas continuas sin cortes/limpieza intermedia; QA física |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Seguimiento físico; métrica autoritativa de avance común pendiente |
@@ -175,3 +175,19 @@ derrotas deliberadas, reinicio y rotación táctiles en ambas orientaciones, con
 registro único/avance exacto. Evidencia y límites en release v62. 1000 experiencias
 distintas requieren comprobar configuración además de seed y reserva de rotación;
 la auditoría detectó duplicados en algunas configuraciones públicas actuales.
+
+
+### v63 · Jet Stream variado
+
+V4 conserva integrador, inputs, scoring y terminal V3, pero garantiza cambios de
+altura de25–45px mínimos/75–85px máximos tras dos pasos de aprendizaje. Reglas
+versionadas, ventanas/recogibles existentes inmutables y height=portales reales.
+1000 geometrías iniciales distintas,32 recorridos de180s, apertura/duales/golden/
+replay/render/inputs inválidos pasan. QA táctil completa vertical/horizontal,
+derrota/doble toque/cancel/reinicio/rotación y envío antes de explosión pasan.
+Typecheck/lint, suite histórica y build pasan; evidencia en release v63.
+
+No se confunde esa prueba geométrica con rotación sin repetición: HTTP público
+sigue emitiendo V2 con seed aleatoria; catálogo V3 no está conectado a esa ruta.
+Rotación/reservas y unicidad1000 de los demás juegos continúan pendientes, junto
+con métricas/comparación, Maze, enemigo Sky, cortes reales restantes y privados.

@@ -1,12 +1,12 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  JET_STREAM_CORE_V3,
-  type JetStreamV3State,
-} from "@/lib/verified/jetStreamCore.v3";
+  JET_STREAM_CORE_V4,
+  type JetStreamV4State,
+} from "@/lib/verified/jetStreamCore.v4";
 import { drawJetBackground, drawJetShip } from "./jet-stream/presentation";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, state: JetStreamV3State) {
+function render(ctx: CanvasRenderingContext2D, state: JetStreamV4State) {
   drawJetBackground(ctx, state);
   for (const gate of state.gates) {
     const x = (gate.worldXMilli - state.scrollMilli) / 1000;
@@ -75,7 +75,7 @@ const failureFinale = {
   durationMs: 720,
   render(
     ctx: CanvasRenderingContext2D,
-    state: JetStreamV3State,
+    state: JetStreamV4State,
     elapsedMs: number,
   ) {
     const t = Math.min(1, elapsedMs / 720),
@@ -113,9 +113,10 @@ export default function JetStreamV3(props: GameRuntimeProps) {
   return (
     <CoreCanvasGame
       {...props}
-      core={JET_STREAM_CORE_V3}
+      core={JET_STREAM_CORE_V4}
       name="Jet Stream"
       hideHudLabel
+      hideHudScore
       failureFinale={failureFinale}
       render={render}
       primaryAction="FLAP"

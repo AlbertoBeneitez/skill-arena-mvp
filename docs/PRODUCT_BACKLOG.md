@@ -264,3 +264,9 @@ revisa portadas/fondo orbital y amplía otra vez Stack Shift conservando core V1
 Resultado muestra tiempo decimal real; scoring/desempate todavía no migrados.
 Evidencia incremental en release v60 y pendientes en el ledger, sin duplicar
 reglas competitivas ni afirmar dataset de 1000 por usar seeds distintas.
+
+
+v61–v63 continúan las unidades pendientes: Piano y River sin resets, Jet con
+cambios de altura más claros. Estado, evidencia y siguientes tareas se mantienen
+en PRODUCT_BACKLOG_STATUS.md y sus releases; no se declara rotación1000 global
+ni comparación por avance completadas.

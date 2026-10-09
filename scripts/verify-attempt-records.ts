@@ -74,6 +74,7 @@ try {
     ["jet-stream", "1.0.0"],
     ["dino-dash", "1.0.0"],
     ["jet-stream", "2.0.0"],
+    ["jet-stream", "3.0.0"],
     ["darts", "1.0.0"],
     ["river-dash", "1.0.0"],
     ["river-dash", "2.0.0"],
@@ -90,7 +91,7 @@ try {
     reject(zero, "CLIENT_ENDED_BEFORE_RESOLUTION");
   }
 
-  for (const version of ["1.0.0", "2.0.0", "3.0.0"]) {
+  for (const version of ["1.0.0", "2.0.0", "3.0.0", "4.0.0"]) {
     const jet = payload("jet-stream", version);
     jet.inputs = [{ seq: 0, tick: 60, action: "FLAP" }];
     jet.final_tick = 61;
@@ -168,6 +169,15 @@ try {
     score: 0, time_ms: 6583, height: undefined, failure: "OUT_OF_BOUNDS", won: false,
     authoritative_source: "SERVER_REPLAY", client_score_ignored: true,
   }, "Historical terminal result/hash envelope changed");
+  const reached = { ...payload("jet-stream", "4.0.0"), final_tick: 790 };
+  now += 10_000; // This newly-issued ticket must have real elapsed time too.
+  const reachedResult = processAttemptRecord({ ...reached, client_score: 1e9, won: true, height: 999999 });
+  assert.equal(reachedResult.status, 200);
+  assert.equal(reachedResult.body.verified, true);
+  if (!reachedResult.body.verified) throw new Error("Current terminal did not verify");
+  assert.equal(reachedResult.body.height, 0, "Jet V4 reach must come from replay, never client");
+  assert.equal(reachedResult.body.score, 0);
+  assert.equal(reachedResult.body.won, false);
   reject(abandon(terminal), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
   reject({ ...abandon(terminal), final_tick: 791 }, "FINAL_TICK_AFTER_RESOLUTION");
   reject({ ...abandon(terminal), inputs: [{ seq: 0, tick: 790, action: "FLAP" }] }, "UNCONSUMED_INPUTS");
