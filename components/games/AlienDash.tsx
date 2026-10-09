@@ -199,7 +199,7 @@ function render(ctx: CanvasRenderingContext2D, s: AlienState) {
   ctx.fillStyle = "#adcadd";
   ctx.font = "bold 12px system-ui";
   ctx.fillText(
-    `SECTOR ${Math.min(4, 1 + Math.floor(s.tick / 3600))} / 4`,
+    "EXPLORACIÓN EN CURSO",
     195,
     65,
   );

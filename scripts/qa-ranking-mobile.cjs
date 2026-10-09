@@ -42,7 +42,7 @@ const assert = require("node:assert/strict");
     localStorage.setItem("skill-arena-color-tutorial-v12", "1");
   });
   await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
-  assert.ok((await page.locator(".balanceChip").innerText()).startsWith("DEMO"));
+  assert.ok((await page.locator(".balanceChip").innerText()).startsWith("FICTICIO"));
   await page
     .getByRole("button", {
       name: "Ranking global · Beneficio neto",
@@ -54,9 +54,9 @@ const assert = require("node:assert/strict");
     .waitFor();
   assert.equal(await page.locator(".rankingTable").count(), 0);
   const productionRequests = requests.length;
-  await page.getByRole("button", { name: "Ver demo", exact: true }).tap();
+  await page.getByRole("button", { name: "Ver ejemplo", exact: true }).tap();
   await page
-    .getByText("DEMOSTRACIÓN · IMPORTES FICTICIOS", { exact: true })
+    .getByText("DATOS DE EJEMPLO · IMPORTES FICTICIOS", { exact: true })
     .waitFor();
   await page.locator(".rankingTable tbody tr").first().waitFor();
   assert.equal(await page.locator(".rankingTable tbody tr").count(), 25);
@@ -120,7 +120,7 @@ const assert = require("node:assert/strict");
     .waitFor();
   assert.equal(await page.locator(".rankingTable").count(), 0);
   await page.setViewportSize({ width: 844, height: 390 });
-  await page.getByRole("button", { name: "Ver demo", exact: true }).tap();
+  await page.getByRole("button", { name: "Ver ejemplo", exact: true }).tap();
   await page
     .locator(".rankingTable")
     .getByText("#1", { exact: true })
@@ -132,6 +132,7 @@ const assert = require("node:assert/strict");
     true,
   );
   assert.deepEqual(errors, []);
+    assert.doesNotMatch(await page.locator("body").innerText(), /\bdemo\b|\bdemostración\b/iu, "frontend copy must identify local/sample scope without demo wording");
   const bad = await page.request.get(
     (process.env.QA_BASE_URL || "http://127.0.0.1:3000") +
       "/api/rankings/global?limit=101",

@@ -3,7 +3,7 @@ import type { RankingPage } from "../ranking";
 const players = Array.from({ length: 64 }, (_, i) => ({
   position: i + 1,
   playerId: `demo-pilot-${i + 1}`,
-  playerName: `Piloto demo ${String(i + 1).padStart(2, "0")}`,
+  playerName: `Piloto de ejemplo ${String(i + 1).padStart(2, "0")}`,
   netProfitMinor: String(20000 - i * 450),
   avatarKey: `avatar-${i % 8 + 1}`,
 }));

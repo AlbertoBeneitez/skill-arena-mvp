@@ -122,7 +122,7 @@ const controls = [
   { action: "OUT", label: "Órbita exterior", symbol: "+ EXTERIOR" },
 ] as const;
 const hudLabel = (s: Readonly<OrbitState>) =>
-  `${s.passed}/60 · SECTOR ${Math.min(3, 1 + Math.floor(s.passed / 20))} · ÓRBITA ${s.lane + 1}`;
+  `${s.passed}/60 PASOS · ÓRBITA ${s.lane + 1}`;
 const gestureAction = (
   from: { x: number; y: number },
   to: { x: number; y: number },

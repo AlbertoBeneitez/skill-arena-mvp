@@ -189,7 +189,7 @@ export default function GroupHub({
     rawPrice >= 0 &&
     rawPrice <= balance;
   const configurationHint = !priceValid
-    ? `Introduce una entrada demo entre 0 y ${balance.toFixed(2)} €.`
+    ? `Introduce una entrada con saldo ficticio entre 0 y ${balance.toFixed(2)} €.`
     : !leagueRulesValid
       ? "Elige entre 1 y 50 jornadas."
       : !leagueScheduleComplete
@@ -405,7 +405,7 @@ export default function GroupHub({
     return (
       <section className="groupScreen">
         <div className="groupHero">
-          <span>GRUPOS · DEMO LOCAL</span>
+          <span>GRUPOS · RIVALES SIMULADOS</span>
           <h1>Compite con tu gente</h1>
           <p>
             Prueba partidas, ligas y torneos con rivales simulados. Los códigos
@@ -458,7 +458,7 @@ export default function GroupHub({
                 <small>CREADOR</small>
                 <strong>{playerName || "TÚ"}</strong>
               </div>
-              <b>DEMO</b>
+              <b>LOCAL</b>
             </div>
 
             <button
@@ -468,7 +468,7 @@ export default function GroupHub({
                 onCreateGroup(draftName, 0)
               }
             >
-              CREAR GRUPO DEMO
+              CREAR GRUPO
             </button>
           </div>
         ) : (
@@ -502,7 +502,7 @@ export default function GroupHub({
             </label>
 
             <p className="groupJoinHint">
-              Pega un código o enlace para abrir un grupo demo local. No se
+              Pega un código o enlace para abrir un grupo local. No se
               consulta ni se une a una sala real.
             </p>
 
@@ -512,7 +512,7 @@ export default function GroupHub({
               disabled={joinCode.length < 4}
               onClick={submitJoin}
             >
-              ABRIR GRUPO DEMO
+              ABRIR GRUPO
             </button>
           </div>
         )}
@@ -524,14 +524,14 @@ export default function GroupHub({
     <section className="groupScreen">
       <div className="groupHeaderCard groupHeaderSinglePage">
         <div>
-          <small>GRUPO DEMO LOCAL</small>
+          <small>GRUPO LOCAL</small>
           <h1>{group.name}</h1>
         </div>
         <span className="groupCodeBadge">{group.code}</span>
       </div>
 
       <p className="groupDemoNotice">
-        Rivales simulados · saldo ficticio. Este enlace abre una demo; no
+        Rivales simulados · saldo ficticio. Este enlace abre un grupo local; no
         sincroniza partidas ni invitaciones reales.
       </p>
       <div className="groupShareActions">
@@ -554,7 +554,7 @@ export default function GroupHub({
           (copiedCode
             ? "Código copiado."
             : copiedLink
-              ? "Enlace demo copiado."
+              ? "Enlace del grupo local copiado."
               : "")}
         {shareFallback && (
           <input
@@ -633,7 +633,7 @@ export default function GroupHub({
 
       <div className="competitionConfigCard numericConfigCard">
         <label>
-          <span>ENTRADA DEMO POR JUGADOR</span>
+          <span>ENTRADA FICTICIA POR JUGADOR</span>
           <div className="numberInputWithUnit">
             <input
               type="number"
@@ -968,7 +968,7 @@ export default function GroupHub({
 
       {competitionType !== "quick" && (
         <div className="competitionConfigCard">
-          <span>REPARTO DEL BOTE DEMO</span>
+          <span>REPARTO DEL BOTE FICTICIO</span>
 
           <div className="payoutOptionList">
             {payoutOptions.map((option) => (
@@ -998,14 +998,14 @@ export default function GroupHub({
           <strong>{group.members.length}</strong>
         </div>
         <div>
-          <span>BOTE DEMO</span>
+          <span>BOTE FICTICIO</span>
           <strong>{pot === 0 ? "—" : `${pot.toFixed(2)}€`}</strong>
         </div>
       </div>
 
       <div className="readyRoomCard">
         <div className="groupSectionTitle">
-          <span>PREPARACIÓN DEMO</span>
+          <span>PREPARACIÓN</span>
           <small>
             {ready
               ? `${group.members.length}/${group.members.length} LISTOS`
@@ -1060,10 +1060,10 @@ export default function GroupHub({
           onClick={startCompetition}
         >
           {competitionType === "quick"
-            ? "EMPEZAR PARTIDA DEMO"
+            ? "EMPEZAR PARTIDA"
             : competitionType === "league"
-              ? "EMPEZAR LIGA DEMO"
-              : "EMPEZAR TORNEO DEMO"}
+              ? "EMPEZAR LIGA"
+              : "EMPEZAR TORNEO"}
         </button>
       </div>
     </section>

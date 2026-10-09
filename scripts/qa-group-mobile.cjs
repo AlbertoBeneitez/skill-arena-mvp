@@ -64,11 +64,11 @@ const assert = require("node:assert/strict");
       await page
         .getByRole("heading", { name: "Compite con tu gente" })
         .waitFor();
-      assert.match(await page.locator(".groupHero").innerText(), /DEMO LOCAL/);
+      assert.match(await page.locator(".groupHero").innerText(), /RIVALES SIMULADOS/);
       await page.getByRole("tab", { name: "UNIRSE", exact: true }).tap();
       assert.equal(
         await page
-          .getByRole("button", { name: "ABRIR GRUPO DEMO" })
+          .getByRole("button", { name: "ABRIR GRUPO" })
           .isDisabled(),
         true,
       );
@@ -77,7 +77,7 @@ const assert = require("node:assert/strict");
         await page.locator(".groupJoinCard input").inputValue(),
         "ABC12",
       );
-      await page.getByRole("button", { name: "ABRIR GRUPO DEMO" }).tap();
+      await page.getByRole("button", { name: "ABRIR GRUPO" }).tap();
       await page.locator(".groupCodeBadge").waitFor();
       assert.equal(await page.locator(".groupCodeBadge").innerText(), "ABC12");
       assert.equal(
@@ -119,7 +119,7 @@ const assert = require("node:assert/strict");
         /No se pudo copiar/,
       );
       const price = page.getByRole("spinbutton", {
-        name: "ENTRADA DEMO POR JUGADOR",
+        name: "ENTRADA FICTICIA POR JUGADOR",
       });
       const ready = page.getByRole("button", {
         name: "ESTOY LISTO",
@@ -182,7 +182,7 @@ const assert = require("node:assert/strict");
       await ready.tap();
       assert.equal(
         await page
-          .getByRole("button", { name: "EMPEZAR PARTIDA DEMO", exact: true })
+          .getByRole("button", { name: "EMPEZAR PARTIDA", exact: true })
           .isEnabled(),
         true,
       );
@@ -211,7 +211,7 @@ const assert = require("node:assert/strict");
         );
       assert.deepEqual(small, [], "all rendered buttons >=44px");
       await page
-        .getByRole("button", { name: "EMPEZAR PARTIDA DEMO", exact: true })
+        .getByRole("button", { name: "EMPEZAR PARTIDA", exact: true })
         .tap();
       await page.locator(".mazeRushVerified").waitFor({ timeout: 15000 });
       await page.waitForFunction(() =>
@@ -236,7 +236,7 @@ const assert = require("node:assert/strict");
         .getByRole("textbox", { name: "NOMBRE DEL GRUPO" })
         .fill("Órbita QA");
       await page
-        .getByRole("button", { name: "CREAR GRUPO DEMO", exact: true })
+        .getByRole("button", { name: "CREAR GRUPO", exact: true })
         .tap();
       assert.equal(
         await page.locator(".groupHeaderCard h1").innerText(),
@@ -254,6 +254,7 @@ const assert = require("node:assert/strict");
         fullPage: true,
       });
       assert.deepEqual(errors, []);
+    assert.doesNotMatch(await page.locator("body").innerText(), /\bdemo\b|\bdemostración\b/iu, "frontend copy must identify local/sample scope without demo wording");
       console.log(
         JSON.stringify({
           viewport,

@@ -87,7 +87,7 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV3State) {
     ctx.font = "bold 12px system-ui";
     ctx.fillStyle = "#a8cce2";
     ctx.fillText(
-      `SECTOR ${1 + Math.floor(state.passed / 8)} · PRECISIÓN CRECIENTE`,
+      "PRECISIÓN CRECIENTE",
       195,
       106,
     );

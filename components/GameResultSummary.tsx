@@ -38,8 +38,8 @@ export default function GameResultSummary({
     <section className="gameResultSummary" aria-label="Resumen del intento">
       <span className="resultSourceBadge">
         {result.verified === true
-          ? "DEMO · REPLAY DE SERVIDOR"
-          : "DEMO · RESULTADO LOCAL"}
+          ? "ENTRENAMIENTO · REPLAY DE SERVIDOR"
+          : "ENTRENAMIENTO · RESULTADO LOCAL"}
       </span>
       <p className="resultGameName">{gameName}</p>
       <h2>
@@ -63,7 +63,7 @@ export default function GameResultSummary({
       </dl>
       <p className="resultLearningNote">
         {waitingForRival
-          ? "Marca demo guardada. El duelo todavía espera a un rival."
+          ? "Marca guardada. El duelo todavía espera a un rival."
           : result.won
             ? "Buen trabajo. Prueba otro escenario o mejora tu marca."
             : (result.failureReason && causes[result.failureReason]) ||

@@ -173,7 +173,7 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
       <p className="mineAuthorityEfficiency">
         Menos acciones al resolver, más bonus.
       </p>
-      <p className="mineAuthorityDemo">DEMO LOCAL · RESULTADO DE SERVIDOR</p>
+      <p className="mineAuthorityDemo">ENTRENAMIENTO · RESULTADO DE SERVIDOR</p>
       {transition && (
         <div className="mineAuthorityTransition" role="status">
           <strong>SECTOR DESPEJADO</strong>

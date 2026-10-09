@@ -58,21 +58,21 @@ const assert = require("node:assert/strict");
     );
     assert.match(
       await page.locator(".accountWalletCard").innerText(),
-      /SALDO DEMO/,
+      /SALDO FICTICIO/,
     );
     assert.match(
       await page.locator(".miniMovementList").innerText(),
       /Todavía no hay movimientos/,
     );
     await page
-      .getByRole("button", { name: "Añadir 10 € demo", exact: true })
+      .getByRole("button", { name: "Añadir 10 € ficticios", exact: true })
       .tap();
     assert.match(
       await page.locator(".accountWalletCard strong").innerText(),
       /35/,
     );
     await page
-      .getByRole("button", { name: "Retirar 10 € demo", exact: true })
+      .getByRole("button", { name: "Retirar 10 € ficticios", exact: true })
       .tap();
     assert.match(
       await page.locator(".accountWalletCard strong").innerText(),
@@ -85,7 +85,7 @@ const assert = require("node:assert/strict");
     );
     assert.match(
       await page.locator(".miniMovementList").innerText(),
-      /Ingreso demo/,
+      /Ingreso ficticio/,
     );
     await page.getByRole("button", { name: /Sonido/ }).tap();
     assert.equal(
@@ -121,7 +121,7 @@ const assert = require("node:assert/strict");
       }
     }
     await page.setViewportSize({ width: 320, height: 740 });
-    await page.getByRole("button", { name: /Información de la demo/ }).tap();
+    await page.getByRole("button", { name: /Información de la aplicación/ }).tap();
     const texts = [];
     for (const name of ["Términos", "Privacidad", "Cookies", "Reglas"]) {
       const b = page
@@ -166,7 +166,7 @@ const assert = require("node:assert/strict");
     await page.screenshot({
       path: "/workspace/.cloud-setup/account-profile-v48.png",
     });
-    await page.getByRole("button", { name: /Reiniciar perfil demo/ }).tap();
+    await page.getByRole("button", { name: /Reiniciar perfil local/ }).tap();
     assert.equal(
       await page.locator(".profileStrip strong").innerText(),
       "PLAYER_NEW",
@@ -177,11 +177,11 @@ const assert = require("node:assert/strict");
     );
     assert.match(
       await page.locator(".miniMovementList").innerText(),
-      /Ingreso demo/,
+      /Ingreso ficticio/,
     );
-    await page.getByRole("button", { name: /Cerrar sesión demo/ }).tap();
+    await page.getByRole("button", { name: /Cerrar sesión local/ }).tap();
     await page
-      .getByRole("button", { name: "Iniciar sesión demo local", exact: true })
+      .getByRole("button", { name: "Iniciar sesión local", exact: true })
       .waitFor();
     const local = await page.evaluate(() =>
       JSON.parse(localStorage.getItem("skill-arena-v12") || "null"),
@@ -226,6 +226,7 @@ const assert = require("node:assert/strict");
       "negative and positive profits lie either side of zero",
     );
     assert.equal(errors.length, 0, JSON.stringify(errors));
+    assert.doesNotMatch(await page.locator("body").innerText(), /\bdemo\b|\bdemostración\b/iu, "frontend copy must identify local/sample scope without demo wording");
     console.log(
       JSON.stringify({
         sizes: ["320×740", "844×390"],

@@ -97,7 +97,7 @@ function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
   ctx.font = "bold 13px system-ui";
   ctx.fillStyle = "#e6f5ff";
   ctx.fillText(
-    `${s.lines}/18 FILAS · NIVEL ${1 + Math.floor(s.lines / 3)}`,
+    `${s.lines}/18 FILAS`,
     bx,
     44,
   );
@@ -124,7 +124,7 @@ function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
   }
 }
 const hudLabel = (s: Readonly<StackShiftState>) =>
-  `${s.lines}/18 FILAS · NIVEL ${1 + Math.floor(s.lines / 3)}`;
+  `${s.lines}/18 FILAS`;
 const keys = {
   ArrowLeft: "LEFT",
   ArrowRight: "RIGHT",

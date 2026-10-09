@@ -164,7 +164,7 @@ const GAME_DEFINITIONS = [
     rivalName: "MIRA",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Desliza a izquierda o derecha entre siete carriles y hacia arriba para saltar.",
-    scoring: "60 formaciones en tres sectores reproducibles, saltos, recargas y tres escudos; score por replay de servidor.",
+    scoring: "60 formaciones en un recorrido reproducible, saltos, recargas y tres escudos; score por replay de servidor.",
   },
   {
     id: "orbit-shift",
@@ -184,7 +184,7 @@ const GAME_DEFINITIONS = [
     rivalName: "ORBIT",
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Interior acerca al centro; exterior aleja. Evita arcos rosas y recoge recargas verdes.",
-    scoring: "60 pasos por tres sectores, arcos combinados, recargas y tres escudos; replay de servidor.",
+    scoring: "60 pasos en un recorrido continuo, arcos combinados, recargas y tres escudos; replay de servidor.",
   },
   {
     id: "solitaire-sprint",
@@ -486,7 +486,7 @@ const GAME_DEFINITIONS = [
     rivalName: "HOP",
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Mantén izquierda o derecha para dirigir el salto automático.",
-    scoring: "75 apoyos por sectores, balizas y recogibles. Solo la altura nueva puntúa; replay de servidor.",
+    scoring: "75 apoyos en un recorrido continuo, balizas y recogibles. Solo la altura nueva puntúa; replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];

@@ -560,7 +560,7 @@ export default function DemoApp() {
       setBalance((value) => Number((value + selectedStake).toFixed(2)));
       setMovements((items) => [
         {
-          label: `${selectedGame.name} · cancelación demo`,
+          label: `${selectedGame.name} · cancelación local`,
           amount: selectedStake,
         },
         ...items,
@@ -1051,7 +1051,7 @@ export default function DemoApp() {
               <button className="authButton google" disabled aria-label="Google, próximamente"><span aria-hidden="true">G</span>Google</button>
               <button className="authButton apple" disabled aria-label="Apple, próximamente"><span aria-hidden="true">●</span>Apple</button>
             </div>
-            <button className="authButton guest galacticEntryAction" aria-label="Iniciar sesión demo local" onClick={continueWithoutProvider}><span>INICIAR SESIÓN</span><small>DEMO LOCAL</small></button>
+            <button className="authButton guest galacticEntryAction" aria-label="Iniciar sesión local" onClick={continueWithoutProvider}><span>INICIAR SESIÓN</span><small>SESIÓN LOCAL</small></button>
           </div>
         </section>
       </main>
@@ -1099,7 +1099,7 @@ export default function DemoApp() {
             aria-label="Nombre de avatar"
           />
           <div className={`nameAvailability ${nameAvailable ? "available" : "unavailable"}`}>
-            {playerName.trim().length === 0 ? "" : nameAvailable ? "Nombre válido para esta demo" : "Elige otro nombre"}
+            {playerName.trim().length === 0 ? "" : nameAvailable ? "Nombre disponible en este navegador" : "Elige otro nombre"}
           </div>
 
           {avatarEditorOpen && (
@@ -1185,7 +1185,7 @@ export default function DemoApp() {
             >
               {musicOn ? "🔊" : "🔇"}
             </button>
-            <button className="balanceChip" aria-label={`Saldo demo ${euro(balance)}`} onClick={() => navigate("profile")}>DEMO · {euro(balance)}</button>
+            <button className="balanceChip" aria-label={`Saldo ficticio ${euro(balance)}`} onClick={() => navigate("profile")}>FICTICIO · {euro(balance)}</button>
           </div>
         </header>
       )}
@@ -1206,7 +1206,7 @@ export default function DemoApp() {
                   key={stake}
                   className={selectedStake === stake ? "selected" : ""}
                   aria-pressed={selectedStake === stake}
-                  aria-label={stake===0?"Entrenamiento gratis":`Reto demo de ${stake} euros`}
+                  aria-label={stake===0?"Entrenamiento gratis":`Reto con ${stake} euros ficticios`}
                   onClick={() => selectStake(stake)}
                   disabled={stake > balance}
                 >
@@ -1216,7 +1216,7 @@ export default function DemoApp() {
             </div>
 
             <CatalogBrowser stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
-            <button className="galacticHelpButton" type="button" onClick={()=>{setTutorialStep(0);setTutorialOpen(true);}}>Cómo funcionan los retos demo</button>
+            <button className="galacticHelpButton" type="button" onClick={()=>{setTutorialStep(0);setTutorialOpen(true);}}>Cómo funcionan los retos</button>
           </section>
         )}
 
@@ -1248,10 +1248,10 @@ export default function DemoApp() {
                 <strong>{selectedGame.name}</strong>
                 <small>
                   {matchScope === "group" && groupCompetition && group
-                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `DEMO · ${selectedStake}€`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
+                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€ FICTICIOS`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
                     : selectedStake === 0
                       ? "ENTRENAMIENTO"
-                      : `DEMO · ${selectedStake}€ · 1 VS 1`}
+                      : `${selectedStake}€ FICTICIOS · 1 VS 1`}
                 </small>
               </div>
               <div className="gameHeaderActions">
@@ -1317,7 +1317,7 @@ export default function DemoApp() {
                   <strong>SALIR DE LA PARTIDA</strong>
                   <p>
                     {selectedStake > 0
-                      ? "Esta demo devolverá la entrada al salir."
+                      ? "Se devolverá la entrada ficticia al salir."
                       : "La partida actual se cancelará."}
                   </p>
                   <div>
@@ -1409,35 +1409,35 @@ export default function DemoApp() {
         )}
 
         {screen === "profile" && (
-          <section className={`simpleScreen ${shellStyles.accountView}`} aria-label="Perfil demo">
+          <section className={`simpleScreen ${shellStyles.accountView}`} aria-label="Perfil local">
             <h1>Tu avatar</h1>
             <button type="button" className="globalRankingShortcut avatarRankingShortcut" onClick={() => navigate("ranking")} aria-label="Ver ranking global desde avatar">Ranking global →</button>
             <p className={shellStyles.demoNote}>Identidad local · saldo y premios ficticios</p>
-            <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>Cuenta demo · sin posición real</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>Cuenta local · sin posición real</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 
             <section className="accountWalletCard">
               <div>
-                <small>SALDO DEMO</small>
+                <small>SALDO FICTICIO</small>
                 <strong>{euro(balance)}</strong>
               </div>
               <div className="walletActions">
                 <button onClick={() => {
                   setBalance((b) => b + 10);
-                  setMovements((m) => [{ label: "Ingreso demo", amount: 10 }, ...m]);
-                }}>Añadir 10 € demo</button>
+                  setMovements((m) => [{ label: "Ingreso ficticio", amount: 10 }, ...m]);
+                }}>Añadir 10 € ficticios</button>
                 <button
                   disabled={balance < 10}
                   onClick={() => {
                     setBalance((b) => Number((b - 10).toFixed(2)));
-                    setMovements((m) => [{ label: "Retirada demo", amount: -10 }, ...m]);
+                    setMovements((m) => [{ label: "Retirada ficticia", amount: -10 }, ...m]);
                   }}
-                >Retirar 10 € demo</button>
+                >Retirar 10 € ficticios</button>
               </div>
               <div className="miniMovementList" aria-live="polite">
-                {movements.length === 0 && <p className={shellStyles.emptyNote}>Todavía no hay movimientos. Este saldo solo sirve para probar partidas demo.</p>}
+                {movements.length === 0 && <p className={shellStyles.emptyNote}>Todavía no hay movimientos. Este saldo ficticio solo sirve para practicar.</p>}
                 {movements.slice(0, 3).map((movement, index) => (
                   <div key={`${movement.label}-${index}`}>
-                    <span>{movement.label}</span>
+                    <span>{movement.label.replace(/\bdemo\b/gi, "ficticio")}</span>
                     <b className={movement.amount < 0 ? "negative" : ""}>
                       {movement.amount > 0 ? "+" : ""}{euro(movement.amount)}
                     </b>
@@ -1447,8 +1447,8 @@ export default function DemoApp() {
             </section>
 
             <div className="chartPanel">
-              <div className="chartHead"><span>BENEFICIO NETO DEMO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
-              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Beneficio neto de partidas demo a lo largo del tiempo">
+              <div className="chartHead"><span>BENEFICIO NETO FICTICIO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
+              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Beneficio neto ficticio de partidas a lo largo del tiempo">
                 <line x1="0" y1="50" x2="100" y2="50" className="zeroLine" />
                 <polyline points={chartPoints} className="profitLine" />
               </svg>
@@ -1457,18 +1457,18 @@ export default function DemoApp() {
             <div className="settingsList">
               <button aria-pressed={musicOn} onClick={() => setMusicOn((v) => !v)}><span>Sonido</span><b>{musicOn ? "ON" : "OFF"}</b></button>
               <button onClick={() => { setAvatarEditorOpen(true); setAvatarError(""); navigate("avatar-setup"); }}><span>Nombre y avatar</span><b>→</b></button>
-              <button onClick={resetAvatar}><span>Reiniciar perfil demo</span><b aria-hidden="true">↺</b></button>
-              <button onClick={() => navigate("legal")}><span>Información de la demo</span><b aria-hidden="true">→</b></button>
-              <button onClick={logoutDemo}><span>Cerrar sesión demo</span><b>×</b></button>
+              <button onClick={resetAvatar}><span>Reiniciar perfil local</span><b aria-hidden="true">↺</b></button>
+              <button onClick={() => navigate("legal")}><span>Información de la aplicación</span><b aria-hidden="true">→</b></button>
+              <button onClick={logoutDemo}><span>Cerrar sesión local</span><b>×</b></button>
             </div>
-            <p className="resetNote">Reiniciar perfil cambia tu nombre y avatar y borra las estadísticas demo. Conserva el saldo y los movimientos. Cerrar sesión elimina el perfil local y vuelve a la entrada.</p>
+            <p className="resetNote">Reiniciar perfil cambia tu nombre y avatar y borra las estadísticas locales. Conserva el saldo y los movimientos. Cerrar sesión elimina el perfil local y vuelve a la entrada.</p>
           </section>
         )}
 
         {screen === "legal" && (
           <section className={`simpleScreen ${shellStyles.legalView}`}>
             <button className="textBack" aria-label="Volver al perfil" onClick={() => navigate("profile")}>← Tu perfil</button>
-            <h1>Información de la demo</h1>
+            <h1>Información de la aplicación</h1>
             <p className={shellStyles.demoNote}>GALACTIC GAMES · sin dinero real</p>
             <div className="legalTabs">
               <button aria-pressed={legalTab === "terms"} className={legalTab === "terms" ? "active" : ""} onClick={() => setLegalTab("terms")}>Términos</button>
@@ -1479,22 +1479,22 @@ export default function DemoApp() {
             <article className="legalCopy">
               <h2>{legalTab === "terms" ? "Términos y condiciones" : legalTab === "privacy" ? "Privacidad" : legalTab === "cookies" ? "Cookies" : "Reglas de competición"}</h2>
               {legalTab === "terms" && <>
-                <p>Esta versión permite entrenar y probar partidas con saldo ficticio. Añadir o retirar saldo demo no mueve dinero real ni genera pagos.</p>
-                <p>La competición con dinero real no está disponible. Esta información describe la demo; no sustituye los términos jurídicos revisados que necesitará el servicio definitivo.</p>
+                <p>Esta versión permite entrenar y probar partidas con saldo ficticio. Añadir o retirar saldo ficticio no mueve dinero real ni genera pagos.</p>
+                <p>La competición con dinero real no está disponible. Esta información describe la versión actual; no sustituye los términos jurídicos revisados que necesitará el servicio definitivo.</p>
               </>}
               {legalTab === "privacy" && <>
-                <p>Tu nombre, avatar, preferencias y estadísticas demo se guardan en este navegador. Las partidas verificadas envían sus inputs al servidor para reconstruir el resultado.</p>
-                <p>La demo no solicita documentos de identidad ni datos de pago. Cerrar sesión elimina el perfil local de este navegador; no equivale a una solicitud de borrado de registros del servidor.</p>
+                <p>Tu nombre, avatar, preferencias y estadísticas locales se guardan en este navegador. Las partidas verificadas envían sus inputs al servidor para reconstruir el resultado.</p>
+                <p>La aplicación no solicita documentos de identidad ni datos de pago. Cerrar sesión elimina el perfil local de este navegador; no equivale a una solicitud de borrado de registros del servidor.</p>
                 <p>Antes de crear cuentas reales, se publicarán la política de privacidad, los plazos de conservación y los medios para ejercer tus derechos.</p>
               </>}
               {legalTab === "cookies" && <>
-                <p>La aplicación utiliza almacenamiento local del navegador para recordar el perfil demo y las preferencias. Si lo borras, tendrás que configurar la entrada de nuevo.</p>
-                <p>La información definitiva sobre cookies y servicios de alojamiento estará disponible antes de activar cuentas reales. Esta demo no presenta un consentimiento de producción.</p>
+                <p>La aplicación utiliza almacenamiento local del navegador para recordar el perfil local y las preferencias. Si lo borras, tendrás que configurar la entrada de nuevo.</p>
+                <p>La información definitiva sobre cookies y servicios de alojamiento estará disponible antes de activar cuentas reales. Esta versión no presenta un consentimiento de producción.</p>
               </>}
               {legalTab === "rules" && <>
-                <p>Entrenamiento gratis te permite aprender cada juego sin usar saldo demo. Las otras modalidades utilizan importes y resultados de demostración.</p>
+                <p>Entrenamiento gratis te permite aprender cada juego sin usar saldo ficticio. Las otras modalidades utilizan saldo ficticio y rivales simulados.</p>
                 <p>En juegos con verificación, el servidor reconstruye la partida a partir del escenario y los inputs y calcula el resultado. Si la verificación falla, no se confirma una victoria.</p>
-                <p>El ranking demo es una muestra independiente: sus jugadores y beneficios son ficticios. El ranking real solo mostrará datos de servidor cuando el servicio esté configurado.</p>
+                <p>El ranking de ejemplo es una muestra independiente: sus jugadores y beneficios son ficticios. El ranking real solo mostrará datos de servidor cuando el servicio esté configurado.</p>
               </>}
             </article>
           </section>
@@ -1511,10 +1511,10 @@ export default function DemoApp() {
             </button>
             <p>
               {tutorialStep === 0
-                ? "Juegas primero. Tu resultado queda guardado para que otro jugador intente superarlo."
+                ? "Juegas primero y tu resultado queda guardado. En esta sesión los rivales son simulados."
                 : tutorialStep === 1
-                  ? "Otro jugador ya dejó su resultado. Tú juegas ahora para intentar superarlo."
-                  : "Hay un jugador esperando una partida de este importe. Este color indica cola activa."}
+                  ? "Un rival simulado ya dejó su marca. Tú juegas ahora para intentar superarla."
+                  : "Este color representa una partida pendiente con un rival simulado. No conecta una cola de jugadores reales."}
             </p>
             <div className={`tutorialActions ${tutorialStep === 0 ? "single" : ""}`}>
               {tutorialStep > 0 && <button className="tutorialBack" onClick={() => setTutorialStep((step) => Math.max(0, step - 1))}>ATRÁS</button>}

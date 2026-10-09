@@ -155,7 +155,7 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopState) {
   }
 }
 const hudLabel = (s: Readonly<SkyHopState>) =>
-  `${s.highest}/75 · SECTOR ${Math.min(3, 1 + Math.floor(s.highest / 25))}`;
+  `ALTURA ${s.highest}/75`;
 const keys = {
   ArrowLeft: "LEFT_DOWN",
   ArrowRight: "RIGHT_DOWN",

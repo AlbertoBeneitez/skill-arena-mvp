@@ -171,7 +171,7 @@ const { chromium } = require(
       "PREPARANDO PARTIDA",
     );
     releaseStart();
-    assert.equal((await (await issued).json()).manifest.game_version, "1.0.0");
+    assert.equal((await (await issued).json()).manifest.game_version, "2.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     assert.equal(starts, 1);
@@ -215,7 +215,7 @@ const { chromium } = require(
         search: true,
         empty: true,
         navigation: true,
-        startVersion: "1.0.0",
+        startVersion: "2.0.0",
         loading: true,
         startFailure: true,
         errors,

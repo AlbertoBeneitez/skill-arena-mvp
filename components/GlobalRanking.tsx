@@ -100,12 +100,12 @@ export default function GlobalRanking() {
           aria-pressed={source === "demo"}
           onClick={() => switchSource("demo")}
         >
-          Ver demo
+          Ver ejemplo
         </button>
       </div>
       {source === "demo" && (
         <div className="rankingDemoNotice" role="note">
-          <strong>DEMOSTRACIÓN · IMPORTES FICTICIOS</strong>
+          <strong>DATOS DE EJEMPLO · IMPORTES FICTICIOS</strong>
           <p>
             Estos jugadores y beneficios son ejemplos. No representan dinero
             ganado.
@@ -118,7 +118,7 @@ export default function GlobalRanking() {
           <h2>El ranking real aún no está disponible</h2>
           <p>
             Todavía no hay beneficios reales publicados. Puedes consultar el
-            ejemplo demo.
+            ranking de ejemplo.
           </p>
         </div>
       )}
@@ -150,7 +150,7 @@ export default function GlobalRanking() {
         <>
           {!cursor && page.entries.length > 0 && (
             <section className="rankingLeaders" aria-label="Top jugadores">
-              <h2>Top jugadores{source === "demo" ? " · demo" : ""}</h2>
+              <h2>Top jugadores{source === "demo" ? " · ejemplo" : ""}</h2>
               <div>
                 {page.entries.slice(0, 3).map((row) => (
                   <article key={row.playerId}>
@@ -175,7 +175,7 @@ export default function GlobalRanking() {
               <table className="rankingTable">
                 <caption>
                   {source === "demo"
-                    ? "Ranking demo · beneficio neto ficticio"
+                    ? "Ranking de ejemplo · beneficio neto ficticio"
                     : "Ranking global · beneficio neto histórico"}
                 </caption>
                 <thead>
@@ -251,7 +251,7 @@ export default function GlobalRanking() {
       <section className="rankingOwnPosition" aria-label="Tu posición">
         <h2>Tu posición</h2>
         <p>
-          Tu cuenta de demostración todavía no tiene una posición real.
+          Tu cuenta local todavía no tiene una posición real.
           Aparecerá aquí al conectar identidad autenticada y resultados reales.
         </p>
       </section>

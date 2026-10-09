@@ -111,7 +111,7 @@ export default function CatalogBrowser(props: Props) {
                   ? "ENTRANDO…"
                   : props.stake === 0
                     ? "JUGAR"
-                    : `JUGAR · ${props.stake}€ DEMO`}
+                    : `JUGAR · ${props.stake}€ FICTICIOS`}
               </button>
             </article>
           ))}

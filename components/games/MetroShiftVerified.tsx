@@ -169,7 +169,7 @@ const controls = [
   { action: "RIGHT", label: "Cambiar carril derecha", symbol: "→" },
 ] as const;
 const hudLabel = (s: Readonly<MetroState>) =>
-  `${s.passed}/60 · SECTOR ${Math.min(3, 1 + Math.floor(s.passed / 20))}`;
+  `${s.passed}/60 PASOS`;
 const inputTones = { LEFT: "tap", RIGHT: "tap", JUMP: "tap" } as const;
 const gestureAction = (
   from: { x: number; y: number },
