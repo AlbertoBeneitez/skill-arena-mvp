@@ -1,1 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#17305f"/><stop offset="1" stop-color="#8dc6d9"/></linearGradient></defs><rect width="640" height="400" rx="32" fill="url(#g)"/><rect x="112" y="278" width="128" height="18" rx="8" fill="#69d3ac"/><rect x="300" y="215" width="104" height="18" rx="8" fill="#e7b756"/><rect x="185" y="145" width="110" height="18" rx="8" fill="#69d3ac"/><path d="M332 118l24 32-24 16-24-16z" fill="#f4ce60"/><text x="38" y="360" fill="#fff" font-size="46" font-family="system-ui" font-weight="900">SKY HOP</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs><linearGradient id="space" x2="0" y2="1"><stop stop-color="#0a1731"/><stop offset="1" stop-color="#243e58"/></linearGradient><radialGradient id="planet"><stop stop-color="#708b99"/><stop offset="1" stop-color="#314759"/></radialGradient></defs>
+  <rect width="640" height="400" rx="32" fill="url(#space)"/>
+  <g fill="#d4e9fc" opacity=".45"><circle cx="81" cy="85" r="2"/><circle cx="183" cy="45" r="1.5"/><circle cx="536" cy="258" r="2"/><circle cx="483" cy="58" r="1.5"/><circle cx="104" cy="206" r="1.5"/></g>
+  <circle cx="483" cy="130" r="59" fill="url(#planet)" opacity=".7"/>
+  <ellipse cx="483" cy="130" rx="91" ry="17" transform="rotate(-24 483 130)" fill="none" stroke="#92a7b8" stroke-width="7" opacity=".35"/>
+  <g stroke="#9fe7df" stroke-width="2"><rect x="112" y="278" width="128" height="18" rx="8" fill="#37797d"/><rect x="300" y="215" width="104" height="18" rx="8" fill="#ad8042" stroke="#ffe2a0"/><rect x="185" y="145" width="110" height="18" rx="8" fill="#37797d"/></g>
+  <path d="M126 285h100M314 222h76M199 152h82" stroke="#c7fff1" stroke-width="3" opacity=".65"/>
+  <path d="M327 159l5 25 5-25" fill="#f6bd64" opacity=".8"/>
+  <rect x="317" y="133" width="31" height="26" rx="8" fill="#e1bd64"/>
+  <rect x="310" y="137" width="9" height="20" rx="4" fill="#778dac"/>
+  <circle cx="332" cy="124" r="15" fill="#e7d698" stroke="#fff0bf" stroke-width="2"/>
+  <path d="M320 119h24v11h-24z" fill="#315974"/>
+  <path d="M324 159v7M340 159v7" stroke="#eff0c8" stroke-width="5" stroke-linecap="round"/>
+</svg>

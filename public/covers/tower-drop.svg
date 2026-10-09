@@ -1,1 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#78cfee"/><stop offset=".62" stop-color="#e1f4f7"/><stop offset="1" stop-color="#f1d69a"/></linearGradient></defs><rect width="800" height="600" fill="url(#g)"/><rect x="225" y="480" width="350" height="46" rx="6" fill="#4e78d0"/><rect x="250" y="428" width="300" height="46" rx="6" fill="#7664d9"/><rect x="278" y="376" width="244" height="46" rx="6" fill="#c365bf"/><rect x="301" y="324" width="198" height="46" rx="6" fill="#e58c4c"/><rect x="327" y="272" width="146" height="46" rx="6" fill="#49b983"/><rect x="64" y="210" width="146" height="46" rx="6" fill="#315fae"/><text x="55" y="92" font-family="Arial" font-size="58" font-weight="900" fill="#294f83">TOWER</text><text x="55" y="150" font-family="Arial" font-size="58" font-weight="900" fill="#294f83">DROP</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="space" x2="0" y2="1"><stop stop-color="#080f26"/><stop offset="1" stop-color="#243451"/></linearGradient>
+    <linearGradient id="steel" x2="0" y2="1"><stop stop-color="#c2e7f3"/><stop offset="1" stop-color="#537da1"/></linearGradient>
+    <radialGradient id="planet"><stop stop-color="#6885a0"/><stop offset="1" stop-color="#243650"/></radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#space)"/>
+  <g fill="#d8edff" opacity=".45"><circle cx="93" cy="161" r="2"/><circle cx="146" cy="63" r="2"/><circle cx="657" cy="315" r="2"/><circle cx="710" cy="73" r="2"/><circle cx="80" cy="390" r="1.5"/><circle cx="610" cy="196" r="1.5"/></g>
+  <circle cx="650" cy="134" r="63" fill="url(#planet)"/>
+  <ellipse cx="650" cy="134" rx="98" ry="20" transform="rotate(-20 650 134)" fill="none" stroke="#8b98af" stroke-width="8" opacity=".3"/>
+  <path d="M78 536H722" stroke="#496480" stroke-width="3"/>
+  <ellipse cx="400" cy="534" rx="209" ry="17" fill="#040b17" opacity=".65"/>
+  <rect x="225" y="480" width="350" height="46" rx="6" fill="#4e78d0"/>
+  <rect x="250" y="428" width="300" height="46" rx="6" fill="#7664d9"/>
+  <rect x="278" y="376" width="244" height="46" rx="6" fill="#c365bf"/>
+  <rect x="301" y="324" width="198" height="46" rx="6" fill="#e58c4c"/>
+  <rect x="327" y="272" width="146" height="46" rx="6" fill="#49b983"/>
+  <g stroke="#c5edff" stroke-width="2" opacity=".4"><path d="M234 488h332M259 436h282M287 384h226M310 332h180M336 280h128"/></g>
+  <path d="M400 0V85" stroke="#7497b7" stroke-width="14"/>
+  <rect x="190" y="82" width="420" height="22" rx="5" fill="url(#steel)"/>
+  <path d="M210 91h380M235 84l20 18 20-18 20 18 20-18 20 18 20-18 20 18 20-18 20 18 20-18 20 18 20-18 20 18 20-18 20 18" stroke="#d0eaff" stroke-width="2" opacity=".55"/>
+  <circle cx="400" cy="108" r="12" fill="#203c56" stroke="#bfe9ff" stroke-width="3"/>
+  <path d="M400 120L450 190M450 190l-43 20M450 190l43 20" stroke="#b1d4e1" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <rect x="377" y="209" width="146" height="46" rx="6" fill="#65afdb" stroke="#a7e7ff" stroke-width="2"/>
+  <path d="M386 217h128" stroke="#d4f6ff" stroke-width="3" opacity=".65"/>
+</svg>

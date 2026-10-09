@@ -6,5 +6,5 @@
  <path d="M0 305h640v95H0z" fill="#0b1b32"/><path d="M0 305h640" stroke="#66e2ed" stroke-width="4"/><path d="m10 370 190-65m25 95 80-95m160 95-40-95m200 95-175-95" stroke="#274469" stroke-width="2"/>
  <g><rect x="180" y="217" width="42" height="60" rx="15" fill="#40c5b7"/><rect x="171" y="182" width="60" height="48" rx="21" fill="#97ffe1"/><ellipse cx="188" cy="203" rx="7" ry="11" fill="#092a36"/><ellipse cx="213" cy="203" rx="7" ry="11" fill="#092a36"/><path d="m186 274-15 24m41-24 19 18" stroke="#8df5e1" stroke-width="12" stroke-linecap="round"/></g>
  <rect x="377" y="244" width="44" height="61" rx="5" fill="url(#beam)" stroke="#daa3ff" stroke-width="3"/><path d="m389 258 17 14-17 14" fill="none" stroke="#fff0ff" stroke-width="3"/>
- <text x="35" y="360" fill="#e3fbff" font-size="42" font-family="system-ui" font-weight="900">ALIEN DASH</text>
+
 </svg>

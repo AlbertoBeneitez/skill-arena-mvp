@@ -258,3 +258,9 @@ verificador. Receipt explícito sin resultado/durabilidad; terminal histórico s
 cambios. Checkpoint real por intento, transporte preservado, keepalive acotado y
 renovación tras BFCache; ver ADR 006/release v59. Nuevas prioridades de producto
 y garantías aún pendientes se mantienen en PRODUCT_BACKLOG_STATUS.md.
+
+v60 retira coaching/instrucciones visibles, usa nombres de juego como acceso,
+revisa portadas/fondo orbital y amplía otra vez Stack Shift conservando core V1.
+Resultado muestra tiempo decimal real; scoring/desempate todavía no migrados.
+Evidencia incremental en release v60 y pendientes en el ledger, sin duplicar
+reglas competitivas ni afirmar dataset de 1000 por usar seeds distintas.

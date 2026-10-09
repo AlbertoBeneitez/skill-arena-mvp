@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v59-mobile
+# GALACTIC GAMES · Seguimiento de v60-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -131,3 +131,23 @@ Solicitados 1000 escenarios distintos por juego y experiencias que no se repitan
 reutilizar catálogo/generadores comunes, conservar mismo escenario entre rivales
 y definir rotación auditable/consumo con la persistencia desacoplada existente.
 No declarar unicidad de experiencia por simplemente cambiar un texto o seed.
+
+### v60 · Presentación y espacio útil
+
+Accesos con nombre del juego; retirados tutorial, coaching/instrucciones dentro
+de los juegos y explicaciones redundantes del catálogo, resultado, avatar,
+grupos y ranking. Estado, accesibilidad, privacidad e identificación de saldo
+ficticio/datos de ejemplo permanecen. Tiempo del resultado en segundos con tres
+decimales; no se afirma migración a desempate/avance por cambiar la presentación.
+
+Tablero Stack Shift 288×576, frente a 256×512, con suelo y controles separados;
+Saturno común con halo, órbita, luna y nebulosa discretos, sin cambiar simulación.
+Portadas sin títulos duplicados y revisión orbital de ilustraciones antiguas.
+QA táctil de inicio/salida de los 18 VERIFIED en ambas orientaciones devuelve
+36 recibos reales; victoria Stack vertical y derrota/reinicio horizontal pasan.
+Catálogo 320px/rotación, entrada, avatar, grupos y ranking comprobados.
+
+Persisten métricas autoritativas de avance/desempate, catálogo de 1000 escenarios
+y rotación sin repetición, River continuo, enemigos Sky, restantes juegos con
+cortes y migraciones privadas Mine/Solitaire. Estos puntos no se cierran por
+el pulido visual. La siguiente unidad elimina pausas reales de Piano en V3.
