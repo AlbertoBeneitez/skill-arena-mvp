@@ -1,3 +1,4 @@
+import { MEMORY_CORE } from "../verified/memoryMatchCore.v1";
 import { PIANO_V2_CORE } from "../verified/pianoRushCore.v2";
 import { PIANO_V3_CORE } from "../verified/pianoRushCore.v3";
 import { ORBIT_CORE } from "../verified/orbitShiftCore.v1";
@@ -366,6 +367,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(MEMORY_CORE.gameId, MEMORY_CORE.gameVersion)]: coreAdapter(MEMORY_CORE),
   [adapterKey(PIANO_V3_CORE.gameId, PIANO_V3_CORE.gameVersion)]: coreAdapter(PIANO_V3_CORE),
   [adapterKey(PIANO_V2_CORE.gameId, PIANO_V2_CORE.gameVersion)]: coreAdapter(PIANO_V2_CORE),
   [adapterKey(ORBIT_CORE.gameId, ORBIT_CORE.gameVersion)]: coreAdapter(ORBIT_CORE),

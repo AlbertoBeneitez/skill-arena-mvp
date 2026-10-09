@@ -56,6 +56,7 @@
     "scripts/verify-maze-v1.ts",
     "scripts/verify-maze-v2.ts",
     "scripts/verify-maze-v3.ts",
+    "scripts/verify-memory-v1.ts",
     "scripts/maze-play-fixture.ts",
     "scripts/verify-orbit-v1.ts",
     "scripts/orbit-play-fixture.ts",

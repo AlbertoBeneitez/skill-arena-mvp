@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="sky" x2=".8" y2="1"><stop stop-color="#071324"/><stop offset=".55" stop-color="#182741"/><stop offset="1" stop-color="#0a192c"/></linearGradient>
+    <radialGradient id="haze"><stop stop-color="#6984a4" stop-opacity=".22"/><stop offset="1" stop-color="#6984a4" stop-opacity="0"/></radialGradient>
+    <linearGradient id="back" x2="1" y2="1"><stop stop-color="#1a3046"/><stop offset="1" stop-color="#0e1e33"/></linearGradient>
+    <linearGradient id="face" x2="1" y2="1"><stop stop-color="#254552"/><stop offset="1" stop-color="#112c3b"/></linearGradient>
+    <symbol id="orbit" viewBox="0 0 54 54"><ellipse cx="27" cy="27" rx="22" ry="10" transform="rotate(-25 27 27)" fill="none" stroke="#779aa9" stroke-width="2"/><circle cx="27" cy="27" r="5" fill="#82c0ca"/><circle cx="45" cy="18" r="3" fill="#d4e4e3"/></symbol>
+    <symbol id="world" viewBox="0 0 54 54"><ellipse cx="27" cy="27" rx="25" ry="10" transform="rotate(-25 27 27)" fill="none" stroke="#efd4a1" stroke-width="3"/><circle cx="27" cy="27" r="13" fill="#efd4a1"/><path d="M17 22h20M17 29h20" stroke="#ad9b7e" stroke-width="2" opacity=".7"/></symbol>
+    <symbol id="star" viewBox="0 0 54 54"><path d="m27 3 6 17 17 7-17 6-6 18-6-18-18-6 18-7z" fill="#c7e3a9"/></symbol>
+    <symbol id="closed" viewBox="0 0 78 88"><rect x="1" y="1" width="76" height="86" rx="11" fill="url(#back)" stroke="#476681" stroke-width="1.5"/><rect x="6" y="6" width="66" height="76" rx="7" fill="none" stroke="#9fbdd7" stroke-opacity=".12"/><use href="#orbit" x="13" y="19" width="52" height="52"/></symbol>
+    <symbol id="open" viewBox="0 0 78 88"><rect x="1" y="1" width="76" height="86" rx="11" fill="url(#face)" stroke="#91cfc4" stroke-width="2"/><rect x="6" y="6" width="66" height="76" rx="7" fill="none" stroke="#9bd9cb" stroke-opacity=".16"/><path d="m59 13 4 4 7-8" fill="none" stroke="#d0ecda" stroke-width="2" stroke-linecap="round"/></symbol>
+  </defs>
+  <rect width="640" height="400" rx="32" fill="url(#sky)"/>
+  <ellipse cx="535" cy="100" rx="240" ry="170" fill="url(#haze)"/>
+  <g fill="#c9dce9" opacity=".38"><circle cx="47" cy="62" r="1.5"/><circle cx="86" cy="159" r="1"/><circle cx="44" cy="314" r="1"/><circle cx="123" cy="29" r="1"/><circle cx="207" cy="23" r="1.5"/><circle cx="309" cy="49" r="1"/><circle cx="492" cy="31" r="1.5"/><circle cx="583" cy="195" r="1"/><circle cx="548" cy="343" r="1.5"/><circle cx="473" cy="380" r="1"/><circle cx="228" cy="373" r="1"/></g>
+  <g transform="translate(545 80) rotate(-22)" opacity=".45"><ellipse rx="48" ry="13" fill="none" stroke="#998e79" stroke-width="6"/><circle r="25" fill="#746f62"/><path d="M-21-7h41M-24 3h48M-19 12h38" stroke="#9c937a" stroke-width="3" opacity=".5"/></g>
+  <path d="M65 343Q320 420 580 334" fill="none" stroke="#56829b" stroke-opacity=".16" stroke-width="1"/>
+  <g transform="translate(139 59)">
+    <use href="#open" x="0" y="0" width="78" height="88"/><use href="#world" x="12" y="16" width="54" height="54"/>
+    <use href="#open" x="94" y="0" width="78" height="88"/><use href="#world" x="106" y="16" width="54" height="54"/>
+    <use href="#closed" x="188" y="0" width="78" height="88"/><use href="#closed" x="282" y="0" width="78" height="88"/>
+    <use href="#closed" x="0" y="101" width="78" height="88"/>
+    <use href="#open" x="94" y="101" width="78" height="88"/><use href="#star" x="106" y="117" width="54" height="54"/>
+    <use href="#closed" x="188" y="101" width="78" height="88"/>
+    <use href="#open" x="282" y="101" width="78" height="88"/><use href="#star" x="294" y="117" width="54" height="54"/>
+    <use href="#closed" x="0" y="202" width="78" height="88"/><use href="#closed" x="94" y="202" width="78" height="88"/><use href="#closed" x="188" y="202" width="78" height="88"/><use href="#closed" x="282" y="202" width="78" height="88"/>
+  </g>
+</svg>

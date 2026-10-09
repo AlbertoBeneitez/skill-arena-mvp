@@ -173,6 +173,16 @@ catalogue versions from the historical examples above.
 operational security and production settlement integration. VERIFIED means
 server replay, not activation of production money or identity.
 
+## Public preview in Memoria
+
+`memory-match@1.0.0` adapts to the existing public scenario/core replay contract.
+The whole fixed board is legally visible during the initial preview; hiding faces
+later is presentation. No never-revealed future state or private-authority stack
+is introduced. The server reconstructs flips, matches, lives, timeout and reach.
+A public seed/replay can be automated or its preview stored; VERIFIED does not
+attest human memory or provide bot resistance. This choice must not be reused
+for unrevealed Mine/Solitaire state. Production competition/money remain disabled.
+
 ## Professionalisation gate
 
 `VERIFIED` means server-authoritative replay and deterministic outcome; it does

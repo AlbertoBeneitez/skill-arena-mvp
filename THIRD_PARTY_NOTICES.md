@@ -234,3 +234,11 @@ No upstream assets, sound files or new third-party code are imported.
 GALACTIC GAMES, created with OpenAI image generation. No external game assets,
 brands or third-party artwork were imported. WebP encoding preserves the
 composition of the original 941 × 1672 image; it is presentation only.
+
+
+## Memoria 1.0 (v66)
+
+Original continuous concentration-style variant, fixed-tick TypeScript rules and
+orbital card/cover artwork. Classic pair matching inspires the mechanic; no
+third-party code, assets, brands or sound files are imported. Uses the existing
+shared RNG, driver, synthesized feedback and server replay.

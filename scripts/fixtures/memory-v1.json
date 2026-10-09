@@ -1,0 +1,162 @@
+{
+  "seed": "64ae36509bfe1972dde0be893b462ffd5e0972892b61c5e82b48da794fcc822a",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 960,
+      "action": "FLIP_20"
+    },
+    {
+      "seq": 1,
+      "tick": 1002,
+      "action": "FLIP_18"
+    },
+    {
+      "seq": 2,
+      "tick": 1122,
+      "action": "FLIP_20"
+    },
+    {
+      "seq": 3,
+      "tick": 1164,
+      "action": "FLIP_18"
+    },
+    {
+      "seq": 4,
+      "tick": 1284,
+      "action": "FLIP_20"
+    },
+    {
+      "seq": 5,
+      "tick": 1326,
+      "action": "FLIP_18"
+    },
+    {
+      "seq": 6,
+      "tick": 1488,
+      "action": "FLIP_20"
+    },
+    {
+      "seq": 7,
+      "tick": 1530,
+      "action": "FLIP_21"
+    },
+    {
+      "seq": 8,
+      "tick": 1572,
+      "action": "FLIP_18"
+    },
+    {
+      "seq": 9,
+      "tick": 1614,
+      "action": "FLIP_22"
+    },
+    {
+      "seq": 10,
+      "tick": 1656,
+      "action": "FLIP_15"
+    },
+    {
+      "seq": 11,
+      "tick": 1698,
+      "action": "FLIP_16"
+    },
+    {
+      "seq": 12,
+      "tick": 1740,
+      "action": "FLIP_14"
+    },
+    {
+      "seq": 13,
+      "tick": 1782,
+      "action": "FLIP_23"
+    },
+    {
+      "seq": 14,
+      "tick": 1824,
+      "action": "FLIP_10"
+    },
+    {
+      "seq": 15,
+      "tick": 1866,
+      "action": "FLIP_19"
+    },
+    {
+      "seq": 16,
+      "tick": 1908,
+      "action": "FLIP_8"
+    },
+    {
+      "seq": 17,
+      "tick": 1950,
+      "action": "FLIP_11"
+    },
+    {
+      "seq": 18,
+      "tick": 1992,
+      "action": "FLIP_6"
+    },
+    {
+      "seq": 19,
+      "tick": 2034,
+      "action": "FLIP_7"
+    },
+    {
+      "seq": 20,
+      "tick": 2076,
+      "action": "FLIP_5"
+    },
+    {
+      "seq": 21,
+      "tick": 2118,
+      "action": "FLIP_12"
+    },
+    {
+      "seq": 22,
+      "tick": 2160,
+      "action": "FLIP_4"
+    },
+    {
+      "seq": 23,
+      "tick": 2202,
+      "action": "FLIP_9"
+    },
+    {
+      "seq": 24,
+      "tick": 2244,
+      "action": "FLIP_3"
+    },
+    {
+      "seq": 25,
+      "tick": 2286,
+      "action": "FLIP_13"
+    },
+    {
+      "seq": 26,
+      "tick": 2328,
+      "action": "FLIP_2"
+    },
+    {
+      "seq": 27,
+      "tick": 2370,
+      "action": "FLIP_17"
+    },
+    {
+      "seq": 28,
+      "tick": 2412,
+      "action": "FLIP_0"
+    },
+    {
+      "seq": 29,
+      "tick": 2454,
+      "action": "FLIP_1"
+    }
+  ],
+  "finalTick": 2454,
+  "score": 12000,
+  "height": 12,
+  "lives": 7,
+  "mistakes": 3,
+  "status": "won",
+  "hash": "sha256:bb2c3615657eed3d8c2a3ea5c610a17384291978d25772f18ee2c13ed04c3679"
+}

@@ -53,7 +53,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       receipts.push({ game: game.id, version: game.version, tick: receipt.final_tick });
       await catalog.waitFor();
     }
-    assert.equal(receipts.length, 18);
+    assert.equal(receipts.length, GAMES.filter(g => g.status === "VERIFIED").length);
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({ ok: true, landscape, receipts, errors }));
   } finally { await browser.close(); }

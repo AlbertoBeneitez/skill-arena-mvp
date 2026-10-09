@@ -6160,3 +6160,25 @@ html, body, .arenaOnboarding, .gameScreen {
   background-size: cover;
   background-attachment: fixed;
 }
+/* Stable 6 × 4 topology; full arena input area, no controls over the cards. */
+.memoryOrbitVerified {
+  width: 100%;
+  height: 100%;
+}
+.memoryOrbitVerified .coreHud {
+  left: 14px;
+  right: 14px;
+  gap: 16px;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .memoryOrbitVerified .coreHud {
+    top: 6px;
+    left: 14px;
+    right: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    font-size: 10px;
+    line-height: 10px;
+  }
+}

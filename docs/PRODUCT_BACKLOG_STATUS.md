@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v65-mobile
+# GALACTIC GAMES · Seguimiento de v66-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -24,7 +24,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Star Phalanx | V1: 16 capas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | V2 con capas continuas sin cortes/limpieza intermedia; QA física |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Seguimiento físico; métrica autoritativa de avance común pendiente |
-| Memoria | Solicitado; diseño original compatible con core/lifecycle/replay común | Implementar y validar experiencia móvil continua, preview legal público, inputs/touch/autoridad; documentar límites de automatización |
+| Memoria | v66: V1 VERIFIED, tablero único6×4/12parejas, preview legal8s, dos errores protegidos/ocho vidas, touch al soltar, replay/avance autoritativo; win/error/timeout/reinicio/rotación QA | Seguimiento físico; replay público no prueba memoria humana ni evita automatización |
 | Fondo/música comunes | v65: imagen original optimizada y alineada a viewport, cubre extremos/letterbox; fallback, una caché/blit; mute síncrono cancela voces/resume pendiente, QA audio nativo | Seguimiento físico de FPS/Safari y dirección artística según uso real |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
@@ -34,7 +34,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 
-Los 20 juegos activos incluyen 18 VERIFIED por replay y dos INTEGRATED. Mine 1.0 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
+Los 21 juegos activos incluyen 19 VERIFIED por replay y dos INTEGRATED. Mine 1.0 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
 
 ## Iteración v53
 
@@ -225,3 +225,22 @@ dos wins de8bloques, pérdida14, dobletap/cancel/reinicio/rotación/registro ún
 Catálogo320/horizontal,36montajes/registros, Jet explosión/envío inmediato y
 fondo/entrada real se revisan; detalles en release v65. Próximo: Memoria, luego
 Alien con más patrones/ritmo, conservando versiones e infraestructura común.
+
+
+### v66 · Memoria
+
+Nuevo juego original de parejas orbitales, tablero6×4 estable en toda orientación,
+24tarjetas/12símbolos con forma/color/número. Preview completo legal8s; mismo
+mapa toda la sesión, dos errores protegidos, ocho vidas y reveal120→54ticks según
+avance, límite120s. Avance por parejas únicas, sin puntos visibles ni niveles.
+Registry/lazy loader/driver/RNG/scenario/coreAdapter/registro comunes. No se
+introduce autoridad privada: seed/preview públicos permiten guardar el mapa y
+automatizar; producción sigue apagada.
+
+1000 disposiciones reales distintas,64 runs, golden/replay/render60/120/144,
+inputs inválidos/semánticos, pérdidas/timeout;34versiones en registro común,
+contratos/lifecycle/typecheck/lint/build pasan. QA táctil wins de12parejas en
+vertical/horizontal, errores conservan2pares, timeout real14400ticks conserva1;
+cancel/drag/dobletap/rotación/320px/sonido/reinicio/abandono y consola limpias.
+Catálogo crece por registry, tests usan su tamaño. Ver release v66. Próxima
+unidad: Alien V3, más patrones y plataformas útiles sin sustituir kernel V2.

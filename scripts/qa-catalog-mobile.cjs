@@ -3,7 +3,14 @@ const { chromium } = require(
     process.env.PLAYWRIGHT_MODULE_PATH || "playwright-core",
   ),
   assert = require("node:assert/strict");
+const { register } = require("node:module");
+const { pathToFileURL } = require("node:url");
+const path = require("node:path");
+register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
+  const { GAMES } = await import(
+    pathToFileURL(path.join(__dirname, "../.det-test/lib/games.js"))
+  );
   const browser = await chromium.launch({
     executablePath: "/usr/bin/chromium",
     headless: true,
@@ -44,11 +51,16 @@ const { chromium } = require(
     const catalog = page.getByRole("region", { name: "Catálogo de juegos" }),
       search = page.getByLabel("Buscar juegos", { exact: true });
     await catalog.waitFor();
-    assert.equal(await catalog.locator("article").count(), 20);
+    assert.equal(await catalog.locator("article").count(), GAMES.length);
     for (const card of await catalog.locator("article").all()) {
       const name = await card.getAttribute("aria-label");
-      assert.equal(await card.getByRole("button", { name: `Jugar a ${name}`, exact: true }).innerText(), name,
-        "the access action carries the game name");
+      assert.equal(
+        await card
+          .getByRole("button", { name: `Jugar a ${name}`, exact: true })
+          .innerText(),
+        name,
+        "the access action carries the game name",
+      );
     }
 
     assert.equal(
@@ -93,11 +105,14 @@ const { chromium } = require(
     await search.tap();
     await page.keyboard.insertText("BILLAR");
     assert.equal(await catalog.locator("article").count(), 1);
-    assert.equal(await catalog.locator("article").getAttribute("aria-label"), "Billar");
+    assert.equal(
+      await catalog.locator("article").getAttribute("aria-label"),
+      "Billar",
+    );
     await page
       .getByRole("button", { name: "Limpiar búsqueda", exact: true })
       .tap();
-    assert.equal(await catalog.locator("article").count(), 20);
+    assert.equal(await catalog.locator("article").count(), GAMES.length);
     await search.fill("punteria");
     assert.ok(
       (await catalog.locator("article").count()) > 1,
@@ -109,8 +124,8 @@ const { chromium } = require(
     await page
       .getByRole("button", { name: "Ver todos los juegos", exact: true })
       .tap();
-    assert.equal(await catalog.locator("article").count(), 20);
-    await page.evaluate(() => window.scrollTo({top:0,behavior:"instant"}));
+    assert.equal(await catalog.locator("article").count(), GAMES.length);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     const firstPlay = await page
       .getByRole("button", { name: "Jugar a Dardos", exact: true })
       .boundingBox();
@@ -120,7 +135,8 @@ const { chromium } = require(
       "first game action fits above navigation at 320 px",
     );
     await page.screenshot({
-      path: process.env.QA_SCREENSHOT || "/workspace/.cloud-setup/catalog-320.png",
+      path:
+        process.env.QA_SCREENSHOT || "/workspace/.cloud-setup/catalog-320.png",
       fullPage: false,
     });
     await page
@@ -142,7 +158,7 @@ const { chromium } = require(
     await page.locator(".bottomNav button").first().tap();
     await catalog.waitFor();
     await page.setViewportSize({ width: 844, height: 390 });
-    assert.equal(await catalog.locator("article").count(), 20);
+    assert.equal(await catalog.locator("article").count(), GAMES.length);
     assert.equal(
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
@@ -150,7 +166,9 @@ const { chromium } = require(
       false,
     );
     await page.screenshot({
-      path: process.env.QA_LANDSCAPE_SCREENSHOT || "/workspace/.cloud-setup/catalog-landscape.png",
+      path:
+        process.env.QA_LANDSCAPE_SCREENSHOT ||
+        "/workspace/.cloud-setup/catalog-landscape.png",
     });
     await search.fill("Sky Hop");
     let starts = 0;
@@ -181,18 +199,28 @@ const { chromium } = require(
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     assert.equal(starts, 1);
-    assert.equal(await page.locator(".coreHint").count(), 0, "no instructions inside play");
+    assert.equal(
+      await page.locator(".coreHint").count(),
+      0,
+      "no instructions inside play",
+    );
 
     assert.ok((await page.locator(".coreHud").innerText()).includes("/75"));
     await page.getByRole("button", { name: "Volver", exact: true }).tap();
     await catalog.waitFor();
     assert.equal(
       await catalog.locator("article").count(),
-      20,
+      GAMES.length,
       "catalog resets discovery on remount",
     );
     await page.unroute("**/api/verified-match/start");
-    await page.route("**/api/verified-match/start",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:false,error:"QA_UNAVAILABLE"})}));
+    await page.route("**/api/verified-match/start", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: false, error: "QA_UNAVAILABLE" }),
+      }),
+    );
     await page.evaluate(() => {
       window.__resultTransition = null;
       const observer = new MutationObserver(() => {
@@ -205,19 +233,37 @@ const { chromium } = require(
       observer.observe(document.body, { childList: true, subtree: true });
     });
     await search.fill("Dardos");
-    await page.getByRole("button",{name:"Jugar a Dardos",exact:true}).tap();
-    await page.locator(".resultPanel").waitFor({state:"visible"});
-    assert.ok((await page.locator(".resultPanel").innerText()).includes("RESULTADO NO VERIFICADO"));
-    assert.equal(await page.locator(".gameResultSummary").count(),0,"a start failure must not invent an authoritative result");
+    await page
+      .getByRole("button", { name: "Jugar a Dardos", exact: true })
+      .tap();
+    await page.locator(".resultPanel").waitFor({ state: "visible" });
+    assert.ok(
+      (await page.locator(".resultPanel").innerText()).includes(
+        "RESULTADO NO VERIFICADO",
+      ),
+    );
+    assert.equal(
+      await page.locator(".gameResultSummary").count(),
+      0,
+      "a start failure must not invent an authoritative result",
+    );
     const change = page.getByRole("button", { name: "CAMBIAR", exact: true });
-    assert.equal(await page.evaluate(() => window.__resultTransition.disabled), true, "result actions start disabled");
-    assert.equal(await page.locator(".resultPanel").isVisible(), true, "an immediate action cannot skip the result");
+    assert.equal(
+      await page.evaluate(() => window.__resultTransition.disabled),
+      true,
+      "result actions start disabled",
+    );
+    assert.equal(
+      await page.locator(".resultPanel").isVisible(),
+      true,
+      "an immediate action cannot skip the result",
+    );
     await change.tap();
     await catalog.waitFor();
     assert.deepEqual(errors, []);
     console.log(
       JSON.stringify({
-        catalog: 20,
+        catalog: GAMES.length,
         narrow: 320,
         landscape: true,
         search: true,

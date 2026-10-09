@@ -1,5 +1,6 @@
 import { PIANO_V2_ACTIONS } from "./verified/pianoRushProtocol.v2";
 import { ORBIT_ACTIONS } from "./verified/orbitShiftProtocol.v1";
+import { MEMORY_ACTIONS } from "./verified/memoryMatchProtocol.v1";
 import { MAZE_ACTIONS } from "./verified/mazeRushProtocol.v1";
 import { BRICK_ACTIONS } from "./verified/brickRelayProtocol.v1";
 import { METRO_ACTIONS } from "./verified/metroShiftProtocol.v1";
@@ -85,6 +86,16 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
+  {
+    id: "memory-match", version: "1.0.0", status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/MemoryOrbit")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: MEMORY_ACTIONS },
+    name: "Memoria", cover: "/covers/memory-match.svg", enabled: true,
+    waitingStakes: [1, 5], category: "MEMORIA", tagline: "Doce parejas orbitales en una sola partida.",
+    difficulty: "MEDIA", skillLabel: "MEMORIA + PRECISIÓN", rivalScore: 12000,
+    rivalName: "LYRA", rivalAvatar: "/avatars/avatar-7.svg", instruction: "",
+    scoring: "Avance por parejas únicas; mismo tablero y preview público inicial. Replay de servidor.",
+  },
   {
     id: "darts", version: "2.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/Darts")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: DARTS_ACTIONS },
@@ -499,6 +510,7 @@ export const GAME_REGISTRY = Object.fromEntries(
 ) as unknown as Record<GameId, GameMeta>;
 
 const CATALOG_ORDER: GameId[] = [
+  "memory-match",
   "darts",
   "billiards",
   "precision-stack",
