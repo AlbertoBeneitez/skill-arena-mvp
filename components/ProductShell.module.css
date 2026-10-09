@@ -1,8 +1,11 @@
 /* Scoped product chrome; game simulation, onboarding and individual views stay independent. */
 .shell:global(.appShell) {
-  background:
-    radial-gradient(ellipse at 80% 0, rgba(67, 72, 126, 0.18), transparent 50%),
-    #080f1e;
+  background-color: #050d21;
+  background-image: var(--galactic-space-wash), var(--galactic-space-art);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
   color: #e8f0fb;
 }
 .shell :global(.appHeader) {

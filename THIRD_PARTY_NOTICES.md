@@ -226,3 +226,11 @@ TypeScript implementation replaces UI-owned scoring/physics with the shared
 server replay. New versioned generation adds bounded shifts, three sectors,
 moving/boost/crumbling platforms, recovery checkpoints and unique pickups.
 No upstream assets, sound files or new third-party code are imported.
+
+
+## GALACTIC GAMES shared space background (v65)
+
+`public/art/galactic-background.webp` is original generated artwork requested for
+GALACTIC GAMES, created with OpenAI image generation. No external game assets,
+brands or third-party artwork were imported. WebP encoding preserves the
+composition of the original 941 × 1672 image; it is presentation only.

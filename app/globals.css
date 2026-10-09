@@ -6133,3 +6133,30 @@ html, body {
 
 fieldset.resultActions { border: 0; padding: 0; min-width: 0; }
 fieldset.resultActions:disabled button { opacity: .65; }
+
+
+/* Original shared space art covers the viewport and safe-area edges. */
+:root {
+  --galactic-space-art: url('/art/galactic-background.webp');
+  --galactic-space-wash: linear-gradient(180deg,rgba(3,9,21,.66),rgba(3,9,21,.48) 45%,rgba(3,9,21,.72));
+}
+html, body, .arenaOnboarding, .gameScreen {
+  background-color: #050d21;
+  background-image: var(--galactic-space-wash), var(--galactic-space-art);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.gameScreen .gameArenaWrap, .gameScreen .coreGameSurface {
+  background: transparent;
+}
+.mobileGameHeader { background: rgba(5,13,29,.68); }
+.solitaireSprint, .mineGridGame {
+  background-color: #050d21;
+  background-image: var(--galactic-space-wash), var(--galactic-space-art);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}

@@ -1,11 +1,11 @@
-# GALACTIC GAMES · Seguimiento de v64-mobile
+# GALACTIC GAMES · Seguimiento de v65-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
 | Juego / área | Trabajo preservado y validado | Pendiente |
 | --- | --- | --- |
-| Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles | Retirar texto de ejes, conservar orientación visual; seguimiento físico |
-| Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor | Corregir cámara que oculta suelo/capas inferiores; seguimiento físico |
+| Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles | v65: texto de ejes retirado, orientación visual conservada; seguimiento físico |
+| Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor | v65: base y capas inferiores visibles con cámara/perspectiva compacta; QA táctil/reinicio verificados; seguimiento físico |
 | Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados | Seguimiento físico; rotación1000 sin repetición entre partidas y comparación común pendientes |
 | Alien Dash | v39: V2, plataformas, centinelas anticipados, recogibles, escudos, dos minutos, replay y QA táctil | Más ritmo/variedad/profundidad en nueva versión; retirar instrucción residual AGACHAR; seguimiento físico |
 | Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | V2 para eliminar cambios de etapa y conservar progresión continua; QA física |
@@ -25,7 +25,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Seguimiento físico; métrica autoritativa de avance común pendiente |
 | Memoria | Solicitado; diseño original compatible con core/lifecycle/replay común | Implementar y validar experiencia móvil continua, preview legal público, inputs/touch/autoridad; documentar límites de automatización |
-| Fondo/música comunes | Fondo procedural y audio sintetizado existentes | Integrar imagen original generada cubriendo pantalla; mute inmediato y cancelación de voces tras resume pendiente |
+| Fondo/música comunes | v65: imagen original optimizada y alineada a viewport, cubre extremos/letterbox; fallback, una caché/blit; mute síncrono cancela voces/resume pendiente, QA audio nativo | Seguimiento físico de FPS/Safari y dirección artística según uso real |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
 | Login/onboarding | Entrada demo honesta, avatar/nombre, corto y sin tutorial obligatorio | QA humana; OAuth/auth real requiere proveedor, sin simularlo |
@@ -208,3 +208,20 @@ Golden nuevo8400/70nodos/t3752; cuatro victorias/cuatro derrotas, replay/render
 orientaciones, derrota deliberada, reinicio, rotación/320px y consola limpia;
 registro único y height autoritativo comprobados. Evidencia y límites en release
 v64. Siguiente tanda: Tower/Stack, audio y fondo; después Memoria/Alien.
+
+
+### v65 · Presentación coherente y audio fiable
+
+Tower mantiene suelo y capas inferiores sin cambiar física/inputs; Stack elimina
+texto de ejes conservando flecha/3D. Imagen original90,6KB, compartida y alineada
+a viewport con CSS y lienzo, evita duplicar Saturno; fallback procedural y cero
+lecturas de layout por frame en el driver común. Jet conserva estelas/raíles y
+usa el mismo fondo. Mute inmediato con master gain, voces canceladas/limpias y
+unlock dentro del gesto; no pueden reaparecer voces antiguas tras resume pendiente.
+
+Typecheck/lint/build, goldens/replay de Stack/Tower, regresión base1–501capas,
+RMS/audio nativo y QA botones/persistencia en ambas orientaciones pasan. Tower:
+dos wins de8bloques, pérdida14, dobletap/cancel/reinicio/rotación/registro únicos.
+Catálogo320/horizontal,36montajes/registros, Jet explosión/envío inmediato y
+fondo/entrada real se revisan; detalles en release v65. Próximo: Memoria, luego
+Alien con más patrones/ritmo, conservando versiones e infraestructura común.

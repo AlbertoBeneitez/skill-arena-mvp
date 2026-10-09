@@ -1,5 +1,141 @@
-/** Presentation only: never changes gameplay or consumes a simulation RNG. */
+const SPACE_IMAGE_SRC = "/art/galactic-background.webp";
+let spaceImage: HTMLImageElement | null = null;
+// Only the first backdrop renderer in a logical frame consumes this marker.
+// It reuses the image already drawn across the physical canvas, not a second
+// cropped planet inside the gameplay rectangle.
+const preparedFrames = new WeakMap<CanvasRenderingContext2D, boolean>();
+
+function readySpaceImage(): HTMLImageElement | null {
+  if (typeof window === "undefined") return null;
+  if (!spaceImage) {
+    spaceImage = new window.Image();
+    spaceImage.decoding = "async";
+    spaceImage.src = SPACE_IMAGE_SRC;
+  }
+  return spaceImage.complete && spaceImage.naturalWidth > 0 ? spaceImage : null;
+}
+
+export type SpaceBackdropViewport = {
+  left: number;
+  top: number;
+  cssWidth: number;
+  cssHeight: number;
+  viewportWidth: number;
+  viewportHeight: number;
+};
+const canvasViewports = new WeakMap<HTMLCanvasElement, SpaceBackdropViewport>();
+
+function standaloneViewport(canvas: HTMLCanvasElement): SpaceBackdropViewport {
+  const cached = canvasViewports.get(canvas);
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  // Normal shared frames pass configureLogicalCanvas's cached geometry. This
+  // fallback reads layout once for a standalone renderer, then only on resize.
+  if (
+    cached &&
+    cached.viewportWidth === viewportWidth &&
+    cached.viewportHeight === viewportHeight
+  )
+    return cached;
+  const rect = canvas.getBoundingClientRect();
+  const frame = {
+    left: rect.left,
+    top: rect.top,
+    cssWidth: Math.max(1, rect.width),
+    cssHeight: Math.max(1, rect.height),
+    viewportWidth,
+    viewportHeight,
+  };
+  canvasViewports.set(canvas, frame);
+  return frame;
+}
+
+function paintCanvasSpace(
+  ctx: CanvasRenderingContext2D,
+  frame?: SpaceBackdropViewport,
+): boolean {
+  const width = ctx.canvas.width;
+  const height = ctx.canvas.height;
+  ctx.fillStyle = "#050d21";
+  ctx.fillRect(0, 0, width, height);
+  const image = readySpaceImage();
+  if (!image) return false;
+  const viewport = frame ?? standaloneViewport(ctx.canvas);
+  const scale = Math.max(
+    viewport.viewportWidth / image.naturalWidth,
+    viewport.viewportHeight / image.naturalHeight,
+  );
+  const imageWidth = image.naturalWidth * scale;
+  const imageHeight = image.naturalHeight * scale;
+  const pixelX = width / viewport.cssWidth;
+  const pixelY = height / viewport.cssHeight;
+  // Match CSS's fixed viewport cover. A narrow game canvas reveals its slice
+  // of one planet instead of starting a second image inside the game column.
+  ctx.drawImage(
+    image,
+    ((viewport.viewportWidth - imageWidth) / 2 - viewport.left) * pixelX,
+    -viewport.top * pixelY,
+    imageWidth * pixelX,
+    imageHeight * pixelY,
+  );
+  const wash = ctx.createLinearGradient(
+    0,
+    -viewport.top * pixelY,
+    0,
+    (viewport.viewportHeight - viewport.top) * pixelY,
+  );
+  wash.addColorStop(0, "rgba(3,9,21,.66)");
+  wash.addColorStop(0.45, "rgba(3,9,21,.48)");
+  wash.addColorStop(1, "rgba(3,9,21,.72)");
+  ctx.fillStyle = wash;
+  ctx.fillRect(0, 0, width, height);
+  return true;
+}
+
+/** Called in physical pixels before the logical transform: no empty bars. */
+export function prepareSpaceCanvasBackdrop(
+  ctx: CanvasRenderingContext2D,
+  frame?: SpaceBackdropViewport,
+) {
+  if (frame) canvasViewports.set(ctx.canvas, frame);
+  preparedFrames.set(ctx, paintCanvasSpace(ctx, frame));
+}
+
+/** Presentation only: cached art and subtle foreground dust, no simulation RNG. */
 export function drawSpaceBackdrop(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  scroll = 0,
+  tick = 0,
+) {
+  const alreadyPainted = preparedFrames.get(ctx);
+  preparedFrames.delete(ctx);
+  if (!readySpaceImage()) {
+    drawProceduralSpaceBackdrop(ctx, width, height, scroll, tick);
+    return;
+  }
+  if (!alreadyPainted) {
+    // Standalone/legacy renderers get the same full-canvas cover and fallback.
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    paintCanvasSpace(ctx);
+    ctx.restore();
+  }
+  ctx.save();
+  for (let index = 0; index < 18; index += 1) {
+    const depth = (index % 3) + 1;
+    const x = (((index * 97 - scroll * depth * 0.018) % width) + width) % width;
+    const y = 20 + ((index * 53) % Math.max(1, height * 0.67));
+    ctx.globalAlpha =
+      0.12 + depth * 0.07 + Math.sin(tick * 0.008 + index) * 0.04;
+    ctx.fillStyle = index % 4 ? "#dceaff" : "#7fddff";
+    ctx.fillRect(x, y, depth === 3 ? 2 : 1, depth === 3 ? 2 : 1);
+  }
+  ctx.restore();
+}
+/** Presentation only: never changes gameplay or consumes a simulation RNG. */
+function drawProceduralSpaceBackdrop(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,

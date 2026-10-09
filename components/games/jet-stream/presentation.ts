@@ -1,4 +1,4 @@
-import { drawSaturn } from "@/lib/spaceBackdrop";
+import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
   JET_STREAM_V1,
   jetStreamGapMilliForPassed,
@@ -13,84 +13,14 @@ export const JET_VIEW = {
   playerRadius: JET_STREAM_V1.playerRadius / 1000,
 } as const;
 
-type Star = {
-  x: number;
-  y: number;
-  depth: number;
-  size: number;
-};
-
-function unit(index: number, salt: number) {
-  let x = Math.imul(index + 1, 0x45d9f3b) ^ salt;
-  x = Math.imul(x ^ (x >>> 16), 0x45d9f3b);
-  x ^= x >>> 16;
-  return (x >>> 0) / 0xffffffff;
-}
-
-const STARS: readonly Star[] = Array.from({ length: 68 }, (_, index) => ({
-  x: unit(index, 19) * JET_VIEW.width,
-  y: unit(index, 53) * JET_VIEW.height,
-  depth: 0.2 + unit(index, 89) * 0.8,
-  size: 0.5 + unit(index, 131) * 1.3,
-}));
-
 export function drawJetBackground(
   ctx: CanvasRenderingContext2D,
   state: JetStreamState
 ) {
   const { width: w, height: h } = JET_VIEW;
 
-  const bg = ctx.createLinearGradient(0, 0, 0, h);
-  bg.addColorStop(0, "#040814");
-  bg.addColorStop(0.52, "#0b1830");
-  bg.addColorStop(1, "#060b16");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, w, h);
-
-  const stream = ctx.createRadialGradient(
-    w * 0.34,
-    h * 0.45,
-    18,
-    w * 0.34,
-    h * 0.45,
-    280
-  );
-  stream.addColorStop(0, "rgba(44,112,190,.18)");
-  stream.addColorStop(0.58, "rgba(71,71,171,.07)");
-  stream.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = stream;
-  ctx.fillRect(0, 0, w, h);
-
   const scroll = state.scrollMilli / 1000;
-
-  // Distant planet limb anchors the corridor in the shared orbital universe.
-  const planet = ctx.createRadialGradient(
-    w * 1.02,
-    h * 0.18,
-    18,
-    w * 1.02,
-    h * 0.18,
-    150
-  );
-  planet.addColorStop(0, "rgba(74,121,170,.34)");
-  planet.addColorStop(0.62, "rgba(35,67,112,.18)");
-  planet.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = planet;
-  ctx.fillRect(w - 170, -80, 210, 220);
-
-  for (const star of STARS) {
-    const x =
-      ((star.x - scroll * star.depth * 0.24) %
-        (w + 30) +
-        (w + 30)) %
-        (w + 30) -
-      15;
-    ctx.globalAlpha = 0.28 + star.depth * 0.5;
-    ctx.fillStyle = "#d8edff";
-    ctx.fillRect(x, star.y, star.size, star.size);
-  }
-  ctx.globalAlpha = 1;
-  drawSaturn(ctx, w * .81, h * .21, w * .11);
+  drawSpaceBackdrop(ctx, w, h, scroll, state.tick);
 
   // Deterministic motion streaks communicate speed without introducing
   // gameplay noise or allocations tied to random state.

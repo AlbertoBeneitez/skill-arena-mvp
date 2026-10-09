@@ -1,3 +1,8 @@
+import {
+  prepareSpaceCanvasBackdrop,
+  type SpaceBackdropViewport,
+} from "./spaceBackdrop";
+
 export type CanvasViewportPolicy = "contain" | "expand-horizontal";
 export type LogicalCanvasViewport = { width: number; height: number };
 
@@ -10,6 +15,8 @@ export type CanvasViewportMetrics = {
   cssHeight: number;
   logicalWidth: number;
   logicalHeight: number;
+  /** Cached visual mapping only; competitive/input coordinates stay unchanged. */
+  backdropViewport: SpaceBackdropViewport;
 };
 
 /**
@@ -59,6 +66,14 @@ export function configureLogicalCanvas(
     cssHeight,
     logicalWidth: renderWidth,
     logicalHeight,
+    backdropViewport: {
+      left: rect.left ?? 0,
+      top: rect.top ?? 0,
+      cssWidth,
+      cssHeight,
+      viewportWidth: Math.max(1, window.innerWidth ?? cssWidth),
+      viewportHeight: Math.max(1, window.innerHeight ?? cssHeight),
+    },
   };
 }
 
@@ -69,6 +84,7 @@ export function beginLogicalCanvasFrame(
 ) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  prepareSpaceCanvasBackdrop(ctx, metrics.backdropViewport);
   ctx.setTransform(
     metrics.dpr * metrics.scale,
     0,
