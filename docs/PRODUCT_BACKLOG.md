@@ -195,10 +195,8 @@ Solicitud vigente: un único nivel/recorrido continuo. Comparar altura o avance
 real alcanzado, con menor tiempo autoritativo decimal en empates; NO crear una
 conversión artificial puntos→niveles. Requiere contrato/métricas versionadas.
 
-Tandas pendientes: dardos por swipe ascendente y dinamismo; segmentos Jet menos
-alineados; River con separación fluida; reproducir baliza desaparecida y añadir
-enemigo Sky; reproducir obstáculos parados en Metro; ampliar escenarios Mine y
-Solitaire con generación versionada; arena inicial Stack Shift más grande;
+Tandas pendientes: segmentos Jet menos alineados; River con separación fluida;
+añadir enemigo Sky; ampliar escenarios Mine y Solitaire con generación versionada;
 Maze más fácil y continuo. Portadas deben representar la mecánica actual.
 v53: entrada reducida a identidad/accesos, logo original desarrollado, Avatar con
 ranking, catálogo sin títulos duplicados, CAMBIAR y retirada de coaching genérico.
@@ -207,18 +205,23 @@ ampliados. Dardos V2 usa swipe ascendente sin botón, preservando V1. La transic
 a resultados protege los controles 350 ms contra toques de finalización.
 Validación incremental y evidencia en docs/releases/v53-mobile.md.
 
-Siguen pendientes todas las mejoras de recorrido/dificultad/datasets indicadas
-arriba (dardos por swipe ya resuelto). No se declara Maze más fácil por ampliar
+Siguen pendientes las mejoras de recorrido/dificultad/datasets indicadas arriba. No se declara Maze más fácil por ampliar
 sus nodos. El alcance de altura/avance frente a puntuación requiere aclaración:
 Stack, Stack/Tower o una métrica propia por juego; no se altera scoring histórico.
-
 
 v54 amplía la superficie útil del tablero Stack Shift y sus piezas, conservando
 física/core/replay V1. Victoria, derrota y reinicio táctiles comprobados; suelo y
 botones no se solapan en vertical/horizontal. Solicitud de arena mayor resuelta.
 
-
 v55 corrige el tramo visual inmóvil de los obstáculos Metro al entrar por el
 horizonte: no era una pausa de la simulación. Proyección continua y regresión,
 con reglas/core V1 conservados. Victoria completa, derrota y reinicio táctiles
 con replay comprobados. Los restantes recorridos/datasets/métricas siguen abiertos.
+
+
+v56 repara el bloqueo Sky tras romper baliza y volver al checkpoint. Core V2
+restaura apoyos destruidos por delante del checkpoint conservando altura, score
+y recogibles consumidos. V1/verificador/golden preservados. Ocho escenarios de
+regresión pasan de bloqueo hasta TIME_LIMIT en V1 a victoria en V2. Partida
+táctil con caída deliberada y recuperación llega a altura 75; derrota/reinicio
+horizontal también pasan. El enemigo Sky sigue pendiente, no se da por incluido.

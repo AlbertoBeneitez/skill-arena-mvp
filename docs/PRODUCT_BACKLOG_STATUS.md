@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v55-mobile
+# GALACTIC GAMES · Seguimiento de v56-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -43,7 +43,7 @@ protegido contra toques que llegan durante la transición. Evidencia incremental
 [release v53](releases/v53-mobile.md).
 
 Esta revisión no cierra las nuevas solicitudes de gameplay: Jet menos alineado,
-River más fluido, reproducir baliza Sky desaparecida y añadir enemigo, datasets Mine/Solitaire, Maze más fácil/continuo (arena Stack Shift ampliada en v54).
+River más fluido, añadir enemigo Sky (baliza reparada en v56), datasets Mine/Solitaire, Maze más fácil/continuo (arena Stack Shift ampliada en v54).
 Portadas congruentes y alcance de métrica altura/avance siguen pendientes. QA
 física del propietario es seguimiento y no bloquea desarrollo.
 
@@ -60,3 +60,11 @@ horizonte pese al avance del core. Proyección continua desde distancia 1100,
 con posición de colisión intacta; regresión específica y QA de 60 grupos,
 derrota, replay/reinicio/rotación. Core V1 y scoring permanecen congelados.
 Si se observa otro caso de detención, distinguirlo de este caso reproducido.
+
+### v56 · Recuperación Sky Hop
+
+V2 restaura las balizas rotas por delante del checkpoint al caer. Altura alcanzada
+y recogibles consumidos persisten; no se pueden repetir premios. Ocho regresiones
+completas con replay y partida táctil de caída/recuperación/victoria comprobadas;
+derrota y reinicio horizontal pasan. V1 archivada y golden sin caídas idéntico.
+Sigue pendiente el enemigo; no se confunde la reparación con esa nueva mecánica.
