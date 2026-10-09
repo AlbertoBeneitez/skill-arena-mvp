@@ -33,6 +33,7 @@
     "scripts/verify-command-repository.ts",
     "scripts/verify-billiards-v1.ts",
     "scripts/verify-darts-v1.ts",
+    "scripts/verify-darts-v2.ts",
     "scripts/verify-gallery-v1.ts",
     "scripts/verify-alien-v2.ts",
     "scripts/verify-jet-v3.ts",

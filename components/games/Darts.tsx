@@ -1,8 +1,10 @@
 "use client";
+import { useCallback, useEffect, useRef } from "react";
+import { isDartsThrowGesture } from "@/lib/verified/dartsGesture.v2";
+import { DARTS_CORE_V2 } from "@/lib/verified/dartsCore.v2";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  DARTS_CORE,
   DARTS_RULES,
   DARTS_SECTORS,
   dartsReticle,
@@ -143,11 +145,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsState) {
   ctx.textAlign = "center";
   ctx.fillStyle = "#aed2e2";
   ctx.font = "bold 11px system-ui";
-  ctx.fillText(
-    `FASE ${stage + 1} / 5 · DARDO ${Math.min(15, s.throwIndex + 1)} / 15`,
-    cx,
-    59,
-  );
+  ctx.fillText(`DARDO ${Math.min(15, s.throwIndex + 1)} / 15`, cx, 59);
   ctx.fillStyle = "#f1deb6";
   ctx.font = "bold 20px system-ui";
   ctx.fillText(t.label, cx, 91);
@@ -186,15 +184,28 @@ function render(ctx: CanvasRenderingContext2D, s: DartsState) {
         ? "TIEMPO AGOTADO"
         : `${last?.goal ? "OBJETIVO · " : ""}+${last?.award ?? 0}`
       : s.throwIndex === 0
-        ? "ARRASTRA LA MIRA · TOCA LANZAR"
+        ? "DESLIZA HACIA ARRIBA PARA LANZAR"
         : "Espera al centro de la zona marcada",
     cx,
     492,
   );
+  if (s.phase === "aim") {
+    ctx.strokeStyle = "rgba(156,234,215,.55)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, 580);
+    ctx.lineTo(cx, 530);
+    ctx.moveTo(cx - 7, 539);
+    ctx.lineTo(cx, 530);
+    ctx.lineTo(cx + 7, 539);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, 580, 9, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.textAlign = "left";
 }
-function aim(point: CorePoint, phase: "down" | "move" | "up", s: DartsState) {
-  if (s.phase !== "aim" || phase === "up") return null;
+function aimActions(point: CorePoint) {
   return [
     dartsAimAction(
       "X",
@@ -206,23 +217,48 @@ function aim(point: CorePoint, phase: "down" | "move" | "up", s: DartsState) {
     ),
   ];
 }
-const controls = [{ action: "THROW", label: "Lanzar dardo", symbol: "LANZAR" }],
-  tones = { THROW: "tap" } as const,
+const tones = { THROW: "tap" } as const,
   keys = { " ": "THROW", Enter: "THROW" };
 export default function Darts(props: GameRuntimeProps) {
+  const startRef = useRef<CorePoint | null>(null);
+  useEffect(() => {
+    startRef.current = null;
+    return () => {
+      startRef.current = null;
+    };
+  }, [props.active, props.seed]);
+  const aim = useCallback(
+    (point: CorePoint, phase: "down" | "move" | "up", state: DartsState) => {
+      if (state.phase !== "aim") {
+        startRef.current = null;
+        return null;
+      }
+      if (phase === "down") {
+        startRef.current = point;
+        return aimActions(point);
+      }
+      if (phase === "move") return aimActions(point);
+      const start = startRef.current;
+      startRef.current = null;
+      return start && isDartsThrowGesture(start, point)
+        ? [...aimActions(point), "THROW"]
+        : null;
+    },
+    [],
+  );
   return (
     <div className="dartsVerified">
       <CoreCanvasGame
         {...props}
-        core={DARTS_CORE}
+        core={DARTS_CORE_V2}
         name="Dardos"
         render={render}
         pointAction={aim}
-        controls={controls}
+        controls={[]}
         inputTones={tones}
         keys={keys}
         hideHudLabel
-        instruction="Arrastra para apuntar. Lanza cuando la mira pase por el objetivo dorado."
+        instruction="Desliza desde la zona inferior hacia la diana. Suelta el dedo para lanzar; apunta al objetivo dorado."
       />
     </div>
   );

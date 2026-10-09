@@ -86,9 +86,9 @@ function adaptGameComponent<TProps extends object>(
 
 const GAME_DEFINITIONS = [
   {
-    id: "darts", version: "1.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/Darts")),
+    id: "darts", version: "2.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/Darts")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: DARTS_ACTIONS },
-    name: "Dardos", cover: "/covers/darts.svg", enabled: true, waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Apunta, estabiliza y conquista cada objetivo orbital.", difficulty: "MEDIA", skillLabel: "PUNTERÍA + TIMING", rivalScore: 20000, rivalName: "NOVA", rivalAvatar: "/avatars/avatar-3.svg", instruction: "Arrastra la mira. Toca LANZAR cuando cruce el objetivo.", scoring: "15 dardos: centro, sectores, dobles, triples y secuencia final. Bonus por objetivo y precisión.",
+    name: "Dardos", cover: "/covers/darts.svg", enabled: true, waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Apunta, estabiliza y conquista cada objetivo orbital.", difficulty: "MEDIA", skillLabel: "PUNTERÍA + TIMING", rivalScore: 20000, rivalName: "NOVA", rivalAvatar: "/avatars/avatar-3.svg", instruction: "Desliza desde abajo hacia la diana y suelta para lanzar.", scoring: "15 dardos: centro, sectores, dobles, triples y secuencia final. Bonus por objetivo y precisión.",
   },
   {
     id: "billiards", version: "1.0.0", status: "VERIFIED",

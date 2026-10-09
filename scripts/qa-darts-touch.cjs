@@ -8,9 +8,9 @@ const { chromium } = require(
   path = require("node:path");
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
-  const { DARTS_CORE: core, dartsDrift } = await import(
+  const { DARTS_CORE_V2: core, dartsDrift } = await import(
       pathToFileURL(
-        path.join(__dirname, "../.det-test/lib/verified/dartsCore.v1.js"),
+        path.join(__dirname, "../.det-test/lib/verified/dartsCore.v2.js"),
       )
     ),
     { applyCoreInput, stepCore, replayCore } = await import(
@@ -72,24 +72,16 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           return r;
         });
     });
-    await page.route("**/api/verified-match/start", (r) =>
-      r.continue({
-        postData: JSON.stringify({
-          ...r.request().postDataJSON(),
-          target_score: 1000000,
-        }),
-      }),
-    );
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
-    await page.locator(".quickStakeBar button").first().click();
+    await page.locator(".quickStakeBar button").first().tap();
     const start = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Dardos", exact: true })
-      .click();
+      .tap();
     const issued = await (await start).json();
-    assert.equal(issued.manifest.game_version, "1.0.0");
+    assert.equal(issued.manifest.game_version, "2.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     await page.waitForTimeout(150);
@@ -123,11 +115,16 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       });
     }
     const initialBox = await canvas.boundingBox();
-    await touch(
-      initialBox.x + initialBox.width * 0.4,
-      initialBox.y + initialBox.height * 0.45,
-      true,
-    );
+    const firstScale = Math.min(initialBox.width/390, initialBox.height/620);
+    const firstOx = (initialBox.width-390*firstScale)/2;
+    const firstOy = (initialBox.height-620*firstScale)/2;
+    for (const cancelMode of ['cancel','blur']) {
+      const x=initialBox.x+firstOx+195*firstScale;
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y:initialBox.y+firstOy+560*firstScale}]});
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:initialBox.y+firstOy+285*firstScale}]});
+      if(cancelMode==='blur') await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
+      await cdp.send('Input.dispatchTouchEvent',{type:cancelMode==='cancel'?'touchCancel':'touchEnd',touchPoints:[]});
+    }
     if (process.env.QA_SCREENSHOT)
       await page.screenshot({ path: process.env.QA_SCREENSHOT });
     for (let i = 0; i < 15; i++) {
@@ -147,18 +144,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         scale = Math.min(box.width / 390, box.height / 620),
         ox = (box.width - 390 * scale) / 2,
         oy = (box.height - 620 * scale) / 2;
-      await touch(
-        box.x + ox + (195 + (x - 30) * 5) * scale,
-        box.y + oy + (285 + (y - 30) * 5) * scale,
-        false,
-        i === 0,
-      );
-      await page.waitForTimeout(50);
-      const b = page.getByRole("button", { name: "Lanzar dardo", exact: true });
-      await b.scrollIntoViewIfNeeded();
-      const bb = await b.boundingBox();
-      await touch(bb.x + bb.width / 2, bb.y + bb.height / 2);
-      await touch(bb.x + bb.width / 2, bb.y + bb.height / 2);
+      const tx = box.x + ox + (195 + (x - 30) * 5) * scale;
+      const ty = box.y + oy + (285 + (y - 30) * 5) * scale;
+      await cdp.send("Input.dispatchTouchEvent", {type:"touchStart",touchPoints:[{x:tx,y:box.y+oy+560*scale}]});
+      await page.waitForTimeout(45);
+      await cdp.send("Input.dispatchTouchEvent", {type:"touchMove",touchPoints:[{x:tx,y:ty}]});
+      await cdp.send("Input.dispatchTouchEvent", {type:"touchEnd",touchPoints:[]});
+      assert.equal(await page.getByRole("button", {name:"Lanzar dardo",exact:true}).count(),0);
       for (const a of [
         dartsAimAction("X", x),
         dartsAimAction("Y", y),
@@ -177,7 +169,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         body.inputs,
         body.final_tick,
         issued.manifest.seed,
-        1000000,
+        issued.manifest.competition.target_score,
       );
     assert.equal(result.verified, true);
     assert.equal(replay.valid, true, replay.error);
@@ -186,7 +178,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(
       body.inputs.filter((i) => i.action === "THROW").length,
       15,
-      "double tap/cancel never adds a dart",
+      "cancel and blur never add a dart",
     );
     assert.equal(submits, 1);
     assert.equal(replay.state.impacts.length, 15);
@@ -195,13 +187,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page.evaluate(() => document.body.scrollWidth > window.innerWidth),
       false,
     );
-    await page.getByRole("button", { name: "OTRO JUEGO", exact: true }).click();
+    await page.getByRole("button", { name: "CAMBIAR", exact: true }).tap();
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
     await page
       .getByRole("button", { name: "Jugar a Dardos", exact: true })
-      .click();
+      .tap();
     const again = await (await restart).json();
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
