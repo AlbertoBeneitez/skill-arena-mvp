@@ -19,6 +19,7 @@ import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
 import { DARTS_CORE_V2 } from "../verified/dartsCore.v2";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
 import { BILLIARDS_CORE } from "../verified/billiardsCore.v1";
+import { BILLIARDS_CORE_V2 } from "../verified/billiardsCore.v2";
 import { MINE_GRID_CORE } from "../verified/mineGridCore.v1";
 import { ORB_BURST_CORE } from "../verified/orbBurstCore.v1";
 import { getGameDefinition, type GameId } from "@/lib/games";
@@ -389,6 +390,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(BILLIARDS_CORE.gameId,BILLIARDS_CORE.gameVersion)]: coreAdapter(BILLIARDS_CORE),
+  [adapterKey(BILLIARDS_CORE_V2.gameId,BILLIARDS_CORE_V2.gameVersion)]: coreAdapter(BILLIARDS_CORE_V2),
   [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(ORB_BURST_CORE.gameId,ORB_BURST_CORE.gameVersion)]: coreAdapter(ORB_BURST_CORE),
   [adapterKey(RIVER_DASH_CORE_V2.gameId,RIVER_DASH_CORE_V2.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V2),

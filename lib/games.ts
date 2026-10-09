@@ -102,10 +102,10 @@ const GAME_DEFINITIONS = [
     name: "Dardos", cover: "/covers/darts.svg", enabled: true, waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Apunta, estabiliza y conquista cada objetivo orbital.", difficulty: "MEDIA", skillLabel: "PUNTERÍA + TIMING", rivalScore: 20000, rivalName: "NOVA", rivalAvatar: "/avatars/avatar-3.svg", instruction: "Desliza desde abajo hacia la diana y suelta para lanzar.", scoring: "15 dardos: centro, sectores, dobles, triples y secuencia final. Bonus por objetivo y precisión.",
   },
   {
-    id: "billiards", version: "1.0.0", status: "VERIFIED",
+    id: "billiards", version: "2.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Billiards")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BILLIARDS_ACTIONS },
-    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 22000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Arrastra para apuntar. Elige potencia y toca TIRAR.", scoring: "Emboca las bolas de color. Cinco mesas, siete tiros por mesa; la blanca resta puntos.",
+    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 8000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Arrastra para apuntar. Elige potencia y toca TIRAR.", scoring: "Diez objetivos, dieciocho tiros y una mesa continua. Avance por embocadas únicas, posiciones conservadas entre tiros.",
   },
   {
     id: "tower-drop",

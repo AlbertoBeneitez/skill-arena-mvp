@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v67-mobile
+# GALACTIC GAMES · Seguimiento de v68-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -12,7 +12,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | QA humana física |
 | River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
 | Serpent | Wrap cuatro bordes, nueva estética, core/replay y QA | QA humana física |
-| Billar | Cinco mesas V1, física/potencia, escenario, replay, partidas móviles | V2 sin reinicios de mesa/niveles; conservar profundidad/precisión; QA física |
+| Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Seguimiento físico; rotación1000 y comparación común pendientes |
 | Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | QA humana física |
 | Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo y datasets versionados; integración pública segura y registro; catálogo todavía 0.1 |
 | Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Cierre prematuro al revelar tablero, victoria de 52 bases marcada como derrota y score repetible en traslados; nuevo core versionado y autoridad privada común antes de promoción |
@@ -263,3 +263,24 @@ Typecheck/lint/build y QA táctil de120s vertical/horizontal, muerte/reinicio/
 cancel/blur/dobletap/rotación y registro único se validan; release v67 conserva
 evidencia y límites. V65/V66 permanecen intactas. Siguiente unidad: Billar V2
 continuo; después restantes resets/enemigos, métricas/rotación y privados del ledger.
+
+### v68 · Billar: una mesa, decisiones persistentes
+
+V2 compone literalmente la física entera V1, pero no reconstruye mesa, rellena
+tiros ni repone objetivos. Diez bolas visibles desde inicio, dieciocho tiros,
+apertura cerca de tronera y posiciones/distancias/bumpers variables; cada contacto
+cambia la situación restante. Avance cuenta embocadas únicas, sin premios de
+racha/mesa ni reducción por blanca embocada. V1/adapter/golden permanecen intactos.
+HUD sin puntos/niveles; guía corta de dirección/contacto sin proyección de caída,
+palo/potencia, partículas, bandas y bolas más legibles. Cámara horizontal e
+inversa táctil comparten transformación visual, sin cambiar tokens ni física.
+
+1000 geometrías distintas,128 aperturas seguras,16 arenas completas naturales,
+golden/replay/render60/120/144/inputs inválidos y paridad física V1 pasan;
+4320 conversiones táctiles/cámara y540 combinaciones aim/power sin mutación.
+Registro común36versiones reconstruye avance/score/tiempo frente a campos cliente
+falsos. Typecheck/lint/build pasan. QA táctil vertical/horizontal gana10bolas,
+pierde al consumir18tiros, conserva avance tras scratch y verifica reinicios,
+rotación/cancel/dobletap/registro único/abandono/consola. Evidencia y límites en
+release v68. Siguiente unidad: enemigo anticipable Sky Hop; siguen pendientes
+resets Orb/Brick/Phalanx, métricas/rotación y privados del ledger.

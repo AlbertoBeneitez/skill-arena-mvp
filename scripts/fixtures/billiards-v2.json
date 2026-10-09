@@ -1,0 +1,115 @@
+{
+  "seed": "361bce5ff1e22b3359c5508eac484cedfa6152244cf675776bde3b53b71aa126",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 90,
+      "action": "AIM_137"
+    },
+    {
+      "seq": 1,
+      "tick": 91,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 2,
+      "tick": 603,
+      "action": "AIM_088"
+    },
+    {
+      "seq": 3,
+      "tick": 604,
+      "action": "POWER_HIGH"
+    },
+    {
+      "seq": 4,
+      "tick": 605,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 5,
+      "tick": 1014,
+      "action": "AIM_054"
+    },
+    {
+      "seq": 6,
+      "tick": 1015,
+      "action": "POWER_MEDIUM"
+    },
+    {
+      "seq": 7,
+      "tick": 1016,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 8,
+      "tick": 1443,
+      "action": "AIM_145"
+    },
+    {
+      "seq": 9,
+      "tick": 1444,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 10,
+      "tick": 1742,
+      "action": "AIM_157"
+    },
+    {
+      "seq": 11,
+      "tick": 1743,
+      "action": "POWER_HIGH"
+    },
+    {
+      "seq": 12,
+      "tick": 1744,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 13,
+      "tick": 2341,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 14,
+      "tick": 2342,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 15,
+      "tick": 2601,
+      "action": "AIM_117"
+    },
+    {
+      "seq": 16,
+      "tick": 2602,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 17,
+      "tick": 3110,
+      "action": "AIM_036"
+    },
+    {
+      "seq": 18,
+      "tick": 3111,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 19,
+      "tick": 3496,
+      "action": "AIM_064"
+    },
+    {
+      "seq": 20,
+      "tick": 3497,
+      "action": "SHOOT"
+    }
+  ],
+  "finalTick": 3812,
+  "score": 10000,
+  "height": 10,
+  "totalShots": 9,
+  "hash": "sha256:d65423ac89711b9e9e40b1ef7730edea5326fd2caccada34f2c410a731f0f0a0"
+}
