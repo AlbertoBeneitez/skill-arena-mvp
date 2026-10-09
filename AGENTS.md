@@ -44,6 +44,11 @@ Games should be:
 Preferred progression:
 `easy start → understanding → confidence → increasing challenge → mastery`
 
+Product sessions are one continuous run. Do not introduce levels or disguise
+separate levels as sectors. Remove existing level mechanics incrementally in
+new versions, preserving archived replay behavior. Difficulty may evolve within
+the same run. Physical dartboard sectors and tower height are not levels.
+
 Do not raise difficulty only by increasing speed.
 
 ## Product identity
@@ -79,6 +84,11 @@ Preserve:
 → `authoritative result`
 
 The client renders and records inputs. It must not authoritatively choose score, result, competitive seed/scenario, or rules.
+
+Send the ordered match record at the deterministic terminal immediately, before
+presentation animations finish. Leaving that screen must not cancel a committed
+terminal upload or publish a stale result in a later session. Document incomplete
+legacy coverage and delivery limitations instead of claiming universal recording.
 
 Never downgrade a `VERIFIED` game to client-trusted scoring.
 
@@ -140,7 +150,10 @@ Authoritative simulation must not depend on refresh rate or screen size.
 ## Ranking / auth / money
 Real ranking data must come from authoritative server/settlement data.
 
-Demo/mock data must be clearly separated and labelled.
+Demo/mock data must stay internally separated from production. Do not use
+"demo" in user-facing frontend copy. Describe actual scope with session local,
+entrenamiento, saldo ficticio, rivales simulados or datos de ejemplo; never imply
+that fictitious money, local identity or sample ranking data is real.
 
 Do not activate real-money competition until production identity, PostgreSQL, settlement, and required compliance boundaries are configured.
 

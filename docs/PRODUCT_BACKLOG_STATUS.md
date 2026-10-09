@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v56-mobile
+# GALACTIC GAMES · Seguimiento de v57-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -68,3 +68,17 @@ y recogibles consumidos persisten; no se pueden repetir premios. Ocho regresione
 completas con replay y partida táctil de caída/recuperación/victoria comprobadas;
 derrota y reinicio horizontal pasan. V1 archivada y golden sin caídas idéntico.
 Sigue pendiente el enemigo; no se confunde la reparación con esa nueva mecánica.
+
+### v57 · Registro y frontend
+
+Terminal VERIFIED envía inmediatamente el snapshot ordenado antes de animación;
+salir de la pantalla conserva el transporte y elimina callbacks antiguos.
+Gate mantiene deduplicación; snapshot no cambia al desmontar/reiniciar.
+Entrada/avatar/grupos/ranking/resultados ya no usan demo como etiqueta; datos
+ficticios siguen identificados y separados. Jet/Alien/Metro/Orbit/Sky/Stack Shift
+ya eran continuos: eliminadas etiquetas de niveles, sin tocar cores.
+
+No se afirma universalidad: Mine/Solitaire legacy carecen de registro, abandonos
+anteriores al terminal/offline y persistencia durable quedan pendientes. Niveles
+reales de Maze/Billar/Orb/Brick/River/Piano/Phalanx y Mine privado requieren nuevas
+versiones; no se elimina el histórico. Detalles de validación en release v57.

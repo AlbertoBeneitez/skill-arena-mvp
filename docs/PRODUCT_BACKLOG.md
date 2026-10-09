@@ -225,3 +225,22 @@ y recogibles consumidos. V1/verificador/golden preservados. Ocho escenarios de
 regresión pasan de bloqueo hasta TIME_LIMIT en V1 a victoria en V2. Partida
 táctil con caída deliberada y recuperación llega a altura 75; derrota/reinicio
 horizontal también pasan. El enemigo Sky sigue pendiente, no se da por incluido.
+
+
+## Contrato de producto · continuación de v56
+
+No crear niveles ni disfrazarlos de sectores: recorrido continuo con dificultad
+progresiva. Mantener históricos reproducibles. No usar «demo» en frontend;
+identificar sesión local, saldo ficticio, rivales simulados y datos de ejemplo.
+El navegador debe enviar el registro de partida; el resultado sigue siendo
+reconstruido por servidor para los VERIFIED.
+
+v57: envío terminal inmediato antes de la animación, transporte conservado al
+salir y callbacks antiguos descartados; textos frontend actualizados y etiquetas
+de nivel eliminadas de juegos que ya eran continuos. La API verifica pero no
+persiste de forma durable; siguen pendientes registros interrumpidos y los dos
+legacy. No se declara cobertura universal.
+
+Maze, Billar, Orb, Brick, River, Piano y Phalanx aún requieren eliminar resets o
+pausas reales en versiones nuevas. Mine candidato privado requiere un campo por
+partida antes de integración pública. El siguiente checkpoint aborda Maze.
