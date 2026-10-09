@@ -8,6 +8,13 @@ export default function GameResultSummary({
   gameName: string;
   waitingForRival?: boolean;
 }) {
+  const reach =
+    result.verified === true &&
+    result.height !== undefined &&
+    Number.isSafeInteger(result.height) &&
+    result.height >= 0
+      ? result.height
+      : undefined;
   const duration = `${(Math.max(0, result.timeMs) / 1000).toLocaleString(
     "es-ES",
     {
@@ -32,9 +39,15 @@ export default function GameResultSummary({
       </h2>
       <dl className="resultFacts">
         <div>
-          <dt>Puntos</dt>
-          <dd aria-label="Puntuación del intento">
-            {result.score.toLocaleString("es-ES")}
+          <dt>{reach !== undefined ? "Avance alcanzado" : "Puntos"}</dt>
+          <dd
+            aria-label={
+              reach !== undefined
+                ? "Avance del intento"
+                : "Puntuación del intento"
+            }
+          >
+            {(reach ?? result.score).toLocaleString("es-ES")}
           </dd>
         </div>
         <div>

@@ -76,6 +76,7 @@ try {
     ["jet-stream", "2.0.0"],
     ["darts", "1.0.0"],
     ["river-dash", "1.0.0"],
+    ["river-dash", "2.0.0"],
     ["sky-hop", "1.0.0"],
     ["maze-rush", "1.0.0"],
   ];
@@ -151,7 +152,7 @@ try {
   receipt(lead);
 
   const terminal = { ...zero, final_tick: 790 };
-  const result = processAttemptRecord({ ...terminal, client_score: 1e9, won: true });
+  const result = processAttemptRecord({ ...terminal, client_score: 1e9, won: true, height: 999999 });
   assert.equal(result.status, 200);
   assert.equal(result.body.verified, true);
   assert.ok("verification_id" in result.body);

@@ -23,6 +23,7 @@ import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
 import { JET_STREAM_CORE_V2 } from "../verified/jetStreamCore.v2";
 import { SERPENT_CORE } from "../verified/serpentCore.v1";
 import { RIVER_DASH_CORE_V2 } from "../verified/riverDashCore.v2";
+import { RIVER_DASH_CORE_V3 } from "../verified/riverDashCore.v3";
 import { RIVER_DASH_CORE } from "../verified/riverDashCore.v1";
 import { STACK_3D_CORE } from "../verified/precisionStackCore.v3";
 import type { MatchManifest } from "@/lib/verified/contracts";
@@ -383,6 +384,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(ORB_BURST_CORE.gameId,ORB_BURST_CORE.gameVersion)]: coreAdapter(ORB_BURST_CORE),
   [adapterKey(RIVER_DASH_CORE_V2.gameId,RIVER_DASH_CORE_V2.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V2),
+  [adapterKey(RIVER_DASH_CORE_V3.gameId,RIVER_DASH_CORE_V3.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V3),
   [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
   [adapterKey(JET_STREAM_CORE_V2.gameId,JET_STREAM_CORE_V2.gameVersion)]: coreAdapter(JET_STREAM_CORE_V2),
   [adapterKey(SERPENT_CORE.gameId,SERPENT_CORE.gameVersion)]: coreAdapter(SERPENT_CORE),

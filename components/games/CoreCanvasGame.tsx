@@ -212,6 +212,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
           finishRef.current({
             won: result.verified && result.won === true,
             score: result.verified ? result.score ?? 0 : 0,
+            height: result.verified ? result.height : undefined,
             timeMs: result.verified ? result.time_ms ?? 0 : 0,
             verified: result.verified,
             verificationError: result.error,

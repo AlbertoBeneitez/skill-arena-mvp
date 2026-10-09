@@ -1,19 +1,29 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+import { riverLaneRects } from "@/lib/verified/riverDashCore.v1";
 import {
-  riverLaneRects,
-  type RiverState,
-} from "@/lib/verified/riverDashCore.v1";
-import { RIVER_DASH_CORE_V2 } from "@/lib/verified/riverDashCore.v2";
+  RIVER_DASH_CORE_V3,
+  type RiverV3State,
+} from "@/lib/verified/riverDashCore.v3";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, state: RiverState) {
-  drawSpaceBackdrop(ctx, 390, 620, 3, state.tick);
+function render(ctx: CanvasRenderingContext2D, state: RiverV3State) {
+  // Arrival/camera only: the core has already evaluated the destination.
+  const age = Math.max(0, Math.min(1, (state.tick - state.lastMoveTick) / 12));
+  const ease = state.status === "running" ? 1 - (1 - age) ** 3 : 1;
+  const rowPosition = state.fromRow + (state.row - state.fromRow) * ease;
+  const cameraRows = Math.max(0, 64 - rowPosition - 4);
+  drawSpaceBackdrop(ctx, 390, 620, cameraRows * 15, state.tick);
   const ox = 15,
     oy = 58,
     cell = 44;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(ox, oy, 360, 484);
+  ctx.clip();
   state.lanes.forEach((lane, row) => {
-    const y = oy + row * cell;
+    const y = oy + (10 - (64 - row) + cameraRows) * cell;
+    if (y + cell < oy || y > oy + 484) return;
     ctx.fillStyle =
       lane.kind === "safe"
         ? "rgba(18,64,65,.95)"
@@ -31,6 +41,10 @@ function render(ctx: CanvasRenderingContext2D, state: RiverState) {
       ctx.fillStyle = "rgba(145,247,229,.3)";
       for (let x = ox + 9; x < 375; x += 40)
         ctx.fillRect(x, y + cell / 2 - 1, 18, 3);
+      if (row === 0) {
+        ctx.fillStyle = "#c3eee5";
+        for (let x = ox + 12; x < 375; x += 30) ctx.fillRect(x, y + 7, 10, 8);
+      }
       return;
     }
     ctx.save();
@@ -54,13 +68,14 @@ function render(ctx: CanvasRenderingContext2D, state: RiverState) {
     }
     ctx.restore();
   });
-  const x = 15 + state.xMilli / 1000,
-    y = oy + (state.row + 0.5) * 44;
+  const x =
+      15 + (state.fromXMilli + (state.xMilli - state.fromXMilli) * ease) / 1000,
+    y = oy + (10 - (64 - rowPosition) + cameraRows + 0.5) * cell;
   ctx.save();
   ctx.translate(x, y);
-  ctx.shadowColor = "#9effde";
+  ctx.shadowColor = state.status === "failed" ? "#ef8098" : "#9effde";
   ctx.shadowBlur = 12;
-  ctx.fillStyle = "#b2ffda";
+  ctx.fillStyle = state.status === "failed" ? "#f4a9bd" : "#b2ffda";
   ctx.beginPath();
   ctx.moveTo(0, -14);
   ctx.lineTo(11, 8);
@@ -69,18 +84,32 @@ function render(ctx: CanvasRenderingContext2D, state: RiverState) {
   ctx.closePath();
   ctx.fill();
   ctx.restore();
-  ctx.font = "bold 12px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#bbf8ed";
-  ctx.fillText(
-    state.tick - state.lastCrossTick < 60
-      ? `CRUCE ${state.crossings} COMPLETADO`
-      : `${state.crossings} CRUCES`,
-    195,
-    42,
-  );
-  ctx.textAlign = "left";
+  ctx.restore();
 }
+const hudLabel = (s: Readonly<RiverV3State>) => `AVANCE ${s.height}/64`;
+const failureFinale = {
+  durationMs: 420,
+  render(ctx: CanvasRenderingContext2D, state: RiverV3State, elapsedMs: number) {
+    render(ctx, state);
+    const progress = Math.min(1, elapsedMs / 420);
+    const cameraRows = Math.max(0, 64 - state.row - 4);
+    const x = 15 + state.xMilli / 1000;
+    const y = 58 + (10 - (64 - state.row) + cameraRows + .5) * 44;
+    ctx.save();
+    ctx.globalAlpha = 1 - progress;
+    ctx.strokeStyle = "#e6b8bd";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 9 + progress * 38, 5 + progress * 22, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#f5c5a6";
+    for (let i = 0; i < 8; i++) {
+      const angle = i * Math.PI / 4;
+      ctx.fillRect(x + Math.cos(angle) * progress * 45 - 2, y + Math.sin(angle) * progress * 30 - 2, 4, 4);
+    }
+    ctx.restore();
+  },
+};
 const keys = {
   ArrowUp: "UP",
   ArrowDown: "DOWN",
@@ -102,11 +131,14 @@ export default function RiverDashVerified(props: GameRuntimeProps) {
     <div className="riverVerified">
       <CoreCanvasGame
         {...props}
-        core={RIVER_DASH_CORE_V2}
+        core={RIVER_DASH_CORE_V3}
         name="River Dash"
         render={render}
         keys={keys}
         controls={controls}
+        hudLabel={hudLabel}
+        hideHudScore
+        failureFinale={failureFinale}
         gestureAction={(a, b) => {
           const dx = b.x - a.x,
             dy = b.y - a.y;

@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v61-mobile
+# GALACTIC GAMES · Seguimiento de v62-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -10,7 +10,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Alien Dash | v39: V2, plataformas, centinelas anticipados, recogibles, escudos, dos minutos, replay y QA táctil | QA humana física y pulido según prueba real |
 | Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | V2 para eliminar cambios de etapa y conservar progresión continua; QA física |
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | QA humana física |
-| River Dash | V2: primera línea superable, carry/colisiones y replay/QA | V3 con recorrido continuo sin teletransporte tras cruzar; filas más fluidas; QA física |
+| River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
 | Serpent | Wrap cuatro bordes, nueva estética, core/replay y QA | QA humana física |
 | Billar | Cinco mesas V1, física/potencia, escenario, replay, partidas móviles | V2 sin reinicios de mesa/niveles; conservar profundidad/precisión; QA física |
 | Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | QA humana física |
@@ -160,3 +160,18 @@ ni cambios al histórico. Golden, 64 partidas completas, 128 aperturas/ramps y
 bordes/inputs/render pasan. Victorias/derrotas/reinicio táctiles, audio y rotación
 vertical/horizontal comprobados. Detalles en release v61. Siguiente: River V3
 sin teletransportes, descansos intercalados y recorrido más fluido.
+
+### v62 · River Dash continuo
+
+65 filas generadas una vez, hasta dos peligros consecutivos y apertura central
+superable; conservadas geometría/carry V1 con movimiento/límites V3. Avance se
+acredita tras colisión válida y no se repite al retroceder. Cámara/llegada suave,
+feedback de impacto y HUD de avance sin puntos. Los resultados comunes muestran
+height real recibido de servidor cuando existe (River/Stack/Tower/Sky), sin
+reinterpretar score ni afirmar que el desempate/comparador está migrado.
+
+384 aperturas/16 recorridos, golden/inputs/render/replay pasan; victorias, swipe,
+derrotas deliberadas, reinicio y rotación táctiles en ambas orientaciones, con
+registro único/avance exacto. Evidencia y límites en release v62. 1000 experiencias
+distintas requieren comprobar configuración además de seed y reserva de rotación;
+la auditoría detectó duplicados en algunas configuraciones públicas actuales.
