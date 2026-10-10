@@ -6199,3 +6199,9 @@ html, body, .arenaOnboarding, .gameScreen {
     line-height: 10px;
   }
 }
+
+.avatarSections {display:flex;gap:8px;margin:12px 0 20px;border-bottom:1px solid #294458;padding-bottom:10px;}
+.avatarSections button {flex:1;min-height:48px;border-radius:12px;border:1px solid #344f66;background:#102237;color:#adc9dc;font-weight:750;}
+.avatarSections button[aria-pressed="true"] {background:#244a61;color:#e3f9f8;border-color:#81acbd;}
+.globalRankingScreen.embeddedRanking {padding:0 0 20px;min-height:0;background:none;}
+.embeddedRanking .rankingHeading h2 {font-size:23px;margin:0 0 16px;}

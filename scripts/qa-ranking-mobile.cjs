@@ -42,13 +42,35 @@ const assert = require("node:assert/strict");
     localStorage.setItem("skill-arena-color-tutorial-v12", "1");
   });
   await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
-  assert.ok((await page.locator(".balanceChip").innerText()).startsWith("FICTICIO"));
-  await page
-    .getByRole("button", {
-      name: "Ranking global · Beneficio neto",
+  assert.ok(
+    (await page.locator(".balanceChip").innerText()).startsWith("FICTICIO"),
+  );
+  if (process.env.QA_AVATAR) {
+    await page.getByRole("button", { name: "AVATAR", exact: true }).tap();
+    const sections = page.getByRole("navigation", {
+      name: "Secciones de avatar",
       exact: true,
-    })
-    .tap();
+    });
+    await sections.getByRole("button", { name: "Ranking", exact: true }).tap();
+    assert.equal(new URL(page.url()).hash, "#profile");
+    assert.equal(
+      await page
+        .getByRole("button", { name: "AVATAR", exact: true })
+        .getAttribute("aria-current"),
+      "page",
+    );
+    for (const b of await sections.getByRole("button").all()) {
+      const r = await b.boundingBox();
+      assert.ok(r.height >= 44);
+    }
+  } else {
+    await page
+      .getByRole("button", {
+        name: "Ranking global · Beneficio neto",
+        exact: true,
+      })
+      .tap();
+  }
   await page
     .getByRole("heading", { name: "El ranking real aún no está disponible" })
     .waitFor();
@@ -131,8 +153,37 @@ const assert = require("node:assert/strict");
     ),
     true,
   );
+  if (process.env.QA_AVATAR) {
+    const sections = page.getByRole("navigation", {
+      name: "Secciones de avatar",
+      exact: true,
+    });
+    await sections.getByRole("button", { name: "Perfil", exact: true }).tap();
+    assert.equal(await page.locator(".globalRankingScreen").count(), 0);
+    assert.equal(await page.locator(".profileStrip").count(), 1);
+    await sections.getByRole("button", { name: "Ranking", exact: true }).tap();
+    await page
+      .getByRole("heading", { name: "El ranking real aún no está disponible" })
+      .waitFor();
+    assert.equal(
+      await page.locator(".rankingTable").count(),
+      0,
+      "reopening does not mix sample rows into real source",
+    );
+    await page.setViewportSize({ width: 320, height: 720 });
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+      false,
+    );
+  }
   assert.deepEqual(errors, []);
-    assert.doesNotMatch(await page.locator("body").innerText(), /\bdemo\b|\bdemostración\b/iu, "frontend copy must identify local/sample scope without demo wording");
+  assert.doesNotMatch(
+    await page.locator("body").innerText(),
+    /\bdemo\b|\bdemostración\b/iu,
+    "frontend copy must identify local/sample scope without demo wording",
+  );
   const bad = await page.request.get(
     (process.env.QA_BASE_URL || "http://127.0.0.1:3000") +
       "/api/rankings/global?limit=101",
@@ -141,6 +192,7 @@ const assert = require("node:assert/strict");
   console.log(
     JSON.stringify({
       pages: 3,
+      embeddedAvatar: !!process.env.QA_AVATAR,
       productionRequests,
       sourceIsolation: true,
       mobile: true,

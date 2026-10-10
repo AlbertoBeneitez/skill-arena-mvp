@@ -30,7 +30,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
 | Login/onboarding | Entrada demo honesta, avatar/nombre, corto y sin tutorial obligatorio | QA humana; OAuth/auth real requiere proveedor, sin simularlo |
 | UI global | v38 resultados fieles; v45 catálogo/navegación; v48 perfil y secciones demo legibles, saldos/acciones explícitos, eje de beneficio corregido, preferencias/reset/logout QA | v52 grupos demo explícitos, formularios/feedback/portapapeles y QA vertical/horizontal; quedan restantes layouts y grupos reales con identidad/persistencia; revisión jurídica de producción al configurar servicio; QA humana |
-| Ranking | Beneficio neto exacto, paginación/snapshot/PG, demo aislada y sección visible | Pantalla completa integrada en Avatar (hoy solo acceso); quedan posición propia autenticada y activar read model solo con datos reales |
+| Ranking | Beneficio neto exacto, paginación/snapshot/PG, demo aislada y sección visible | v76 pantalla completa dentro de Avatar mediante selector Perfil/Ranking, misma paginación/API y fuentes aisladas, QA vertical/horizontal/320px; quedan posición propia autenticada y activar read model solo con datos reales |
 | Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 

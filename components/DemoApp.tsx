@@ -219,6 +219,7 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
+  const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -1402,7 +1403,11 @@ export default function DemoApp() {
         {screen === "profile" && (
           <section className={`simpleScreen ${shellStyles.accountView}`} aria-label="Perfil local">
             <h1>Tu avatar</h1>
-            <button type="button" className="globalRankingShortcut avatarRankingShortcut" onClick={() => navigate("ranking")} aria-label="Ver ranking global desde avatar">Ranking global →</button>
+            <nav className="avatarSections" aria-label="Secciones de avatar">
+              <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>Perfil</button>
+              <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>Ranking</button>
+            </nav>
+            {avatarSection === "ranking" ? <GlobalRanking embedded /> : <>
             <p className={shellStyles.demoNote}>Identidad local · saldo y premios ficticios</p>
             <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>Cuenta local · sin posición real</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 
@@ -1452,6 +1457,7 @@ export default function DemoApp() {
               <button onClick={() => navigate("legal")}><span>Información de la aplicación</span><b aria-hidden="true">→</b></button>
               <button onClick={logoutDemo}><span>Cerrar sesión local</span><b>×</b></button>
             </div>
+            </>}
           </section>
         )}
 

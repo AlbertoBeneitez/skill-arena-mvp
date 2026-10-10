@@ -14,7 +14,7 @@ type LoadState = {
   status: "loading" | "ready" | "not-configured" | "unavailable" | "error";
   page?: RankingPage;
 };
-export default function GlobalRanking() {
+export default function GlobalRanking({ embedded = false }: { embedded?: boolean }) {
   const [source, setSource] = useState<"server" | "demo">("server");
   const [cursor, setCursor] = useState<string | null>(null);
   const [history, setHistory] = useState<(string | null)[]>([]);
@@ -81,10 +81,10 @@ export default function GlobalRanking() {
   }
   const page = visible.page;
   return (
-    <section className="globalRankingScreen" aria-label="Ranking global">
+    <section className={`globalRankingScreen${embedded ? " embeddedRanking" : ""}`} aria-label="Ranking global">
       <header className="rankingHeading">
-        <small>{PRODUCT_NAME}</small>
-        <h1>Ranking global</h1>
+        {!embedded && <small>{PRODUCT_NAME}</small>}
+        {embedded ? <h2>Ranking global</h2> : <h1>Ranking global</h1>}
       </header>
       <div className="rankingSourceControls" aria-label="Origen del ranking">
         <button
