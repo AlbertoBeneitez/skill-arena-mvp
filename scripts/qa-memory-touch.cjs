@@ -1,4 +1,4 @@
-// Native touches; the planner remembers only the legally rendered initial preview.
+// Native touches; the planner learns only faces actually turned over; never an opening map.
 // No seed chosen, manifest altered, app clock changed or React/core state inspected.
 const { chromium } = require(
   process.env.PLAYWRIGHT_MODULE_PATH || "playwright-core",
@@ -7,13 +7,14 @@ const assert = require("node:assert/strict");
 const { register } = require("node:module");
 const { pathToFileURL } = require("node:url");
 const path = require("node:path");
+const { writeFileSync } = require("node:fs");
 const repo = process.env.QA_REPO_ROOT || path.resolve(__dirname, "..");
 register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
 
 (async () => {
   const { MEMORY_CORE: core } = await import(
       pathToFileURL(
-        path.join(repo, ".det-test/lib/verified/memoryMatchCore.v1.js"),
+        path.join(repo, ".det-test/lib/verified/memoryMatchCore.v2.js"),
       )
     ),
     { replayCore } = await import(
@@ -65,8 +66,8 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
         }),
       );
       window.__memoryOscillators = 0;
-      const oscillator = AudioContext.prototype.createOscillator;
-      AudioContext.prototype.createOscillator = function (...args) {
+      const oscillator = OscillatorNode.prototype.start;
+      OscillatorNode.prototype.start = function (...args) {
         window.__memoryOscillators++;
         return oscillator.apply(this, args);
       };
@@ -133,11 +134,15 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
     const issued = await (await starting).json();
     assert.equal(issued.ok, true);
     assert.equal(issued.manifest.game_id, "memory-match");
-    assert.equal(issued.manifest.game_version, "1.0.0");
+    assert.equal(issued.manifest.game_version, "2.0.0");
     assert.equal(issued.manifest.competition.target_score, 1000000000);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
-    await page.waitForFunction(() => window.__memoryView?.faces.length === 24);
+    await page.waitForFunction(
+      () =>
+        window.__memoryView?.cards.length >= 24 &&
+        window.__memoryView?.faces.length === 0,
+    );
 
     async function view() {
       return page.evaluate(() => {
@@ -172,22 +177,35 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
         };
       });
     }
-    const legalPreview = await view(),
-      remembered = new Array(24);
-    assert.equal(legalPreview.cards.length, 24);
-    for (const face of legalPreview.faces) {
-      assert.ok(face.index >= 0);
-      remembered[face.index] = face.id;
-    }
+    const remembered = new Map(),
+      completed = new Set();
     assert.equal(
-      remembered.filter((value) => Number.isInteger(value)).length,
-      24,
+      (await view()).faces.length,
+      0,
+      "no opening photograph reveals the board",
     );
-    for (const id of new Set(remembered))
-      assert.equal(remembered.filter((value) => value === id).length, 2);
-    assert.equal(remembered[0], remembered[1]);
-    assert.equal(remembered[6], remembered[7]);
-
+    let flips = 0;
+    function knownPair() {
+      for (const [a, id] of remembered)
+        if (!completed.has(a))
+          for (const [b, other] of remembered)
+            if (a !== b && id === other && !completed.has(b)) return [a, b];
+      return null;
+    }
+    async function learn(index) {
+      await touch(index);
+      await page.waitForTimeout(120);
+      const visible = await view();
+      assert.ok(
+        visible.faces.some((face) => face.index === index),
+        "touched card reveals its face",
+      );
+      for (const face of visible.faces) {
+        assert.ok(face.index >= 0);
+        remembered.set(face.index, face.id);
+      }
+      flips++;
+    }
     async function checkLayout(label) {
       await page.waitForTimeout(250);
       const state = await view();
@@ -239,12 +257,27 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
         touchPoints: [],
       });
     }
-    // Inputs during the legal preview are ignored, without skipping the preview.
-    await touch(0);
-    await page.waitForFunction(
-      () => window.__memoryView?.faces.length === 0,
-      {},
-      { timeout: 11000 },
+    await page
+      .getByRole("button", { name: "Activar sonido", exact: true })
+      .tap();
+    await page
+      .getByRole("button", { name: "Desactivar sonido", exact: true })
+      .waitFor({ timeout: 2000 });
+    const blurCard = (await view()).cards[0];
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ x: blurCard.x, y: blurCard.y }],
+    });
+    await page.locator("canvas.gameCanvas").evaluate((canvas) => canvas.blur());
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+    await page.waitForTimeout(70);
+    assert.equal(
+      (await view()).faces.length,
+      0,
+      "blurred press never reveals a card",
     );
     await touch(0, true);
     await touch(0, false, 1);
@@ -254,76 +287,81 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
       0,
       "cancel and drag never reveal a card",
     );
-    await page
-      .getByRole("button", { name: "Activar sonido", exact: true })
-      .tap();
     const terminal = page.waitForResponse(
       (response) => response.url().includes("/verified-match/verify"),
-      { timeout: 150000 },
+      { timeout: 210000 },
     );
     terminal.catch(() => {});
 
-    const pairs = [...new Set(remembered)].map((id) =>
-        remembered
-          .map((value, index) => (value === id ? index : -1))
-          .filter((index) => index >= 0),
-      ),
-      completed = new Set();
-    async function pair([first, second]) {
-      await touch(first);
-      await page.waitForTimeout(120);
-      await touch(first); // An accidental duplicate on the same face is invalid.
-      await page.waitForTimeout(70);
-      await touch(second);
-      await page.waitForTimeout(180);
-      completed.add(first);
-      completed.add(second);
-    }
-    if (mode === "win") {
-      for (let i = 0; i < pairs.length; i++) {
-        await pair(pairs[i]);
-        if (i === 5) {
-          await page.setViewportSize(
-            landscape
-              ? { width: 390, height: 844 }
-              : { width: 844, height: 390 },
-          );
-          const rotated = await checkLayout("mid-run rotation");
-          for (const face of rotated.faces)
-            assert.equal(
-              face.id,
-              remembered[face.index],
-              "rotation preserves board order",
-            );
-          await page.setViewportSize(originalViewport);
-          await checkLayout("rotation restored");
-        }
-      }
-    } else if (mode === "mismatch") {
-      await pair(pairs[0]);
-      await pair(pairs[1]);
-      const first = remembered.findIndex((_, index) => !completed.has(index)),
-        second = remembered.findIndex(
-          (id, index) => !completed.has(index) && id !== remembered[first],
+    let turns = 0,
+      rotated = false;
+    while (completed.size < 24) {
+      const known = knownPair();
+      let first, second;
+      if (mode === "mismatch" && known) {
+        const wrong = [...remembered].find(
+          ([index, id]) =>
+            !completed.has(index) && id !== remembered.get(known[0]),
         );
-      for (let mistake = 0; mistake < 10; mistake++) {
-        await touch(first);
-        await page.waitForTimeout(100);
-        await touch(second);
-        if (mistake < 9) {
-          await page.waitForFunction(
-            () => window.__memoryView?.faces.length === 4,
-            {},
-            { timeout: 3000 },
-          );
-          if (mistake < 2)
-            assert.match(await page.locator(".coreHud").innerText(), /VIDAS 8/);
-        }
+        if (wrong) [first, second] = [known[0], wrong[0]];
       }
-    } else {
-      await pair(pairs[0]); // Real 120 s timeout; no mocked clocks/ticks.
+      if (first === undefined && mode !== "mismatch" && known)
+        [first, second] = known;
+      if (first === undefined)
+        first = Array.from({ length: 24 }, (_, index) => index).find(
+          (index) => !remembered.has(index),
+        );
+      assert.ok(
+        Number.isInteger(first),
+        "a discoverable or known card remains",
+      );
+      await learn(first);
+      await touch(first); // Duplicate face never adds a command.
+      await page.waitForTimeout(70);
+      if (second === undefined) {
+        const partner = [...remembered].find(
+          ([index, id]) =>
+            index !== first &&
+            !completed.has(index) &&
+            id === remembered.get(first),
+        );
+        second =
+          mode !== "mismatch" && partner
+            ? partner[0]
+            : Array.from({ length: 24 }, (_, index) => index).find(
+                (index) => !remembered.has(index),
+              );
+      }
+      assert.ok(Number.isInteger(second));
+      await learn(second);
+      turns++;
+      if (remembered.get(first) === remembered.get(second)) {
+        completed.add(first);
+        completed.add(second);
+        await page.waitForTimeout(80);
+      } else {
+        const hud = await page.locator(".coreHud").innerText();
+        if (/VIDAS 0/.test(hud)) break;
+        await page.waitForFunction(
+          (count) => window.__memoryView?.faces.length === count,
+          completed.size,
+          { timeout: 3000 },
+        );
+      }
+      if (!rotated && turns >= 4) {
+        rotated = true;
+        await page.setViewportSize(
+          landscape ? { width: 390, height: 844 } : { width: 844, height: 390 },
+        );
+        const visible = await checkLayout("mid-run rotation");
+        for (const face of visible.faces)
+          assert.equal(face.id, remembered.get(face.index));
+        await page.setViewportSize(originalViewport);
+        await checkLayout("rotation restored");
+      }
+      if (mode === "timeout" && completed.size >= 2) break;
+      assert.ok(turns < 40);
     }
-
     const response = await terminal,
       payload = response.request().postDataJSON(),
       result = await response.json(),
@@ -344,14 +382,11 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
     assert.equal(result.height, replay.height);
     assert.equal(result.time_ms, replay.timeMs);
     assert.equal(result.won, mode === "win");
-    assert.equal(
-      replay.height,
-      mode === "win" ? 12 : mode === "mismatch" ? 2 : 1,
-    );
+    assert.equal(replay.height, mode === "win" ? 12 : completed.size / 2);
     assert.equal(
       payload.inputs.length,
-      mode === "timeout" ? 2 : 24,
-      "no cancel/drag/duplicate inputs recorded",
+      flips,
+      "only accepted flips are recorded; cancel/drag/duplicate ignored",
     );
     assert.equal(
       replay.failure,
@@ -361,9 +396,16 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
           ? "MEMORY_MISMATCH"
           : "TIME_LIMIT",
     );
+    if (process.env.QA_REPLAY_PATH)
+      writeFileSync(
+        process.env.QA_REPLAY_PATH,
+        JSON.stringify({ issued, payload, result }, null, 2),
+      );
     assert.equal(records.length, 1, "terminal record submitted once");
     assert.ok(await page.evaluate(() => window.__memoryOscillators > 0));
     await page.locator(".resultPanel").waitFor({ state: "visible" });
+    if (process.env.QA_RESULT_SCREENSHOT)
+      await page.screenshot({ path: process.env.QA_RESULT_SCREENSHOT });
     assert.match(await page.locator(".resultPanel").innerText(), /Avance/);
     assert.doesNotMatch(
       await page.locator(".resultPanel").innerText(),
@@ -374,12 +416,19 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
     );
     await page.getByRole("button", { name: "OTRA VEZ", exact: true }).tap();
     const again = await (await restarted).json();
+    assert.notEqual(again.manifest.seed, issued.manifest.seed);
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
-    await page.waitForFunction(() => window.__memoryView?.faces.length === 24);
+    await page.waitForFunction(
+      () =>
+        window.__memoryView?.cards.length >= 24 &&
+        window.__memoryView?.faces.length === 0,
+    );
     assert.equal(await page.locator(".resultPanel").isVisible(), false);
     assert.match(await page.locator(".coreHud").innerText(), /0\/12 PAREJAS/);
+    await touch(0);
+    await page.waitForTimeout(120);
     const abandoning = page.waitForResponse((r) =>
       r.url().includes("/verified-match/verify"),
     );
@@ -388,7 +437,7 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
       abandonedPayload = abandonedResponse.request().postDataJSON(),
       receipt = await abandonedResponse.json();
     assert.equal(abandonedPayload.record_kind, "abandoned");
-    assert.equal(abandonedPayload.inputs.length, 0);
+    assert.equal(abandonedPayload.inputs.length, 1);
     assert.equal(abandonedPayload.ticket.attempt_id, again.ticket.attempt_id);
     assert.equal(receipt.received, true);
     assert.equal(receipt.verified, false);
@@ -408,7 +457,7 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
         timeMs: replay.timeMs,
         inputs: payload.inputs.length,
         cancelledAndDraggedIgnored: true,
-        rotationPreservesOrder: mode === "win",
+        rotationPreservesOrder: rotated,
         restart: true,
         abandonedReceipt: true,
         errors,

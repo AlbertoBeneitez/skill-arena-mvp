@@ -18,6 +18,7 @@ import { createPrivateMatchManifest } from "../lib/server/privateMatchIssuer";
 import alienFixture from "./fixtures/alien-v3.json" with { type: "json" };
 import billiardsFixture from "./fixtures/billiards-v2.json" with { type: "json" };
 import skyFixture from "./fixtures/sky-hop-v3.json" with { type: "json" };
+import memoryFixture from "./fixtures/memory-v2.json" with { type: "json" };
 import orbFixture from "./fixtures/orb-v2.json" with { type: "json" };
 
 const TEST_SECRET = "attempt-record-test-key-not-for-production";
@@ -87,6 +88,7 @@ try {
     ["sky-hop", "1.0.0"],
     ["sky-hop", "2.0.0"],
     ["orb-burst", "1.0.0"],
+    ["memory-match", "1.0.0"],
     ["maze-rush", "1.0.0"],
     ["maze-rush", "2.0.0"],
   ];
@@ -244,6 +246,19 @@ try {
   assert.equal(skyResult.body.score, ascent.score);
   assert.equal(skyResult.body.time_ms, Math.round(ascent.finalTick * 1000 / 120));
   assert.equal(skyResult.body.won, true);
+  const memoryRun = memoryFixture.runs[0];
+  const memory = { ...payload("memory-match", "2.0.0", memoryFixture.seed), inputs: memoryRun.inputs, final_tick: memoryRun.finalTick };
+  now += Math.ceil(memoryRun.finalTick * 1000 / 120) + 1000;
+  const memoryResult = processAttemptRecord({ ...memory, client_score: 1e9, height: 9999, won: false });
+  assert.equal(memoryResult.body.verified, true);
+  if (!memoryResult.body.verified) throw new Error("Memory V2 did not verify");
+  assert.equal(memoryResult.body.height, 12);
+  assert.equal(memoryResult.body.score, 12000);
+  assert.equal(memoryResult.body.time_ms, Math.round(memoryRun.finalTick * 1000 / 120));
+  assert.equal(memoryResult.body.won, true);
+  receipt({ ...memory, inputs: [memoryRun.inputs[0]], final_tick: memoryRun.inputs[0].tick + 1 });
+  reject(abandon(memory), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
+
   const course = orbFixture.runs[0];
   const orbInputs = course.inputs.map(([tick, action], seq) => ({
     seq, tick: Number(tick), action: String(action),

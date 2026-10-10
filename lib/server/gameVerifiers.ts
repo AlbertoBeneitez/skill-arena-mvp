@@ -1,5 +1,6 @@
 import { ALIEN_DASH_CORE_V3 } from "../verified/alienDashCore.v3";
 import { MEMORY_CORE } from "../verified/memoryMatchCore.v1";
+import { MEMORY_CORE as MEMORY_CORE_V2 } from "../verified/memoryMatchCore.v2";
 import { PIANO_V2_CORE } from "../verified/pianoRushCore.v2";
 import { PIANO_V3_CORE } from "../verified/pianoRushCore.v3";
 import { ORBIT_CORE } from "../verified/orbitShiftCore.v1";
@@ -373,6 +374,7 @@ function adapterKey(gameId: string, gameVersion: string) {
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ALIEN_DASH_CORE_V3.gameId, ALIEN_DASH_CORE_V3.gameVersion)]: coreAdapter(ALIEN_DASH_CORE_V3),
   [adapterKey(MEMORY_CORE.gameId, MEMORY_CORE.gameVersion)]: coreAdapter(MEMORY_CORE),
+  [adapterKey(MEMORY_CORE_V2.gameId, MEMORY_CORE_V2.gameVersion)]: coreAdapter(MEMORY_CORE_V2),
   [adapterKey(PIANO_V3_CORE.gameId, PIANO_V3_CORE.gameVersion)]: coreAdapter(PIANO_V3_CORE),
   [adapterKey(PIANO_V2_CORE.gameId, PIANO_V2_CORE.gameVersion)]: coreAdapter(PIANO_V2_CORE),
   [adapterKey(ORBIT_CORE.gameId, ORBIT_CORE.gameVersion)]: coreAdapter(ORBIT_CORE),

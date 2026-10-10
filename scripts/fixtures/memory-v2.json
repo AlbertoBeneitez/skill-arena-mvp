@@ -1,0 +1,301 @@
+{
+  "seed": "memory-discovery-golden-2026",
+  "runs": [
+    {
+      "mode": "win",
+      "inputs": [
+        {
+          "seq": 0,
+          "tick": 36,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 1,
+          "tick": 78,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 2,
+          "tick": 198,
+          "action": "FLIP_2"
+        },
+        {
+          "seq": 3,
+          "tick": 240,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 4,
+          "tick": 282,
+          "action": "FLIP_3"
+        },
+        {
+          "seq": 5,
+          "tick": 324,
+          "action": "FLIP_4"
+        },
+        {
+          "seq": 6,
+          "tick": 366,
+          "action": "FLIP_5"
+        },
+        {
+          "seq": 7,
+          "tick": 408,
+          "action": "FLIP_6"
+        },
+        {
+          "seq": 8,
+          "tick": 515,
+          "action": "FLIP_7"
+        },
+        {
+          "seq": 9,
+          "tick": 557,
+          "action": "FLIP_8"
+        },
+        {
+          "seq": 10,
+          "tick": 664,
+          "action": "FLIP_9"
+        },
+        {
+          "seq": 11,
+          "tick": 706,
+          "action": "FLIP_10"
+        },
+        {
+          "seq": 12,
+          "tick": 813,
+          "action": "FLIP_5"
+        },
+        {
+          "seq": 13,
+          "tick": 855,
+          "action": "FLIP_10"
+        },
+        {
+          "seq": 14,
+          "tick": 897,
+          "action": "FLIP_11"
+        },
+        {
+          "seq": 15,
+          "tick": 939,
+          "action": "FLIP_12"
+        },
+        {
+          "seq": 16,
+          "tick": 981,
+          "action": "FLIP_13"
+        },
+        {
+          "seq": 17,
+          "tick": 1023,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 18,
+          "tick": 1065,
+          "action": "FLIP_14"
+        },
+        {
+          "seq": 19,
+          "tick": 1107,
+          "action": "FLIP_7"
+        },
+        {
+          "seq": 20,
+          "tick": 1149,
+          "action": "FLIP_15"
+        },
+        {
+          "seq": 21,
+          "tick": 1191,
+          "action": "FLIP_16"
+        },
+        {
+          "seq": 22,
+          "tick": 1233,
+          "action": "FLIP_17"
+        },
+        {
+          "seq": 23,
+          "tick": 1275,
+          "action": "FLIP_18"
+        },
+        {
+          "seq": 24,
+          "tick": 1317,
+          "action": "FLIP_19"
+        },
+        {
+          "seq": 25,
+          "tick": 1359,
+          "action": "FLIP_9"
+        },
+        {
+          "seq": 26,
+          "tick": 1401,
+          "action": "FLIP_20"
+        },
+        {
+          "seq": 27,
+          "tick": 1443,
+          "action": "FLIP_8"
+        },
+        {
+          "seq": 28,
+          "tick": 1485,
+          "action": "FLIP_21"
+        },
+        {
+          "seq": 29,
+          "tick": 1527,
+          "action": "FLIP_6"
+        },
+        {
+          "seq": 30,
+          "tick": 1569,
+          "action": "FLIP_22"
+        },
+        {
+          "seq": 31,
+          "tick": 1611,
+          "action": "FLIP_23"
+        }
+      ],
+      "finalTick": 1611,
+      "score": 12000,
+      "height": 12,
+      "lives": 8,
+      "mistakes": 0,
+      "status": "won",
+      "failure": null,
+      "hash": "sha256:d5d23356aab9a2892334136625a2919509216b0c29534a012d583cbcc0a81eb5"
+    },
+    {
+      "mode": "loss",
+      "inputs": [
+        {
+          "seq": 0,
+          "tick": 36,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 1,
+          "tick": 78,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 2,
+          "tick": 198,
+          "action": "FLIP_2"
+        },
+        {
+          "seq": 3,
+          "tick": 240,
+          "action": "FLIP_3"
+        },
+        {
+          "seq": 4,
+          "tick": 360,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 5,
+          "tick": 402,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 6,
+          "tick": 522,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 7,
+          "tick": 564,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 8,
+          "tick": 684,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 9,
+          "tick": 726,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 10,
+          "tick": 846,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 11,
+          "tick": 888,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 12,
+          "tick": 1008,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 13,
+          "tick": 1050,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 14,
+          "tick": 1170,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 15,
+          "tick": 1212,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 16,
+          "tick": 1332,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 17,
+          "tick": 1374,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 18,
+          "tick": 1494,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 19,
+          "tick": 1536,
+          "action": "FLIP_1"
+        },
+        {
+          "seq": 20,
+          "tick": 1656,
+          "action": "FLIP_0"
+        },
+        {
+          "seq": 21,
+          "tick": 1698,
+          "action": "FLIP_1"
+        }
+      ],
+      "finalTick": 1698,
+      "score": 0,
+      "height": 0,
+      "lives": 0,
+      "mistakes": 10,
+      "status": "failed",
+      "failure": "MEMORY_MISMATCH",
+      "hash": "sha256:bec7bc9af070dbbb8af5976a1f40b7f16508b551c50bae248932724109c81d41"
+    }
+  ]
+}

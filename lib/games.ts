@@ -87,14 +87,14 @@ function adaptGameComponent<TProps extends object>(
 
 const GAME_DEFINITIONS = [
   {
-    id: "memory-match", version: "1.0.0", status: "VERIFIED",
+    id: "memory-match", version: "2.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/MemoryOrbit")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: MEMORY_ACTIONS },
     name: "Memoria", cover: "/covers/memory-match.svg", enabled: true,
     waitingStakes: [1, 5], category: "MEMORIA", tagline: "Doce parejas orbitales en una sola partida.",
     difficulty: "MEDIA", skillLabel: "MEMORIA + PRECISIÓN", rivalScore: 12000,
     rivalName: "LYRA", rivalAvatar: "/avatars/avatar-7.svg", instruction: "",
-    scoring: "Avance por parejas únicas; mismo tablero y preview público inicial. Replay de servidor.",
+    scoring: "Avance por parejas únicas; tablero continuo sin preview; exploración sin pérdida de vidas. Replay de servidor.",
   },
   {
     id: "darts", version: "2.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/Darts")),

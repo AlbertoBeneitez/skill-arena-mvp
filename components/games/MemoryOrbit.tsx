@@ -10,7 +10,7 @@ import {
   memoryCardFaceUp,
   memoryCardMatched,
   type MemoryState,
-} from "@/lib/verified/memoryMatchCore.v1";
+} from "@/lib/verified/memoryMatchCore.v2";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 type CardLayout = {

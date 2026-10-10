@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v70-mobile
+# GALACTIC GAMES · Seguimiento de v71-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -24,7 +24,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Star Phalanx | V1: 16 capas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | V2 con capas continuas sin cortes/limpieza intermedia; QA física |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Nueva versión con apertura moderadamente más exigente y rampas posteriores más lentas |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Siete teclas directamente bajo lanes, melodías reales de dominio público, protocolo/versionado y replay |
-| Memoria | v66: V1 VERIFIED, tablero único6×4/12parejas, preview legal8s, dos errores protegidos/ocho vidas, touch al soltar, replay/avance autoritativo; win/error/timeout/reinicio/rotación QA | Corregir preview completo fotografiable; auditar seed pública/autoridad privada sin falsas garantías de seguridad |
+| Memoria | v71: V2 VERIFIED sin preview, un tablero6×4/12parejas seedado, exploración sin pérdida de vidas, penaliza errores con pareja previamente conocida;128 victorias de aprendizaje y QA táctil win/loss/timeout/reinicio/blur/rotación. V1 archivada | Seed pública aún reconstruible; autoridad privada cronometrada requiere contrato compatible, persistencia/identidad antes de competición real |
 | Fondo/música comunes | v65: imagen original optimizada y alineada a viewport, cubre extremos/letterbox; fallback, una caché/blit; mute síncrono cancela voces/resume pendiente, QA audio nativo | Seguimiento físico de FPS/Safari y dirección artística según uso real |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
