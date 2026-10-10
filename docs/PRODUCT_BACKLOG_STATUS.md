@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v75-mobile
+# GALACTIC GAMES · Seguimiento de v76-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -15,7 +15,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
 | Dardos | v72: dardo presente desde apuntado, sprite propio con profundidad/estela e impacto en coordenada autoritativa; quince swipes, victorias/derrotas/reinicio en ambas orientaciones y replay históricoV1/V2 intacto | Seguimiento físico; comparación común pendiente |
 | Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo, muchos setups versionados, integración pública privada segura/registro; catálogo0.1 |
-| Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Presentación previa mejorada; setups variados y cierre/victoria/farming corregidos mediante core versionado y autoridad privada común |
+| Solitaire Sprint | v76 portada original espacial con siete columnas/mazo/cuatro bases, catálogo y entrada táctil comprobados en ambas orientaciones; fondo y auditoría v52 preservados | Setups variados y cierre/victoria/farming corregidos mediante core versionado y autoridad privada común |
 | Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | Nueva versión más variada/rápida con apertura justa y transiciones superables |
 | Brick Relay | V1 VERIFIED, 69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay/touch | V2 continuo y botón autoritativo para acelerar la bola; preservar V1 |
