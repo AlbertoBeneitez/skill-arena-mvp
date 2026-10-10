@@ -326,3 +326,14 @@ Solitaire generador privado candidato1.0,1000repartos distintos y proyección de
 caras legales, sin promesa de resolubilidad/core/QA completa. Amboscatálogos0.1
 siguen intactos con setup fijo hasta integración privada segura. Evidencia y límites
 en [v80](releases/v80-mobile.md). Doce piezas requieren identificar el set del propietario.
+
+### Publicación v80 · incidencia inicial
+
+HEAD inicial f2b575648714f9715a2dfcd6f0dec13e2011e3f5 pasa CI38062225622 completa
+(determinismo/históricos/PostgreSQL/typecheck/build), pero Vercel marca failed en
+dpl_DVch4XUps9PiSnQggxQGzaWzyFgW. GitHub no devuelve logs y la API/CLI de Vercel
+rechazan su lectura por ausencia de credenciales; se solicita solo el error del
+build, nunca secretos. Este checkpoint de estado realiza un único nuevo build
+automático de Vercel con el mismo código, para comprobar si fue transitorio.
+No se cambia configuración ni se desactiva seguridad. No se promueve mobile-test
+sin CI y Ready del HEAD que vaya a publicarse; v79 queda recuperable e intacta.

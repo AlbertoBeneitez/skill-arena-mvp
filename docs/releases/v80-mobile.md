@@ -44,3 +44,14 @@ no bloquea avances. StackShift conserva sus seis formas: I3,L3,Z4,O4,X5,L4.
 Se preguntó si las doce son pentominós F,I,L,N,P,T,U,V,W,X,Y,Z, sin respuesta todavía.
 Brick continuo/boost y Phalanx continuo ya están cerrados en v78/v79. Resto del
 backlog y la comparación alcance/tiempo siguen en PRODUCT_BACKLOG_STATUS.md.
+
+### Publicación v80 · incidencia inicial
+
+HEAD inicial f2b575648714f9715a2dfcd6f0dec13e2011e3f5 pasa CI38062225622 completa
+(determinismo/históricos/PostgreSQL/typecheck/build), pero Vercel marca failed en
+dpl_DVch4XUps9PiSnQggxQGzaWzyFgW. GitHub no devuelve logs y la API/CLI de Vercel
+rechazan su lectura por ausencia de credenciales; se solicita solo el error del
+build, nunca secretos. Este checkpoint de estado realiza un único nuevo build
+automático de Vercel con el mismo código, para comprobar si fue transitorio.
+No se cambia configuración ni se desactiva seguridad. No se promueve mobile-test
+sin CI y Ready del HEAD que vaya a publicarse; v79 queda recuperable e intacta.
