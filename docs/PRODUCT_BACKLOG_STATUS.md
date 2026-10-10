@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v79-mobile
+# GALACTIC GAMES · Seguimiento de v80-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -19,7 +19,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | Nueva versión más variada/rápida con apertura justa y transiciones superables |
 | Brick Relay | v78: V2 VERIFIED, muro continuo69 bloques, aceleración mantenida3/2 registrada, alcance por bloques únicos, arrastre final conservado durante cooldown; victorias/derrota/reinicio táctiles en ambas orientaciones. V1 preservado | Pulido posterior según experiencia en móviles físicos; comparación global alcance/tiempo pendiente |
-| Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | Doce piezas originales: identidad solicitada al propietario; no inventar variantes sin resolverla |
+| Stack Shift | Core1.0 VERIFIED con seis formas propias (I3,L3,Z4,O4,X5,L4), base/apoyo/arena ampliada preservados | Identificar doce piezas: se ha preguntado si son pentominós F,I,L,N,P,T,U,V,W,X,Y,Z; falta respuesta, no se inventan ni cambian reglas |
 | Maze Rush | v74: joystick circular116px con zona neutra/histéresis, STOP retenido durante cooldown, captura/cancelación; victorias70nodos y derrotas/reinicio/rotación en ambas orientaciones, mismo coreV3/replay. v64: V3 VERIFIED, 70 nodos continuos, más margen para girar/perseguidores, avance por nodos, confirmación de input/pulso y tablero horizontal ampliado; victorias/derrotas/reinicio táctiles y replay. V1/V2 archivadas | Seguimiento físico y pulido según uso real |
 | Star Phalanx | v79: V2 VERIFIED, curso continuo16capas/100enemigos sin pausas/borrado de proyectiles/reinicio de vuelo, destino táctil coalescido; victorias/derrotas/reinicio en ambas orientaciones. Presentación v77 y archivoV1 preservados | Pulido posterior en móviles físicos y comparación global alcance/tiempo |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Nueva versión con apertura moderadamente más exigente y rampas posteriores más lentas |
@@ -34,7 +34,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 
-Los 21 juegos activos incluyen 19 VERIFIED por replay y dos INTEGRATED. Mine 1.0 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
+Los 21 juegos activos incluyen 19 VERIFIED por replay y dos INTEGRATED. Mine privado V1/V2 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
 
 ## Iteración v53
 
@@ -318,3 +318,11 @@ visible. Stack Shift: pregunta concreta sobre los doce pentominós pendiente de 
 Phalanx V2 continuo, replays V1/V2 y disparos entre capas preservados.
 [Validación y QA](releases/v79-mobile.md). Mine/Solitaire privados y doce
 piezas permanecen pendientes; sin activar proveedores/dinero reales.
+
+## Iteración v80
+
+Mine privado continuo2.0,1000campos no-guess/replay/golden/proyección/QA local;
+Solitaire generador privado candidato1.0,1000repartos distintos y proyección de
+caras legales, sin promesa de resolubilidad/core/QA completa. Amboscatálogos0.1
+siguen intactos con setup fijo hasta integración privada segura. Evidencia y límites
+en [v80](releases/v80-mobile.md). Doce piezas requieren identificar el set del propietario.

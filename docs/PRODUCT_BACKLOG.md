@@ -332,3 +332,10 @@ Checkpoint v79 cierra Phalanx continuo mediante core2.0.0, manteniendo formació
 progresiva y presentaciónv77, proyectiles/relojes entre capas y el verificadorV1.
 QA completa, inputs, golden y render en ambas versiones. Los pendientes privados
 Mine/Solitaire y doce piezas se mantienen en el ledger, sin asumir cierre público.
+
+Checkpoint v80 prepara Mine privado2.0 continuo con1000tableros distintos/resolubles
+y el generador/proyección privado candidato Solitaire con1000repartos distintos.
+V1 y catálogos legacy permanecen intactos. No cierra variedad visible pública,
+resolubilidad/core Solitaire ni integración durable: la autoridad local sigue
+bloqueada en Vercel. La identidad de doce piezas Stack Shift aún necesita respuesta;
+el core actual tiene seis formas propias, no siete tetrominós. Detalle vivo en el ledger.
