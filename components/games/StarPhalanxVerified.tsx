@@ -4,7 +4,7 @@ import {
   PHALANX_CORE,
   PHALANX_RULES,
   type PhalanxState,
-} from "@/lib/verified/starPhalanxCore.v1";
+} from "@/lib/verified/starPhalanxCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { drawPhalanxBolt } from "@/lib/phalanxPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
@@ -196,6 +196,7 @@ export default function StarPhalanxVerified(props: GameRuntimeProps) {
         inputTones={inputTones}
         feedbackScore={feedbackScore}
         pointAction={pointAction}
+        coalescePointActions
         pointerReleaseAction="FIRE_UP"
         keys={keys}
         keyReleases={keyReleases}

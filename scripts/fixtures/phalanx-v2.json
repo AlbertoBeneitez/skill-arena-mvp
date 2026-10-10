@@ -1,0 +1,2105 @@
+{
+  "seed": "phalanx-v2-continuous-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "FIRE_DOWN"
+    },
+    {
+      "seq": 1,
+      "tick": 1,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 2,
+      "tick": 7,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 3,
+      "tick": 56,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 4,
+      "tick": 109,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 5,
+      "tick": 126,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 6,
+      "tick": 152,
+      "action": "AIM_005"
+    },
+    {
+      "seq": 7,
+      "tick": 205,
+      "action": "AIM_004"
+    },
+    {
+      "seq": 8,
+      "tick": 258,
+      "action": "AIM_003"
+    },
+    {
+      "seq": 9,
+      "tick": 270,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 10,
+      "tick": 280,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 11,
+      "tick": 333,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 12,
+      "tick": 386,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 13,
+      "tick": 439,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 14,
+      "tick": 466,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 15,
+      "tick": 519,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 16,
+      "tick": 554,
+      "action": "AIM_003"
+    },
+    {
+      "seq": 17,
+      "tick": 562,
+      "action": "AIM_002"
+    },
+    {
+      "seq": 18,
+      "tick": 615,
+      "action": "AIM_001"
+    },
+    {
+      "seq": 19,
+      "tick": 668,
+      "action": "AIM_000"
+    },
+    {
+      "seq": 20,
+      "tick": 698,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 21,
+      "tick": 743,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 22,
+      "tick": 796,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 23,
+      "tick": 846,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 24,
+      "tick": 860,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 25,
+      "tick": 914,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 26,
+      "tick": 965,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 27,
+      "tick": 984,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 28,
+      "tick": 990,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 29,
+      "tick": 1024,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 30,
+      "tick": 1066,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 31,
+      "tick": 1107,
+      "action": "AIM_003"
+    },
+    {
+      "seq": 32,
+      "tick": 1146,
+      "action": "AIM_002"
+    },
+    {
+      "seq": 33,
+      "tick": 1188,
+      "action": "AIM_001"
+    },
+    {
+      "seq": 34,
+      "tick": 1225,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 35,
+      "tick": 1255,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 36,
+      "tick": 1281,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 37,
+      "tick": 1322,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 38,
+      "tick": 1363,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 39,
+      "tick": 1371,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 40,
+      "tick": 1411,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 41,
+      "tick": 1433,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 42,
+      "tick": 1490,
+      "action": "AIM_007"
+    },
+    {
+      "seq": 43,
+      "tick": 1513,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 44,
+      "tick": 1538,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 45,
+      "tick": 1554,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 46,
+      "tick": 1596,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 47,
+      "tick": 1637,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 48,
+      "tick": 1658,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 49,
+      "tick": 1681,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 50,
+      "tick": 1723,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 51,
+      "tick": 1764,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 52,
+      "tick": 1775,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 53,
+      "tick": 1803,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 54,
+      "tick": 1844,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 55,
+      "tick": 1885,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 56,
+      "tick": 1899,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 57,
+      "tick": 1930,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 58,
+      "tick": 1942,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 59,
+      "tick": 1975,
+      "action": "AIM_005"
+    },
+    {
+      "seq": 60,
+      "tick": 2016,
+      "action": "AIM_004"
+    },
+    {
+      "seq": 61,
+      "tick": 2057,
+      "action": "AIM_003"
+    },
+    {
+      "seq": 62,
+      "tick": 2063,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 63,
+      "tick": 2092,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 64,
+      "tick": 2134,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 65,
+      "tick": 2175,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 66,
+      "tick": 2181,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 67,
+      "tick": 2213,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 68,
+      "tick": 2255,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 69,
+      "tick": 2296,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 70,
+      "tick": 2302,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 71,
+      "tick": 2334,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 72,
+      "tick": 2376,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 73,
+      "tick": 2417,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 74,
+      "tick": 2423,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 75,
+      "tick": 2443,
+      "action": "AIM_007"
+    },
+    {
+      "seq": 76,
+      "tick": 2477,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 77,
+      "tick": 2510,
+      "action": "AIM_005"
+    },
+    {
+      "seq": 78,
+      "tick": 2523,
+      "action": "AIM_001"
+    },
+    {
+      "seq": 79,
+      "tick": 2540,
+      "action": "AIM_000"
+    },
+    {
+      "seq": 80,
+      "tick": 2622,
+      "action": "AIM_004"
+    },
+    {
+      "seq": 81,
+      "tick": 2641,
+      "action": "AIM_005"
+    },
+    {
+      "seq": 82,
+      "tick": 2675,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 83,
+      "tick": 2709,
+      "action": "AIM_007"
+    },
+    {
+      "seq": 84,
+      "tick": 2735,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 85,
+      "tick": 2758,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 86,
+      "tick": 2792,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 87,
+      "tick": 2826,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 88,
+      "tick": 2859,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 89,
+      "tick": 2884,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 90,
+      "tick": 2890,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 91,
+      "tick": 2920,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 92,
+      "tick": 2954,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 93,
+      "tick": 2988,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 94,
+      "tick": 3002,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 95,
+      "tick": 3085,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 96,
+      "tick": 3115,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 97,
+      "tick": 3149,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 98,
+      "tick": 3182,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 99,
+      "tick": 3214,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 100,
+      "tick": 3229,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 101,
+      "tick": 3263,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 102,
+      "tick": 3297,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 103,
+      "tick": 3331,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 104,
+      "tick": 3338,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 105,
+      "tick": 3357,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 106,
+      "tick": 3391,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 107,
+      "tick": 3408,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 108,
+      "tick": 3433,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 109,
+      "tick": 3467,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 110,
+      "tick": 3501,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 111,
+      "tick": 3525,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 112,
+      "tick": 3571,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 113,
+      "tick": 3589,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 114,
+      "tick": 3622,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 115,
+      "tick": 3656,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 116,
+      "tick": 3690,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 117,
+      "tick": 3696,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 118,
+      "tick": 3702,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 119,
+      "tick": 3731,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 120,
+      "tick": 3765,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 121,
+      "tick": 3799,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 122,
+      "tick": 3817,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 123,
+      "tick": 3823,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 124,
+      "tick": 3856,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 125,
+      "tick": 3890,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 126,
+      "tick": 3924,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 127,
+      "tick": 3933,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 128,
+      "tick": 3958,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 129,
+      "tick": 3985,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 130,
+      "tick": 4001,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 131,
+      "tick": 4050,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 132,
+      "tick": 4057,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 133,
+      "tick": 4091,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 134,
+      "tick": 4125,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 135,
+      "tick": 4159,
+      "action": "AIM_007"
+    },
+    {
+      "seq": 136,
+      "tick": 4173,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 137,
+      "tick": 4197,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 138,
+      "tick": 4230,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 139,
+      "tick": 4264,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 140,
+      "tick": 4298,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 141,
+      "tick": 4315,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 142,
+      "tick": 4333,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 143,
+      "tick": 4367,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 144,
+      "tick": 4400,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 145,
+      "tick": 4433,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 146,
+      "tick": 4453,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 147,
+      "tick": 4467,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 148,
+      "tick": 4473,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 149,
+      "tick": 4499,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 150,
+      "tick": 4528,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 151,
+      "tick": 4535,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 152,
+      "tick": 4563,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 153,
+      "tick": 4592,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 154,
+      "tick": 4620,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 155,
+      "tick": 4649,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 156,
+      "tick": 4677,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 157,
+      "tick": 4706,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 158,
+      "tick": 4712,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 159,
+      "tick": 4721,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 160,
+      "tick": 4739,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 161,
+      "tick": 4762,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 162,
+      "tick": 4790,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 163,
+      "tick": 4819,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 164,
+      "tick": 4825,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 165,
+      "tick": 4831,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 166,
+      "tick": 4859,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 167,
+      "tick": 4888,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 168,
+      "tick": 4905,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 169,
+      "tick": 4911,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 170,
+      "tick": 4917,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 171,
+      "tick": 4960,
+      "action": "AIM_005"
+    },
+    {
+      "seq": 172,
+      "tick": 4979,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 173,
+      "tick": 5008,
+      "action": "AIM_007"
+    },
+    {
+      "seq": 174,
+      "tick": 5036,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 175,
+      "tick": 5065,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 176,
+      "tick": 5093,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 177,
+      "tick": 5111,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 178,
+      "tick": 5118,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 179,
+      "tick": 5124,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 180,
+      "tick": 5151,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 181,
+      "tick": 5157,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 182,
+      "tick": 5171,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 183,
+      "tick": 5200,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 184,
+      "tick": 5229,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 185,
+      "tick": 5257,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 186,
+      "tick": 5264,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 187,
+      "tick": 5270,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 188,
+      "tick": 5298,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 189,
+      "tick": 5327,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 190,
+      "tick": 5356,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 191,
+      "tick": 5384,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 192,
+      "tick": 5400,
+      "action": "AIM_001"
+    },
+    {
+      "seq": 193,
+      "tick": 5406,
+      "action": "AIM_000"
+    },
+    {
+      "seq": 194,
+      "tick": 5486,
+      "action": "AIM_004"
+    },
+    {
+      "seq": 195,
+      "tick": 5492,
+      "action": "AIM_005"
+    },
+    {
+      "seq": 196,
+      "tick": 5517,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 197,
+      "tick": 5523,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 198,
+      "tick": 5551,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 199,
+      "tick": 5579,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 200,
+      "tick": 5608,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 201,
+      "tick": 5637,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 202,
+      "tick": 5665,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 203,
+      "tick": 5686,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 204,
+      "tick": 5692,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 205,
+      "tick": 5708,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 206,
+      "tick": 5714,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 207,
+      "tick": 5739,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 208,
+      "tick": 5751,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 209,
+      "tick": 5766,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 210,
+      "tick": 5804,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 211,
+      "tick": 5823,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 212,
+      "tick": 5851,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 213,
+      "tick": 5876,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 214,
+      "tick": 5882,
+      "action": "AIM_007"
+    },
+    {
+      "seq": 215,
+      "tick": 5908,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 216,
+      "tick": 5932,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 217,
+      "tick": 5938,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 218,
+      "tick": 5964,
+      "action": "AIM_008"
+    },
+    {
+      "seq": 219,
+      "tick": 6040,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 220,
+      "tick": 6051,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 221,
+      "tick": 6067,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 222,
+      "tick": 6083,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 223,
+      "tick": 6111,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 224,
+      "tick": 6140,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 225,
+      "tick": 6168,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 226,
+      "tick": 6174,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 227,
+      "tick": 6180,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 228,
+      "tick": 6188,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 229,
+      "tick": 6245,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 230,
+      "tick": 6255,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 231,
+      "tick": 6284,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 232,
+      "tick": 6312,
+      "action": "AIM_018"
+    },
+    {
+      "seq": 233,
+      "tick": 6341,
+      "action": "AIM_017"
+    },
+    {
+      "seq": 234,
+      "tick": 6369,
+      "action": "AIM_016"
+    },
+    {
+      "seq": 235,
+      "tick": 6375,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 236,
+      "tick": 6395,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 237,
+      "tick": 6423,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 238,
+      "tick": 6452,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 239,
+      "tick": 6481,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 240,
+      "tick": 6499,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 241,
+      "tick": 6512,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 242,
+      "tick": 6527,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 243,
+      "tick": 6543,
+      "action": "AIM_009"
+    },
+    {
+      "seq": 244,
+      "tick": 6556,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 245,
+      "tick": 6584,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 246,
+      "tick": 6590,
+      "action": "AIM_007"
+    },
+    {
+      "seq": 247,
+      "tick": 6596,
+      "action": "AIM_006"
+    },
+    {
+      "seq": 248,
+      "tick": 6670,
+      "action": "AIM_010"
+    },
+    {
+      "seq": 249,
+      "tick": 6698,
+      "action": "AIM_011"
+    },
+    {
+      "seq": 250,
+      "tick": 6726,
+      "action": "AIM_012"
+    },
+    {
+      "seq": 251,
+      "tick": 6755,
+      "action": "AIM_013"
+    },
+    {
+      "seq": 252,
+      "tick": 6778,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 253,
+      "tick": 6786,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 254,
+      "tick": 6792,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 255,
+      "tick": 6868,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 256,
+      "tick": 6889,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 257,
+      "tick": 6918,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 258,
+      "tick": 6946,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 259,
+      "tick": 6970,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 260,
+      "tick": 6976,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 261,
+      "tick": 6994,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 262,
+      "tick": 7023,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 263,
+      "tick": 7031,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 264,
+      "tick": 7060,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 265,
+      "tick": 7089,
+      "action": "AIM_015"
+    },
+    {
+      "seq": 266,
+      "tick": 7110,
+      "action": "AIM_014"
+    },
+    {
+      "seq": 267,
+      "tick": 7133,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 268,
+      "tick": 7146,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 269,
+      "tick": 7171,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 270,
+      "tick": 7179,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 271,
+      "tick": 7190,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 272,
+      "tick": 7215,
+      "action": "AIM_034"
+    },
+    {
+      "seq": 273,
+      "tick": 7221,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 274,
+      "tick": 7231,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 275,
+      "tick": 7256,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 276,
+      "tick": 7281,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 277,
+      "tick": 7306,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 278,
+      "tick": 7312,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 279,
+      "tick": 7321,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 280,
+      "tick": 7346,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 281,
+      "tick": 7371,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 282,
+      "tick": 7396,
+      "action": "AIM_034"
+    },
+    {
+      "seq": 283,
+      "tick": 7420,
+      "action": "AIM_035"
+    },
+    {
+      "seq": 284,
+      "tick": 7488,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 285,
+      "tick": 7505,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 286,
+      "tick": 7530,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 287,
+      "tick": 7555,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 288,
+      "tick": 7580,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 289,
+      "tick": 7604,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 290,
+      "tick": 7629,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 291,
+      "tick": 7635,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 292,
+      "tick": 7675,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 293,
+      "tick": 7693,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 294,
+      "tick": 7717,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 295,
+      "tick": 7742,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 296,
+      "tick": 7767,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 297,
+      "tick": 7791,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 298,
+      "tick": 7797,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 299,
+      "tick": 7848,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 300,
+      "tick": 7854,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 301,
+      "tick": 7874,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 302,
+      "tick": 7898,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 303,
+      "tick": 7923,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 304,
+      "tick": 7948,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 305,
+      "tick": 7960,
+      "action": "AIM_035"
+    },
+    {
+      "seq": 306,
+      "tick": 7995,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 307,
+      "tick": 8024,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 308,
+      "tick": 8035,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 309,
+      "tick": 8059,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 310,
+      "tick": 8065,
+      "action": "AIM_035"
+    },
+    {
+      "seq": 311,
+      "tick": 8135,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 312,
+      "tick": 8155,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 313,
+      "tick": 8175,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 314,
+      "tick": 8190,
+      "action": "AIM_019"
+    },
+    {
+      "seq": 315,
+      "tick": 8205,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 316,
+      "tick": 8215,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 317,
+      "tick": 8239,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 318,
+      "tick": 8264,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 319,
+      "tick": 8289,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 320,
+      "tick": 8314,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 321,
+      "tick": 8320,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 322,
+      "tick": 8328,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 323,
+      "tick": 8353,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 324,
+      "tick": 8378,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 325,
+      "tick": 8403,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 326,
+      "tick": 8427,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 327,
+      "tick": 8437,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 328,
+      "tick": 8457,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 329,
+      "tick": 8481,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 330,
+      "tick": 8490,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 331,
+      "tick": 8560,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 332,
+      "tick": 8566,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 333,
+      "tick": 8591,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 334,
+      "tick": 8615,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 335,
+      "tick": 8640,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 336,
+      "tick": 8665,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 337,
+      "tick": 8677,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 338,
+      "tick": 8694,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 339,
+      "tick": 8719,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 340,
+      "tick": 8744,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 341,
+      "tick": 8768,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 342,
+      "tick": 8777,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 343,
+      "tick": 8790,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 344,
+      "tick": 8814,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 345,
+      "tick": 8839,
+      "action": "AIM_034"
+    },
+    {
+      "seq": 346,
+      "tick": 8847,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 347,
+      "tick": 8856,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 348,
+      "tick": 8926,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 349,
+      "tick": 8944,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 350,
+      "tick": 8968,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 351,
+      "tick": 8987,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 352,
+      "tick": 9004,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 353,
+      "tick": 9017,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 354,
+      "tick": 9023,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 355,
+      "tick": 9031,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 356,
+      "tick": 9037,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 357,
+      "tick": 9051,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 358,
+      "tick": 9058,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 359,
+      "tick": 9101,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 360,
+      "tick": 9117,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 361,
+      "tick": 9142,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 362,
+      "tick": 9158,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 363,
+      "tick": 9164,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 364,
+      "tick": 9183,
+      "action": "AIM_020"
+    },
+    {
+      "seq": 365,
+      "tick": 9189,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 366,
+      "tick": 9209,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 367,
+      "tick": 9234,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 368,
+      "tick": 9259,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 369,
+      "tick": 9280,
+      "action": "AIM_021"
+    },
+    {
+      "seq": 370,
+      "tick": 9305,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 371,
+      "tick": 9329,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 372,
+      "tick": 9354,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 373,
+      "tick": 9379,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 374,
+      "tick": 9401,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 375,
+      "tick": 9425,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 376,
+      "tick": 9450,
+      "action": "AIM_024"
+    },
+    {
+      "seq": 377,
+      "tick": 9474,
+      "action": "AIM_025"
+    },
+    {
+      "seq": 378,
+      "tick": 9499,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 379,
+      "tick": 9506,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 380,
+      "tick": 9521,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 381,
+      "tick": 9532,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 382,
+      "tick": 9557,
+      "action": "AIM_034"
+    },
+    {
+      "seq": 383,
+      "tick": 9563,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 384,
+      "tick": 9578,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 385,
+      "tick": 9648,
+      "action": "AIM_023"
+    },
+    {
+      "seq": 386,
+      "tick": 9657,
+      "action": "AIM_022"
+    },
+    {
+      "seq": 387,
+      "tick": 9682,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 388,
+      "tick": 9707,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 389,
+      "tick": 9732,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 390,
+      "tick": 9757,
+      "action": "AIM_032"
+    },
+    {
+      "seq": 391,
+      "tick": 9781,
+      "action": "AIM_033"
+    },
+    {
+      "seq": 392,
+      "tick": 9802,
+      "action": "AIM_026"
+    },
+    {
+      "seq": 393,
+      "tick": 9827,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 394,
+      "tick": 9851,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 395,
+      "tick": 9876,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 396,
+      "tick": 9901,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 397,
+      "tick": 9926,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 398,
+      "tick": 9950,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 399,
+      "tick": 9975,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 400,
+      "tick": 10000,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 401,
+      "tick": 10025,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 402,
+      "tick": 10046,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 403,
+      "tick": 10052,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 404,
+      "tick": 10076,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 405,
+      "tick": 10101,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 406,
+      "tick": 10126,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 407,
+      "tick": 10140,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 408,
+      "tick": 10152,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 409,
+      "tick": 10177,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 410,
+      "tick": 10202,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 411,
+      "tick": 10227,
+      "action": "AIM_031"
+    },
+    {
+      "seq": 412,
+      "tick": 10234,
+      "action": "AIM_027"
+    },
+    {
+      "seq": 413,
+      "tick": 10254,
+      "action": "AIM_028"
+    },
+    {
+      "seq": 414,
+      "tick": 10279,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 415,
+      "tick": 10285,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 416,
+      "tick": 10293,
+      "action": "AIM_029"
+    },
+    {
+      "seq": 417,
+      "tick": 10304,
+      "action": "AIM_030"
+    },
+    {
+      "seq": 418,
+      "tick": 10329,
+      "action": "AIM_031"
+    }
+  ],
+  "finalTick": 10352,
+  "score": 43475,
+  "status": "won",
+  "failure": null,
+  "hash": "sha256:023e94a805184bcfff80a95971e02d7c72b3b2be57f331213439b285e116694e"
+}

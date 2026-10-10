@@ -10,7 +10,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const b = pathToFileURL(path.join(__dirname, "../.det-test/")).href,
     { PHALANX_CORE: core } = await import(
-      b + "lib/verified/starPhalanxCore.v1.js"
+      b + "lib/verified/starPhalanxCore.v2.js"
     ),
     { replayCore } = await import(b + "lib/verified/coreRuntime.v1.js");
   const browser = await chromium.launch({
@@ -123,7 +123,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Star Phalanx", exact: true })
       .click();
     const issued = await (await start).json();
-    assert.equal(issued.manifest.game_version, "1.0.0");
+    assert.equal(issued.manifest.game_version, "2.0.0");
     const target = issued.manifest.competition.target_score;
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });

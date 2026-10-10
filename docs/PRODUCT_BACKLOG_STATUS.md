@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v78-mobile
+# GALACTIC GAMES · Seguimiento de v79-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -21,7 +21,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Brick Relay | v78: V2 VERIFIED, muro continuo69 bloques, aceleración mantenida3/2 registrada, alcance por bloques únicos, arrastre final conservado durante cooldown; victorias/derrota/reinicio táctiles en ambas orientaciones. V1 preservado | Pulido posterior según experiencia en móviles físicos; comparación global alcance/tiempo pendiente |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | Doce piezas originales: identidad solicitada al propietario; no inventar variantes sin resolverla |
 | Maze Rush | v74: joystick circular116px con zona neutra/histéresis, STOP retenido durante cooldown, captura/cancelación; victorias70nodos y derrotas/reinicio/rotación en ambas orientaciones, mismo coreV3/replay. v64: V3 VERIFIED, 70 nodos continuos, más margen para girar/perseguidores, avance por nodos, confirmación de input/pulso y tablero horizontal ampliado; victorias/derrotas/reinicio táctiles y replay. V1/V2 archivadas | Seguimiento físico y pulido según uso real |
-| Star Phalanx | v77: proyectiles diferenciados/estelas, fogonazo, carga circular, blindaje por indicadores y escudo legible; victorias100enemigos y derrotas/reinicio en ambas orientaciones, 2921frames sin mutar coreV1. V1: 16 capas, geometrías, cargas/pares y replay | V2 continuo y UX inspirada en arcade probado, implementación original; preservar V1 |
+| Star Phalanx | v79: V2 VERIFIED, curso continuo16capas/100enemigos sin pausas/borrado de proyectiles/reinicio de vuelo, destino táctil coalescido; victorias/derrotas/reinicio en ambas orientaciones. Presentación v77 y archivoV1 preservados | Pulido posterior en móviles físicos y comparación global alcance/tiempo |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Nueva versión con apertura moderadamente más exigente y rampas posteriores más lentas |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Siete teclas directamente bajo lanes, melodías reales de dominio público, protocolo/versionado y replay |
 | Memoria | v71: V2 VERIFIED sin preview, un tablero6×4/12parejas seedado, exploración sin pérdida de vidas, penaliza errores con pareja previamente conocida;128 victorias de aprendizaje y QA táctil win/loss/timeout/reinicio/blur/rotación. V1 archivada | Seed pública aún reconstruible; autoridad privada cronometrada requiere contrato compatible, persistencia/identidad antes de competición real |
@@ -312,3 +312,9 @@ Brick Relay continuo y acelerador autoritativo; corregido destino táctil perdid
 durante cooldown sin alterar replays históricos. Evidencia: [v78](releases/v78-mobile.md).
 Mine/Solitaire siguen pendientes de integración privada pública segura y variedad
 visible. Stack Shift: pregunta concreta sobre los doce pentominós pendiente de respuesta.
+
+## Iteración v79
+
+Phalanx V2 continuo, replays V1/V2 y disparos entre capas preservados.
+[Validación y QA](releases/v79-mobile.md). Mine/Solitaire privados y doce
+piezas permanecen pendientes; sin activar proveedores/dinero reales.

@@ -327,3 +327,8 @@ Checkpoint v78 cierra Brick Relay continuo y botón de aceleración mediante cor
 el último destino perdido en arrastres durante cooldown mediante opt-in en el
 controlador común; no modifica semánticas de otros juegos. Mine/Solitaire,
 Phalanx continuo y la identidad de doce piezas siguen en el ledger activo.
+
+Checkpoint v79 cierra Phalanx continuo mediante core2.0.0, manteniendo formación
+progresiva y presentaciónv77, proyectiles/relojes entre capas y el verificadorV1.
+QA completa, inputs, golden y render en ambas versiones. Los pendientes privados
+Mine/Solitaire y doce piezas se mantienen en el ledger, sin asumir cierre público.

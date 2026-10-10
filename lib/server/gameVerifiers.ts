@@ -14,6 +14,7 @@ import { SKY_HOP_CORE } from "../verified/skyHopCore.v1";
 import { SKY_HOP_CORE_V2 } from "../verified/skyHopCore.v2";
 import { SKY_HOP_CORE_V3 } from "../verified/skyHopCore.v3";
 import { PHALANX_CORE } from "../verified/starPhalanxCore.v1";
+import { PHALANX_CORE as PHALANX_V2_CORE } from "../verified/starPhalanxCore.v2";
 import { STACK_SHIFT_CORE } from "../verified/stackShiftCore.v1";
 import { JET_STREAM_CORE_V4 } from "../verified/jetStreamCore.v4";
 import { JET_STREAM_CORE_V3 } from "../verified/jetStreamCore.v3";
@@ -390,6 +391,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(SKY_HOP_CORE_V2.gameId, SKY_HOP_CORE_V2.gameVersion)]: coreAdapter(SKY_HOP_CORE_V2),
   [adapterKey(SKY_HOP_CORE_V3.gameId, SKY_HOP_CORE_V3.gameVersion)]: coreAdapter(SKY_HOP_CORE_V3),
   [adapterKey(PHALANX_CORE.gameId, PHALANX_CORE.gameVersion)]: coreAdapter(PHALANX_CORE),
+  [adapterKey(PHALANX_V2_CORE.gameId, PHALANX_V2_CORE.gameVersion)]: coreAdapter(PHALANX_V2_CORE),
   [adapterKey(STACK_SHIFT_CORE.gameId, STACK_SHIFT_CORE.gameVersion)]: coreAdapter(STACK_SHIFT_CORE),
   [adapterKey(JET_STREAM_CORE_V4.gameId, JET_STREAM_CORE_V4.gameVersion)]: coreAdapter(JET_STREAM_CORE_V4),
   [adapterKey(JET_STREAM_CORE_V3.gameId, JET_STREAM_CORE_V3.gameVersion)]: coreAdapter(JET_STREAM_CORE_V3),
