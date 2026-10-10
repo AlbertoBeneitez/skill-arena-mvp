@@ -8,6 +8,15 @@ import { drawJetBackground, drawJetShip } from "./jet-stream/presentation";
 import CoreCanvasGame from "./CoreCanvasGame";
 function render(ctx: CanvasRenderingContext2D, state: JetStreamV4State) {
   drawJetBackground(ctx, state);
+  // Extend only the opaque bodies through visual letterboxing. The signed
+  // 390×620 field, windows and colliders stay exactly V4 in every viewport.
+  const transform = ctx.getTransform();
+  const topOfCanvas =
+    transform.d > 0 ? Math.min(0, -transform.f / transform.d) : 0;
+  const bottomOfCanvas =
+    transform.d > 0
+      ? Math.max(620, (ctx.canvas.height - transform.f) / transform.d)
+      : 620;
   for (const gate of state.gates) {
     const x = (gate.worldXMilli - state.scrollMilli) / 1000;
     if (x < -50 || x > 420) continue;
@@ -26,14 +35,14 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV4State) {
       ctx.fillRect(x, top, 30, 3);
       ctx.fillRect(x, bottom - 3, 30, 3);
     };
-    let previous = 0;
+    let previous = topOfCanvas;
     for (const window of gate.windows) {
       const top = (window.centerYMilli - window.gapMilli / 2) / 1000,
         bottom = (window.centerYMilli + window.gapMilli / 2) / 1000;
       segment(previous, top);
       previous = bottom;
     }
-    segment(previous, 620);
+    segment(previous, bottomOfCanvas);
     if (gate.pickup && !gate.collected) {
       const y = gate.centerYMilli / 1000;
       ctx.save();

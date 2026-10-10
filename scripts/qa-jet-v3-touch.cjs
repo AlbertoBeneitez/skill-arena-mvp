@@ -6,6 +6,7 @@ const { chromium } = require(
   { register } = require("node:module"),
   { pathToFileURL } = require("node:url"),
   path = require("node:path");
+const { writeFileSync } = require("node:fs");
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const base = pathToFileURL(path.join(__dirname, "../.det-test/")).href;
@@ -64,6 +65,32 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         true,
       );
       // Observe the actual rendered ship, forwarding every drawing call unchanged.
+      const p = CanvasRenderingContext2D.prototype,
+        clear = p.clearRect,
+        fill = p.fillRect;
+      window.__jetBodies = [];
+      p.clearRect = function (...args) {
+        if (this.canvas.classList.contains("gameCanvas"))
+          window.__jetBodies = [];
+        return clear.apply(this, args);
+      };
+      p.fillRect = function (x, y, w, h) {
+        if (
+          this.canvas.classList.contains("gameCanvas") &&
+          w === 30 &&
+          h > 3 &&
+          this.fillStyle instanceof CanvasGradient
+        ) {
+          const m = this.getTransform();
+          window.__jetBodies.push({
+            x,
+            top: m.f + m.d * y,
+            bottom: m.f + m.d * (y + h),
+            height: this.canvas.height,
+          });
+        }
+        return fill.call(this, x, y, w, h);
+      };
       const translate = CanvasRenderingContext2D.prototype.translate;
       CanvasRenderingContext2D.prototype.translate = function (x, y) {
         if (this.canvas.classList.contains("gameCanvas") && x === 92)
@@ -88,7 +115,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         });
     });
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3034");
-    await page.locator(".quickStakeBar button").first().tap();
+    await page
+      .getByRole("button", { name: "Entrenamiento gratis", exact: true })
+      .tap();
     const response = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
@@ -124,7 +153,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .catch(() => {});
     let eventIndex = 0,
       firstTap = true,
-      lastDecision = -1;
+      lastDecision = -1,
+      boundariesChecked = false;
     const loss = Boolean(process.env.QA_LOSS || process.env.QA_TAP_LOSS);
     async function syncPlayer() {
       const clock = await page.evaluate(() => ({
@@ -164,6 +194,23 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     while (!finished) {
       if (process.env.QA_LOSS || (process.env.QA_TAP_LOSS && !firstTap)) break;
       await syncPlayer();
+      if (!boundariesChecked) {
+        const bodies = await page.evaluate(() => window.__jetBodies);
+        const visible = bodies.filter((b) => b.x >= 180 && b.x <= 320);
+        if (visible.length >= 2) {
+          assert.ok(
+            visible.some((b) => Math.abs(b.top) < 0.01),
+            "gate body reaches physical canvas top",
+          );
+          assert.ok(
+            visible.some((b) => Math.abs(b.bottom - b.height) < 0.01),
+            "gate body reaches physical canvas bottom",
+          );
+          boundariesChecked = true;
+          if (process.env.QA_GATE_SCREENSHOT)
+            await page.screenshot({ path: process.env.QA_GATE_SCREENSHOT });
+        }
+      }
       if (s.status !== "running") break;
       if (s.tick !== lastDecision) {
         lastDecision = s.tick;
@@ -203,6 +250,15 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         issued.manifest.seed,
         target,
       );
+    if (process.env.QA_REPLAY_PATH)
+      writeFileSync(
+        process.env.QA_REPLAY_PATH,
+        JSON.stringify(
+          { issued, payload: body, result, boundariesChecked },
+          null,
+          2,
+        ),
+      );
     assert.equal(result.verified, true);
     assert.equal(replay.valid, true, replay.error);
     assert.equal(result.score, replay.score);
@@ -221,6 +277,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(result.won, !loss);
     assert.equal(submits, 1);
     if (!loss) {
+      assert.equal(boundariesChecked, true);
       assert.ok(replay.state.passed > 50);
       assert.ok(replay.state.collected > 5);
     } else {
@@ -280,6 +337,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       JSON.stringify({
         orientation: process.env.QA_LANDSCAPE ? "landscape" : "portrait",
         verified: true,
+        boundariesChecked,
         won: result.won,
         score: result.score,
         finalTick: body.final_tick,
