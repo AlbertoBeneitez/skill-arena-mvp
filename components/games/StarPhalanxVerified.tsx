@@ -2,9 +2,11 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import {
   PHALANX_CORE,
+  PHALANX_RULES,
   type PhalanxState,
 } from "@/lib/verified/starPhalanxCore.v1";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+import { drawPhalanxBolt } from "@/lib/phalanxPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
   drawSpaceBackdrop(ctx, 390, 620, s.tick * 0.22, s.tick);
@@ -18,16 +20,6 @@ function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
     ctx.lineTo(195 + i * 78 - 234, 620);
     ctx.stroke();
   }
-  ctx.fillStyle = "#9ec9df";
-  ctx.textAlign = "center";
-  ctx.font = "bold 12px system-ui";
-  ctx.fillText(
-    s.nextLayerTick !== null
-      ? "SIGUIENTE CAPA EN APROXIMACIÓN"
-      : "",
-    195,
-    82,
-  );
   if (s.nextLayerTick !== null) {
     ctx.strokeStyle = "rgba(156,204,240,.25)";
     for (let i = 0; i < 3; i++) {
@@ -83,16 +75,27 @@ function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
     ctx.lineTo(x + 8, y - 8);
     ctx.closePath();
     ctx.fill();
+    // Armor pips communicate remaining hits without covering the silhouette.
     if (e.maxHp > 1) {
-      ctx.fillStyle = "#eadcff";
-      ctx.font = "bold 10px system-ui";
-      ctx.fillText(String(e.hp), x, y - 1);
+      for (let hp = 0; hp < e.maxHp; hp++) {
+        ctx.fillStyle = hp < e.hp ? "#eadcff" : "#4d4066";
+        ctx.fillRect(x - (e.maxHp * 5 - 2) / 2 + hp * 5, y - 20, 3, 3);
+      }
+    }
+    if (s.chargeId === e.id) {
+      const charge = Math.min(
+        1,
+        Math.max(0, (s.tick - s.chargeStarted) / PHALANX_RULES.chargeTicks),
+      );
+      ctx.strokeStyle = "#ffb29e";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 20, -Math.PI / 2, -Math.PI / 2 + charge * Math.PI * 2);
+      ctx.stroke();
     }
   }
-  for (const b of s.shots) {
-    ctx.fillStyle = b.enemy ? "#ff788f" : "#bdf7ff";
-    ctx.fillRect(b.x / 1000 - 2, b.y / 1000 - 8, 4, 16);
-  }
+  for (const b of s.shots) drawPhalanxBolt(ctx, b);
+
   const killAge = s.tick - s.lastKillTick;
   if (killAge >= 0 && killAge < 36) {
     ctx.globalAlpha = 1 - killAge / 36;
@@ -121,6 +124,40 @@ function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
   ctx.lineTo(-18, 13);
   ctx.closePath();
   ctx.fill();
+  // Cockpit and metal wing trim retain the authoritative hull center.
+  ctx.strokeStyle = "#4f9fb9";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-12, 8);
+  ctx.lineTo(-3, 0);
+  ctx.moveTo(12, 8);
+  ctx.lineTo(3, 0);
+  ctx.stroke();
+  const shotAge = s.tick - s.lastPlayerShot;
+  if (s.firing && shotAge >= 0 && shotAge < 8) {
+    ctx.save();
+    ctx.globalAlpha = 1 - shotAge / 8;
+    ctx.strokeStyle = "#ecffff";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, -22, 3 + shotAge * 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  if (s.tick < s.shieldUntil) {
+    const remaining = Math.min(
+      1,
+      (s.shieldUntil - s.tick) / PHALANX_RULES.shieldTicks,
+    );
+    ctx.save();
+    ctx.globalAlpha = 0.65;
+    ctx.strokeStyle = "#c3e6ff";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, 25, -Math.PI / 2, -Math.PI / 2 + remaining * Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
   ctx.fillStyle = "#d5f7ff";
   ctx.fillRect(-3, -6, 6, 13);
   if (s.firing) {
@@ -146,7 +183,7 @@ const feedbackScore = (s: Readonly<PhalanxState>) =>
 const keys = { " ": "FIRE_DOWN" } as const,
   keyReleases = { " ": "FIRE_UP" } as const;
 const hudLabel = (s: Readonly<PhalanxState>) =>
-  `OLA ${Math.min(5, s.wave)}/5 · CAPA ${s.layer + 1}/${s.layers} · ${Math.max(0, Math.ceil((21600 - s.tick) / 120))}s`;
+  `${s.kills} NAVES · ${Math.max(0, Math.ceil((21600 - s.tick) / 120))}s`;
 export default function StarPhalanxVerified(props: GameRuntimeProps) {
   return (
     <div className="phalanxVerified">
@@ -154,6 +191,7 @@ export default function StarPhalanxVerified(props: GameRuntimeProps) {
         {...props}
         core={PHALANX_CORE}
         name="Star Phalanx"
+        hideHudScore
         render={render}
         inputTones={inputTones}
         feedbackScore={feedbackScore}

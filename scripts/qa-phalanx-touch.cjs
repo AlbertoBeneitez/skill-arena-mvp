@@ -88,10 +88,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       proto.fill = function (...a) {
         const points = paths.get(this),
           scene = window.__scene;
-        if (matches(this) && scene && points?.length === 3) {
-          if (["#83e2df", "#c1a8ff", "#edaa76"].includes(this.fillStyle))
+        if (matches(this) && scene && points) {
+          if (
+            points.length === 3 &&
+            ["#83e2df", "#c1a8ff", "#edaa76"].includes(this.fillStyle)
+          )
             scene.enemies.push({ x: points[0].x, y: points[0].y - 14 });
-          else if (this.fillStyle === "#90eff1") {
+          else if (points.length === 4 && this.fillStyle === "#90eff1") {
             const m = this.getTransform();
             scene.shipX = (m.e - (this.canvas.width - 390 * m.a) / 2) / m.a;
           }
@@ -124,9 +127,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     const target = issued.manifest.competition.target_score;
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
-    assert.ok(
-      (await page.locator(".coreHud").innerText()).includes("CAPA 1/2"),
-    );
+    assert.ok((await page.locator(".coreHud").innerText()).includes("0 NAVES"));
     if (process.env.QA_SOUND)
       await page
         .getByRole("button", { name: "Activar sonido", exact: true })
@@ -184,7 +185,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page.screenshot({ path: process.env.QA_SCREENSHOT });
     let previous = null,
       lastPoint = null,
-      tracked = null;
+      tracked = null,
+      showcaseCaptured = false;
     if (!process.env.QA_LOSS)
       for (let turns = 0; !done && turns < 4000; turns++) {
         const scene = await page.evaluate(() => window.__scene);
@@ -259,6 +261,15 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           });
           lastPoint = desired;
         }
+        if (
+          !showcaseCaptured &&
+          process.env.QA_SCREENSHOT &&
+          scene.shots.length &&
+          scene.enemies.length
+        ) {
+          await page.screenshot({ path: process.env.QA_SCREENSHOT });
+          showcaseCaptured = true;
+        }
         previous = scene;
         await page.waitForTimeout(60);
       }
@@ -273,6 +284,17 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         issued.manifest.seed,
         target,
       );
+    console.log(
+      "observed",
+      JSON.stringify({
+        won: result.won,
+        failure: replay.failure,
+        kills: replay.state.kills,
+        layers: replay.state.clearedLayers,
+        tick: body.final_tick,
+        inputs: body.inputs.length,
+      }),
+    );
     assert.equal(result.verified, true);
     assert.equal(replay.valid, true, replay.error);
     assert.equal(result.score, replay.score);

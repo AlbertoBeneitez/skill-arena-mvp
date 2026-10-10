@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v76-mobile
+# GALACTIC GAMES · Seguimiento de v77-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -21,7 +21,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Brick Relay | V1 VERIFIED, 69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay/touch | V2 continuo y botón autoritativo para acelerar la bola; preservar V1 |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | Doce piezas originales: identidad solicitada al propietario; no inventar variantes sin resolverla |
 | Maze Rush | v74: joystick circular116px con zona neutra/histéresis, STOP retenido durante cooldown, captura/cancelación; victorias70nodos y derrotas/reinicio/rotación en ambas orientaciones, mismo coreV3/replay. v64: V3 VERIFIED, 70 nodos continuos, más margen para girar/perseguidores, avance por nodos, confirmación de input/pulso y tablero horizontal ampliado; victorias/derrotas/reinicio táctiles y replay. V1/V2 archivadas | Seguimiento físico y pulido según uso real |
-| Star Phalanx | V1: 16 capas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | V2 continuo y UX inspirada en arcade probado, implementación original; preservar V1 |
+| Star Phalanx | v77: proyectiles diferenciados/estelas, fogonazo, carga circular, blindaje por indicadores y escudo legible; victorias100enemigos y derrotas/reinicio en ambas orientaciones, 2921frames sin mutar coreV1. V1: 16 capas, geometrías, cargas/pares y replay | V2 continuo y UX inspirada en arcade probado, implementación original; preservar V1 |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Nueva versión con apertura moderadamente más exigente y rampas posteriores más lentas |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Siete teclas directamente bajo lanes, melodías reales de dominio público, protocolo/versionado y replay |
 | Memoria | v71: V2 VERIFIED sin preview, un tablero6×4/12parejas seedado, exploración sin pérdida de vidas, penaliza errores con pareja previamente conocida;128 victorias de aprendizaje y QA táctil win/loss/timeout/reinicio/blur/rotación. V1 archivada | Seed pública aún reconstruible; autoridad privada cronometrada requiere contrato compatible, persistencia/identidad antes de competición real |

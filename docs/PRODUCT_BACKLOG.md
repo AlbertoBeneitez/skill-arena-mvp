@@ -317,3 +317,7 @@ intactos; evidencia en releases y estado restante en el ledger.
 v76 integra la pantalla completa de ranking dentro de Avatar y presenta
 Solitaire con una portada original congruente con su mesa espacial. Conserva
 ranking independiente y fuentes; no declara reparados los repartos legacy.
+
+v77 mejora lectura/impacto de Star Phalanx con arte propio y QA de partidas
+completas. Sus pausas/oleadas siguen pendientes de coreV2 continuo; no se
+confunde pulido visual con cumplimiento de esa evolución competitiva.
