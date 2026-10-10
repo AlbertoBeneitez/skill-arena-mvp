@@ -63,5 +63,6 @@ if (process.argv[2] === "repository") {
   await (await import("./verify-billiards-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-mine-v1.js");
   await import("../.det-test/scripts/verify-mine-v2.js");
+  await import("../.det-test/scripts/verify-solitaire-setups.js");
   await import("../.det-test/scripts/verify-hidden-commands.js");
 }
