@@ -36,3 +36,21 @@ La prueba local usa una capacidad HttpOnly separada de una futura identidad aute
 320 tableros reproducibles, 64 partidas completas, fixture golden de cinco sectores, replay a 60/120/144 Hz, apertura segura, inputs inválidos, límites, banderas, penalizaciones y finalización. Autoridad: pertenencia, payload exacto, conflictos, revisiones obsoletas, concurrencia e intentos independientes de dos participantes con el mismo escenario. PostgreSQL real local: migraciones repetibles, binding, CAS, unicidad y borrado idempotente.
 
 QA Chromium táctil real, 390×844 y 844×390: resolución usando solo pistas públicas, cinco sectores, derrota, reinicio, pointer cancel sin comando, proyección sin seed y cero errores de página. No sustituye QA humana en dispositivos físicos.
+
+## Candidato continuo V2 · v80
+
+Mine2.0 reutiliza el kernel V1 de apertura/deducción/flags/penalizaciones y su
+generador privado en un solo campo7×12/18minas, con apertura segura y dos escudos.
+No transición/reemplazo ni niveles en la proyección/UI. Alcance=66casillas seguras
+máximo. Score/inputs/replay siguen autoritativos en el controlador privado común.
+El ordinal de comandos no mide segundos reales ni adjudica desempates temporales.
+
+1000seeds de prueba producen1000tableros distintos y resolubles sin adivinar;64
+partidas completas y golden8379/tick47/hash0e1895de3ca66b2e042b27e35335db262bbc9ff81f3f86d097bae184b85262b4.
+Proyección sin seed/valores ocultos; paired participants y registros independientes,
+idempotencia/pertenencia comprobadas. V1 queda reproducible en su archivo.
+QA táctil local producción portrait y landscape: victoria/derrota/reinicio/cancel
+y consola correctos, sin transferir secretos al navegador. Catalog0.1 INTEGRATED
+continúa intacto: esta unidad prepara el candidato, no activa integración pública.
+El singleton local pasa aV2; está bloqueado en Vercel incluso con la bandera local.
+Auth/PG privados durables siguen como integración pendiente, sin fallback a SQLite.

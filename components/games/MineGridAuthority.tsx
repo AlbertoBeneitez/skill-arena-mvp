@@ -2,23 +2,18 @@
 import { useEffect, useRef, useState } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import { useHiddenAttempt } from "@/lib/verified/useHiddenAttempt";
-import {
-  mineAction,
-  type MinePublicView,
-} from "@/lib/verified/mineGridProtocol.v1";
+import { mineAction } from "@/lib/verified/mineGridProtocol.v1";
+import type { MinePublicViewV2 } from "@/lib/verified/mineGridProtocol.v2";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 export default function MineGridAuthority(props: GameRuntimeProps) {
-  const { session, phase, send } = useHiddenAttempt<MinePublicView>({
+  const { session, phase, send } = useHiddenAttempt<MinePublicViewV2>({
       active: props.active,
       gameId: "mine-grid",
     }),
-    [flagMode, setFlagMode] = useState(false),
-    [transition, setTransition] = useState(false);
+    [flagMode, setFlagMode] = useState(false);
   const finish = useRef(props.onFinish),
     finished = useRef(false),
-    last = useRef<{ stage: number; revision: number; score: number } | null>(
-      null,
-    );
+    last = useRef<{ revision: number; score: number } | null>(null);
   useEffect(() => {
     finish.current = props.onFinish;
   }, [props.onFinish]);
@@ -31,7 +26,6 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
     if (!session) return;
     const previous = last.current;
     last.current = {
-      stage: session.view.stage,
       revision: session.revision,
       score: session.score,
     };
@@ -56,12 +50,6 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
           failureReason: session.failure,
         });
       }, 600);
-      return () => clearTimeout(timer);
-    }
-    if (previous && session.view.stage !== previous.stage) {
-      setFlagMode(false);
-      setTransition(true);
-      const timer = setTimeout(() => setTransition(false), 650);
       return () => clearTimeout(timer);
     }
   }, [session]);
@@ -89,23 +77,13 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
       </div>
     );
   const view = session.view,
-    busy = phase === "sending" || transition;
+    busy = phase === "sending";
   return (
     <div className="mineAuthoritySurface">
       <div className="mineAuthorityHud">
-        <span>
-          SECTOR {view.stage + 1}/{view.levels}
-        </span>
-        <strong>{session.score.toLocaleString("es-ES")}</strong>
+        <strong>{view.reach} CASILLAS</strong>
         <span>ESCUDOS {view.lives}</span>
       </div>
-      <p className="mineAuthorityGuide">
-        {!view.started
-          ? "Toca el punto luminoso. Es una zona segura."
-          : flagMode
-            ? "Marca las minas que has deducido. Puedes desmarcar."
-            : "El número indica cuántas minas rodean esa casilla."}
-      </p>
       <div className="mineAuthorityBoardViewport">
         <div
           className="mineAuthorityBoard"
@@ -114,12 +92,11 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
             gridTemplateColumns: `repeat(${view.cols},1fr)`,
           }}
           aria-label="Campo orbital"
-          data-stage={view.stage}
           aria-busy={busy}
         >
           {view.cells.map((value, index) => (
             <button
-              key={`${view.stage}-${index}`}
+              key={index}
               type="button"
               data-index={index}
               data-clue={value}
@@ -166,20 +143,7 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
           MARCAR
         </button>
       </div>
-      <div className="mineAuthorityLegend">
-        <span>1–8 · minas alrededor</span>
-        <span>⚑ · marca sin puntos</span>
-      </div>
-      <p className="mineAuthorityEfficiency">
-        Menos acciones al resolver, más bonus.
-      </p>
       <p className="mineAuthorityDemo">ENTRENAMIENTO · RESULTADO DE SERVIDOR</p>
-      {transition && (
-        <div className="mineAuthorityTransition" role="status">
-          <strong>SECTOR DESPEJADO</strong>
-          <span>La siguiente zona está lista</span>
-        </div>
-      )}
     </div>
   );
 }

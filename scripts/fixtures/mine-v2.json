@@ -1,0 +1,250 @@
+{
+  "seed": "mine-v2-private-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "OPEN_008"
+    },
+    {
+      "seq": 1,
+      "tick": 1,
+      "action": "OPEN_004"
+    },
+    {
+      "seq": 2,
+      "tick": 2,
+      "action": "OPEN_005"
+    },
+    {
+      "seq": 3,
+      "tick": 3,
+      "action": "OPEN_038"
+    },
+    {
+      "seq": 4,
+      "tick": 4,
+      "action": "OPEN_032"
+    },
+    {
+      "seq": 5,
+      "tick": 5,
+      "action": "OPEN_039"
+    },
+    {
+      "seq": 6,
+      "tick": 6,
+      "action": "OPEN_044"
+    },
+    {
+      "seq": 7,
+      "tick": 7,
+      "action": "OPEN_045"
+    },
+    {
+      "seq": 8,
+      "tick": 8,
+      "action": "OPEN_046"
+    },
+    {
+      "seq": 9,
+      "tick": 9,
+      "action": "FLAG_003"
+    },
+    {
+      "seq": 10,
+      "tick": 10,
+      "action": "FLAG_025"
+    },
+    {
+      "seq": 11,
+      "tick": 11,
+      "action": "FLAG_026"
+    },
+    {
+      "seq": 12,
+      "tick": 12,
+      "action": "OPEN_033"
+    },
+    {
+      "seq": 13,
+      "tick": 13,
+      "action": "OPEN_040"
+    },
+    {
+      "seq": 14,
+      "tick": 14,
+      "action": "FLAG_027"
+    },
+    {
+      "seq": 15,
+      "tick": 15,
+      "action": "FLAG_031"
+    },
+    {
+      "seq": 16,
+      "tick": 16,
+      "action": "OPEN_042"
+    },
+    {
+      "seq": 17,
+      "tick": 17,
+      "action": "OPEN_050"
+    },
+    {
+      "seq": 18,
+      "tick": 18,
+      "action": "OPEN_051"
+    },
+    {
+      "seq": 19,
+      "tick": 19,
+      "action": "OPEN_052"
+    },
+    {
+      "seq": 20,
+      "tick": 20,
+      "action": "OPEN_058"
+    },
+    {
+      "seq": 21,
+      "tick": 21,
+      "action": "OPEN_059"
+    },
+    {
+      "seq": 22,
+      "tick": 22,
+      "action": "OPEN_060"
+    },
+    {
+      "seq": 23,
+      "tick": 23,
+      "action": "OPEN_054"
+    },
+    {
+      "seq": 24,
+      "tick": 24,
+      "action": "OPEN_048"
+    },
+    {
+      "seq": 25,
+      "tick": 25,
+      "action": "OPEN_041"
+    },
+    {
+      "seq": 26,
+      "tick": 26,
+      "action": "OPEN_055"
+    },
+    {
+      "seq": 27,
+      "tick": 27,
+      "action": "OPEN_061"
+    },
+    {
+      "seq": 28,
+      "tick": 28,
+      "action": "OPEN_062"
+    },
+    {
+      "seq": 29,
+      "tick": 29,
+      "action": "OPEN_065"
+    },
+    {
+      "seq": 30,
+      "tick": 30,
+      "action": "OPEN_066"
+    },
+    {
+      "seq": 31,
+      "tick": 31,
+      "action": "OPEN_071"
+    },
+    {
+      "seq": 32,
+      "tick": 32,
+      "action": "OPEN_076"
+    },
+    {
+      "seq": 33,
+      "tick": 33,
+      "action": "OPEN_081"
+    },
+    {
+      "seq": 34,
+      "tick": 34,
+      "action": "FLAG_034"
+    },
+    {
+      "seq": 35,
+      "tick": 35,
+      "action": "FLAG_043"
+    },
+    {
+      "seq": 36,
+      "tick": 36,
+      "action": "FLAG_047"
+    },
+    {
+      "seq": 37,
+      "tick": 37,
+      "action": "FLAG_049"
+    },
+    {
+      "seq": 38,
+      "tick": 38,
+      "action": "FLAG_053"
+    },
+    {
+      "seq": 39,
+      "tick": 39,
+      "action": "FLAG_056"
+    },
+    {
+      "seq": 40,
+      "tick": 40,
+      "action": "FLAG_057"
+    },
+    {
+      "seq": 41,
+      "tick": 41,
+      "action": "FLAG_064"
+    },
+    {
+      "seq": 42,
+      "tick": 42,
+      "action": "FLAG_069"
+    },
+    {
+      "seq": 43,
+      "tick": 43,
+      "action": "FLAG_078"
+    },
+    {
+      "seq": 44,
+      "tick": 44,
+      "action": "OPEN_063"
+    },
+    {
+      "seq": 45,
+      "tick": 45,
+      "action": "OPEN_070"
+    },
+    {
+      "seq": 46,
+      "tick": 46,
+      "action": "OPEN_077"
+    },
+    {
+      "seq": 47,
+      "tick": 47,
+      "action": "OPEN_079"
+    }
+  ],
+  "finalTick": 47,
+  "score": 8379,
+  "status": "won",
+  "failure": null,
+  "hash": "sha256:0e1895de3ca66b2e042b27e35335db262bbc9ff81f3f86d097bae184b85262b4"
+}

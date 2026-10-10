@@ -115,7 +115,10 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await action(next(session));
     assert.equal(session.status, "won");
     assert.equal(session.verified, true);
-    assert.equal(session.view.stage, 4);
+    assert.equal(session.gameVersion, "2.0.0");
+    assert.equal(session.view.reach, 66);
+    assert.equal("stage" in session.view, false);
+    assert.equal("levels" in session.view, false);
     await page
       .getByRole("heading", { name: "CAMPO RESUELTO", exact: true })
       .waitFor();

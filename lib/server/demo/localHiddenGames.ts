@@ -4,9 +4,9 @@ import { MemoryCommandAttemptRepository } from "./memoryCommandAttemptRepository
 import { HiddenCommandAuthority } from "../hiddenCommandAuthority";
 import { createPrivateMatchManifest } from "../privateMatchIssuer";
 import {
-  MINE_GRID_CORE,
-  projectMineState,
-} from "../../verified/mineGridCore.v1";
+  MINE_GRID_CORE_V2,
+  projectMineV2,
+} from "../../verified/mineGridCore.v2";
 import { CommandAuthorityError } from "../commandAttemptRepository";
 import { hashManifest } from "../matchIntegrity";
 /** Explicit local demo singleton. Never use process memory as Vercel persistence. */
@@ -16,7 +16,7 @@ function createLocalService() {
   const authority = new HiddenCommandAuthority(
     matches,
     attempts,
-    { core: MINE_GRID_CORE, project: projectMineState },
+    { core: MINE_GRID_CORE_V2, project: projectMineV2 },
     "demo",
   );
   let count = 0;
@@ -24,7 +24,7 @@ function createLocalService() {
     authority,
     async start(actorId: string) {
       if (count >= 200) throw new CommandAuthorityError("UNAVAILABLE");
-      const manifest = createPrivateMatchManifest("mine-grid", "1.0.0"),
+      const manifest = createPrivateMatchManifest("mine-grid", "2.0.0"),
         attemptId = randomUUID();
       await matches.createMatch(manifest, {
         A: actorId,
