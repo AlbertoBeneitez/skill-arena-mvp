@@ -1,16 +1,23 @@
 "use client";
 import { useMemo } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
+import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+import { ORB_RULES, orbDirection } from "@/lib/verified/orbBurstCore.v1";
 import {
-  ORB_BURST_CORE,
-  ORB_RULES,
-  orbCenter,
-  forecastOrb,
-  orbMissLimit,
-  type OrbState,
-} from "@/lib/verified/orbBurstCore.v1";
+  ORB_BURST_CORE_V2,
+  ORB_V2_RULES,
+  orbCenterV2,
+  orbMissLimitV2,
+  type OrbV2State,
+} from "@/lib/verified/orbBurstCore.v2";
 import { orbAimAction } from "@/lib/verified/orbBurstProtocol.v1";
+import {
+  applyOrbCamera,
+  getOrbCamera,
+  unprojectOrbPoint,
+  type OrbCamera,
+} from "@/lib/orbPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const colors = ["#66e9ff", "#ff8bbb", "#ffe082", "#a9f786", "#b9a0ff"];
 function orb(
@@ -19,6 +26,7 @@ function orb(
   y: number,
   color: number,
   r = 17,
+  origin?: "source" | "shot" | "pressure",
 ) {
   const gradient = ctx.createRadialGradient(
     x - r * 0.3,
@@ -68,120 +76,227 @@ function orb(
     ctx.strokeRect(-4, -4, 8, 8);
   }
   ctx.restore();
-}
-function renderer() {
-  let cacheKey = "",
-    path: ReturnType<typeof forecastOrb>["points"] = [];
-  return (ctx: CanvasRenderingContext2D, state: OrbState) => {
-    drawSpaceBackdrop(ctx, 390, 620, state.tick * 0.03, state.tick);
-    ctx.fillStyle = "rgba(4,15,31,.72)";
+  if (origin === "source") {
+    ctx.strokeStyle = "rgba(235,254,255,.85)";
+    ctx.lineWidth = 2.2;
     ctx.beginPath();
-    ctx.roundRect(6, 20, 378, 501, 16);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(123,214,241,.25)";
-    ctx.lineWidth = 1;
+    ctx.arc(x, y, r - 3, -2.65, -0.6);
     ctx.stroke();
-    for (const bubble of state.bubbles) {
-      const p = orbCenter(bubble.row, bubble.col);
-      orb(ctx, p.xMilli / 1000, p.yMilli / 1000, bubble.color);
-    }
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,151,166,.6)";
-    ctx.setLineDash([5, 8]);
-    ctx.beginPath();
-    ctx.moveTo(16, 502);
-    ctx.lineTo(374, 502);
-    ctx.stroke();
-    ctx.restore();
-    if (!state.shot && state.status === "running" && !state.settleRemaining) {
-      const key = `${state.seed}:${state.boardRevision}:${state.aimIndex}:${state.shotOrdinal}`;
-      if (key !== cacheKey) {
-        cacheKey = key;
-        path = forecastOrb(state).points;
-      }
-      const shown = state.stage < 2 ? path : path.slice(0, 12);
-      ctx.fillStyle = "rgba(205,244,255,.65)";
-      for (const p of shown) {
-        ctx.beginPath();
-        ctx.arc(p.xMilli / 1000, p.yMilli / 1000, 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    if (state.shot)
-      orb(
-        ctx,
-        state.shot.xMilli / 1000,
-        state.shot.yMilli / 1000,
-        state.shot.color,
-      );
-    if (state.burst) {
-      const age = (state.tick - state.burst.tick) / 70;
-      if (age >= 0 && age < 1) {
-        ctx.save();
-        ctx.globalAlpha = 1 - age;
-        for (const bubble of state.burst.bubbles) {
-          const p = orbCenter(bubble.row, bubble.col);
-          ctx.strokeStyle = colors[bubble.color];
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(
-            p.xMilli / 1000,
-            p.yMilli / 1000,
-            18 + age * 18,
-            0,
-            Math.PI * 2,
-          );
-          ctx.stroke();
-          for (let i = 0; i < 5; i++) {
-            const a = (i * Math.PI * 2) / 5 + bubble.col;
-            ctx.fillStyle = colors[bubble.color];
-            ctx.fillRect(
-              p.xMilli / 1000 + Math.cos(a) * age * 35 - 2,
-              p.yMilli / 1000 + Math.sin(a) * age * 35 + age * 12 - 2,
-              4,
-              4,
-            );
-          }
-        }
-        ctx.restore();
-      }
-    }
-    ctx.fillStyle = "#112c43";
-    ctx.strokeStyle = "#66c7de";
+  } else if (origin === "pressure") {
+    ctx.strokeStyle = "rgba(16,29,44,.45)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.ellipse(195, 581, 43, 20, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(x - 9, y + 7);
+    ctx.lineTo(x - 3, y + 11);
+    ctx.moveTo(x + 3, y + 7);
+    ctx.lineTo(x + 9, y + 11);
     ctx.stroke();
-    if (!state.shot) orb(ctx, 195, 574, state.currentColor);
-    orb(ctx, 286, 574, state.nextColor, 12);
-    ctx.textAlign = "center";
-    ctx.font = "bold 11px system-ui";
-    ctx.fillStyle = "#b8d8e9";
-    ctx.fillText("SIGUIENTE", 286, 601);
-    ctx.font = "bold 12px system-ui";
-    ctx.fillStyle = "#d2f5ff";
-    ctx.fillText(`SECTOR ${state.stage + 1}`, 68, 548);
-    ctx.fillStyle =
-      state.misses >= orbMissLimit(state.stage) - 2 ? "#ffadac" : "#afcad8";
-    ctx.font = "bold 10px system-ui";
-    ctx.fillText(
-      `${orbMissLimit(state.stage) - state.misses} FALLOS ANTES DEL DESCENSO`,
-      250,
-      538,
+  }
+}
+function drawAimGuide(
+  ctx: CanvasRenderingContext2D,
+  state: Readonly<OrbV2State>,
+) {
+  const direction = orbDirection(state.aimIndex);
+  ctx.save();
+  ctx.strokeStyle = "rgba(205,244,255,.7)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([3, 7]);
+  ctx.beginPath();
+  ctx.moveTo(
+    195 + (direction.x / direction.length) * 24,
+    574 + (direction.y / direction.length) * 24,
+  );
+  ctx.lineTo(
+    195 + (direction.x / direction.length) * 84,
+    574 + (direction.y / direction.length) * 84,
+  );
+  ctx.stroke();
+  ctx.restore();
+}
+function renderField(
+  ctx: CanvasRenderingContext2D,
+  state: OrbV2State,
+  camera: OrbCamera,
+) {
+  ctx.save();
+  applyOrbCamera(ctx, camera);
+  ctx.fillStyle = "rgba(4,15,31,.72)";
+  ctx.beginPath();
+  ctx.roundRect(6, 20, 378, 501, 16);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(123,214,241,.25)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(6, 20, 378, 501);
+  ctx.clip();
+  const insertionAge = state.tick - state.lastInsertionTick;
+  // The core locks launch for 18 ticks after every insertion. Only those
+  // safe settling frames interpolate; shots always see the true collider.
+  const descent =
+    state.status === "running" &&
+    !state.shot &&
+    state.settleRemaining > 0 &&
+    insertionAge >= 0 &&
+    insertionAge < 12
+      ? (ORB_RULES.rowHeightMilli / 1000) * (1 - insertionAge / 12)
+      : 0;
+  for (const bubble of state.bubbles) {
+    const p = orbCenterV2(state, bubble.row, bubble.col),
+      y = p.yMilli / 1000 - descent;
+    if (y < 2 || y > 539) continue;
+    orb(ctx, p.xMilli / 1000, y, bubble.color, 17, bubble.origin);
+  }
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,151,166,.6)";
+  ctx.setLineDash([5, 8]);
+  ctx.beginPath();
+  ctx.moveTo(16, 502);
+  ctx.lineTo(374, 502);
+  ctx.stroke();
+  ctx.restore();
+  if (!state.shot && state.status === "running" && !state.settleRemaining)
+    drawAimGuide(ctx, state);
+  if (state.shot)
+    orb(
+      ctx,
+      state.shot.xMilli / 1000,
+      state.shot.yMilli / 1000,
+      state.shot.color,
     );
-    if (state.tick - state.lastStageTick < 100) {
-      ctx.fillStyle = "#affff1";
-      ctx.font = "bold 22px system-ui";
-      ctx.fillText("SECTOR DESPEJADO", 195, 290);
+  if (state.burst) {
+    const age = (state.tick - state.burst.tick) / 70;
+    if (age >= 0 && age < 1) {
+      ctx.save();
+      ctx.globalAlpha = 1 - age;
+      for (const bubble of state.burst.bubbles) {
+        // These positions were captured before the grid parity/insertion
+        // changed; never relocate an already removed orb to the new grid.
+        const p = bubble;
+        ctx.strokeStyle = colors[bubble.color];
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(
+          p.xMilli / 1000,
+          p.yMilli / 1000,
+          18 + age * 18,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+        for (let i = 0; i < 5; i++) {
+          const a = (i * Math.PI * 2) / 5 + bubble.col;
+          ctx.fillStyle = colors[bubble.color];
+          ctx.fillRect(
+            p.xMilli / 1000 + Math.cos(a) * age * 35 - 2,
+            p.yMilli / 1000 + Math.sin(a) * age * 35 + age * 12 - 2,
+            4,
+            4,
+          );
+        }
+      }
+      ctx.restore();
     }
-    ctx.textAlign = "left";
+  }
+  ctx.fillStyle = "#112c43";
+  ctx.strokeStyle = "#66c7de";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(195, 581, 43, 20, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  const direction = orbDirection(state.aimIndex);
+  ctx.strokeStyle = "#78cbdf";
+  ctx.lineWidth = 8;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(
+    195 + (direction.x / direction.length) * 21,
+    574 + (direction.y / direction.length) * 21,
+  );
+  ctx.lineTo(
+    195 + (direction.x / direction.length) * 34,
+    574 + (direction.y / direction.length) * 34,
+  );
+  ctx.stroke();
+  if (!state.shot) orb(ctx, 195, 574, state.currentColor);
+  orb(ctx, 286, 574, state.nextColor, 12);
+  // Pressure is an actual state indicator, not an instruction or a forecast.
+  for (let i = 0; i < orbMissLimitV2(state); i++) {
+    ctx.fillStyle = i < state.misses ? "#ff9dad" : "rgba(139,199,220,.24)";
+    ctx.beginPath();
+    ctx.arc(49 + i * 14, 546, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+function createPresentation() {
+  let camera = getOrbCamera({ width: 390, height: 620 }),
+    viewportKey = "";
+  return {
+    render(
+      ctx: CanvasRenderingContext2D,
+      state: OrbV2State,
+      viewport: LogicalCanvasViewport,
+    ) {
+      const dpr =
+        typeof window === "undefined"
+          ? 1
+          : Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+      const key = `${viewport.width}:${viewport.height}:${ctx.canvas.width}:${ctx.canvas.height}:${dpr}`;
+      if (key !== viewportKey) {
+        viewportKey = key;
+        const transform = ctx.getTransform();
+        camera = getOrbCamera(
+          viewport,
+          Math.hypot(transform.a, transform.b) / dpr,
+        );
+      }
+      drawSpaceBackdrop(
+        ctx,
+        viewport.width,
+        viewport.height,
+        state.tick * 0.03,
+        state.tick,
+      );
+      renderField(ctx, state, camera);
+    },
+    pointAction(
+      point: CorePoint,
+      phase: "down" | "move" | "up",
+      state: OrbV2State,
+    ) {
+      return pointAction(unprojectOrbPoint(camera, point), phase, state);
+    },
+    failureFinale: {
+      durationMs: 300,
+      render(
+        ctx: CanvasRenderingContext2D,
+        state: OrbV2State,
+        elapsedMs: number,
+      ) {
+        if (state.status !== "failed") return;
+        ctx.save();
+        applyOrbCamera(ctx, camera);
+        const fade = 1 - Math.min(1, Math.max(0, elapsedMs) / 300);
+        ctx.strokeStyle = `rgba(255,126,148,${fade})`;
+        ctx.lineWidth = 3 + 7 * (1 - fade);
+        ctx.beginPath();
+        ctx.moveTo(16, 502);
+        ctx.lineTo(374, 502);
+        ctx.stroke();
+        ctx.restore();
+      },
+    },
   };
 }
 function pointAction(
   point: CorePoint,
   phase: "down" | "move" | "up",
-  state: OrbState,
+  state: OrbV2State,
 ) {
   if (phase === "up") return "SHOOT";
   if (state.shot || state.settleRemaining) return null;
@@ -199,21 +314,28 @@ const keys = {
   " ": "SHOOT",
   Enter: "SHOOT",
 };
-const controls = [{ action: "SHOOT", label: "Lanzar orbe", symbol: "LANZAR" }];
+const hudLabel = (state: Readonly<OrbV2State>) =>
+  `AVANCE ${state.height}/${ORB_V2_RULES.sourceGoal}`;
+const feedbackScore = (state: Readonly<OrbV2State>) =>
+  state.height * 1000 - state.pressureRows;
 export default function OrbBurstVerified(props: GameRuntimeProps) {
-  const render = useMemo(renderer, []);
+  const presentation = useMemo(createPresentation, []);
   return (
     <div className="orbVerified">
       <CoreCanvasGame
         {...props}
-        core={ORB_BURST_CORE}
+        core={ORB_BURST_CORE_V2}
         name="Orb Burst"
-        render={render}
-        pointAction={pointAction}
+        render={presentation.render}
+        pointAction={presentation.pointAction}
+        expandHorizontalViewport
+        hudLabel={hudLabel}
+        hideHudScore
+        feedbackScore={feedbackScore}
+        failureFinale={presentation.failureFinale}
         inputTones={inputTones}
         keys={keys}
-        controls={controls}
-        instruction="Arrastra para apuntar y suelta para lanzar. Junta 3 del mismo color."
+        instruction=""
       />
     </div>
   );

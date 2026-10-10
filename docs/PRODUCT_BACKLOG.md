@@ -266,10 +266,37 @@ Evidencia incremental en release v60 y pendientes en el ledger, sin duplicar
 reglas competitivas ni afirmar dataset de 1000 por usar seeds distintas.
 
 
-v61–v69 continúan las unidades pendientes: Piano y River sin resets, Jet con
-cambios de altura más claros y Maze con lectura/cadencia pulidas; fondo/audio/Tower corregidos, Memoria añadida, Alien con decisiones encadenadas, Billar continuo y Sky con marcianos/recuperación segura. Estado, evidencia y siguientes tareas se mantienen
+v61–v70 continúan las unidades pendientes: Piano y River sin resets, Jet con
+cambios de altura más claros y Maze con lectura/cadencia pulidas; fondo/audio/Tower corregidos, Memoria añadida, Alien con decisiones encadenadas, Billar y Orb continuos y Sky con marcianos/recuperación segura. Estado, evidencia y siguientes tareas se mantienen
 en PRODUCT_BACKLOG_STATUS.md y sus releases; no se declara rotación1000 global
 ni comparación por avance completadas.
 
 Las nuevas solicitudes (fondo generado, mute fiable, base visible de Tower,
 variedad de Alien y Memoria) se mantienen en PRODUCT_BACKLOG_STATUS.md.
+
+## Product iteration · 2026-10-10
+
+Latest owner feedback extends the existing units; it does not replace validated
+work or authorize historical core edits. Resolve one game at a time. Follow the
+status ledger for release evidence and unfinished work.
+
+| Game | New acceptance requirement | Boundary |
+| --- | --- | --- |
+| Memoria | Remove the opening full-board photograph advantage; audit public seed/layout disclosure and use the existing private authority when compatible | No claim that hiding UI protects a public seed. Preserve V1; disclose remaining external-assistance limits and assess private persistence before public activation |
+| Dardos | Dart visible from the initial aiming state, followed by a convincing flight and impact | Interpret “dado” as dart in the existing game; preserve skill-based aim/swipe and authoritative throws |
+| Billar | Cue direction and pull distance follow one finger gesture; release shoots with that direction/power | Keep V2 physics and continuous table; version protocol/core if the nine-power/quantized-direction contract changes |
+| Stack | Make alternating perpendicular movement unmistakable; verify actual X/Z alternation rather than reintroducing axis labels | Core V3 already alternates; presentation polish unless a concrete core defect is found |
+| Tower Drop | Decorated launch platform; fixed-size incoming blocks, old blocks remain below as height grows | New competitive version for width/support/stability changes; preserve historical pendulum and V3 replay |
+| Jet Stream | Gate bodies extend fully to both field boundaries | Preserve V4 gaps/collisions; match visible bodies to the existing authoritative geometry |
+| Piano Rush | Recognizable real melodies, seven keys, direct touch underneath each falling lane | New version/protocol when necessary; original arrangements of public-domain compositions with documented provenance, no protected recordings |
+| Alien Dash | More gradual platform-height decisions and optional routes/pickups | New core version if generation/rules change; preserve V1–V3 and the existing movement/replay |
+| Orb Burst | Release-to-launch only, no launch button; smaller miss allowance | Fold into unpublished continuous V2: four misses initially, three after 54 original orbs; retest full wins/losses and historical V1 |
+| Shot Gallery | Six unboxed colour/shape/number targets, less text, visible shot/impact per selected target | New version for option count, input bounds or trials; server identifies actual valid targets |
+| Sky Hop | No fixed height goal; continuously generated course with gradual difficulty | New version preserving V1–V3; keep technical input/replay bounds explicit rather than silently claiming unbounded server work |
+| Metro Shift | Faster, more varied decisions and greater depth | New core version; protect the opening learning window and solvable transition timing |
+| Orbit Shift | Moderately stronger opening, slower subsequent difficulty ramp | New version for schedule/tolerances; retain deterministic paths and reaction margins |
+| Solitaire / Mine Grid | Many different reproducible setups across attempts | Existing private-authority prerequisites remain; no fixed preset repeatedly presented, no client-selected competitive layout |
+
+These requests are pending until both code and complete-play QA satisfy them.
+Real auth, PostgreSQL activation, money and protected music are not introduced by
+this iteration. Physical mobile follow-up remains useful and does not block work.

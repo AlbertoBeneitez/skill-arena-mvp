@@ -1,30 +1,30 @@
-# GALACTIC GAMES · Seguimiento de v69-mobile
+# GALACTIC GAMES · Seguimiento de v70-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
 | Juego / área | Trabajo preservado y validado | Pendiente |
 | --- | --- | --- |
-| Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Seguimiento físico |
-| Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Seguimiento físico |
-| Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados | Seguimiento físico; rotación1000 sin repetición entre partidas y comparación común pendientes |
-| Alien Dash | v67: V3 VERIFIED, patrones encadenados de salto/agachado, tejados/puentes, centinelas y recuperaciones, avance por actores pasados y cámara horizontal con FOV igual; replay/QA táctil120s. V1/V2 archivados | Seguimiento físico; rotación1000 y comparación común pendientes |
-| Orb Burst | Launch reparado, touch/cancel, core/replay V1, etapas y feedback | V2 para eliminar cambios de etapa y conservar progresión continua; QA física |
-| Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | QA humana física |
+| Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Revisar legibilidad de alternancia X/Z sin texto; seguimiento físico |
+| Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Nueva versión para bloques de tamaño constante/estabilidad y plataforma de lanzamiento cuidada; conservar base y replay |
+| Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados | Extender cuerpos de puertas a ambos extremos visuales; rotación1000 y comparación común pendientes |
+| Alien Dash | v67: V3 VERIFIED, patrones encadenados de salto/agachado, tejados/puentes, centinelas y recuperaciones, avance por actores pasados y cámara horizontal con FOV igual; replay/QA táctil120s. V1/V2 archivados | Más decisiones opcionales de altura/plataformas en nueva versión progresiva; rotación1000 y comparación común pendientes |
+| Orb Burst | v70: V2 VERIFIED, campo continuo de108 originales, suministro sin resets, avance sin farming, presión4→3, disparo al soltar sin botón, cámara horizontal y replay/QA táctil completos. V1 archivada | Rotación1000 sin repetición y comparación común pendientes; seguimiento físico |
+| Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | Seis figuras sin recuadros, menos texto e impactos de disparo; nueva versión si cambian trials/inputs |
 | River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
 | Serpent | Wrap cuatro bordes, nueva estética, core/replay y QA | QA humana física |
-| Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Seguimiento físico; rotación1000 y comparación común pendientes |
-| Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | QA humana física |
-| Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo y datasets versionados; integración pública segura y registro; catálogo todavía 0.1 |
-| Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Cierre prematuro al revelar tablero, victoria de 52 bases marcada como derrota y score repetible en traslados; nuevo core versionado y autoridad privada común antes de promoción |
-| Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Seguimiento físico; rotación1000 y comparación común pendientes |
-| Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | QA humana física |
+| Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
+| Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | Dardo visible antes del gesto, vuelo e impacto completos; conservar swipe/replay |
+| Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo, muchos setups versionados, integración pública privada segura/registro; catálogo0.1 |
+| Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Setups variados; corregir cierre/victoria/farming mediante core versionado y autoridad privada común |
+| Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
+| Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | Nueva versión más variada/rápida con apertura justa y transiciones superables |
 | Brick Relay | V1 VERIFIED, 69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay/touch | V2 sin cambios de tablero ni pausas de sector; QA física |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | QA humana física |
 | Maze Rush | v64: V3 VERIFIED, 70 nodos continuos, más margen para girar/perseguidores, avance por nodos, confirmación de input/pulso y tablero horizontal ampliado; victorias/derrotas/reinicio táctiles y replay. V1/V2 archivadas | Seguimiento físico y pulido según uso real |
 | Star Phalanx | V1: 16 capas, geometrías, blindaje, cargas/pares, core/replay y QA táctil | V2 con capas continuas sin cortes/limpieza intermedia; QA física |
-| Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Seguimiento en móviles físicos |
-| Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Seguimiento físico; métrica autoritativa de avance común pendiente |
-| Memoria | v66: V1 VERIFIED, tablero único6×4/12parejas, preview legal8s, dos errores protegidos/ocho vidas, touch al soltar, replay/avance autoritativo; win/error/timeout/reinicio/rotación QA | Seguimiento físico; replay público no prueba memoria humana ni evita automatización |
+| Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Nueva versión con apertura moderadamente más exigente y rampas posteriores más lentas |
+| Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Siete teclas directamente bajo lanes, melodías reales de dominio público, protocolo/versionado y replay |
+| Memoria | v66: V1 VERIFIED, tablero único6×4/12parejas, preview legal8s, dos errores protegidos/ocho vidas, touch al soltar, replay/avance autoritativo; win/error/timeout/reinicio/rotación QA | Corregir preview completo fotografiable; auditar seed pública/autoridad privada sin falsas garantías de seguridad |
 | Fondo/música comunes | v65: imagen original optimizada y alineada a viewport, cubre extremos/letterbox; fallback, una caché/blit; mute síncrono cancela voces/resume pendiente, QA audio nativo | Seguimiento físico de FPS/Safari y dirección artística según uso real |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |

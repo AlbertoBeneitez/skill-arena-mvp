@@ -364,7 +364,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orb-burst",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: ORB_ACTIONS },
@@ -373,14 +373,14 @@ const GAME_DEFINITIONS = [
     enabled: true,
     waitingStakes: [5, 50],
     category: "PUZZLE",
-    tagline: "Mismo tablero y misma cola de orbes.",
+    tagline: "Un campo continuo, decisiones encadenadas.",
     difficulty: "MEDIA",
     skillLabel: "ÁNGULO + PLANIFICACIÓN",
-    rivalScore: 7600,
+    rivalScore: 108,
     rivalName: "ORB",
     rivalAvatar: "/avatars/avatar-5.svg",
     instruction: "Apunta arrastrando y suelta para lanzar. Junta tres o más.",
-    scoring: "El tablero inicial, la cola de colores y la presión son idénticos.",
+    scoring: "Avance por los 108 orbes originales retirados de un campo continuo; disparos y presión no dan avance. Replay de servidor.",
 
   },
   {

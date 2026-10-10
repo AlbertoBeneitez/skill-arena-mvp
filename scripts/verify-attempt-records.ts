@@ -18,6 +18,7 @@ import { createPrivateMatchManifest } from "../lib/server/privateMatchIssuer";
 import alienFixture from "./fixtures/alien-v3.json" with { type: "json" };
 import billiardsFixture from "./fixtures/billiards-v2.json" with { type: "json" };
 import skyFixture from "./fixtures/sky-hop-v3.json" with { type: "json" };
+import orbFixture from "./fixtures/orb-v2.json" with { type: "json" };
 
 const TEST_SECRET = "attempt-record-test-key-not-for-production";
 const START_TIME = Date.parse("2026-10-09T12:00:00.000Z");
@@ -85,6 +86,7 @@ try {
     ["river-dash", "2.0.0"],
     ["sky-hop", "1.0.0"],
     ["sky-hop", "2.0.0"],
+    ["orb-burst", "1.0.0"],
     ["maze-rush", "1.0.0"],
     ["maze-rush", "2.0.0"],
   ];
@@ -242,6 +244,33 @@ try {
   assert.equal(skyResult.body.score, ascent.score);
   assert.equal(skyResult.body.time_ms, Math.round(ascent.finalTick * 1000 / 120));
   assert.equal(skyResult.body.won, true);
+  const course = orbFixture.runs[0];
+  const orbInputs = course.inputs.map(([tick, action], seq) => ({
+    seq, tick: Number(tick), action: String(action),
+  }));
+  const orb = {
+    ...payload("orb-burst", "2.0.0", course.seed),
+    inputs: orbInputs,
+    final_tick: course.finalTick,
+  };
+  now += Math.ceil(course.finalTick * 1000 / 120) + 1000;
+  const orbPrefix = {
+    ...orb,
+    inputs: orbInputs.filter(input => input.tick <= 300),
+    final_tick: 300,
+  };
+  assert.ok(orbPrefix.inputs.some(input => input.action === "SHOOT"), "Orb abandoned prefix includes the actual in-flight launch");
+  receipt(orbPrefix);
+  reject(orbPrefix, "CLIENT_ENDED_BEFORE_RESOLUTION");
+  const orbResult = processAttemptRecord({ ...orb, client_score: 1e9, won: false, height: 999999 });
+  assert.equal(orbResult.status, 200);
+  assert.equal(orbResult.body.verified, true);
+  if (!orbResult.body.verified) throw new Error("Orb V2 terminal did not verify");
+  assert.equal(orbResult.body.height, course.height, "Orb advance comes only from replayed original IDs, never client totals");
+  assert.equal(orbResult.body.score, course.score);
+  assert.equal(orbResult.body.time_ms, Math.round(course.finalTick * 1000 / 120));
+  assert.equal(orbResult.body.won, true);
+  reject(abandon(orb), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
   reject(abandon(terminal), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
   reject({ ...abandon(terminal), final_tick: 791 }, "FINAL_TICK_AFTER_RESOLUTION");
   reject({ ...abandon(terminal), inputs: [{ seq: 0, tick: 790, action: "FLAP" }] }, "UNCONSUMED_INPUTS");

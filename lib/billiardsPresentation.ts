@@ -1,4 +1,10 @@
 import type { LogicalCanvasViewport } from "./gameCanvas";
+import {
+  applyCanvasCamera,
+  projectCanvasPoint,
+  unprojectCanvasPoint,
+  type CanvasCamera,
+} from "./canvasCamera";
 
 export type BilliardsViewPoint = { x: number; y: number };
 export type BilliardsCamera = {
@@ -17,6 +23,12 @@ export const BILLIARDS_TABLE_VIEW_BOUNDS = {
 } as const;
 const worldCenterX = 195;
 const worldCenterY = 299.5;
+const sharedCamera = (camera: BilliardsCamera): CanvasCamera => ({
+  ...camera,
+  worldCenterX,
+  worldCenterY,
+  rotation: camera.rotated ? -Math.PI / 2 : 0,
+});
 
 /** Pure visual framing; physical coordinates, core and input tokens stay intact. */
 export function getBilliardsCamera(
@@ -55,36 +67,19 @@ export function projectBilliardsPoint(
   camera: BilliardsCamera,
   point: BilliardsViewPoint,
 ): BilliardsViewPoint {
-  const x = point.x - worldCenterX;
-  const y = point.y - worldCenterY;
-  return camera.rotated
-    ? {
-        x: camera.centerX + y * camera.scale,
-        y: camera.centerY - x * camera.scale,
-      }
-    : {
-        x: camera.centerX + x * camera.scale,
-        y: camera.centerY + y * camera.scale,
-      };
+  return projectCanvasPoint(sharedCamera(camera), point);
 }
 
 export function unprojectBilliardsPoint(
   camera: BilliardsCamera,
   point: BilliardsViewPoint,
 ): BilliardsViewPoint {
-  const x = (point.x - camera.centerX) / camera.scale;
-  const y = (point.y - camera.centerY) / camera.scale;
-  return camera.rotated
-    ? { x: worldCenterX - y, y: worldCenterY + x }
-    : { x: worldCenterX + x, y: worldCenterY + y };
+  return unprojectCanvasPoint(sharedCamera(camera), point);
 }
 
 export function applyBilliardsCamera(
   ctx: CanvasRenderingContext2D,
   camera: BilliardsCamera,
 ) {
-  ctx.translate(camera.centerX, camera.centerY);
-  if (camera.rotated) ctx.rotate(-Math.PI / 2);
-  ctx.scale(camera.scale, camera.scale);
-  ctx.translate(-worldCenterX, -worldCenterY);
+  applyCanvasCamera(ctx, sharedCamera(camera));
 }
