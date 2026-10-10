@@ -266,8 +266,8 @@ Evidencia incremental en release v60 y pendientes en el ledger, sin duplicar
 reglas competitivas ni afirmar dataset de 1000 por usar seeds distintas.
 
 
-v61–v71 continúan las unidades pendientes: Piano y River sin resets, Jet con
-cambios de altura más claros y Maze con lectura/cadencia pulidas; fondo/audio/Tower corregidos, Memoria añadida y después sin preview fotografiable, Alien con decisiones encadenadas, Billar y Orb continuos y Sky con marcianos/recuperación segura. Estado, evidencia y siguientes tareas se mantienen
+v61–v72 continúan las unidades pendientes: Piano y River sin resets, Jet con
+cambios de altura más claros y Maze con lectura/cadencia pulidas; fondo/audio/Tower corregidos, Memoria añadida y después sin preview fotografiable, Alien con decisiones encadenadas, Billar y Orb continuos, Sky con marcianos/recuperación segura y Dardos con presencia/vuelo completos. Estado, evidencia y siguientes tareas se mantienen
 en PRODUCT_BACKLOG_STATUS.md y sus releases; no se declara rotación1000 global
 ni comparación por avance completadas.
 

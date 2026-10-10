@@ -3,6 +3,11 @@ import { useCallback, useEffect, useRef } from "react";
 import { isDartsThrowGesture } from "@/lib/verified/dartsGesture.v2";
 import { DARTS_CORE_V2 } from "@/lib/verified/dartsCore.v2";
 import type { GameRuntimeProps } from "@/lib/games";
+import {
+  dartPresentationPose,
+  dartFlightPose,
+  drawDart,
+} from "@/lib/dartsPresentation";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
   DARTS_RULES,
@@ -97,10 +102,11 @@ function render(ctx: CanvasRenderingContext2D, s: DartsState) {
     : s.impacts
   ).slice(-3)) {
     if (p.timeout) continue;
-    ctx.fillStyle = p.goal ? "#d4fff0" : "#e7b997";
-    ctx.beginPath();
-    ctx.arc(cx + p.x / 1000, cy + p.y / 1000, 3, 0, Math.PI * 2);
-    ctx.fill();
+    drawDart(
+      ctx,
+      dartFlightPose(cx + p.x / 1000, cy + p.y / 1000, DARTS_RULES.impactTicks),
+      p.goal ? "#a7ffe0" : "#e9b586",
+    );
   }
   if (s.phase === "aim") {
     const r = dartsReticle(s),
@@ -119,27 +125,66 @@ function render(ctx: CanvasRenderingContext2D, s: DartsState) {
     ctx.moveTo(x, y + 4);
     ctx.lineTo(x, y + 13);
     ctx.stroke();
-  } else {
-    const last = s.impacts.at(-1);
-    if (last && !last.timeout) {
-      const progress = Math.min(1, s.phaseTicks / 24),
-        x = cx + last.x / 1000,
-        y = cy + last.y / 1000,
-        dx = cx + (x - cx) * progress,
-        dy = 550 + (y - 550) * progress;
-      ctx.strokeStyle = "#e9fcff";
-      ctx.lineWidth = 3;
+  }
+  const dart = dartPresentationPose(s),
+    impact = s.impacts.at(-1);
+  if (dart) {
+    if (
+      s.phase === "flight" &&
+      s.phaseTicks < DARTS_RULES.impactTicks &&
+      impact
+    ) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(184,246,255,.5)";
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(dx, dy);
-      ctx.lineTo(dx - 4, dy + 12 * (1 - progress));
+      for (
+        let age = Math.max(0, s.phaseTicks - 8);
+        age <= s.phaseTicks;
+        age += 2
+      ) {
+        const tail = dartFlightPose(
+          cx + impact.x / 1000,
+          cy + impact.y / 1000,
+          age,
+        );
+        if (age === Math.max(0, s.phaseTicks - 8)) ctx.moveTo(tail.x, tail.y);
+        else ctx.lineTo(tail.x, tail.y);
+      }
       ctx.stroke();
-      if (s.phaseTicks > 24) {
-        ctx.strokeStyle = last.goal ? "#a7ffe0" : "#ebb88c";
-        ctx.lineWidth = 2;
+      ctx.restore();
+    }
+    // Previous impacts are already drawn above after impactTick.
+    if (s.phase === "aim" || s.phaseTicks < DARTS_RULES.impactTicks)
+      drawDart(ctx, dart);
+    if (
+      s.phase === "flight" &&
+      s.phaseTicks >= DARTS_RULES.impactTicks &&
+      impact
+    ) {
+      const age = s.phaseTicks - DARTS_RULES.impactTicks;
+      ctx.save();
+      ctx.globalAlpha =
+        1 - age / (DARTS_RULES.flightTicks - DARTS_RULES.impactTicks);
+      ctx.strokeStyle = impact.goal ? "#a7ffe0" : "#ebb88c";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(dart.x, dart.y, 5 + age, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let ray = 0; ray < 6; ray++) {
+        const a = (ray * Math.PI) / 3;
         ctx.beginPath();
-        ctx.arc(x, y, 5 + (s.phaseTicks - 24), 0, Math.PI * 2);
+        ctx.moveTo(
+          dart.x + Math.cos(a) * (8 + age),
+          dart.y + Math.sin(a) * (8 + age),
+        );
+        ctx.lineTo(
+          dart.x + Math.cos(a) * (13 + age * 1.2),
+          dart.y + Math.sin(a) * (13 + age * 1.2),
+        );
         ctx.stroke();
       }
+      ctx.restore();
     }
   }
   ctx.textAlign = "center";
@@ -182,25 +227,13 @@ function render(ctx: CanvasRenderingContext2D, s: DartsState) {
     s.phase === "flight"
       ? last?.timeout
         ? "TIEMPO AGOTADO"
-        : `${last?.goal ? "OBJETIVO · " : ""}+${last?.award ?? 0}`
+        : last?.goal
+          ? "OBJETIVO"
+          : ""
       : "",
     cx,
     492,
   );
-  if (s.phase === "aim") {
-    ctx.strokeStyle = "rgba(156,234,215,.55)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, 580);
-    ctx.lineTo(cx, 530);
-    ctx.moveTo(cx - 7, 539);
-    ctx.lineTo(cx, 530);
-    ctx.lineTo(cx + 7, 539);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(cx, 580, 9, 0, Math.PI * 2);
-    ctx.stroke();
-  }
   ctx.textAlign = "left";
 }
 function aimActions(point: CorePoint) {
@@ -255,6 +288,7 @@ export default function Darts(props: GameRuntimeProps) {
         controls={[]}
         inputTones={tones}
         keys={keys}
+        hideHudScore
         hideHudLabel
         instruction="Desliza desde la zona inferior hacia la diana. Suelta el dedo para lanzar; apunta al objetivo dorado."
       />

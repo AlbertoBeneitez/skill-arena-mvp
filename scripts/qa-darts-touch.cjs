@@ -6,6 +6,7 @@ const { chromium } = require(
   { register } = require("node:module"),
   { pathToFileURL } = require("node:url"),
   path = require("node:path");
+const { writeFileSync } = require("node:fs");
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const { DARTS_CORE_V2: core, dartsDrift } = await import(
@@ -39,6 +40,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       page = await context.newPage(),
       errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
+    page.on("console", (m) => {
+      if (m.type() === "error") errors.push(m.text());
+    });
     await page.addInitScript(() => {
       localStorage.setItem(
         "skill-arena-v12",
@@ -58,6 +62,26 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         }),
       );
       localStorage.setItem("skill-arena-color-tutorial-v12", "1");
+      window.__dartTrace = [];
+      const fill = CanvasRenderingContext2D.prototype.fill;
+      CanvasRenderingContext2D.prototype.fill = function (...args) {
+        if (
+          this.canvas.classList.contains("gameCanvas") &&
+          this.fillStyle === "#dff7ff"
+        ) {
+          const m = this.getTransform(),
+            trace = window.__dartTrace;
+          trace.push({
+            x: m.e,
+            y: m.f,
+            scale: Math.hypot(m.a, m.b),
+            pixelWidth: this.canvas.width,
+            pixelHeight: this.canvas.height,
+          });
+          if (trace.length > 300) trace.shift();
+        }
+        return fill.apply(this, args);
+      };
       const raf = requestAnimationFrame;
       window.requestAnimationFrame = (cb) => {
         if (window.__issued && !window.__epoch)
@@ -73,7 +97,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         });
     });
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
-    await page.locator(".quickStakeBar button").first().tap();
+    await page
+      .getByRole("button", { name: "Entrenamiento gratis", exact: true })
+      .tap();
     const start = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
@@ -88,7 +114,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     const cdp = await context.newCDPSession(page),
       canvas = page.locator("canvas.gameCanvas"),
       state = core.create(issued.manifest.seed);
-    let submits = 0;
+    let submits = 0,
+      firstFlight = null;
     page.on("request", (r) => {
       if (r.url().includes("/verified-match/verify")) submits++;
     });
@@ -114,16 +141,40 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         touchPoints: [],
       });
     }
+    const dpr = await page.evaluate(() =>
+      Math.min(2, Math.max(1, devicePixelRatio || 1)),
+    );
     const initialBox = await canvas.boundingBox();
-    const firstScale = Math.min(initialBox.width/390, initialBox.height/620);
-    const firstOx = (initialBox.width-390*firstScale)/2;
-    const firstOy = (initialBox.height-620*firstScale)/2;
-    for (const cancelMode of ['cancel','blur']) {
-      const x=initialBox.x+firstOx+195*firstScale;
-      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y:initialBox.y+firstOy+560*firstScale}]});
-      await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:initialBox.y+firstOy+285*firstScale}]});
-      if(cancelMode==='blur') await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
-      await cdp.send('Input.dispatchTouchEvent',{type:cancelMode==='cancel'?'touchCancel':'touchEnd',touchPoints:[]});
+    const firstScale = Math.min(
+      initialBox.width / 390,
+      initialBox.height / 620,
+    );
+    const firstOx = (initialBox.width - 390 * firstScale) / 2;
+    const firstOy = (initialBox.height - 620 * firstScale) / 2;
+    await page.waitForFunction(() => window.__dartTrace.length > 0);
+    const prepared = await page.evaluate(() => window.__dartTrace.at(-1));
+    // Native canvas matrices use float32; tolerate one milli-unit, not a wrong target.
+    assert.ok(Math.abs((prepared.x / dpr - firstOx) / firstScale - 195) < 1e-3);
+    assert.ok(
+      Math.abs((prepared.y / dpr - firstOy) / firstScale - 550) < 1e-3,
+      "dart visible in launch position before first throw",
+    );
+    for (const cancelMode of ["cancel", "blur"]) {
+      const x = initialBox.x + firstOx + 195 * firstScale;
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [{ x, y: initialBox.y + firstOy + 560 * firstScale }],
+      });
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ x, y: initialBox.y + firstOy + 285 * firstScale }],
+      });
+      if (cancelMode === "blur")
+        await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: cancelMode === "cancel" ? "touchCancel" : "touchEnd",
+        touchPoints: [],
+      });
     }
     if (process.env.QA_SCREENSHOT)
       await page.screenshot({ path: process.env.QA_SCREENSHOT });
@@ -146,11 +197,49 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         oy = (box.height - 620 * scale) / 2;
       const tx = box.x + ox + (195 + (x - 30) * 5) * scale;
       const ty = box.y + oy + (285 + (y - 30) * 5) * scale;
-      await cdp.send("Input.dispatchTouchEvent", {type:"touchStart",touchPoints:[{x:tx,y:box.y+oy+560*scale}]});
+      if (i === 0) await page.evaluate(() => (window.__dartTrace = []));
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [{ x: tx, y: box.y + oy + 560 * scale }],
+      });
       await page.waitForTimeout(45);
-      await cdp.send("Input.dispatchTouchEvent", {type:"touchMove",touchPoints:[{x:tx,y:ty}]});
-      await cdp.send("Input.dispatchTouchEvent", {type:"touchEnd",touchPoints:[]});
-      assert.equal(await page.getByRole("button", {name:"Lanzar dardo",exact:true}).count(),0);
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ x: tx, y: ty }],
+      });
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        touchPoints: [],
+      });
+      if (i === 0) {
+        await page.waitForTimeout(250);
+        const trace = await page.evaluate(() => window.__dartTrace);
+        firstFlight = trace.map((p) => ({
+          x: (p.x / dpr - ox) / scale,
+          y: (p.y / dpr - oy) / scale,
+          scale: p.scale / dpr / scale,
+        }));
+        const moving = firstFlight.filter(
+          (p) => p.scale < 1.3 && p.scale > 0.5,
+        );
+        assert.ok(moving.length >= 2, "visible real dart frames in flight");
+        assert.ok(
+          new Set(moving.map((p) => p.y.toFixed(3))).size >= 2,
+          "dart tip visibly moves",
+        );
+        assert.ok(
+          moving[0].scale > moving.at(-1).scale,
+          "dart recedes into the board",
+        );
+        if (process.env.QA_FLIGHT_SCREENSHOT)
+          await page.screenshot({ path: process.env.QA_FLIGHT_SCREENSHOT });
+      }
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Lanzar dardo", exact: true })
+          .count(),
+        0,
+      );
       for (const a of [
         dartsAimAction("X", x),
         dartsAimAction("Y", y),
@@ -181,7 +270,39 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       "cancel and blur never add a dart",
     );
     assert.equal(submits, 1);
+    const hit = replay.state.impacts[0];
+    if (process.env.QA_REPLAY_PATH)
+      writeFileSync(
+        process.env.QA_REPLAY_PATH,
+        JSON.stringify(
+          {
+            issued,
+            payload: body,
+            result,
+            firstFlight,
+            hit,
+            dpr,
+            initialBox,
+            prepared,
+          },
+          null,
+          2,
+        ),
+      );
+    assert.ok(
+      firstFlight.some(
+        (p) =>
+          Math.abs(p.x - (195 + hit.x / 1000)) < 1e-3 &&
+          Math.abs(p.y - (285 + hit.y / 1000)) < 1e-3,
+      ),
+      "visible impact equals authoritative landing",
+    );
     assert.equal(replay.state.impacts.length, 15);
+    assert.equal(
+      await page.locator(".coreHud strong").count(),
+      0,
+      "points absent from game HUD",
+    );
     await page.locator(".resultPanel").waitFor({ state: "visible" });
     assert.equal(
       await page.evaluate(() => document.body.scrollWidth > window.innerWidth),
@@ -195,9 +316,23 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Dardos", exact: true })
       .tap();
     const again = await (await restart).json();
+    assert.notEqual(again.manifest.seed, issued.manifest.seed);
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     assert.equal(await page.locator(".resultPanel").isVisible(), false);
+    await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
+    await page.evaluate(() => (window.__dartTrace = []));
+    await page.waitForFunction(() => window.__dartTrace.at(-1)?.scale > 0);
+    const abandoning = page.waitForResponse((r) =>
+      r.url().includes("/verified-match/verify"),
+    );
+    await page.getByRole("button", { name: "Volver", exact: true }).tap();
+    const abandoned = await abandoning,
+      receipt = await abandoned.json();
+    assert.equal(abandoned.request().postDataJSON().record_kind, "abandoned");
+    assert.equal(receipt.received, true);
+    assert.equal(receipt.verified, false);
+    assert.equal(submits, 2);
     assert.deepEqual(errors, []);
     console.log(
       JSON.stringify({
@@ -207,6 +342,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         score: result.score,
         goals: replay.state.impacts.filter((i) => i.goal).length,
         finalTick: body.final_tick,
+        preparedDart: true,
+        flightAndImpact: true,
+        restartAndReceipt: true,
         errors,
       }),
     );

@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v71-mobile
+# GALACTIC GAMES · Seguimiento de v72-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -13,7 +13,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
 | Serpent | Wrap cuatro bordes, nueva estética, core/replay y QA | QA humana física |
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
-| Dardos | v36: quince lanzamientos, objetivos progresivos, skill/timing, replay y QA | Dardo visible antes del gesto, vuelo e impacto completos; conservar swipe/replay |
+| Dardos | v72: dardo presente desde apuntado, sprite propio con profundidad/estela e impacto en coordenada autoritativa; quince swipes, victorias/derrotas/reinicio en ambas orientaciones y replay históricoV1/V2 intacto | Seguimiento físico; comparación común pendiente |
 | Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo, muchos setups versionados, integración pública privada segura/registro; catálogo0.1 |
 | Solitaire Sprint | Fondo espacial preservado; auditoría incremental v52 | Setups variados; corregir cierre/victoria/farming mediante core versionado y autoridad privada común |
 | Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
