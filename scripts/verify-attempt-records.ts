@@ -71,6 +71,7 @@ function reject(raw: unknown, error: string, status = 400) {
 
 try {
   const historical: [GameId, string][] = [
+    ["grid-serpent", "1.0.0"],
     ["tower-drop", "2.1.0"],
     ["precision-stack", "1.0.0"],
     ["precision-stack", "2.0.0"],

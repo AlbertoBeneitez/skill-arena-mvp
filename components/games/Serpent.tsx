@@ -1,19 +1,25 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
-import {
-  SERPENT_CORE,
-  SERPENT_V1,
-  type SerpentState,
-} from "@/lib/verified/serpentCore.v1";
+import { SERPENT_V1, type SerpentState } from "@/lib/verified/serpentCore.v1";
+import { SERPENT_CORE_V2 } from "@/lib/verified/serpentCore.v2";
+import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import CoreCanvasGame from "./CoreCanvasGame";
-const cell = 300 / SERPENT_V1.cols,
-  ox = 45,
-  oy = 62;
-function render(ctx: CanvasRenderingContext2D, state: SerpentState) {
-  drawSpaceBackdrop(ctx, 390, 620, 2, state.tick);
+function render(
+  ctx: CanvasRenderingContext2D,
+  state: SerpentState,
+  viewport: LogicalCanvasViewport,
+) {
+  drawSpaceBackdrop(ctx, viewport.width, viewport.height, 2, state.tick);
+  const cell = Math.min(
+    (viewport.width - 24) / SERPENT_V1.cols,
+    (viewport.height - 94) / SERPENT_V1.rows,
+  );
+  const width = cell * SERPENT_V1.cols;
+  const ox = (viewport.width - width) / 2,
+    oy = 54;
   ctx.fillStyle = "rgba(3,19,33,.85)";
-  ctx.fillRect(ox, oy, 300, cell * SERPENT_V1.rows);
+  ctx.fillRect(ox, oy, width, cell * SERPENT_V1.rows);
   ctx.strokeStyle = "rgba(104,227,222,.12)";
   ctx.lineWidth = 0.6;
   for (let x = 0; x <= SERPENT_V1.cols; x++) {
@@ -25,12 +31,12 @@ function render(ctx: CanvasRenderingContext2D, state: SerpentState) {
   for (let y = 0; y <= SERPENT_V1.rows; y++) {
     ctx.beginPath();
     ctx.moveTo(ox, oy + y * cell);
-    ctx.lineTo(ox + 300, oy + y * cell);
+    ctx.lineTo(ox + width, oy + y * cell);
     ctx.stroke();
   }
   ctx.strokeStyle = "#4bb2bb";
   ctx.lineWidth = 2;
-  ctx.strokeRect(ox, oy, 300, cell * SERPENT_V1.rows);
+  ctx.strokeRect(ox, oy, width, cell * SERPENT_V1.rows);
   if (state.food) {
     const x = ox + (state.food.x + 0.5) * cell,
       y = oy + (state.food.y + 0.5) * cell;
@@ -78,21 +84,23 @@ function render(ctx: CanvasRenderingContext2D, state: SerpentState) {
     }
   });
   if (state.tick - state.lastEatTick < 45) {
-    ctx.fillStyle = "#fff3b0";
-    ctx.font = "bold 14px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("+1000", 195, 46);
-    ctx.textAlign = "left";
+    const head = state.snake[0],
+      age = (state.tick - state.lastEatTick) / 45;
+    ctx.save();
+    ctx.strokeStyle = "#fff3b0";
+    ctx.globalAlpha = 1 - age;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(
+      ox + (head.x + 0.5) * cell,
+      oy + (head.y + 0.5) * cell,
+      cell * (0.5 + age),
+      0,
+      Math.PI * 2,
+    );
+    ctx.stroke();
+    ctx.restore();
   }
-  ctx.fillStyle = "#a2d6e6";
-  ctx.font = "11px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillText(
-    `${state.foods} NÚCLEOS · ${state.wrapCount} PORTALES`,
-    195,
-    550,
-  );
-  ctx.textAlign = "left";
 }
 const keys = {
   ArrowUp: "UP",
@@ -115,7 +123,10 @@ export default function Serpent(props: GameRuntimeProps) {
     <div className="serpentVerified">
       <CoreCanvasGame
         {...props}
-        core={SERPENT_CORE}
+        core={SERPENT_CORE_V2}
+        hideHudScore
+        hudLabel={(state) => `${state.foods} NÚCLEOS`}
+        expandHorizontalViewport
         name="Serpent"
         render={render}
         keys={keys}

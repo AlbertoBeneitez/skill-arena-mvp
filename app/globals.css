@@ -5850,6 +5850,20 @@ html, body {
   .serpentVerified .coreHint, .riverVerified .coreHint { left: 14px; right: 78px; bottom: 8px; }
 }
 
+/* Serpent has large, separated direction targets without covering its grid. */
+.serpentVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 98px) !important;}
+.serpentVerified .coreControls {bottom:12px;gap:10px;}
+.serpentVerified .coreControls button {width:72px;height:64px;font-size:30px;}
+@media (orientation:landscape) and (max-height:600px) {
+ .serpentVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 104px) !important;height:100% !important;}
+ .serpentVerified .coreControls {left:auto;right:12px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:6px;}
+ .serpentVerified .coreControls button {width:72px;height:60px;}
+}
+@media (max-width:350px) and (orientation:portrait) {
+ .serpentVerified .coreControls {gap:6px;left:6px;right:6px;}
+ .serpentVerified .coreControls button {width:calc((100vw - 36px)/4);height:64px;}
+}
+
 /* Ranking read model and explicitly isolated fictional illustration. */
 .bottomNav.bottomNavFour { grid-template-columns: repeat(4,minmax(0,1fr)); }
 .globalRankingShortcut { width:100%; margin:8px 0 14px; padding:14px; border:1px solid #438095; border-radius:14px; background:linear-gradient(110deg,#133b52,#18344e); color:#c9f4ef; font-weight:850; text-align:left; }

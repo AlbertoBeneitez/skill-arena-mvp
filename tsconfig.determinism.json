@@ -26,6 +26,7 @@
     "scripts/verify-tower-v3.ts",
     "scripts/verify-jet-v2.ts",
     "scripts/verify-serpent-v1.ts",
+    "scripts/verify-serpent-v2.ts",
     "scripts/verify-river-v1.ts",
     "scripts/verify-river-v2.ts",
     "scripts/verify-river-v3.ts",

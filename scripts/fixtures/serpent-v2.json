@@ -1,0 +1,86 @@
+{
+  "seed": "serpent-v2-golden-original",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 17,
+      "action": "DOWN"
+    },
+    {
+      "seq": 1,
+      "tick": 233,
+      "action": "LEFT"
+    },
+    {
+      "seq": 2,
+      "tick": 395,
+      "action": "UP"
+    },
+    {
+      "seq": 3,
+      "tick": 539,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 4,
+      "tick": 610,
+      "action": "UP"
+    },
+    {
+      "seq": 5,
+      "tick": 763,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 6,
+      "tick": 865,
+      "action": "DOWN"
+    },
+    {
+      "seq": 7,
+      "tick": 916,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 8,
+      "tick": 949,
+      "action": "DOWN"
+    },
+    {
+      "seq": 9,
+      "tick": 965,
+      "action": "LEFT"
+    },
+    {
+      "seq": 10,
+      "tick": 1013,
+      "action": "UP"
+    },
+    {
+      "seq": 11,
+      "tick": 1045,
+      "action": "LEFT"
+    },
+    {
+      "seq": 12,
+      "tick": 1077,
+      "action": "DOWN"
+    },
+    {
+      "seq": 13,
+      "tick": 1189,
+      "action": "LEFT"
+    },
+    {
+      "seq": 14,
+      "tick": 1332,
+      "action": "DOWN"
+    },
+    {
+      "seq": 15,
+      "tick": 1347,
+      "action": "RIGHT"
+    }
+  ],
+  "finalTick": 1363
+}

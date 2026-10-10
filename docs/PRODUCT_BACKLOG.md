@@ -309,3 +309,7 @@ pieces (identity to confirm); varied Mine/Solitaire setups; larger Serpent
 controls/field and slightly slower movement; authoritative Brick speed button;
 Solitaire pre-game presentation; ranking screen within Avatar. These extend the
 existing ledger, not historical core contracts. Validate one game at a time.
+
+v74–v75 cierran el joystick circular de Maze y el control/campo ampliados de
+Serpent con una pequeña reducción versionada de cadencia. Replays históricos
+intactos; evidencia en releases y estado restante en el ledger.

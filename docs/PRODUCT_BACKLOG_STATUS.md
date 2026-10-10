@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v74-mobile
+# GALACTIC GAMES · Seguimiento de v75-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -11,7 +11,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Orb Burst | v70: V2 VERIFIED, campo continuo de108 originales, suministro sin resets, avance sin farming, presión4→3, disparo al soltar sin botón, cámara horizontal y replay/QA táctil completos. V1 archivada | Rotación1000 sin repetición y comparación común pendientes; seguimiento físico |
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | Seis figuras sin recuadros, menos texto e impactos de disparo; nueva versión si cambian trials/inputs |
 | River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
-| Serpent | Wrap cuatro bordes, nueva estética, core/replay y QA | Botones mayores, campo visual mayor, velocidad ligeramente reducida en versión nueva |
+| Serpent | v75: V2 VERIFIED, cadencia18→10ticks frente17→9V1, botones72px y campo ampliado, avance por núcleos, 32 recorridos equivalentes al kernelV1 y 8 derrotas; QA táctil victoria/derrota/reinicio en ambas orientaciones, históricoV1 archivado | Seguimiento físico y comparación común pendientes |
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
 | Dardos | v72: dardo presente desde apuntado, sprite propio con profundidad/estela e impacto en coordenada autoritativa; quince swipes, victorias/derrotas/reinicio en ambas orientaciones y replay históricoV1/V2 intacto | Seguimiento físico; comparación común pendiente |
 | Mine Grid | Candidato privado V1 resoluble, autoridad común/PG y QA local | V2 continuo, muchos setups versionados, integración pública privada segura/registro; catálogo0.1 |
