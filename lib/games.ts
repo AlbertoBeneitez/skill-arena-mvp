@@ -2,7 +2,7 @@ import { PIANO_V2_ACTIONS } from "./verified/pianoRushProtocol.v2";
 import { ORBIT_ACTIONS } from "./verified/orbitShiftProtocol.v1";
 import { MEMORY_ACTIONS } from "./verified/memoryMatchProtocol.v1";
 import { MAZE_ACTIONS } from "./verified/mazeRushProtocol.v1";
-import { BRICK_ACTIONS } from "./verified/brickRelayProtocol.v1";
+import { BRICK_V2_ACTIONS } from "./verified/brickRelayProtocol.v2";
 import { METRO_ACTIONS } from "./verified/metroShiftProtocol.v1";
 import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
 import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
@@ -263,10 +263,10 @@ const GAME_DEFINITIONS = [
 
   {
     id: "brick-relay",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/BrickRelayVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BRICK_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: BRICK_V2_ACTIONS },
     name: "Brick Relay",
     cover: "/covers/brick-relay.svg",
     enabled: true,
@@ -279,7 +279,7 @@ const GAME_DEFINITIONS = [
     rivalName: "RICO",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Arrastra para mover la pala. El mapa y el lanzamiento inicial son idénticos.",
-    scoring: "Cuatro sectores con blindaje, movimiento y explosivos; tres vidas, rebotes dirigidos y replay de servidor.",
+    scoring: "Un muro continuo con blindaje, explosivos y aceleración registrada; tres vidas y replay de servidor.",
   },
   {
     id: "stack-shift",

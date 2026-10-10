@@ -4,7 +4,7 @@ import {
   BRICK_RELAY_CORE,
   relayBrickX,
   type BrickState,
-} from "@/lib/verified/brickRelayCore.v1";
+} from "@/lib/verified/brickRelayCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
 const colors = ["#5e8fe8", "#6fd7c3", "#f0bb59", "#d97a8f", "#9f7ee2"];
@@ -76,7 +76,7 @@ function render(ctx: CanvasRenderingContext2D, s: BrickState) {
   ctx.beginPath();
   ctx.arc(s.ballX / 1000, s.ballY / 1000, 8, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "rgba(255,232,168,.3)";
+  ctx.strokeStyle = s.boosted ? "rgba(103,229,255,.8)" : "rgba(255,232,168,.3)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(s.ballX / 1000, s.ballY / 1000);
@@ -114,30 +114,43 @@ function render(ctx: CanvasRenderingContext2D, s: BrickState) {
     ctx.fillStyle = `rgba(215,75,111,${0.18 * (1 - miss / 60)})`;
     ctx.fillRect(0, 0, 390, 620);
   }
-  ctx.textAlign = "center";
-  ctx.font = "12px system-ui";
-  ctx.fillStyle = "#d3e4f6";
-  if (s.waveUntil !== null)
-    ctx.fillText("SECTOR COMPLETADO · RECUPERAS UNA VIDA", 195, 310);
 }
 const pointAction = (p: { x: number }, phase: "down" | "move" | "up") =>
   phase === "up"
     ? null
     : `AIM_${String(Math.max(0, Math.min(78, Math.round(p.x / 5)))).padStart(3, "0")}`;
-const keys = { ArrowLeft: "LEFT", ArrowRight: "RIGHT" } as const;
-const hudLabel = (s: Readonly<BrickState>) =>
-  `SECTOR ${s.wave}/4 · ${s.destroyed} BLOQUES`;
+const keys = {
+  ArrowLeft: "LEFT",
+  ArrowRight: "RIGHT",
+  " ": "BOOST_DOWN",
+} as const;
+const keyReleases = { " ": "BOOST_UP" } as const;
+const controls = [
+  {
+    action: "BOOST_DOWN",
+    releaseAction: "BOOST_UP",
+    label: "Acelerar bola",
+    symbol: "»",
+  },
+] as const;
+const hudLabel = (s: Readonly<BrickState>) => `${s.destroyed} BLOQUES`;
 export default function BrickRelayVerified(props: GameRuntimeProps) {
   return (
-    <CoreCanvasGame
-      {...props}
-      core={BRICK_RELAY_CORE}
-      name="Brick Relay"
-      render={render}
-      pointAction={pointAction}
-      keys={keys}
-      hudLabel={hudLabel}
-      instruction="Arrastra para mover · los bordes cambian el ángulo del rebote"
-    />
+    <div className="brickRelayVerified">
+      <CoreCanvasGame
+        {...props}
+        core={BRICK_RELAY_CORE}
+        name="Brick Relay"
+        render={render}
+        pointAction={pointAction}
+        coalescePointActions
+        keys={keys}
+        keyReleases={keyReleases}
+        controls={controls}
+        hudLabel={hudLabel}
+        hideHudScore
+        instruction="Arrastra para mover · los bordes cambian el ángulo del rebote"
+      />
+    </div>
   );
 }

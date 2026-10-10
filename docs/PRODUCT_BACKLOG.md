@@ -321,3 +321,9 @@ ranking independiente y fuentes; no declara reparados los repartos legacy.
 v77 mejora lectura/impacto de Star Phalanx con arte propio y QA de partidas
 completas. Sus pausas/oleadas siguen pendientes de coreV2 continuo; no se
 confunde pulido visual con cumplimiento de esa evolución competitiva.
+
+Checkpoint v78 cierra Brick Relay continuo y botón de aceleración mediante core
+2.0.0, inputs BOOST_DOWN/UP, replay y QA táctil completa. Conserva V1. Corrige
+el último destino perdido en arrastres durante cooldown mediante opt-in en el
+controlador común; no modifica semánticas de otros juegos. Mine/Solitaire,
+Phalanx continuo y la identidad de doce piezas siguen en el ledger activo.

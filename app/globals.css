@@ -6205,3 +6205,7 @@ html, body, .arenaOnboarding, .gameScreen {
 .avatarSections button[aria-pressed="true"] {background:#244a61;color:#e3f9f8;border-color:#81acbd;}
 .globalRankingScreen.embeddedRanking {padding:0 0 20px;min-height:0;background:none;}
 .embeddedRanking .rankingHeading h2 {font-size:23px;margin:0 0 16px;}
+
+.brickRelayVerified {position:absolute;inset:0;}
+.brickRelayVerified .coreControls {top:55px;bottom:auto;left:auto;right:12px;}
+.brickRelayVerified .coreControls button {width:64px;height:50px;}

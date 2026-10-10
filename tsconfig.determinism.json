@@ -65,6 +65,7 @@
     "scripts/verify-metro-v1.ts",
     "scripts/metro-play-fixture.ts",
     "scripts/verify-brick-v1.ts",
+    "scripts/verify-brick-v2.ts",
     "scripts/brick-play-fixture.ts",
     "scripts/verify-maze-v1.ts",
     "scripts/verify-maze-v2.ts",

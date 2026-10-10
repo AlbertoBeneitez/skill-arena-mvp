@@ -8,6 +8,7 @@ import { MAZE_CORE } from "../verified/mazeRushCore.v1";
 import { MAZE_CORE_V3 } from "../verified/mazeRushCore.v3";
 import { MAZE_CORE_V2 } from "../verified/mazeRushCore.v2";
 import { BRICK_RELAY_CORE } from "../verified/brickRelayCore.v1";
+import { BRICK_RELAY_CORE as BRICK_RELAY_V2_CORE } from "../verified/brickRelayCore.v2";
 import { METRO_CORE } from "../verified/metroShiftCore.v1";
 import { SKY_HOP_CORE } from "../verified/skyHopCore.v1";
 import { SKY_HOP_CORE_V2 } from "../verified/skyHopCore.v2";
@@ -383,6 +384,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(MAZE_CORE_V3.gameId, MAZE_CORE_V3.gameVersion)]: coreAdapter(MAZE_CORE_V3),
   [adapterKey(MAZE_CORE_V2.gameId, MAZE_CORE_V2.gameVersion)]: coreAdapter(MAZE_CORE_V2),
   [adapterKey(BRICK_RELAY_CORE.gameId, BRICK_RELAY_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_CORE),
+  [adapterKey(BRICK_RELAY_V2_CORE.gameId, BRICK_RELAY_V2_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_V2_CORE),
   [adapterKey(METRO_CORE.gameId, METRO_CORE.gameVersion)]: coreAdapter(METRO_CORE),
   [adapterKey(SKY_HOP_CORE.gameId, SKY_HOP_CORE.gameVersion)]: coreAdapter(SKY_HOP_CORE),
   [adapterKey(SKY_HOP_CORE_V2.gameId, SKY_HOP_CORE_V2.gameVersion)]: coreAdapter(SKY_HOP_CORE_V2),

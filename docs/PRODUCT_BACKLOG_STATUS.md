@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v77-mobile
+# GALACTIC GAMES · Seguimiento de v78-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -18,7 +18,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Solitaire Sprint | v76 portada original espacial con siete columnas/mazo/cuatro bases, catálogo y entrada táctil comprobados en ambas orientaciones; fondo y auditoría v52 preservados | Setups variados y cierre/victoria/farming corregidos mediante core versionado y autoridad privada común |
 | Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | Nueva versión más variada/rápida con apertura justa y transiciones superables |
-| Brick Relay | V1 VERIFIED, 69 bloques, rebotes dirigidos, blindajes/explosivos/móviles, recuperación y replay/touch | V2 continuo y botón autoritativo para acelerar la bola; preservar V1 |
+| Brick Relay | v78: V2 VERIFIED, muro continuo69 bloques, aceleración mantenida3/2 registrada, alcance por bloques únicos, arrastre final conservado durante cooldown; victorias/derrota/reinicio táctiles en ambas orientaciones. V1 preservado | Pulido posterior según experiencia en móviles físicos; comparación global alcance/tiempo pendiente |
 | Stack Shift | v41: base recortada reparada, apoyo/ghost, core 1.0 VERIFIED, bags/progresión, filas y QA táctil | Doce piezas originales: identidad solicitada al propietario; no inventar variantes sin resolverla |
 | Maze Rush | v74: joystick circular116px con zona neutra/histéresis, STOP retenido durante cooldown, captura/cancelación; victorias70nodos y derrotas/reinicio/rotación en ambas orientaciones, mismo coreV3/replay. v64: V3 VERIFIED, 70 nodos continuos, más margen para girar/perseguidores, avance por nodos, confirmación de input/pulso y tablero horizontal ampliado; victorias/derrotas/reinicio táctiles y replay. V1/V2 archivadas | Seguimiento físico y pulido según uso real |
 | Star Phalanx | v77: proyectiles diferenciados/estelas, fogonazo, carga circular, blindaje por indicadores y escudo legible; victorias100enemigos y derrotas/reinicio en ambas orientaciones, 2921frames sin mutar coreV1. V1: 16 capas, geometrías, cargas/pares y replay | V2 continuo y UX inspirada en arcade probado, implementación original; preservar V1 |
@@ -305,3 +305,10 @@ puro/FOV/goal/audio, typecheck/lint/build y QA táctil vertical/horizontal pasan
 cancel/blur/dobletap/rotación/320px/registro único/abandono y consola limpia.
 Evidencia y límites en release v69. Siguiente: Orb continuo y restantes resets,
 comparación/rotación comunes e integración privada Mine/Solitaire.
+
+## Iteración v78
+
+Brick Relay continuo y acelerador autoritativo; corregido destino táctil perdido
+durante cooldown sin alterar replays históricos. Evidencia: [v78](releases/v78-mobile.md).
+Mine/Solitaire siguen pendientes de integración privada pública segura y variedad
+visible. Stack Shift: pregunta concreta sobre los doce pentominós pendiente de respuesta.

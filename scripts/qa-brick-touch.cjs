@@ -10,7 +10,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const base = pathToFileURL(path.join(__dirname, "../.det-test/")).href,
     { BRICK_RELAY_CORE: core } = await import(
-      base + "lib/verified/brickRelayCore.v1.js"
+      base + "lib/verified/brickRelayCore.v2.js"
     ),
     { chooseBrickAction } = await import(
       base + "scripts/brick-play-fixture.js"
@@ -64,7 +64,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         matches = (ctx) => ctx.canvas.classList?.contains("gameCanvas"),
         clear = proto.clearRect,
         rect = proto.fillRect,
-        arc = proto.arc;
+        arc = proto.arc,
+        move = proto.moveTo,
+        line = proto.lineTo;
       proto.clearRect = function (...a) {
         if (matches(this))
           window.__scene = {
@@ -112,6 +114,27 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           window.__scene.ball = { x: x * 1000, y: y * 1000 };
         return arc.call(this, x, y, r, ...a);
       };
+      proto.moveTo = function (x, y, ...a) {
+        this.__qaLineStart = { x, y };
+        return move.call(this, x, y, ...a);
+      };
+      proto.lineTo = function (x, y, ...a) {
+        const from = this.__qaLineStart,
+          scene = window.__scene;
+        if (
+          matches(this) &&
+          scene?.ball &&
+          from &&
+          this.lineWidth === 2 &&
+          Math.abs(from.x * 1000 - scene.ball.x) < 0.01 &&
+          Math.abs(from.y * 1000 - scene.ball.y) < 0.01
+        )
+          scene.velocity = {
+            vx: Math.round(((from.x - x) * 1000) / 7),
+            vy: Math.round(((from.y - y) * 1000) / 7),
+          };
+        return line.call(this, x, y, ...a);
+      };
     });
     let starts = 0,
       submits = 0;
@@ -127,7 +150,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Brick Relay", exact: true })
       .tap();
     const issued = await (await started).json();
-    assert.equal(issued.manifest.game_version, "1.0.0");
+    assert.equal(issued.manifest.game_version, "2.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     const cdp = await context.newCDPSession(page),
@@ -159,6 +182,64 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     await page
       .getByRole("button", { name: "Activar sonido", exact: true })
       .tap();
+    // One rapid drag ends inside the aim cooldown: its last destination must stick.
+    await start(120);
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchMove",
+      touchPoints: [point(270)],
+    });
+    await end();
+    await page.waitForTimeout(500);
+    const stoppedDrag = await page.evaluate(() => window.__scene?.paddle?.x);
+    assert.ok(
+      Math.abs(stoppedDrag - 270000) < 1000,
+      "final touch destination survives cooldown without further moves",
+    );
+    await start(195);
+    await end();
+    await page.waitForTimeout(300);
+    const boostButton = page.getByRole("button", {
+      name: "Acelerar bola",
+      exact: true,
+    });
+    const boostBox = await boostButton.boundingBox();
+    assert.ok(boostBox.width >= 44 && boostBox.height >= 44);
+    const boostPoint = {
+      x: boostBox.x + boostBox.width / 2,
+      y: boostBox.y + boostBox.height / 2,
+    };
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [boostPoint],
+    });
+    await page.waitForTimeout(100);
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchCancel",
+      touchPoints: [],
+    });
+    await page.waitForTimeout(100);
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [boostPoint],
+    });
+    await page.waitForTimeout(100);
+    await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+    await page.waitForTimeout(100);
+    await page.waitForTimeout(2200);
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [boostPoint],
+    });
+    await page.waitForTimeout(350);
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+    await page.waitForTimeout(80);
     await start(process.env.QA_LOSS ? 350 : 195);
     if (process.env.QA_LOSS) {
       // Move away after the serve: leaving the paddle beneath a vertical
@@ -186,8 +267,12 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       const scene = await page.evaluate(() => window.__scene);
       if (scene?.ball && scene.paddle) {
         const dt = previous ? ((scene.t - previous.t) * 120) / 1000 : 0,
-          vx = dt > 0 ? Math.round((scene.ball.x - previous.x) / dt) : 0,
-          vy = dt > 0 ? Math.round((scene.ball.y - previous.y) / dt) : 0;
+          vx =
+            scene.velocity?.vx ??
+            (dt > 0 ? Math.round((scene.ball.x - previous.x) / dt) : 0),
+          vy =
+            scene.velocity?.vy ??
+            (dt > 0 ? Math.round((scene.ball.y - previous.y) / dt) : 0);
         previous = { ...scene.ball, t: scene.t };
         if (
           process.env.QA_LOSS &&
@@ -253,19 +338,26 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       "result",
       JSON.stringify({
         result,
-        wave: replay.state.wave,
+        boosted: replay.state.boosted,
         bricks: replay.state.destroyed,
         inputs: body.inputs.length,
       }),
     );
     assert.equal(result.verified, true);
+    assert.ok(body.inputs.filter((i) => i.action === "BOOST_DOWN").length >= 2);
+    assert.equal(
+      body.inputs.filter((i) => i.action === "BOOST_DOWN").length,
+      body.inputs.filter((i) => i.action === "BOOST_UP").length,
+      "cancel/blur release boost in recorded replay",
+    );
+    assert.equal(replay.state.boosted, false);
     assert.equal(replay.valid, true, replay.error);
     assert.equal(result.score, replay.score);
     assert.equal(result.won, !process.env.QA_LOSS);
     assert.equal(starts, 1, "audio toggle does not reset attempt");
     assert.equal(submits, 1);
     if (!process.env.QA_LOSS) {
-      assert.equal(replay.state.wave, 4);
+      assert.equal(replay.state.height, 69);
       assert.equal(replay.state.destroyed, 69);
     } else assert.equal(replay.failure, "BALL_LOST");
     await page.locator(".resultPanel").waitFor({ state: "visible" });
@@ -285,6 +377,15 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     assert.equal(await page.locator(".resultPanel").isVisible(), false);
+    await page.setViewportSize(
+      landscape ? { width: 390, height: 844 } : { width: 844, height: 390 },
+    );
+    await page.waitForTimeout(300);
+    assert.equal(
+      await page.evaluate(() => document.body.scrollWidth > innerWidth),
+      false,
+    );
+    assert.equal(await page.locator(".resultPanel").isVisible(), false);
     assert.deepEqual(errors, []);
     console.log(
       JSON.stringify({
@@ -292,7 +393,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         score: result.score,
         finalTick: body.final_tick,
         won: result.won,
-        wave: replay.state.wave,
+        boosted: replay.state.boosted,
         lives: replay.state.lives,
         inputs: body.inputs.length,
         errors,

@@ -23,6 +23,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   /** Presentation-only reward signal; HUD/replay keep the complete authoritative score. */
   feedbackScore?(state: S): number;
   inputTones?: Readonly<Partial<Record<string, Parameters<typeof gameTone>[0]>>>;
+  /** Single-axis destination survives the core cooldown; ordered gestures keep their normal queue. */
+  coalescePointActions?: boolean;
   pointAction?(point: CorePoint, phase: "down" | "move" | "up", state: S): string | readonly string[] | null;
   gestureAction?(from: CorePoint, to: CorePoint, state: S): string | null;
   keys?: Readonly<Record<string, string>>;
@@ -148,7 +150,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
 
   // Some touch gestures update two quantized axes; each remains a distinct recorded tick.
   function sendPointActions(actions: string | readonly string[]) {
-    for (const action of typeof actions === "string" ? [actions] : actions) send(action);
+    if (props.coalescePointActions && typeof actions === "string") sendStick(actions);
+    else for (const action of typeof actions === "string" ? [actions] : actions) send(action);
   }
 
   const releaseHeld = useCallback(() => {

@@ -10,7 +10,20 @@ function reflected(x: number) {
     p = (((x - 8000) % (w * 2)) + w * 2) % (w * 2);
   return 8000 + (p <= w ? p : w * 2 - p);
 }
-export function chooseBrickAction(s: BrickState) {
+export function chooseBrickAction(
+  s: Pick<
+    BrickState,
+    | "ballX"
+    | "ballY"
+    | "vx"
+    | "vy"
+    | "bricks"
+    | "paddleX"
+    | "paddleW"
+    | "speed"
+    | "tick"
+  >,
+) {
   let aim = s.ballX;
   if (s.vy > 0 && s.ballY > 320000) {
     const down = Math.max(0, Math.ceil((562000 - s.ballY) / s.vy)),
