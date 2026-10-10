@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import DirectionalJoystick from "./DirectionalJoystick";
 import type { GameRuntimeProps } from "@/lib/games";
 import { configureLogicalCanvas, beginLogicalCanvasFrame, type CanvasViewportMetrics, type LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { gameTone, haptic } from "@/lib/gameFeedback";
@@ -27,6 +28,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keys?: Readonly<Record<string, string>>;
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
+  /** Actions still pass through the shared recorder and server replay. */
+  directionalJoystick?: boolean;
   hideHudLabel?: boolean;
   /** Presentation text refreshed with the common HUD cadence, never authoritative state. */
   hudLabel?(state: Readonly<S>): string;
@@ -53,6 +56,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const finishRef = useRef(props.onFinish);
   const targetRef = useRef(targetScore);
   const pendingRef = useRef<string[]>([]);
+  const stickPendingRef = useRef<string | null>(null);
   const lastInputTickRef = useRef(-1);
   const feedbackScoreRef = useRef(0);
   const heldRef = useRef(new Set<string>());
@@ -84,6 +88,12 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
 
   const flush = useCallback(() => {
     const state = stateRef.current;
+    // Coalesce finger motion until the existing core's input cooldown permits it.
+    // In particular a fast cancel must retain STOP rather than discard it as invalid.
+    if (stickPendingRef.current && core.canApply(state, stickPendingRef.current) && pendingRef.current.length < 4) {
+      pendingRef.current.push(stickPendingRef.current);
+      stickPendingRef.current = null;
+    }
     while (pendingRef.current.length && state.status === "running") {
       const action = pendingRef.current[0];
       if (!core.canApply(state, action)) { pendingRef.current.shift(); continue; }
@@ -123,6 +133,15 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     sync(performance.now());
     if (stateRef.current.status !== "running" || pendingRef.current.length >= 4) return;
     pendingRef.current.push(action);
+    flush();
+    draw();
+  }, [active, attempt.state.status, core, sync, flush, draw]);
+
+  const sendStick = useCallback((action: string) => {
+    if (!active || attempt.state.status !== "ready" || !runningRef.current || finishedRef.current || !core.actions.includes(action)) return;
+    sync(performance.now());
+    if (stateRef.current.status !== "running") return;
+    stickPendingRef.current = action;
     flush();
     draw();
   }, [active, attempt.state.status, core, sync, flush, draw]);
@@ -170,6 +189,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     targetRef.current = manifest.competition.target_score;
     epochRef.current = performance.now();
     pendingRef.current = [];
+    stickPendingRef.current = null;
     lastInputTickRef.current = -1;
     finishedRef.current = false;
     runningRef.current = true;
@@ -235,6 +255,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       terminalStartedRef.current = null;
       terminalElapsedRef.current = 0;
       pendingRef.current = [];
+      stickPendingRef.current = null;
       heldRef.current.clear();
       const pointer = pointerRef.current;
       if (pointer && canvasRef.current?.hasPointerCapture(pointer.id)) canvasRef.current.releasePointerCapture(pointer.id);
@@ -302,6 +323,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       }}
     />
     <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
+    {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
     {!!props.controls?.length && <div className="coreControls">{props.controls.map(control => <button key={control.action} type="button" aria-label={control.label}
       onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); if (control.releaseAction) heldRef.current.add(control.releaseAction); send(control.action); }}
       onPointerUp={event => { if (control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }}

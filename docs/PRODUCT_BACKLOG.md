@@ -300,3 +300,12 @@ status ledger for release evidence and unfinished work.
 These requests are pending until both code and complete-play QA satisfy them.
 Real auth, PostgreSQL activation, money and protected music are not introduced by
 this iteration. Physical mobile follow-up remains useful and does not block work.
+
+## Product iteration · mobile controls and variety
+
+Owner feedback after v73: Star Phalanx UX inspired by proven arcade mechanics
+(original implementation); Maze circular joystick; Stack Shift twelve original
+pieces (identity to confirm); varied Mine/Solitaire setups; larger Serpent
+controls/field and slightly slower movement; authoritative Brick speed button;
+Solitaire pre-game presentation; ranking screen within Avatar. These extend the
+existing ledger, not historical core contracts. Validate one game at a time.

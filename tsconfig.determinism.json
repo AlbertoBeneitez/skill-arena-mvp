@@ -13,6 +13,7 @@
     "incremental": false
   },
   "include": [
+    "scripts/verify-directional-joystick.ts",
     "scripts/verify-competitive-games.ts",
     "scripts/verify-match-contracts.ts",
     "scripts/verify-scenarios.ts",

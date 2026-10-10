@@ -283,13 +283,6 @@ const keys = {
   ArrowRight: "RIGHT",
   " ": "STOP",
 } as const;
-const controls = [
-  { action: "LEFT", label: "Girar izquierda", symbol: "←" },
-  { action: "UP", label: "Girar arriba", symbol: "↑" },
-  { action: "STOP", label: "Detener movimiento", symbol: "■" },
-  { action: "DOWN", label: "Girar abajo", symbol: "↓" },
-  { action: "RIGHT", label: "Girar derecha", symbol: "→" },
-] as const;
 const gestureAction = (
   from: { x: number; y: number },
   to: { x: number; y: number },
@@ -318,7 +311,7 @@ export default function MazeRushVerified(props: GameRuntimeProps) {
         name="Maze Rush"
         render={render}
         keys={keys}
-        controls={controls}
+        directionalJoystick
         gestureAction={gestureAction}
         hudLabel={hudLabel}
         instruction="Desliza para girar · ■ detiene · verde protege"

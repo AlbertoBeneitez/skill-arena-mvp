@@ -27,6 +27,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-maze-v1.js");
   await import("../.det-test/scripts/verify-maze-v2.js");
   await import("../.det-test/scripts/verify-maze-v3.js");
+  await import("../.det-test/scripts/verify-directional-joystick.js");
   await import("../.det-test/scripts/verify-memory-v1.js");
   await import("../.det-test/scripts/verify-memory-v2.js");
   await import("../.det-test/scripts/verify-orbit-v1.js");

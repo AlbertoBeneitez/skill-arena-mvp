@@ -149,17 +149,27 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     const initialNodeCount = await page.evaluate(
       () => window.__mazeView.nodes.length,
     );
-    const names = {
-      LEFT: "Girar izquierda",
-      UP: "Girar arriba",
-      STOP: "Detener movimiento",
-      DOWN: "Girar abajo",
-      RIGHT: "Girar derecha",
-    };
-    for (const b of await page.locator(".coreControls button").all()) {
-      const r = await b.boundingBox();
-      assert.ok(r.width >= 44 && r.height >= 44);
-    }
+    const names = { STOP: "Detener movimiento" };
+    const joystick = page.getByRole("group", {
+      name: "Joystick de dirección",
+      exact: true,
+    });
+    const stickBox = await joystick.boundingBox();
+    assert.ok(stickBox.width >= 112 && stickBox.height >= 112);
+    const stickPoint = (action) => ({
+      x:
+        stickBox.x +
+        stickBox.width *
+          (action === "LEFT" ? 0.15 : action === "RIGHT" ? 0.85 : 0.5),
+      y:
+        stickBox.y +
+        stickBox.height *
+          (action === "UP" ? 0.15 : action === "DOWN" ? 0.85 : 0.5),
+    });
+    // Start audio before native cancellation, which suppresses synthetic clicks.
+    await page
+      .getByRole("button", { name: "Activar sonido", exact: true })
+      .tap();
     // Swipe accepted while moving; cancel must not add a second action on release.
     const cdp = await context.newCDPSession(page),
       box = await page.locator("canvas.gameCanvas").boundingBox(),
@@ -203,9 +213,24 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       type: "touchEnd",
       touchPoints: [],
     });
-    await page
-      .getByRole("button", { name: "Activar sonido", exact: true })
-      .tap();
+    // Cancel a fast drag: the common tick queue must retain its final STOP.
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [stickPoint("RIGHT")],
+    });
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchMove",
+      touchPoints: [stickPoint("UP")],
+    });
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchCancel",
+      touchPoints: [],
+    });
+    await page.waitForTimeout(100);
+    assert.equal(
+      await joystick.locator(".stickThumb").evaluate((e) => e.style.transform),
+      "translate(0px, 0px)",
+    );
     let previousCell = null,
       changedAt = Date.now(),
       geometry = null,
@@ -302,17 +327,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
             (action !== "STOP" && Date.now() - changedAt > 500))
         ) {
           if (done || (await page.locator(".resultPanel").isVisible())) break;
-          const button = await page
-            .getByRole("button", { name: names[action], exact: true })
-            .boundingBox();
           await cdp.send("Input.dispatchTouchEvent", {
             type: "touchStart",
-            touchPoints: [
-              {
-                x: button.x + button.width / 2,
-                y: button.y + button.height / 2,
-              },
-            ],
+            touchPoints: [stickPoint(action)],
           });
           await cdp.send("Input.dispatchTouchEvent", {
             type: "touchEnd",
@@ -354,6 +371,15 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       }),
     );
     assert.equal(result.verified, true);
+    assert.ok(
+      body.inputs.some(
+        (input, i) =>
+          i > 0 &&
+          input.action === "STOP" &&
+          body.inputs[i - 1].action !== "STOP",
+      ),
+      "cancelled movement has a recorded stop",
+    );
     assert.equal(replay.valid, true, replay.error);
     assert.equal(result.score, replay.score);
     assert.equal(result.height, replay.state.collected);
