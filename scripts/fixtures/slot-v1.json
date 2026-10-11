@@ -1,0 +1,408 @@
+{
+  "seed": "slot-v1-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "REEL_0_MORE"
+    },
+    {
+      "seq": 1,
+      "tick": 3,
+      "action": "REEL_0_MORE"
+    },
+    {
+      "seq": 2,
+      "tick": 6,
+      "action": "REEL_0_MORE"
+    },
+    {
+      "seq": 3,
+      "tick": 9,
+      "action": "REEL_1_MORE"
+    },
+    {
+      "seq": 4,
+      "tick": 12,
+      "action": "REEL_1_MORE"
+    },
+    {
+      "seq": 5,
+      "tick": 15,
+      "action": "REEL_1_MORE"
+    },
+    {
+      "seq": 6,
+      "tick": 18,
+      "action": "REEL_2_MORE"
+    },
+    {
+      "seq": 7,
+      "tick": 21,
+      "action": "REEL_2_MORE"
+    },
+    {
+      "seq": 8,
+      "tick": 24,
+      "action": "REEL_2_MORE"
+    },
+    {
+      "seq": 9,
+      "tick": 27,
+      "action": "SPIN"
+    },
+    {
+      "seq": 10,
+      "tick": 387,
+      "action": "REEL_0_MORE"
+    },
+    {
+      "seq": 11,
+      "tick": 390,
+      "action": "REEL_0_MORE"
+    },
+    {
+      "seq": 12,
+      "tick": 393,
+      "action": "REEL_0_MORE"
+    },
+    {
+      "seq": 13,
+      "tick": 396,
+      "action": "REEL_0_MORE"
+    },
+    {
+      "seq": 14,
+      "tick": 399,
+      "action": "REEL_1_MORE"
+    },
+    {
+      "seq": 15,
+      "tick": 402,
+      "action": "REEL_1_MORE"
+    },
+    {
+      "seq": 16,
+      "tick": 405,
+      "action": "REEL_1_MORE"
+    },
+    {
+      "seq": 17,
+      "tick": 408,
+      "action": "REEL_1_MORE"
+    },
+    {
+      "seq": 18,
+      "tick": 411,
+      "action": "REEL_2_MORE"
+    },
+    {
+      "seq": 19,
+      "tick": 414,
+      "action": "REEL_2_MORE"
+    },
+    {
+      "seq": 20,
+      "tick": 417,
+      "action": "REEL_2_MORE"
+    },
+    {
+      "seq": 21,
+      "tick": 420,
+      "action": "REEL_2_MORE"
+    },
+    {
+      "seq": 22,
+      "tick": 423,
+      "action": "SPIN"
+    },
+    {
+      "seq": 23,
+      "tick": 783,
+      "action": "SPIN"
+    },
+    {
+      "seq": 24,
+      "tick": 1143,
+      "action": "SPIN"
+    },
+    {
+      "seq": 25,
+      "tick": 1503,
+      "action": "SPIN"
+    },
+    {
+      "seq": 26,
+      "tick": 1863,
+      "action": "SPIN"
+    },
+    {
+      "seq": 27,
+      "tick": 2223,
+      "action": "SPIN"
+    },
+    {
+      "seq": 28,
+      "tick": 2583,
+      "action": "SPIN"
+    },
+    {
+      "seq": 29,
+      "tick": 2943,
+      "action": "SPIN"
+    },
+    {
+      "seq": 30,
+      "tick": 3303,
+      "action": "SPIN"
+    },
+    {
+      "seq": 31,
+      "tick": 3663,
+      "action": "SPIN"
+    },
+    {
+      "seq": 32,
+      "tick": 4023,
+      "action": "SPIN"
+    },
+    {
+      "seq": 33,
+      "tick": 4383,
+      "action": "SPIN"
+    },
+    {
+      "seq": 34,
+      "tick": 4743,
+      "action": "SPIN"
+    },
+    {
+      "seq": 35,
+      "tick": 5103,
+      "action": "SPIN"
+    },
+    {
+      "seq": 36,
+      "tick": 5463,
+      "action": "SPIN"
+    },
+    {
+      "seq": 37,
+      "tick": 5823,
+      "action": "SPIN"
+    },
+    {
+      "seq": 38,
+      "tick": 6183,
+      "action": "SPIN"
+    },
+    {
+      "seq": 39,
+      "tick": 6543,
+      "action": "SPIN"
+    },
+    {
+      "seq": 40,
+      "tick": 6903,
+      "action": "SPIN"
+    },
+    {
+      "seq": 41,
+      "tick": 7263,
+      "action": "SPIN"
+    },
+    {
+      "seq": 42,
+      "tick": 7623,
+      "action": "SPIN"
+    },
+    {
+      "seq": 43,
+      "tick": 7983,
+      "action": "SPIN"
+    },
+    {
+      "seq": 44,
+      "tick": 8343,
+      "action": "SPIN"
+    },
+    {
+      "seq": 45,
+      "tick": 8703,
+      "action": "SPIN"
+    },
+    {
+      "seq": 46,
+      "tick": 9063,
+      "action": "SPIN"
+    },
+    {
+      "seq": 47,
+      "tick": 9423,
+      "action": "SPIN"
+    },
+    {
+      "seq": 48,
+      "tick": 9783,
+      "action": "SPIN"
+    },
+    {
+      "seq": 49,
+      "tick": 10143,
+      "action": "SPIN"
+    },
+    {
+      "seq": 50,
+      "tick": 10503,
+      "action": "SPIN"
+    },
+    {
+      "seq": 51,
+      "tick": 10863,
+      "action": "SPIN"
+    },
+    {
+      "seq": 52,
+      "tick": 11223,
+      "action": "SPIN"
+    },
+    {
+      "seq": 53,
+      "tick": 11583,
+      "action": "SPIN"
+    },
+    {
+      "seq": 54,
+      "tick": 11943,
+      "action": "SPIN"
+    },
+    {
+      "seq": 55,
+      "tick": 12303,
+      "action": "SPIN"
+    },
+    {
+      "seq": 56,
+      "tick": 12663,
+      "action": "SPIN"
+    },
+    {
+      "seq": 57,
+      "tick": 13023,
+      "action": "SPIN"
+    },
+    {
+      "seq": 58,
+      "tick": 13383,
+      "action": "SPIN"
+    },
+    {
+      "seq": 59,
+      "tick": 13743,
+      "action": "SPIN"
+    },
+    {
+      "seq": 60,
+      "tick": 14103,
+      "action": "SPIN"
+    },
+    {
+      "seq": 61,
+      "tick": 14463,
+      "action": "SPIN"
+    },
+    {
+      "seq": 62,
+      "tick": 14823,
+      "action": "SPIN"
+    },
+    {
+      "seq": 63,
+      "tick": 15183,
+      "action": "SPIN"
+    },
+    {
+      "seq": 64,
+      "tick": 15543,
+      "action": "SPIN"
+    },
+    {
+      "seq": 65,
+      "tick": 15903,
+      "action": "SPIN"
+    },
+    {
+      "seq": 66,
+      "tick": 16263,
+      "action": "SPIN"
+    },
+    {
+      "seq": 67,
+      "tick": 16623,
+      "action": "SPIN"
+    },
+    {
+      "seq": 68,
+      "tick": 16983,
+      "action": "SPIN"
+    },
+    {
+      "seq": 69,
+      "tick": 17343,
+      "action": "SPIN"
+    },
+    {
+      "seq": 70,
+      "tick": 17703,
+      "action": "SPIN"
+    },
+    {
+      "seq": 71,
+      "tick": 18063,
+      "action": "SPIN"
+    },
+    {
+      "seq": 72,
+      "tick": 18423,
+      "action": "SPIN"
+    },
+    {
+      "seq": 73,
+      "tick": 18783,
+      "action": "SPIN"
+    },
+    {
+      "seq": 74,
+      "tick": 19143,
+      "action": "SPIN"
+    },
+    {
+      "seq": 75,
+      "tick": 19503,
+      "action": "SPIN"
+    },
+    {
+      "seq": 76,
+      "tick": 19863,
+      "action": "SPIN"
+    },
+    {
+      "seq": 77,
+      "tick": 20223,
+      "action": "SPIN"
+    },
+    {
+      "seq": 78,
+      "tick": 20583,
+      "action": "SPIN"
+    },
+    {
+      "seq": 79,
+      "tick": 20943,
+      "action": "SPIN"
+    }
+  ],
+  "finalTick": 21600,
+  "score": 1160500,
+  "hash": "sha256:b9ea1be8854eea77579ddf4b88969657669e19ea20cdbab3408218886e28adae"
+}

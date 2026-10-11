@@ -1342,7 +1342,7 @@ export default function DemoApp() {
                   </>
                 ) : (
                   <>
-                    <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} waitingForRival={selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
+                    <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} resultMetric={selectedGame.resultMetric} waitingForRival={selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
                   </>
                 )}
                 <fieldset className="resultActions" disabled={!resultActionsReady} aria-label="Acciones del resultado">

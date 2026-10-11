@@ -6209,3 +6209,15 @@ html, body, .arenaOnboarding, .gameScreen {
 .brickRelayVerified {position:absolute;inset:0;}
 .brickRelayVerified .coreControls {top:55px;bottom:auto;left:auto;right:12px;}
 .brickRelayVerified .coreControls button {width:64px;height:50px;}
+
+/* Slot controls remain physical touch targets rather than shrinking with Canvas. */
+.slotVerified {height:100%;min-height:0;}
+.slotVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 124px) !important;}
+.slotVerified .coreControls {position:absolute;bottom:8px;left:12px;right:12px;display:grid;grid-template-columns:repeat(6,minmax(44px,1fr));gap:6px;}
+.slotVerified .coreControls button {width:100%;min-width:44px;min-height:48px;}
+.slotVerified .coreControls button:last-child {grid-column:1 / -1;}
+@media (orientation:landscape) and (max-height:600px) {
+ .slotVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 184px) !important;height:100% !important;}
+ .slotVerified .coreControls {left:auto;right:10px;bottom:20px;width:168px;grid-template-columns:repeat(2,minmax(44px,1fr));}
+ .slotVerified .coreControls button:last-child {grid-column:1 / -1;}
+}

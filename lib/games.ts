@@ -1,3 +1,4 @@
+import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
 import { PIANO_V2_ACTIONS } from "./verified/pianoRushProtocol.v2";
 import { ORBIT_ACTIONS } from "./verified/orbitShiftProtocol.v1";
 import { MEMORY_ACTIONS } from "./verified/memoryMatchProtocol.v1";
@@ -72,6 +73,7 @@ export type GameDefinition<TId extends string = string> = {
   instruction: string;
   scoring: string;
   deterministicSeed?: string;
+  resultMetric?: "fictitious-balance";
 };
 
 /**
@@ -86,6 +88,15 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
+  {
+    id: "galactic-slot", version: "1.0.0", status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SLOT_ACTIONS },
+    resultMetric: "fictitious-balance", name: "Galactic Slot", cover: "/covers/galactic-slot.svg", enabled: true,
+    waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
+    rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances de un octavo de vuelta. Servidor reproduce inputs y saldo; sin dinero real.",
+  },
+
   {
     id: "memory-match", version: "2.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/MemoryOrbit")),
@@ -510,6 +521,7 @@ export const GAME_REGISTRY = Object.fromEntries(
 ) as unknown as Record<GameId, GameMeta>;
 
 const CATALOG_ORDER: GameId[] = [
+  "galactic-slot",
   "memory-match",
   "darts",
   "billiards",

@@ -339,3 +339,26 @@ V1 y catálogos legacy permanecen intactos. No cierra variedad visible pública,
 resolubilidad/core Solitaire ni integración durable: la autoridad local sigue
 bloqueada en Vercel. La identidad de doce piezas Stack Shift aún necesita respuesta;
 el core actual tiene seis formas propias, no siete tetrominós. Detalle vivo en el ledger.
+
+
+## Nueva unidad: juegos originales de saldo ficticio y lanzamiento
+
+Galactic Slot: tres franjas de ocho símbolos con orden fijo por escenario,
+configuración inicial emitida por servidor, avances ajustables, tabla de premios,
+100€ ficticios iniciales, 5€ por tirada y cierre en tres minutos o saldo cero.
+La métrica terminal es saldo ficticio y nunca liquida dinero de plataforma.
+Implementación inicial v81; evidencia y estado de validación en el ledger.
+
+Galactic Roulette pendiente: rueda europea y lanzamiento controlado por el
+jugador con movimiento reproducible, apuestas usuales y saldo ficticio; 5€ por
+tirada y cierre en tres minutos o insolvencia. Core versionado y replay común.
+
+Galactic Birds pendiente: juego original de lanzamiento y demolición por física
+reproducible. Puede inspirarse en mecánicas del género; no copiar personajes,
+marca, niveles, gráficos, audio ni código protegido de Angry Birds.
+
+La última solicitud previa mantiene pendientes Mine público variado, Phalanx más
+largo/variado, Maze más amplio con coleccionables y movimiento expresivo, Metro
+con mayor profundidad de corredor, retirar Ranking de navegación inferior y
+selección de las16 imágenes deseadas (no adjuntas). No sustituye sus garantías
+competitivas ni declara esos puntos completados con los candidatos privados.

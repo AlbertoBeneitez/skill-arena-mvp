@@ -3,11 +3,14 @@ export default function GameResultSummary({
   result,
   gameName,
   waitingForRival = false,
+  resultMetric,
 }: {
   result: GameResult;
   gameName: string;
   waitingForRival?: boolean;
+  resultMetric?: "fictitious-balance";
 }) {
+  const balance = resultMetric === "fictitious-balance";
   const reach =
     result.verified === true &&
     result.height !== undefined &&
@@ -39,15 +42,25 @@ export default function GameResultSummary({
       </h2>
       <dl className="resultFacts">
         <div>
-          <dt>{reach !== undefined ? "Avance alcanzado" : "Puntos"}</dt>
+          <dt>
+            {balance
+              ? "Saldo ficticio final"
+              : reach !== undefined
+                ? "Avance alcanzado"
+                : "Puntos"}
+          </dt>
           <dd
             aria-label={
-              reach !== undefined
-                ? "Avance del intento"
-                : "Puntuación del intento"
+              balance
+                ? "Saldo ficticio del intento"
+                : reach !== undefined
+                  ? "Avance del intento"
+                  : "Puntuación del intento"
             }
           >
-            {(reach ?? result.score).toLocaleString("es-ES")}
+            {balance
+              ? `${((reach ?? result.score) / 100).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`
+              : (reach ?? result.score).toLocaleString("es-ES")}
           </dd>
         </div>
         <div>

@@ -242,3 +242,10 @@ Original continuous concentration-style variant, fixed-tick TypeScript rules and
 orbital card/cover artwork. Classic pair matching inspires the mechanic; no
 third-party code, assets, brands or sound files are imported. Uses the existing
 shared RNG, driver, synthesized feedback and server replay.
+
+## Galactic Slot 1.0.0
+
+Original TypeScript core and Canvas cabinet/symbols; original SVG cover. Uses
+standard fruit, geometric and typographic slot motifs only. No third-party slot
+code, artwork, sound, trademark or casino integration is included. Euro amounts
+are a fictitious in-game metric, never a payment or payout.
