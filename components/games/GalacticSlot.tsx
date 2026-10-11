@@ -148,6 +148,9 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
     ctx.fillText(`+${s.lastPayout / 100}€`, 195, 348);
   }
 }
+const hudLabel = (s: Readonly<SlotState>) =>
+  `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
+const feedbackScore = (s: Readonly<SlotState>) => s.balanceMinor;
 export default function GalacticSlot(props: GameRuntimeProps) {
   return (
     <div className="slotVerified">
@@ -158,10 +161,8 @@ export default function GalacticSlot(props: GameRuntimeProps) {
         instruction=""
         render={render}
         hideHudScore
-        hudLabel={(s) =>
-          `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`
-        }
-        feedbackScore={(s) => s.balanceMinor}
+        hudLabel={hudLabel}
+        feedbackScore={feedbackScore}
         keys={{ " ": "SPIN" }}
         controls={[
           {

@@ -155,6 +155,9 @@ function render(ctx: CanvasRenderingContext2D, s: RouletteState) {
     ctx.fillText(`+${s.lastPayout / 100}€`, cx, 103);
   }
 }
+const hudLabel = (s: Readonly<RouletteState>) =>
+  `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
+const feedbackScore = (s: Readonly<RouletteState>) => s.balanceMinor;
 export default function GalacticRoulette(props: GameRuntimeProps) {
   const origin = useRef<CorePoint | null>(null);
   return (
@@ -166,10 +169,8 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         instruction=""
         render={render}
         hideHudScore
-        hudLabel={(s) =>
-          `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`
-        }
-        feedbackScore={(s) => s.balanceMinor}
+        hudLabel={hudLabel}
+        feedbackScore={feedbackScore}
         controls={[
           ...[
             "RED",
