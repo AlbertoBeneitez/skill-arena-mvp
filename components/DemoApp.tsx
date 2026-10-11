@@ -1387,12 +1387,16 @@ export default function DemoApp() {
                     </>
                   ) : (
                     <>
-                      <button className="rematchAction" onClick={() => startMatch()}>
+                      <GameActionButton className="rematchAction" onActivate={source => {
+                        if (resultActionsReady && (source === "click" || resultPointerReadyRef.current)) startMatch();
+                      }}>
                         OTRA VEZ
-                      </button>
-                      <button className="mainAction" onClick={() => navigate("home")}>
+                      </GameActionButton>
+                      <GameActionButton className="mainAction" onActivate={source => {
+                        if (resultActionsReady && (source === "click" || resultPointerReadyRef.current)) navigate("home");
+                      }}>
                         CAMBIAR
-                      </button>
+                      </GameActionButton>
                     </>
                   )}
                 </fieldset>

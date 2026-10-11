@@ -30,13 +30,16 @@ Evidence:
 - 1000 distinct fields, sixteen full clears, sixty-four stable openings,
   four complete losses, timeout/late-clear/input locks, integer physics,
   signed endpoint, malformed/excess inputs and replay/render60/120/144Hz.
-- Native production-build touch wins: portrait twelve drones/nine shots,
-  score6900,t3384; landscape twelve drones/eleven shots,6920,t3540.
-  Complete losses: thirty shots,zero drones,t7814/t7865. No clock/client-state
+- Native production-build touch wins: portrait twelve drones/thirteen shots,
+  score6910,t3608; landscape twelve drones/eleven shots,6890,t3327.
+  Complete losses: thirty shots,zero drones,t7980/t7947. No clock/client-state
   overrides. Rotation, cancel/blur, sound preference, one terminal submission,
   fresh restart and abandoned-prefix receipt checked; no app console errors.
+  A press started during the result guard and released after it expires cannot
+  restart; a subsequent fresh touch does restart (additional full clear,t3409).
 - Focused 320px portrait/small landscape gesture/cancel/blur/record validation.
-  Native touch release now drives shared game-header buttons; optional compatibility
+  Native touch release now drives shared game-header and duel/training result
+  buttons; result readiness/held-gesture guards remain intact. Optional compatibility
   clicks are deduplicated, while keyboard/mouse retain click semantics. This fixes
   an actual missing-click path observed after canvas gestures. Sling hit area is
   also enlarged to stay at least44px in the tested small landscape viewport.

@@ -346,6 +346,8 @@ sin CI y Ready del HEAD que vaya a publicarse; v79 queda recuperable e intacta.
 Birds original, campo persistente y lanzamiento con dirección/potencia registrados
 por la cola común; replay autoritativo y QA completa. Slot/Roulette corrigen
 reinicio involuntario al cambiar sonido sin modificar sus cores históricos.
+Cabecera y acciones del resultado responden al soltar el dedo, deduplican clics
+y conservan bloqueo de gesto retenido; QA de reinicio/teclado/cancelación/blur.
 Evidencia y límites en [v83](releases/v83-mobile.md). No activa dinero real,
 identidad ni pairing durable. La última solicitud previa sigue pendiente:
 Mine público variado, Phalanx más largo/variado, Maze amplio/expresivo, Metro más

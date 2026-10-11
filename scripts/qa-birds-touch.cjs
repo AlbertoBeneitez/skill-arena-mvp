@@ -32,7 +32,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     args: ["--no-sandbox"],
   });
   try {
-    for (const landscape of [false, true]) {
+    for (const landscape of process.env.QA_PORTRAIT_ONLY
+      ? [false]
+      : [false, true]) {
       const context = await browser.newContext({
           viewport: landscape
             ? process.env.QA_SMALL
@@ -466,7 +468,43 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         assert.equal(replay.failure, "OUT_OF_SHOTS");
       } else assert.equal(replay.height, 12);
       await page.locator(".resultPanel").waitFor({ state: "visible" });
-      await page.waitForTimeout(450);
+      if (process.env.QA_RESULT_GUARD) {
+        const repeat = page.getByRole("button", {
+            name: "OTRA VEZ",
+            exact: true,
+          }),
+          box = await repeat.boundingBox();
+        assert.equal(
+          await repeat.isEnabled(),
+          false,
+          "result guard must still be active",
+        );
+        let freshStarts = 0;
+        const count = (r) => {
+          if (r.url().includes("/verified-match/start")) freshStarts++;
+        };
+        page.on("request", count);
+        await cdp.send("Input.dispatchTouchEvent", {
+          type: "touchStart",
+          touchPoints: [
+            { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+          ],
+        });
+        await page.waitForTimeout(450);
+        await cdp.send("Input.dispatchTouchEvent", {
+          type: "touchEnd",
+          touchPoints: [],
+        });
+        await page.waitForTimeout(150);
+        assert.equal(
+          freshStarts,
+          0,
+          "a press begun during the result guard must not restart on release",
+        );
+        assert.equal(await page.locator(".resultPanel").count(), 1);
+        page.off("request", count);
+        console.log(JSON.stringify({ heldResultGestureBlocked: true }));
+      } else await page.waitForTimeout(450);
       const restarting = page.waitForResponse((r) =>
         r.url().includes("/verified-match/start"),
       );

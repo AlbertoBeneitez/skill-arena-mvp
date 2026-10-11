@@ -2,7 +2,7 @@
 import { useEffect, useRef, type ButtonHTMLAttributes } from "react";
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> & {
-  onActivate(): void;
+  onActivate(source: "touch" | "click"): void;
 };
 
 /** Touch release is reliable even when a browser suppresses the compatibility
@@ -57,7 +57,7 @@ export default function GameActionButton({
           event.clientY > rect.bottom
         )
           return;
-        onActivate();
+        onActivate("touch");
       }}
       onClick={(event) => {
         if (event.detail !== 0 && suppressClick.current) {
@@ -66,7 +66,7 @@ export default function GameActionButton({
           return;
         }
         suppressClick.current = false;
-        onActivate();
+        onActivate("click");
       }}
     >
       {children}
