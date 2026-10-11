@@ -108,6 +108,7 @@ assert.equal(idle.failure, "TIME_LIMIT");
 assert.equal(idle.kills, 0);
 const manifest = createMatchManifest({
     gameId: core.gameId,
+    gameVersion: core.gameVersion,
     seed: fixture.seed,
     targetScore: 1e9,
   }),

@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v85-mobile
+# GALACTIC GAMES · Seguimiento de v86-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -6,7 +6,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | --- | --- | --- |
 | Galactic Slot | v81: core1.0/replay, tres franjas fijas, ajustes por posición, tabla de premios, saldo ficticio100€/5€, tres minutos o insolvencia; pulsadores accesibles y formato de euros aislado de wallet | QA táctil win54tiradas/180s y loss20tiradas/~68s en ambas vistas, reinicio/rotación/abandono,320px; sin dinero real ni pairing/consumo durable |
 | Galactic Roulette | v82: core1.0/replay, rueda37casillas y lanzamiento por swipe, fricción/potencia/dirección enteras, apuestas a número/color/paridad/mitades/docenas, saldo ficticio100€/5€, tres minutos o insolvencia; QA31tiradas/180s y derrota20tiradas/~114s, reinicio/rotación/abandono ambas vistas | v84 tablero completo de las46apuestas admitidas siempre visible, columnas europeas plegadas en móvil, verde/azul/cero blanco y potencia/sentido seleccionables; sigue siendo una apuesta por tiro, sin splits/corners/múltiples chips ni dinero real/pairing durable |
-| Galactic Birds | v83: core1.0 VERIFIED/replay, campo continuo con12drones/6estructuras, vidrio/cerámica/aleación,30tiros y lanzamiento por arrastre;1000campos,16victorias completas, derrotas/timeout/inputs/golden/render; QA táctil win/loss/reinicio/rotación en ambas vistas | Física arcade AABB translacional, no simulador de cuerpos rotatorios; seguimiento físico y comparación común pendientes |
+| Galactic Birds | v86: V2 VERIFIED con tres tipos físicos (rápido/pesado/explorador), cola10de cada tipo, seis estructuras persistentes visibles en radar y vidrio más legible;1000campos/16clears/64inicios estables/cuatro derrotas/golden/render, QA táctil win/loss/reinicio/rotación/sonido ambas vistas. V1 preservada | Física arcade AABB translacional, sin cuerpos rotatorios; seguimiento físico y comparación común pendientes |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Revisar legibilidad de alternancia X/Z sin texto; seguimiento físico |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Nueva versión para bloques de tamaño constante/estabilidad y plataforma de lanzamiento cuidada; conservar base y replay |
 | Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados; v73 extiende cuerpos hasta ambos bordes reales del canvas, huecos V4 exactos y QA180s en ambas orientaciones | Rotación1000 y comparación común pendientes |
@@ -376,3 +376,15 @@ protocolo/lifecycle comunes y históricos intactos. [Reglas](DARTS_V3.md) y
 La publicación de v84 pasó CI38152831748 y Vercel6997918762Ready; mobile-test
 avanzó por fast-forward a b24aa0b. Próximo: Birds con tipos/cola/demolición visible;
 River continuo; Mine público seguro y variado; las16imágenes siguen sin adjuntar.
+
+## Iteración v86
+
+Birds2.0 añade masa/radio/velocidad por tipo y cola reproducible; la UI muestra
+las aves próximas y todo el campo real en radar. Conserva caída/contactos/inputs
+comunes y V1 verificable. [Reglas](GALACTIC_BIRDS_V2.md) y [QA](releases/v86-mobile.md).
+v85 pasó CI38154047088/Vercel6998129407Ready y mobile-test avanzó por fast-forward
+a4b117dd. Pendiente de la solicitud actual: River sin meta de65filas, Mine público
+con setups variados y secreto/persistencia protegidos, e imágenes16de identidad
+(no recibidas). Galactic Shot queda intacto; Memoria retirada, título blanco y
+Roulette/Dardos resueltos en checkpoints anteriores. El ledger superior mantiene
+el resto del backlog, sin declararlo terminado.

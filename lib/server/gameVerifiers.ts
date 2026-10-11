@@ -1,3 +1,4 @@
+import { BIRDS_CORE as BIRDS_CORE_V2 } from "../verified/galacticBirdsCore.v2";
 import { BIRDS_CORE } from "../verified/galacticBirdsCore.v1";
 import { ROULETTE_CORE } from "../verified/galacticRouletteCore.v1";
 import { SLOT_CORE } from "../verified/galacticSlotCore.v1";
@@ -381,6 +382,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BIRDS_CORE.gameId, BIRDS_CORE.gameVersion)]: coreAdapter(BIRDS_CORE),
+  [adapterKey(BIRDS_CORE_V2.gameId, BIRDS_CORE_V2.gameVersion)]: coreAdapter(BIRDS_CORE_V2),
   [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
   [adapterKey(SLOT_CORE.gameId, SLOT_CORE.gameVersion)]: coreAdapter(SLOT_CORE),
   [adapterKey(ALIEN_DASH_CORE_V3.gameId, ALIEN_DASH_CORE_V3.gameVersion)]: coreAdapter(ALIEN_DASH_CORE_V3),

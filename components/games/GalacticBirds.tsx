@@ -4,8 +4,9 @@ import type { GameRuntimeProps } from "@/lib/games";
 import {
   BIRDS_CORE,
   BIRDS_RULES,
+  type BirdKind,
   type BirdsState,
-} from "@/lib/verified/galacticBirdsCore.v1";
+} from "@/lib/verified/galacticBirdsCore.v2";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -17,7 +18,7 @@ const hudLabel = (s: Readonly<BirdsState>) =>
 const feedbackScore = (s: Readonly<BirdsState>) => s.kills * 10 + s.destroyed;
 const inputTones = { SHOOT: "tap" } as const;
 const materials = {
-  glass: { fill: "rgba(124,225,249,.32)", edge: "#91d8e7" },
+  glass: { fill: "rgba(124,225,249,.48)", edge: "#91d8e7" },
   ceramic: { fill: "#637aa1", edge: "#b3bbd7" },
   alloy: { fill: "#364a60", edge: "#8facca" },
 };
@@ -26,10 +27,13 @@ function falcon(
   x: number,
   y: number,
   angle: number,
+  kind: BirdKind = "scout",
+  thumbnail = false,
 ) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
+  if (thumbnail) ctx.scale(0.65, 0.65);
   ctx.fillStyle = "#d79d6f";
   ctx.beginPath();
   ctx.moveTo(-10, -4);
@@ -39,11 +43,18 @@ function falcon(
   ctx.lineTo(-10, 4);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "#739aae";
+  ctx.fillStyle =
+    kind === "dart" ? "#6fcbd6" : kind === "meteor" ? "#ce9b73" : "#739aae";
   ctx.strokeStyle = "#bddeeb";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.arc(0, 0, 13, 0, Math.PI * 2);
+  ctx.arc(
+    0,
+    0,
+    kind === "meteor" ? 18 : kind === "dart" ? 9 : 12,
+    0,
+    Math.PI * 2,
+  );
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = "#132f48";
@@ -192,7 +203,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         ctx.lineTo(px, py);
         ctx.lineTo(lx + 14, 512);
         ctx.stroke();
-        falcon(ctx, px, py, (-(10 + s.aim) * Math.PI) / 180);
+        falcon(ctx, px, py, (-(10 + s.aim) * Math.PI) / 180, s.queue[s.shots]);
       }
       if (s.bird) {
         const b = s.bird,
@@ -204,7 +215,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         ctx.moveTo(x - (b.vx / 1000) * 8, y - (b.vy / 1000) * 8);
         ctx.lineTo(x, y);
         ctx.stroke();
-        falcon(ctx, x, y, Math.atan2(b.vy, b.vx));
+        falcon(ctx, x, y, Math.atan2(b.vy, b.vx), b.kind);
       }
       for (const e of s.events) {
         const age = s.tick - e.tick;
@@ -231,6 +242,73 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           );
         }
         ctx.globalAlpha = 1;
+      }
+      // Radar shows the actual complete demolition field, never a predicted shot.
+      const mapLeft = 18,
+        mapTop = 74,
+        mapWidth = width - 36,
+        mapHeight = 78,
+        mapScale = mapWidth / 1600;
+      ctx.fillStyle = "rgba(5,16,30,.84)";
+      ctx.strokeStyle = "#537488";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(mapLeft, mapTop, mapWidth, mapHeight, 9);
+      ctx.fill();
+      ctx.stroke();
+      for (const body of s.bodies) {
+        if (!body.alive) continue;
+        ctx.fillStyle =
+          body.material === "glass"
+            ? "#69b9c8"
+            : body.material === "ceramic"
+              ? "#8d9abf"
+              : "#65829a";
+        ctx.fillRect(
+          mapLeft + ((body.x - body.w / 2) / 1000) * mapScale,
+          mapTop +
+            mapHeight -
+            8 -
+            ((560000 - body.y + body.h / 2) / 1000) * 0.32,
+          Math.max(2, (body.w / 1000) * mapScale),
+          (body.h / 1000) * 0.32,
+        );
+      }
+      for (const enemy of s.enemies) {
+        if (!enemy.alive) continue;
+        ctx.fillStyle = "#f0b3bd";
+        ctx.beginPath();
+        ctx.arc(
+          mapLeft + (enemy.x / 1000) * mapScale,
+          mapTop + mapHeight - 8 - ((560000 - enemy.y) / 1000) * 0.32,
+          3,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
+      ctx.strokeStyle = "#deca94";
+      ctx.strokeRect(
+        mapLeft + (camera / 1000) * mapScale,
+        mapTop + 4,
+        Math.min(mapWidth, width * mapScale),
+        mapHeight - 8,
+      );
+      const queueStart = s.shots - (s.bird ? 1 : 0),
+        names = { scout: "EXPLORADOR", dart: "RÁPIDO", meteor: "PESADO" };
+      for (let i = 0; i < 3; i++) {
+        const kind = s.queue[queueStart + i];
+        if (!kind) continue;
+        const x = ((i + 0.5) * width) / 3;
+        ctx.fillStyle = i === 0 ? "rgba(56,84,96,.8)" : "rgba(12,30,48,.7)";
+        ctx.beginPath();
+        ctx.roundRect(x - width / 6 + 8, 564, width / 3 - 16, 54, 8);
+        ctx.fill();
+        falcon(ctx, x, 580, 0, kind, true);
+        ctx.fillStyle = "#e1edf2";
+        ctx.font = `bold ${Math.min(24, (18 * width) / 390)}px system-ui`;
+        ctx.textAlign = "center";
+        ctx.fillText(names[kind], x, 614);
       }
       // One field's persistent targets, not level/sector indicators.
       for (let i = 0; i < s.enemies.length; i++) {

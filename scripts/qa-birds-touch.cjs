@@ -12,13 +12,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       pathToFileURL(
         path.join(
           __dirname,
-          "../.det-test/lib/verified/galacticBirdsCore.v1.js",
+          "../.det-test/lib/verified/galacticBirdsCore.v2.js",
         ),
       )
     ),
     { chooseBirdsShot, birdsTrial } = await import(
       pathToFileURL(
-        path.join(__dirname, "../.det-test/scripts/birds-play-fixture.js"),
+        path.join(__dirname, "../.det-test/scripts/birds-v2-play-fixture.js"),
       )
     ),
     { replayCore } = await import(
@@ -125,7 +125,11 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         CanvasRenderingContext2D.prototype.fill = function (...args) {
           const f = window.__birds,
             m = this.getTransform();
-          if (f.base && this.fillStyle === "#739aae" && this.__arc?.r === 13) {
+          if (
+            f.base &&
+            ["#739aae", "#6fcbd6", "#ce9b73"].includes(this.fillStyle) &&
+            Math.hypot(m.a, m.b) > f.base.a * 0.95
+          ) {
             f.helmet = {
               x: m.e,
               y: m.f,
@@ -166,6 +170,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         .tap();
       const issued = await (await start).json();
       assert.equal(issued.manifest.game_id, "galactic-birds");
+      assert.equal(issued.manifest.game_version, "2.0.0");
       await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
       await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
       await page.waitForTimeout(150);

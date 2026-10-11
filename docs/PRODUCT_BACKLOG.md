@@ -383,3 +383,8 @@ las restantes unidades se siguen en PRODUCT_BACKLOG_STATUS.md.
 v85 introduce Dardos3.0: veinte tiradas, suma clásica sin bonus/objetivos, vuelo
 largo curvo y ausencia de previsión/marcas de caída. La competencia histórica
 V1/V2 sigue reproducible; próximas unidades de la solicitud actual en el ledger.
+
+v86 profesionaliza Birds con tres proyectiles físicamente distintos, cola y
+representación visible de todas las estructuras reales, sin clonar recursos
+comerciales. Core2.0/replay nuevo y V1 preservada; solicitud River/Mine/imágenes
+sigue abierta según el ledger, no se considera cerrada por estos checkpoints.

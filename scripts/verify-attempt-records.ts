@@ -71,6 +71,7 @@ function reject(raw: unknown, error: string, status = 400) {
 
 try {
   const historical: [GameId, string][] = [
+    ["galactic-birds", "1.0.0"],
     ["star-phalanx", "1.0.0"],
     ["brick-relay", "1.0.0"],
     ["grid-serpent", "1.0.0"],
