@@ -1,4 +1,9 @@
 import assert from "node:assert/strict";
+import { GAMES, getGameDefinition } from "../lib/games";
+import { getServerGameAdapter } from "../lib/server/gameVerifiers";
+assert.equal(GAMES.some(g => g.id === "memory-match"), false, "retired from catalogue and lazy loaders");
+assert.equal(getGameDefinition("memory-match")?.enabled, false);
+for (const version of ["1.0.0", "2.0.0"]) assert.ok(getServerGameAdapter("memory-match",version), "historical replay stays available");
 import {
   MEMORY_CORE as core,
   MEMORY_RULES,

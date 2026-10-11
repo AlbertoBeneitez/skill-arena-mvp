@@ -5917,7 +5917,7 @@ html, body {
 .galacticProviderNote { font-size:11px; margin-bottom:0; }
 .galacticAvatarSetup { min-height:min(760px,calc(100dvh - 32px)); border:1px solid #344457; border-radius:28px; background:linear-gradient(150deg,#142c40,#091724); color:#eaf4ff; padding:26px; justify-content:center; }
 .galacticSetupBrand { font-size:10px; letter-spacing:.12em; color:#9fc7d3; text-align:center; }
-.galacticAvatarSetup h1 { font-size:25px; text-align:center; margin:18px 0 6px; }
+.galacticAvatarSetup h1 { color: #fff; font-size:25px; text-align:center; margin:18px 0 6px; }
 .galacticAvatarSetup > p { font-size:13px; color:#a6bacd; text-align:center; margin:0 0 24px; }
 .galacticAvatarChoices { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:0 0 20px; }
 .galacticAvatarChoices button { min-width:48px; min-height:48px; border:1px solid #365567; border-radius:14px; background:#132d40; padding:5px; touch-action:manipulation; }

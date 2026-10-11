@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   const game = getGameDefinition(body.game_id);
   if (
-    !game ||
+    !game || !game.enabled ||
     game.competition.verification !== "server-replay"
   ) {
     return reject("UNSUPPORTED_GAME_VERSION");
