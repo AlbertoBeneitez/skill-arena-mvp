@@ -1,5 +1,6 @@
 "use client";
 import GameResultSummary from "./GameResultSummary";
+import GameActionButton from "./GameActionButton";
 import CatalogBrowser from "./CatalogBrowser";
 import shellStyles from "./ProductShell.module.css";
 
@@ -1231,13 +1232,13 @@ export default function DemoApp() {
         {screen === "game" && (
           <section className="gameScreen">
             <div className="mobileGameHeader">
-              <button
+              <GameActionButton
                 className="mobileGameBack"
-                onClick={requestExitGame}
+                onActivate={requestExitGame}
                 aria-label="Volver"
               >
                 ←
-              </button>
+              </GameActionButton>
               <div>
                 <strong>{selectedGame.name}</strong>
                 <small>
@@ -1249,15 +1250,15 @@ export default function DemoApp() {
                 </small>
               </div>
               <div className="gameHeaderActions">
-                <button
+                <GameActionButton
                   className={`gameSoundToggle ${musicOn ? "on" : "off"}`}
                   type="button"
                   aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
                   aria-pressed={musicOn}
-                  onClick={toggleSound}
+                  onActivate={toggleSound}
                 >
                   {musicOn ? "🔊" : "🔇"}
-                </button>
+                </GameActionButton>
                 {selectedMode === "existing" && matchScope === "duel" && (
                   <button
                     className={`ghostToggle ${ghostEnabled ? "active" : ""}`}

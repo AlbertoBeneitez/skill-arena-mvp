@@ -111,6 +111,44 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         });
         await page.waitForTimeout(500);
       }
+      const cancelSession = await context.newCDPSession(page),
+        toggleBox = await page.locator(".gameSoundToggle").boundingBox();
+      await cancelSession.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [
+          {
+            x: toggleBox.x + toggleBox.width / 2,
+            y: toggleBox.y + toggleBox.height / 2,
+          },
+        ],
+      });
+      await cancelSession.send("Input.dispatchTouchEvent", {
+        type: "touchCancel",
+        touchPoints: [],
+      });
+      assert.equal(
+        await page.locator(".gameSoundToggle").getAttribute("aria-pressed"),
+        "false",
+      );
+      await cancelSession.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [
+          {
+            x: toggleBox.x + toggleBox.width / 2,
+            y: toggleBox.y + toggleBox.height / 2,
+          },
+        ],
+      });
+      await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+      await cancelSession.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        touchPoints: [],
+      });
+      await page.waitForTimeout(100);
+      assert.equal(
+        await page.locator(".gameSoundToggle").getAttribute("aria-pressed"),
+        "false",
+      );
       const before = await page.locator(".coreHud").innerText();
       assert.equal(before.split(" €")[0], name === "Slot" ? "295.00" : "95.00");
       await page.evaluate(() => {
@@ -150,6 +188,31 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page
         .getByRole("button", { name: "Desactivar sonido", exact: true })
         .tap();
+      assert.equal(
+        await page.locator(".gameSoundToggle").getAttribute("aria-pressed"),
+        "false",
+      );
+      await page.locator(".gameSoundToggle").focus();
+      await page.keyboard.press("Space");
+      assert.equal(
+        await page.locator(".gameSoundToggle").getAttribute("aria-pressed"),
+        "true",
+      );
+      await page.keyboard.press("Enter");
+      assert.equal(
+        await page.locator(".gameSoundToggle").getAttribute("aria-pressed"),
+        "false",
+      );
+      await page.locator(".gameSoundToggle").click();
+      assert.equal(
+        await page.locator(".gameSoundToggle").getAttribute("aria-pressed"),
+        "true",
+      );
+      await page.locator(".gameSoundToggle").click();
+      assert.equal(
+        await page.locator(".gameSoundToggle").getAttribute("aria-pressed"),
+        "false",
+      );
       if (name === "Roulette") await page.waitForTimeout(5400);
       const final = await page.locator(".coreHud").innerText();
       assert.ok(final.split(" €")[0] !== "100.00");
