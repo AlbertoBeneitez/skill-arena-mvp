@@ -8,10 +8,15 @@ export function demoActor(request: NextRequest) {
 export function checkHiddenOrigin(request: NextRequest) {
   const origin = request.headers.get("origin");
   if (origin) {
-    const parsed = new URL(origin),
-      protocol =
-        request.headers.get("x-forwarded-proto") ??
-        new URL(request.url).protocol.replace(":", "");
+    let parsed: URL;
+    try {
+      parsed = new URL(origin);
+    } catch {
+      throw new CommandAuthorityError("INVALID_COMMAND");
+    }
+    const protocol =
+      request.headers.get("x-forwarded-proto") ??
+      new URL(request.url).protocol.replace(":", "");
     if (
       parsed.host !== request.headers.get("host") ||
       parsed.protocol !== `${protocol}:`
@@ -40,4 +45,29 @@ export function hiddenError(error: unknown) {
       headers: { "Cache-Control": "no-store" },
     },
   );
+}
+
+/** Bound streamed bodies too; Content-Length alone is not a trusted limit. */
+export async function readHiddenBody(request: NextRequest): Promise<unknown> {
+  const reader = request.body?.getReader();
+  if (!reader) throw new CommandAuthorityError("INVALID_COMMAND");
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      if (length > 4096) {
+        await reader.cancel();
+        throw new CommandAuthorityError("INVALID_COMMAND");
+      }
+      chunks.push(value);
+    }
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    throw new CommandAuthorityError("INVALID_COMMAND");
+  } finally {
+    reader.releaseLock();
+  }
 }

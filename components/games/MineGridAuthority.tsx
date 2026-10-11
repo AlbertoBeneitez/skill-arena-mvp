@@ -47,6 +47,7 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
           score: session.score,
           timeMs: 0,
           verified: true,
+          height: session.view.reach,
           failureReason: session.failure,
         });
       }, 600);
@@ -56,18 +57,14 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
   if (phase === "unavailable")
     return (
       <div className="hiddenMineEmpty">
-        <h2>Mine Grid está en preparación</h2>
-        <p>
-          El nuevo campo necesita la conexión de servidor para mantener las
-          minas ocultas. No se sustituirá por resultados del cliente.
-        </p>
+        <h2>Mine Grid no disponible</h2>
       </div>
     );
   if (phase === "error")
     return (
       <div className="hiddenMineEmpty" role="alert">
         <h2>No se puede recuperar el campo</h2>
-        <p>Sal y vuelve a entrar para iniciar otro intento.</p>
+
       </div>
     );
   if (!session)

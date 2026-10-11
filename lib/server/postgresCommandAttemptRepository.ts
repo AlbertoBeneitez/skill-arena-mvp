@@ -30,7 +30,7 @@ function record(row: Row): StoredCommandAttempt {
 export class PostgresCommandAttemptRepository
   implements CommandAttemptRepository
 {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pick<Pool, "query">) {}
   async create(next: StoredCommandAttempt) {
     if (
       next.revision !== 0 ||

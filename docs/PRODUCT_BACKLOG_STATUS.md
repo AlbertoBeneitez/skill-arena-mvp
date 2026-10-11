@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v86-mobile
+# GALACTIC GAMES · Seguimiento de v88-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -17,7 +17,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Serpent | v75: V2 VERIFIED, cadencia18→10ticks frente17→9V1, botones72px y campo ampliado, avance por núcleos, 32 recorridos equivalentes al kernelV1 y 8 derrotas; QA táctil victoria/derrota/reinicio en ambas orientaciones, históricoV1 archivado | Seguimiento físico y comparación común pendientes |
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
 | Dardos | v85: V3 VERIFIED,20swipes/suma cruda sin bonus ni objetivos, oscilación1000perfiles, vuelo1s/arco/profundidad sin previsión ni marcas antiguas,64victorias/ocho derrotas/timeout/golden/render y QA táctil completa/rotación/reinicio. V1/V2 preservados | Seguimiento físico; comparación común y consumo durable pendientes |
-| Mine Grid | v80 candidato privado V2 continuo7×12,1000tableros distintos no-guess,64replays, alcance66, proyección sin niveles/seed y QA local victoria/derrota/reinicio ambas vistas; V1 preservado | Integración pública privada segura/registro al configurar identidad y repositorios durables; catálogo0.1 conserva setup fijo |
+| Mine Grid | v88: Mine2.0 privado conserva1000campos no-guess/goldens; integración opcional del catálogo con PostgreSQL transaccional/CAS, cookies opacas, cuerpos limitados, registros al salir, recuperación entre workers y partidas táctiles completas ambas vistas | Activación pública pendiente de DATABASE_URL/proveedor y migraciones explícitas; Vercel actual conserva0.1/setup fijo. Sin autenticación/dinero/competición real; reloj ordinal no ofrece desempate por tiempo real |
 | Solitaire Sprint | Portadav76/QA preservados; v80 generador privado candidato,1000repartos iniciales distintos reproducibles,52cartas únicas/proyección oculta/golden, sin templates públicos recuperables | Resolver policy de resolubilidad, core privado/cierre52bases/farming, QA completa e integración durable pública; catálogo0.1 conserva setup fijo |
 | Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | Nueva versión más variada/rápida con apertura justa y transiciones superables |
@@ -397,3 +397,14 @@ no como meta del recorrido. v86 pasó CI38155661041/Vercel6998411564Ready y
 mobile-test avanzó por fast-forward a281b3ef. Próximo: Mine público seguro con
 PostgreSQL; no hay DATABASE_URL ni proveedor elegido. Las16imágenes no están
 en adjuntos/repositorio, por lo que no se sustituyen por imágenes inventadas.
+
+## Iteración v88
+
+[Mine persistido](MINE_PERSISTED_TRAINING.md): conexión reutiliza repositorios/autoridad
+existentes; entrenamiento privado durable opcional, sin activar proveedores ni
+auth/money. PostgreSQL local real y QA catálogo completa verifican campos distintos,
+terminales/reinicio/abandono/seguridad; sin configuración mantiene legacy público.
+v87 pasó CI38165672231/Vercel7000173634Ready; mobile-test fast-forward a8367025.
+La tarea Mine pública NO está cerrada: falta configurar PostgreSQL en Vercel;
+no hay DATABASE_URL ni servicio elegido. Las16imágenes siguen sin adjuntar.
+River no tiene meta de filas, con límite técnico de seis minutos documentado.

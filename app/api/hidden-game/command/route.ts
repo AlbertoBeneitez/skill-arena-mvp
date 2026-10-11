@@ -1,10 +1,13 @@
+import { getHiddenTrainingService } from "@/lib/server/hiddenTrainingService";
 import type { NextRequest } from "next/server";
-import { getLocalHiddenGames } from "@/lib/server/demo/localHiddenGames";
+
 import {
   checkHiddenOrigin,
   demoActor,
   hiddenError,
+  readHiddenBody,
 } from "@/lib/server/hiddenHttp";
+import type { HiddenCommandRequest } from "@/lib/verified/hiddenCommandContracts";
 import { CommandAuthorityError } from "@/lib/server/commandAttemptRepository";
 export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
@@ -14,8 +17,11 @@ export async function POST(request: NextRequest) {
     if (!actor) throw new CommandAuthorityError("NOT_FOUND");
     if (Number(request.headers.get("content-length")) > 4096)
       throw new CommandAuthorityError("INVALID_COMMAND");
-    const body = await request.json(),
-      session = await getLocalHiddenGames().authority.command(body, actor);
+    const body = await readHiddenBody(request),
+      session = await getHiddenTrainingService().authority.command(
+        body as HiddenCommandRequest,
+        actor,
+      );
     return Response.json(session, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return hiddenError(error);

@@ -96,7 +96,7 @@ export function useHiddenAttempt<V>({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
-            signal: request.signal,
+            keepalive: true,
             cache: "no-store",
           }),
           value = await response.json();

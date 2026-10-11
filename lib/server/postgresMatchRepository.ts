@@ -35,7 +35,7 @@ function validPlayerId(id: unknown): id is string {
 
 /** Uses a real PostgreSQL pool. No memory/SQLite fallback or automatic migration. */
 export class PostgresMatchRepository implements MatchRepository {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pick<Pool, "query">) {}
 
   async createMatch(manifest: MatchManifest, participants: MatchParticipants): Promise<StoredMatch> {
     if (

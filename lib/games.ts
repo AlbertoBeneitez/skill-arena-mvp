@@ -237,7 +237,7 @@ const GAME_DEFINITIONS = [
     id: "mine-grid",
     version: "0.1.0",
     status: "INTEGRATED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/MineGrid")),
+    loadComponent: adaptGameComponent(() => import("@/components/games/MineGridEntry")),
     competition: { verification: "client-result" },
     name: "Mine Grid",
     cover: "/covers/mine-grid.svg",

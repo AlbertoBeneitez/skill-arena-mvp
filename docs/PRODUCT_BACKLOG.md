@@ -394,3 +394,10 @@ velocidades/separaciones variables y alcance máximo verificado al terminal.
 V1–V3 reproducibles; mantiene límite técnico de seis minutos. Validación y QA
 en [RIVER_DASH_V4.md](RIVER_DASH_V4.md). Pendientes de esta solicitud: integración
 Mine pública/durable con estado privado y las16imágenes todavía no recibidas.
+
+Checkpoint v88: integración opcional Mine privado2.0→PostgreSQL→catálogo, sin
+reescribir core/autoridad. Validación real local de campos distintos, persistencia
+entre workers, CAS/transacciones, partidas táctiles y seguridad HTTP. Vercel
+sigue con legacy/setup fijo mientras falte la base configurada. Detalles y límites
+en [MINE_PERSISTED_TRAINING.md](MINE_PERSISTED_TRAINING.md). No se declara cerrada
+la activación pública ni las16imágenes todavía ausentes; auth/money continúan apagados.
