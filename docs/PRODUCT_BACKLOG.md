@@ -353,7 +353,7 @@ Galactic Roulette v82: rueda europea y lanzamiento controlado por el
 jugador con movimiento reproducible, apuestas usuales y saldo ficticio; 5€ por
 tirada y cierre en tres minutos o insolvencia. Core versionado y replay común.
 
-Galactic Birds pendiente: juego original de lanzamiento y demolición por física
+Galactic Birds v83: juego original de lanzamiento y demolición por física
 reproducible. Puede inspirarse en mecánicas del género; no copiar personajes,
 marca, niveles, gráficos, audio ni código protegido de Angry Birds.
 
@@ -367,5 +367,7 @@ competitivas ni declara esos puntos completados con los candidatos privados.
 Checkpoint v81 añade Galactic Slot con saldo ficticio y replay/QA completo;
 CI y Vercel correctos, mobile-test avanzó por fast-forward. Checkpoint v82 añade
 Galactic Roulette europea de cero único, una apuesta por lanzamiento, fricción
-entera y saldo ficticio reproducible. No conecta bancos ni ledger real. Birds
-permanece pendiente de implementación original y validación, no de copiar assets.
+entera y saldo ficticio reproducible. No conecta bancos ni ledger real.
+Checkpoint v83 incorpora Birds original continuo con replay y QA táctil completos,
+y estabiliza callbacks Slot/Roulette al cambiar sonido sin alterar sus cores V1.
+La aceptación en dispositivos físicos y el backlog anterior permanecen abiertos.

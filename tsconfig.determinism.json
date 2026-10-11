@@ -83,7 +83,9 @@
     "scripts/verify-piano-v3.ts",
     "scripts/verify-slot-v1.ts",
     "scripts/verify-roulette-v1.ts",
-    "scripts/roulette-play-fixture.ts"
+    "scripts/roulette-play-fixture.ts",
+    "scripts/birds-play-fixture.ts",
+    "scripts/verify-birds-v1.ts"
   ],
   "exclude": [
     "node_modules",

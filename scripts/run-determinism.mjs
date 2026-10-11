@@ -8,6 +8,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-ranking-repository.js");
   await import("../.det-test/scripts/verify-command-repository.js");
 } else {
+  await import("../.det-test/scripts/verify-birds-v1.js");
   await import("../.det-test/scripts/verify-roulette-v1.js");
   await import("../.det-test/scripts/verify-slot-v1.js");
   await import("../.det-test/scripts/verify-competitive-games.js");

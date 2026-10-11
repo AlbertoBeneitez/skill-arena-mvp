@@ -256,3 +256,10 @@ Original fixed-point core, Canvas wheel/ball and SVG cover. Standard European
 single-zero numbering and betting conventions; no casino provider, third-party
 implementation, commercial graphics, trademark or audio reused. Amounts are
 fictitious and never settle or pay out real money.
+
+## Galactic Birds 1.0.0
+
+Original fixed-point sling/demolition core, Canvas falcon/drone/structures and
+SVG cover. Inspired by established projectile-and-demolition mechanics only;
+no Angry Birds characters, levels, assets, branding, sounds or code are reused.
+Uses the project's existing synthesized audio and shared orbital background.

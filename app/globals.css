@@ -6232,3 +6232,5 @@ html, body, .arenaOnboarding, .gameScreen {
  .rouletteVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 184px) !important;height:100% !important;}
  .rouletteVerified .coreControls {left:auto;right:10px;top:35px;bottom:6px;width:168px;max-height:none;grid-template-columns:repeat(3,minmax(44px,1fr));}
 }
+
+.birdsVerified {height:100%;min-height:0;}
