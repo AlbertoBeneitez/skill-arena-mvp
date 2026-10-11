@@ -1,3 +1,4 @@
+import { ROULETTE_ACTIONS } from "./verified/galacticRouletteProtocol.v1";
 import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
 import { PIANO_V2_ACTIONS } from "./verified/pianoRushProtocol.v2";
 import { ORBIT_ACTIONS } from "./verified/orbitShiftProtocol.v1";
@@ -88,6 +89,7 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
+  { id: "galactic-roulette", version: "1.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:1,allowedActions:ROULETTE_ACTIONS}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único: apuestas de5€ ficticios,100€ iniciales, tres minutos o insolvencia. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
     id: "galactic-slot", version: "1.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
@@ -521,6 +523,7 @@ export const GAME_REGISTRY = Object.fromEntries(
 ) as unknown as Record<GameId, GameMeta>;
 
 const CATALOG_ORDER: GameId[] = [
+  "galactic-roulette",
   "galactic-slot",
   "memory-match",
   "darts",

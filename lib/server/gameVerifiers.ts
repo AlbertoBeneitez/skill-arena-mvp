@@ -1,3 +1,4 @@
+import { ROULETTE_CORE } from "../verified/galacticRouletteCore.v1";
 import { SLOT_CORE } from "../verified/galacticSlotCore.v1";
 import { ALIEN_DASH_CORE_V3 } from "../verified/alienDashCore.v3";
 import { MEMORY_CORE } from "../verified/memoryMatchCore.v1";
@@ -377,6 +378,7 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
+  [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
   [adapterKey(SLOT_CORE.gameId, SLOT_CORE.gameVersion)]: coreAdapter(SLOT_CORE),
   [adapterKey(ALIEN_DASH_CORE_V3.gameId, ALIEN_DASH_CORE_V3.gameVersion)]: coreAdapter(ALIEN_DASH_CORE_V3),
   [adapterKey(MEMORY_CORE.gameId, MEMORY_CORE.gameVersion)]: coreAdapter(MEMORY_CORE),

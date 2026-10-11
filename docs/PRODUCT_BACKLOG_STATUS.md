@@ -1,11 +1,11 @@
-# GALACTIC GAMES · Seguimiento de v81-mobile
+# GALACTIC GAMES · Seguimiento de v82-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
 | Juego / área | Trabajo preservado y validado | Pendiente |
 | --- | --- | --- |
 | Galactic Slot | v81: core1.0/replay, tres franjas fijas, ajustes por posición, tabla de premios, saldo ficticio100€/5€, tres minutos o insolvencia; pulsadores accesibles y formato de euros aislado de wallet | QA táctil win54tiradas/180s y loss20tiradas/~68s en ambas vistas, reinicio/rotación/abandono,320px; sin dinero real ni pairing/consumo durable |
-| Galactic Roulette | Solicitud nueva registrada; no existe todavía | Rueda/lanzamiento deterministas, apuestas habituales, saldo ficticio y QA/replay antes de publicación |
+| Galactic Roulette | v82: core1.0/replay, rueda37casillas y lanzamiento por swipe, fricción/potencia/dirección enteras, apuestas a número/color/paridad/mitades/docenas, saldo ficticio100€/5€, tres minutos o insolvencia; QA31tiradas/180s y derrota20tiradas/~114s, reinicio/rotación/abandono ambas vistas | Variante rápida de una apuesta por tiro; no splits/corners/múltiples chips ni dinero real/pairing durable |
 | Galactic Birds | Solicitud nueva registrada; no existe todavía | Lanzamiento y demolición originales, física reproducible, controles/pulido/replay; sin assets/licencias comerciales |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Revisar legibilidad de alternancia X/Z sin texto; seguimiento físico |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Nueva versión para bloques de tamaño constante/estabilidad y plataforma de lanzamiento cuidada; conservar base y replay |
@@ -37,7 +37,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 
-Los 22 juegos activos incluyen 20 VERIFIED por replay y dos INTEGRATED. Mine privado V1/V2 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
+Los 23 juegos activos incluyen 21 VERIFIED por replay y dos INTEGRATED. Mine privado V1/V2 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
 
 ## Iteración v53
 

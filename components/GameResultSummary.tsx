@@ -36,9 +36,13 @@ export default function GameResultSummary({
       <h2>
         {waitingForRival
           ? "Marca registrada"
-          : result.won
-            ? "Reto superado"
-            : "Inténtalo de nuevo"}
+          : balance
+            ? reach === 0
+              ? "Saldo agotado"
+              : "Saldo registrado"
+            : result.won
+              ? "Reto superado"
+              : "Inténtalo de nuevo"}
       </h2>
       <dl className="resultFacts">
         <div>

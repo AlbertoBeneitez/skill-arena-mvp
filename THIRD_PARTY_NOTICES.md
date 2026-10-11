@@ -249,3 +249,10 @@ Original TypeScript core and Canvas cabinet/symbols; original SVG cover. Uses
 standard fruit, geometric and typographic slot motifs only. No third-party slot
 code, artwork, sound, trademark or casino integration is included. Euro amounts
 are a fictitious in-game metric, never a payment or payout.
+
+## Galactic Roulette 1.0.0
+
+Original fixed-point core, Canvas wheel/ball and SVG cover. Standard European
+single-zero numbering and betting conventions; no casino provider, third-party
+implementation, commercial graphics, trademark or audio reused. Amounts are
+fictitious and never settle or pay out real money.

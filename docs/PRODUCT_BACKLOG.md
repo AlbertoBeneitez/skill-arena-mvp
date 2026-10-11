@@ -349,7 +349,7 @@ configuración inicial emitida por servidor, avances ajustables, tabla de premio
 La métrica terminal es saldo ficticio y nunca liquida dinero de plataforma.
 Implementación inicial v81; evidencia y estado de validación en el ledger.
 
-Galactic Roulette pendiente: rueda europea y lanzamiento controlado por el
+Galactic Roulette v82: rueda europea y lanzamiento controlado por el
 jugador con movimiento reproducible, apuestas usuales y saldo ficticio; 5€ por
 tirada y cierre en tres minutos o insolvencia. Core versionado y replay común.
 
@@ -362,3 +362,10 @@ largo/variado, Maze más amplio con coleccionables y movimiento expresivo, Metro
 con mayor profundidad de corredor, retirar Ranking de navegación inferior y
 selección de las16 imágenes deseadas (no adjuntas). No sustituye sus garantías
 competitivas ni declara esos puntos completados con los candidatos privados.
+
+
+Checkpoint v81 añade Galactic Slot con saldo ficticio y replay/QA completo;
+CI y Vercel correctos, mobile-test avanzó por fast-forward. Checkpoint v82 añade
+Galactic Roulette europea de cero único, una apuesta por lanzamiento, fricción
+entera y saldo ficticio reproducible. No conecta bancos ni ledger real. Birds
+permanece pendiente de implementación original y validación, no de copiar assets.
