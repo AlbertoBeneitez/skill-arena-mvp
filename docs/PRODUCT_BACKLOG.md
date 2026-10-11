@@ -371,3 +371,11 @@ entera y saldo ficticio reproducible. No conecta bancos ni ledger real.
 Checkpoint v83 incorpora Birds original continuo con replay y QA táctil completos,
 y estabiliza callbacks Slot/Roulette al cambiar sonido sin alterar sus cores V1.
 La aceptación en dispositivos físicos y el backlog anterior permanecen abiertos.
+
+La solicitud posterior a v83 retira Memoria (históricos preservados), pide el
+título de identidad blanco y16imágenes aún no recibidas, tipos/cola/estructuras
+visibles en Birds, apuestas visibles y verde/azul/cero blanco con potencia/sentido
+en Roulette,20tiradas con suma cruda y vuelo10m en Dardos, River sin meta de filas
+y variación visible del Mine público. Galactic Shot no se modifica por aclaración.
+v84 resuelve retirada/título y presentación/control Roulette sin cambiar su core;
+las restantes unidades se siguen en PRODUCT_BACKLOG_STATUS.md.

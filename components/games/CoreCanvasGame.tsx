@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import DirectionalJoystick from "./DirectionalJoystick";
 import type { GameRuntimeProps } from "@/lib/games";
 import { configureLogicalCanvas, beginLogicalCanvasFrame, type CanvasViewportMetrics, type LogicalCanvasViewport } from "@/lib/gameCanvas";
@@ -9,7 +9,7 @@ import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
 import { advanceCoreToTick, applyCoreInput, type CoreState, type GameCore } from "@/lib/verified/coreRuntime.v1";
 
 export type CorePoint = { x: number; y: number };
-type Control = { action: string; label: string; symbol: string; releaseAction?: string };
+type Control = { action: string; label: string; symbol: string; releaseAction?: string; style?: CSSProperties };
 type Props<S extends CoreState> = GameRuntimeProps & {
   core: GameCore<S>;
   name: string;
@@ -327,7 +327,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     />
     <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
-    {!!props.controls?.length && <div className="coreControls">{props.controls.map(control => <button key={control.action} type="button" aria-label={control.label}
+    {!!props.controls?.length && <div className="coreControls">{props.controls.map(control => <button key={control.action} type="button" aria-label={control.label} style={control.style}
       onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); if (control.releaseAction) heldRef.current.add(control.releaseAction); send(control.action); }}
       onPointerUp={event => { if (control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }}
       onPointerCancel={() => { if (control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } }}

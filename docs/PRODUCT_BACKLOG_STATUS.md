@@ -1,11 +1,11 @@
-# GALACTIC GAMES · Seguimiento de v83-mobile
+# GALACTIC GAMES · Seguimiento de v84-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
 | Juego / área | Trabajo preservado y validado | Pendiente |
 | --- | --- | --- |
 | Galactic Slot | v81: core1.0/replay, tres franjas fijas, ajustes por posición, tabla de premios, saldo ficticio100€/5€, tres minutos o insolvencia; pulsadores accesibles y formato de euros aislado de wallet | QA táctil win54tiradas/180s y loss20tiradas/~68s en ambas vistas, reinicio/rotación/abandono,320px; sin dinero real ni pairing/consumo durable |
-| Galactic Roulette | v82: core1.0/replay, rueda37casillas y lanzamiento por swipe, fricción/potencia/dirección enteras, apuestas a número/color/paridad/mitades/docenas, saldo ficticio100€/5€, tres minutos o insolvencia; QA31tiradas/180s y derrota20tiradas/~114s, reinicio/rotación/abandono ambas vistas | Variante rápida de una apuesta por tiro; no splits/corners/múltiples chips ni dinero real/pairing durable |
+| Galactic Roulette | v82: core1.0/replay, rueda37casillas y lanzamiento por swipe, fricción/potencia/dirección enteras, apuestas a número/color/paridad/mitades/docenas, saldo ficticio100€/5€, tres minutos o insolvencia; QA31tiradas/180s y derrota20tiradas/~114s, reinicio/rotación/abandono ambas vistas | v84 tablero completo de las46apuestas admitidas siempre visible, columnas europeas plegadas en móvil, verde/azul/cero blanco y potencia/sentido seleccionables; sigue siendo una apuesta por tiro, sin splits/corners/múltiples chips ni dinero real/pairing durable |
 | Galactic Birds | v83: core1.0 VERIFIED/replay, campo continuo con12drones/6estructuras, vidrio/cerámica/aleación,30tiros y lanzamiento por arrastre;1000campos,16victorias completas, derrotas/timeout/inputs/golden/render; QA táctil win/loss/reinicio/rotación en ambas vistas | Física arcade AABB translacional, no simulador de cuerpos rotatorios; seguimiento físico y comparación común pendientes |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Revisar legibilidad de alternancia X/Z sin texto; seguimiento físico |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Nueva versión para bloques de tamaño constante/estabilidad y plataforma de lanzamiento cuidada; conservar base y replay |
@@ -27,17 +27,17 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Star Phalanx | v79: V2 VERIFIED, curso continuo16capas/100enemigos sin pausas/borrado de proyectiles/reinicio de vuelo, destino táctil coalescido; victorias/derrotas/reinicio en ambas orientaciones. Presentación v77 y archivoV1 preservados | Nueva petición: más duración, enemigos, estímulos y acción; versión posterior con archivoV1/V2 intacto y comparación global alcance/tiempo |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Nueva versión con apertura moderadamente más exigente y rampas posteriores más lentas |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Siete teclas directamente bajo lanes, melodías reales de dominio público, protocolo/versionado y replay |
-| Memoria | v71: V2 VERIFIED sin preview, un tablero6×4/12parejas seedado, exploración sin pérdida de vidas, penaliza errores con pareja previamente conocida;128 victorias de aprendizaje y QA táctil win/loss/timeout/reinicio/blur/rotación. V1 archivada | Seed pública aún reconstruible; autoridad privada cronometrada requiere contrato compatible, persistencia/identidad antes de competición real |
+| Memoria (retirada en v84) | v71: V2 VERIFIED sin preview, un tablero6×4/12parejas seedado, exploración sin pérdida de vidas, penaliza errores con pareja previamente conocida;128 victorias de aprendizaje y QA táctil win/loss/timeout/reinicio/blur/rotación. V1 archivada | Fuera del catálogo/loader público y nuevos inicios bloqueados en v84 por petición del propietario; cores/adapters/tests V1/V2 preservados para reproducir registros históricos |
 | Fondo/música comunes | v65: imagen original optimizada y alineada a viewport, cubre extremos/letterbox; fallback, una caché/blit; mute síncrono cancela voces/resume pendiente, QA audio nativo | Seguimiento físico de FPS/Safari y dirección artística según uso real |
 | 2048 / Pulse Runner | Retirados del catálogo y loaders | No reintroducir |
 | Rebranding | v33 identidad visible GALACTIC GAMES, metadata/manifest/icono original | Revisión global final de restos visibles |
-| Login/onboarding | Entrada demo honesta, avatar/nombre, corto y sin tutorial obligatorio | QA humana; OAuth/auth real requiere proveedor, sin simularlo |
+| Login/onboarding | Entrada local honesta, avatar/nombre; v84 título Elige tu identidad blanco, QA vertical/horizontal/320px | Las16 imágenes solicitadas no están adjuntas a esta sesión; no se sustituyen por otras. OAuth/auth real requiere proveedor, sin simularlo |
 | UI global | v38 resultados fieles; v45 catálogo/navegación; v48 perfil y secciones demo legibles, saldos/acciones explícitos, eje de beneficio corregido, preferencias/reset/logout QA | v52 grupos demo explícitos, formularios/feedback/portapapeles y QA vertical/horizontal; quedan restantes layouts y grupos reales con identidad/persistencia; revisión jurídica de producción al configurar servicio; QA humana |
 | Ranking | Beneficio neto exacto, paginación/snapshot/PG, demo aislada y sección visible | v76 pantalla completa dentro de Avatar mediante selector Perfil/Ranking, misma paginación/API y fuentes aisladas, QA vertical/horizontal/320px; quedan posición propia autenticada y activar read model solo con datos reales |
 | Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 
-Los 24 juegos activos incluyen 22 VERIFIED por replay y dos INTEGRATED. Mine privado V1/V2 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
+Los 23 juegos activos incluyen 21 VERIFIED por replay y dos INTEGRATED. Mine privado V1/V2 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
 
 ## Iteración v53
 
@@ -352,3 +352,15 @@ Evidencia y límites en [v83](releases/v83-mobile.md). No activa dinero real,
 identidad ni pairing durable. La última solicitud previa sigue pendiente:
 Mine público variado, Phalanx más largo/variado, Maze amplio/expresivo, Metro más
 profundo, retirar Ranking inferior y las16 imágenes de avatar no adjuntas.
+
+## Iteración v84
+
+Memoria retirada sin borrar verificadores históricos; endpoint de inicio respeta
+`enabled`. Identidad con título blanco. Roulette conserva el core1.0 y sus hashes,
+pero presenta todas las46apuestas admitidas sin scroll, paleta verde/azul/cero blanco,
+potencia explícita y selección de sentido/gesto angular. Correcciones de ancho
+cero del contenedor y límite520px detectadas en QA antes de publicar.
+Evidencia en [v84](releases/v84-mobile.md).
+Siguiente: Dardos20tiradas/suma cruda/vuelo10m; Birds con tipos/cola y objetivos
+visibles; River continuo y Mine público variado con secreto protegido/persistencia.
+Galactic Shot queda sin cambios por aclaración expresa del propietario.
