@@ -90,6 +90,7 @@ try {
     ["darts", "2.0.0"],
     ["river-dash", "1.0.0"],
     ["river-dash", "2.0.0"],
+    ["river-dash", "3.0.0"],
     ["sky-hop", "1.0.0"],
     ["sky-hop", "2.0.0"],
     ["orb-burst", "1.0.0"],

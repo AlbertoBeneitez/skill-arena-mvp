@@ -388,3 +388,9 @@ v86 profesionaliza Birds con tres proyectiles físicamente distintos, cola y
 representación visible de todas las estructuras reales, sin clonar recursos
 comerciales. Core2.0/replay nuevo y V1 preservada; solicitud River/Mine/imágenes
 sigue abierta según el ledger, no se considera cerrada por estos checkpoints.
+
+Checkpoint v87: River4.0 genera filas sin meta65 ni resets; progresión suave,
+velocidades/separaciones variables y alcance máximo verificado al terminal.
+V1–V3 reproducibles; mantiene límite técnico de seis minutos. Validación y QA
+en [RIVER_DASH_V4.md](RIVER_DASH_V4.md). Pendientes de esta solicitud: integración
+Mine pública/durable con estado privado y las16imágenes todavía no recibidas.

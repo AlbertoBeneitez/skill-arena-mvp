@@ -1,18 +1,18 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
-import { riverLaneRects } from "@/lib/verified/riverDashCore.v1";
 import {
-  RIVER_DASH_CORE_V3,
-  type RiverV3State,
-} from "@/lib/verified/riverDashCore.v3";
+  RIVER_DASH_CORE_V4,
+  type RiverV4State,
+  riverRectsV4,
+} from "@/lib/verified/riverDashCore.v4";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, state: RiverV3State) {
+function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
   // Arrival/camera only: the core has already evaluated the destination.
   const age = Math.max(0, Math.min(1, (state.tick - state.lastMoveTick) / 12));
   const ease = state.status === "running" ? 1 - (1 - age) ** 3 : 1;
   const rowPosition = state.fromRow + (state.row - state.fromRow) * ease;
-  const cameraRows = Math.max(0, 64 - rowPosition - 4);
+  const cameraRows = Math.max(0, rowPosition - 4);
   drawSpaceBackdrop(ctx, 390, 620, cameraRows * 15, state.tick);
   const ox = 15,
     oy = 58,
@@ -22,7 +22,7 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV3State) {
   ctx.rect(ox, oy, 360, 484);
   ctx.clip();
   state.lanes.forEach((lane, row) => {
-    const y = oy + (10 - (64 - row) + cameraRows) * cell;
+    const y = oy + (10 - (row) + cameraRows) * cell;
     if (y + cell < oy || y > oy + 484) return;
     ctx.fillStyle =
       lane.kind === "safe"
@@ -41,17 +41,13 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV3State) {
       ctx.fillStyle = "rgba(145,247,229,.3)";
       for (let x = ox + 9; x < 375; x += 40)
         ctx.fillRect(x, y + cell / 2 - 1, 18, 3);
-      if (row === 0) {
-        ctx.fillStyle = "#c3eee5";
-        for (let x = ox + 12; x < 375; x += 30) ctx.fillRect(x, y + 7, 10, 8);
-      }
       return;
     }
     ctx.save();
     ctx.beginPath();
     ctx.rect(ox, y, 360, cell);
     ctx.clip();
-    for (const rect of riverLaneRects(state, row)) {
+    for (const rect of riverRectsV4(state, row)) {
       const x = ox + rect.xMilli / 1000,
         w = rect.wMilli / 1000;
       ctx.fillStyle = lane.kind === "river" ? "#275b78" : "#bf7286";
@@ -70,7 +66,7 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV3State) {
   });
   const x =
       15 + (state.fromXMilli + (state.xMilli - state.fromXMilli) * ease) / 1000,
-    y = oy + (10 - (64 - rowPosition) + cameraRows + 0.5) * cell;
+    y = oy + (10 - (rowPosition) + cameraRows + 0.5) * cell;
   ctx.save();
   ctx.translate(x, y);
   ctx.shadowColor = state.status === "failed" ? "#ef8098" : "#9effde";
@@ -86,15 +82,15 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV3State) {
   ctx.restore();
   ctx.restore();
 }
-const hudLabel = (s: Readonly<RiverV3State>) => `AVANCE ${s.height}/64`;
+const hudLabel = (s: Readonly<RiverV4State>) => `AVANCE ${s.height}`;
 const failureFinale = {
   durationMs: 420,
-  render(ctx: CanvasRenderingContext2D, state: RiverV3State, elapsedMs: number) {
+  render(ctx: CanvasRenderingContext2D, state: RiverV4State, elapsedMs: number) {
     render(ctx, state);
     const progress = Math.min(1, elapsedMs / 420);
-    const cameraRows = Math.max(0, 64 - state.row - 4);
+    const cameraRows = Math.max(0, state.row - 4);
     const x = 15 + state.xMilli / 1000;
-    const y = 58 + (10 - (64 - state.row) + cameraRows + .5) * 44;
+    const y = 58 + (10 - (state.row) + cameraRows + .5) * 44;
     ctx.save();
     ctx.globalAlpha = 1 - progress;
     ctx.strokeStyle = "#e6b8bd";
@@ -131,7 +127,7 @@ export default function RiverDashVerified(props: GameRuntimeProps) {
     <div className="riverVerified">
       <CoreCanvasGame
         {...props}
-        core={RIVER_DASH_CORE_V3}
+        core={RIVER_DASH_CORE_V4}
         name="River Dash"
         render={render}
         keys={keys}

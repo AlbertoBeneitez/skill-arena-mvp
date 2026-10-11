@@ -30,6 +30,8 @@
     "scripts/verify-river-v1.ts",
     "scripts/verify-river-v2.ts",
     "scripts/verify-river-v3.ts",
+    "scripts/verify-river-v4.ts",
+    "scripts/river-v4-play-fixture.ts",
     "scripts/verify-ranking.ts",
     "scripts/verify-ranking-repository.ts",
     "scripts/verify-orb-v1.ts",

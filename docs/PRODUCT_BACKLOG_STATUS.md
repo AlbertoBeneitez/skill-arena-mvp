@@ -13,7 +13,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Alien Dash | v67: V3 VERIFIED, patrones encadenados de salto/agachado, tejados/puentes, centinelas y recuperaciones, avance por actores pasados y cámara horizontal con FOV igual; replay/QA táctil120s. V1/V2 archivados | Más decisiones opcionales de altura/plataformas en nueva versión progresiva; rotación1000 y comparación común pendientes |
 | Orb Burst | v70: V2 VERIFIED, campo continuo de108 originales, suministro sin resets, avance sin farming, presión4→3, disparo al soltar sin botón, cámara horizontal y replay/QA táctil completos. V1 archivada | Rotación1000 sin repetición y comparación común pendientes; seguimiento físico |
 | Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | Seis figuras sin recuadros, menos texto e impactos de disparo; nueva versión si cambian trials/inputs |
-| River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
+| River Dash | v87: V4 VERIFIED, filas generadas sin meta65, velocidades/longitudes/huecos variables y dificultad suave; alcance terminal sin farming ni cierre por target;1000courses,384starts,golden/replay y partidas táctiles reach80/derrotas/reinicio/abandono ambas vistas; V1–V3 archivados | Sesión limitada técnicamente a seis minutos; comparación real por avance/tiempo y seguimiento físico pendientes |
 | Serpent | v75: V2 VERIFIED, cadencia18→10ticks frente17→9V1, botones72px y campo ampliado, avance por núcleos, 32 recorridos equivalentes al kernelV1 y 8 derrotas; QA táctil victoria/derrota/reinicio en ambas orientaciones, históricoV1 archivado | Seguimiento físico y comparación común pendientes |
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
 | Dardos | v85: V3 VERIFIED,20swipes/suma cruda sin bonus ni objetivos, oscilación1000perfiles, vuelo1s/arco/profundidad sin previsión ni marcas antiguas,64victorias/ocho derrotas/timeout/golden/render y QA táctil completa/rotación/reinicio. V1/V2 preservados | Seguimiento físico; comparación común y consumo durable pendientes |
@@ -388,3 +388,12 @@ con setups variados y secreto/persistencia protegidos, e imágenes16de identidad
 (no recibidas). Galactic Shot queda intacto; Memoria retirada, título blanco y
 Roulette/Dardos resueltos en checkpoints anteriores. El ledger superior mantiene
 el resto del backlog, sin declararlo terminado.
+
+## Iteración v87
+
+River4.0 elimina la meta de65filas y genera recorrido continuo sin resets ni niveles.
+[Reglas y QA](RIVER_DASH_V4.md). Mantiene seis minutos como límite de recursos,
+no como meta del recorrido. v86 pasó CI38155661041/Vercel6998411564Ready y
+mobile-test avanzó por fast-forward a281b3ef. Próximo: Mine público seguro con
+PostgreSQL; no hay DATABASE_URL ni proveedor elegido. Las16imágenes no están
+en adjuntos/repositorio, por lo que no se sustituyen por imágenes inventadas.
