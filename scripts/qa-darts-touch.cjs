@@ -1,4 +1,4 @@
-// Native mobile gesture, timing, complete fifteen darts and independent server replay.
+// Native mobile gesture, timing, complete twenty darts and independent server replay.
 const { chromium } = require(
     process.env.PLAYWRIGHT_MODULE_PATH || "playwright-core",
   ),
@@ -9,9 +9,9 @@ const { chromium } = require(
 const { writeFileSync } = require("node:fs");
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
-  const { DARTS_CORE_V2: core, dartsDrift } = await import(
+  const { DARTS_CORE_V3: core } = await import(
       pathToFileURL(
-        path.join(__dirname, "../.det-test/lib/verified/dartsCore.v2.js"),
+        path.join(__dirname, "../.det-test/lib/verified/dartsCore.v3.js"),
       )
     ),
     { applyCoreInput, stepCore, replayCore } = await import(
@@ -82,19 +82,6 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         }
         return fill.apply(this, args);
       };
-      const raf = requestAnimationFrame;
-      window.requestAnimationFrame = (cb) => {
-        if (window.__issued && !window.__epoch)
-          window.__epoch = performance.now();
-        return raf(cb);
-      };
-      const original = fetch;
-      window.fetch = (...args) =>
-        original(...args).then((r) => {
-          if (String(args[0]).includes("/verified-match/start"))
-            window.__issued = true;
-          return r;
-        });
     });
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
     await page
@@ -107,7 +94,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Dardos", exact: true })
       .tap();
     const issued = await (await start).json();
-    assert.equal(issued.manifest.game_version, "2.0.0");
+    assert.equal(issued.manifest.game_version, "3.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     await page.waitForTimeout(150);
@@ -178,18 +165,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     }
     if (process.env.QA_SCREENSHOT)
       await page.screenshot({ path: process.env.QA_SCREENSHOT });
-    for (let i = 0; i < 15; i++) {
-      const tick = await page.evaluate(() =>
-          Math.floor(((performance.now() - window.__epoch) * 120) / 1000),
-        ),
-        drift = dartsDrift(state, tick + 8),
-        t = state.target,
-        x = process.env.QA_LOSS
-          ? 0
-          : Math.max(0, Math.min(60, Math.round((t.x - drift.x) / 5000) + 30)),
-        y = process.env.QA_LOSS
-          ? 60
-          : Math.max(0, Math.min(60, Math.round((t.y - drift.y) / 5000) + 30));
+    for (let i = 0; i < 20; i++) {
+      const x = process.env.QA_LOSS ? 0 : 30,
+        y = process.env.QA_LOSS ? 60 : 30;
       await canvas.scrollIntoViewIfNeeded();
       const box = await canvas.boundingBox(),
         scale = Math.min(box.width / 390, box.height / 620),
@@ -212,7 +190,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         touchPoints: [],
       });
       if (i === 0) {
-        await page.waitForTimeout(250);
+        await page.waitForTimeout(1050);
         const trace = await page.evaluate(() => window.__dartTrace);
         firstFlight = trace.map((p) => ({
           x: (p.x / dpr - ox) / scale,
@@ -247,8 +225,24 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       ]) {
         if (core.canApply(state, a)) applyCoreInput(core, state, a, 1000000);
       }
-      for (let j = 0; j < 48; j++) core.step(state);
-      if (i < 14) await page.waitForTimeout(600);
+      for (let j = 0; j < 144; j++) core.step(state);
+      if (i < 19) await page.waitForTimeout(1350);
+      if (i === 7) {
+        await page.setViewportSize(
+          process.env.QA_LANDSCAPE
+            ? { width: 390, height: 844 }
+            : { width: 844, height: 390 },
+        );
+        await page.waitForTimeout(100);
+      }
+      if (i === 11) {
+        await page.setViewportSize(
+          process.env.QA_LANDSCAPE
+            ? { width: 844, height: 390 }
+            : { width: 390, height: 844 },
+        );
+        await page.waitForTimeout(100);
+      }
     }
     const vr = await response,
       body = vr.request().postDataJSON(),
@@ -266,7 +260,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(result.won, !process.env.QA_LOSS);
     assert.equal(
       body.inputs.filter((i) => i.action === "THROW").length,
-      15,
+      20,
       "cancel and blur never add a dart",
     );
     assert.equal(submits, 1);
@@ -297,7 +291,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       ),
       "visible impact equals authoritative landing",
     );
-    assert.equal(replay.state.impacts.length, 15);
+    assert.equal(replay.state.impacts.length, 20);
     assert.equal(
       await page.locator(".coreHud strong").count(),
       0,
@@ -308,13 +302,32 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page.evaluate(() => document.body.scrollWidth > window.innerWidth),
       false,
     );
-    await page.getByRole("button", { name: "CAMBIAR", exact: true }).tap();
+    await page.waitForTimeout(450);
+    async function nativeResultTap(name) {
+      const b = await page
+        .getByRole("button", { name, exact: true })
+        .boundingBox();
+      await cdp.send("Input.synthesizeTapGesture", {
+        x: b.x + b.width / 2,
+        y: b.y + b.height / 2,
+        duration: 80,
+      });
+    }
+    if (!process.env.QA_RESTART_DIRECT) {
+      await nativeResultTap("CAMBIAR");
+      await page
+        .getByRole("region", { name: "Catálogo de juegos", exact: true })
+        .waitFor();
+    }
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
-    await page
-      .getByRole("button", { name: "Jugar a Dardos", exact: true })
-      .tap();
+    restart.catch(() => {});
+    if (process.env.QA_RESTART_DIRECT) await nativeResultTap("OTRA VEZ");
+    else
+      await page
+        .getByRole("button", { name: "Jugar a Dardos", exact: true })
+        .tap();
     const again = await (await restart).json();
     assert.notEqual(again.manifest.seed, issued.manifest.seed);
     assert.notEqual(again.manifest.match_id, issued.manifest.match_id);

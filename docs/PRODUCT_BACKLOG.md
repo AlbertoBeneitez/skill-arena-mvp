@@ -379,3 +379,7 @@ en Roulette,20tiradas con suma cruda y vuelo10m en Dardos, River sin meta de fil
 y variación visible del Mine público. Galactic Shot no se modifica por aclaración.
 v84 resuelve retirada/título y presentación/control Roulette sin cambiar su core;
 las restantes unidades se siguen en PRODUCT_BACKLOG_STATUS.md.
+
+v85 introduce Dardos3.0: veinte tiradas, suma clásica sin bonus/objetivos, vuelo
+largo curvo y ausencia de previsión/marcas de caída. La competencia histórica
+V1/V2 sigue reproducible; próximas unidades de la solicitud actual en el ledger.

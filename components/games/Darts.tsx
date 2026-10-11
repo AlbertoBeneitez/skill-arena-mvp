@@ -1,21 +1,21 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
-import { isDartsThrowGesture } from "@/lib/verified/dartsGesture.v2";
-import { DARTS_CORE_V2 } from "@/lib/verified/dartsCore.v2";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  dartPresentationPose,
-  dartFlightPose,
-  drawDart,
-} from "@/lib/dartsPresentation";
-import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+  DARTS_CORE_V3,
+  DARTS_RULES_V3,
+  dartsStageV3,
+  type DartsStateV3,
+} from "@/lib/verified/dartsCore.v3";
+import { DARTS_SECTORS } from "@/lib/verified/dartsCore.v1";
 import {
-  DARTS_RULES,
-  DARTS_SECTORS,
-  dartsReticle,
-  type DartsState,
-} from "@/lib/verified/dartsCore.v1";
+  dartFlightPoseV3,
+  dartPresentationPoseV3,
+} from "@/lib/dartsPresentation.v3";
+import { drawDart } from "@/lib/dartsPresentation";
+import { isDartsThrowGesture } from "@/lib/verified/dartsGesture.v2";
 import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
+import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const cx = 195,
   cy = 285;
@@ -34,12 +34,12 @@ function ring(
   ctx.closePath();
   ctx.fill();
 }
-function render(ctx: CanvasRenderingContext2D, s: DartsState) {
+function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   drawSpaceBackdrop(ctx, 390, 620, 0, s.tick);
-  const stage = Math.min(4, Math.floor(s.throwIndex / 3)),
+  const stage = dartsStageV3(s),
     remaining = Math.max(
       0,
-      DARTS_RULES.deadlineSeconds[stage] - s.phaseTicks / 120,
+      DARTS_RULES_V3.deadlineSeconds[stage] - s.phaseTicks / 120,
     );
   ctx.fillStyle = "#0a192a";
   ctx.beginPath();
@@ -78,162 +78,52 @@ function render(ctx: CanvasRenderingContext2D, s: DartsState) {
   ctx.beginPath();
   ctx.arc(cx, cy, 10, 0, Math.PI * 2);
   ctx.fill();
-  const t = s.target,
-    tx = cx + t.x / 1000,
-    ty = cy + t.y / 1000;
-  ctx.strokeStyle = "#f3dca5";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([5, 4]);
-  ctx.beginPath();
-  ctx.arc(tx, ty, t.radius / 1000, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = "rgba(255,229,160,.13)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,229,160,.8)";
-  ctx.beginPath();
-  ctx.moveTo(tx - 5, ty);
-  ctx.lineTo(tx + 5, ty);
-  ctx.moveTo(tx, ty - 5);
-  ctx.lineTo(tx, ty + 5);
-  ctx.stroke();
-  for (const p of (s.phase === "flight" && s.phaseTicks < 24
-    ? s.impacts.slice(0, -1)
-    : s.impacts
-  ).slice(-3)) {
-    if (p.timeout) continue;
-    drawDart(
-      ctx,
-      dartFlightPose(cx + p.x / 1000, cy + p.y / 1000, DARTS_RULES.impactTicks),
-      p.goal ? "#a7ffe0" : "#e9b586",
-    );
-  }
-  if (s.phase === "aim") {
-    const r = dartsReticle(s),
-      x = cx + r.x / 1000,
-      y = cy + r.y / 1000;
-    ctx.strokeStyle = "#e9fcff";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI * 2);
-    ctx.moveTo(x - 13, y);
-    ctx.lineTo(x - 4, y);
-    ctx.moveTo(x + 4, y);
-    ctx.lineTo(x + 13, y);
-    ctx.moveTo(x, y - 13);
-    ctx.lineTo(x, y - 4);
-    ctx.moveTo(x, y + 4);
-    ctx.lineTo(x, y + 13);
-    ctx.stroke();
-  }
-  const dart = dartPresentationPose(s),
-    impact = s.impacts.at(-1);
-  if (dart) {
-    if (
-      s.phase === "flight" &&
-      s.phaseTicks < DARTS_RULES.impactTicks &&
-      impact
-    ) {
-      ctx.save();
-      ctx.strokeStyle = "rgba(184,246,255,.5)";
+
+  const pose = dartPresentationPoseV3(s);
+  if (pose) {
+    const impact = s.impacts.at(-1);
+    if (s.phase === "flight" && s.phaseTicks < 120 && impact) {
+      ctx.strokeStyle = "rgba(184,246,255,.42)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       for (
-        let age = Math.max(0, s.phaseTicks - 8);
+        let age = Math.max(0, s.phaseTicks - 6);
         age <= s.phaseTicks;
         age += 2
       ) {
-        const tail = dartFlightPose(
+        const p = dartFlightPoseV3(
           cx + impact.x / 1000,
           cy + impact.y / 1000,
           age,
         );
-        if (age === Math.max(0, s.phaseTicks - 8)) ctx.moveTo(tail.x, tail.y);
-        else ctx.lineTo(tail.x, tail.y);
+        if (age === Math.max(0, s.phaseTicks - 6)) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
       }
       ctx.stroke();
-      ctx.restore();
     }
-    // Previous impacts are already drawn above after impactTick.
-    if (s.phase === "aim" || s.phaseTicks < DARTS_RULES.impactTicks)
-      drawDart(ctx, dart);
-    if (
-      s.phase === "flight" &&
-      s.phaseTicks >= DARTS_RULES.impactTicks &&
-      impact
-    ) {
-      const age = s.phaseTicks - DARTS_RULES.impactTicks;
-      ctx.save();
-      ctx.globalAlpha =
-        1 - age / (DARTS_RULES.flightTicks - DARTS_RULES.impactTicks);
-      ctx.strokeStyle = impact.goal ? "#a7ffe0" : "#ebb88c";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(dart.x, dart.y, 5 + age, 0, Math.PI * 2);
-      ctx.stroke();
-      for (let ray = 0; ray < 6; ray++) {
-        const a = (ray * Math.PI) / 3;
-        ctx.beginPath();
-        ctx.moveTo(
-          dart.x + Math.cos(a) * (8 + age),
-          dart.y + Math.sin(a) * (8 + age),
-        );
-        ctx.lineTo(
-          dart.x + Math.cos(a) * (13 + age * 1.2),
-          dart.y + Math.sin(a) * (13 + age * 1.2),
-        );
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+    drawDart(ctx, pose);
   }
+  ctx.fillStyle = "#b4d3df";
   ctx.textAlign = "center";
-  ctx.fillStyle = "#aed2e2";
-  ctx.font = "bold 11px system-ui";
-  ctx.fillText(`DARDO ${Math.min(15, s.throwIndex + 1)} / 15`, cx, 59);
-  ctx.fillStyle = "#f1deb6";
-  ctx.font = "bold 20px system-ui";
-  ctx.fillText(t.label, cx, 91);
-  ctx.fillStyle = "#1d3343";
+  ctx.font = "bold 13px system-ui";
+  ctx.fillText(`${Math.min(20, s.throwIndex + 1)} / 20`, cx, 61);
+  ctx.fillStyle = "#294257";
   ctx.beginPath();
-  ctx.roundRect(100, 104, 190, 4, 2);
+  ctx.roundRect(105, 85, 180, 4, 2);
   ctx.fill();
-  ctx.fillStyle = remaining < 3 ? "#ffc081" : "#71dec8";
+  ctx.fillStyle = remaining < 3 ? "#e7b488" : "#81d6b7";
   ctx.beginPath();
   ctx.roundRect(
-    100,
-    104,
-    190 *
-      (s.phase === "aim" ? remaining / DARTS_RULES.deadlineSeconds[stage] : 1),
+    105,
+    85,
+    180 *
+      (s.phase === "aim"
+        ? remaining / DARTS_RULES_V3.deadlineSeconds[stage]
+        : 1),
     4,
     2,
   );
   ctx.fill();
-  for (let i = 0; i < 15; i++) {
-    ctx.fillStyle =
-      i < s.impacts.length
-        ? s.impacts[i].goal
-          ? "#79e3bf"
-          : "#bc9c82"
-        : "#344d60";
-    ctx.beginPath();
-    ctx.arc(90 + i * 15, 464, 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  const last = s.impacts.at(-1);
-  ctx.fillStyle = "#d6e9f1";
-  ctx.font = "bold 13px system-ui";
-  ctx.fillText(
-    s.phase === "flight"
-      ? last?.timeout
-        ? "TIEMPO AGOTADO"
-        : last?.goal
-          ? "OBJETIVO"
-          : ""
-      : "",
-    cx,
-    492,
-  );
   ctx.textAlign = "left";
 }
 function aimActions(point: CorePoint) {
@@ -250,6 +140,8 @@ function aimActions(point: CorePoint) {
 }
 const tones = { THROW: "tap" } as const,
   keys = { " ": "THROW", Enter: "THROW" };
+const feedbackScore = (s: Readonly<DartsStateV3>) => s.total;
+const hudLabel = (s: Readonly<DartsStateV3>) => `TOTAL ${s.total}`;
 export default function Darts(props: GameRuntimeProps) {
   const startRef = useRef<CorePoint | null>(null);
   useEffect(() => {
@@ -259,7 +151,7 @@ export default function Darts(props: GameRuntimeProps) {
     };
   }, [props.active, props.seed]);
   const aim = useCallback(
-    (point: CorePoint, phase: "down" | "move" | "up", state: DartsState) => {
+    (point: CorePoint, phase: "down" | "move" | "up", state: DartsStateV3) => {
       if (state.phase !== "aim") {
         startRef.current = null;
         return null;
@@ -281,7 +173,7 @@ export default function Darts(props: GameRuntimeProps) {
     <div className="dartsVerified">
       <CoreCanvasGame
         {...props}
-        core={DARTS_CORE_V2}
+        core={DARTS_CORE_V3}
         name="Dardos"
         render={render}
         pointAction={aim}
@@ -289,8 +181,9 @@ export default function Darts(props: GameRuntimeProps) {
         inputTones={tones}
         keys={keys}
         hideHudScore
-        hideHudLabel
-        instruction="Desliza desde la zona inferior hacia la diana. Suelta el dedo para lanzar; apunta al objetivo dorado."
+        hudLabel={hudLabel}
+        feedbackScore={feedbackScore}
+        instruction=""
       />
     </div>
   );

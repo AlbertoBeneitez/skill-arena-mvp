@@ -1,0 +1,108 @@
+{
+  "seed": "darts-v3-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 45,
+      "action": "THROW"
+    },
+    {
+      "seq": 1,
+      "tick": 237,
+      "action": "THROW"
+    },
+    {
+      "seq": 2,
+      "tick": 432,
+      "action": "THROW"
+    },
+    {
+      "seq": 3,
+      "tick": 630,
+      "action": "THROW"
+    },
+    {
+      "seq": 4,
+      "tick": 831,
+      "action": "THROW"
+    },
+    {
+      "seq": 5,
+      "tick": 1035,
+      "action": "THROW"
+    },
+    {
+      "seq": 6,
+      "tick": 1242,
+      "action": "THROW"
+    },
+    {
+      "seq": 7,
+      "tick": 1452,
+      "action": "THROW"
+    },
+    {
+      "seq": 8,
+      "tick": 1665,
+      "action": "THROW"
+    },
+    {
+      "seq": 9,
+      "tick": 1881,
+      "action": "THROW"
+    },
+    {
+      "seq": 10,
+      "tick": 2100,
+      "action": "THROW"
+    },
+    {
+      "seq": 11,
+      "tick": 2322,
+      "action": "THROW"
+    },
+    {
+      "seq": 12,
+      "tick": 2547,
+      "action": "THROW"
+    },
+    {
+      "seq": 13,
+      "tick": 2775,
+      "action": "THROW"
+    },
+    {
+      "seq": 14,
+      "tick": 3006,
+      "action": "THROW"
+    },
+    {
+      "seq": 15,
+      "tick": 3240,
+      "action": "THROW"
+    },
+    {
+      "seq": 16,
+      "tick": 3477,
+      "action": "THROW"
+    },
+    {
+      "seq": 17,
+      "tick": 3717,
+      "action": "THROW"
+    },
+    {
+      "seq": 18,
+      "tick": 3960,
+      "action": "THROW"
+    },
+    {
+      "seq": 19,
+      "tick": 4206,
+      "action": "THROW"
+    }
+  ],
+  "finalTick": 4350,
+  "score": 925,
+  "hash": "sha256:264c920dc230b22ca2d38eff5f4aeca470e69a4a7901b45775a065d5fe5e08aa"
+}

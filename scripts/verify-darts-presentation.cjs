@@ -1,4 +1,4 @@
-// Actual renderer and read-only sprite/flight geometry; competitive cores stay frozen.
+// Render the actual V3 component: no predicted landing marker, no scoring/UI mutation.
 const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path");
@@ -8,12 +8,13 @@ const root = path.resolve(__dirname, ".."),
   req = createRequire(path.join(root, "package.json"));
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
-  const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const legacy = await load("lib/verified/dartsCore.v1.js"),
-    v2 = await load("lib/verified/dartsCore.v2.js"),
+  const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p))),
+    v3 = await load("lib/verified/dartsCore.v3.js"),
+    legacy = await load("lib/verified/dartsCore.v1.js"),
+    visual = await load("lib/dartsPresentation.v3.js"),
+    sprite = await load("lib/dartsPresentation.js"),
     protocol = await load("lib/verified/dartsProtocol.v1.js"),
-    gesture = await load("lib/verified/dartsGesture.v2.js");
-  const visual = await load("lib/dartsPresentation.js"),
+    gesture = await load("lib/verified/dartsGesture.v2.js"),
     runtime = await load("lib/verified/coreRuntime.v1.js");
   const file = path.join(root, "components/games/Darts.tsx"),
     source = fs.readFileSync(file, "utf8");
@@ -31,15 +32,16 @@ module.exports = (async () => {
     },
   );
   const deps = {
-    "@/lib/verified/dartsCore.v1": legacy,
-    "@/lib/verified/dartsCore.v2": v2,
-    "@/lib/verified/dartsGesture.v2": gesture,
-    "@/lib/verified/dartsProtocol.v1": protocol,
-    "@/lib/dartsPresentation": visual,
-    "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
-    "./CoreCanvasGame": () => null,
-  };
-  const exports = {};
+      "@/lib/verified/dartsCore.v3": v3,
+      "@/lib/verified/dartsCore.v1": legacy,
+      "@/lib/dartsPresentation.v3": visual,
+      "@/lib/dartsPresentation": sprite,
+      "@/lib/verified/dartsProtocol.v1": protocol,
+      "@/lib/verified/dartsGesture.v2": gesture,
+      "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
+      "./CoreCanvasGame": () => null,
+    },
+    exports = {};
   new Function("require", "exports", compiled.code)(
     (id) => deps[id] || req(id),
     exports,
@@ -47,15 +49,15 @@ module.exports = (async () => {
   function recorder() {
     const stack = [],
       sprites = [],
-      calls = [];
-    let transform = { x: 0, y: 0, angle: 0, scale: 1 };
+      arcs = [],
+      texts = [];
+    let transform = { x: 0, y: 0, scale: 1, angle: 0 };
     const ctx = new Proxy(
       { fillStyle: "", globalAlpha: 1 },
       {
         get(obj, key) {
           if (key in obj) return obj[key];
           return (...args) => {
-            calls.push([key, ...args]);
             if (key === "save")
               stack.push({
                 transform: { ...transform },
@@ -73,98 +75,83 @@ module.exports = (async () => {
               transform.x += args[0];
               transform.y += args[1];
             }
-            if (key === "rotate") transform.angle += args[0];
             if (key === "scale") transform.scale *= args[0];
+            if (key === "rotate") transform.angle += args[0];
+            if (key === "arc") arcs.push(args);
+            if (key === "fillText") texts.push(String(args[0]));
             if (key === "fill" && obj.fillStyle === "#dff7ff")
               sprites.push({ ...transform });
           };
         },
       },
     );
-    return { ctx, stack, sprites, calls };
+    return { ctx, stack, sprites, arcs, texts };
   }
   let frames = 0;
-  for (let seed = 0; seed < 100; seed++) {
-    const state = v2.DARTS_CORE_V2.create(`darts-presentation-${seed}`),
-      original = JSON.stringify(state);
-    let r = recorder();
-    exports.renderUnderTest(r.ctx, state);
-    assert.equal(JSON.stringify(state), original);
-    assert.equal(r.sprites.length, 1, "dart visible before any input");
-    assert.deepEqual(
-      [r.sprites[0].x, r.sprites[0].y, r.sprites[0].scale],
-      [195, 550, 1.35],
-    );
-    assert.equal(r.stack.length, 0);
-    const ready = visual.dartPresentationPose(state);
-    assert.equal(ready.x, 195);
-    assert.equal(ready.y, 550);
-    runtime.applyCoreInput(v2.DARTS_CORE_V2, state, "THROW", 1e6);
-    const last = state.impacts.at(-1);
-    assert.ok(last && !last.timeout);
-    const endpoint = { x: 195 + last.x / 1000, y: 285 + last.y / 1000 };
-    let previous = visual.dartPresentationPose(state);
-    for (let tick = 0; tick <= 24; tick++) {
-      const before = JSON.stringify(state),
-        pose = visual.dartPresentationPose(state);
-      r = recorder();
-      exports.renderUnderTest(r.ctx, state);
-      assert.equal(
-        JSON.stringify(state),
-        before,
-        "renderer never changes authority",
-      );
+  for (let i = 0; i < 32; i++) {
+    const s = v3.DARTS_CORE_V3.create(`dart3-visual-${i}`);
+    function check() {
+      const before = JSON.stringify(s),
+        r = recorder();
+      exports.renderUnderTest(r.ctx, s);
+      assert.equal(JSON.stringify(s), before);
       assert.equal(r.stack.length, 0);
-      assert.equal(
-        r.sprites.length,
-        1,
-        "one projectile/impact, never ghost plus duplicate",
-      );
-      assert.ok(
-        Math.abs(r.sprites[0].x - pose.x) < 1e-9 &&
-          Math.abs(r.sprites[0].y - pose.y) < 1e-9,
-        "actual sprite tip follows public pose",
-      );
-      if (tick > 0) {
-        assert.ok(pose.y < previous.y);
-        assert.ok(pose.scale < previous.scale);
+      assert.ok(!r.arcs.some((a) => a[2] === 7), "no landing reticle");
+      assert.ok(!r.texts.some((t) => t.includes("OBJETIVO")));
+      const p = visual.dartPresentationPoseV3(s);
+      assert.equal(r.sprites.length, p ? 1 : 0);
+      if (p) {
+        assert.ok(Math.abs(p.x - r.sprites[0].x) < 1e-9);
+        assert.ok(Math.abs(p.y - r.sprites[0].y) < 1e-9);
       }
-      if (tick === 24) {
-        assert.equal(pose.x, endpoint.x);
-        assert.equal(pose.y, endpoint.y);
-        assert.equal(state.score, last.award);
-      }
-      previous = pose;
       frames++;
-      if (tick < 24) runtime.stepCore(v2.DARTS_CORE_V2, state, 1e6);
     }
+    check();
+    assert.equal(visual.dartPresentationPoseV3(s).y, 550);
+    runtime.applyCoreInput(v3.DARTS_CORE_V3, s, "THROW", 1e9);
+    const hit = s.impacts[0];
+    let lastScale = Infinity;
+    const angles = new Set();
+    for (let age = 0; age < 144; age++) {
+      check();
+      const p = visual.dartPresentationPoseV3(s);
+      if (age <= 120) {
+        assert.ok(p.scale <= lastScale);
+        lastScale = p.scale;
+        angles.add(p.angle.toFixed(3));
+        if (age === 120) {
+          assert.equal(p.x, 195 + hit.x / 1000);
+          assert.equal(p.y, 285 + hit.y / 1000);
+          assert.equal(s.total, hit.points);
+        }
+      }
+      runtime.stepCore(v3.DARTS_CORE_V3, s, 1e9);
+    }
+    assert.ok(angles.size > 10, "tangent changes through arc");
+    check();
+    assert.equal(s.impacts.length, 1);
   }
-  const timeout = v2.DARTS_CORE_V2.create("dart-timeout");
-  runtime.advanceCoreToTick(v2.DARTS_CORE_V2, timeout, 14 * 120, 1e6);
-  assert.equal(timeout.impacts.at(-1).timeout, true);
+  const idle = v3.DARTS_CORE_V3.create("visual-timeout");
+  runtime.advanceCoreToTick(v3.DARTS_CORE_V3, idle, 14 * 120, 1e9);
   assert.equal(
-    visual.dartPresentationPose(timeout),
+    visual.dartPresentationPoseV3(idle),
     null,
     "timeout never fabricates a thrown dart",
   );
-  assert.ok(!source.includes("+${last?.award"), "no distracting points toast");
-  assert.ok(source.includes("hideHudScore"));
-  assert.ok(
-    !source.includes("ctx.lineTo(cx, 530)"),
-    "prepared dart replaces procedural swipe arrow",
-  );
+  assert.ok(!source.includes("s.impacts.slice"), "no persistent landing marks");
   console.log(
     JSON.stringify({
-      variant: "Darts V2 presentation",
+      variant: "Darts V3",
+      frames,
       openingSprite: true,
-      flightFrames: frames,
-      actualImpactTick: 24,
+      impactTick: 120,
+      curvedFlight: true,
+      noForecast: true,
+      noPastImpactMarkers: true,
       rendererPure: true,
-      ghosts: 0,
-      coreAndInputsUnchanged: true,
     }),
   );
-})().catch((error) => {
-  console.error(error);
-  throw error;
+})().catch((e) => {
+  console.error(e);
+  throw e;
 });

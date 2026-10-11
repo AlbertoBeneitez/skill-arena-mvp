@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v84-mobile
+# GALACTIC GAMES · Seguimiento de v85-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -16,7 +16,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | River Dash | v62: V3 VERIFIED, campo único de65filas, descansos intercalados, carry/fases permanentes, avance válido sin farming, cámara continua y QA táctil completa. V1/V2 archivados | Seguimiento físico; comparación común por avance/tiempo pendiente |
 | Serpent | v75: V2 VERIFIED, cadencia18→10ticks frente17→9V1, botones72px y campo ampliado, avance por núcleos, 32 recorridos equivalentes al kernelV1 y 8 derrotas; QA táctil victoria/derrota/reinicio en ambas orientaciones, históricoV1 archivado | Seguimiento físico y comparación común pendientes |
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
-| Dardos | v72: dardo presente desde apuntado, sprite propio con profundidad/estela e impacto en coordenada autoritativa; quince swipes, victorias/derrotas/reinicio en ambas orientaciones y replay históricoV1/V2 intacto | Seguimiento físico; comparación común pendiente |
+| Dardos | v85: V3 VERIFIED,20swipes/suma cruda sin bonus ni objetivos, oscilación1000perfiles, vuelo1s/arco/profundidad sin previsión ni marcas antiguas,64victorias/ocho derrotas/timeout/golden/render y QA táctil completa/rotación/reinicio. V1/V2 preservados | Seguimiento físico; comparación común y consumo durable pendientes |
 | Mine Grid | v80 candidato privado V2 continuo7×12,1000tableros distintos no-guess,64replays, alcance66, proyección sin niveles/seed y QA local victoria/derrota/reinicio ambas vistas; V1 preservado | Integración pública privada segura/registro al configurar identidad y repositorios durables; catálogo0.1 conserva setup fijo |
 | Solitaire Sprint | Portadav76/QA preservados; v80 generador privado candidato,1000repartos iniciales distintos reproducibles,52cartas únicas/proyección oculta/golden, sin templates públicos recuperables | Resolver policy de resolubilidad, core privado/cierre52bases/farming, QA completa e integración durable pública; catálogo0.1 conserva setup fijo |
 | Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
@@ -364,3 +364,15 @@ Evidencia en [v84](releases/v84-mobile.md).
 Siguiente: Dardos20tiradas/suma cruda/vuelo10m; Birds con tipos/cola y objetivos
 visibles; River continuo y Mine público variado con secreto protegido/persistencia.
 Galactic Shot queda sin cambios por aclaración expresa del propietario.
+
+## Iteración v85
+
+Dardos3.0 sustituye quince pruebas con bonus por veinte lanzamientos de suma
+clásica. El core conserva el total y publica score solo al terminal, evitando
+cierres por target antes del vigésimo dardo. No hay niveles, puntos por objetivo,
+retícula de caída ni marcadores persistentes. Vuelo largo con arco/tangente,
+protocolo/lifecycle comunes y históricos intactos. [Reglas](DARTS_V3.md) y
+[evidencia](releases/v85-mobile.md).
+La publicación de v84 pasó CI38152831748 y Vercel6997918762Ready; mobile-test
+avanzó por fast-forward a b24aa0b. Próximo: Birds con tipos/cola/demolición visible;
+River continuo; Mine público seguro y variado; las16imágenes siguen sin adjuntar.
