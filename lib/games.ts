@@ -11,7 +11,7 @@ import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
 import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
 import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
 import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
-import { SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v1";
+import { SHOT_GALLERY_ACTIONS_V2 as SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v2";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS } from "./verified/billiardsProtocol.v1";
 import { ORB_ACTIONS } from "./verified/orbBurstProtocol.v1";
@@ -476,10 +476,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SHOT_GALLERY_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: SHOT_GALLERY_ACTIONS },
     name: "Shot Gallery",
     cover: "/covers/shot-gallery.svg",
     enabled: true,
@@ -488,7 +488,7 @@ const GAME_DEFINITIONS = [
     tagline: "Reconoce el objetivo. Reacciona con precisión.",
     difficulty: "ALTA",
     skillLabel: "REACCIÓN + RECONOCIMIENTO",
-    rivalScore: 12000,
+    rivalScore: 7500,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Lee la regla. Espera a la activación y toca el objetivo correcto.",

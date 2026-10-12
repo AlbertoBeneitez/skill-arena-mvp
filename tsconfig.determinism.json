@@ -54,6 +54,8 @@
     "lib/dartsPresentation.v3.ts",
     "lib/dartsPresentation.ts",
     "scripts/verify-gallery-v1.ts",
+    "scripts/verify-gallery-v2.ts",
+    "lib/galleryPresentation.ts",
     "scripts/verify-alien-v2.ts",
     "scripts/verify-alien-v3.ts",
     "components/games/alien-dash/presentation.ts",

@@ -419,3 +419,9 @@ Continúan Phalanx con decisiones/recompensas, galería de tiro y Birds de demol
 Birds: objetivos porcinos de diseño propio, encuadre de demolición más legible y
 regresión de derribo/derrota indirecta. Campo continuo/estructuras/masa/gravedad
 V2preservados. QA completa win/loss, ambos formatos; nueva galería y Phalanx pendientes.
+
+Checkpoint v90: Birds porcino/demolición y Shot Gallery2.0de plantilla descubierta,
+seis figuras y soundtrack original tenso. Registros/replays/históricos preservados;
+QA completa de controles/resultados/reinicio y puntos táctiles en ambos formatos.
+La solicitud actual deja Phalanx pendiente: más decisiones/esquiva y recompensas
+por puntos en un core nuevo con V1/V2 intactos. Evidencia en releases/v90-mobile.md.

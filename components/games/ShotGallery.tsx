@@ -1,15 +1,13 @@
 "use client";
-import { useMemo } from "react";
+import { useCallback, useRef } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  SHOT_GALLERY_CORE,
-  GALLERY_COLORS,
-  GALLERY_SHAPES,
-  type GalleryState,
-} from "@/lib/verified/shotGalleryCore.v1";
-import { SHOT_GALLERY_SLOTS } from "@/lib/verified/shotGalleryProtocol.v1";
+  SHOT_GALLERY_CORE_V2 as core,
+  type GalleryStateV2,
+} from "@/lib/verified/shotGalleryCore.v2";
+import { gallerySlots } from "@/lib/galleryPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const colors = ["#84d5fa", "#ffac94", "#bee899", "#c1a9fa"];
 function shape(
@@ -17,175 +15,155 @@ function shape(
   kind: number,
   x: number,
   y: number,
+  size = 30,
 ) {
   ctx.beginPath();
-  if (kind === 0) ctx.arc(x, y, 26, 0, Math.PI * 2);
-  else if (kind === 2) ctx.roundRect(x - 24, y - 24, 48, 48, 6);
+  if (kind === 0) ctx.arc(x, y, size, 0, Math.PI * 2);
+  else if (kind === 2) ctx.roundRect(x - size, y - size, size * 2, size * 2, 7);
   else {
     const count = kind === 1 ? 3 : 6;
     for (let i = 0; i < count; i++) {
-      const angle = -Math.PI / 2 + (i * Math.PI * 2) / count,
-        px = x + Math.cos(angle) * 29,
-        py = y + Math.sin(angle) * 29;
-      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      const a = -Math.PI / 2 + (i * Math.PI * 2) / count,
+        px = x + Math.cos(a) * size,
+        py = y + Math.sin(a) * size;
+      i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
     }
     ctx.closePath();
   }
   ctx.fill();
 }
-function renderer() {
-  let lastReady = -1,
-    lastTick = -1;
-  return (ctx: CanvasRenderingContext2D, s: GalleryState) => {
-    if (s.tick < lastTick) lastReady = -1;
-    lastTick = s.tick;
-    if (s.phase === "ready" && lastReady !== s.trial) {
-      lastReady = s.trial;
-      gameTone("countdown");
-    }
-    drawSpaceBackdrop(ctx, 390, 620, 0, s.tick);
-    const trial = s.trials[Math.min(s.trial, 11)],
-      last = s.results.at(-1);
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#abc9df";
-    ctx.font = "bold 11px system-ui";
-    ctx.fillText(
-      `PRUEBA ${Math.min(12, s.trial + 1)} / 12 · ${["COLORES", "FORMAS", "NÚMEROS", "COMBINACIONES"][Math.min(3, Math.floor(s.trial / 3))]}`,
-      195,
-      68,
-    );
-    ctx.fillStyle = "#eddfbb";
-    ctx.font = "bold 19px system-ui";
-    ctx.fillText(trial.rule, 195, 105);
-    const stateLabel =
-      s.phase === "waiting"
-        ? "ESPERA LA ACTIVACIÓN"
-        : s.phase === "ready"
-          ? "¡AHORA!"
-          : last?.type === "CORRECT"
-            ? `+${last.award} · ${Math.round((last.reactionTicks! * 1000) / 120)} ms`
-            : last?.type === "FALSE_START"
-              ? "MUY PRONTO · ESPERA LA SEÑAL"
-              : last?.type === "WRONG"
-                ? "OTRA OPCIÓN · MIRA LA REGLA"
-                : "TIEMPO AGOTADO";
-    ctx.fillStyle =
-      s.phase === "ready"
-        ? "#9bffe1"
-        : s.phase === "feedback" && last?.type !== "CORRECT"
-          ? "#ffbea3"
-          : "#b9cfde";
-    ctx.font = "bold 14px system-ui";
-    ctx.fillText(stateLabel, 195, 163);
-    ctx.fillStyle = s.phase === "ready" ? "#79e9bc" : "#526878";
-    ctx.beginPath();
-    ctx.arc(195, 186, s.phase === "ready" ? 6 : 4, 0, Math.PI * 2);
-    ctx.fill();
-    trial.cards.forEach((card, i) => {
-      const slot = SHOT_GALLERY_SLOTS[i],
-        feedback = s.phase === "feedback",
-        chosen = feedback && last?.pick === i,
-        correct = feedback && i === trial.answer;
-      ctx.fillStyle = chosen
-        ? last?.type === "CORRECT"
-          ? "#173c37"
-          : "#422e37"
-        : "rgba(9,28,45,.93)";
-      ctx.beginPath();
-      ctx.roundRect(slot.x, slot.y, slot.width, slot.height, 18);
-      ctx.fill();
-      ctx.strokeStyle = correct
-        ? "#8eebc4"
-        : chosen
-          ? "#ffac94"
-          : s.phase === "ready"
-            ? "#719aaa"
-            : "#35495e";
-      ctx.lineWidth = correct || chosen ? 3 : 1.5;
-      ctx.stroke();
-      const x = slot.x + slot.width / 2,
-        y = slot.y + 44;
-      if (s.phase === "waiting") {
-        ctx.fillStyle = "#536d82";
-        ctx.font = "bold 28px system-ui";
-        ctx.fillText("?", x, y + 10);
-      } else if (trial.kind === "NUMBER") {
-        ctx.fillStyle = "#e5f1fb";
-        ctx.font = "bold 38px system-ui";
-        ctx.fillText(String(card.number), x, y + 14);
-      } else {
-        ctx.fillStyle = colors[card.color];
-        shape(ctx, card.shape, x, y);
-        ctx.font = "bold 10px system-ui";
-        ctx.fillStyle = "#b5d0de";
-        ctx.fillText(
-          trial.kind === "COLOR"
-            ? GALLERY_COLORS[card.color]
-            : trial.kind === "SHAPE"
-              ? GALLERY_SHAPES[card.shape]
-              : `${GALLERY_SHAPES[card.shape]} · ${GALLERY_COLORS[card.color]}`,
-          x,
-          slot.y + 90,
-        );
-      }
-      ctx.fillStyle = s.phase === "waiting" ? "#496379" : "#708c9e";
-      ctx.font = "10px system-ui";
-      ctx.fillText(String(i + 1), slot.x + 14, slot.y + slot.height - 11);
-    });
-    ctx.fillStyle = "#adcbdc";
-    ctx.font = "bold 12px system-ui";
-    ctx.fillText(`${s.correct} ACIERTOS · SUMA ${s.score}`, 195, 522);
-    for (let i = 0; i < 12; i++) {
-      const r = s.results[i];
-      ctx.fillStyle = !r
-        ? "#344d61"
-        : r.type === "CORRECT"
-          ? "#88ddc2"
-          : "#c29584";
-      ctx.beginPath();
-      ctx.arc(107 + i * 16, 549, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.font = "11px system-ui";
-    ctx.fillStyle = "#8caabd";
-    ctx.fillText(
-      "Cada prueba cuenta. Los errores no terminan la partida.",
-      195,
-      583,
-    );
-    ctx.textAlign = "left";
-  };
-}
-function pick(
-  point: CorePoint,
-  phase: "down" | "move" | "up",
-  s: GalleryState,
-) {
-  if (phase !== "down") return null;
-  const index = SHOT_GALLERY_SLOTS.findIndex(
-    (p, i) =>
-      i < s.trials[Math.min(s.trial, 11)].cards.length &&
-      point.x >= p.x &&
-      point.x <= p.x + p.width &&
-      point.y >= p.y &&
-      point.y <= p.y + p.height,
-  );
-  return index < 0 ? null : `PICK_${index}`;
-}
-const keys = { "1": "PICK_0", "2": "PICK_1", "3": "PICK_2", "4": "PICK_3" };
+const hudLabel = (s: Readonly<GalleryStateV2>) =>
+  `${s.correct} ACIERTOS · ${Math.min(12, s.trial + 1)}/12`;
+const feedbackScore = (s: Readonly<GalleryStateV2>) => s.total;
 export default function ShotGallery(props: GameRuntimeProps) {
-  const render = useMemo(renderer, []);
+  const width = useRef(390),
+    lastResult = useRef(-1),
+    lastTick = useRef(-1);
+  const render = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      s: GalleryStateV2,
+      viewport: { width: number; height: number },
+    ) => {
+      width.current = viewport.width;
+      if (s.tick < lastTick.current) lastResult.current = -1;
+      lastTick.current = s.tick;
+      if (s.results.length > lastResult.current && s.results.length > 0) {
+        gameTone("tap");
+        lastResult.current = s.results.length;
+      }
+      const w = viewport.width,
+        slots = gallerySlots(w),
+        trial = s.trials[Math.min(s.trial, 11)],
+        last = s.results.at(-1),
+        fieldHeight = w >= 650 ? 144 : 274;
+      drawSpaceBackdrop(ctx, w, 520, 0, s.tick);
+      ctx.fillStyle = "rgba(10,24,38,.94)";
+      ctx.strokeStyle = "#496a7b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(12, 188, w - 24, fieldHeight, 12);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#bfd4df";
+      ctx.font = "bold 16px system-ui";
+      ctx.textAlign = "center";
+      // Essential target cue, not a tutorial. Colors/forms use a pictogram; numbers retain the rule.
+      if (trial.kind === "NUMBER") ctx.fillText(trial.rule, w / 2, 120);
+      else {
+        const target = trial.cards[trial.answer];
+        ctx.fillStyle =
+          trial.kind === "SHAPE" ? "#e3e7f0" : colors[target.color];
+        shape(ctx, trial.kind === "COLOR" ? 0 : target.shape, w / 2, 119, 24);
+      }
+      ctx.fillStyle = s.phase === "ready" ? "#79e9bc" : "#526878";
+      ctx.beginPath();
+      ctx.arc(w / 2, 165, s.phase === "ready" ? 6 : 4, 0, Math.PI * 2);
+      ctx.fill();
+      if (s.phase === "waiting") {
+        ctx.fillStyle = "#243e51";
+        ctx.fillRect(18, 195, w - 36, fieldHeight - 14);
+        ctx.strokeStyle = "#446576";
+        ctx.lineWidth = 1;
+        for (let y = 200; y < 188 + fieldHeight - 8; y += 16) {
+          ctx.beginPath();
+          ctx.moveTo(20, y);
+          ctx.lineTo(w - 20, y);
+          ctx.stroke();
+        }
+      } else
+        trial.cards.forEach((card, i) => {
+          const slot = slots[i],
+            x = slot.x + slot.width / 2,
+            y = slot.y + slot.height / 2,
+            chosen = s.phase === "feedback" && last?.pick === i;
+          ctx.save();
+          if (chosen) ctx.globalAlpha = Math.max(0.2, 1 - s.phaseTicks / 84);
+          ctx.fillStyle =
+            trial.kind === "NUMBER" ? "#e5f1fb" : colors[card.color];
+          if (trial.kind === "NUMBER") {
+            ctx.font = "bold 48px system-ui";
+            ctx.fillText(String(card.number), x, y + 15);
+          } else shape(ctx, card.shape, x, y, w >= 650 ? 36 : 29);
+          ctx.restore();
+          if (chosen && s.phaseTicks < 48) {
+            const p = s.phaseTicks / 48;
+            ctx.save();
+            ctx.globalAlpha = 1 - p;
+            ctx.strokeStyle = last?.type === "CORRECT" ? "#f9ecd2" : "#e8a7a0";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, 8 + 18 * p, 0, Math.PI * 2);
+            ctx.stroke();
+            for (let k = 0; k < 8; k++) {
+              const a = (k * Math.PI) / 4,
+                r = 12 + 36 * p;
+              ctx.beginPath();
+              ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+              ctx.lineTo(x + Math.cos(a) * (r + 9), y + Math.sin(a) * (r + 9));
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+        });
+    },
+    [],
+  );
+  const pick = useCallback(
+    (point: CorePoint, phase: "down" | "move" | "up") => {
+      if (phase !== "down") return null;
+      const i = gallerySlots(width.current).findIndex(
+        (p) =>
+          point.x >= p.x &&
+          point.x <= p.x + p.width &&
+          point.y >= p.y &&
+          point.y <= p.y + p.height,
+      );
+      return i < 0 ? null : `PICK_${i}`;
+    },
+    [],
+  );
   return (
     <div className="shotGalleryVerified">
       <CoreCanvasGame
         {...props}
-        core={SHOT_GALLERY_CORE}
+        core={core}
         name="Shot Gallery"
+        instruction=""
         render={render}
+        expandHorizontalViewport
         pointAction={pick}
-        keys={keys}
-        hideHudLabel
-        instruction="Lee la regla. Espera la señal verde y toca la opción correcta."
+        hideHudScore
+        hudLabel={hudLabel}
+        feedbackScore={feedbackScore}
+        keys={{
+          "1": "PICK_0",
+          "2": "PICK_1",
+          "3": "PICK_2",
+          "4": "PICK_3",
+          "5": "PICK_4",
+          "6": "PICK_5",
+        }}
       />
     </div>
   );

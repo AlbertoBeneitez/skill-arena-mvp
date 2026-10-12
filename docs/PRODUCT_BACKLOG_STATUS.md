@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v89-mobile
+# GALACTIC GAMES · Seguimiento de v90-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -12,7 +12,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados; v73 extiende cuerpos hasta ambos bordes reales del canvas, huecos V4 exactos y QA180s en ambas orientaciones | Rotación1000 y comparación común pendientes |
 | Alien Dash | v67: V3 VERIFIED, patrones encadenados de salto/agachado, tejados/puentes, centinelas y recuperaciones, avance por actores pasados y cámara horizontal con FOV igual; replay/QA táctil120s. V1/V2 archivados | Más decisiones opcionales de altura/plataformas en nueva versión progresiva; rotación1000 y comparación común pendientes |
 | Orb Burst | v70: V2 VERIFIED, campo continuo de108 originales, suministro sin resets, avance sin farming, presión4→3, disparo al soltar sin botón, cámara horizontal y replay/QA táctil completos. V1 archivada | Rotación1000 sin repetición y comparación común pendientes; seguimiento físico |
-| Shot Gallery | v37: colores/formas/números/combinaciones, suma autoritativa, 12 pruebas y replay | Seis figuras sin recuadros, menos texto e impactos de disparo; nueva versión si cambian trials/inputs |
+| Shot Gallery | v90: V2 VERIFIED, una plantilla revelada/seis figuras directas/impactos y música original de tensión; doce pruebas intercaladas/suma terminal sin cierres por target;1000sets/golden/input/replay/render/servidor, QA táctil win/wrong/early/reinicio y tamaños44px ambas vistas; V1 archivada | Seguimiento físico y producción real siguen fuera del scope |
 | River Dash | v87: V4 VERIFIED, filas generadas sin meta65, velocidades/longitudes/huecos variables y dificultad suave; alcance terminal sin farming ni cierre por target;1000courses,384starts,golden/replay y partidas táctiles reach80/derrotas/reinicio/abandono ambas vistas; V1–V3 archivados | Sesión limitada técnicamente a seis minutos; comparación real por avance/tiempo y seguimiento físico pendientes |
 | Serpent | v75: V2 VERIFIED, cadencia18→10ticks frente17→9V1, botones72px y campo ampliado, avance por núcleos, 32 recorridos equivalentes al kernelV1 y 8 derrotas; QA táctil victoria/derrota/reinicio en ambas orientaciones, históricoV1 archivado | Seguimiento físico y comparación común pendientes |
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
@@ -442,3 +442,12 @@ score6920y pérdida30tiros, ambas vistas, reinicio/rotación/sonido/cancel/aband
 No copia recursos/identidad comercial. Física AABB translacional continúa siendo
 un límite documentado, no se presenta como simulador de cuerpos rotatorios.
 Siguiente: nueva Shot Gallery y Phalanx con más decisiones/recompensas.
+
+## Unidad Gallery / checkpoint v90
+
+Galería2.0en una superficie descubierta, seis objetivos y señales mínimas; sonido
+tenso original con silencio/cleanup. Suma de doce pruebas publica al terminal,
+V1preservada. [Evidencia y reglas](SHOT_GALLERY_V2.md). Birds y Gallery se
+cierran en commits separados. v89CI38232622397/Vercel7011187789Ready y
+mobile-test fast-forward2ae6777. Siguiente solicitud actual: Phalanx con mayor
+exigencia/decisiones/recompensas; Mine/configuración y16imágenes previos intactos.

@@ -103,19 +103,22 @@ const { stripTypeScriptTypes } = require("node:module");
     await page.setContent(
       '<button id="on">On</button><button id="off">Off</button><button id="win">Win</button><button id="stop">Stop</button>',
     );
-    await page.evaluate((code) => {
-      window.__feedback = {};
-      new Function("exports", code)(window.__feedback);
-      const f = window.__feedback;
-      document.querySelector("#on").onclick = () => {
-        f.setGameSoundEnabled(true, true);
-        f.startGameMusic("river-dash");
-      };
-      document.querySelector("#off").onclick = () =>
-        f.setGameSoundEnabled(false, true);
-      document.querySelector("#win").onclick = () => f.gameTone("win");
-      document.querySelector("#stop").onclick = () => f.stopGameMusic();
-    }, code);
+    await page.evaluate(
+      ({ code, gameId }) => {
+        window.__feedback = {};
+        new Function("exports", code)(window.__feedback);
+        const f = window.__feedback;
+        document.querySelector("#on").onclick = () => {
+          f.setGameSoundEnabled(true, true);
+          f.startGameMusic(gameId);
+        };
+        document.querySelector("#off").onclick = () =>
+          f.setGameSoundEnabled(false, true);
+        document.querySelector("#win").onclick = () => f.gameTone("win");
+        document.querySelector("#stop").onclick = () => f.stopGameMusic();
+      },
+      { code, gameId: process.env.QA_AUDIO_GAME || "river-dash" },
+    );
     await page.locator("#on").tap();
     await page.waitForTimeout(180);
     const before = await page.evaluate(() => window.__qaAudio.sample());

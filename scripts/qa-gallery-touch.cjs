@@ -8,17 +8,14 @@ const { chromium } = require(
   path = require("node:path");
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
-  const { SHOT_GALLERY_CORE: core } = await import(
+  const { SHOT_GALLERY_CORE_V2: core } = await import(
       pathToFileURL(
-        path.join(__dirname, "../.det-test/lib/verified/shotGalleryCore.v1.js"),
+        path.join(__dirname, "../.det-test/lib/verified/shotGalleryCore.v2.js"),
       )
     ),
-    { SHOT_GALLERY_SLOTS: slots } = await import(
+    { gallerySlots } = await import(
       pathToFileURL(
-        path.join(
-          __dirname,
-          "../.det-test/lib/verified/shotGalleryProtocol.v1.js",
-        ),
+        path.join(__dirname, "../.det-test/lib/galleryPresentation.js"),
       )
     ),
     { replayCore } = await import(
@@ -34,8 +31,12 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
   try {
     const context = await browser.newContext({
         viewport: process.env.QA_LANDSCAPE
-          ? { width: 844, height: 390 }
-          : { width: 390, height: 844 },
+          ? process.env.QA_SMALL
+            ? { width: 568, height: 320 }
+            : { width: 844, height: 390 }
+          : process.env.QA_SMALL
+            ? { width: 320, height: 568 }
+            : { width: 390, height: 844 },
         isMobile: true,
         hasTouch: true,
       }),
@@ -61,16 +62,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       );
       localStorage.setItem("skill-arena-color-tutorial-v12", "1");
     });
-    await page.route("**/api/verified-match/start", (r) =>
-      r.continue({
-        postData: JSON.stringify({
-          ...r.request().postDataJSON(),
-          target_score: 1000000,
-        }),
-      }),
-    );
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3000");
-    await page.locator(".quickStakeBar button").first().click();
     const start = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
@@ -79,7 +71,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .click();
     const issued = await (await start).json();
     assert.equal(issued.manifest.game_id, "reaction-test");
-    assert.equal(issued.manifest.game_version, "1.0.0");
+    assert.equal(issued.manifest.game_version, "2.0.0");
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     await page.waitForTimeout(100);
@@ -97,9 +89,14 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     response.catch(() => {});
     async function touchLogical(x, y, cancel = false) {
       const b = await canvas.boundingBox(),
-        scale = Math.min(b.width / 390, b.height / 620),
-        ox = (b.width - 390 * scale) / 2,
-        oy = (b.height - 620 * scale) / 2;
+        metrics = await canvas.evaluate((c) => {
+          const m = c.getContext("2d").getTransform(),
+            dpr = Math.min(2, Math.max(1, devicePixelRatio || 1));
+          return { scale: m.a / dpr, ox: m.e / dpr, oy: m.f / dpr };
+        }),
+        scale = metrics.scale,
+        ox = metrics.ox,
+        oy = metrics.oy;
       await cdp.send("Input.dispatchTouchEvent", {
         type: "touchStart",
         touchPoints: [{ x: b.x + ox + x * scale, y: b.y + oy + y * scale }],
@@ -119,8 +116,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
             if (!ctx) return false;
             const t = ctx.getTransform(),
               p = ctx.getImageData(
-                Math.round(t.a * 195 + t.e),
-                Math.round(t.d * 186 + t.f),
+                Math.round((t.a * (c.width / t.a)) / 2 + t.e),
+                Math.round(t.d * 165 + t.f),
                 1,
                 1,
               ).data;
@@ -139,7 +136,20 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           : process.env.QA_WRONG
             ? (trial.answer + 1) % trial.cards.length
             : trial.answer,
-        p = slots[index];
+        p = gallerySlots(
+          await canvas.evaluate(
+            (c) => c.width / c.getContext("2d").getTransform().a,
+          ),
+        )[index];
+      const physicalScale = await canvas.evaluate(
+        (c) =>
+          c.getContext("2d").getTransform().a /
+          Math.min(2, Math.max(1, devicePixelRatio || 1)),
+      );
+      assert.ok(
+        p.width * physicalScale >= 44 && p.height * physicalScale >= 44,
+        "physical target is at least44px",
+      );
       await touchLogical(p.x + p.width / 2, p.y + p.height / 2);
       await touchLogical(p.x + p.width / 2, p.y + p.height / 2);
       if (i < 11) await page.waitForTimeout(process.env.QA_EARLY ? 950 : 900);
@@ -152,7 +162,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         body.inputs,
         body.final_tick,
         issued.manifest.seed,
-        1000000,
+        issued.manifest.competition.target_score,
       );
     assert.equal(result.verified, true);
     assert.equal(replay.valid, true, replay.error);

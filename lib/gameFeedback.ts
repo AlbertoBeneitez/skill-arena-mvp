@@ -137,9 +137,20 @@ type MusicProfile = {
   root: number;
   scale: number[];
   bassEvery: number;
+  motif?: readonly number[];
+  leadType?: OscillatorType;
 };
 
 function profileFor(gameId: string): MusicProfile {
+  if (gameId === "reaction-test")
+    return {
+      bpm: 144,
+      root: 110,
+      scale: [0, 1, 3, 6, 7, 10],
+      bassEvery: 2,
+      motif: [0, 1, 0, 3, 0, 4, 3, 1, 0, 1, 0, 5, 4, 3, 1, 0],
+      leadType: "triangle",
+    };
   const profiles: MusicProfile[] = [
     { bpm: 112, root: 220, scale: [0, 3, 5, 7, 10, 12], bassEvery: 4 },
     { bpm: 120, root: 196, scale: [0, 2, 5, 7, 9, 12], bassEvery: 4 },
@@ -166,7 +177,9 @@ function scheduleMusicStep(gameId: string) {
   if (!ctx) return;
 
   const profile = profileFor(gameId);
-  const phrase = [0, 2, 4, 2, 3, 5, 4, 1, 0, 3, 4, 2, 5, 3, 1, 2];
+  const phrase = profile.motif ?? [
+    0, 2, 4, 2, 3, 5, 4, 1, 0, 3, 4, 2, 5, 3, 1, 2,
+  ];
   const degree = phrase[musicStep % phrase.length] % profile.scale.length;
   const offset = profile.scale[degree];
   const beatSeconds = 60 / profile.bpm;
@@ -175,7 +188,7 @@ function scheduleMusicStep(gameId: string) {
     frequency: semitone(profile.root, offset),
     duration: beatSeconds * 0.72,
     volume: 0.011,
-    type: "sine",
+    type: profile.leadType ?? "sine",
     kind: "music",
   });
 

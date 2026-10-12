@@ -1,0 +1,68 @@
+{
+  "seed": "gallery2-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 155,
+      "action": "PICK_1"
+    },
+    {
+      "seq": 1,
+      "tick": 392,
+      "action": "PICK_1"
+    },
+    {
+      "seq": 2,
+      "tick": 669,
+      "action": "PICK_3"
+    },
+    {
+      "seq": 3,
+      "tick": 906,
+      "action": "PICK_5"
+    },
+    {
+      "seq": 4,
+      "tick": 1134,
+      "action": "PICK_3"
+    },
+    {
+      "seq": 5,
+      "tick": 1399,
+      "action": "PICK_3"
+    },
+    {
+      "seq": 6,
+      "tick": 1686,
+      "action": "PICK_5"
+    },
+    {
+      "seq": 7,
+      "tick": 1901,
+      "action": "PICK_5"
+    },
+    {
+      "seq": 8,
+      "tick": 2174,
+      "action": "PICK_3"
+    },
+    {
+      "seq": 9,
+      "tick": 2436,
+      "action": "PICK_0"
+    },
+    {
+      "seq": 10,
+      "tick": 2675,
+      "action": "PICK_0"
+    },
+    {
+      "seq": 11,
+      "tick": 2951,
+      "action": "PICK_4"
+    }
+  ],
+  "finalTick": 3035,
+  "score": 9090,
+  "hash": "sha256:16a3e0a0167187f1ebb527676a3b6d3a06d0fe23a063afadbadf4030f8af1b6c"
+}
