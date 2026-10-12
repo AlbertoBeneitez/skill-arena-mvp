@@ -117,6 +117,7 @@ console.log(
 
 const manifest = createMatchManifest({
     gameId: core.gameId,
+    gameVersion: core.gameVersion,
     seed: fixture.seed,
     targetScore: 1e9,
   }),

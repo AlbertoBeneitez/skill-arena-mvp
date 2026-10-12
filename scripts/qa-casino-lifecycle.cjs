@@ -227,7 +227,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       assert.equal(receipt.verified, false);
       assert.equal(
         body.inputs.filter(
-          (i) => i.action === "SPIN" || i.action.startsWith("LAUNCH_"),
+          (i) => i.action === "SPIN" || i.action.startsWith("TOSS_"),
         ).length,
         1,
       );

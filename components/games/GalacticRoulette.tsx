@@ -2,24 +2,24 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE,
+  ROULETTE_CORE_V2,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteState,
-} from "@/lib/verified/galacticRouletteCore.v1";
-import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v1";
+  type RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v2";
+import { ROULETTE_BETS_V2 } from "@/lib/verified/galacticRouletteProtocol.v2";
 import {
   ROULETTE_BALL_DOCK,
-  rouletteBallCanGrab,
-  rouletteDragLaunch,
-} from "@/lib/rouletteGesture";
+  rouletteTossCanGrab,
+  rouletteHandToss,
+} from "@/lib/rouletteTossGesture";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const cx = 195,
   cy = 195;
 function render(
   ctx: CanvasRenderingContext2D,
-  s: RouletteState,
+  s: RouletteStateV2,
   drag: CorePoint | null = null,
 ) {
   drawSpaceBackdrop(ctx, 390, 400, 1, s.tick);
@@ -90,51 +90,37 @@ function render(
     ctx.fill();
     ctx.restore();
   }
-  let radius = 143;
-  if (s.landingTick !== -1) {
-    const remaining = s.landingTick - s.tick;
-    radius = 143 - 45 * Math.max(0, 1 - remaining / 180);
-  } else if (s.lastNumber !== null) radius = 98;
-  const angle = (s.ballPhase / 65536) * Math.PI * 2 - Math.PI / 2;
-  if (s.landingTick !== -1) {
-    ctx.strokeStyle = "rgba(234,245,255,.25)";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(
-      cx,
-      cy,
-      radius,
-      angle - 0.12 * Math.sign(s.ballSpeed),
-      angle,
-      s.ballSpeed < 0,
-    );
-    ctx.stroke();
-  }
   const idle = s.landingTick === -1;
-  const x = idle
-      ? (drag?.x ?? ROULETTE_BALL_DOCK.x)
-      : cx + Math.cos(angle) * radius,
-    y = idle
-      ? (drag?.y ?? ROULETTE_BALL_DOCK.y)
-      : cy + Math.sin(angle) * radius;
+  const x = idle ? (drag?.x ?? ROULETTE_BALL_DOCK.x) : s.ballX / 1000;
+  const groundY = idle ? (drag?.y ?? ROULETTE_BALL_DOCK.y) : s.ballY / 1000;
+  const height = idle ? 0 : s.ballZ / 1000;
+  const y = groundY - height;
   if (idle && !drag) {
     ctx.strokeStyle = "rgba(169,219,238,.6)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(x, y, 28, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = "rgba(10,28,45,.8)";
-    ctx.beginPath();
-    ctx.arc(x, y, 26, 0, Math.PI * 2);
-    ctx.fill();
   }
-  ctx.fillStyle = "#071320";
+  ctx.fillStyle = "rgba(0,4,14,.45)";
   ctx.beginPath();
-  ctx.arc(x + 2, y + 4, 6, 0, Math.PI * 2);
+  ctx.ellipse(
+    x + 2,
+    groundY + 3,
+    6 + height * 0.08,
+    3 + height * 0.03,
+    0,
+    0,
+    Math.PI * 2,
+  );
   ctx.fill();
   ctx.fillStyle = "#f0f7ff";
   ctx.beginPath();
-  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.arc(x, y, 6 + height * 0.07, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(x - 2, y - 2, 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#c7ac7a";
   ctx.lineWidth = 5;
@@ -173,16 +159,16 @@ function render(
           DOZEN_3: "25–36",
         } as Record<string, string>
       )[s.bet];
-  ctx.fillText(`${bet} · 5€`, cx, 377);
+  ctx.fillText(`${bet ?? "2:1"} · 5€`, cx, 377);
   if (s.lastPayout > 0 && s.tick - s.lastLandingTick < 120) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 19px system-ui";
     ctx.fillText(`+${s.lastPayout / 100}€`, cx, 103);
   }
 }
-const hudLabel = (s: Readonly<RouletteState>) =>
+const hudLabel = (s: Readonly<RouletteStateV2>) =>
   `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
-const feedbackScore = (s: Readonly<RouletteState>) => s.balanceMinor;
+const feedbackScore = (s: Readonly<RouletteStateV2>) => s.balanceMinor;
 const betLabels: Record<string, string> = {
   RED: "VERDE",
   BLACK: "AZUL",
@@ -195,21 +181,67 @@ const betLabels: Record<string, string> = {
   DOZEN_3: "25–36",
 };
 const choiceControl = {
-  label: "Apuesta de ruleta",
-  options: ROULETTE_BETS.map((bet) => ({
-    action: `BET_${bet}`,
-    label: `${bet.startsWith("NUMBER_") ? "NÚMERO " + Number(bet.slice(7)) : betLabels[bet]} · 5€ ficticios`,
-  })),
-  value: (s: RouletteState) => `BET_${s.bet}`,
-  disabled: (s: RouletteState) =>
-    s.landingTick !== -1 || s.status !== "running",
+  label: "Tapete de apuestas",
+  presentation: "grid" as const,
+  columns: 4,
+  options: ROULETTE_BETS_V2.map((bet) => {
+    if (bet.startsWith("NUMBER_")) {
+      const n = Number(bet.slice(7));
+      return {
+        action: `BET_${bet}`,
+        label: String(n),
+        tone:
+          n === 0
+            ? "#e9eeed"
+            : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number])
+              ? "#176f5a"
+              : "#102d50",
+        placement:
+          n === 0
+            ? { row: 1, column: 1, columnSpan: 3 }
+            : { row: 2 + Math.floor((n - 1) / 3), column: 1 + ((n - 1) % 3) },
+      };
+    }
+    if (bet.startsWith("DOZEN_")) {
+      const n = Number(bet.slice(6));
+      return {
+        action: `BET_${bet}`,
+        label: betLabels[bet],
+        tone: "#173e42",
+        placement: { row: 2 + (n - 1) * 4, column: 4, rowSpan: 4 },
+      };
+    }
+    if (bet.startsWith("COLUMN_"))
+      return {
+        action: `BET_${bet}`,
+        label: `C${Number(bet.slice(7))} 2:1`,
+        tone: "#173e42",
+        placement: { row: 14, column: Number(bet.slice(7)) },
+      };
+    const i = ["LOW", "EVEN", "RED", "BLACK", "ODD", "HIGH"].indexOf(bet);
+    return {
+      action: `BET_${bet}`,
+      label: betLabels[bet],
+      tone: bet === "RED" ? "#176f5a" : bet === "BLACK" ? "#102d50" : "#173e42",
+      placement: {
+        row: 15 + Math.floor(i / 2),
+        column: 1 + (i % 2) * 2,
+        columnSpan: 2,
+      },
+    };
+  }),
+  value: (s: RouletteStateV2) => `BET_${s.bet}`,
+  disabled: (s: RouletteStateV2) =>
+    s.landingTick !== -1 || s.status !== "running" || s.tick + 720 > 21600,
 };
 export default function GalacticRoulette(props: GameRuntimeProps) {
   const origin = useRef<CorePoint | null>(null),
     drag = useRef<CorePoint | null>(null);
   const canvasRender = useCallback(
-    (ctx: CanvasRenderingContext2D, s: RouletteState) =>
-      render(ctx, s, drag.current),
+    (ctx: CanvasRenderingContext2D, s: RouletteStateV2) => {
+      if (s.landingTick !== -1) drag.current = null;
+      render(ctx, s, drag.current);
+    },
     [],
   );
   useEffect(() => {
@@ -233,13 +265,15 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         drag.current = null;
       }}
       onLostPointerCapture={() => {
-        origin.current = null;
-        drag.current = null;
+        if (origin.current) {
+          origin.current = null;
+          drag.current = null;
+        }
       }}
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE}
+        core={ROULETTE_CORE_V2}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -250,7 +284,10 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              s.landingTick === -1 && rouletteBallCanGrab(p) ? p : null;
+              ROULETTE_CORE_V2.canApply(s, "TOSS_D00_P00") &&
+              rouletteTossCanGrab(p)
+                ? p
+                : null;
             drag.current = origin.current ? p : null;
             return null;
           }
@@ -261,8 +298,9 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           }
           const from = origin.current;
           origin.current = null;
-          drag.current = null;
-          return rouletteDragLaunch(from, p);
+          const actions = rouletteHandToss(from, p);
+          drag.current = actions ? p : null;
+          return actions;
         }}
       />
     </div>

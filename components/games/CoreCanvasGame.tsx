@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import GameActionButton from "../GameActionButton";
 import DirectionalJoystick from "./DirectionalJoystick";
 import type { GameRuntimeProps } from "@/lib/games";
 import { configureLogicalCanvas, beginLogicalCanvasFrame, type CanvasViewportMetrics, type LogicalCanvasViewport } from "@/lib/gameCanvas";
@@ -31,7 +32,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
   /** A native choice emits actions through the same input queue and recorder. */
-  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string }[]; value(state: S): string; disabled?(state: S): boolean }>;
+  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string; tone?: string; placement?: {row:number;column:number;rowSpan?:number;columnSpan?:number} }[]; presentation?: "grid"; columns?: number; value(state: S): string; disabled?(state: S): boolean }>;
   /** Actions still pass through the shared recorder and server replay. */
   directionalJoystick?: boolean;
   hideHudLabel?: boolean;
@@ -48,6 +49,10 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const attempt = useVerifiedAttempt({ active, gameId: core.gameId, stakeMinor: Math.round(stake * 100), targetScore });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const choiceRef = useRef<HTMLSelectElement>(null);
+  const choicePanelRef = useRef<HTMLDivElement>(null);
+  const choiceSummaryRef = useRef<HTMLSpanElement>(null);
+  const choiceStateRef = useRef("");
+  const [choiceOpen, setChoiceOpen] = useState(false);
   const metricsRef = useRef<CanvasViewportMetrics | null>(null);
   const [preview] = useState(() => core.create("preview"));
   const stateRef = useRef<S>(preview);
@@ -91,6 +96,21 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     if (choiceRef.current && props.choiceControl) {
       choiceRef.current.value = props.choiceControl.value(stateRef.current);
       choiceRef.current.disabled = !runningRef.current || (props.choiceControl.disabled?.(stateRef.current) ?? false);
+    }
+    if (choicePanelRef.current && props.choiceControl) {
+      const value = props.choiceControl.value(stateRef.current), disabled = !runningRef.current || (props.choiceControl.disabled?.(stateRef.current) ?? false);
+      const signature = `${value}:${disabled}`;
+      if (signature !== choiceStateRef.current) {
+        choiceStateRef.current = signature;
+        for (const button of choicePanelRef.current.querySelectorAll<HTMLButtonElement>("button[data-choice]")) {
+          button.disabled = disabled;
+          button.setAttribute("aria-pressed", String(button.dataset.choice === value));
+        }
+        if (choiceSummaryRef.current) choiceSummaryRef.current.textContent = props.choiceControl.options.find(option => option.action === value)?.label ?? "";
+        const trigger=choicePanelRef.current.querySelector<HTMLButtonElement>(".coreChoiceTrigger");
+        if(trigger)trigger.disabled=disabled;
+        if (disabled) setChoiceOpen(false);
+      }
     }
     if (stateRef.current.status === "failed") props.failureFinale?.render(ctx, stateRef.current, terminalElapsedRef.current);
   }, [core, render, props.failureFinale, props.choiceControl, viewportPolicy]);
@@ -170,7 +190,12 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const resize = () => { metricsRef.current = configureLogicalCanvas(canvas, core.width, core.height, 2, viewportPolicy); draw(); };
+    const resize = () => {
+      metricsRef.current = configureLogicalCanvas(canvas, core.width, core.height, 2, viewportPolicy);
+      const panel=choicePanelRef.current, grid=panel?.querySelector<HTMLElement>(".coreChoiceGrid");
+      if(grid)grid.style.maxHeight=`${Math.max(88,(panel?.parentElement?.clientHeight ?? 300)-64)}px`;
+      draw();
+    };
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
@@ -334,7 +359,17 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     />
     <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
-    {props.choiceControl && <label className="coreChoice"><span>{props.choiceControl.label}</span><select ref={choiceRef} aria-label={props.choiceControl.label} defaultValue={props.choiceControl.value(preview)} onChange={event => send(event.currentTarget.value)}>{props.choiceControl.options.map(option => <option key={option.action} value={option.action}>{option.label}</option>)}</select></label>}
+    {props.choiceControl && (props.choiceControl.presentation === "grid" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel">
+      <GameActionButton className="coreChoiceTrigger" aria-label={props.choiceControl.label} aria-expanded={choiceOpen} onActivate={()=>{
+        const panel=choicePanelRef.current, grid=panel?.querySelector<HTMLElement>(".coreChoiceGrid");
+        if(!runningRef.current || props.choiceControl?.disabled?.(stateRef.current))return;
+        if(grid)grid.style.maxHeight=`${Math.max(88,(panel?.parentElement?.clientHeight ?? 300)-64)}px`;
+        setChoiceOpen(open=>!open);
+      }}><span ref={choiceSummaryRef}>{props.choiceControl.options.find(option => option.action === props.choiceControl!.value(preview))?.label}</span><span aria-hidden="true">⌄</span></GameActionButton>
+      <div hidden={!choiceOpen} className="coreChoiceGrid" role="group" aria-label={props.choiceControl.label} style={{gridTemplateColumns:`repeat(${props.choiceControl.columns ?? 3},minmax(0,1fr))`}}>
+        {props.choiceControl.options.map(option => <GameActionButton key={option.action} data-choice={option.action} aria-pressed={option.action === props.choiceControl!.value(preview)} style={{background:option.tone,gridRow:option.placement ? `${option.placement.row} / span ${option.placement.rowSpan ?? 1}` : undefined,gridColumn:option.placement ? `${option.placement.column} / span ${option.placement.columnSpan ?? 1}` : undefined}} onActivate={()=>{send(option.action);setChoiceOpen(false);}}>{option.label}</GameActionButton>)}
+      </div>
+    </div> : <label className="coreChoice"><span>{props.choiceControl.label}</span><select ref={choiceRef} aria-label={props.choiceControl.label} defaultValue={props.choiceControl.value(preview)} onChange={event => send(event.currentTarget.value)}>{props.choiceControl.options.map(option => <option key={option.action} value={option.action}>{option.label}</option>)}</select></label>)}
     {!!props.controls?.length && <div className="coreControls">{props.controls.map(control => <button key={control.action} type="button" aria-label={control.label} style={control.style}
       onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); if (control.releaseAction) heldRef.current.add(control.releaseAction); send(control.action); }}
       onPointerUp={event => { if (control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }}
