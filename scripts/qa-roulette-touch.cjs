@@ -109,60 +109,17 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
       await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
       await page.waitForTimeout(150);
-      const power = page.getByRole("slider", { name: "Potencia de la bola" });
-      await power.focus();
-      await power.press("Home");
-      for (let i = 0; i < 6; i++) await power.press("ArrowRight");
-      assert.equal(await power.inputValue(), "6");
-      await page
-        .getByRole("button", { name: "Sentido antihorario", exact: true })
-        .tap();
-      assert.equal(
-        await page
-          .getByRole("button", { name: "Sentido antihorario", exact: true })
-          .getAttribute("aria-pressed"),
-        "true",
-      );
-      await page
-        .getByRole("button", { name: "Sentido horario", exact: true })
-        .tap();
-      const bets = await page
-        .locator(".rouletteVerified .coreControls button")
-        .evaluateAll((buttons) =>
-          buttons.map((b) => {
-            const r = b.getBoundingClientRect(),
-              c = getComputedStyle(b);
-            return {
-              label: b.getAttribute("aria-label"),
-              x: r.x,
-              y: r.y,
-              w: r.width,
-              h: r.height,
-              colour: c.backgroundColor,
-            };
-          }),
-        );
-      assert.equal(bets.length, 46);
-      const viewport = page.viewportSize();
-      for (const b of bets) {
-        assert.ok(b.w >= 44 && b.h >= 44, b.label);
-        assert.ok(
-          b.x >= 0 &&
-            b.y >= 0 &&
-            b.x + b.w <= viewport.width + 1 &&
-            b.y + b.h <= viewport.height + 1,
-          `visible without scroll: ${b.label}`,
-        );
-      }
-      assert.equal(bets[0].colour, "rgb(241, 245, 238)");
-      assert.equal(
-        bets.find((b) => b.label === "Apostar número 1").colour,
-        "rgb(21, 133, 104)",
-      );
-      assert.equal(
-        bets.find((b) => b.label === "Apostar número 2").colour,
-        "rgb(16, 45, 80)",
-      );
+      const select = page.getByRole("combobox", {
+        name: "Apuesta de ruleta",
+        exact: true,
+      });
+      const box = await select.boundingBox();
+      assert.ok(box.width >= 44 && box.height >= 44);
+      assert.equal(await select.locator("option").count(), 46);
+      assert.equal(await page.getByRole("slider").count(), 0);
+      await select.selectOption("BET_EVEN");
+      await page.waitForTimeout(80);
+      assert.equal(await select.inputValue(), "BET_EVEN");
       const cdp = await context.newCDPSession(page),
         canvas = page.locator("canvas.gameCanvas");
       let submits = 0,
@@ -186,15 +143,15 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           k = Math.min(b.width / 390, b.height / 400),
           ox = (b.width - 390 * k) / 2,
           oy = (b.height - 400 * k) / 2;
-        const x = b.x + ox + 195 * k,
-          y = b.y + oy + 195 * k;
+        const x = b.x + ox + 323 * k,
+          y = b.y + oy + 330 * k;
         await cdp.send("Input.dispatchTouchEvent", {
           type: "touchStart",
           touchPoints: [{ x, y }],
         });
         await cdp.send("Input.dispatchTouchEvent", {
           type: "touchMove",
-          touchPoints: [{ x: x + 30 * k, y }],
+          touchPoints: [{ x: b.x + ox + 285 * k, y: b.y + oy + 299 * k }],
         });
         await cdp.send("Input.dispatchTouchEvent", {
           type: cancel ? "touchCancel" : "touchEnd",
@@ -226,9 +183,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         console.log(
           JSON.stringify({
             viewport: page.viewportSize(),
-            all46Visible: true,
+            all46Options: true,
             minTarget44: true,
-            powerAndDirection: true,
+            dragPowerAndDirection: true,
             singleLaunch: true,
             prefixReceipt: true,
           }),
@@ -248,14 +205,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           const target = process.env.QA_LOSS
             ? (predicted.lastNumber + 1) % 37
             : predicted.lastNumber;
-          const button = page.getByRole("button", {
-            name: `Apostar número ${target}`,
-            exact: true,
-          });
-          await button.scrollIntoViewIfNeeded();
-          const r = await button.boundingBox();
-          assert.ok(r.width >= 44 && r.height >= 44);
-          await button.tap();
+          await select.selectOption(
+            `BET_NUMBER_${String(target).padStart(2, "0")}`,
+          );
           await page.waitForTimeout(60);
         }
         if (done) break;

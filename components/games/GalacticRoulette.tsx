@@ -1,6 +1,5 @@
 "use client";
-import { useRef, useState, type CSSProperties } from "react";
-import GameActionButton from "@/components/GameActionButton";
+import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
   ROULETTE_CORE,
@@ -8,12 +7,21 @@ import {
   ROULETTE_RED,
   type RouletteState,
 } from "@/lib/verified/galacticRouletteCore.v1";
-import { rouletteLaunchAction } from "@/lib/verified/galacticRouletteProtocol.v1";
+import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v1";
+import {
+  ROULETTE_BALL_DOCK,
+  rouletteBallCanGrab,
+  rouletteDragLaunch,
+} from "@/lib/rouletteGesture";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const cx = 195,
   cy = 195;
-function render(ctx: CanvasRenderingContext2D, s: RouletteState) {
+function render(
+  ctx: CanvasRenderingContext2D,
+  s: RouletteState,
+  drag: CorePoint | null = null,
+) {
   drawSpaceBackdrop(ctx, 390, 400, 1, s.tick);
   const rotation = (s.wheelPhase / 65536) * Math.PI * 2 - Math.PI / 2;
   ctx.fillStyle = "#193545";
@@ -102,8 +110,24 @@ function render(ctx: CanvasRenderingContext2D, s: RouletteState) {
     );
     ctx.stroke();
   }
-  const x = cx + Math.cos(angle) * radius,
-    y = cy + Math.sin(angle) * radius;
+  const idle = s.landingTick === -1;
+  const x = idle
+      ? (drag?.x ?? ROULETTE_BALL_DOCK.x)
+      : cx + Math.cos(angle) * radius,
+    y = idle
+      ? (drag?.y ?? ROULETTE_BALL_DOCK.y)
+      : cy + Math.sin(angle) * radius;
+  if (idle && !drag) {
+    ctx.strokeStyle = "rgba(169,219,238,.6)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, 28, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(10,28,45,.8)";
+    ctx.beginPath();
+    ctx.arc(x, y, 26, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.fillStyle = "#071320";
   ctx.beginPath();
   ctx.arc(x + 2, y + 4, 6, 0, Math.PI * 2);
@@ -159,157 +183,88 @@ function render(ctx: CanvasRenderingContext2D, s: RouletteState) {
 const hudLabel = (s: Readonly<RouletteState>) =>
   `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
 const feedbackScore = (s: Readonly<RouletteState>) => s.balanceMinor;
-function betStyle(
-  column: string,
-  row: string,
-  wideColumn: string,
-  wideRow: string,
-  compactColumn: string,
-  compactRow: string,
-  colour: string,
-): CSSProperties {
-  return {
-    "--bet-column": column,
-    "--bet-row": row,
-    "--bet-wide-column": wideColumn,
-    "--bet-wide-row": wideRow,
-    "--bet-compact-column": compactColumn,
-    "--bet-compact-row": compactRow,
-    "--bet-colour": colour,
-  } as CSSProperties;
-}
-const rouletteControls = [
-  {
-    action: "BET_NUMBER_00",
-    label: "Apostar número 0",
-    symbol: "0",
-    style: betStyle("1", "7", "1", "1 / 4", "10", "1 / 5", "#f1f5ee"),
-  },
-  ...Array.from({ length: 36 }, (_, i) => {
-    const n = Math.floor(i / 6) * 3 + (i % 3) + (i % 6 >= 3 ? 18 : 0) + 1;
-    return {
-      action: `BET_NUMBER_${String(n).padStart(2, "0")}`,
-      label: `Apostar número ${n}`,
-      symbol: String(n),
-      style: betStyle(
-        String((i % 6) + 1),
-        String(Math.floor(i / 6) + 1),
-        String(Math.floor((n - 1) / 3) + 2),
-        String(3 - ((n - 1) % 3)),
-        String(Math.floor((n - 1) / 12) * 3 + ((n - 1) % 3) + 1),
-        String(Math.floor(((n - 1) % 12) / 3) + 1),
-        ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number])
-          ? "#158568"
-          : "#102d50",
-      ),
-    };
-  }),
-  ...[
-    "DOZEN_1",
-    "DOZEN_2",
-    "DOZEN_3",
-    "LOW",
-    "EVEN",
-    "RED",
-    "BLACK",
-    "ODD",
-    "HIGH",
-  ].map((b, i) => ({
-    action: `BET_${b}`,
-    label: `Apostar ${["1 a 12", "13 a 24", "25 a 36", "1 a 18", "par", "verde", "azul", "impar", "19 a 36"][i]}`,
-    symbol: [
-      "1–12",
-      "13–24",
-      "25–36",
-      "1–18",
-      "PAR",
-      "VERDE",
-      "AZUL",
-      "IMPAR",
-      "19–36",
-    ][i],
-    style: betStyle(
-      i < 3 ? ["2", "3 / span 2", "5 / span 2"][i] : String(i - 2),
-      i < 3 ? "7" : "8",
-      i < 3 ? `${2 + i * 4} / span 4` : `${2 + (i - 3) * 2} / span 2`,
-      i < 3 ? "4" : "5",
-      String(i + 1),
-      "5",
-      b === "RED" ? "#158568" : "#102d50",
-    ),
+const betLabels: Record<string, string> = {
+  RED: "VERDE",
+  BLACK: "AZUL",
+  EVEN: "PAR",
+  ODD: "IMPAR",
+  LOW: "1–18",
+  HIGH: "19–36",
+  DOZEN_1: "1–12",
+  DOZEN_2: "13–24",
+  DOZEN_3: "25–36",
+};
+const choiceControl = {
+  label: "Apuesta de ruleta",
+  options: ROULETTE_BETS.map((bet) => ({
+    action: `BET_${bet}`,
+    label: `${bet.startsWith("NUMBER_") ? "NÚMERO " + Number(bet.slice(7)) : betLabels[bet]} · 5€ ficticios`,
   })),
-];
+  value: (s: RouletteState) => `BET_${s.bet}`,
+  disabled: (s: RouletteState) =>
+    s.landingTick !== -1 || s.status !== "running",
+};
 export default function GalacticRoulette(props: GameRuntimeProps) {
-  const origin = useRef<CorePoint | null>(null);
-  const [power, setPower] = useState(24);
-  const [direction, setDirection] = useState<1 | -1>(1);
+  const origin = useRef<CorePoint | null>(null),
+    drag = useRef<CorePoint | null>(null);
+  const canvasRender = useCallback(
+    (ctx: CanvasRenderingContext2D, s: RouletteState) =>
+      render(ctx, s, drag.current),
+    [],
+  );
+  useEffect(() => {
+    const clear = () => {
+      origin.current = null;
+      drag.current = null;
+    };
+    window.addEventListener("blur", clear);
+    window.addEventListener("resize", clear);
+    return () => {
+      window.removeEventListener("blur", clear);
+      window.removeEventListener("resize", clear);
+      clear();
+    };
+  }, []);
   return (
-    <div className="rouletteVerified">
+    <div
+      className="rouletteVerified rouletteMobile"
+      onPointerCancel={() => {
+        origin.current = null;
+        drag.current = null;
+      }}
+      onLostPointerCapture={() => {
+        origin.current = null;
+        drag.current = null;
+      }}
+    >
       <CoreCanvasGame
         {...props}
         core={ROULETTE_CORE}
         name="Galactic Roulette"
         instruction=""
-        render={render}
+        render={canvasRender}
         hideHudScore
         hudLabel={hudLabel}
         feedbackScore={feedbackScore}
-        controls={rouletteControls}
-        pointAction={(p, phase) => {
+        choiceControl={choiceControl}
+        pointAction={(p, phase, s) => {
           if (phase === "down") {
-            origin.current = Math.hypot(p.x - cx, p.y - cy) < 170 ? p : null;
+            origin.current =
+              s.landingTick === -1 && rouletteBallCanGrab(p) ? p : null;
+            drag.current = origin.current ? p : null;
             return null;
           }
-          if (phase !== "up" || !origin.current) return null;
+          if (!origin.current) return null;
+          if (phase === "move") {
+            drag.current = p;
+            return null;
+          }
           const from = origin.current;
           origin.current = null;
-          if (Math.hypot(p.x - cx, p.y - cy) >= 170) return null;
-          // A deliberate wheel release launches the selected settings. A drag
-          // around its centre may choose the rotation from the angular gesture.
-          const cross = (from.x - cx) * (p.y - cy) - (from.y - cy) * (p.x - cx);
-          const chosen =
-            Math.hypot(p.x - from.x, p.y - from.y) >= 18 &&
-            Math.abs(cross) > 200
-              ? cross > 0
-                ? 1
-                : -1
-              : direction;
-          return rouletteLaunchAction(power, chosen);
+          drag.current = null;
+          return rouletteDragLaunch(from, p);
         }}
       />
-      <div className="rouletteLaunchSettings">
-        <div
-          className="rouletteDirection"
-          role="group"
-          aria-label="Dirección de la bola"
-        >
-          <GameActionButton
-            aria-label="Sentido antihorario"
-            aria-pressed={direction === -1}
-            onActivate={() => setDirection(-1)}
-          >
-            ↶
-          </GameActionButton>
-          <GameActionButton
-            aria-label="Sentido horario"
-            aria-pressed={direction === 1}
-            onActivate={() => setDirection(1)}
-          >
-            ↷
-          </GameActionButton>
-        </div>
-        <label className="roulettePower">
-          POTENCIA <output>{Math.round((power * 100) / 63)}%</output>
-          <input
-            aria-label="Potencia de la bola"
-            type="range"
-            min="0"
-            max="63"
-            value={power}
-            onChange={(e) => setPower(Number(e.target.value))}
-          />
-        </label>
-      </div>
     </div>
   );
 }

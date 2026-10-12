@@ -6223,33 +6223,11 @@ html, body, .arenaOnboarding, .gameScreen {
 }
 
 .gameBody:has(.rouletteVerified) {max-width:none;}
-/* European betting columns; folded layouts keep every supported bet visible. */
-.rouletteVerified {width:100%;height:100%;min-height:0;position:relative;--roulette-board-height:374px;}
-.rouletteVerified .coreGameSurface .deterministicCanvas {height:calc(100% - var(--roulette-board-height) - 62px) !important;min-height:68px;}
-.rouletteVerified .coreHud {top:4px;font-size:10px;pointer-events:none;}
-.rouletteVerified .coreControls {bottom:4px;left:8px;right:8px;display:grid;grid-template-columns:repeat(6,minmax(44px,1fr));grid-template-rows:repeat(8,44px);gap:2px;max-height:none;overflow:visible;pointer-events:auto;}
-.rouletteVerified .coreControls button {grid-column:var(--bet-column);grid-row:var(--bet-row);background:var(--bet-colour);color:#fff;border:1px solid #537087;width:100%;min-width:44px;height:44px;min-height:44px;border-radius:4px;font-size:11px;padding:0;box-shadow:none;}
-.rouletteVerified .coreControls button:first-child {color:#102d50;border-color:#fff;}
-.rouletteLaunchSettings {position:absolute;bottom:calc(var(--roulette-board-height) + 4px);left:8px;right:8px;height:56px;display:flex;gap:12px;align-items:center;}
-.rouletteDirection {display:flex;gap:4px;}
-.rouletteDirection button {min-width:44px;min-height:44px;border:1px solid #537087;border-radius:8px;background:#102237;color:#dbeefb;font-size:25px;}
-.rouletteDirection button[aria-pressed="true"] {background:#276650;border-color:#87ddae;}
-.roulettePower {flex:1;display:grid;grid-template-columns:1fr auto;color:#e5f1f7;font-size:10px;font-weight:750;}
-.roulettePower input {grid-column:1 / -1;width:100%;height:44px;accent-color:#87ddae;touch-action:pan-x;}
-@media (orientation:landscape) and (max-height:600px) {
- .rouletteVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 598px) !important;height:100% !important;min-height:0;}
- .rouletteVerified .coreHud {left:8px;right:auto;max-width:calc(100% - 598px);font-size:9px;}
- .rouletteVerified .coreControls {left:auto;right:8px;bottom:6px;width:588px;grid-template-columns:repeat(13,1fr);grid-template-rows:repeat(5,44px);}
- .rouletteVerified .coreControls button {grid-column:var(--bet-wide-column);grid-row:var(--bet-wide-row);height:100%;}
- .rouletteLaunchSettings {left:auto;right:8px;bottom:auto;top:4px;width:588px;}
-}
-@media (orientation:landscape) and (max-height:600px) and (max-width:739px) {
- .rouletteVerified .coreGameSurface .deterministicCanvas {width:calc(100% - 466px) !important;}
- .rouletteVerified .coreHud {max-width:calc(100% - 466px);font-size:8px;}
- .rouletteVerified .coreControls {width:458px;grid-template-columns:repeat(10,44px);bottom:4px;}
- .rouletteVerified .coreControls button {grid-column:var(--bet-compact-column);grid-row:var(--bet-compact-row);}
- .rouletteLaunchSettings {width:calc(100% - 474px);left:4px;right:auto;top:auto;bottom:8px;height:auto;flex-direction:column;gap:4px;}
- .roulettePower {width:100%;}
-}
+.rouletteVerified {width:100%;height:100%;min-height:0;position:relative;}
+.rouletteMobile .coreGameSurface .deterministicCanvas {width:100% !important;height:calc(100% - 76px) !important;min-height:0;}
+.rouletteMobile .coreHud {top:4px;left:8px;right:8px;max-width:none;font-size:11px;pointer-events:none;}
+.coreChoice {position:absolute;z-index:3;bottom:8px;left:12px;right:12px;display:grid;gap:4px;color:#d8eaf4;font-size:11px;font-weight:750;}
+.coreChoice select {width:100%;min-height:48px;border:1px solid #607e91;border-radius:12px;padding:0 12px;background:#153547;color:#edf5ec;font-size:14px;touch-action:manipulation;}
+.coreChoice select:disabled {opacity:.65;}
 
 .birdsVerified {height:100%;min-height:0;}

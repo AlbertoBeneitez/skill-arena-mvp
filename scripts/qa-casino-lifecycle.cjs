@@ -94,8 +94,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         const canvas = page.locator("canvas.gameCanvas"),
           b = await canvas.boundingBox(),
           scale = Math.min(b.width / 390, b.height / 400),
-          x = b.x + b.width / 2,
-          y = b.y + b.height / 2,
+          x = b.x + (b.width - 390 * scale) / 2 + 323 * scale,
+          y = b.y + (b.height - 400 * scale) / 2 + 330 * scale,
           cdp = await context.newCDPSession(page);
         await cdp.send("Input.dispatchTouchEvent", {
           type: "touchStart",
@@ -103,7 +103,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         });
         await cdp.send("Input.dispatchTouchEvent", {
           type: "touchMove",
-          touchPoints: [{ x: x + 30 * scale, y }],
+          touchPoints: [{ x: x - 38 * scale, y: y - 31 * scale }],
         });
         await cdp.send("Input.dispatchTouchEvent", {
           type: "touchEnd",

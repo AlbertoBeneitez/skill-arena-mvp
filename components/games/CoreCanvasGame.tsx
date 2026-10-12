@@ -30,6 +30,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keys?: Readonly<Record<string, string>>;
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
+  /** A native choice emits actions through the same input queue and recorder. */
+  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string }[]; value(state: S): string; disabled?(state: S): boolean }>;
   /** Actions still pass through the shared recorder and server replay. */
   directionalJoystick?: boolean;
   hideHudLabel?: boolean;
@@ -45,6 +47,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const viewportPolicy = props.expandHorizontalViewport ? "expand-horizontal" : "contain";
   const attempt = useVerifiedAttempt({ active, gameId: core.gameId, stakeMinor: Math.round(stake * 100), targetScore });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const choiceRef = useRef<HTMLSelectElement>(null);
   const metricsRef = useRef<CanvasViewportMetrics | null>(null);
   const [preview] = useState(() => core.create("preview"));
   const stateRef = useRef<S>(preview);
@@ -85,8 +88,12 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       width: metricsRef.current.logicalWidth,
       height: metricsRef.current.logicalHeight,
     });
+    if (choiceRef.current && props.choiceControl) {
+      choiceRef.current.value = props.choiceControl.value(stateRef.current);
+      choiceRef.current.disabled = !runningRef.current || (props.choiceControl.disabled?.(stateRef.current) ?? false);
+    }
     if (stateRef.current.status === "failed") props.failureFinale?.render(ctx, stateRef.current, terminalElapsedRef.current);
-  }, [core, render, props.failureFinale, viewportPolicy]);
+  }, [core, render, props.failureFinale, props.choiceControl, viewportPolicy]);
 
   const flush = useCallback(() => {
     const state = stateRef.current;
@@ -327,6 +334,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     />
     <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
+    {props.choiceControl && <label className="coreChoice"><span>{props.choiceControl.label}</span><select ref={choiceRef} aria-label={props.choiceControl.label} defaultValue={props.choiceControl.value(preview)} onChange={event => send(event.currentTarget.value)}>{props.choiceControl.options.map(option => <option key={option.action} value={option.action}>{option.label}</option>)}</select></label>}
     {!!props.controls?.length && <div className="coreControls">{props.controls.map(control => <button key={control.action} type="button" aria-label={control.label} style={control.style}
       onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); if (control.releaseAction) heldRef.current.add(control.releaseAction); send(control.action); }}
       onPointerUp={event => { if (control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }}

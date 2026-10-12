@@ -410,3 +410,8 @@ visible10s y avance0. Se implementan por unidades, con históricos preservados.
 Slot: avance8histórico se presenta como0y permanece quieto en el renderer; mapa
 de orden se oculta en tick1200y la máquina se amplía. Core1.0/payouts/hashes
 intactos; QA completa de victoria/insolvencia/reinicio/rotación/abandono ambas vistas.
+
+Checkpoint v89: Slot0/referencia10s y Roulette desplegable/arrastre, uno por
+commit, con cores históricos intactos y QA de sesiones completas. El control
+nativo común conserva la cola/replay/servidor. Evidencia en releases/v89-mobile.md.
+Continúan Phalanx con decisiones/recompensas, galería de tiro y Birds de demolición.

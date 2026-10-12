@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v88-mobile
+# GALACTIC GAMES · Seguimiento de v89-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -417,3 +417,15 @@ Suite completa/typecheck/build; QA win53tiradas/180s/saldo1043500y loss20tiradas
 t8326–8393, ambas orientaciones, reinicio/cancel/doble input/registro. QA específica
 comprueba0, ocultación10s, rotación y prefijo aceptado. Pendientes de solicitud
 actual: Roulette desplegable/arrastre, Phalanx decisiones/recompensas, galería y Birds.
+
+## Unidad Roulette / checkpoint v89
+
+Roulette1.0conserva reglas/goldens pero presenta desplegable nativo46opciones y
+arrastre de bola desde dock→rueda. Distancia/sentido cuantizados en inputs
+históricos; sin slider ni ajustes previos. CoreCanvasGame añade choiceControl
+opcional a la cola común; selección autoritativa/bloqueo en vuelo. QA completa
+win32/180s y loss22en ambas vistas; 320px/horizontal pequeño, CW/CCW,
+keyboard/cancel/blur/doble intento/sonido/rotación/reinicio/prefijo aceptado.
+[Alcance y evidencia](releases/v89-mobile.md). Siguiente: Phalanx, galería y Birds.
+No se reabren otras unidades validadas; Mine público/avatares siguen con sus
+prerrequisitos externos documentados.
