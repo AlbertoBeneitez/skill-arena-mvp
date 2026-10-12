@@ -10,8 +10,18 @@ import {
   type ReplayInput,
 } from "@/lib/verified/inputValidation";
 import {
+  recordAttemptSubmission,
+  reserveAttemptSubmission,
+} from "@/lib/server/attemptAuditLedger";
+import {
+  checkRateLimit,
+  rateLimitHeaders,
+  requestRateLimitKey,
+} from "@/lib/server/rateLimit";
+import {
   hashManifest,
   hashReplay,
+  MAX_CLOCK_LEAD_MS,
   validateManifest,
   verifyAttemptTicket,
 } from "@/lib/server/verifiedMatch";
@@ -41,6 +51,23 @@ function isPayload(value: unknown): value is VerifiedAttemptPayload {
 }
 
 export async function POST(request: Request) {
+  const requestKey = requestRateLimitKey(request);
+  const rate = checkRateLimit({
+    scope: "verified-match:verify",
+    key: requestKey,
+    limit: 60,
+    windowMs: 60_000,
+  });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { ok: false, verified: false, error: "RATE_LIMITED" },
+      {
+        status: 429,
+        headers: rateLimitHeaders(rate),
+      }
+    );
+  }
+
   const declaredLength = Number(
     request.headers.get("content-length") ?? 0
   );
@@ -80,7 +107,28 @@ export async function POST(request: Request) {
     return reject(ticketCheck.error, 401);
   }
 
+  if (!reserveAttemptSubmission(ticket.attempt_id)) {
+    return reject("ATTEMPT_ALREADY_SUBMITTED", 409);
+  }
+
   const adapter = manifestCheck.adapter;
+  const manifestHash = hashManifest(manifest);
+  const recordRejected = (auditId: string, error: string) => {
+    recordAttemptSubmission({
+      auditId,
+      attemptId: ticket.attempt_id,
+      matchId: ticket.match_id,
+      playerId: ticket.player_id,
+      slot: ticket.slot,
+      manifestHash,
+      accepted: false,
+      error,
+      inputs,
+      finalTick,
+      receivedAt: new Date().toISOString(),
+    });
+  };
+
   const inputError = validateInputSequence(inputs, finalTick, {
     version: adapter.inputProtocol.version,
     allowedActions: adapter.inputProtocol.allowedActions,
@@ -88,7 +136,11 @@ export async function POST(request: Request) {
     maxFinalTick: adapter.simulation.maxFinalTick,
   });
 
-  if (inputError) return reject(inputError);
+  if (inputError) {
+    const auditId = randomUUID();
+    recordRejected(auditId, inputError);
+    return reject(inputError);
+  }
 
   const replay = adapter.replay({
     inputs,
@@ -97,16 +149,19 @@ export async function POST(request: Request) {
   });
 
   if (!replay.valid) {
-    return reject(replay.error ?? "REPLAY_MISMATCH");
+    const error = replay.error ?? "REPLAY_MISMATCH";
+    const auditId = randomUUID();
+    recordRejected(auditId, error);
+    return reject(error);
   }
 
   const elapsedWallMs = Date.now() - ticketCheck.issuedAt;
-  const maxClockLeadMs = 2_500;
-  if (replay.timeMs > elapsedWallMs + maxClockLeadMs) {
+  if (replay.timeMs > elapsedWallMs + MAX_CLOCK_LEAD_MS) {
+    const auditId = randomUUID();
+    recordRejected(auditId, "SIMULATION_FASTER_THAN_REAL_TIME");
     return reject("SIMULATION_FASTER_THAN_REAL_TIME", 409);
   }
 
-  const manifestHash = hashManifest(manifest);
   const replayHash = hashReplay({
     manifestHash,
     attemptId: ticket.attempt_id,
@@ -120,11 +175,34 @@ export async function POST(request: Request) {
       failure: replay.failure,
     },
   });
+  const verificationId = randomUUID();
+
+  recordAttemptSubmission({
+    auditId: verificationId,
+    attemptId: ticket.attempt_id,
+    matchId: ticket.match_id,
+    playerId: ticket.player_id,
+    slot: ticket.slot,
+    manifestHash,
+    accepted: true,
+    inputs,
+    finalTick,
+    receivedAt: new Date().toISOString(),
+    replayHash,
+    result: {
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.won,
+      height: replay.height,
+      failure: replay.failure,
+    },
+  });
 
   return NextResponse.json({
     ok: true,
     verified: true,
-    verification_id: randomUUID(),
+    verification_id: verificationId,
+    audit_id: verificationId,
     replay_hash: replayHash,
     score: replay.score,
     time_ms: replay.timeMs,

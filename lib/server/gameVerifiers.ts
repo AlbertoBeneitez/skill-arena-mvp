@@ -1,4 +1,5 @@
 import { getGameDefinition, type GameId } from "@/lib/games";
+import { getGameRules } from "@/lib/game-rules/rulesRegistry";
 import type { MatchManifest } from "@/lib/verified/contracts";
 import type { ReplayInput } from "@/lib/verified/inputValidation";
 import {
@@ -33,6 +34,20 @@ import {
   replayJetStream,
   type JetStreamInput,
 } from "@/lib/verified/jetStreamCore.v1";
+import {
+  DINO_DASH_ACTIONS,
+  DINO_DASH_V1,
+  DINO_DASH_V1_CONTENT,
+  replayDinoDash,
+  type DinoDashInput,
+} from "@/lib/verified/dinoDashCore.v1";
+import {
+  PULSE_RUNNER_ACTIONS,
+  PULSE_RUNNER_V1,
+  PULSE_RUNNER_V1_CONTENT,
+  replayPulseRunner,
+  type PulseRunnerInput,
+} from "@/lib/verified/pulseRunnerCore.v1";
 
 export type ServerReplayResult = {
   valid: boolean;
@@ -276,6 +291,88 @@ const jetStreamAdapter: VerifiedGameAdapter = {
   },
 };
 
+const dinoDashAdapter: VerifiedGameAdapter = {
+  gameId: "dino-dash",
+  gameVersion: "1.0.0",
+  engineVersion: "skill-core-1",
+  simulation: {
+    tickRate: DINO_DASH_V1.tickRate,
+    coordinateWidth: DINO_DASH_V1.coordinateWidth,
+    coordinateHeight: DINO_DASH_V1.coordinateHeight,
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    maxFinalTick: DINO_DASH_V1.maxFinalTick,
+  },
+  inputProtocol: {
+    version: DINO_DASH_V1.inputProtocolVersion,
+    allowedActions: DINO_DASH_ACTIONS,
+    maxInputs: DINO_DASH_V1.maxInputs,
+  },
+  rulesDescriptor: {
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    scoringAuthority: "SERVER_REPLAY_ONLY",
+    inputClock: "SIMULATION_TICKS",
+  },
+  gameplayContentDescriptor: DINO_DASH_V1_CONTENT,
+  replay({ inputs, finalTick, manifest }) {
+    const replay = replayDinoDash(
+      inputs as DinoDashInput[],
+      finalTick,
+      manifest.seed,
+      manifest.competition.target_score
+    );
+
+    return {
+      valid: replay.valid,
+      error: replay.error,
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.state.status === "won",
+      failure: replay.failure,
+    };
+  },
+};
+
+const pulseRunnerAdapter: VerifiedGameAdapter = {
+  gameId: "pulse-runner",
+  gameVersion: "1.0.0",
+  engineVersion: "skill-core-1",
+  simulation: {
+    tickRate: PULSE_RUNNER_V1.tickRate,
+    coordinateWidth: PULSE_RUNNER_V1.coordinateWidth,
+    coordinateHeight: PULSE_RUNNER_V1.coordinateHeight,
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    maxFinalTick: PULSE_RUNNER_V1.maxFinalTick,
+  },
+  inputProtocol: {
+    version: PULSE_RUNNER_V1.inputProtocolVersion,
+    allowedActions: PULSE_RUNNER_ACTIONS,
+    maxInputs: PULSE_RUNNER_V1.maxInputs,
+  },
+  rulesDescriptor: {
+    endCondition: "FIRST_FAILURE_OR_TARGET",
+    scoringAuthority: "SERVER_REPLAY_ONLY",
+    inputClock: "SIMULATION_TICKS",
+  },
+  gameplayContentDescriptor: PULSE_RUNNER_V1_CONTENT,
+  replay({ inputs, finalTick, manifest }) {
+    const replay = replayPulseRunner(
+      inputs as PulseRunnerInput[],
+      finalTick,
+      manifest.seed,
+      manifest.competition.target_score
+    );
+
+    return {
+      valid: replay.valid,
+      error: replay.error,
+      score: replay.score,
+      timeMs: replay.timeMs,
+      won: replay.state.status === "won",
+      failure: replay.failure,
+    };
+  },
+};
+
 function adapterKey(gameId: string, gameVersion: string) {
   return `${gameId}@${gameVersion}`;
 }
@@ -298,11 +395,45 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
     pianoRushAdapter,
   [adapterKey(jetStreamAdapter.gameId, jetStreamAdapter.gameVersion)]:
     jetStreamAdapter,
+  [adapterKey(dinoDashAdapter.gameId, dinoDashAdapter.gameVersion)]:
+    dinoDashAdapter,
+  [adapterKey(pulseRunnerAdapter.gameId, pulseRunnerAdapter.gameVersion)]:
+    pulseRunnerAdapter,
 };
 
 function assertCurrentAdapterContract(
   adapter: VerifiedGameAdapter
 ) {
+  const rules = getGameRules(adapter.gameId, adapter.gameVersion);
+  if (!rules) {
+    throw new Error(
+      `Missing official rules: ${adapter.gameId}@${adapter.gameVersion}`
+    );
+  }
+
+  const ruleActions = rules.playerFacing.inputs.map(
+    (input) => input.action
+  );
+  const sameRuleActions =
+    ruleActions.length === adapter.inputProtocol.allowedActions.length &&
+    ruleActions.every(
+      (action, index) =>
+        action === adapter.inputProtocol.allowedActions[index]
+    );
+
+  if (
+    !sameRuleActions ||
+    rules.competitive.endCondition !==
+      adapter.simulation.endCondition ||
+    rules.competitive.inputClock !== "SIMULATION_TICKS" ||
+    rules.competitive.resultAuthority !==
+      "SERVER_REPLAY_ONLY"
+  ) {
+    throw new Error(
+      `Official rules drift: ${adapter.gameId}@${adapter.gameVersion}`
+    );
+  }
+
   const definition = getGameDefinition(adapter.gameId);
 
   // Historical adapters intentionally outlive the current catalogue version.
@@ -325,7 +456,11 @@ function assertCurrentAdapterContract(
     competition.engineVersion !== adapter.engineVersion ||
     competition.inputProtocolVersion !==
       adapter.inputProtocol.version ||
-    !sameActions
+    !sameActions ||
+    definition.instruction !==
+      rules.playerFacing.quickStart ||
+    definition.scoring !==
+      rules.playerFacing.scoringSummary
   ) {
     throw new Error(
       `Verified adapter contract drift: ${adapter.gameId}@${adapter.gameVersion}`

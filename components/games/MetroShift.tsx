@@ -14,9 +14,11 @@ type Props = {
 type Lane = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 type Kind = "wall" | "barrier";
 type Hazard = { lane: Lane; kind: Kind };
+type Coin = { lane: Lane; collected: boolean };
 type ObstacleGroup = {
   y: number;
   hazards: Hazard[];
+  coins: Coin[];
   passed: boolean;
 };
 
@@ -56,6 +58,8 @@ const GHOST_LANES: Lane[] = [
   3,2,2,3,4,5,6,5,4,3,2,1,0,1,2,3,4,5,6,5,4,3,2,1,2,3,4,4,3,2,
 ]
 
+const LANES: Lane[] = [0, 1, 2, 3, 4, 5, 6];
+
 function speedFor(ticks: number) {
   const seconds = ticks / 120;
   return Math.min(358, 188 + seconds * 1.35);
@@ -85,15 +89,29 @@ function makeInitialGroups() {
   let y = 118;
 
   for (let index = 0; index < 12; index += 1) {
+    const hazards = GROUP_PATTERN[index % GROUP_PATTERN.length];
     items.push({
       y,
-      hazards: GROUP_PATTERN[index % GROUP_PATTERN.length],
+      hazards,
+      coins: coinLanesFor(index, hazards),
       passed: false,
     });
     y -= GAP_PATTERN[index % GAP_PATTERN.length];
   }
 
   return { items, nextIndex: 12 };
+}
+
+function coinLanesFor(index: number, hazards: Hazard[]): Coin[] {
+  const blocked = new Set(hazards.map((hazard) => hazard.lane));
+  const openLanes = LANES.filter((lane) => !blocked.has(lane));
+  if (openLanes.length === 0) return [];
+
+  const first = openLanes[index % openLanes.length];
+  const second = openLanes[(index * 3 + 2) % openLanes.length];
+  const lanes = first === second ? [first] : [first, second];
+
+  return lanes.map((lane) => ({ lane, collected: false }));
 }
 
 function rotatePoint(point: Point, angle: number): Point {
@@ -263,8 +281,10 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
     acc: 0,
     passed: 0,
     score: 0,
+    coins: 0,
     jumpY: 0,
     jumpVy: 0,
+    slideTicks: 0,
     laneChanges: 0,
     travel: 0,
   });
@@ -297,10 +317,12 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
       HORIZON_Y
     );
     const compression = Math.max(0.74, 1 - Math.floor(s.passed / 16) * 0.026);
+    const hazards = GROUP_PATTERN[index % GROUP_PATTERN.length];
 
     s.groups.push({
       y: topY - GAP_PATTERN[index % GAP_PATTERN.length] * compression,
-      hazards: GROUP_PATTERN[index % GROUP_PATTERN.length],
+      hazards,
+      coins: coinLanesFor(index, hazards),
       passed: false,
     });
 
@@ -328,19 +350,45 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
       s.jumpY = 0;
       s.jumpVy = 0;
     }
+    if (s.slideTicks > 0) s.slideTicks -= 1;
 
     const playerAngle = Math.max(
       -0.22,
       Math.min(0.22, s.vx / 420)
     );
-    const plane = playerPolygon(s.x, PLAYER_Y + s.jumpY, playerAngle);
+    const isSliding = s.slideTicks > 0 && s.jumpY > -2;
+    const plane = isSliding
+      ? [
+          { x: s.x - 20, y: PLAYER_Y + 5 },
+          { x: s.x + 20, y: PLAYER_Y + 5 },
+          { x: s.x + 15, y: PLAYER_Y + 27 },
+          { x: s.x - 15, y: PLAYER_Y + 27 },
+        ]
+      : playerPolygon(s.x, PLAYER_Y + s.jumpY, playerAngle);
 
     for (const group of s.groups) {
       const perspectiveSpeed = 0.58 + depthFor(group.y) * 0.72;
       group.y += speed * perspectiveSpeed * DT;
       if (group.passed) continue;
 
+      for (const coin of group.coins) {
+        if (coin.collected) continue;
+
+        const coinX = laneX(coin.lane, group.y);
+        const dx = Math.abs(coinX - s.x);
+        const dy = Math.abs(group.y - (PLAYER_Y + s.jumpY));
+
+        if (dx < 30 && dy < 38) {
+          coin.collected = true;
+          s.coins += 1;
+          s.score += 90 + Math.min(260, s.coins * 4);
+          gameTone("tap");
+          haptic(2);
+        }
+      }
+
       for (const hazard of group.hazards) {
+        if (isSliding && hazard.kind === "barrier") continue;
         const rects = hazardRects(group.y, hazard);
         if (rects.some((rect) => polygonHitsRect(plane, rect))) {
           finish();
@@ -483,6 +531,30 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
     for (const group of s.groups) {
       if (group.y < 60 || group.y > H + 110) continue;
 
+      for (const coin of group.coins) {
+        if (coin.collected) continue;
+
+        const { depth } = sizeFor(group.y, "barrier");
+        const x = laneX(coin.lane, group.y);
+        const radius = 5 + 8 * depth;
+
+        ctx.save();
+        ctx.shadowBlur = 9 * depth;
+        ctx.shadowColor = "rgba(255,211,77,.56)";
+        ctx.fillStyle = "#ffd34d";
+        ctx.beginPath();
+        ctx.arc(x, group.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.40)";
+        ctx.fillRect(
+          x - radius * 0.38,
+          group.y - radius * 0.18,
+          radius * 0.76,
+          Math.max(2, radius * 0.18)
+        );
+        ctx.restore();
+      }
+
       for (const hazard of group.hazards) {
         const { depth, width, height } = sizeFor(group.y, hazard.kind);
         const x = laneX(hazard.lane, group.y);
@@ -560,19 +632,30 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
     ctx.save();
     ctx.translate(s.x, PLAYER_Y + s.jumpY);
     ctx.rotate(playerAngle);
+    ctx.fillStyle = "#55e8ff";
+    ctx.fillRect(-25, 18, 50, 6);
+    ctx.fillStyle = "#ffe071";
+    ctx.fillRect(-17, 14, 34, 5);
     ctx.shadowBlur = 17;
     ctx.shadowColor = "#ffd34f";
     ctx.fillStyle = "#ffd34f";
     ctx.beginPath();
-    ctx.moveTo(0, -28);
-    ctx.lineTo(17, 23);
-    ctx.lineTo(0, 16);
-    ctx.lineTo(-17, 23);
+    if (s.slideTicks > 0 && s.jumpY > -2) {
+      ctx.moveTo(-21, 4);
+      ctx.lineTo(22, 9);
+      ctx.lineTo(10, 17);
+      ctx.lineTo(-24, 13);
+    } else {
+      ctx.moveTo(0, -28);
+      ctx.lineTo(17, 23);
+      ctx.lineTo(0, 16);
+      ctx.lineTo(-17, 23);
+    }
     ctx.closePath();
     ctx.fill();
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#315fae";
-    ctx.fillRect(-7, -11, 14, 20);
+    ctx.fillRect(-7, s.slideTicks > 0 && s.jumpY > -2 ? 2 : -11, 14, 20);
     ctx.restore();
 
     ctx.textAlign = "start";
@@ -610,8 +693,10 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
       acc: 0,
       passed: 0,
       score: 0,
+      coins: 0,
       jumpY: 0,
       jumpVy: 0,
+      slideTicks: 0,
       laneChanges: 0,
       travel: 0,
     };
@@ -652,8 +737,19 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
     if (!s.running || s.jumpY < -2) return;
 
     s.jumpVy = -455;
+    s.slideTicks = 0;
     gameTone("tap");
     haptic(5);
+  }
+
+  function slide() {
+    const s = state.current;
+    if (!s.running || s.jumpY < -2) return;
+
+    s.slideTicks = 44;
+    s.vx *= 0.82;
+    gameTone("tap");
+    haptic(4);
   }
 
   function localPoint(clientX: number, clientY: number) {
@@ -676,6 +772,7 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
     }
 
     if (dy < -22) jump();
+    else if (dy > 22) slide();
   }
 
   return (
@@ -723,6 +820,7 @@ export default function MetroShift({ active, ghostEnabled, targetScore, onFinish
         <button type="button" onPointerDown={(event) => { event.preventDefault(); move(-1); }}>←</button>
         <button type="button" className="jump" onPointerDown={(event) => { event.preventDefault(); jump(); }}>↑</button>
         <button type="button" onPointerDown={(event) => { event.preventDefault(); move(1); }}>→</button>
+        <button type="button" className="slide" onPointerDown={(event) => { event.preventDefault(); slide(); }}>↓</button>
       </div>
     </div>
   );

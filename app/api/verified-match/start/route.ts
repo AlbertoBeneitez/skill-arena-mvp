@@ -1,6 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getGameDefinition, type GameId } from "@/lib/games";
+import { recordMatchStart } from "@/lib/server/attemptAuditLedger";
+import {
+  checkRateLimit,
+  rateLimitHeaders,
+  requestRateLimitKey,
+} from "@/lib/server/rateLimit";
 import {
   createMatchManifest,
   hashManifest,
@@ -21,6 +27,23 @@ function reject(error: string, status = 400) {
 }
 
 export async function POST(request: Request) {
+  const requestKey = requestRateLimitKey(request);
+  const rate = checkRateLimit({
+    scope: "verified-match:start",
+    key: requestKey,
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { ok: false, error: "RATE_LIMITED" },
+      {
+        status: 429,
+        headers: rateLimitHeaders(rate),
+      }
+    );
+  }
+
   let body: StartRequest = {};
   try {
     body = (await request.json()) as StartRequest;
@@ -68,11 +91,19 @@ export async function POST(request: Request) {
     slot: "A",
     ttlMinutes: 15,
   });
+  const manifestHash = hashManifest(manifest);
+
+  recordMatchStart({
+    manifest,
+    manifestHash,
+    ticket,
+    requestKey,
+  });
 
   return NextResponse.json({
     ok: true,
     manifest,
-    manifest_hash: hashManifest(manifest),
+    manifest_hash: manifestHash,
     ticket,
     note:
       ticket.security_mode === "demo"

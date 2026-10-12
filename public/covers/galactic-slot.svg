@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Galactic Slot cover">
+  <rect width="512" height="512" rx="86" fill="#07111f"/>
+  <circle cx="105" cy="86" r="3" fill="#9beafe"/>
+  <circle cx="404" cy="118" r="4" fill="#ffd166"/>
+  <circle cx="423" cy="391" r="3" fill="#9beafe"/>
+  <rect x="92" y="104" width="328" height="304" rx="38" fill="#17233c" stroke="#70e3ff" stroke-width="8"/>
+  <rect x="122" y="140" width="268" height="150" rx="18" fill="#0a1424" stroke="#304968" stroke-width="5"/>
+  <g font-family="Arial, sans-serif" font-weight="900" font-size="42" text-anchor="middle">
+    <rect x="138" y="158" width="68" height="112" rx="14" fill="#263b59"/>
+    <text x="172" y="228" fill="#f5d94b">L</text>
+    <rect x="222" y="158" width="68" height="112" rx="14" fill="#263b59"/>
+    <text x="256" y="228" fill="#f8fbff">7</text>
+    <rect x="306" y="158" width="68" height="112" rx="14" fill="#263b59"/>
+    <text x="340" y="228" fill="#ef476f">C</text>
+  </g>
+  <rect x="152" y="318" width="208" height="48" rx="24" fill="#f4c95d"/>
+  <rect x="396" y="150" width="30" height="118" rx="15" fill="#0f1827"/>
+  <circle cx="411" cy="136" r="20" fill="#ef476f"/>
+</svg>

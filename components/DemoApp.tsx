@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import GameLoader from "./GameLoader";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
+import { listGameRules } from "@/lib/game-rules/rulesRegistry";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
@@ -272,6 +273,17 @@ export default function DemoApp() {
   const [pendingJoinCode, setPendingJoinCode] = useState("");
   const freshOnboardingRef = useRef(false);
   const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
+  const currentOfficialRules = useMemo(
+    () =>
+      listGameRules().filter((rules) =>
+        GAMES.some(
+          (game) =>
+            game.id === rules.gameId &&
+            game.version === rules.gameVersion
+        )
+      ),
+    []
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1523,8 +1535,24 @@ export default function DemoApp() {
             </div>
             <article className="legalCopy">
               <h2>{legalTab === "terms" ? "Términos y condiciones" : legalTab === "privacy" ? "Privacidad" : legalTab === "cookies" ? "Cookies" : "Reglas de competición"}</h2>
-              <p>Contenido de demostración. Antes de operar con dinero real esta sección deberá sustituirse por documentación jurídica revisada y aplicable al servicio definitivo.</p>
-              <p>La arquitectura reserva esta pantalla para que las condiciones sean accesibles desde la aplicación móvil sin depender de una web externa.</p>
+              {legalTab === "rules" ? (
+                <>
+                  <p>Estas reglas se generan desde el registro oficial versionado. Las entradas SERVER_REPLAY_ONLY se validan contra el contrato del servidor; las CLIENT_RESULT_DRAFT son contratos de diseño hasta su migración a replay autoritativo.</p>
+                  {currentOfficialRules.map((rules) => (
+                    <section key={`${rules.gameId}:${rules.gameVersion}`}>
+                      <h3>{rules.title}</h3>
+                      <p><strong>Cómo se juega:</strong> {rules.playerFacing.quickStart}</p>
+                      <p><strong>Puntuación:</strong> {rules.playerFacing.scoringSummary}</p>
+                      <p><strong>Autoridad:</strong> {rules.competitive.resultAuthority}. Inputs: {rules.playerFacing.inputs.map((input) => input.action).join(", ")}.</p>
+                    </section>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <p>Contenido de demostración. Antes de operar con dinero real esta sección deberá sustituirse por documentación jurídica revisada y aplicable al servicio definitivo.</p>
+                  <p>La arquitectura reserva esta pantalla para que las condiciones sean accesibles desde la aplicación móvil sin depender de una web externa.</p>
+                </>
+              )}
             </article>
           </section>
         )}

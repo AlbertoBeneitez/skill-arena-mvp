@@ -1,8 +1,16 @@
 node_modules/
 .next/
+.det-test/
+.pnpm-home/
+.pnpm-store/
+.pnpm-data/
+.playwright-browsers/
 .env
 .env.local
 .env.*.local
 .vercel/
 .DS_Store
 *.log
+*.tsbuildinfo
+AGENTS.md
+CLAUDE.md

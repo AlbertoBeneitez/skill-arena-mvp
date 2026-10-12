@@ -5571,9 +5571,9 @@ html, body {
   left: 50%;
   bottom: 12px;
   z-index: 8;
-  width: min(86%, 330px);
+  width: min(90%, 360px);
   display: grid;
-  grid-template-columns: 1fr .72fr 1fr;
+  grid-template-columns: 1fr .72fr 1fr .72fr;
   gap: 8px;
   transform: translateX(-50%);
   pointer-events: none;
@@ -5598,9 +5598,198 @@ html, body {
   color: #ffe27a;
 }
 
+.metroTouchControls button.slide {
+  background: rgba(10,54,73,.82);
+  color: #82efff;
+}
+
 .metroTouchControls button:active {
   transform: translateY(2px) scale(.97);
   background: rgba(72,128,207,.94);
+}
+
+.galacticSlotGame,
+.galacticRouletteGame,
+.galacticBirdsGame {
+  position: relative;
+  color: #f7fbff;
+  background: #07111f;
+}
+
+.galacticSlotGame {
+  min-height: 620px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 9%, rgba(114,234,255,.24), transparent 26%),
+    linear-gradient(180deg, #07111f 0%, #16223c 55%, #070b12 100%);
+}
+
+.gameScreen .galacticSlotGame {
+  height: calc(100dvh - 185px);
+  min-height: 520px;
+}
+
+.galacticHud,
+.rouletteHud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 8px;
+  background: rgba(7,15,28,.62);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.galacticHud strong,
+.rouletteHud strong {
+  color: #ffd166;
+}
+
+.slotMachineShell {
+  flex: 1;
+  min-height: 0;
+  padding: 16px 10px;
+  border: 1px solid rgba(114,234,255,.22);
+  border-radius: 8px;
+  background: rgba(8,18,34,.68);
+  box-shadow: inset 0 0 30px rgba(114,234,255,.08);
+}
+
+.slotReels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  height: calc(100% - 72px);
+  min-height: 330px;
+}
+
+.slotReel {
+  display: grid;
+  grid-template-rows: 1fr 1.15fr 1fr 48px;
+  gap: 7px;
+}
+
+.slotSymbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  color: var(--symbol-tint);
+  font-size: 10px;
+  font-weight: 950;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.slotSymbol.active {
+  border-color: rgba(255,255,255,.36);
+  background: rgba(255,255,255,.12);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--symbol-tint) 44%, transparent);
+  font-size: 13px;
+}
+
+.slotReel button,
+.slotSpinButton,
+.rouletteControls button {
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 8px;
+  background: rgba(39,63,103,.85);
+  color: #f7fbff;
+  font-weight: 950;
+  touch-action: manipulation;
+}
+
+.slotSpinButton {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 14px;
+  background: linear-gradient(180deg, #f4c95d, #b9781f);
+  color: #1b160b;
+  font-size: 14px;
+}
+
+.slotPayouts {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.slotPayouts span {
+  color: rgba(247,251,255,.72);
+}
+
+.rouletteHud {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  z-index: 4;
+}
+
+.rouletteControls {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.rouletteControls button {
+  min-height: 38px;
+  font-size: 10px;
+}
+
+.rouletteControls button.active {
+  border-color: rgba(255,209,102,.75);
+  background: rgba(218,156,50,.88);
+  color: #1b160b;
+}
+
+.rouletteControls button.launch {
+  grid-column: span 2;
+  background: linear-gradient(180deg, #65e3ff, #2b78d0);
+  color: #06111d;
+}
+
+.birdsStatus {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 8px;
+  background: rgba(7,15,28,.62);
+  color: #f7fbff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.birdsStatus strong {
+  color: #ffd166;
 }
 
 /* Stack Shift board ends immediately at the control deck. */
@@ -5645,6 +5834,17 @@ html, body {
   .metroTouchControls button {
     min-height: 54px;
     font-size: 23px;
+  }
+
+  .gameScreen .galacticSlotGame {
+    height: calc(100dvh - 170px);
+    min-height: 0;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .slotReels {
+    min-height: 250px;
   }
 
   .mineGridAdvanced {

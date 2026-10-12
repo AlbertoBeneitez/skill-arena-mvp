@@ -40,6 +40,11 @@ const DROP_DURATION_MS = 180;
 const FAILURE_DURATION_MS = 520;
 const DT = 1 / PRECISION_STACK_V2.tickRate;
 const CAMERA_RESPONSE = 10.5;
+// Long frame gaps must advance competitive time instead of becoming a pause.
+const MAX_CATCH_UP_SECONDS =
+  PRECISION_STACK_V2.maxIdleTicksPerBlock /
+    PRECISION_STACK_V2.tickRate +
+  1;
 
 type DropFx = {
   startedAt: number;
@@ -102,6 +107,7 @@ export default function PrecisionStack({
   const loopingRef = useRef(false);
   const terminalSubmittedRef = useRef(false);
   const startFailureReportedRef = useRef(false);
+  const runGenerationRef = useRef(0);
 
   const lastFrameTimeRef = useRef(0);
   const accumulatorRef = useRef(0);
@@ -410,6 +416,7 @@ export default function PrecisionStack({
   const submitTerminal = useCallback(
     async (state: PrecisionStackState) => {
       if (terminalSubmittedRef.current) return;
+      const runGeneration = runGenerationRef.current;
       terminalSubmittedRef.current = true;
       loopingRef.current = false;
 
@@ -419,6 +426,10 @@ export default function PrecisionStack({
       }
 
       const result = await verifyAttempt(state.tick);
+
+      if (runGeneration !== runGenerationRef.current) {
+        return;
+      }
 
       if (!result.ok || !result.verified) {
         finishRef.current({
@@ -468,7 +479,7 @@ export default function PrecisionStack({
       }
 
       const frameSeconds = Math.min(
-        0.05,
+        MAX_CATCH_UP_SECONDS,
         Math.max(0, (now - lastFrameTimeRef.current) / 1000)
       );
       lastFrameTimeRef.current = now;
@@ -537,6 +548,7 @@ export default function PrecisionStack({
       attemptState.manifest.seed
     );
 
+    runGenerationRef.current += 1;
     terminalSubmittedRef.current = false;
     startFailureReportedRef.current = false;
     lastFrameTimeRef.current = 0;
@@ -552,6 +564,7 @@ export default function PrecisionStack({
     rafRef.current = requestAnimationFrame(loop);
 
     return () => {
+      runGenerationRef.current += 1;
       loopingRef.current = false;
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);

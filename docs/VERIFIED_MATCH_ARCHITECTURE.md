@@ -1,7 +1,7 @@
 # Verified match architecture
 
 This document describes the shared competitive verification path used by
-Skill Arena. Tower Drop V2, Precision Stack V2, Piano Rush V1 and Jet Stream V1 are current reference implementations.
+Skill Arena. Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1, Dino Dash V1 and Pulse Runner V1 are current reference implementations.
 
 ## Authority boundary
 
@@ -14,6 +14,7 @@ The server issues:
 - an immutable `MatchManifest`;
 - a signed `AttemptTicket`;
 - the competitive seed.
+- the official rules version and scenario id.
 
 The client returns:
 
@@ -33,6 +34,10 @@ The common contracts live in:
 - `lib/verified/useVerifiedAttempt.ts`;
 - `lib/server/verifiedMatch.ts`;
 - `lib/server/gameVerifiers.ts`.
+- `lib/game-rules/rulesRegistry.ts`;
+- `lib/game-scenarios/scenarioRegistry.ts`;
+- `lib/server/attemptAuditLedger.ts`;
+- `lib/server/rateLimit.ts`.
 
 `useVerifiedAttempt` owns the repeated client session mechanics: start,
 manifest/ticket storage, ordered input capture, request cancellation and replay
@@ -40,22 +45,46 @@ submission. Games do not duplicate the verified-match HTTP protocol.
 
 ## MatchManifest
 
-Manifest version 2 binds:
+Manifest version 3 binds:
 
 - game id and explicit game version;
 - engine version;
+- official rules version;
 - rules hash;
+- scenario id, scenario version, difficulty and seed namespace;
 - gameplay-content hash;
 - server-issued seed;
 - simulation tick rate and coordinate space;
 - end condition;
 - stake/currency/tie rule/target;
 - input protocol version, allowed actions and maximum input count;
+- lifecycle policy for attempt TTL, ordered input capture, duplicate
+  submission handling, replay storage and clock-lead tolerance;
 - creation timestamp.
 
 A competitive seed is created by the server. Demo-only fixed seeds may still
 exist in catalogue metadata for legacy games, but verified games use the
 manifest seed.
+
+## Official rules registry
+
+`lib/game-rules/rulesRegistry.ts` is the product/legal source of truth for
+verified games. It contains the public quick-start text, scoring summary,
+allowed actions, end condition, lifecycle model and fairness statements.
+
+Current catalogue metadata is checked against this registry for verified
+games. If the game card says one thing and the official rules say another, the
+server adapter contract throws instead of allowing silent drift.
+
+## Scenario registry
+
+`lib/game-scenarios/scenarioRegistry.ts` declares the scenario pool for each
+verified `game_id + game_version`. Each manifest stores the selected scenario
+id, scenario version, difficulty, seed namespace and generation mode.
+
+The gameplay-content hash includes both the frozen core content descriptor and
+the selected scenario descriptor. That ties a replay to the exact game code
+version and scenario family used for the attempt.
 
 ## AttemptTicket
 
@@ -95,6 +124,8 @@ Current adapters:
 - Precision Stack historical `1.0.0` → `precisionStackCore.v1.ts`;
 - Piano Rush `1.0.0` → `pianoRushCore.v1.ts`;
 - Jet Stream `1.0.0` → `jetStreamCore.v1.ts`.
+- Dino Dash `1.0.0` → `dinoDashCore.v1.ts`.
+- Pulse Runner `1.0.0` → `pulseRunnerCore.v1.ts`.
 
 The server adapter archive is keyed by `game_id + game_version`, not only by the current catalogue version. Old adapters remain registered while historical replays must be reproducible; advancing the public registry therefore does not invalidate persisted manifests.
 
@@ -121,6 +152,33 @@ Shared validation rejects:
 The verify endpoint also rejects request bodies above its configured byte
 limit before replay.
 
+## Rate limits and timing guardrails
+
+The start and verify endpoints use an in-memory rate limiter keyed by forwarded
+client IP headers:
+
+- `POST /api/verified-match/start`: 30 requests per minute;
+- `POST /api/verified-match/verify`: 60 requests per minute.
+
+The verify endpoint also enforces signed unexpired tickets, one terminal
+submission per attempt id, ordered tick inputs, no inputs after the final tick,
+server replay only and no simulated time more than 2.5 seconds ahead of real
+elapsed wall time.
+
+## Attempt audit ledger
+
+The demo server records started matches and terminal verification submissions
+in `lib/server/attemptAuditLedger.ts`.
+
+For each verified attempt it stores manifest hash, ticket/player/slot, ordered
+input stream, final tick, replay hash and the authoritative result or rejection
+reason.
+
+This is intentionally an in-memory MVP ledger. It proves the contract and
+prevents duplicate terminal submissions during a server lifetime. Production
+must swap this boundary for durable database storage with retention and dispute
+policies.
+
 ## Replay and result
 
 The verification flow is:
@@ -134,10 +192,11 @@ The verification flow is:
    `POST /api/verified-match/verify`;
 6. server validates manifest, ticket and input protocol;
 7. server replays the frozen core;
-8. server performs real-time sanity checks;
-9. server returns authoritative score/time/outcome plus replay hash and
-   verification id;
-10. platform accepts competitive results only when `verified === true`.
+8. server performs real-time sanity checks and duplicate/rate-limit guards;
+9. server records the terminal attempt audit;
+10. server returns authoritative score/time/outcome plus replay hash,
+   verification id and audit id;
+11. platform accepts competitive results only when `verified === true`.
 
 Client-reported score is never trusted.
 
@@ -173,9 +232,10 @@ Before real-money production, the platform still needs:
   competitors instead of creating isolated demo attempts;
 - server-owned stake, opponent result/target and settlement configuration
   rather than accepting those competition values from the browser;
-- durable attempt/match/replay storage;
+- durable database-backed attempt/match/replay storage replacing the current
+  in-memory audit ledger;
 - production signing secret management;
-- rate limiting and abuse controls;
+- stronger distributed rate limiting and abuse controls;
 - replay retention/dispute policy;
 - bot/automation controls;
 - authoritative two-player settlement wired to the ledger.

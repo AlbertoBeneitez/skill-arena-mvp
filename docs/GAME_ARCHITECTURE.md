@@ -1,6 +1,6 @@
 # Skill Arena game architecture
 
-Status: **STABLE**. Tower Drop V2, Precision Stack V2, Piano Rush V1 and Jet Stream V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
+Status: **STABLE**. Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1, Dino Dash V1 and Pulse Runner V1 pass the common registry/server-replay contract and deterministic replay tests. The external game contract is frozen; changes require a demonstrated cross-game need rather than convenience for one implementation.
 
 ## Boundaries
 
@@ -139,7 +139,7 @@ Tower Drop, Precision Stack, Piano Rush and Jet Stream demonstrate this split: p
 ## Legacy migration
 
 Do not mass-migrate. Existing games may stay `INTEGRATED` and client-result
-based. Piano Rush and Jet Stream have now migrated. Recommended next order is Dino Dash → Pulse Runner → Metro Shift → 2048 → Orbit Shift, one game at a time.
+based. Piano Rush, Jet Stream, Dino Dash and Pulse Runner have now migrated. Recommended next order is Metro Shift → 2048 → Orbit Shift, one game at a time.
 
 ## Open-source import rule
 
@@ -164,6 +164,8 @@ characters, logos, fonts or trademarks.
 - Precision Stack: **VERIFIED**, current V2 core with faster cadence, adaptive perfect window and minimum-stable-overlap rule; frozen V1 remains replayable for historical manifests.
 - Piano Rush: **VERIFIED**, with seeded timing chart and typed lane protocol.
 - Jet Stream: **VERIFIED**, with seeded gate course and typed FLAP protocol.
+- Dino Dash: **VERIFIED**, with seeded obstacle course, typed jump/duck protocol and server-authoritative replay.
+- Pulse Runner: **VERIFIED**, with seeded one-button obstacle course, typed JUMP protocol and server-authoritative replay.
 - Remaining catalogue: **INTEGRATED** legacy games pending one-by-one professionalisation.
 - `PRODUCTION-GRADE` remains reserved for games that also pass real-device QA,
   operational security requirements and production settlement integration.
@@ -175,6 +177,10 @@ not by itself claim commercial-grade game feel. A game is only a finished
 quality pass when its input, responsive rendering, lifecycle cleanup,
 presentation, feedback, difficulty curve and relevant open-source provenance
 have also been reviewed.
+
+Run the repeatable per-game cycle in
+`docs/GAME_PROFESSIONALIZATION_CYCLE.md` before raising maturity or freezing a
+game for the next phase.
 
 Competitive rules stay in a pure versioned core. Camera, particles, decorative
 animation and haptics remain presentation/feedback unless changing them would

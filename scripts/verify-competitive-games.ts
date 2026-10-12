@@ -38,6 +38,25 @@ import {
   type JetStreamInput,
   type JetStreamState,
 } from "../lib/verified/jetStreamCore.v1";
+import {
+  applyDinoDashInput,
+  createDinoDashState,
+  DINO_DASH_V1,
+  replayDinoDash,
+  stepDinoDash,
+  type DinoDashInput,
+  type DinoDashState,
+} from "../lib/verified/dinoDashCore.v1";
+import {
+  applyPulseRunnerInput,
+  createPulseRunnerState,
+  isPulseRunnerGrounded,
+  PULSE_RUNNER_V1,
+  replayPulseRunner,
+  stepPulseRunner,
+  type PulseRunnerInput,
+  type PulseRunnerState,
+} from "../lib/verified/pulseRunnerCore.v1";
 import { validateInputSequence } from "../lib/verified/inputValidation";
 import {
   createTowerDropState,
@@ -777,6 +796,24 @@ assert(
   "precision v2 accepted an ambiguous sliver landing"
 );
 
+const precisionV2IdleTimeout =
+  createPrecisionStackStateV2("precision-idle-timeout-v2");
+for (
+  let index = 0;
+  index < PRECISION_STACK_V2.maxIdleTicksPerBlock;
+  index += 1
+) {
+  stepPrecisionStackV2(
+    precisionV2IdleTimeout,
+    "precision-idle-timeout-v2"
+  );
+}
+assert(
+  precisionV2Status(precisionV2IdleTimeout) === "failed" &&
+    precisionV2IdleTimeout.failure === "TIMEOUT_IDLE",
+  "precision v2 idle timeout did not resolve after the configured tick budget"
+);
+
 function simulatePrecisionV2RenderRate(frameHz: number) {
   const state = createPrecisionStackStateV2(
     precisionV2Golden.seed
@@ -1319,5 +1356,516 @@ console.log(
     `finalTick=${jetFinalTick}`,
     `inputs=${jetInputs.length}`,
     `replayHash=${jetReplayHash}`,
+  ].join(" · ")
+);
+
+
+function dinoStatus(
+  state: DinoDashState
+): DinoDashState["status"] {
+  return state.status;
+}
+
+function nextDinoObstacle(state: DinoDashState) {
+  return state.obstacles.find(
+    (obstacle) =>
+      obstacle.worldXMilli -
+        state.scrollMilli +
+        obstacle.wMilli >
+      DINO_DASH_V1.playerXMilli - 8_000
+  );
+}
+
+function dinoGrounded(state: DinoDashState) {
+  return (
+    state.yMilli >=
+    DINO_DASH_V1.groundYMilli -
+      DINO_DASH_V1.playerStandingHeightMilli -
+      100
+  );
+}
+
+function pushDinoInput(
+  state: DinoDashState,
+  inputs: DinoDashInput[],
+  action: DinoDashInput["action"]
+) {
+  if (
+    inputs.length > 0 &&
+    inputs[inputs.length - 1].tick === state.tick
+  ) {
+    return false;
+  }
+
+  inputs.push({
+    seq: inputs.length,
+    tick: state.tick,
+    action,
+  });
+  applyDinoDashInput(state, action);
+  return true;
+}
+
+const dinoGoldenSeed = "dino-dash-golden-v1";
+const dinoGoldenTarget = 7_200;
+const dinoGoldenExpected = {
+  score: 7_200,
+  passed: 18,
+  finalTick: 3_585,
+  inputCount: 19,
+  replayHash:
+    "sha256:9766270a6ecc55faf50222372ea6b6dc46784d7a0661c823a86cf56fad0e49bb",
+} as const;
+
+const dinoBuilder = createDinoDashState(dinoGoldenSeed);
+const dinoInputs: DinoDashInput[] = [];
+let dinoGuard = 0;
+
+while (
+  dinoStatus(dinoBuilder) === "running" &&
+  dinoGuard < 300_000
+) {
+  const obstacle = nextDinoObstacle(dinoBuilder);
+
+  if (obstacle) {
+    const x = obstacle.worldXMilli - dinoBuilder.scrollMilli;
+
+    if (obstacle.kind === "flyer") {
+      if (
+        x < 122_000 &&
+        x > 18_000 &&
+        !dinoBuilder.ducking
+      ) {
+        pushDinoInput(
+          dinoBuilder,
+          dinoInputs,
+          "DUCK_DOWN"
+        );
+      }
+
+      if (
+        dinoBuilder.ducking &&
+        x + obstacle.wMilli <
+          DINO_DASH_V1.playerXMilli - 5_000
+      ) {
+        pushDinoInput(
+          dinoBuilder,
+          dinoInputs,
+          "DUCK_UP"
+        );
+      }
+    } else {
+      if (dinoBuilder.ducking && x > 143_000) {
+        pushDinoInput(
+          dinoBuilder,
+          dinoInputs,
+          "DUCK_UP"
+        );
+      }
+
+      if (
+        dinoGrounded(dinoBuilder) &&
+        x < 140_000 &&
+        x > 56_000
+      ) {
+        pushDinoInput(
+          dinoBuilder,
+          dinoInputs,
+          "JUMP"
+        );
+      }
+    }
+  } else if (dinoBuilder.ducking) {
+    pushDinoInput(dinoBuilder, dinoInputs, "DUCK_UP");
+  }
+
+  if (dinoStatus(dinoBuilder) === "running") {
+    stepDinoDash(
+      dinoBuilder,
+      dinoGoldenSeed,
+      dinoGoldenTarget
+    );
+  }
+
+  dinoGuard += 1;
+}
+
+assert(
+  dinoStatus(dinoBuilder) === "won",
+  `dino golden builder failed: status=${dinoBuilder.status} failure=${dinoBuilder.failure} score=${dinoBuilder.score} passed=${dinoBuilder.passed}`
+);
+
+const dinoFinalTick = dinoBuilder.tick;
+const dinoFirst = replayDinoDash(
+  dinoInputs,
+  dinoFinalTick,
+  dinoGoldenSeed,
+  dinoGoldenTarget
+);
+const dinoSecond = replayDinoDash(
+  dinoInputs,
+  dinoFinalTick,
+  dinoGoldenSeed,
+  dinoGoldenTarget
+);
+
+assert(
+  dinoFirst.valid && dinoSecond.valid,
+  "dino golden replay rejected"
+);
+assert(
+  JSON.stringify(dinoFirst.state) ===
+    JSON.stringify(dinoSecond.state),
+  "dino replay diverged across identical runs"
+);
+assert(
+  dinoFirst.score === dinoGoldenExpected.score &&
+    dinoFirst.state.passed === dinoGoldenExpected.passed &&
+    dinoFinalTick === dinoGoldenExpected.finalTick &&
+    dinoInputs.length === dinoGoldenExpected.inputCount,
+  "dino frozen golden result changed"
+);
+
+function simulateDinoRenderRate(frameHz: number) {
+  const state = createDinoDashState(dinoGoldenSeed);
+  let inputIndex = 0;
+  let accumulator = 0;
+  const frameSeconds = 1 / frameHz;
+  const tickSeconds = 1 / DINO_DASH_V1.tickRate;
+  let guard = 0;
+
+  while (
+    dinoStatus(state) === "running" &&
+    guard < 1_000_000
+  ) {
+    accumulator += frameSeconds;
+
+    while (
+      accumulator + 1e-12 >= tickSeconds &&
+      dinoStatus(state) === "running"
+    ) {
+      while (
+        inputIndex < dinoInputs.length &&
+        dinoInputs[inputIndex].tick === state.tick
+      ) {
+        applyDinoDashInput(
+          state,
+          dinoInputs[inputIndex].action
+        );
+        inputIndex += 1;
+      }
+
+      if (dinoStatus(state) !== "running") break;
+      stepDinoDash(
+        state,
+        dinoGoldenSeed,
+        dinoGoldenTarget
+      );
+      accumulator -= tickSeconds;
+    }
+
+    guard += 1;
+  }
+
+  return {
+    tick: state.tick,
+    yMilli: state.yMilli,
+    vyMilliPerSecond: state.vyMilliPerSecond,
+    scrollMilli: state.scrollMilli,
+    score: state.score,
+    passed: state.passed,
+    failure: state.failure,
+    status: state.status,
+  };
+}
+
+const dino60 = simulateDinoRenderRate(60);
+const dino120 = simulateDinoRenderRate(120);
+const dino144 = simulateDinoRenderRate(144);
+
+assert(
+  JSON.stringify(dino60) === JSON.stringify(dino120) &&
+    JSON.stringify(dino120) === JSON.stringify(dino144),
+  "dino render-rate equivalence failed"
+);
+
+const dinoNoInput = createDinoDashState("dino-no-input-v1");
+let dinoNoInputGuard = 0;
+while (
+  dinoStatus(dinoNoInput) === "running" &&
+  dinoNoInputGuard < 20_000
+) {
+  stepDinoDash(dinoNoInput, "dino-no-input-v1");
+  dinoNoInputGuard += 1;
+}
+assert(
+  dinoStatus(dinoNoInput) === "failed" &&
+    dinoNoInput.failure === "OBSTACLE_COLLISION",
+  "dino no-input run did not collide"
+);
+
+const dinoReplayFixture = {
+  manifestHash: "sha256:dino-dash-golden-manifest",
+  attemptId: "dino-dash-golden-attempt",
+  inputs: dinoInputs,
+  finalTick: dinoFinalTick,
+  result: {
+    score: dinoFirst.score,
+    timeMs: dinoFirst.timeMs,
+    won: dinoFirst.state.status === "won",
+    failure: dinoFirst.failure,
+  },
+};
+const dinoReplayHash =
+  "sha256:" +
+  createHash("sha256")
+    .update(canonicalJson(dinoReplayFixture))
+    .digest("hex");
+
+assert(
+  dinoReplayHash === dinoGoldenExpected.replayHash,
+  "dino golden replay hash changed"
+);
+
+console.log(
+  [
+    "Dino Dash v1 deterministic replay OK",
+    `score=${dinoFirst.score}`,
+    `passed=${dinoFirst.state.passed}`,
+    `finalTick=${dinoFinalTick}`,
+    `inputs=${dinoInputs.length}`,
+    `replayHash=${dinoReplayHash}`,
+  ].join(" · ")
+);
+
+function pulseStatus(
+  state: PulseRunnerState
+): PulseRunnerState["status"] {
+  return state.status;
+}
+
+function nextPulseObstacle(state: PulseRunnerState) {
+  return state.obstacles.find(
+    (obstacle) =>
+      obstacle.worldXMilli -
+        state.scrollMilli +
+        obstacle.wMilli >
+      PULSE_RUNNER_V1.playerXMilli - 8_000
+  );
+}
+
+function pushPulseJump(
+  state: PulseRunnerState,
+  inputs: PulseRunnerInput[]
+) {
+  if (
+    inputs.length > 0 &&
+    inputs[inputs.length - 1].tick === state.tick
+  ) {
+    return false;
+  }
+
+  inputs.push({
+    seq: inputs.length,
+    tick: state.tick,
+    action: "JUMP",
+  });
+  applyPulseRunnerInput(state, "JUMP");
+  return true;
+}
+
+const pulseGoldenSeed = "pulse-runner-golden-v1";
+const pulseGoldenTarget = 7_200;
+const pulseGoldenExpected = {
+  score: 7_867,
+  passed: 7,
+  finalTick: 2_048,
+  inputCount: 10,
+  replayHash:
+    "sha256:dadda57b49bf05b8822ed47499ea8681de54ccc99b1f58f9f0c958a072fbd894",
+} as const;
+const pulseBuilder = createPulseRunnerState(pulseGoldenSeed);
+const pulseInputs: PulseRunnerInput[] = [];
+let pulseGuard = 0;
+
+while (
+  pulseStatus(pulseBuilder) === "running" &&
+  pulseGuard < 300_000
+) {
+  const obstacle = nextPulseObstacle(pulseBuilder);
+  if (obstacle) {
+    const x = obstacle.worldXMilli - pulseBuilder.scrollMilli;
+    const jumpAt =
+      obstacle.kind === "pillar"
+        ? 260_000
+        : obstacle.kind === "block"
+          ? 250_000
+          : 120_000;
+
+    if (
+      isPulseRunnerGrounded(pulseBuilder) &&
+      x < jumpAt &&
+      x > 30_000
+    ) {
+      pushPulseJump(pulseBuilder, pulseInputs);
+    }
+  }
+
+  if (pulseStatus(pulseBuilder) === "running") {
+    stepPulseRunner(
+      pulseBuilder,
+      pulseGoldenSeed,
+      pulseGoldenTarget
+    );
+  }
+
+  pulseGuard += 1;
+}
+
+assert(
+  pulseStatus(pulseBuilder) === "won",
+  `pulse golden builder failed: status=${pulseBuilder.status} failure=${pulseBuilder.failure} score=${pulseBuilder.score} passed=${pulseBuilder.passed}`
+);
+
+const pulseFinalTick = pulseBuilder.tick;
+const pulseFirst = replayPulseRunner(
+  pulseInputs,
+  pulseFinalTick,
+  pulseGoldenSeed,
+  pulseGoldenTarget
+);
+const pulseSecond = replayPulseRunner(
+  pulseInputs,
+  pulseFinalTick,
+  pulseGoldenSeed,
+  pulseGoldenTarget
+);
+
+assert(
+  pulseFirst.valid && pulseSecond.valid,
+  "pulse golden replay rejected"
+);
+assert(
+  JSON.stringify(pulseFirst.state) ===
+    JSON.stringify(pulseSecond.state),
+  "pulse replay diverged across identical runs"
+);
+assert(
+  pulseFirst.score === pulseGoldenExpected.score &&
+    pulseFirst.state.passed === pulseGoldenExpected.passed &&
+    pulseFinalTick === pulseGoldenExpected.finalTick &&
+    pulseInputs.length === pulseGoldenExpected.inputCount,
+  "pulse frozen golden result changed"
+);
+
+function simulatePulseRenderRate(frameHz: number) {
+  const state = createPulseRunnerState(pulseGoldenSeed);
+  let inputIndex = 0;
+  let accumulator = 0;
+  const frameSeconds = 1 / frameHz;
+  const tickSeconds = 1 / PULSE_RUNNER_V1.tickRate;
+  let guard = 0;
+
+  while (
+    pulseStatus(state) === "running" &&
+    guard < 1_000_000
+  ) {
+    accumulator += frameSeconds;
+
+    while (
+      accumulator + 1e-12 >= tickSeconds &&
+      pulseStatus(state) === "running"
+    ) {
+      while (
+        inputIndex < pulseInputs.length &&
+        pulseInputs[inputIndex].tick === state.tick
+      ) {
+        applyPulseRunnerInput(
+          state,
+          pulseInputs[inputIndex].action
+        );
+        inputIndex += 1;
+      }
+
+      if (pulseStatus(state) !== "running") break;
+      stepPulseRunner(
+        state,
+        pulseGoldenSeed,
+        pulseGoldenTarget
+      );
+      accumulator -= tickSeconds;
+    }
+
+    guard += 1;
+  }
+
+  return {
+    tick: state.tick,
+    yMilli: state.yMilli,
+    vyMilliPerSecond: state.vyMilliPerSecond,
+    scrollMilli: state.scrollMilli,
+    score: state.score,
+    passed: state.passed,
+    failure: state.failure,
+    status: state.status,
+  };
+}
+
+const pulse60 = simulatePulseRenderRate(60);
+const pulse120 = simulatePulseRenderRate(120);
+const pulse144 = simulatePulseRenderRate(144);
+
+assert(
+  JSON.stringify(pulse60) === JSON.stringify(pulse120) &&
+    JSON.stringify(pulse120) === JSON.stringify(pulse144),
+  "pulse render-rate equivalence failed"
+);
+
+const pulseNoInput = createPulseRunnerState("pulse-no-input-v1");
+let pulseNoInputGuard = 0;
+while (
+  pulseStatus(pulseNoInput) === "running" &&
+  pulseNoInputGuard < 20_000
+) {
+  stepPulseRunner(pulseNoInput, "pulse-no-input-v1", pulseGoldenTarget);
+  pulseNoInputGuard += 1;
+}
+assert(
+  pulseStatus(pulseNoInput) === "failed" &&
+    pulseNoInput.failure === "OBSTACLE_COLLISION",
+  "pulse no-input run did not collide"
+);
+
+const pulseReplayFixture = {
+  manifestHash: "sha256:pulse-runner-golden-manifest",
+  attemptId: "pulse-runner-golden-attempt",
+  inputs: pulseInputs,
+  finalTick: pulseFinalTick,
+  result: {
+    score: pulseFirst.score,
+    timeMs: pulseFirst.timeMs,
+    won: pulseFirst.state.status === "won",
+    failure: pulseFirst.failure,
+  },
+};
+const pulseReplayHash =
+  "sha256:" +
+  createHash("sha256")
+    .update(canonicalJson(pulseReplayFixture))
+    .digest("hex");
+
+assert(
+  pulseReplayHash === pulseGoldenExpected.replayHash,
+  "pulse golden replay hash changed"
+);
+
+console.log(
+  [
+    "Pulse Runner v1 deterministic replay OK",
+    `score=${pulseFirst.score}`,
+    `passed=${pulseFirst.state.passed}`,
+    `finalTick=${pulseFinalTick}`,
+    `inputs=${pulseInputs.length}`,
+    `replayHash=${pulseReplayHash}`,
   ].join(" · ")
 );

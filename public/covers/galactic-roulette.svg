@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Galactic Roulette cover">
+  <rect width="512" height="512" rx="86" fill="#07111f"/>
+  <circle cx="256" cy="256" r="178" fill="#17233c" stroke="#70e3ff" stroke-width="8"/>
+  <g transform="translate(256 256)">
+    <path d="M0 0L0-160A160 160 0 0 1 80-138z" fill="#1f9d55"/>
+    <path d="M0 0L80-138A160 160 0 0 1 138-80z" fill="#c73548"/>
+    <path d="M0 0L138-80A160 160 0 0 1 160 0z" fill="#111827"/>
+    <path d="M0 0L160 0A160 160 0 0 1 138 80z" fill="#c73548"/>
+    <path d="M0 0L138 80A160 160 0 0 1 80 138z" fill="#111827"/>
+    <path d="M0 0L80 138A160 160 0 0 1 0 160z" fill="#c73548"/>
+    <path d="M0 0L0 160A160 160 0 0 1-80 138z" fill="#111827"/>
+    <path d="M0 0L-80 138A160 160 0 0 1-138 80z" fill="#c73548"/>
+    <path d="M0 0L-138 80A160 160 0 0 1-160 0z" fill="#111827"/>
+    <path d="M0 0L-160 0A160 160 0 0 1-138-80z" fill="#c73548"/>
+    <path d="M0 0L-138-80A160 160 0 0 1-80-138z" fill="#111827"/>
+    <path d="M0 0L-80-138A160 160 0 0 1 0-160z" fill="#c73548"/>
+    <circle r="86" fill="#243451"/>
+    <circle r="46" fill="#caa85c"/>
+    <circle cx="118" cy="-78" r="14" fill="#f8fbff"/>
+  </g>
+</svg>

@@ -11,6 +11,15 @@ import type {
   AttemptTicket,
   MatchManifest,
 } from "@/lib/verified/contracts";
+import {
+  getGameRules,
+  requireGameRules,
+} from "@/lib/game-rules/rulesRegistry";
+import {
+  getGameScenario,
+  manifestScenarioFor,
+  selectGameScenario,
+} from "@/lib/game-scenarios/scenarioRegistry";
 import { getServerGameAdapter } from "./gameVerifiers";
 
 const DEMO_SIGNING_SECRET =
@@ -24,6 +33,9 @@ const COMMON_COMPETITION_RULES = {
   tieRule: "EXACT_TIE_REFUND",
   authoritativeResult: "SERVER_REPLAY_ONLY",
 } as const;
+
+const ATTEMPT_TTL_MINUTES = 15;
+export const MAX_CLOCK_LEAD_MS = 2_500;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
@@ -69,11 +81,27 @@ export function hashManifest(manifest: MatchManifest) {
 
 export function expectedGameplayContentHash(
   gameId: string,
-  gameVersion?: string
+  gameVersion?: string,
+  scenarioId?: string
 ) {
   const adapter = getServerGameAdapter(gameId, gameVersion);
   if (!adapter) return null;
-  return sha256(canonicalJson(adapter.gameplayContentDescriptor));
+  const scenario = scenarioId
+    ? getGameScenario(
+        adapter.gameId,
+        adapter.gameVersion,
+        scenarioId
+      )
+    : undefined;
+
+  if (scenarioId && !scenario) return null;
+
+  return sha256(
+    canonicalJson({
+      game: adapter.gameplayContentDescriptor,
+      scenario: scenario?.descriptor ?? null,
+    })
+  );
 }
 
 export function expectedRulesHash(
@@ -82,10 +110,13 @@ export function expectedRulesHash(
 ) {
   const adapter = getServerGameAdapter(gameId, gameVersion);
   if (!adapter) return null;
+  const rules = getGameRules(adapter.gameId, adapter.gameVersion);
+  if (!rules) return null;
 
   return sha256(
     canonicalJson({
       common: COMMON_COMPETITION_RULES,
+      official: rules,
       game: adapter.rulesDescriptor,
     })
   );
@@ -97,6 +128,7 @@ export function createMatchManifest(args: {
   stakeMinor?: number;
   targetScore?: number;
   seed?: string;
+  scenarioId?: string;
 }): MatchManifest {
   const adapter = getServerGameAdapter(args.gameId);
   if (!adapter) {
@@ -106,6 +138,18 @@ export function createMatchManifest(args: {
   const createdAt = new Date().toISOString();
   const stakeMinor = Math.max(0, Math.floor(args.stakeMinor ?? 0));
   const targetScore = Math.max(1, Math.floor(args.targetScore ?? 1));
+  const seed = args.seed ?? randomBytes(16).toString("hex");
+  const rules = requireGameRules(adapter.gameId, adapter.gameVersion);
+  const scenario = selectGameScenario(
+    adapter.gameId,
+    adapter.gameVersion,
+    seed,
+    args.scenarioId
+  );
+
+  if (!scenario) {
+    throw new Error("UNSUPPORTED_GAME_SCENARIO");
+  }
 
   const rulesHash = expectedRulesHash(
     args.gameId,
@@ -113,21 +157,24 @@ export function createMatchManifest(args: {
   );
   const contentHash = expectedGameplayContentHash(
     args.gameId,
-    adapter.gameVersion
+    adapter.gameVersion,
+    scenario.scenarioId
   );
   if (!rulesHash || !contentHash) {
     throw new Error("UNSUPPORTED_GAME_VERSION");
   }
 
   return {
-    manifest_version: 2,
+    manifest_version: 3,
     match_id: args.matchId ?? randomUUID(),
     game_id: adapter.gameId,
     game_version: adapter.gameVersion,
     engine_version: adapter.engineVersion,
+    rules_version: rules.rulesVersion,
     rules_hash: rulesHash,
+    scenario: manifestScenarioFor(scenario),
     gameplay_content_hash: contentHash,
-    seed: args.seed ?? randomBytes(16).toString("hex"),
+    seed,
     simulation: {
       tick_rate: adapter.simulation.tickRate,
       coordinate_width: adapter.simulation.coordinateWidth,
@@ -146,6 +193,15 @@ export function createMatchManifest(args: {
       version: adapter.inputProtocol.version,
       allowed_actions: [...adapter.inputProtocol.allowedActions],
       max_inputs: adapter.inputProtocol.maxInputs,
+    },
+    lifecycle: {
+      attempt_ttl_ms: ATTEMPT_TTL_MINUTES * 60_000,
+      input_capture: "ORDERED_TICK_INPUT_STREAM",
+      duplicate_submission_policy:
+        "FIRST_TERMINAL_SUBMISSION_WINS",
+      disconnect_policy: "ATTEMPT_ABANDONED_IF_NOT_VERIFIED",
+      replay_storage: "SERVER_AUDIT_LEDGER",
+      max_clock_lead_ms: MAX_CLOCK_LEAD_MS,
     },
     created_at: createdAt,
   };
@@ -166,7 +222,10 @@ export function issueAttemptTicket(args: {
   ttlMinutes?: number;
 }): AttemptTicket {
   const issued = Date.now();
-  const ttlMinutes = Math.max(1, Math.min(30, args.ttlMinutes ?? 15));
+  const ttlMinutes = Math.max(
+    1,
+    Math.min(30, args.ttlMinutes ?? ATTEMPT_TTL_MINUTES)
+  );
   const security = signingSecret();
 
   const unsigned: UnsignedTicket = {
@@ -240,12 +299,14 @@ export function validateManifest(manifest: MatchManifest) {
   const simulation = manifest.simulation;
   const competition = manifest.competition;
   const inputProtocol = manifest.input_protocol;
+  const lifecycle = manifest.lifecycle;
 
   if (
-    manifest.manifest_version !== 2 ||
+    manifest.manifest_version !== 3 ||
     typeof manifest.game_id !== "string" ||
     typeof manifest.game_version !== "string" ||
     typeof manifest.engine_version !== "string" ||
+    typeof manifest.rules_version !== "string" ||
     typeof manifest.rules_hash !== "string" ||
     typeof manifest.gameplay_content_hash !== "string" ||
     typeof manifest.seed !== "string" ||
@@ -254,7 +315,9 @@ export function validateManifest(manifest: MatchManifest) {
     typeof manifest.created_at !== "string" ||
     !isRecord(simulation) ||
     !isRecord(competition) ||
-    !isRecord(inputProtocol)
+    !isRecord(inputProtocol) ||
+    !isRecord(lifecycle) ||
+    !isRecord(manifest.scenario)
   ) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }
@@ -274,11 +337,38 @@ export function validateManifest(manifest: MatchManifest) {
     return { ok: false as const, error: "UNSUPPORTED_GAME_VERSION" };
   }
 
+  const expectedRules = getGameRules(
+    manifest.game_id,
+    manifest.game_version
+  );
+  const expectedScenario = getGameScenario(
+    manifest.game_id,
+    manifest.game_version,
+    manifest.scenario.id
+  );
+  if (!expectedRules || !expectedScenario) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
+  if (
+    manifest.rules_version !== expectedRules.rulesVersion ||
+    manifest.scenario.version !==
+      expectedScenario.scenarioVersion ||
+    manifest.scenario.difficulty !==
+      expectedScenario.difficulty ||
+    manifest.scenario.seed_namespace !==
+      expectedScenario.seedNamespace ||
+    manifest.scenario.generation !== expectedScenario.generation
+  ) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
   if (
     manifest.gameplay_content_hash !==
       expectedGameplayContentHash(
         manifest.game_id,
-        manifest.game_version
+        manifest.game_version,
+        manifest.scenario.id
       ) ||
     manifest.rules_hash !==
       expectedRulesHash(
@@ -325,6 +415,19 @@ export function validateManifest(manifest: MatchManifest) {
     !Number.isInteger(competition.target_score) ||
     (competition.target_score as number) < 1 ||
     (competition.target_score as number) > 1_000_000_000
+  ) {
+    return { ok: false as const, error: "INVALID_MANIFEST" };
+  }
+
+  if (
+    lifecycle.attempt_ttl_ms !== ATTEMPT_TTL_MINUTES * 60_000 ||
+    lifecycle.input_capture !== "ORDERED_TICK_INPUT_STREAM" ||
+    lifecycle.duplicate_submission_policy !==
+      "FIRST_TERMINAL_SUBMISSION_WINS" ||
+    lifecycle.disconnect_policy !==
+      "ATTEMPT_ABANDONED_IF_NOT_VERIFIED" ||
+    lifecycle.replay_storage !== "SERVER_AUDIT_LEDGER" ||
+    lifecycle.max_clock_lead_ms !== MAX_CLOCK_LEAD_MS
   ) {
     return { ok: false as const, error: "INVALID_MANIFEST" };
   }

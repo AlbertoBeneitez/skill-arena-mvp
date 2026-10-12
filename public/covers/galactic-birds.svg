@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Galactic Birds cover">
+  <rect width="512" height="512" rx="86" fill="#10264a"/>
+  <path d="M0 372h512v140H0z" fill="#27381f"/>
+  <circle cx="398" cy="88" r="34" fill="#7be3ff" opacity=".25"/>
+  <path d="M126 360l22-120M178 360l-22-120" fill="none" stroke="#8a542f" stroke-width="18" stroke-linecap="round"/>
+  <path d="M148 245c-26 8-45 0-66-20" fill="none" stroke="#211725" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="84" cy="226" r="28" fill="#ffcf5f"/>
+  <circle cx="75" cy="218" r="8" fill="#f97366"/>
+  <g stroke="#17233c" stroke-width="6">
+    <rect x="300" y="284" width="30" height="88" rx="5" fill="#b98a58"/>
+    <rect x="364" y="284" width="30" height="88" rx="5" fill="#b98a58"/>
+    <rect x="284" y="254" width="126" height="28" rx="6" fill="#94a3b8"/>
+    <rect x="330" y="206" width="42" height="42" rx="10" fill="#74e3ff"/>
+    <rect x="286" y="178" width="126" height="24" rx="6" fill="#b98a58"/>
+  </g>
+</svg>
