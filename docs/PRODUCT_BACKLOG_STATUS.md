@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v94-mobile
+# GALACTIC GAMES · Seguimiento de v95-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -494,3 +494,20 @@ por compilar.
 Fase posterior del propietario: escenarios iniciales/registro durable y
 verificación inmediata de ganadores, menús/inicios/ranking dentro de avatar y
 pagos, respetando las dependencias existentes. Backlog general sigue abierto.
+
+
+## Entrega incremental v95
+
+- Navegación: tres pestañas Juegos/Grupo/Avatar; Ranking y todo su contenido
+  integrados en Avatar. Acceso del catálogo/historial compatible, sin pantalla
+  paralela ni cambios en datos reales, muestras o repositorio.
+- Buscador retirado en v92; ruleta V2 física preservada de v94, sin órbita prefijada.
+- QA: catálogo320px/horizontal, Avatar/perfil/ranking, tres páginas de ejemplo,
+  fuente real no configurada, atrás y entrada histórica; cero errores de página.
+  Arrastre Roulette V2 en320×568/568×320:49apuestas, áreas48px, un TOSS y
+  registro abandonado recibido. Suite determinista completa, typecheck/lint,
+  build y diff-check correctos. CI y entrega Vercel pendientes de confirmar.
+- Entrega anterior: CI v92/v93 correcta y Vercel Ready confirmado. mobile-test
+  avanzó sin force-push de v91 a v93. Preview v94 aún sin evento de Vercel.
+- No se activa identidad autenticada, datos/pagos reales ni Mine sin PostgreSQL.
+  El resto del backlog de las filas anteriores permanece abierto.

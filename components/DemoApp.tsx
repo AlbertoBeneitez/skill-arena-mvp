@@ -489,7 +489,7 @@ export default function DemoApp() {
   useEffect(() => {
     if (!isLoaded) return;
 
-    window.history.replaceState({ skillArenaScreen: screen }, "", `#${screen}`);
+    window.history.replaceState({ skillArenaScreen: screen, avatarSection }, "", `#${screen}`);
 
     const onPopState = (event: PopStateEvent) => {
       if (screen === "game" && (activeGame || countdown !== null)) {
@@ -498,17 +498,21 @@ export default function DemoApp() {
       }
 
       const target = event.state?.skillArenaScreen;
+      if (target === "ranking") {
+        window.history.replaceState({ skillArenaScreen: "profile", avatarSection: "ranking" }, "", "#profile");
+      }
       setActiveGame(false);
       setCountdown(null);
       setResult(null);
       setAttemptSummary(null);
 
-      setScreen(isScreen(target) ? target : onboarded ? "home" : "welcome");
+      setAvatarSection(target === "ranking" || event.state?.avatarSection === "ranking" ? "ranking" : "profile");
+      setScreen(target === "ranking" ? "profile" : isScreen(target) ? target : onboarded ? "home" : "welcome");
     };
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [isLoaded, onboarded, screen, activeGame, countdown]);
+  }, [isLoaded, onboarded, screen, activeGame, countdown, avatarSection]);
 
 
   useEffect(() => {
@@ -548,12 +552,16 @@ export default function DemoApp() {
   }, [screen, countdown]);
 
   function navigate(next: Screen, replace = false) {
-    if (next === screen) return;
+    // Keep historical ranking navigation compatible, inside Avatar.
+    const target = next === "ranking" ? "profile" : next;
+    const section = next === "ranking" ? "ranking" : "profile";
+    if (target === "profile") setAvatarSection(section);
+    if (target === screen) return;
 
-    const state = { skillArenaScreen: next };
-    if (replace) window.history.replaceState(state, "", `#${next}`);
-    else window.history.pushState(state, "", `#${next}`);
-    setScreen(next);
+    const state = { skillArenaScreen: target, avatarSection: section };
+    if (replace) window.history.replaceState(state, "", `#${target}`);
+    else window.history.pushState(state, "", `#${target}`);
+    setScreen(target);
   }
 
   function leaveGameNow() {
@@ -1187,7 +1195,6 @@ export default function DemoApp() {
       )}
 
       <div className={`appBody ${screen === "game" ? "gameBody" : ""}`}>
-        {screen === "ranking" && <GlobalRanking />}
         {screen === "home" && (
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <div className="homePlayHeading">
@@ -1503,14 +1510,13 @@ export default function DemoApp() {
       </div>
 
       {screen !== "game" && screen !== "legal" && (
-        <nav className="bottomNav bottomNavFour" aria-label="Navegación principal">
+        <nav className="bottomNav bottomNavThree" aria-label="Navegación principal">
           <button className={screen === "home" ? "active" : ""} aria-current={screen === "home" ? "page" : undefined} onClick={() => navigate("home")}>
             <span>▶</span>JUEGOS
           </button>
           <button className={screen === "group" ? "active" : ""} aria-current={screen === "group" ? "page" : undefined} onClick={() => navigate("group")}>
             <span>◉</span>GRUPO
           </button>
-          <button className={screen === "ranking" ? "active" : ""} aria-current={screen === "ranking" ? "page" : undefined} onClick={() => navigate("ranking")}><span aria-hidden="true">≡</span>RANKING</button>
           <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
             <img src={avatarSrc} alt="" />AVATAR
           </button>

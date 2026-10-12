@@ -10,7 +10,9 @@ const assert = require("node:assert/strict");
     args: ["--no-sandbox"],
   });
   const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
+    viewport: process.env.QA_LANDSCAPE
+      ? { width: 844, height: 390 }
+      : { width: 390, height: 844 },
     isMobile: true,
     hasTouch: true,
   });
@@ -71,6 +73,13 @@ const assert = require("node:assert/strict");
       })
       .tap();
   }
+  assert.equal(await page.locator(".bottomNav button").count(), 3);
+  assert.equal(
+    await page.locator(".bottomNav button[aria-current='page']").innerText(),
+    "AVATAR",
+  );
+  assert.equal(new URL(page.url()).hash, "#profile");
+  await page.getByRole("heading", { name: "Tu avatar", exact: true }).waitFor();
   await page
     .getByRole("heading", { name: "El ranking real aún no está disponible" })
     .waitFor();
@@ -122,7 +131,9 @@ const assert = require("node:assert/strict");
     true,
   );
   const notice = await page.locator(".rankingDemoNotice").boundingBox();
-  assert.ok(notice.y >= 59 && notice.y + notice.height <= 844);
+  assert.ok(
+    notice.y >= 59 && notice.y + notice.height <= page.viewportSize().height,
+  );
   assert.equal(
     await page.evaluate(() => {
       const notice = document.querySelector(".rankingDemoNotice"),
@@ -178,6 +189,24 @@ const assert = require("node:assert/strict");
       false,
     );
   }
+  await page.locator(".bottomNav button").first().tap();
+  await page
+    .getByRole("heading", { name: "Elige tu reto", exact: true })
+    .waitFor();
+  await page.goBack();
+  await page.getByRole("heading", { name: "Tu avatar", exact: true }).waitFor();
+  assert.equal(
+    await page.locator(".avatarSections button[aria-pressed=true]").innerText(),
+    "Ranking",
+  );
+  await page.waitForTimeout(100);
+  await page.evaluate(() => {
+    const legacyState = { ...history.state, skillArenaScreen: "ranking" };
+    history.pushState(legacyState, "", "#ranking");
+    dispatchEvent(new PopStateEvent("popstate", { state: legacyState }));
+  });
+  await page.getByRole("heading", { name: "Tu avatar", exact: true }).waitFor();
+  assert.equal(await page.locator(".globalRankingScreen").count(), 1);
   assert.deepEqual(errors, []);
   assert.doesNotMatch(
     await page.locator("body").innerText(),

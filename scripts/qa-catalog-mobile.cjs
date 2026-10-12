@@ -134,7 +134,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .waitFor();
     assert.equal(
       await page.locator('.bottomNav button[aria-current="page"]').innerText(),
-      "≡\nRANKING",
+      "AVATAR",
     );
     await page.locator(".bottomNav button").first().tap();
     await catalog.waitFor();

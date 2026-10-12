@@ -5865,7 +5865,7 @@ html, body {
 }
 
 /* Ranking read model and explicitly isolated fictional illustration. */
-.bottomNav.bottomNavFour { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.bottomNav.bottomNavThree { grid-template-columns: repeat(3,minmax(0,1fr)); }
 .globalRankingShortcut { width:100%; margin:8px 0 14px; padding:14px; border:1px solid #438095; border-radius:14px; background:linear-gradient(110deg,#133b52,#18344e); color:#c9f4ef; font-weight:850; text-align:left; }
 .globalRankingScreen { padding:18px 14px 100px; min-height:100%; background:radial-gradient(ellipse at 15% 10%,rgba(63,107,173,.22),transparent 55%),radial-gradient(ellipse at 95% 60%,rgba(95,56,155,.2),transparent 60%),#0b172a; color:#e5f2ff; }
 .rankingHeading small { color:#9fcad8; letter-spacing:.15em; font-size:10px; }

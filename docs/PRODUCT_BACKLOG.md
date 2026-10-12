@@ -448,6 +448,16 @@ del dedo, gravedad/contactos/rodadura y captura determinista, no órbita
 prefijada. Tapete plegable49apuestas, incluyendo columnas, áreas48px y gesto
 fiable; V1/core/golden/adaptador intactos. [Evidencia](GALACTIC_ROULETTE_V2.md).
 La solicitud de cinco puntos queda implementada y validada localmente entre
-v92–v94. Despliegue pendiente: Vercel no ha emitido previews v92/v93, por lo que
-mobile-test sigue en v91 hasta CI+Ready del HEAD nuevo. Menús/escenarios/
+v92–v94. Vercel confirmó posteriormente previews Ready para v92 y v93;
+mobile-test avanzó por fast-forward a v93. v94 sigue esperando evento de
+despliegue. Menús/escenarios/
 persistencia de ganadores/pagos son una fase posterior, sin activar datos/dinero real.
+
+
+Checkpoint v95: navegación principal Juegos/Grupo/Avatar. Ranking vive únicamente
+dentro de Avatar, con el mismo componente/repositorio, paginación y separación
+de datos reales/ejemplo. El acceso del catálogo y el historial antiguo abren
+la sección de Avatar; volver atrás conserva su selección. Catálogo sin buscador
+v92 y ruleta física cartesiana v94 se conservan sin cambiar cores/hashes.
+QA táctil vertical/horizontal, aislamiento de fuentes, historial y arrastre de
+ruleta pequeño confirmados; entrega CI/Vercel se registra en el ledger.
