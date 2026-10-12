@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v91-mobile
+# GALACTIC GAMES · Seguimiento de v92-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -460,3 +460,16 @@ Solicitud de cinco juegos cerrada por unidades v89–v91; no declara terminado
 el backlog general. v90CI38235738271success/Vercel7011722710Ready,
 mobile-test avanzó a bb3ff46 sin force-push. Configuración Mine,16imágenes
 ausentes y tareas generales del ledger siguen pendientes.
+
+## Checkpoint v92 · catálogo, Slot y Dardos
+
+Buscador eliminado con su lógica/CSS/QA obsoleta; catálogo completo, navegación,
+estados de carga/fallo y reinicio comprobados a320px y en horizontal. Slot
+pareja/7sinpareja más discreto; core1.0/goldens/recibos intactos, derrota20tiradas
+y cero/10s/rotación/reinicio/abandono en ambas vistas. Dardos proyecta una
+trayectoria3D balística de gravedad9.81m/s² y cámara pinhole hasta el impacto
+autoritativo, sin retícula/proyección previa. Core3.0/gesto/20tiradas no cambian.
+4672frames puros, QA táctil20tiradas:975/t4077 vertical y0/t4129 horizontal,
+cancel/blur/reinicio/recibo sin errores.
+Pendientes de esta solicitud: andamios complejos/conteos Birds; física de
+lanzamiento y tapete plegable Roulette, en nuevas versiones competitivas.

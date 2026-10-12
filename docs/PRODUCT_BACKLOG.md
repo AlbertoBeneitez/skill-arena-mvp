@@ -431,3 +431,9 @@ anunciado y abanicos, recogibles de puntos/escudos y decisiones de riesgo.
 V1/V2 preservados; replay/servidor, controles táctiles y sesiones completas
 ambas vistas validados. Evidencia en STAR_PHALANX_V3.md y releases/v91-mobile.md.
 La última solicitud de cinco juegos se cierra; backlog general del ledger permanece.
+
+Checkpoint v92: catálogo sin buscador; premios secundarios Slot refinados sin
+cambiar reglas; Dardos con perspectiva balística de cámara y gravedad en la
+presentación, manteniendo core3.0,20tiradas, gesto/replay/puntuación.
+Solicitud actual: Birds andamiaje/conteos y Roulette vuelo físico/tapete plegable
+siguen pendientes. Evidencia en releases/v92-mobile.md.
