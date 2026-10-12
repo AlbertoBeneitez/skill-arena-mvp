@@ -3,8 +3,9 @@ import type { GameRuntimeProps } from "@/lib/games";
 import {
   PHALANX_CORE,
   PHALANX_RULES,
+  phalanxVolley,
   type PhalanxState,
-} from "@/lib/verified/starPhalanxCore.v2";
+} from "@/lib/verified/starPhalanxCore.v3";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { drawPhalanxBolt } from "@/lib/phalanxPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
@@ -40,12 +41,13 @@ function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
       ctx.save();
       ctx.setLineDash([5, 7]);
       ctx.strokeStyle = `rgba(255,127,143,${0.2 + (s.tick - s.chargeStarted) / 100})`;
-      for (const lane of s.wave >= 4 || (s.wave >= 3 && e.maxHp > 1)
-        ? [-22, 22]
-        : [0]) {
+      for (const trajectory of phalanxVolley(s, e)) {
+        const targetX =
+          trajectory.x +
+          (trajectory.vx * (552000 - trajectory.y)) / trajectory.vy;
         ctx.beginPath();
-        ctx.moveTo(x + lane, y + 18);
-        ctx.lineTo(x + lane, 575);
+        ctx.moveTo(x, y + 18);
+        ctx.lineTo(targetX / 1000, 552);
         ctx.stroke();
       }
       ctx.restore();
@@ -53,7 +55,8 @@ function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
       ctx.fillRect(
         x - 18,
         y - 27,
-        36 * Math.min(1, (s.tick - s.chargeStarted) / 60),
+        36 *
+          Math.min(1, (s.tick - s.chargeStarted) / PHALANX_RULES.chargeTicks),
         3,
       );
     }
@@ -95,6 +98,40 @@ function render(ctx: CanvasRenderingContext2D, s: PhalanxState) {
     }
   }
   for (const b of s.shots) drawPhalanxBolt(ctx, b);
+  for (const reward of s.rewards) {
+    const x = reward.x / 1000,
+      y = reward.y / 1000;
+    ctx.fillStyle = reward.kind === "shield" ? "#8be3e9" : "#f4d192";
+    ctx.strokeStyle = reward.kind === "shield" ? "#d0ffff" : "#fff0c4";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#173747";
+    if (reward.kind === "shield") {
+      ctx.fillRect(x - 1.5, y - 5, 3, 10);
+      ctx.fillRect(x - 5, y - 1.5, 10, 3);
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(x, y - 5);
+      ctx.lineTo(x + 4, y);
+      ctx.lineTo(x, y + 5);
+      ctx.lineTo(x - 4, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  if (s.tick - s.lastRewardTick >= 0 && s.tick - s.lastRewardTick < 75) {
+    const age = s.tick - s.lastRewardTick;
+    ctx.save();
+    ctx.globalAlpha = 1 - age / 75;
+    ctx.fillStyle = "#ffe3aa";
+    ctx.font = "bold 20px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(`+${s.lastRewardValue}`, s.shipX / 1000, 522 - age * 0.4);
+    ctx.restore();
+  }
 
   const killAge = s.tick - s.lastKillTick;
   if (killAge >= 0 && killAge < 36) {
@@ -178,12 +215,11 @@ function pointAction(p: CorePoint, phase: "down" | "move" | "up") {
   return phase === "down" ? [aim, "FIRE_DOWN"] : aim;
 }
 const inputTones = { FIRE_DOWN: "tap" } as const;
-const feedbackScore = (s: Readonly<PhalanxState>) =>
-  s.score - (3 - s.lives) * 250;
+const feedbackScore = (s: Readonly<PhalanxState>) => s.total;
 const keys = { " ": "FIRE_DOWN" } as const,
   keyReleases = { " ": "FIRE_UP" } as const;
 const hudLabel = (s: Readonly<PhalanxState>) =>
-  `${s.kills} NAVES · ${Math.max(0, Math.ceil((21600 - s.tick) / 120))}s`;
+  `${s.kills} NAVES · ${s.total} PTS · ${Math.max(0, Math.ceil((21600 - s.tick) / 120))}s`;
 export default function StarPhalanxVerified(props: GameRuntimeProps) {
   return (
     <div className="phalanxVerified">
@@ -201,7 +237,7 @@ export default function StarPhalanxVerified(props: GameRuntimeProps) {
         keys={keys}
         keyReleases={keyReleases}
         hudLabel={hudLabel}
-        instruction="Mantén y arrastra para moverte y disparar. Suelta para pausar el fuego."
+        instruction=""
       />
     </div>
   );

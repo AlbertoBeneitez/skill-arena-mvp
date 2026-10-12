@@ -425,3 +425,9 @@ seis figuras y soundtrack original tenso. Registros/replays/históricos preserva
 QA completa de controles/resultados/reinicio y puntos táctiles en ambos formatos.
 La solicitud actual deja Phalanx pendiente: más decisiones/esquiva y recompensas
 por puntos en un core nuevo con V1/V2 intactos. Evidencia en releases/v90-mobile.md.
+
+Checkpoint v91: Phalanx3.0 con24oleadas continuas/168enemigos, fuego dirigido
+anunciado y abanicos, recogibles de puntos/escudos y decisiones de riesgo.
+V1/V2 preservados; replay/servidor, controles táctiles y sesiones completas
+ambas vistas validados. Evidencia en STAR_PHALANX_V3.md y releases/v91-mobile.md.
+La última solicitud de cinco juegos se cierra; backlog general del ledger permanece.

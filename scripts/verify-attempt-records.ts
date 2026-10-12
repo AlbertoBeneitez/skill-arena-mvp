@@ -88,6 +88,7 @@ try {
     ["jet-stream", "3.0.0"],
     ["darts", "1.0.0"],
     ["reaction-test", "1.0.0"],
+    ["star-phalanx", "2.0.0"],
     ["darts", "2.0.0"],
     ["river-dash", "1.0.0"],
     ["river-dash", "2.0.0"],

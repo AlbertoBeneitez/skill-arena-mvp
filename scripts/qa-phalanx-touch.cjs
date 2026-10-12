@@ -1,4 +1,4 @@
-// Real held touch/drag/cancel, all five waves and actual server replay. No seed override.
+// Real held touch/drag/cancel, all24 continuous formations and actual server replay. No seed override.
 const { chromium } = require(
     process.env.PLAYWRIGHT_MODULE_PATH || "playwright-core",
   ),
@@ -10,7 +10,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const b = pathToFileURL(path.join(__dirname, "../.det-test/")).href,
     { PHALANX_CORE: core } = await import(
-      b + "lib/verified/starPhalanxCore.v2.js"
+      b + "lib/verified/starPhalanxCore.v3.js"
     ),
     { replayCore } = await import(b + "lib/verified/coreRuntime.v1.js");
   const browser = await chromium.launch({
@@ -68,6 +68,8 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
             t: performance.now(),
             enemies: [],
             shots: [],
+            rewards: [],
+            charges: [],
             shipX: 195,
           };
         return clear.apply(this, a);
@@ -84,6 +86,29 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           return original.call(this, x, y, ...a);
         };
       }
+      const arc = proto.arc;
+      proto.arc = function (x, y, r, ...a) {
+        this.__lastArc = { x, y, r };
+        return arc.call(this, x, y, r, ...a);
+      };
+      const stroke = proto.stroke;
+      proto.stroke = function (...a) {
+        const points = paths.get(this);
+        if (
+          matches(this) &&
+          window.__scene &&
+          String(this.strokeStyle)
+            .replace(/\s/g, "")
+            .startsWith("rgba(255,127,143") &&
+          points?.length === 2
+        )
+          window.__scene.charges.push({
+            x: points[0].x,
+            y: points[0].y - 18,
+            targetX: points[1].x,
+          });
+        return stroke.apply(this, a);
+      };
       const fill = proto.fill;
       proto.fill = function (...a) {
         const points = paths.get(this),
@@ -99,6 +124,16 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
             scene.shipX = (m.e - (this.canvas.width - 390 * m.a) / 2) / m.a;
           }
         }
+        if (
+          matches(this) &&
+          scene &&
+          this.__lastArc?.r === 9 &&
+          ["#8be3e9", "#f4d192"].includes(this.fillStyle)
+        )
+          scene.rewards.push({
+            ...this.__lastArc,
+            kind: this.fillStyle === "#8be3e9" ? "shield" : "points",
+          });
         return fill.apply(this, a);
       };
       const rect = proto.fillRect;
@@ -115,7 +150,6 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       };
     });
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3037");
-    await page.locator(".quickStakeBar button").first().click();
     const start = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
@@ -123,7 +157,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Star Phalanx", exact: true })
       .click();
     const issued = await (await start).json();
-    assert.equal(issued.manifest.game_version, "2.0.0");
+    assert.equal(issued.manifest.game_version, "3.0.0");
     const target = issued.manifest.competition.target_score;
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
@@ -132,13 +166,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       await page
         .getByRole("button", { name: "Activar sonido", exact: true })
         .tap();
-    const cdp = await context.newCDPSession(page),
-      box = await page.locator("canvas.gameCanvas").boundingBox(),
+    const cdp = await context.newCDPSession(page);
+    let box = await page.locator("canvas.gameCanvas").boundingBox(),
       scale = Math.min(box.width / 390, box.height / 620),
       ox = (box.width - 390 * scale) / 2,
       oy = (box.height - 620 * scale) / 2;
     function point(x) {
-      return { x: box.x + ox + x * scale, y: box.y + oy + 470 * scale };
+      return { x: box.x + ox + x * scale, y: box.y + oy + 602 * scale };
     }
     let held = false,
       done = false,
@@ -186,17 +220,60 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     let previous = null,
       lastPoint = null,
       tracked = null,
-      showcaseCaptured = false;
+      showcaseCaptured = false,
+      rotated = false;
     if (!process.env.QA_LOSS)
       for (let turns = 0; !done && turns < 4000; turns++) {
-        const scene = await page.evaluate(() => window.__scene);
+        const scene = await page.evaluate(() => ({
+          ...window.__scene,
+          kills: Number(
+            document
+              .querySelector(".coreHud")
+              ?.innerText.match(/(\d+) NAVES/)?.[1] || 0,
+          ),
+          lives: Number(
+            document
+              .querySelector(".coreHud")
+              ?.innerText.match(/VIDAS\s+(\d+)/)?.[1] || 3,
+          ),
+        }));
         if (!scene?.shipX) {
           await page.waitForTimeout(60);
           continue;
         }
+        if (!rotated && scene.kills >= 24) {
+          if (held) await up(true);
+          await page.setViewportSize(
+            landscape
+              ? { width: 390, height: 844 }
+              : { width: 844, height: 390 },
+          );
+          await page.waitForTimeout(120);
+          box = await page.locator("canvas.gameCanvas").boundingBox();
+          scale = Math.min(box.width / 390, box.height / 620);
+          ox = (box.width - 390 * scale) / 2;
+          oy = (box.height - 620 * scale) / 2;
+          previous = null;
+          tracked = null;
+          lastPoint = null;
+          rotated = true;
+          assert.equal(
+            await page.evaluate(() => document.body.scrollWidth > innerWidth),
+            false,
+          );
+          continue;
+        }
         let desired = scene.shipX;
         if (scene.enemies.length) {
-          let enemy = tracked
+          const charged = scene.charges[0];
+          let enemy = charged
+            ? scene.enemies.find(
+                (e) =>
+                  Math.abs(e.x - charged.x) < 3 &&
+                  Math.abs(e.y - charged.y) < 3,
+              )
+            : null;
+          enemy ??= tracked
             ? scene.enemies.find(
                 (e) =>
                   Math.abs(e.x - tracked.x) < 15 &&
@@ -230,25 +307,69 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           desired = enemy.x + (speed * (532 - enemy.y)) / 480;
           tracked = enemy;
         } else tracked = null;
-        for (const bolt of scene.shots.filter((b) => b.y > 400 && b.y < 575)) {
-          const cross =
-            (scene.shipX <= bolt.x && desired >= bolt.x) ||
-            (scene.shipX >= bolt.x && desired <= bolt.x);
-          if (
-            cross ||
-            Math.abs(desired - bolt.x) < 45 ||
-            Math.abs(scene.shipX - bolt.x) < 35
-          ) {
-            const left = bolt.x - 55,
-              right = bolt.x + 55;
-            desired =
-              scene.shipX < bolt.x && left >= 20
-                ? Math.min(desired, left)
-                : right <= 370
-                  ? Math.max(desired, right)
-                  : Math.min(desired, left);
+        const health = scene.rewards
+          .filter((r) => r.kind === "shield" && r.y > 350)
+          .sort((a, b) => b.y - a.y)[0];
+        const coin = scene.rewards.find(
+          (r) =>
+            r.kind === "points" &&
+            r.y > 490 &&
+            Math.abs(r.x - scene.shipX) < 45,
+        );
+        if (scene.lives < 3 && health) desired = health.x;
+        else if (coin) desired = coin.x;
+        const dt =
+          previous && scene.t > previous.t ? (scene.t - previous.t) / 1000 : 0;
+        const threats = scene.shots.map((b) => {
+          let vx = 0,
+            vy = 250;
+          if (dt > 0 && dt < 0.3 && previous.shots.length) {
+            const before = previous.shots.reduce(
+              (best, p) =>
+                !best ||
+                Math.abs(p.y - (b.y - 280 * dt)) + Math.abs(p.x - b.x) * 0.3 <
+                  Math.abs(best.y - (b.y - 280 * dt)) +
+                    Math.abs(best.x - b.x) * 0.3
+                  ? p
+                  : best,
+              null,
+            );
+            if (before && b.y > before.y) {
+              vx = Math.max(-240, Math.min(240, (b.x - before.x) / dt));
+              vy = Math.max(200, Math.min(400, (b.y - before.y) / dt));
+            }
+          }
+          return { ...b, vx, vy };
+        });
+        let best = scene.shipX,
+          bestCost = Infinity;
+        for (let n = 0; n < 36; n++) {
+          const x = 20 + n * 10;
+          let cost = Math.abs(x - desired) + Math.abs(x - scene.shipX) * 0.15;
+          for (const b of threats) {
+            const eta = (552 - b.y) / b.vy;
+            if (eta < -0.08 || eta > 1.3) continue;
+            for (const offset of [-0.06, -0.03, 0, 0.03, 0.06]) {
+              const t = Math.max(0, eta + offset),
+                player =
+                  scene.shipX +
+                  Math.max(-300 * t, Math.min(300 * t, x - scene.shipX)),
+                bx = b.x + b.vx * t;
+              if (
+                Math.abs(b.y + b.vy * t - 552) < 18 &&
+                Math.abs(player - bx) < 28
+              )
+                cost += 1000000;
+            }
+          }
+          if (scene.charges.some((c) => Math.abs(x - c.targetX) < 32))
+            cost += 60;
+          if (cost < bestCost) {
+            bestCost = cost;
+            best = x;
           }
         }
+        desired = best;
         desired =
           20 + Math.max(0, Math.min(35, Math.round((desired - 20) / 10))) * 10;
         if (!held) {
@@ -317,8 +438,12 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         "cancel cannot leave autonomous fire running",
       );
     } else {
-      assert.equal(replay.state.clearedLayers, 16);
-      assert.equal(replay.state.kills, 100);
+      assert.equal(replay.state.clearedLayers, 24);
+      assert.equal(replay.state.kills, 168);
+      assert.ok(
+        replay.state.collected > 0 && replay.state.rewardPoints > 0,
+        "real played reward collection",
+      );
     }
     await page.locator(".resultPanel").waitFor({ state: "visible" });
     assert.equal(

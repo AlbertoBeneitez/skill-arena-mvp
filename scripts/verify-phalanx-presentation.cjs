@@ -9,12 +9,12 @@ register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const { PHALANX_CORE: core } = await import(
       pathToFileURL(
-        path.join(root, ".det-test/lib/verified/starPhalanxCore.v1.js"),
+        path.join(root, ".det-test/lib/verified/starPhalanxCore.v3.js"),
       )
     ),
     { choosePhalanxAction } = await import(
       pathToFileURL(
-        path.join(root, ".det-test/scripts/phalanx-play-fixture.js"),
+        path.join(root, ".det-test/scripts/phalanx-v3-play-fixture.js"),
       )
     );
   const swc = req("next/dist/build/swc");
@@ -45,9 +45,9 @@ module.exports = (async () => {
   const ui = await load(
     path.join(root, "components/games/StarPhalanxVerified.tsx"),
     {
-      "@/lib/verified/starPhalanxCore.v2": await import(
+      "@/lib/verified/starPhalanxCore.v3": await import(
         pathToFileURL(
-          path.join(root, ".det-test/lib/verified/starPhalanxCore.v2.js"),
+          path.join(root, ".det-test/lib/verified/starPhalanxCore.v3.js"),
         )
       ),
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
@@ -56,16 +56,7 @@ module.exports = (async () => {
     },
     "\nexport {render};",
   );
-  const cores = [
-    core,
-    (
-      await import(
-        pathToFileURL(
-          path.join(root, ".det-test/lib/verified/starPhalanxCore.v2.js"),
-        )
-      )
-    ).PHALANX_CORE,
-  ];
+  const cores = [core];
   let frames = 0;
   for (const core of cores)
     for (let seed = 0; seed < 8; seed++) {
@@ -95,8 +86,8 @@ module.exports = (async () => {
               h === 16
             )
               bodies.push({
-                x: x + 2,
-                y: y + 8,
+                x: Math.round((x + 2) * 1000),
+                y: Math.round((y + 8) * 1000),
                 enemy: this.fillStyle === "#ff788f",
               });
           },
@@ -115,8 +106,8 @@ module.exports = (async () => {
         assert.deepEqual(
           bodies,
           state.shots.map((b) => ({
-            x: b.x / 1000,
-            y: b.y / 1000,
+            x: b.x,
+            y: b.y,
             enemy: b.enemy,
           })),
         );

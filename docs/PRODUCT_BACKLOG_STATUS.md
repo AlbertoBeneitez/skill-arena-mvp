@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v90-mobile
+# GALACTIC GAMES · Seguimiento de v91-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -24,7 +24,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Brick Relay | v78: V2 VERIFIED, muro continuo69 bloques, aceleración mantenida3/2 registrada, alcance por bloques únicos, arrastre final conservado durante cooldown; victorias/derrota/reinicio táctiles en ambas orientaciones. V1 preservado | Pulido posterior según experiencia en móviles físicos; comparación global alcance/tiempo pendiente |
 | Stack Shift | Core1.0 VERIFIED con seis formas propias (I3,L3,Z4,O4,X5,L4), base/apoyo/arena ampliada preservados | Identificar doce piezas: se ha preguntado si son pentominós F,I,L,N,P,T,U,V,W,X,Y,Z; falta respuesta, no se inventan ni cambian reglas |
 | Maze Rush | v74: joystick circular116px con zona neutra/histéresis, STOP retenido durante cooldown, captura/cancelación; victorias70nodos y derrotas/reinicio/rotación en ambas orientaciones, mismo coreV3/replay. v64: V3 VERIFIED, 70 nodos continuos, más margen para girar/perseguidores, avance por nodos, confirmación de input/pulso y tablero horizontal ampliado; victorias/derrotas/reinicio táctiles y replay. V1/V2 archivadas | Nueva petición: maze más amplio, estrellas y movimiento expresivo original inspirado en el género; preservar joystick e históricos |
-| Star Phalanx | v79: V2 VERIFIED, curso continuo16capas/100enemigos sin pausas/borrado de proyectiles/reinicio de vuelo, destino táctil coalescido; victorias/derrotas/reinicio en ambas orientaciones. Presentación v77 y archivoV1 preservados | Nueva petición: más duración, enemigos, estímulos y acción; versión posterior con archivoV1/V2 intacto y comparación global alcance/tiempo |
+| Star Phalanx | v91: V3 VERIFIED, 24 oleadas continuas/168 enemigos, disparos dirigidos con aviso y abanicos simples/dobles/triples; decisiones de ataque/esquiva/recogida, premios500 y escudos300 con recuperación; partidas completas táctiles ambas vistas, derrota/reinicio/rotación, replay/golden/inputs/servidor. V1/V2 preservados | Seguimiento físico y comparación común alcance/tiempo; no activa competición real |
 | Orbit Shift | v50: apertura reparada; core 1.0 VERIFIED, 60 pasos/3 sectores, arcos combinados, recargas/escudos, transición radial y replay; QA táctil completa | Nueva versión con apertura moderadamente más exigente y rampas posteriores más lentas |
 | Piano Rush | v61: V3 VERIFIED, 48 notas continuas, ocho de aprendizaje, precisión/ritmo graduales, escudos/combo; V1/V2 archivados y QA táctil completa | Siete teclas directamente bajo lanes, melodías reales de dominio público, protocolo/versionado y replay |
 | Memoria (retirada en v84) | v71: V2 VERIFIED sin preview, un tablero6×4/12parejas seedado, exploración sin pérdida de vidas, penaliza errores con pareja previamente conocida;128 victorias de aprendizaje y QA táctil win/loss/timeout/reinicio/blur/rotación. V1 archivada | Fuera del catálogo/loader público y nuevos inicios bloqueados en v84 por petición del propietario; cores/adapters/tests V1/V2 preservados para reproducir registros históricos |
@@ -451,3 +451,12 @@ V1preservada. [Evidencia y reglas](SHOT_GALLERY_V2.md). Birds y Gallery se
 cierran en commits separados. v89CI38232622397/Vercel7011187789Ready y
 mobile-test fast-forward2ae6777. Siguiente solicitud actual: Phalanx con mayor
 exigencia/decisiones/recompensas; Mine/configuración y16imágenes previos intactos.
+
+## Checkpoint v91 · Phalanx
+
+V3 añade presión anunciada desde el inicio, decisiones de interrupción/esquiva
+y recogibles sin pausas ni resets. [Reglas y evidencia](STAR_PHALANX_V3.md).
+Solicitud de cinco juegos cerrada por unidades v89–v91; no declara terminado
+el backlog general. v90CI38235738271success/Vercel7011722710Ready,
+mobile-test avanzó a bb3ff46 sin force-push. Configuración Mine,16imágenes
+ausentes y tareas generales del ledger siguen pendientes.

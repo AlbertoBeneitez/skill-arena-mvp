@@ -66,6 +66,8 @@
     "scripts/stack-shift-play-fixture.ts",
     "scripts/verify-phalanx-v1.ts",
     "scripts/verify-phalanx-v2.ts",
+    "scripts/verify-phalanx-v3.ts",
+    "scripts/phalanx-v3-play-fixture.ts",
     "scripts/phalanx-play-fixture.ts",
     "scripts/verify-sky-hop-v1.ts",
     "scripts/verify-sky-hop-v2.ts",
