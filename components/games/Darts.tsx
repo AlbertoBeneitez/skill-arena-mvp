@@ -9,9 +9,9 @@ import {
 } from "@/lib/verified/dartsCore.v3";
 import { DARTS_SECTORS } from "@/lib/verified/dartsCore.v1";
 import {
-  dartFlightPoseV3,
-  dartPresentationPoseV3,
-} from "@/lib/dartsPresentation.v3";
+  dartPerspectiveFlight,
+  dartPerspectivePose,
+} from "@/lib/dartsFlightPerspective";
 import { drawDart } from "@/lib/dartsPresentation";
 import { isDartsThrowGesture } from "@/lib/verified/dartsGesture.v2";
 import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
@@ -79,7 +79,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   ctx.arc(cx, cy, 10, 0, Math.PI * 2);
   ctx.fill();
 
-  const pose = dartPresentationPoseV3(s);
+  const pose = dartPerspectivePose(s);
   if (pose) {
     const impact = s.impacts.at(-1);
     if (s.phase === "flight" && s.phaseTicks < 120 && impact) {
@@ -91,7 +91,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
         age <= s.phaseTicks;
         age += 2
       ) {
-        const p = dartFlightPoseV3(
+        const p = dartPerspectiveFlight(
           cx + impact.x / 1000,
           cy + impact.y / 1000,
           age,

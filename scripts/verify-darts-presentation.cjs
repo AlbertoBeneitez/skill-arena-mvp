@@ -11,7 +11,7 @@ module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p))),
     v3 = await load("lib/verified/dartsCore.v3.js"),
     legacy = await load("lib/verified/dartsCore.v1.js"),
-    visual = await load("lib/dartsPresentation.v3.js"),
+    visual = await load("lib/dartsFlightPerspective.js"),
     sprite = await load("lib/dartsPresentation.js"),
     protocol = await load("lib/verified/dartsProtocol.v1.js"),
     gesture = await load("lib/verified/dartsGesture.v2.js"),
@@ -34,7 +34,7 @@ module.exports = (async () => {
   const deps = {
       "@/lib/verified/dartsCore.v3": v3,
       "@/lib/verified/dartsCore.v1": legacy,
-      "@/lib/dartsPresentation.v3": visual,
+      "@/lib/dartsFlightPerspective": visual,
       "@/lib/dartsPresentation": sprite,
       "@/lib/verified/dartsProtocol.v1": protocol,
       "@/lib/verified/dartsGesture.v2": gesture,
@@ -98,7 +98,7 @@ module.exports = (async () => {
       assert.equal(r.stack.length, 0);
       assert.ok(!r.arcs.some((a) => a[2] === 7), "no landing reticle");
       assert.ok(!r.texts.some((t) => t.includes("OBJETIVO")));
-      const p = visual.dartPresentationPoseV3(s);
+      const p = visual.dartPerspectivePose(s);
       assert.equal(r.sprites.length, p ? 1 : 0);
       if (p) {
         assert.ok(Math.abs(p.x - r.sprites[0].x) < 1e-9);
@@ -107,14 +107,14 @@ module.exports = (async () => {
       frames++;
     }
     check();
-    assert.equal(visual.dartPresentationPoseV3(s).y, 550);
+    assert.equal(visual.dartPerspectivePose(s).y, 550);
     runtime.applyCoreInput(v3.DARTS_CORE_V3, s, "THROW", 1e9);
     const hit = s.impacts[0];
     let lastScale = Infinity;
     const angles = new Set();
     for (let age = 0; age < 144; age++) {
       check();
-      const p = visual.dartPresentationPoseV3(s);
+      const p = visual.dartPerspectivePose(s);
       if (age <= 120) {
         assert.ok(p.scale <= lastScale);
         lastScale = p.scale;
@@ -134,7 +134,7 @@ module.exports = (async () => {
   const idle = v3.DARTS_CORE_V3.create("visual-timeout");
   runtime.advanceCoreToTick(v3.DARTS_CORE_V3, idle, 14 * 120, 1e9);
   assert.equal(
-    visual.dartPresentationPoseV3(idle),
+    visual.dartPerspectivePose(idle),
     null,
     "timeout never fabricates a thrown dart",
   );
