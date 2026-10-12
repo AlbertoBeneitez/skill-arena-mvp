@@ -442,3 +442,12 @@ Checkpoint v93: Birds3.0 añade seis andamios persistentes de dos a cuatro altur
 58piezas con soportes/decks reales y conteos visibles por tipo. V1/V2 archivados.
 Registros/replay/servidor y QA completa ambas vistas preservados; Roulette físico
 y tapete plegable es la siguiente unidad de la solicitud.
+
+Checkpoint v94: Roulette2.0/protocolo2 con lanzamiento cartesiano desde la suelta
+del dedo, gravedad/contactos/rodadura y captura determinista, no órbita
+prefijada. Tapete plegable49apuestas, incluyendo columnas, áreas48px y gesto
+fiable; V1/core/golden/adaptador intactos. [Evidencia](GALACTIC_ROULETTE_V2.md).
+La solicitud de cinco puntos queda implementada y validada localmente entre
+v92–v94. Despliegue pendiente: Vercel no ha emitido previews v92/v93, por lo que
+mobile-test sigue en v91 hasta CI+Ready del HEAD nuevo. Menús/escenarios/
+persistencia de ganadores/pagos son una fase posterior, sin activar datos/dinero real.

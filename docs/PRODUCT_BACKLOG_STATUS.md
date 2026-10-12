@@ -1,11 +1,11 @@
-# GALACTIC GAMES · Seguimiento de v93-mobile
+# GALACTIC GAMES · Seguimiento de v94-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
 | Juego / área | Trabajo preservado y validado | Pendiente |
 | --- | --- | --- |
 | Galactic Slot | v89: V1 VERIFIED conservado; referencia fija alineada visible10s, máquina ampliada después, avance0 visible/inmóvil equivalente al wrap histórico; QA táctil completa53tiradas/180s y insolvencia20tiradas, ambas vistas, reinicio/rotación/abandono y320px | Sin dinero real ni pairing/consumo durable; seguimiento físico |
-| Galactic Roulette | v89: V1 VERIFIED conservado; selector nativo de46apuestas, arrastre de bola al aro sin slider/botones de potencia, gesto determinista y cancelable; QA32tiradas/180s, derrota22tiradas, reinicio/rotación/abandono y320px ambas vistas | Una apuesta por tiro, sin splits/corners/múltiples chips; sin dinero real/pairing durable |
+| Galactic Roulette | v94: V2 VERIFIED, suelta XY/dirección/impulso por ticks, física cartesiana3D de vuelo/gravedad/contacto/rodadura; tapete plegable49apuestas/columnas, objetivos48px, touch fiable;32wins/8losses/golden/servidor/render, QA completa70/68tiradas180s y20tiradas de insolvencia, ambas vistas/reinicio/rotación/recibos. V1 preservada | Aproximación arcade, una apuesta por tiro sin splits/corners/múltiples chips; sin dinero real/pairing durable |
 | Galactic Birds | v93: V3 VERIFIED, seis andamios persistentes2–4alturas/58piezas, soportes y plataformas físicos, doce cerdos; restantes por cada tipo de pájaro;1000campos,8clears/32inicios estables/golden/replay/inputs/servidor/render y QA táctil win/loss/reinicio/rotación/recibo ambas vistas. V1/V2 preservados | Física AABB translacional sin rotación; seguimiento físico/comparación común |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Revisar legibilidad de alternancia X/Z sin texto; seguimiento físico |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Nueva versión para bloques de tamaño constante/estabilidad y plataforma de lanzamiento cuidada; conservar base y replay |
@@ -480,3 +480,17 @@ lanzamiento y tapete plegable Roulette, en nuevas versiones competitivas.
 Vercel aún no ha emitido despliegue para55b9332, acceso a webhooks403.
 mobile-test conserva último checkpoint desplegado hasta Ready.
 Siguiente: Roulette con trayectoria/cartesianas/gravedad y tapete plegable.
+
+## Checkpoint v94 · cierre de la solicitud de cinco puntos
+
+Buscador retirado, Slot fino, perspectiva Dardos, andamios/conteos Birds y
+Roulette físico/tapete plegable, por unidades independientes.
+[Reglas y QA Roulette](GALACTIC_ROULETTE_V2.md). Estados/contextos de v92/v93
+se conservan; CI38285896654 y38286994753 success. Vercel no ha emitido nuevas
+previews; lectura de webhooks403 y sin credenciales de inspección. No se
+avanza mobile-test desde v91 sin Ready del mismo HEAD. GitHub/CI/despliegue
+final se comprobarán antes de cerrar la publicación; no se afirma despliegue
+por compilar.
+Fase posterior del propietario: escenarios iniciales/registro durable y
+verificación inmediata de ganadores, menús/inicios/ranking dentro de avatar y
+pagos, respetando las dependencias existentes. Backlog general sigue abierto.
