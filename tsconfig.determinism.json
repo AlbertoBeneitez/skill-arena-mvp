@@ -87,6 +87,7 @@
     "scripts/verify-piano-v2.ts",
     "scripts/verify-piano-v3.ts",
     "scripts/verify-slot-v1.ts",
+    "scripts/verify-slot-presentation.ts",
     "scripts/verify-roulette-v1.ts",
     "scripts/roulette-play-fixture.ts",
     "scripts/birds-play-fixture.ts",

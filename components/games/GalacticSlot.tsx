@@ -6,6 +6,12 @@ import {
   type SlotState,
 } from "@/lib/verified/galacticSlotCore.v1";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+import {
+  SLOT_ORDER_PREVIEW_TICKS,
+  slotVisibleSteps,
+  slotReelPosition,
+  slotMachineLayout,
+} from "@/lib/slotPresentation";
 import CoreCanvasGame from "./CoreCanvasGame";
 const colors = [
   "#f7d75f",
@@ -71,29 +77,36 @@ function symbol(
 }
 function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   drawSpaceBackdrop(ctx, 390, 620, 2, s.tick);
-  ctx.fillStyle = "rgba(6,16,34,.88)";
-  ctx.beginPath();
-  ctx.roundRect(24, 45, 342, 223, 18);
-  ctx.fill();
-  for (let i = 0; i < 3; i++) {
-    const x = 86 + i * 109;
-    for (let j = 0; j < 8; j++) {
-      const y = 65 + j * 23;
-      if (s.positions[i] === j) {
-        ctx.fillStyle = "rgba(115,212,255,.2)";
-        ctx.beginPath();
-        ctx.roundRect(x - 40, y - 11, 80, 22, 8);
-        ctx.fill();
+  const layout = slotMachineLayout(s.tick);
+  if (s.tick < SLOT_ORDER_PREVIEW_TICKS) {
+    ctx.fillStyle = "rgba(6,16,34,.88)";
+    ctx.beginPath();
+    ctx.roundRect(24, 45, 342, 223, 18);
+    ctx.fill();
+    for (let i = 0; i < 3; i++) {
+      const x = 85 + i * 110;
+      for (let j = 0; j < 8; j++) {
+        const y = 65 + j * 23;
+        if (s.positions[i] === j) {
+          ctx.fillStyle = "rgba(115,212,255,.2)";
+          ctx.beginPath();
+          ctx.roundRect(x - 40, y - 11, 80, 22, 8);
+          ctx.fill();
+        }
+        symbol(ctx, s.strips[i][j], x, y, 24);
+        ctx.fillStyle = "#a5b9cd";
+        ctx.font = "11px system-ui";
+        ctx.fillText(String(j + 1), x + 25, y + 4);
       }
-      symbol(ctx, s.strips[i][j], x - 9, y, 24);
-      ctx.fillStyle = "#a5b9cd";
-      ctx.font = "11px system-ui";
-      ctx.fillText(String(j + 1), x + 25, y + 4);
     }
+    ctx.fillStyle = "#e7f3ff";
+    ctx.textAlign = "right";
+    ctx.font = "bold 14px system-ui";
+    ctx.fillText(`${Math.ceil((1200 - s.tick) / 120)}s`, 351, 255);
   }
   for (let id = 0; id < 8; id++) {
     const x = 47 + (id % 4) * 91,
-      y = 286 + Math.floor(id / 4) * 26;
+      y = layout.tableY + Math.floor(id / 4) * 26;
     symbol(ctx, id, x - 12, y, 24);
     ctx.fillStyle = "#d8e7f4";
     ctx.textAlign = "left";
@@ -103,29 +116,24 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   ctx.fillStyle = "#90a9bf";
   ctx.font = "11px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("PAREJA 10€  ·  7 SIN PAREJA 5€", 195, 333);
+  ctx.fillText("PAREJA 10€  ·  7 SIN PAREJA 5€", 195, layout.tableY + 47);
   const lit = s.tick - s.lastSettledTick < 90 && s.lastPayout > 0;
   ctx.fillStyle = "#132940";
   ctx.strokeStyle = lit ? "#ffe9a4" : "#59788b";
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.roundRect(22, 350, 346, 108, 22);
+  ctx.roundRect(22, layout.top, 346, layout.height, 22);
   ctx.fill();
   ctx.stroke();
   for (let i = 0; i < 3; i++) {
     const x = 85 + i * 110;
     ctx.save();
     ctx.beginPath();
-    ctx.roundRect(x - 44, 357, 88, 94, 12);
+    ctx.roundRect(x - 44, layout.top + 7, 88, layout.height - 14, 12);
     ctx.clip();
     ctx.fillStyle = "#061322";
-    ctx.fillRect(x - 44, 357, 88, 94);
-    const p =
-      s.settlingAt === -1
-        ? s.positions[i]
-        : s.from[i] +
-          (24 + i * 8 + s.steps[i]) *
-            (1 - Math.pow(1 - Math.min(1, (s.tick - s.spinStart) / 360), 3));
+    ctx.fillRect(x - 44, layout.top + 7, 88, layout.height - 14);
+    const p = slotReelPosition(s, i);
     const index = Math.floor(p),
       fraction = p - index;
     for (let k = -1; k <= 2; k++)
@@ -133,19 +141,19 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
         ctx,
         s.strips[i][(((index + k) % 8) + 8) % 8],
         x,
-        405 + (k - fraction) * 65,
-        62,
+        layout.center + (k - fraction) * layout.pitch,
+        layout.symbolSize,
       );
     ctx.restore();
     ctx.fillStyle = "#edf6ff";
     ctx.font = "bold 16px system-ui";
     ctx.textAlign = "center";
-    ctx.fillText(String(s.steps[i]), x, 490);
+    ctx.fillText(String(slotVisibleSteps(s.steps[i])), x, 490);
   }
   if (lit) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 18px system-ui";
-    ctx.fillText(`+${s.lastPayout / 100}€`, 195, 348);
+    ctx.fillText(`+${s.lastPayout / 100}€`, 195, layout.top - 8);
   }
 }
 const hudLabel = (s: Readonly<SlotState>) =>

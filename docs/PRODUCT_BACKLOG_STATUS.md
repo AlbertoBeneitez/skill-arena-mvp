@@ -408,3 +408,12 @@ v87 pasó CI38165672231/Vercel7000173634Ready; mobile-test fast-forward a8367025
 La tarea Mine pública NO está cerrada: falta configurar PostgreSQL en Vercel;
 no hay DATABASE_URL ni servicio elegido. Las16imágenes siguen sin adjuntar.
 River no tiene meta de filas, con límite técnico de seis minutos documentado.
+
+## Unidad Slot posterior a v88
+
+Referencia fija alineada con rodillos y oculta tras1200ticks; máquina ampliada y
+avance0(alias del wrap8existente) visualmente inmóvil. Core1.0y goldens intactos.
+Suite completa/typecheck/build; QA win53tiradas/180s/saldo1043500y loss20tiradas/
+t8326–8393, ambas orientaciones, reinicio/cancel/doble input/registro. QA específica
+comprueba0, ocultación10s, rotación y prefijo aceptado. Pendientes de solicitud
+actual: Roulette desplegable/arrastre, Phalanx decisiones/recompensas, galería y Birds.

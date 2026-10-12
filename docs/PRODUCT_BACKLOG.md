@@ -401,3 +401,12 @@ entre workers, CAS/transacciones, partidas táctiles y seguridad HTTP. Vercel
 sigue con legacy/setup fijo mientras falte la base configurada. Detalles y límites
 en [MINE_PERSISTED_TRAINING.md](MINE_PERSISTED_TRAINING.md). No se declara cerrada
 la activación pública ni las16imágenes todavía ausentes; auth/money continúan apagados.
+
+Solicitud posterior a v88: Phalanx con más decisiones/esquiva/dificultad inicial y
+recompensas; Shot Gallery como una plantilla de tiro revelada y música tensa;
+Birds centrado en derribo de estructuras y enemigos porcinos espaciales originales;
+Roulette con apuestas desplegables y arrastre de bola; Slot referencia de orden
+visible10s y avance0. Se implementan por unidades, con históricos preservados.
+Slot: avance8histórico se presenta como0y permanece quieto en el renderer; mapa
+de orden se oculta en tick1200y la máquina se amplía. Core1.0/payouts/hashes
+intactos; QA completa de victoria/insolvencia/reinicio/rotación/abandono ambas vistas.
