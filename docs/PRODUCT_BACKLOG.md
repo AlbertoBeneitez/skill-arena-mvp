@@ -415,3 +415,7 @@ Checkpoint v89: Slot0/referencia10s y Roulette desplegable/arrastre, uno por
 commit, con cores históricos intactos y QA de sesiones completas. El control
 nativo común conserva la cola/replay/servidor. Evidencia en releases/v89-mobile.md.
 Continúan Phalanx con decisiones/recompensas, galería de tiro y Birds de demolición.
+
+Birds: objetivos porcinos de diseño propio, encuadre de demolición más legible y
+regresión de derribo/derrota indirecta. Campo continuo/estructuras/masa/gravedad
+V2preservados. QA completa win/loss, ambos formatos; nueva galería y Phalanx pendientes.

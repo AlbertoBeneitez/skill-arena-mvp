@@ -286,7 +286,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       while (!done) {
         const frame = await page.evaluate(() => window.__birds),
           hud = await page.locator(".coreHud").innerText(),
-          values = hud.match(/(\d+) DRONES · (\d+) TIROS/);
+          values = hud.match(/(\d+)\/\d+ CERDOS · (\d+) TIROS/);
         if (!values) break;
         const ammo = Number(values[2]);
         if (ammo === 0) {
@@ -323,7 +323,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           used = new Set();
         for (const rect of frame.bodies) {
           const x = Math.round((rect.x + rect.w / 2) * 1000 + camera),
-            y = Math.round((rect.y + rect.h / 2) * 1000),
+            y = Math.round((rect.y + rect.h / 2 + 80) * 1000),
             matches = model.bodies
               .filter(
                 (b) =>
@@ -354,7 +354,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           }
         for (const r of frame.enemies) {
           const x = Math.round((r.x + r.w / 2) * 1000 + camera),
-            y = Math.round((r.y + r.h / 2) * 1000),
+            y = Math.round((r.y + r.h / 2 + 80) * 1000),
             e = model.enemies
               .filter((e) => e.alive)
               .sort(
@@ -422,10 +422,10 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         while (!done && Date.now() < until) {
           await page.waitForTimeout(120);
           const pose = await page.evaluate(() => window.__birds.helmet);
-          if (pose && Math.abs(pose.logicalY - 520) < 0.001) {
+          if (pose && Math.abs(pose.logicalY - 440) < 0.001) {
             await page.waitForTimeout(120);
             const still = await page.evaluate(() => window.__birds.helmet);
-            if (still && Math.abs(still.logicalY - 520) < 0.001) break;
+            if (still && Math.abs(still.logicalY - 440) < 0.001) break;
           }
         }
         if (shotCount === 3 && !done) {

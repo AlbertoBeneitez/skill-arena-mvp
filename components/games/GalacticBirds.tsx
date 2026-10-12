@@ -12,9 +12,10 @@ import {
   birdsPowerAction,
 } from "@/lib/verified/galacticBirdsProtocol.v1";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
+import { BIRDS_SCENE_LIFT, drawSpacePig } from "@/lib/birdsPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const hudLabel = (s: Readonly<BirdsState>) =>
-  `${s.kills} DRONES · ${s.ammo} TIROS`;
+  `${s.kills}/${s.enemies.length} CERDOS · ${s.ammo} TIROS`;
 const feedbackScore = (s: Readonly<BirdsState>) => s.kills * 10 + s.destroyed;
 const inputTones = { SHOOT: "tap" } as const;
 const materials = {
@@ -76,7 +77,7 @@ function falcon(
 }
 export default function GalacticBirds(props: GameRuntimeProps) {
   const drag = useRef<{ from: CorePoint; to: CorePoint } | null>(null),
-    launcher = useRef<CorePoint>({ x: 110, y: 520 });
+    launcher = useRef<CorePoint>({ x: 110, y: 520 - BIRDS_SCENE_LIFT });
   useEffect(() => {
     drag.current = null;
     const clear = () => {
@@ -106,28 +107,28 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           Math.min(1600000 - width * 1000, (s.bird?.x ?? s.launcherX) - 110000),
         ),
         worldX = (x: number) => (x - camera) / 1000;
-      launcher.current = { x: worldX(s.launcherX), y: 520 };
+      launcher.current = { x: worldX(s.launcherX), y: 520 - BIRDS_SCENE_LIFT };
       drawSpaceBackdrop(ctx, width, 620, 2, s.tick);
       ctx.fillStyle = "rgba(15,35,51,.94)";
-      ctx.fillRect(0, 560, width, 60);
+      ctx.fillRect(0, 560 - BIRDS_SCENE_LIFT, width, 60 + BIRDS_SCENE_LIFT);
       ctx.strokeStyle = "#71919f";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(0, 560);
-      ctx.lineTo(width, 560);
+      ctx.moveTo(0, 560 - BIRDS_SCENE_LIFT);
+      ctx.lineTo(width, 560 - BIRDS_SCENE_LIFT);
       ctx.stroke();
       ctx.strokeStyle = "rgba(104,164,187,.2)";
       ctx.lineWidth = 1;
       for (let x = -((camera / 1000) % 70); x < width; x += 70) {
         ctx.beginPath();
-        ctx.moveTo(x, 562);
+        ctx.moveTo(x, 562 - BIRDS_SCENE_LIFT);
         ctx.lineTo(x + 35, 620);
         ctx.stroke();
       }
       for (const b of s.bodies) {
         if (!b.alive) continue;
         const x = worldX(b.x),
-          y = b.y / 1000,
+          y = b.y / 1000 - BIRDS_SCENE_LIFT,
           w = b.w / 1000,
           h = b.h / 1000;
         if (x + w / 2 < 0 || x - w / 2 > width) continue;
@@ -155,60 +156,45 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       for (const e of s.enemies) {
         if (!e.alive) continue;
         const x = worldX(e.x),
-          y = e.y / 1000;
+          y = e.y / 1000 - BIRDS_SCENE_LIFT;
         if (x < -25 || x > width + 25) continue;
-        ctx.fillStyle = "#374762";
-        ctx.strokeStyle = "#9da8d1";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(x - 17, y - 16, 34, 32, 10);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = "#cb83a1";
-        ctx.beginPath();
-        ctx.arc(x - 6, y - 1, 3, 0, Math.PI * 2);
-        ctx.arc(x + 6, y - 1, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#93c7cd";
-        ctx.beginPath();
-        ctx.moveTo(x - 6, y + 9);
-        ctx.lineTo(x + 6, y + 9);
-        ctx.stroke();
+        drawSpacePig(ctx, x, y);
       }
       const lx = launcher.current.x;
       ctx.fillStyle = "#294c60";
       ctx.strokeStyle = "#87bcc4";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(lx - 27, 548, 54, 12, 4);
+      ctx.roundRect(lx - 27, 548 - BIRDS_SCENE_LIFT, 54, 12, 4);
       ctx.fill();
       ctx.stroke();
       ctx.lineWidth = 7;
       ctx.beginPath();
-      ctx.moveTo(lx, 548);
-      ctx.lineTo(lx, 535);
-      ctx.moveTo(lx, 535);
-      ctx.lineTo(lx - 14, 512);
-      ctx.moveTo(lx, 535);
-      ctx.lineTo(lx + 14, 512);
+      ctx.moveTo(lx, 548 - BIRDS_SCENE_LIFT);
+      ctx.lineTo(lx, 535 - BIRDS_SCENE_LIFT);
+      ctx.moveTo(lx, 535 - BIRDS_SCENE_LIFT);
+      ctx.lineTo(lx - 14, 512 - BIRDS_SCENE_LIFT);
+      ctx.moveTo(lx, 535 - BIRDS_SCENE_LIFT);
+      ctx.lineTo(lx + 14, 512 - BIRDS_SCENE_LIFT);
       ctx.stroke();
       const pulled = s.phase === "aim" ? drag.current : null,
         px = pulled ? lx + pulled.to.x - pulled.from.x : lx,
-        py = pulled ? 520 + pulled.to.y - pulled.from.y : 520;
+        py =
+          (pulled ? 520 + pulled.to.y - pulled.from.y : 520) - BIRDS_SCENE_LIFT;
       if (s.phase === "aim") {
         ctx.strokeStyle = "#d6c28c";
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(lx - 14, 512);
+        ctx.moveTo(lx - 14, 512 - BIRDS_SCENE_LIFT);
         ctx.lineTo(px, py);
-        ctx.lineTo(lx + 14, 512);
+        ctx.lineTo(lx + 14, 512 - BIRDS_SCENE_LIFT);
         ctx.stroke();
         falcon(ctx, px, py, (-(10 + s.aim) * Math.PI) / 180, s.queue[s.shots]);
       }
       if (s.bird) {
         const b = s.bird,
           x = worldX(b.x),
-          y = b.y / 1000;
+          y = b.y / 1000 - BIRDS_SCENE_LIFT;
         ctx.strokeStyle = "rgba(148,210,231,.28)";
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -222,7 +208,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         if (age > 100) continue;
         const p = age / 100,
           x = worldX(e.x),
-          y = e.y / 1000;
+          y = e.y / 1000 - BIRDS_SCENE_LIFT;
         ctx.globalAlpha = 1 - p;
         ctx.strokeStyle =
           e.kind === "enemy" ? "#f0bfc2" : materials[e.kind].edge;
@@ -348,7 +334,8 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           }
           if (phase === "down") {
             drag.current =
-              Math.hypot(p.x - launcher.current.x, p.y - 520) < 64
+              Math.hypot(p.x - launcher.current.x, p.y - launcher.current.y) <
+              64
                 ? { from: p, to: p }
                 : null;
             return null;

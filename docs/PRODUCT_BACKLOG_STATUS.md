@@ -429,3 +429,16 @@ keyboard/cancel/blur/doble intento/sonido/rotación/reinicio/prefijo aceptado.
 [Alcance y evidencia](releases/v89-mobile.md). Siguiente: Phalanx, galería y Birds.
 No se reabren otras unidades validadas; Mine público/avatares siguen con sus
 prerrequisitos externos documentados.
+
+## Unidad Birds posterior a v89
+
+Birds conserva core2.0/physics/replay y cambia objetivos a porcinos espaciales
+originales; el campo horizontal, soportes y lanzador se elevan80px para despejar
+la cola y mejorar lectura. Se mantiene radar con todas las estructuras reales y
+tres aves físicas distintas. Regresión seedbirds-demolition-0/aim0 demuestra
+derribo y derrota indirecta por caída, sin reemplazar el campo.576frames/render
+puro y testsV2/goldens/históricos intactos; QA táctil completa11tiros/12objetivos/
+score6920y pérdida30tiros, ambas vistas, reinicio/rotación/sonido/cancel/abandono.
+No copia recursos/identidad comercial. Física AABB translacional continúa siendo
+un límite documentado, no se presenta como simulador de cuerpos rotatorios.
+Siguiente: nueva Shot Gallery y Phalanx con más decisiones/recompensas.

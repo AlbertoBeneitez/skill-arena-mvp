@@ -94,7 +94,9 @@
     "scripts/birds-play-fixture.ts",
     "scripts/verify-birds-v1.ts",
     "scripts/verify-birds-v2.ts",
-    "scripts/birds-v2-play-fixture.ts"
+    "scripts/birds-v2-play-fixture.ts",
+    "lib/birdsPresentation.ts",
+    "scripts/verify-birds-demolition.ts"
   ],
   "exclude": [
     "node_modules",
