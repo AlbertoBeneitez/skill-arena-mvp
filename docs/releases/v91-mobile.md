@@ -19,3 +19,9 @@ interactive QA uses a local production build. No real auth/money activation.
 The five-game request is implemented across v89–v91. General backlog,
 provider configuration for public Mine and missing16avatar files remain tracked
 in PRODUCT_BACKLOG_STATUS.md, without duplicating them here.
+
+Publication follow-up: initial Vercel deployment for10711d7 failed. GitHub
+exposes no build-log cause, and the environment has no Vercel inspection token.
+The local production build passes. This ledger correction also triggers one
+fresh provider attempt; mobile-test stays at validated v90 until exact-head
+CI and VercelReady are confirmed. No credentials requested or introduced.
