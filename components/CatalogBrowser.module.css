@@ -1,63 +1,6 @@
 .browser {
   min-width: 0;
 }
-.searchRow {
-  display: grid;
-  gap: 8px;
-  margin: 8px 0 16px;
-}
-.searchLabel {
-  color: #d6e3f2;
-  font-size: 13px;
-  font-weight: 600;
-}
-.searchField {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #111f32;
-  border: 1px solid #334962;
-  border-radius: 12px;
-  padding: 0 12px;
-}
-.searchField svg {
-  stroke: #9db8cf;
-  fill: none;
-  stroke-width: 1.8;
-  flex-shrink: 0;
-}
-.searchField input {
-  width: 100%;
-  min-width: 0;
-  height: 48px;
-  border: 0;
-  outline: none;
-  color: #f2f6ff;
-  background: transparent;
-  font-size: 16px;
-}
-.searchField input::placeholder {
-  color: #9aacbe;
-}
-.searchField:focus-within {
-  border-color: #8adce8;
-  outline: 2px solid #8adce8;
-  outline-offset: 2px;
-}
-.searchField button {
-  flex-shrink: 0;
-  min-width: 44px;
-  min-height: 44px;
-  font-size: 24px;
-  background: transparent;
-  border: 0;
-  color: #d9e8f9;
-}
-.count {
-  margin: 0;
-  color: #9db2c8;
-  font-size: 12px;
-}
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -78,8 +21,7 @@
   aspect-ratio: 16/11;
   background:
     radial-gradient(ellipse at 75% 12%, #374162 0, transparent 46%),
-    radial-gradient(ellipse at 12% 72%, #1c344a 0, transparent 60%),
-    #0b1729;
+    radial-gradient(ellipse at 12% 72%, #1c344a 0, transparent 60%), #0b1729;
 }
 .cover img {
   width: 100%;
@@ -140,36 +82,9 @@
   background: #7cd2dc;
 }
 .play:focus-visible,
-.ghost:focus-visible,
-.empty button:focus-visible,
-.searchField button:focus-visible {
+.ghost:focus-visible {
   outline: 3px solid #e5b5ff;
   outline-offset: 3px;
-}
-.empty {
-  padding: 28px 20px;
-  border: 1px solid #33465b;
-  border-radius: 16px;
-  background: #111e30;
-  text-align: center;
-  color: #e6f0fb;
-}
-.empty strong {
-  font-size: 17px;
-}
-.empty p {
-  color: #b6c7d9;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.empty button {
-  min-height: 48px;
-  border: 1px solid #8ad3df;
-  border-radius: 10px;
-  padding: 8px 16px;
-  background: #18364a;
-  color: #d4f7ff;
-  font-weight: 700;
 }
 @media (min-width: 680px) {
   .grid {

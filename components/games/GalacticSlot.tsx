@@ -113,10 +113,18 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
     ctx.font = "bold 11px system-ui";
     ctx.fillText(`×3  ${SLOT_RULES.tripleMultipliers[id] * 5}€`, x + 3, y + 4);
   }
-  ctx.fillStyle = "#90a9bf";
-  ctx.font = "11px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("PAREJA 10€  ·  7 SIN PAREJA 5€", 195, layout.tableY + 47);
+  for (const [x, label, amount] of [
+    [107, "Pareja", "10 €"],
+    [280, "7 sin pareja", "5 €"],
+  ] as const) {
+    ctx.fillStyle = "#a5b9cd";
+    ctx.font = "400 10px system-ui";
+    ctx.fillText(label, x - 14, layout.tableY + 47);
+    ctx.fillStyle = "#e0d2a6";
+    ctx.font = "500 10px system-ui";
+    ctx.fillText(amount, x + 34, layout.tableY + 47);
+  }
   const lit = s.tick - s.lastSettledTick < 90 && s.lastPayout > 0;
   ctx.fillStyle = "#132940";
   ctx.strokeStyle = lit ? "#ffe9a4" : "#59788b";

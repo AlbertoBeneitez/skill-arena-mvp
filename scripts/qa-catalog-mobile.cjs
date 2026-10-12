@@ -48,8 +48,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       ),
     );
     await page.goto(process.env.QA_BASE_URL || "http://127.0.0.1:3042");
-    const catalog = page.getByRole("region", { name: "Catálogo de juegos" }),
-      search = page.getByLabel("Buscar juegos", { exact: true });
+    const catalog = page.getByRole("region", { name: "Catálogo de juegos" });
     await catalog.waitFor();
     assert.equal(await catalog.locator("article").count(), GAMES.length);
     for (const card of await catalog.locator("article").all()) {
@@ -102,29 +101,11 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         .evaluate((e) => getComputedStyle(e).backgroundColor),
       "rgb(24, 44, 65)",
     );
-    await search.tap();
-    await page.keyboard.insertText("BILLAR");
-    assert.equal(await catalog.locator("article").count(), 1);
     assert.equal(
-      await catalog.locator("article").getAttribute("aria-label"),
-      "Billar",
+      await page.getByRole("searchbox").count(),
+      0,
+      "catalogue has no search",
     );
-    await page
-      .getByRole("button", { name: "Limpiar búsqueda", exact: true })
-      .tap();
-    assert.equal(await catalog.locator("article").count(), GAMES.length);
-    await search.fill("punteria");
-    assert.ok(
-      (await catalog.locator("article").count()) > 1,
-      "accent-insensitive skill discovery",
-    );
-    await search.fill("un-juego-inexistente");
-    assert.equal(await catalog.locator("article").count(), 0);
-    await page.getByText("No encontramos ese reto", { exact: true }).waitFor();
-    await page
-      .getByRole("button", { name: "Ver todos los juegos", exact: true })
-      .tap();
-    assert.equal(await catalog.locator("article").count(), GAMES.length);
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     const firstPlay = await page
       .getByRole("button", { name: "Jugar a Dardos", exact: true })
@@ -170,7 +151,6 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         process.env.QA_LANDSCAPE_SCREENSHOT ||
         "/workspace/.cloud-setup/catalog-landscape.png",
     });
-    await search.fill("Sky Hop");
     let starts = 0;
     page.on("request", (r) => {
       if (r.url().includes("/verified-match/start")) starts++;
@@ -195,7 +175,10 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       "PREPARANDO PARTIDA",
     );
     releaseStart();
-    assert.equal((await (await issued).json()).manifest.game_version, "2.0.0");
+    assert.equal(
+      (await (await issued).json()).manifest.game_version,
+      GAMES.find((g) => g.id === "sky-hop").version,
+    );
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
     assert.equal(starts, 1);
@@ -211,7 +194,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     assert.equal(
       await catalog.locator("article").count(),
       GAMES.length,
-      "catalog resets discovery on remount",
+      "catalog remains complete on remount",
     );
     await page.unroute("**/api/verified-match/start");
     await page.route("**/api/verified-match/start", (route) =>
@@ -232,7 +215,6 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       });
       observer.observe(document.body, { childList: true, subtree: true });
     });
-    await search.fill("Dardos");
     await page
       .getByRole("button", { name: "Jugar a Dardos", exact: true })
       .tap();
@@ -258,7 +240,17 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       true,
       "an immediate action cannot skip the result",
     );
-    await change.tap();
+    await page.waitForFunction(
+      () => !document.querySelector("fieldset.resultActions")?.disabled,
+    );
+    await change.scrollIntoViewIfNeeded();
+    const cdp = await context.newCDPSession(page),
+      r = await change.boundingBox();
+    await cdp.send("Input.synthesizeTapGesture", {
+      x: r.x + r.width / 2,
+      y: r.y + r.height / 2,
+      duration: 80,
+    });
     await catalog.waitFor();
     assert.deepEqual(errors, []);
     console.log(
@@ -266,10 +258,9 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         catalog: GAMES.length,
         narrow: 320,
         landscape: true,
-        search: true,
-        empty: true,
+        searchRemoved: true,
         navigation: true,
-        startVersion: "2.0.0",
+        startVersion: GAMES.find((g) => g.id === "sky-hop").version,
         loading: true,
         startFailure: true,
         errors,
