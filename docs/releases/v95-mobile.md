@@ -17,6 +17,10 @@ V2 touch at320×568 and568×320 covered all49bets, one release/TOSS and abandone
 record receipt. Prior complete V2 wins/losses remain in GALACTIC_ROULETTE_V2.md.
 
 Delivery: v92/v93 previews subsequently became Ready; mobile-test safely advanced
-to v93. v95 CI and exact-HEAD Vercel delivery will be checked before its promotion.
+to v93 (921f314). CI38295718573 succeeded for d3c60be, including PostgreSQL17.
+Vercel has not emitted a deployment for that commit after push and draft PR8;
+exact-HEAD Ready remains required before promotion. The stable alias redirects
+to Vercel SSO from this environment, so hosted browser inspection cannot claim
+that its content is updated. The owner’s existing access is preserved.
 Remaining product scope stays in PRODUCT_BACKLOG_STATUS.md. No real identity,
 money or unconfigured private Mine service is activated.

@@ -506,8 +506,13 @@ pagos, respetando las dependencias existentes. Backlog general sigue abierto.
   fuente real no configurada, atrás y entrada histórica; cero errores de página.
   Arrastre Roulette V2 en320×568/568×320:49apuestas, áreas48px, un TOSS y
   registro abandonado recibido. Suite determinista completa, typecheck/lint,
-  build y diff-check correctos. CI y entrega Vercel pendientes de confirmar.
+  build y diff-check correctos. CI38295718573 success para d3c60be;
+  PostgreSQL17/fixtures/build incluidos. Vercel sin evento para ese HEAD después
+  de push y PR8; entrega externa pendiente, no falta de implementación.
 - Entrega anterior: CI v92/v93 correcta y Vercel Ready confirmado. mobile-test
-  avanzó sin force-push de v91 a v93. Preview v94 aún sin evento de Vercel.
+  avanzó sin force-push de v91 a v93 (921f314), sin divergencia. v94/v95 aún
+  sin evento de Vercel. El alias habitual responde302 a Vercel SSO desde este
+  entorno; no se atribuye un fallo de juego ni se pide QA humana para continuar.
+  No se afirma que el alias ya muestre v95; no se avanza sin Ready confirmado.
 - No se activa identidad autenticada, datos/pagos reales ni Mine sin PostgreSQL.
   El resto del backlog de las filas anteriores permanece abierto.
