@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v92-mobile
+# GALACTIC GAMES · Seguimiento de v93-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -6,7 +6,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | --- | --- | --- |
 | Galactic Slot | v89: V1 VERIFIED conservado; referencia fija alineada visible10s, máquina ampliada después, avance0 visible/inmóvil equivalente al wrap histórico; QA táctil completa53tiradas/180s y insolvencia20tiradas, ambas vistas, reinicio/rotación/abandono y320px | Sin dinero real ni pairing/consumo durable; seguimiento físico |
 | Galactic Roulette | v89: V1 VERIFIED conservado; selector nativo de46apuestas, arrastre de bola al aro sin slider/botones de potencia, gesto determinista y cancelable; QA32tiradas/180s, derrota22tiradas, reinicio/rotación/abandono y320px ambas vistas | Una apuesta por tiro, sin splits/corners/múltiples chips; sin dinero real/pairing durable |
-| Galactic Birds | v90: V2 VERIFIED preservado; tres proyectiles físicos originales, cola/radar de seis estructuras, campo horizontal y soportes legibles; objetivos porcinos espaciales propios, regresión de derrota indirecta por derribo; QA win11tiros/12objetivos y loss30tiros, ambas vistas/reinicio/rotación/cancel/abandono | Física AABB translacional sin cuerpos rotatorios; seguimiento físico y comparación común |
+| Galactic Birds | v93: V3 VERIFIED, seis andamios persistentes2–4alturas/58piezas, soportes y plataformas físicos, doce cerdos; restantes por cada tipo de pájaro;1000campos,8clears/32inicios estables/golden/replay/inputs/servidor/render y QA táctil win/loss/reinicio/rotación/recibo ambas vistas. V1/V2 preservados | Física AABB translacional sin rotación; seguimiento físico/comparación común |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Revisar legibilidad de alternancia X/Z sin texto; seguimiento físico |
 | Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Nueva versión para bloques de tamaño constante/estabilidad y plataforma de lanzamiento cuidada; conservar base y replay |
 | Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados; v73 extiende cuerpos hasta ambos bordes reales del canvas, huecos V4 exactos y QA180s en ambas orientaciones | Rotación1000 y comparación común pendientes |
@@ -473,3 +473,10 @@ autoritativo, sin retícula/proyección previa. Core3.0/gesto/20tiradas no cambi
 cancel/blur/reinicio/recibo sin errores.
 Pendientes de esta solicitud: andamios complejos/conteos Birds; física de
 lanzamiento y tapete plegable Roulette, en nuevas versiones competitivas.
+
+## Checkpoint v93 · andamios Birds
+
+[Reglas y evidencia](GALACTIC_BIRDS_V3.md). v92CI38285896654success;
+Vercel aún no ha emitido despliegue para55b9332, acceso a webhooks403.
+mobile-test conserva último checkpoint desplegado hasta Ready.
+Siguiente: Roulette con trayectoria/cartesianas/gravedad y tapete plegable.

@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p))),
-    v2 = await load("lib/verified/galacticBirdsCore.v2.js"),
+    v2 = await load("lib/verified/galacticBirdsCore.v3.js"),
     presentation = await load("lib/birdsPresentation.js"),
     protocol = await load("lib/verified/galacticBirdsProtocol.v1.js"),
     runtime = await load("lib/verified/coreRuntime.v1.js");
@@ -33,7 +33,7 @@ module.exports = (async () => {
         useEffect() {},
         useCallback: (f) => f,
       },
-      "@/lib/verified/galacticBirdsCore.v2": v2,
+      "@/lib/verified/galacticBirdsCore.v3": v2,
       "@/lib/verified/galacticBirdsProtocol.v1": protocol,
       "@/lib/birdsPresentation": presentation,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
@@ -56,7 +56,7 @@ module.exports = (async () => {
   for (let seed = 0; seed < 32; seed++)
     for (const width of [390, 993, 1438])
       for (let shot = 0; shot < 3; shot++) {
-        const s = v2.BIRDS_CORE.create(`birds-v2-visual-${seed}`);
+        const s = v2.BIRDS_CORE.create(`birds-v3-visual-${seed}`);
         s.shots = shot;
         s.ammo -= shot;
         for (const phase of ["aim", "flight"]) {
@@ -126,12 +126,20 @@ module.exports = (async () => {
           assert.ok(
             texts.some((t) => ["EXPLORADOR", "RÁPIDO", "PESADO"].includes(t)),
           );
+          for (const kind of ["scout", "dart", "meteor"]) {
+            assert.ok(
+              texts.includes(
+                `×${s.queue.slice(s.shots).filter((k) => k === kind).length}`,
+              ),
+              "remaining type count excludes launched bird",
+            );
+          }
           frames++;
         }
       }
   console.log(
     JSON.stringify({
-      variant: "Birds V2",
+      variant: "Birds V3",
       frames,
       allStructuresVisible: true,
       typedQueue: true,

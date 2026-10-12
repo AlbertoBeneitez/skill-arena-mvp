@@ -437,3 +437,8 @@ cambiar reglas; Dardos con perspectiva balística de cámara y gravedad en la
 presentación, manteniendo core3.0,20tiradas, gesto/replay/puntuación.
 Solicitud actual: Birds andamiaje/conteos y Roulette vuelo físico/tapete plegable
 siguen pendientes. Evidencia en releases/v92-mobile.md.
+
+Checkpoint v93: Birds3.0 añade seis andamios persistentes de dos a cuatro alturas,
+58piezas con soportes/decks reales y conteos visibles por tipo. V1/V2 archivados.
+Registros/replay/servidor y QA completa ambas vistas preservados; Roulette físico
+y tapete plegable es la siguiente unidad de la solicitud.

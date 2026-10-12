@@ -6,7 +6,7 @@ import {
   BIRDS_RULES,
   type BirdKind,
   type BirdsState,
-} from "@/lib/verified/galacticBirdsCore.v2";
+} from "@/lib/verified/galacticBirdsCore.v3";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -142,16 +142,25 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         ctx.roundRect(x - w / 2, y - h / 2, w, h, 3);
         ctx.fill();
         ctx.stroke();
-        ctx.strokeStyle = b.hp < b.maxHp ? "#faad9b" : "rgba(225,240,255,.2)";
+        ctx.strokeStyle = b.hp < b.maxHp ? "#faad9b" : "rgba(225,240,255,.35)";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(x - w / 3, y - h / 3);
-        ctx.lineTo(x + w / 3, y + h / 3);
-        if (b.hp < b.maxHp) {
-          ctx.moveTo(x + w / 3, y - h / 3);
-          ctx.lineTo(x - w / 3, y + h / 3);
+        if (h > w) {
+          for (let brace = -h / 2 + 6; brace < h / 2 - 6; brace += 22) {
+            const bottom = Math.min(h / 2 - 6, brace + 22);
+            ctx.moveTo(x - w / 3, y + brace);
+            ctx.lineTo(x + w / 3, y + bottom);
+            ctx.moveTo(x + w / 3, y + brace);
+            ctx.lineTo(x - w / 3, y + bottom);
+          }
+        } else {
+          ctx.moveTo(x - w / 2 + 6, y);
+          ctx.lineTo(x + w / 2 - 6, y);
         }
         ctx.stroke();
+        ctx.fillStyle = c.edge;
+        for (const sign of [-1, 1])
+          ctx.fillRect(x + sign * (w / 2 - 4) - 1, y - h / 2 + 3, 2, 2);
       }
       for (const e of s.enemies) {
         if (!e.alive) continue;
@@ -255,9 +264,9 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           mapTop +
             mapHeight -
             8 -
-            ((560000 - body.y + body.h / 2) / 1000) * 0.32,
+            ((560000 - body.y + body.h / 2) / 1000) * 0.2,
           Math.max(2, (body.w / 1000) * mapScale),
-          (body.h / 1000) * 0.32,
+          (body.h / 1000) * 0.2,
         );
       }
       for (const enemy of s.enemies) {
@@ -266,7 +275,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         ctx.beginPath();
         ctx.arc(
           mapLeft + (enemy.x / 1000) * mapScale,
-          mapTop + mapHeight - 8 - ((560000 - enemy.y) / 1000) * 0.32,
+          mapTop + mapHeight - 8 - ((560000 - enemy.y) / 1000) * 0.2,
           3,
           0,
           Math.PI * 2,
@@ -280,20 +289,24 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         Math.min(mapWidth, width * mapScale),
         mapHeight - 8,
       );
-      const queueStart = s.shots - (s.bird ? 1 : 0),
-        names = { scout: "EXPLORADOR", dart: "RÁPIDO", meteor: "PESADO" };
-      for (let i = 0; i < 3; i++) {
-        const kind = s.queue[queueStart + i];
-        if (!kind) continue;
+      const names = { scout: "EXPLORADOR", dart: "RÁPIDO", meteor: "PESADO" };
+      for (const [i, kind] of (
+        ["scout", "dart", "meteor"] as const
+      ).entries()) {
+        const count = s.queue.slice(s.shots).filter((k) => k === kind).length;
         const x = ((i + 0.5) * width) / 3;
-        ctx.fillStyle = i === 0 ? "rgba(56,84,96,.8)" : "rgba(12,30,48,.7)";
+        const next = s.queue[s.shots] === kind && s.phase === "aim";
+        ctx.fillStyle = next ? "rgba(56,84,96,.8)" : "rgba(12,30,48,.7)";
         ctx.beginPath();
         ctx.roundRect(x - width / 6 + 8, 564, width / 3 - 16, 54, 8);
         ctx.fill();
-        falcon(ctx, x, 580, 0, kind, true);
-        ctx.fillStyle = "#e1edf2";
-        ctx.font = `bold ${Math.min(24, (18 * width) / 390)}px system-ui`;
+        falcon(ctx, x - 18, 580, 0, kind, true);
+        ctx.fillStyle = count ? "#ecdfb4" : "#71899b";
         ctx.textAlign = "center";
+        ctx.font = "700 17px system-ui";
+        ctx.fillText(`×${count}`, x + 18, 586);
+        ctx.fillStyle = "#e1edf2";
+        ctx.font = `bold ${Math.min(18, (14 * width) / 390)}px system-ui`;
         ctx.fillText(names[kind], x, 614);
       }
       // One field's persistent targets, not level/sector indicators.

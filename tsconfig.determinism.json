@@ -96,7 +96,9 @@
     "scripts/birds-play-fixture.ts",
     "scripts/verify-birds-v1.ts",
     "scripts/verify-birds-v2.ts",
+    "scripts/verify-birds-v3.ts",
     "scripts/birds-v2-play-fixture.ts",
+    "scripts/birds-v3-play-fixture.ts",
     "lib/birdsPresentation.ts",
     "lib/dartsFlightPerspective.ts",
     "scripts/verify-birds-demolition.ts"
