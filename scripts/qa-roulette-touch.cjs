@@ -151,6 +151,17 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           document.querySelector('button[data-choice="BET_EVEN"]')?.disabled ===
           false,
       );
+      // Compatibility clicks must not land on a newly exposed betting cell.
+      const originalBet = await summary.innerText();
+      const closedBounds = await summary.boundingBox();
+      await summary.tap();
+      await page.waitForTimeout(80);
+      assert.equal(await summary.innerText(), originalBet);
+      assert.equal(await summary.getAttribute("aria-expanded"), "true");
+      const openBounds = await summary.boundingBox();
+      assert.ok(Math.abs(openBounds.y - closedBounds.y) < 1, "trigger must stay anchored");
+      await summary.tap();
+      assert.equal(await summary.getAttribute("aria-expanded"), "false");
       await tap(summary);
       if (
         !(await panel.evaluate(

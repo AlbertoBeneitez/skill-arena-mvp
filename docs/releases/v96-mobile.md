@@ -9,6 +9,8 @@ Owner's five requested changes are implemented as one bounded batch:
   continuous field, twelve targets and thirty shots; V1–V3 remain archived.
 - Galactic Roulette: collapsible betting cloth with joined numbered cells,
   separate dozens/outside bets and a selected chip, preserving green/blue/white.
+  The trigger stays fixed at the bottom during expansion, preventing a
+  compatibility click from selecting a newly exposed cell.
   Zenithal ball position follows V2's authoritative Cartesian coordinates;
   bounce height affects scale/shadow, not horizontal position. The raised central
   cone has radial shading, slope ribs and a lit boss. On settlement the ball
@@ -41,7 +43,8 @@ panel, one toss/abandoned receipt at320×568 and568×320. Darts: full touch veri
 impacts across five throws. Solitaire: native predictive taps and legal waste
 card snap in both orientations, no page errors/overflow. No new assets or deps.
 
-Delivery: GitHub push, CI and exact-commit Vercel preview are checked after the
-implementation commit. mobile-test stays on its validated checkpoint until CI
-and the matching preview are ready. No access policy change or real-money
+Delivery: implementation df6c181 is pushed as v96-mobile. GitHub reports its
+Vercel deployment completed and CI38423764885 runs the full pipeline. The
+anchored-trigger follow-up is validated before its push; CI/preview for the
+latest commit are checked before mobile-test promotion. No access policy change or real-money
 activation is included. Physical-device QA remains unverified.
