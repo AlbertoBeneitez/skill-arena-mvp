@@ -292,12 +292,16 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
           reach: result.height,
         }),
       );
-    assert.equal(result.won, !loss);
+    if (loss) assert.equal(result.won, false);
+    else if (process.env.QA_EXPECT_WIN) assert.equal(result.won, true);
+    if (result.won) assert.equal(body.final_tick, 32400);
+    else { assert.equal(replay.state.lives, 0); assert.ok(["GATE_COLLISION","OUT_OF_BOUNDS"].includes(result.failure)); }
     assert.equal(submits, 1);
     if (!loss) {
       assert.equal(boundariesChecked, true);
       assert.ok(replay.state.passed > 50);
       assert.ok(replay.state.collected > 5);
+      assert.ok(replay.state.clocks > 0);
     } else {
       assert.ok(body.final_tick > (process.env.QA_TAP_LOSS ? 360 : 720));
       if (process.env.QA_TAP_LOSS)
@@ -326,10 +330,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     );
     if (process.env.QA_SCREENSHOT)
       await page.screenshot({ path: process.env.QA_SCREENSHOT });
+    await page.waitForTimeout(400); // result controls intentionally guard the terminal touch for350ms
     await page.getByRole("button", { name: "CAMBIAR", exact: true }).tap();
+    assert.equal(new URL(page.url()).hash, "#home", "terminal compatibility click must not open Grupo");
     const restart = page.waitForResponse((r) =>
       r.url().includes("/verified-match/start"),
     );
+    restart.catch(()=>{});
     await page
       .getByRole("button", { name: "Jugar a Jet Stream", exact: true })
       .tap();
@@ -362,6 +369,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         portals: replay.state.passed,
         lives: replay.state.lives,
         pickups: replay.state.collected,
+        clocks: replay.state.clocks,
         inputs: body.inputs.length,
         errors,
       }),

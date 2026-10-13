@@ -45,8 +45,14 @@ Native390×844/844×390: direct photo chooser/crop, no000charge/one short spin,
 Darts impact/last points and all six Birds levels (13and12shots, verified wins).
 Roulette320×568/568×320:49bets, fixed trigger, cancel/blur, one toss and abandoned
 receipt. Native Jet reached203portals/23clocks and a server-verified collision
-terminal (23212ticks); the signed270second full-win golden also passes. Native
-player uses actual visible tubes to avoid clock-induced prediction drift.
+terminal (23212ticks); the signed270second full-win golden also passes. Second native player reached235portals before collision. Native
+player uses actual visible tubes; both winning and natural collision terminals
+are legitimate QA outcomes, with an optional explicit win-expectation flag.
+
+Result navigation follow-up: suppress the compatibility click after a touch
+activation even when the result button unmounts. It previously targeted Grupo
+after CAMBIAR; a new physical gesture immediately clears the short click guard.
+Touch activation timing and keyboard/assistive clicks remain unchanged.
 
 Delivery follows GitHub CI and the exact-commit Vercel preview. mobile-test is
 promoted only by fast-forward after both are successful. Original sixteen-avatar

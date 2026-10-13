@@ -539,3 +539,9 @@ Acceso: flecha circular abre el selector de foto sin panel intermedio. Avatares1
 originales siguen ausentes de archivos/adjuntos; integración incompleta hasta
 recibirlos. [Pruebas y límites](releases/v97-mobile.md). Backend/replays/históricos
 conservados. CI/preview del commit exacto preceden la promoción de mobile-test.
+
+Seguimiento de controles v97: CAMBIAR conserva navegación al catálogo y permite
+reinicio; clic de compatibilidad posterior no puede activar Grupo. Derrota Jet
+horizontal/reinicio/envío único y49apuestas Roulette vertical/horizontal pasan.
+La versión base a90ca40 pasó CI38443118376ypreviewReady; se comprueba el commit
+con esta corrección antes de promover mobile-test.

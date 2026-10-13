@@ -485,3 +485,9 @@ comprobados. Las16imágenes originales no están en adjuntos/repositorio; ese
 material sigue pendiente y no se marca incluido. [Evidencia](releases/v97-mobile.md).
 Históricos preservados; suite completa/typecheck/build y QA táctil de unidades
 pasan. Se comprueban CI/Vercel del commit antes de avanzar mobile-test.
+
+Seguimiento v97: corregido clic de compatibilidad al desmontar botones de
+resultado; CAMBIAR abría Grupo accidentalmente tras volver al catálogo. Guard
+transitorio consume solo ese clic y se limpia ante un nuevo gesto físico.
+QA táctil de derrota/reinicio Jet horizontal y49apuestas Roulette en ambas
+orientaciones pasan; sin cambiar el tick de activación táctil ni los cores.
