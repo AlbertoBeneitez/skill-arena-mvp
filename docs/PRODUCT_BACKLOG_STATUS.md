@@ -516,3 +516,15 @@ pagos, respetando las dependencias existentes. Backlog general sigue abierto.
   No se afirma que el alias ya muestre v95; no se avanza sin Ready confirmado.
 - No se activa identidad autenticada, datos/pagos reales ni Mine sin PostgreSQL.
   El resto del backlog de las filas anteriores permanece abierto.
+
+## v96 · solicitud de cinco juegos
+
+Birds4: arcos/pirámide/puente/escalera/torres/voladizo, daños de carga y escombros.
+Roulette2con tapete plegable unido, cono central iluminado y bola asentada en
+número; físicos/resultados históricos preservados. Dardos3con impactos clavados
+persistentes. Billar3con gesto de taco,13potencias,release/cancel y replay.
+Solitaire0.2con tap predictivo, secuencias legales, bases por palo y snap drag.
+[Reglas, pruebas y QA](releases/v96-mobile.md). Queda pendiente la entrega externa
+hasta comprobar CI/Vercel del commit exacto; mobile-test no se avanza antes.
+Los límites de producción y el audit de scoring/end-condition Solitaire siguen
+abiertos; este cambio de entradas no altera su madurez legacy.

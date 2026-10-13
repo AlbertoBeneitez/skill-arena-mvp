@@ -14,7 +14,7 @@ import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
 import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
 import { SHOT_GALLERY_ACTIONS_V2 as SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v2";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
-import { BILLIARDS_ACTIONS } from "./verified/billiardsProtocol.v1";
+import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
 import { ORB_ACTIONS } from "./verified/orbBurstProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
@@ -91,7 +91,7 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  {id:"galactic-birds",version:"3.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:1,allowedActions:BIRDS_ACTIONS},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Campo continuo con12drones, estructuras de vidrio/cerámica/aleación y30tiros. Cola de exploradores, rápidos y pesados; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
+  {id:"galactic-birds",version:"4.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:1,allowedActions:BIRDS_ACTIONS},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Campo continuo con12drones, estructuras de vidrio/cerámica/aleación y30tiros. Cola de exploradores, rápidos y pesados; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
   { id: "galactic-roulette", version: "2.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V2}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único: apuestas de5€ ficticios,100€ iniciales, tres minutos o insolvencia. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
     id: "galactic-slot", version: "1.0.0", status: "VERIFIED",
@@ -118,10 +118,10 @@ const GAME_DEFINITIONS = [
     name: "Dardos", cover: "/covers/darts.svg", enabled: true, waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Veinte lanzamientos, una diana orbital.", difficulty: "MEDIA", skillLabel: "PUNTERÍA + TIMING", rivalScore: 800, rivalName: "NOVA", rivalAvatar: "/avatars/avatar-3.svg", instruction: "Desliza desde abajo hacia la diana y suelta para lanzar.", scoring: "Suma cruda de20tiradas en una diana continua. Sin bonus por objetivos/combo. Swipe ascendente, vuelo1s y progresión suave de estabilidad/presión. Replay autoritativo.",
   },
   {
-    id: "billiards", version: "2.0.0", status: "VERIFIED",
+    id: "billiards", version: "3.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Billiards")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BILLIARDS_ACTIONS },
-    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 8000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Arrastra para apuntar. Elige potencia y toca TIRAR.", scoring: "Diez objetivos, dieciocho tiros y una mesa continua. Avance por embocadas únicas, posiciones conservadas entre tiros.",
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: BILLIARDS_ACTIONS_V3 },
+    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 8000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Tira del taco hacia atrás para ajustar dirección y potencia; suelta para golpear.", scoring: "Diez objetivos, dieciocho tiros y una mesa continua. Avance por embocadas únicas, posiciones conservadas entre tiros.",
   },
   {
     id: "tower-drop",
@@ -215,7 +215,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "solitaire-sprint",
-    version: "0.1.0",
+    version: "0.2.0",
     status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/SolitaireSprint")),
     competition: { verification: "client-result" },

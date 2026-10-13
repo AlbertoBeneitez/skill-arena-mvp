@@ -104,7 +104,12 @@
     "scripts/birds-v3-play-fixture.ts",
     "lib/birdsPresentation.ts",
     "lib/dartsFlightPerspective.ts",
-    "scripts/verify-birds-demolition.ts"
+    "scripts/verify-birds-demolition.ts",
+    "scripts/verify-birds-v4.ts",
+    "scripts/birds-v4-play-fixture.ts",
+    "scripts/verify-interactions-v96.ts",
+    "lib/billiardsPullback.ts",
+    "lib/solitaireMoves.ts"
   ],
   "exclude": ["node_modules", ".det-test"]
 }

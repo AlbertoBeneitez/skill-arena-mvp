@@ -64,9 +64,32 @@ function render(
     ctx.lineTo(cx + Math.cos(a) * 120, cy + Math.sin(a) * 120);
     ctx.stroke();
   }
-  ctx.fillStyle = "#0c2635";
+  // Top-down cone: a raised illuminated boss slopes down to the pockets.
+  const cone = ctx.createRadialGradient(cx - 20, cy - 26, 8, cx, cy, 90);
+  cone.addColorStop(0, "#c9bd91");
+  cone.addColorStop(0.18, "#668281");
+  cone.addColorStop(0.65, "#244c57");
+  cone.addColorStop(1, "#0a202f");
+  ctx.fillStyle = cone;
   ctx.beginPath();
-  ctx.arc(cx, cy, 88, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < 12; i++) {
+    const a = rotation + i * Math.PI / 6;
+    ctx.strokeStyle = i < 6 ? "rgba(231,217,174,.16)" : "rgba(0,8,18,.24)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * 12, cy + Math.sin(a) * 12);
+    ctx.lineTo(cx + Math.cos(a) * 87, cy + Math.sin(a) * 87);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(0,5,14,.35)";
+  ctx.beginPath();
+  ctx.ellipse(cx + 5, cy + 7, 19, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#e5cd96";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 12, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#b99b71";
   ctx.lineWidth = 2;
@@ -91,32 +114,36 @@ function render(
     ctx.restore();
   }
   const idle = s.landingTick === -1;
-  const x = idle ? (drag?.x ?? ROULETTE_BALL_DOCK.x) : s.ballX / 1000;
-  const groundY = idle ? (drag?.y ?? ROULETTE_BALL_DOCK.y) : s.ballY / 1000;
-  const height = idle ? 0 : s.ballZ / 1000;
-  const y = groundY - height;
+  const settled = idle && !drag && s.lastNumber !== null && !s.lastMiss;
+  const pocketAngle = rotation + ROULETTE_WHEEL.findIndex(n => n === s.lastNumber) * Math.PI * 2 / 37;
+  const x = settled ? cx + Math.cos(pocketAngle) * 104
+    : idle ? (drag?.x ?? ROULETTE_BALL_DOCK.x) : s.ballX / 1000;
+  const y = settled ? cy + Math.sin(pocketAngle) * 104
+    : idle ? (drag?.y ?? ROULETTE_BALL_DOCK.y) : s.ballY / 1000;
+  // Height changes size and shadow separation in a zenithal view; it never
+  // shifts the authoritative horizontal trajectory towards the screen top.
+  const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - 6);
   if (idle && !drag) {
     ctx.strokeStyle = "rgba(169,219,238,.6)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(x, y, 28, 0, Math.PI * 2);
+    ctx.arc(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 28, 0, Math.PI * 2);
     ctx.stroke();
+    if (settled) {
+      ctx.fillStyle = "rgba(240,247,255,.28)";
+      ctx.beginPath();
+      ctx.arc(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.fillStyle = "rgba(0,4,14,.45)";
   ctx.beginPath();
-  ctx.ellipse(
-    x + 2,
-    groundY + 3,
-    6 + height * 0.08,
-    3 + height * 0.03,
-    0,
-    0,
-    Math.PI * 2,
-  );
+  ctx.ellipse(x + 2 + height * 0.12, y + 3 + height * 0.15,
+    6 + height * 0.07, 4 + height * 0.04, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#f0f7ff";
   ctx.beginPath();
-  ctx.arc(x, y, 6 + height * 0.07, 0, Math.PI * 2);
+  ctx.arc(x, y, 6 + height * 0.04, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
@@ -183,7 +210,7 @@ const betLabels: Record<string, string> = {
 const choiceControl = {
   label: "Tapete de apuestas",
   presentation: "grid" as const,
-  columns: 4,
+  columns: 5,
   options: ROULETTE_BETS_V2.map((bet) => {
     if (bet.startsWith("NUMBER_")) {
       const n = Number(bet.slice(7));
@@ -224,9 +251,9 @@ const choiceControl = {
       label: betLabels[bet],
       tone: bet === "RED" ? "#176f5a" : bet === "BLACK" ? "#102d50" : "#173e42",
       placement: {
-        row: 15 + Math.floor(i / 2),
-        column: 1 + (i % 2) * 2,
-        columnSpan: 2,
+        row: 2 + i * 2,
+        column: 5,
+        rowSpan: 2,
       },
     };
   }),

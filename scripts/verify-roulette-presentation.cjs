@@ -61,6 +61,7 @@ module.exports = (async () => {
             {
               get(o, k) {
                 if (k in o) return o[k];
+                if (k === "createRadialGradient") return () => ({addColorStop() {}});
                 return (...a) => {
                   if (k === "save") stack.push(o.fillStyle);
                   if (k === "restore") {
@@ -79,19 +80,46 @@ module.exports = (async () => {
           assert.equal(stack.length, 0);
           assert.equal(balls.length, 1);
           assert.equal(Math.round(balls[0][0] * 1000), s.ballX);
-          assert.equal(Math.round(balls[0][1] * 1000), s.ballY - s.ballZ);
-          assert.equal(balls[0][2], 6 + (s.ballZ / 1000) * 0.07);
+          assert.equal(Math.round(balls[0][1] * 1000), s.ballY);
+          assert.equal(balls[0][2], 6 + Math.max(0, s.ballZ / 1000 - 6) * 0.04);
           frames++;
         }
         runtime.stepCore(coreModule.ROULETTE_CORE_V2, s, 1e9);
       }
     }
+  // A landed ball remains in the awarded rotating pocket, never back at dock.
+  const s = coreModule.ROULETTE_CORE_V2.create("settled-zenithal");
+  s.lastNumber = 32;
+  s.lastLandingTick = 240;
+  s.tick = 240;
+  for (let age = 0; age < 120; age++) {
+    const balls = [], stack = [];
+    let arc;
+    const ctx = new Proxy({fillStyle:""}, {get(o,k) {
+      if (k in o) return o[k];
+      if (k === "createRadialGradient") return () => ({addColorStop(){}});
+      return (...args) => {
+        if(k === "save") stack.push(o.fillStyle);
+        if(k === "restore") o.fillStyle = stack.pop();
+        if(k === "arc") arc = args;
+        if(k === "fill" && o.fillStyle === "#f0f7ff") balls.push(arc);
+      };
+    }});
+    const before = JSON.stringify(s);
+    exports.renderUnderTest(ctx,s);
+    assert.equal(JSON.stringify(s),before);
+    const angle = s.wheelPhase / 65536 * Math.PI * 2 - Math.PI / 2 + coreModule.ROULETTE_WHEEL.indexOf(32) * Math.PI * 2 / 37;
+    assert.equal(balls.length,1);
+    assert.ok(Math.abs(balls[0][0] - (195 + Math.cos(angle) * 104)) < 1e-8);
+    assert.ok(Math.abs(balls[0][1] - (195 + Math.sin(angle) * 104)) < 1e-8);
+    runtime.stepCore(coreModule.ROULETTE_CORE_V2,s,1e9);
+  }
   console.log(
     JSON.stringify({
       variant: "RouletteV2",
       frames,
       cartesianFlight: true,
-      gravitationalDepth: true,
+      zenithalBounce: true, persistentAwardedPocket: true,
       rendererPure: true,
     }),
   );

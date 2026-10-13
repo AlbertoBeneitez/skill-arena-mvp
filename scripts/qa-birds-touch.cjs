@@ -12,13 +12,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       pathToFileURL(
         path.join(
           __dirname,
-          "../.det-test/lib/verified/galacticBirdsCore.v3.js",
+          "../.det-test/lib/verified/galacticBirdsCore.v4.js",
         ),
       )
     ),
     { chooseBirdsShot, birdsTrial } = await import(
       pathToFileURL(
-        path.join(__dirname, "../.det-test/scripts/birds-v3-play-fixture.js"),
+        path.join(__dirname, "../.det-test/scripts/birds-v4-play-fixture.js"),
       )
     ),
     { replayCore } = await import(
@@ -170,7 +170,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         .tap();
       const issued = await (await start).json();
       assert.equal(issued.manifest.game_id, "galactic-birds");
-      assert.equal(issued.manifest.game_version, "3.0.0");
+      assert.equal(issued.manifest.game_version, "4.0.0");
       await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
       await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
       await page.waitForTimeout(150);

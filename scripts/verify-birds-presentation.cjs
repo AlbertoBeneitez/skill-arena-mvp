@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p))),
-    v2 = await load("lib/verified/galacticBirdsCore.v3.js"),
+    v2 = await load("lib/verified/galacticBirdsCore.v4.js"),
     presentation = await load("lib/birdsPresentation.js"),
     protocol = await load("lib/verified/galacticBirdsProtocol.v1.js"),
     runtime = await load("lib/verified/coreRuntime.v1.js");
@@ -33,7 +33,7 @@ module.exports = (async () => {
         useEffect() {},
         useCallback: (f) => f,
       },
-      "@/lib/verified/galacticBirdsCore.v3": v2,
+      "@/lib/verified/galacticBirdsCore.v4": v2,
       "@/lib/verified/galacticBirdsProtocol.v1": protocol,
       "@/lib/birdsPresentation": presentation,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },

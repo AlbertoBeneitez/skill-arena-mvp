@@ -1,0 +1,190 @@
+{
+  "seed": "billiards3-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "POWER_00"
+    },
+    {
+      "seq": 1,
+      "tick": 1,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 2,
+      "tick": 407,
+      "action": "POWER_01"
+    },
+    {
+      "seq": 3,
+      "tick": 408,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 4,
+      "tick": 568,
+      "action": "POWER_02"
+    },
+    {
+      "seq": 5,
+      "tick": 569,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 6,
+      "tick": 1012,
+      "action": "POWER_03"
+    },
+    {
+      "seq": 7,
+      "tick": 1013,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 8,
+      "tick": 1469,
+      "action": "POWER_04"
+    },
+    {
+      "seq": 9,
+      "tick": 1470,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 10,
+      "tick": 1938,
+      "action": "POWER_05"
+    },
+    {
+      "seq": 11,
+      "tick": 1939,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 12,
+      "tick": 2418,
+      "action": "POWER_06"
+    },
+    {
+      "seq": 13,
+      "tick": 2419,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 14,
+      "tick": 2908,
+      "action": "POWER_07"
+    },
+    {
+      "seq": 15,
+      "tick": 2909,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 16,
+      "tick": 3408,
+      "action": "POWER_08"
+    },
+    {
+      "seq": 17,
+      "tick": 3409,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 18,
+      "tick": 3917,
+      "action": "POWER_09"
+    },
+    {
+      "seq": 19,
+      "tick": 3918,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 20,
+      "tick": 4434,
+      "action": "POWER_10"
+    },
+    {
+      "seq": 21,
+      "tick": 4435,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 22,
+      "tick": 4960,
+      "action": "POWER_11"
+    },
+    {
+      "seq": 23,
+      "tick": 4961,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 24,
+      "tick": 5516,
+      "action": "POWER_12"
+    },
+    {
+      "seq": 25,
+      "tick": 5517,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 26,
+      "tick": 5581,
+      "action": "POWER_00"
+    },
+    {
+      "seq": 27,
+      "tick": 5582,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 28,
+      "tick": 6000,
+      "action": "POWER_01"
+    },
+    {
+      "seq": 29,
+      "tick": 6001,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 30,
+      "tick": 6431,
+      "action": "POWER_02"
+    },
+    {
+      "seq": 31,
+      "tick": 6432,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 32,
+      "tick": 6876,
+      "action": "POWER_03"
+    },
+    {
+      "seq": 33,
+      "tick": 6877,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 34,
+      "tick": 7319,
+      "action": "POWER_04"
+    },
+    {
+      "seq": 35,
+      "tick": 7320,
+      "action": "SHOOT"
+    }
+  ],
+  "finalTick": 7788,
+  "score": 1000,
+  "status": "failed",
+  "failure": "SHOTS_EXHAUSTED",
+  "hash": "sha256:879c634e8fd816ee9e11d7f0fb734609e5993e081578018652c19cec1286f0df"
+}

@@ -6,7 +6,7 @@ import {
   BIRDS_RULES,
   type BirdKind,
   type BirdsState,
-} from "@/lib/verified/galacticBirdsCore.v3";
+} from "@/lib/verified/galacticBirdsCore.v4";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -214,8 +214,8 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       }
       for (const e of s.events) {
         const age = s.tick - e.tick;
-        if (age > 100) continue;
-        const p = age / 100,
+        if (age > 240) continue;
+        const p = age / 240,
           x = worldX(e.x),
           y = e.y / 1000 - BIRDS_SCENE_LIFT;
         ctx.globalAlpha = 1 - p;
@@ -226,15 +226,29 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         ctx.arc(x, y, 8 + 30 * p, 0, Math.PI * 2);
         ctx.stroke();
         ctx.fillStyle = ctx.strokeStyle;
-        for (let i = 0; i < 8; i++) {
-          const a = (i * Math.PI) / 4 + e.x * 0.00001,
-            r = 10 + p * (e.kind === "enemy" ? 55 : 40);
-          ctx.fillRect(
-            x + Math.cos(a) * r - 2,
-            y + Math.sin(a) * r + p * p * 20 - 2,
-            4,
-            4,
-          );
+        // Material shards tumble, settle into rubble, and outlast the flash.
+        for (let i = 0; i < 14; i++) {
+          const a = (i * Math.PI * 2) / 14 + e.x * 0.00001;
+          const speed = 0.32 + (i % 4) * 0.13;
+          const dx = Math.cos(a) * Math.min(age, 110) * speed;
+          const floorY = 558 - BIRDS_SCENE_LIFT;
+          const shardY = Math.min(floorY, y + Math.sin(a) * age * speed - age * 0.4 + age * age * 0.009);
+          ctx.save();
+          ctx.translate(x + dx, shardY);
+          ctx.rotate(a + Math.min(age, 110) * (i % 2 ? 0.07 : -0.06));
+          ctx.beginPath();
+          ctx.moveTo(-4, -3);
+          ctx.lineTo(5 + i % 3, -2);
+          ctx.lineTo(2, 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        if (age < 100) {
+          ctx.fillStyle = e.kind === "enemy" ? "rgba(240,190,170,.16)" : "rgba(163,191,204,.12)";
+          ctx.beginPath();
+          ctx.ellipse(x, y + age * 0.15, 12 + age * 0.6, 8 + age * 0.3, 0, 0, Math.PI * 2);
+          ctx.fill();
         }
         ctx.globalAlpha = 1;
       }

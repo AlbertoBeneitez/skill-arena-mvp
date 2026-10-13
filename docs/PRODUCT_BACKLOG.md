@@ -461,3 +461,14 @@ la sección de Avatar; volver atrás conserva su selección. Catálogo sin busca
 v92 y ruleta física cartesiana v94 se conservan sin cambiar cores/hashes.
 QA táctil vertical/horizontal, aislamiento de fuentes, historial y arrastre de
 ruleta pequeño confirmados; entrega CI/Vercel se registra en el ledger.
+
+## v96 · controles físicos y variedad de destrucción
+
+Solicitud de cinco juegos implementada: Birds4con seis estructuras diferentes y
+colisiones de derrumbe; Roulette con tapete plegable de casino/cone central/vista
+cenital/bola persistente en número; dardos clavados persistentes; Billar3con
+arrastre hacia atrás,13potencias y disparo al soltar; Solitaire0.2con destinos
+válidos predictivos y ajuste de arrastre. Históricos competitivos conservados.
+[Evidencia y límites](releases/v96-mobile.md). Suite completa/typecheck/build y
+QA táctil vertical/horizontal pasan. No se declara completado el backlog general
+ni se promueve el Solitaire legacy a verificación autoritativa.

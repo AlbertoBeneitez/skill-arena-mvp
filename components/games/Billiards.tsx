@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
@@ -15,11 +15,11 @@ import {
   billiardsDirection,
 } from "@/lib/verified/billiardsCore.v1";
 import {
-  BILLIARDS_CORE_V2,
   BILLIARDS_V2_RULES,
   type BilliardsV2State,
 } from "@/lib/verified/billiardsCore.v2";
-import { billiardsAimAction } from "@/lib/verified/billiardsProtocol.v1";
+import { BILLIARDS_CORE_V3 } from "@/lib/verified/billiardsCore.v3";
+import { grabBilliardsCue, pullBilliardsCue, type CueDrag } from "@/lib/billiardsPullback";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 const ballColors = [
@@ -92,7 +92,7 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV2State) {
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(x - dx * pullback, y - dy * pullback);
-  ctx.lineTo(x - dx * (pullback + 34), y - dy * (pullback + 34));
+  ctx.lineTo(x - dx * (pullback + 64), y - dy * (pullback + 64));
   ctx.stroke();
   if (distance > radius + 2) {
     ctx.strokeStyle = "rgba(220,254,248,.65)";
@@ -293,17 +293,9 @@ function renderTable(
   ctx.restore();
   // Power stays upright, separate from the rotated physical table.
   ctx.save();
-  for (let i = 0; i < 3; i++) {
-    ctx.fillStyle =
-      i <= s.power
-        ? ["#79d8c3", "#8ccdeb", "#e5c58b"][s.power]
-        : "rgba(134,171,187,.2)";
-    ctx.fillRect(
-      camera.centerX - 29 + i * 21,
-      camera.rotated ? 592 : 535,
-      16,
-      8,
-    );
+  for (let i = 0; i < 13; i++) {
+    ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
+    ctx.fillRect(camera.centerX - 64 + i * 10, camera.rotated ? 592 : 535, 7, 8);
   }
   ctx.restore();
 }
@@ -311,7 +303,9 @@ function renderTable(
 function createPresentation() {
   let camera = getBilliardsCamera({ width: 390, height: 620 });
   let viewportKey = "";
+  let drag: CueDrag | null = null;
   return {
+    clear() { drag = null; },
     render(
       ctx: CanvasRenderingContext2D,
       state: BilliardsV2State,
@@ -324,6 +318,7 @@ function createPresentation() {
       const key = `${viewport.width}:${viewport.height}:${ctx.canvas.width}:${ctx.canvas.height}:${dpr}`;
       if (key !== viewportKey) {
         viewportKey = key;
+        drag = null;
         const transform = ctx.getTransform();
         camera = getBilliardsCamera(
           viewport,
@@ -338,46 +333,48 @@ function createPresentation() {
       phase: "down" | "move" | "up",
       state: BilliardsV2State,
     ) {
-      return aim(unprojectBilliardsPoint(camera, point), phase, state);
+      const p = unprojectBilliardsPoint(camera, point);
+      if (state.phase !== "aim") { drag = null; return null; }
+      if (phase === "down") {
+        const cue = state.balls[0];
+        drag = cue && !cue.potted ? grabBilliardsCue(p, {x: cue.x / 1000, y: cue.y / 1000}, state.aim) : null;
+        return null;
+      }
+      if (!drag) return null;
+      const actions = pullBilliardsCue(drag, p);
+      if (phase === "up") {
+        drag = null;
+        return actions ? [...actions, "SHOOT"] : null;
+      }
+      return actions;
     },
   };
 }
-function aim(
-  point: CorePoint,
-  phase: "down" | "move" | "up",
-  s: BilliardsV2State,
-) {
-  if (phase === "up" || s.phase !== "aim") return null;
-  const cue = s.balls[0],
-    dx = point.x - cue.x / 1000,
-    dy = point.y - cue.y / 1000;
-  if (dx * dx + dy * dy < 100) return null;
-  const angle = (Math.atan2(dy, dx) + Math.PI * 2) % (Math.PI * 2);
-  return billiardsAimAction(Math.round((angle * 180) / (Math.PI * 2)) % 180);
-}
-const controls = [
-  { action: "POWER_LOW", label: "Potencia suave", symbol: "SUAVE" },
-  { action: "POWER_MEDIUM", label: "Potencia media", symbol: "MEDIA" },
-  { action: "POWER_HIGH", label: "Potencia fuerte", symbol: "FUERTE" },
-  { action: "SHOOT", label: "Tirar bola", symbol: "TIRAR" },
-];
+const controls: readonly {action: string; label: string; symbol: string}[] = [];
 const tones = { SHOOT: "tap" } as const;
 const keys = {
   " ": "SHOOT",
   Enter: "SHOOT",
-  "1": "POWER_LOW",
-  "2": "POWER_MEDIUM",
-  "3": "POWER_HIGH",
+  "1": "POWER_00",
+  "2": "POWER_06",
+  "3": "POWER_12",
 };
 const hudLabel = (s: Readonly<BilliardsV2State>) =>
   `AVANCE ${s.height} / ${BILLIARDS_V2_RULES.targets} · ${s.shotsLeft} TIROS${s.scratch ? " · BLANCA EMBOCADA" : ""}`;
 export default function Billiards(props: GameRuntimeProps) {
   const presentation = useMemo(createPresentation, []);
+  useEffect(() => {
+    const clear = presentation.clear;
+    clear();
+    window.addEventListener("blur", clear);
+    window.addEventListener("resize", clear);
+    return () => { window.removeEventListener("blur", clear); window.removeEventListener("resize", clear); clear(); };
+  }, [presentation, props.active, props.seed]);
   return (
-    <div className="billiardsVerified">
+    <div className="billiardsVerified" onPointerCancel={presentation.clear} onLostPointerCapture={presentation.clear}>
       <CoreCanvasGame
         {...props}
-        core={BILLIARDS_CORE_V2}
+        core={BILLIARDS_CORE_V3}
         name="Billar"
         render={presentation.render}
         pointAction={presentation.pointAction}

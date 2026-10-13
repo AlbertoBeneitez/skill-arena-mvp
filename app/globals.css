@@ -6245,3 +6245,17 @@ html, body, .arenaOnboarding, .gameScreen {
 .coreChoiceGrid[hidden] {display:none;}
 
 .coreChoiceTrigger:disabled {opacity:.55;}
+
+/* Casino cloth: joined number grid, side dozens/outside bets and chip selection. */
+.rouletteVerified .coreChoicePanel {border:2px solid #bba57d;background:#103d3b;box-shadow:0 8px 25px #0008,inset 0 0 25px #031c20;border-radius:18px;}
+.rouletteVerified .coreChoiceGrid {gap:0;padding:12px;background:radial-gradient(ellipse at 40% 25%,#285a50,#103b3a 75%);}
+.rouletteVerified .coreChoiceGrid button {position:relative;border:1px solid #d3c7a2;border-radius:0;min-width:0;min-height:44px;font-size:14px;box-shadow:inset 0 0 12px #ffffff08;}
+.rouletteVerified .coreChoiceGrid button[data-choice^="BET_DOZEN_"] {writing-mode:vertical-rl;}
+.rouletteVerified .coreChoiceGrid button[data-choice="BET_NUMBER_00"] {border-radius:32% 32% 0 0;color:#102d50;}
+.rouletteVerified .coreChoiceGrid button[aria-pressed="true"] {box-shadow:inset 0 0 0 2px #ffebbd;}
+.rouletteVerified .coreChoiceGrid button[aria-pressed="true"]::after {content:"";position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:50%;border:3px dashed #143944;background:#e7c780;box-shadow:0 2px 4px #0009;pointer-events:none;}
+
+.solitaireSprint .solitaireCard.faceUp,.solitaireSprint .solitairePile.waste {touch-action:none;cursor:grab;}
+.solitaireSprint .solitaireCard.selected,.solitaireSprint .solitairePile.waste.selected {cursor:grabbing;}
+.solitaireSprint .validDestination {outline:2px solid #83dec2;outline-offset:2px;box-shadow:0 0 16px #60d5bc35;}
+.solitaireSprint .solitaireCard {transition:box-shadow .15s;}

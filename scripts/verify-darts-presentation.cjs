@@ -98,11 +98,17 @@ module.exports = (async () => {
       assert.equal(r.stack.length, 0);
       assert.ok(!r.arcs.some((a) => a[2] === 7), "no landing reticle");
       assert.ok(!r.texts.some((t) => t.includes("OBJETIVO")));
-      const p = visual.dartPerspectivePose(s);
-      assert.equal(r.sprites.length, p ? 1 : 0);
+      const flight = s.phase === "flight" && s.phaseTicks < 120;
+      const landed = s.impacts.filter((hit, i) => !hit.timeout && !(i === s.impacts.length - 1 && flight));
+      const p = s.phase === "flight" && s.phaseTicks >= 120 ? null : visual.dartPerspectivePose(s);
+      assert.equal(r.sprites.length, landed.length + (p ? 1 : 0));
+      landed.forEach((hit, i) => {
+        assert.equal(r.sprites[i].x, 195 + hit.x / 1000);
+        assert.equal(r.sprites[i].y, 285 + hit.y / 1000);
+      });
       if (p) {
-        assert.ok(Math.abs(p.x - r.sprites[0].x) < 1e-9);
-        assert.ok(Math.abs(p.y - r.sprites[0].y) < 1e-9);
+        assert.ok(Math.abs(p.x - r.sprites.at(-1).x) < 1e-9);
+        assert.ok(Math.abs(p.y - r.sprites.at(-1).y) < 1e-9);
       }
       frames++;
     }
@@ -130,6 +136,15 @@ module.exports = (async () => {
     assert.ok(angles.size > 10, "tangent changes through arc");
     check();
     assert.equal(s.impacts.length, 1);
+    for (let throwIndex = 1; throwIndex < 5; throwIndex++) {
+      runtime.applyCoreInput(v3.DARTS_CORE_V3, s, "THROW", 1e9);
+      for (let age = 0; age < 144; age++) {
+        if (age % 12 === 0) check();
+        runtime.stepCore(v3.DARTS_CORE_V3, s, 1e9);
+      }
+      check();
+      assert.equal(s.impacts.length, throwIndex + 1);
+    }
   }
   const idle = v3.DARTS_CORE_V3.create("visual-timeout");
   runtime.advanceCoreToTick(v3.DARTS_CORE_V3, idle, 14 * 120, 1e9);
@@ -138,7 +153,7 @@ module.exports = (async () => {
     null,
     "timeout never fabricates a thrown dart",
   );
-  assert.ok(!source.includes("s.impacts.slice"), "no persistent landing marks");
+  assert.ok(source.includes("i < s.impacts.length"), "landed darts remain on board");
   console.log(
     JSON.stringify({
       variant: "Darts V3",
@@ -147,7 +162,7 @@ module.exports = (async () => {
       impactTick: 120,
       curvedFlight: true,
       noForecast: true,
-      noPastImpactMarkers: true,
+      persistentImpacts: true,
       rendererPure: true,
     }),
   );

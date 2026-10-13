@@ -164,15 +164,17 @@ module.exports = (async () => {
   const ui = await load(
     uiSource,
     {
-      react: { useMemo: (factory) => factory() },
+      react: { useMemo: (factory) => factory(), useEffect() {} },
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/billiardsPresentation": camera,
       "@/lib/verified/billiardsCore.v1": v1,
       "@/lib/verified/billiardsCore.v2": v2,
       "@/lib/verified/billiardsProtocol.v1": protocol,
+      "@/lib/verified/billiardsCore.v3": await import(pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v3.js"))),
+      "@/lib/billiardsPullback": await import(pathToFileURL(path.join(root, ".det-test/lib/billiardsPullback.js"))),
       "./CoreCanvasGame": { default() {} },
     },
-    "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.aim=aim;exports.hudLabel=hudLabel;",
+    "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.hudLabel=hudLabel;",
   );
   const state = v2.BILLIARDS_CORE_V2.create("ui-public-test");
   assert.equal(state.balls.length, 11);
@@ -321,18 +323,15 @@ module.exports = (async () => {
             Math.abs(back.x - world.x) < 1e-9 &&
               Math.abs(back.y - world.y) < 1e-9,
           );
-          assert.equal(
-            adapter.pointAction(projected, "down", state),
-            `AIM_${String(aim).padStart(3, "0")}`,
-          );
+          const cue = camera.projectBilliardsPoint(view, {x: state.balls[0].x / 1000, y: state.balls[0].y / 1000});
+          assert.equal(adapter.pointAction(cue, "down", state), null);
+          const pulled = camera.projectBilliardsPoint(view, {
+            x: state.balls[0].x / 1000 - (dir.x / dir.length) * 62,
+            y: state.balls[0].y / 1000 - (dir.y / dir.length) * 62,
+          });
+          assert.deepEqual(adapter.pointAction(pulled, "up", state), [`AIM_${String(aim).padStart(3, "0")}`, "POWER_06", "SHOOT"]);
           assert.equal(adapter.pointAction(projected, "up", state), null);
-          assert.equal(
-            adapter.pointAction(projected, "down", {
-              ...state,
-              phase: "moving",
-            }),
-            null,
-          );
+          assert.equal(adapter.pointAction(cue, "down", {...state, phase: "moving"}), null);
           roundTrips++;
         }
         const matrixCtx = recorder();
@@ -361,12 +360,12 @@ module.exports = (async () => {
     targetScore: 1e9,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core, v2.BILLIARDS_CORE_V2);
+  assert.equal(surface.core.gameVersion, "3.0.0");
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.hideHudLabel, undefined);
   assert.equal(surface.expandHorizontalViewport, true);
   assert.equal(surface.hudLabel(state), "AVANCE 0 / 10 · 18 TIROS");
-  assert.equal(surface.controls.length, 4);
+  assert.equal(surface.controls.length, 0);
   const source = fs.readFileSync(uiSource, "utf8");
   assert.ok(!source.includes("forecastBilliards"));
   assert.ok(!source.includes("s.stage"));
@@ -380,7 +379,7 @@ module.exports = (async () => {
       cssViewports: dimensions.length,
       dprCases: 4,
       forecastCalls: 0,
-      inputsUnchanged: true,
+      pullbackInputs: true,
       rendererStateUnchanged: true,
       coreVersion: surface.core.gameVersion,
     }),

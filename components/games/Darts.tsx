@@ -79,7 +79,17 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   ctx.arc(cx, cy, 10, 0, Math.PI * 2);
   ctx.fill();
 
-  const pose = dartPerspectivePose(s);
+  // The tip stays at the server-owned impact. Never display the newest
+  // recorded impact before the flying dart has actually reached the board.
+  for (let i = 0; i < s.impacts.length; i++) {
+    const hit = s.impacts[i];
+    const flying = i === s.impacts.length - 1 && s.phase === "flight";
+    if (hit.timeout || (flying && s.phaseTicks < DARTS_RULES_V3.impactTicks)) continue;
+    const pose = dartPerspectiveFlight(cx + hit.x / 1000, cy + hit.y / 1000, DARTS_RULES_V3.impactTicks);
+    drawDart(ctx, { ...pose, scale: 0.52 }, i % 2 ? "#dfb885" : "#6bdde2");
+  }
+  const pose = s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks
+    ? null : dartPerspectivePose(s);
   if (pose) {
     const impact = s.impacts.at(-1);
     if (s.phase === "flight" && s.phaseTicks < 120 && impact) {

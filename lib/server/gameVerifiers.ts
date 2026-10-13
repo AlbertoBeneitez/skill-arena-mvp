@@ -1,3 +1,5 @@
+import { BILLIARDS_CORE_V3 } from "../verified/billiardsCore.v3";
+import { BIRDS_CORE as BIRDS_CORE_V4 } from "../verified/galacticBirdsCore.v4";
 import { ROULETTE_CORE_V2 } from "../verified/galacticRouletteCore.v2";
 import { BIRDS_CORE as BIRDS_CORE_V3 } from "../verified/galacticBirdsCore.v3";
 import { BIRDS_CORE as BIRDS_CORE_V2 } from "../verified/galacticBirdsCore.v2";
@@ -388,6 +390,7 @@ function adapterKey(gameId: string, gameVersion: string) {
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BIRDS_CORE.gameId, BIRDS_CORE.gameVersion)]: coreAdapter(BIRDS_CORE),
   [adapterKey(BIRDS_CORE_V2.gameId, BIRDS_CORE_V2.gameVersion)]: coreAdapter(BIRDS_CORE_V2),
+  [adapterKey(BIRDS_CORE_V4.gameId, BIRDS_CORE_V4.gameVersion)]: coreAdapter(BIRDS_CORE_V4),
   [adapterKey(BIRDS_CORE_V3.gameId, BIRDS_CORE_V3.gameVersion)]: coreAdapter(BIRDS_CORE_V3),
   [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
@@ -420,6 +423,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(DARTS_CORE_V3.gameId,DARTS_CORE_V3.gameVersion)]: coreAdapter(DARTS_CORE_V3),
   [adapterKey(BILLIARDS_CORE.gameId,BILLIARDS_CORE.gameVersion)]: coreAdapter(BILLIARDS_CORE),
+  [adapterKey(BILLIARDS_CORE_V3.gameId,BILLIARDS_CORE_V3.gameVersion)]: coreAdapter(BILLIARDS_CORE_V3),
   [adapterKey(BILLIARDS_CORE_V2.gameId,BILLIARDS_CORE_V2.gameVersion)]: coreAdapter(BILLIARDS_CORE_V2),
   [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(MINE_GRID_CORE_V2.gameId,MINE_GRID_CORE_V2.gameVersion)]: coreAdapter(MINE_GRID_CORE_V2),

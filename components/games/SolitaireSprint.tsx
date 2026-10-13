@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { canPlaceOnTableau, canPlaceOnFoundation, isRed, solitaireDestinations, type Card, type Source, type Suit, type SolitaireDestination } from "@/lib/solitaireMoves";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { GameResult } from "@/lib/types";
 import { solitaireChallengeFor } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
@@ -12,18 +14,6 @@ type Props = {
   onFinish: (result: GameResult) => void;
 };
 
-type Suit = "♠" | "♥" | "♦" | "♣";
-type Card = {
-  id: string;
-  suit: Suit;
-  rank: number;
-  faceUp: boolean;
-};
-type Source =
-  | { type: "waste" }
-  | { type: "tableau"; column: number; index: number }
-  | null;
-
 const SUITS: Suit[] = ["♠", "♥", "♦", "♣"];
 
 function rankLabel(rank: number) {
@@ -32,10 +22,6 @@ function rankLabel(rank: number) {
   if (rank === 12) return "Q";
   if (rank === 13) return "K";
   return String(rank);
-}
-
-function isRed(suit: Suit) {
-  return suit === "♥" || suit === "♦";
 }
 
 function card(suit: Suit, rank: number, faceUp = false): Card {
@@ -88,21 +74,6 @@ function dealVerifiedChallenge(seed: string) {
   };
 }
 
-function canPlaceOnTableau(cardToMove: Card, target?: Card) {
-  if (!target) return cardToMove.rank === 13;
-  return (
-    target.faceUp &&
-    target.rank === cardToMove.rank + 1 &&
-    isRed(target.suit) !== isRed(cardToMove.suit)
-  );
-}
-
-function canPlaceOnFoundation(cardToMove: Card, foundation: Card[]) {
-  if (!foundation.length) return cardToMove.rank === 1;
-  const top = foundation[foundation.length - 1];
-  return top.suit === cardToMove.suit && cardToMove.rank === top.rank + 1;
-}
-
 function formatTimer(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -127,6 +98,10 @@ export default function SolitaireSprint({
   const [score, setScore] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
 
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{source: Exclude<Source, null>; id: number; x: number; y: number; moved: boolean} | null>(null);
+  const suppressClickRef = useRef(false);
+  const [dragOffset, setDragOffset] = useState<{x: number; y: number} | null>(null);
   const scoreRef = useRef(0);
   const runningRef = useRef(false);
   const startRef = useRef(0);
@@ -138,6 +113,9 @@ export default function SolitaireSprint({
     setWaste([]);
     setFoundations(Array.from({ length: 4 }, () => []));
     setSelected(null);
+    dragRef.current = null;
+    setDragOffset(null);
+    suppressClickRef.current = false;
     setScore(0);
     scoreRef.current = 0;
     setElapsedMs(0);
@@ -252,10 +230,10 @@ export default function SolitaireSprint({
     revealTop(nextTableau, source.column);
   }
 
-  function moveSelectedToTableau(column: number) {
-    if (!selected || !runningRef.current) return false;
-
-    const moving = sourceCards(selected);
+  function moveSelectedToTableau(column: number, source = selected) {
+    if (!source || !runningRef.current || (source.type === "tableau" && source.column === column)) return false;
+    if (!solitaireDestinations(source, tableau, waste, foundations).some(d => d.type === "tableau" && d.index === column)) return false;
+    const moving = sourceCards(source);
     if (!moving.length) return false;
 
     const targetColumn = tableau[column];
@@ -267,7 +245,7 @@ export default function SolitaireSprint({
       cards.map((item) => ({ ...item }))
     );
 
-    removeSource(selected, nextTableau);
+    removeSource(source, nextTableau);
     nextTableau[column].push(...moving.map((item) => ({ ...item })));
 
     setTableau(nextTableau);
@@ -280,17 +258,17 @@ export default function SolitaireSprint({
     return true;
   }
 
-  function moveSelectedToFoundation(foundationIndex: number) {
-    if (!selected || !runningRef.current) return false;
-
-    const moving = sourceCards(selected);
+  function moveSelectedToFoundation(foundationIndex: number, source = selected) {
+    if (!source || !runningRef.current) return false;
+    if (!solitaireDestinations(source, tableau, waste, foundations).some(d => d.type === "foundation" && d.index === foundationIndex)) return false;
+    const moving = sourceCards(source);
     if (moving.length !== 1) return false;
 
     const selectedCard = moving[0];
 
     if (
-      selected.type === "tableau" &&
-      selected.index !== tableau[selected.column].length - 1
+      source.type === "tableau" &&
+      source.index !== tableau[source.column].length - 1
     ) {
       return false;
     }
@@ -305,7 +283,7 @@ export default function SolitaireSprint({
       cards.map((item) => ({ ...item }))
     );
 
-    removeSource(selected, nextTableau);
+    removeSource(source, nextTableau);
     nextFoundations[foundationIndex].push({
       ...selectedCard,
       faceUp: true,
@@ -332,46 +310,77 @@ export default function SolitaireSprint({
     return true;
   }
 
+  function moveTo(source: Exclude<Source, null>, destination: SolitaireDestination) {
+    return destination.type === "foundation" ? moveSelectedToFoundation(destination.index, source) : moveSelectedToTableau(destination.index, source);
+  }
+  function predictMove(source: Exclude<Source, null>) {
+    const destination = solitaireDestinations(source, tableau, waste, foundations)[0];
+    return destination ? moveTo(source, destination) : false;
+  }
   function tapWaste() {
     if (!waste.length || !runningRef.current) return;
-    setSelected((current) =>
-      current?.type === "waste" ? null : { type: "waste" }
-    );
-    haptic(2);
+    if (!predictMove({type: "waste"})) setSelected({type: "waste"});
   }
-
   function tapTableau(column: number, index: number) {
-    if (!runningRef.current) return;
-    const selectedCard = tableau[column][index];
-    if (!selectedCard?.faceUp) return;
-
-    if (selected) {
-      if (
-        selected.type === "tableau" &&
-        selected.column === column &&
-        selected.index === index
-      ) {
-        setSelected(null);
-        return;
-      }
-
-      if (moveSelectedToTableau(column)) return;
-    }
-
-    setSelected({
-      type: "tableau",
-      column,
-      index,
-    });
-    haptic(2);
+    if (!runningRef.current || !tableau[column][index]?.faceUp) return;
+    if (selected && moveSelectedToTableau(column)) return;
+    const source = {type: "tableau" as const, column, index};
+    if (!predictMove(source)) setSelected(source);
   }
-
   function tapEmptyColumn(column: number) {
     if (selected) moveSelectedToTableau(column);
   }
-
+  function cancelDrag() {
+    dragRef.current = null;
+    setDragOffset(null);
+  }
+  useEffect(() => {
+    window.addEventListener("blur", cancelDrag);
+    window.addEventListener("resize", cancelDrag);
+    return () => { window.removeEventListener("blur", cancelDrag); window.removeEventListener("resize", cancelDrag); };
+  }, []);
+  function startDrag(event: ReactPointerEvent<HTMLButtonElement>, source: Exclude<Source, null>) {
+    if (!runningRef.current || event.button !== 0 || !sourceCards(source)[0]?.faceUp) return;
+    suppressClickRef.current = false;
+    dragRef.current = {source, id: event.pointerId, x: event.clientX, y: event.clientY, moved: false};
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+  function continueDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.id !== event.pointerId) return;
+    const x = event.clientX - drag.x, y = event.clientY - drag.y;
+    if (Math.hypot(x, y) > 7) drag.moved = true;
+    if (drag.moved) { setSelected(drag.source); setDragOffset({x, y}); }
+  }
+  function endDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.id !== event.pointerId) return;
+    const moved = drag.moved || Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 7;
+    suppressClickRef.current = moved;
+    cancelDrag();
+    if (!moved) return;
+    const destinations = solitaireDestinations(drag.source, tableau, waste, foundations);
+    let best: SolitaireDestination | null = null, distance = 65;
+    for (const destination of destinations) {
+      const element = surfaceRef.current?.querySelector<HTMLElement>(`[data-solitaire-destination="${destination.type}-${destination.index}"]`);
+      if (!element) continue;
+      const rect = element.getBoundingClientRect();
+      const dx = Math.max(rect.left - event.clientX, 0, event.clientX - rect.right);
+      const dy = Math.max(rect.top - event.clientY, 0, event.clientY - rect.bottom);
+      const gap = Math.hypot(dx, dy);
+      if (gap < distance) { best = destination; distance = gap; }
+    }
+    if (best) moveTo(drag.source, best);
+    else setSelected(drag.source);
+  }
+  function clickCard(action: () => void) {
+    if (suppressClickRef.current) { suppressClickRef.current = false; return; }
+    action();
+  }
+  const destinations = solitaireDestinations(selected, tableau, waste, foundations);
+  const suggested = (type: SolitaireDestination["type"], index: number) => destinations.some(d => d.type === type && d.index === index);
   return (
-    <div className="detGameSurface solitaireSprint">
+    <div ref={surfaceRef} className="detGameSurface solitaireSprint" onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag}>
       <div className="solitaireTimer" aria-label="Tiempo">
         {formatTimer(elapsedMs)}
       </div>
@@ -389,7 +398,11 @@ export default function SolitaireSprint({
         <button
           type="button"
           className={`solitairePile waste ${selected?.type === "waste" ? "selected" : ""}`}
-          onClick={tapWaste}
+          onClick={() => clickCard(tapWaste)}
+          onPointerDown={event => startDrag(event, {type: "waste"})}
+          onPointerMove={continueDrag}
+          onPointerUp={endDrag}
+          style={selected?.type === "waste" && dragOffset ? {transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`, zIndex: 30} : undefined}
           aria-label="Descarte"
         >
           {waste.length ? (
@@ -412,7 +425,8 @@ export default function SolitaireSprint({
               <button
                 key={suit}
                 type="button"
-                className="solitairePile foundation"
+                className={`solitairePile foundation ${suggested("foundation", index) ? "validDestination" : ""}`}
+                data-solitaire-destination={`foundation-${index}`}
                 onClick={() => moveSelectedToFoundation(index)}
                 aria-label={`Base de ${suit}`}
               >
@@ -440,7 +454,8 @@ export default function SolitaireSprint({
         {tableau.map((column, columnIndex) => (
           <div
             key={columnIndex}
-            className="solitaireColumn"
+            className={`solitaireColumn ${suggested("tableau", columnIndex) ? "validDestination" : ""}`}
+            data-solitaire-destination={`tableau-${columnIndex}`}
             onClick={() => {
               if (!column.length) tapEmptyColumn(columnIndex);
             }}
@@ -450,10 +465,13 @@ export default function SolitaireSprint({
                 type="button"
                 key={item.id}
                 className={`solitaireCard ${item.faceUp ? "faceUp" : "faceDown"} ${selected?.type === "tableau" && selected.column === columnIndex && selected.index === index ? "selected" : ""}`}
-                style={{ top: index * 31 }}
+                style={{ top: index * 31, ...(dragOffset && selected?.type === "tableau" && selected.column === columnIndex && index >= selected.index ? {transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`, zIndex: 30 + index} : {}) }}
+                onPointerDown={event => startDrag(event, {type: "tableau", column: columnIndex, index})}
+                onPointerMove={continueDrag}
+                onPointerUp={endDrag}
                 onClick={(event) => {
                   event.stopPropagation();
-                  tapTableau(columnIndex, index);
+                  clickCard(() => tapTableau(columnIndex, index));
                 }}
                 aria-label={
                   item.faceUp
