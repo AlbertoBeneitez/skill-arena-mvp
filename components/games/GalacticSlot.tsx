@@ -1,17 +1,17 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  SLOT_CORE,
   SLOT_RULES,
   type SlotState,
 } from "@/lib/verified/galacticSlotCore.v1";
+import { SLOT_CORE_V2 } from "@/lib/verified/galacticSlotCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
   SLOT_ORDER_PREVIEW_TICKS,
   slotVisibleSteps,
   slotReelPosition,
   slotMachineLayout,
-} from "@/lib/slotPresentation";
+} from "@/lib/slotPresentation.v2";
 import CoreCanvasGame from "./CoreCanvasGame";
 const colors = [
   "#f7d75f",
@@ -165,14 +165,14 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   }
 }
 const hudLabel = (s: Readonly<SlotState>) =>
-  `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
+  `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s${s.steps.every(step => step === 0) ? " · 000 NO PERMITIDO" : ""}`;
 const feedbackScore = (s: Readonly<SlotState>) => s.balanceMinor;
 export default function GalacticSlot(props: GameRuntimeProps) {
   return (
     <div className="slotVerified">
       <CoreCanvasGame
         {...props}
-        core={SLOT_CORE}
+        core={SLOT_CORE_V2}
         name="Galactic Slot"
         instruction=""
         render={render}

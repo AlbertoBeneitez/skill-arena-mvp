@@ -1,0 +1,610 @@
+{
+  "seed": "slot-v2-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "SPIN"
+    },
+    {
+      "seq": 1,
+      "tick": 180,
+      "action": "SPIN"
+    },
+    {
+      "seq": 2,
+      "tick": 360,
+      "action": "SPIN"
+    },
+    {
+      "seq": 3,
+      "tick": 540,
+      "action": "SPIN"
+    },
+    {
+      "seq": 4,
+      "tick": 720,
+      "action": "SPIN"
+    },
+    {
+      "seq": 5,
+      "tick": 900,
+      "action": "SPIN"
+    },
+    {
+      "seq": 6,
+      "tick": 1080,
+      "action": "SPIN"
+    },
+    {
+      "seq": 7,
+      "tick": 1260,
+      "action": "SPIN"
+    },
+    {
+      "seq": 8,
+      "tick": 1440,
+      "action": "SPIN"
+    },
+    {
+      "seq": 9,
+      "tick": 1620,
+      "action": "SPIN"
+    },
+    {
+      "seq": 10,
+      "tick": 1800,
+      "action": "SPIN"
+    },
+    {
+      "seq": 11,
+      "tick": 1980,
+      "action": "SPIN"
+    },
+    {
+      "seq": 12,
+      "tick": 2160,
+      "action": "SPIN"
+    },
+    {
+      "seq": 13,
+      "tick": 2340,
+      "action": "SPIN"
+    },
+    {
+      "seq": 14,
+      "tick": 2520,
+      "action": "SPIN"
+    },
+    {
+      "seq": 15,
+      "tick": 2700,
+      "action": "SPIN"
+    },
+    {
+      "seq": 16,
+      "tick": 2880,
+      "action": "SPIN"
+    },
+    {
+      "seq": 17,
+      "tick": 3060,
+      "action": "SPIN"
+    },
+    {
+      "seq": 18,
+      "tick": 3240,
+      "action": "SPIN"
+    },
+    {
+      "seq": 19,
+      "tick": 3420,
+      "action": "SPIN"
+    },
+    {
+      "seq": 20,
+      "tick": 3600,
+      "action": "SPIN"
+    },
+    {
+      "seq": 21,
+      "tick": 3780,
+      "action": "SPIN"
+    },
+    {
+      "seq": 22,
+      "tick": 3960,
+      "action": "SPIN"
+    },
+    {
+      "seq": 23,
+      "tick": 4140,
+      "action": "SPIN"
+    },
+    {
+      "seq": 24,
+      "tick": 4320,
+      "action": "SPIN"
+    },
+    {
+      "seq": 25,
+      "tick": 4500,
+      "action": "SPIN"
+    },
+    {
+      "seq": 26,
+      "tick": 4680,
+      "action": "SPIN"
+    },
+    {
+      "seq": 27,
+      "tick": 4860,
+      "action": "SPIN"
+    },
+    {
+      "seq": 28,
+      "tick": 5040,
+      "action": "SPIN"
+    },
+    {
+      "seq": 29,
+      "tick": 5220,
+      "action": "SPIN"
+    },
+    {
+      "seq": 30,
+      "tick": 5400,
+      "action": "SPIN"
+    },
+    {
+      "seq": 31,
+      "tick": 5580,
+      "action": "SPIN"
+    },
+    {
+      "seq": 32,
+      "tick": 5760,
+      "action": "SPIN"
+    },
+    {
+      "seq": 33,
+      "tick": 5940,
+      "action": "SPIN"
+    },
+    {
+      "seq": 34,
+      "tick": 6120,
+      "action": "SPIN"
+    },
+    {
+      "seq": 35,
+      "tick": 6300,
+      "action": "SPIN"
+    },
+    {
+      "seq": 36,
+      "tick": 6480,
+      "action": "SPIN"
+    },
+    {
+      "seq": 37,
+      "tick": 6660,
+      "action": "SPIN"
+    },
+    {
+      "seq": 38,
+      "tick": 6840,
+      "action": "SPIN"
+    },
+    {
+      "seq": 39,
+      "tick": 7020,
+      "action": "SPIN"
+    },
+    {
+      "seq": 40,
+      "tick": 7200,
+      "action": "SPIN"
+    },
+    {
+      "seq": 41,
+      "tick": 7380,
+      "action": "SPIN"
+    },
+    {
+      "seq": 42,
+      "tick": 7560,
+      "action": "SPIN"
+    },
+    {
+      "seq": 43,
+      "tick": 7740,
+      "action": "SPIN"
+    },
+    {
+      "seq": 44,
+      "tick": 7920,
+      "action": "SPIN"
+    },
+    {
+      "seq": 45,
+      "tick": 8100,
+      "action": "SPIN"
+    },
+    {
+      "seq": 46,
+      "tick": 8280,
+      "action": "SPIN"
+    },
+    {
+      "seq": 47,
+      "tick": 8460,
+      "action": "SPIN"
+    },
+    {
+      "seq": 48,
+      "tick": 8640,
+      "action": "SPIN"
+    },
+    {
+      "seq": 49,
+      "tick": 8820,
+      "action": "SPIN"
+    },
+    {
+      "seq": 50,
+      "tick": 9000,
+      "action": "SPIN"
+    },
+    {
+      "seq": 51,
+      "tick": 9180,
+      "action": "SPIN"
+    },
+    {
+      "seq": 52,
+      "tick": 9360,
+      "action": "SPIN"
+    },
+    {
+      "seq": 53,
+      "tick": 9540,
+      "action": "SPIN"
+    },
+    {
+      "seq": 54,
+      "tick": 9720,
+      "action": "SPIN"
+    },
+    {
+      "seq": 55,
+      "tick": 9900,
+      "action": "SPIN"
+    },
+    {
+      "seq": 56,
+      "tick": 10080,
+      "action": "SPIN"
+    },
+    {
+      "seq": 57,
+      "tick": 10260,
+      "action": "SPIN"
+    },
+    {
+      "seq": 58,
+      "tick": 10440,
+      "action": "SPIN"
+    },
+    {
+      "seq": 59,
+      "tick": 10620,
+      "action": "SPIN"
+    },
+    {
+      "seq": 60,
+      "tick": 10800,
+      "action": "SPIN"
+    },
+    {
+      "seq": 61,
+      "tick": 10980,
+      "action": "SPIN"
+    },
+    {
+      "seq": 62,
+      "tick": 11160,
+      "action": "SPIN"
+    },
+    {
+      "seq": 63,
+      "tick": 11340,
+      "action": "SPIN"
+    },
+    {
+      "seq": 64,
+      "tick": 11520,
+      "action": "SPIN"
+    },
+    {
+      "seq": 65,
+      "tick": 11700,
+      "action": "SPIN"
+    },
+    {
+      "seq": 66,
+      "tick": 11880,
+      "action": "SPIN"
+    },
+    {
+      "seq": 67,
+      "tick": 12060,
+      "action": "SPIN"
+    },
+    {
+      "seq": 68,
+      "tick": 12240,
+      "action": "SPIN"
+    },
+    {
+      "seq": 69,
+      "tick": 12420,
+      "action": "SPIN"
+    },
+    {
+      "seq": 70,
+      "tick": 12600,
+      "action": "SPIN"
+    },
+    {
+      "seq": 71,
+      "tick": 12780,
+      "action": "SPIN"
+    },
+    {
+      "seq": 72,
+      "tick": 12960,
+      "action": "SPIN"
+    },
+    {
+      "seq": 73,
+      "tick": 13140,
+      "action": "SPIN"
+    },
+    {
+      "seq": 74,
+      "tick": 13320,
+      "action": "SPIN"
+    },
+    {
+      "seq": 75,
+      "tick": 13500,
+      "action": "SPIN"
+    },
+    {
+      "seq": 76,
+      "tick": 13680,
+      "action": "SPIN"
+    },
+    {
+      "seq": 77,
+      "tick": 13860,
+      "action": "SPIN"
+    },
+    {
+      "seq": 78,
+      "tick": 14040,
+      "action": "SPIN"
+    },
+    {
+      "seq": 79,
+      "tick": 14220,
+      "action": "SPIN"
+    },
+    {
+      "seq": 80,
+      "tick": 14400,
+      "action": "SPIN"
+    },
+    {
+      "seq": 81,
+      "tick": 14580,
+      "action": "SPIN"
+    },
+    {
+      "seq": 82,
+      "tick": 14760,
+      "action": "SPIN"
+    },
+    {
+      "seq": 83,
+      "tick": 14940,
+      "action": "SPIN"
+    },
+    {
+      "seq": 84,
+      "tick": 15120,
+      "action": "SPIN"
+    },
+    {
+      "seq": 85,
+      "tick": 15300,
+      "action": "SPIN"
+    },
+    {
+      "seq": 86,
+      "tick": 15480,
+      "action": "SPIN"
+    },
+    {
+      "seq": 87,
+      "tick": 15660,
+      "action": "SPIN"
+    },
+    {
+      "seq": 88,
+      "tick": 15840,
+      "action": "SPIN"
+    },
+    {
+      "seq": 89,
+      "tick": 16020,
+      "action": "SPIN"
+    },
+    {
+      "seq": 90,
+      "tick": 16200,
+      "action": "SPIN"
+    },
+    {
+      "seq": 91,
+      "tick": 16380,
+      "action": "SPIN"
+    },
+    {
+      "seq": 92,
+      "tick": 16560,
+      "action": "SPIN"
+    },
+    {
+      "seq": 93,
+      "tick": 16740,
+      "action": "SPIN"
+    },
+    {
+      "seq": 94,
+      "tick": 16920,
+      "action": "SPIN"
+    },
+    {
+      "seq": 95,
+      "tick": 17100,
+      "action": "SPIN"
+    },
+    {
+      "seq": 96,
+      "tick": 17280,
+      "action": "SPIN"
+    },
+    {
+      "seq": 97,
+      "tick": 17460,
+      "action": "SPIN"
+    },
+    {
+      "seq": 98,
+      "tick": 17640,
+      "action": "SPIN"
+    },
+    {
+      "seq": 99,
+      "tick": 17820,
+      "action": "SPIN"
+    },
+    {
+      "seq": 100,
+      "tick": 18000,
+      "action": "SPIN"
+    },
+    {
+      "seq": 101,
+      "tick": 18180,
+      "action": "SPIN"
+    },
+    {
+      "seq": 102,
+      "tick": 18360,
+      "action": "SPIN"
+    },
+    {
+      "seq": 103,
+      "tick": 18540,
+      "action": "SPIN"
+    },
+    {
+      "seq": 104,
+      "tick": 18720,
+      "action": "SPIN"
+    },
+    {
+      "seq": 105,
+      "tick": 18900,
+      "action": "SPIN"
+    },
+    {
+      "seq": 106,
+      "tick": 19080,
+      "action": "SPIN"
+    },
+    {
+      "seq": 107,
+      "tick": 19260,
+      "action": "SPIN"
+    },
+    {
+      "seq": 108,
+      "tick": 19440,
+      "action": "SPIN"
+    },
+    {
+      "seq": 109,
+      "tick": 19620,
+      "action": "SPIN"
+    },
+    {
+      "seq": 110,
+      "tick": 19800,
+      "action": "SPIN"
+    },
+    {
+      "seq": 111,
+      "tick": 19980,
+      "action": "SPIN"
+    },
+    {
+      "seq": 112,
+      "tick": 20160,
+      "action": "SPIN"
+    },
+    {
+      "seq": 113,
+      "tick": 20340,
+      "action": "SPIN"
+    },
+    {
+      "seq": 114,
+      "tick": 20520,
+      "action": "SPIN"
+    },
+    {
+      "seq": 115,
+      "tick": 20700,
+      "action": "SPIN"
+    },
+    {
+      "seq": 116,
+      "tick": 20880,
+      "action": "SPIN"
+    },
+    {
+      "seq": 117,
+      "tick": 21060,
+      "action": "SPIN"
+    },
+    {
+      "seq": 118,
+      "tick": 21240,
+      "action": "SPIN"
+    },
+    {
+      "seq": 119,
+      "tick": 21420,
+      "action": "SPIN"
+    }
+  ],
+  "finalTick": 21600,
+  "score": 2500,
+  "status": "won",
+  "failure": null,
+  "hash": "sha256:2abad1cfbaa26a95d797a8ae6301e69bfd18ed70e9ae985c0501b2fb98282b46"
+}

@@ -91,15 +91,15 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  {id:"galactic-birds",version:"4.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:1,allowedActions:BIRDS_ACTIONS},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Campo continuo con12drones, estructuras de vidrio/cerámica/aleación y30tiros. Cola de exploradores, rápidos y pesados; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
-  { id: "galactic-roulette", version: "2.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V2}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único: apuestas de5€ ficticios,100€ iniciales, tres minutos o insolvencia. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
+  {id:"galactic-birds",version:"5.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:1,allowedActions:BIRDS_ACTIONS},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Seis niveles fijos con12drones, estructuras de vidrio/cerámica/aleación y30tiros. Cola de exploradores, rápidos y pesados; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
+  { id: "galactic-roulette", version: "3.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V2}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único: apuestas de5€ ficticios,100€ iniciales, tres minutos o insolvencia. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
-    id: "galactic-slot", version: "1.0.0", status: "VERIFIED",
+    id: "galactic-slot", version: "2.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SLOT_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: SLOT_ACTIONS },
     resultMetric: "fictitious-balance", name: "Galactic Slot", cover: "/covers/galactic-slot.svg", enabled: true,
     waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
-    rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances de un octavo de vuelta. Servidor reproduce inputs y saldo; sin dinero real.",
+    rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances cortos de −3 a +3 posiciones, sin jugada 000. Servidor reproduce inputs y saldo; sin dinero real.",
   },
 
   {
@@ -150,13 +150,13 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "jet-stream",
-    version: "4.0.0",
+    version: "5.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/JetStreamV3")),
     competition: {
       verification: "server-replay",
       engineVersion: "skill-core-3",
-      inputProtocolVersion: 3,
+      inputProtocolVersion: 4,
       allowedActions: ["FLAP"],
     },
     name: "Jet Stream",
@@ -170,8 +170,8 @@ const GAME_DEFINITIONS = [
     rivalScore: 45000,
     rivalName: "AERO",
     rivalAvatar: "/avatars/avatar-2.svg",
-    instruction: "Toca para subir, elige un paso y recoge recargas de vida.",
-    scoring: "La ruta, los huecos y la dificultad proceden del mismo seed competitivo.",
+    instruction: "Toca para subir, recoge recargas y relojes de ralentización.",
+    scoring: "270 segundos, tubos de grosor variable, relojes de cuatro segundos a media velocidad y dificultad progresiva; replay de servidor.",
   },
   {
     id: "metro-shift",

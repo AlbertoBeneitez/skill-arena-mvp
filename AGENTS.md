@@ -44,7 +44,10 @@ Games should be:
 Preferred progression:
 `easy start → understanding → confidence → increasing challenge → mastery`
 
-Product sessions are one continuous run. Do not introduce levels or disguise
+Galactic Birds V5 is the owner-requested exception (13 October 2026): one
+fixed-screen building per level, without horizontal scrolling. Preserve V1–V4.
+
+Other product sessions are one continuous run. Do not introduce levels or disguise
 separate levels as sectors. Remove existing level mechanics incrementally in
 new versions, preserving archived replay behavior. Difficulty may evolve within
 the same run. Physical dartboard sectors and tower height are not levels.

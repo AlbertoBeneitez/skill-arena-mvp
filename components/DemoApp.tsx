@@ -1075,9 +1075,8 @@ export default function DemoApp() {
               <button
                 className={`avatarChangeButton ${avatarEditorOpen ? "open" : ""}`}
                 type="button"
-                onClick={() => setAvatarEditorOpen((open) => !open)}
-                aria-label="Cambiar avatar"
-                aria-expanded={avatarEditorOpen}
+                onClick={() => { setAvatarError(""); fileInputRef.current?.click(); }}
+                aria-label="Subir foto de avatar"
               >
                 ↻
               </button>
@@ -1087,7 +1086,7 @@ export default function DemoApp() {
               className="hiddenFileInput"
               type="file"
               accept="image/*"
-              onChange={(e) => handleAvatarUpload(e.target.files?.[0])}
+              onChange={(e) => { handleAvatarUpload(e.target.files?.[0]); e.target.value = ""; }}
             />
           </div>
 
@@ -1107,16 +1106,7 @@ export default function DemoApp() {
             {playerName.trim().length === 0 ? "" : nameAvailable ? "Nombre disponible en este navegador" : "Elige otro nombre"}
           </div>
 
-          {avatarEditorOpen && (
-            <div className="avatarEditor">
-              <div className="avatarActions singleAvatarAction">
-                <button className="secondaryAction" type="button" onClick={() => fileInputRef.current?.click()}>
-                  SUBIR FOTO
-                </button>
-              </div>
-              {avatarError && <div className="avatarError">{avatarError}</div>}
-            </div>
-          )}
+          {avatarError && <div className="avatarError" role="alert">{avatarError}</div>}
 
           <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>CONTINUAR</button>
 

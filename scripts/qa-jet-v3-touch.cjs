@@ -10,13 +10,13 @@ const { writeFileSync } = require("node:fs");
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const base = pathToFileURL(path.join(__dirname, "../.det-test/")).href;
-  const { JET_STREAM_CORE_V4: core } = await import(
-      base + "lib/verified/jetStreamCore.v4.js"
+  const { JET_STREAM_CORE_V5: core } = await import(
+      base + "lib/verified/jetStreamCore.v5.js"
     ),
-    { shouldFlapJetV4 } = await import(base + "scripts/jet-v4-play-fixture.js"),
     { applyCoreInput, advanceCoreToTick, replayCore } = await import(
       base + "lib/verified/coreRuntime.v1.js"
     );
+  const shouldFlapJetV4 = s => core.canApply(s,"FLAP") && (s.launchedAtTick === null ? s.tick >= 240 : s.yMilli > (s.visibleTarget ?? 305000) + 25000 && s.vyMilliPerSecond > 0);
   const browser = await chromium.launch({
     executablePath: "/usr/bin/chromium",
     headless: true,
@@ -77,13 +77,13 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       p.fillRect = function (x, y, w, h) {
         if (
           this.canvas.classList.contains("gameCanvas") &&
-          w === 30 &&
+          w >= 24 && w <= 96 &&
           h > 3 &&
           this.fillStyle instanceof CanvasGradient
         ) {
           const m = this.getTransform();
           window.__jetBodies.push({
-            x,
+            x, width:w, worldTop:y, worldBottom:y+h,
             top: m.f + m.d * y,
             bottom: m.f + m.d * (y + h),
             height: this.canvas.height,
@@ -125,7 +125,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       .getByRole("button", { name: "Jugar a Jet Stream", exact: true })
       .tap();
     const issued = await (await response).json();
-    assert.equal(issued.manifest.game_version, "4.0.0");
+    assert.equal(issued.manifest.game_version, "5.0.0");
     const target = issued.manifest.competition.target_score;
     const s = core.create(issued.manifest.seed);
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
@@ -144,7 +144,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     });
     const verified = page.waitForResponse(
       (r) => r.url().includes("/verified-match/verify"),
-      { timeout: 240000 },
+      { timeout: 340000 },
     );
     verified
       .then(() => {
@@ -156,12 +156,14 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       lastDecision = -1,
       boundariesChecked = false;
     const loss = Boolean(process.env.QA_LOSS || process.env.QA_TAP_LOSS);
+    let previousShip = null;
     async function syncPlayer() {
       const clock = await page.evaluate(() => ({
         epoch: window.__epoch,
         now: performance.now(),
         events: window.__jetEvents,
         ship: window.__jetShip,
+        bodies: window.__jetBodies,
       }));
       for (; eventIndex < clock.events.length; eventIndex++) {
         const tick = Math.max(
@@ -190,6 +192,22 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         Math.floor(((clock.now - clock.epoch) * 120) / 1000),
         target,
       );
+      // The external player reads actual visible pipe geometry. A missed clock
+      // must not desynchronise its model's horizontal position from the game.
+      const visible = clock.bodies.filter(b => b.x+b.width >= 80).sort((a,b)=>a.x-b.x);
+      if (visible.length) {
+        const sections = visible.filter(b => b.x === visible[0].x).sort((a,b)=>a.worldTop-b.worldTop);
+        const gaps = sections.slice(1).map((b,i)=>(sections[i].worldBottom+b.worldTop)*500);
+        if (gaps.length) s.visibleTarget = gaps.sort((a,b)=>Math.abs(a-s.yMilli)-Math.abs(b-s.yMilli))[0];
+      }
+      if (clock.ship) {
+        if (previousShip && clock.ship.when > previousShip.when) s.vyMilliPerSecond = (clock.ship.y-previousShip.y)*1000/(clock.ship.when-previousShip.when);
+        previousShip = clock.ship;
+        s.yMilli = clock.ship.y;
+      }
+      s.tick = Math.floor(((clock.now-clock.epoch)*120)/1000);
+      s.status = "running"; // external estimate only; terminal is observed from HTTP.
+
     }
     while (!finished) {
       if (process.env.QA_LOSS || (process.env.QA_TAP_LOSS && !firstTap)) break;

@@ -9,8 +9,8 @@ const { chromium } = require(
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const b = pathToFileURL(path.join(__dirname, "../.det-test/")).href;
-  const { ROULETTE_CORE_V2: core } = await import(
-      b + "lib/verified/galacticRouletteCore.v2.js"
+  const { ROULETTE_CORE_V3: core } = await import(
+      b + "lib/verified/galacticRouletteCore.v3.js"
     ),
     { replayCore } = await import(b + "lib/verified/coreRuntime.v1.js");
   const browser = await chromium.launch({
@@ -114,7 +114,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         .getByRole("button", { name: "Jugar a Galactic Roulette", exact: true })
         .tap();
       const issued = await (await starting).json();
-      assert.equal(issued.manifest.game_version, "2.0.0");
+      assert.equal(issued.manifest.game_version, "3.0.0");
       await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
       await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
       const cdp = await context.newCDPSession(page),

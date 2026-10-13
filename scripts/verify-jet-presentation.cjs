@@ -1,4 +1,4 @@
-// Actual V4 gate renderer across full physical canvas, including letterboxing.
+// Actual V5 gate renderer across full physical canvas, including letterboxing.
 const fs = require("node:fs"),
   path = require("node:path"),
   assert = require("node:assert/strict");
@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const coreModule = await import(
-    pathToFileURL(path.join(root, ".det-test/lib/verified/jetStreamCore.v4.js"))
+    pathToFileURL(path.join(root, ".det-test/lib/verified/jetStreamCore.v5.js"))
   );
   const swc = req("next/dist/build/swc");
   await swc.loadBindings();
@@ -39,7 +39,7 @@ module.exports = (async () => {
   const ui = await load(
     path.join(root, "components/games/JetStreamV3.tsx"),
     {
-      "@/lib/verified/jetStreamCore.v4": coreModule,
+      "@/lib/verified/jetStreamCore.v5": coreModule,
       "./jet-stream/presentation": { drawJetBackground() {}, drawJetShip() {} },
       "./CoreCanvasGame": () => null,
     },
@@ -51,20 +51,20 @@ module.exports = (async () => {
   const player = await import(
     pathToFileURL(path.join(root, ".det-test/scripts/jet-v4-play-fixture.js"))
   );
-  const natural = coreModule.JET_STREAM_CORE_V4.create("jet-visible-gates");
+  const natural = coreModule.JET_STREAM_CORE_V5.create("jet-visible-gates");
   const opening = structuredClone(natural.gates[0]);
   while (
     !natural.gates.some((g) => g.windows.length === 2) &&
     natural.status === "running"
   ) {
-    if (player.shouldFlapJetV4(natural))
+    if (natural.yMilli > (natural.gates.find(g => g.worldXMilli - natural.scrollMilli + g.widthMilli >= 80000)?.centerYMilli ?? 305000) + 25000 && natural.vyMilliPerSecond > 0 && coreModule.JET_STREAM_CORE_V5.canApply(natural,"FLAP"))
       runtime.applyCoreInput(
-        coreModule.JET_STREAM_CORE_V4,
+        coreModule.JET_STREAM_CORE_V5,
         natural,
         "FLAP",
         1e6,
       );
-    runtime.stepCore(coreModule.JET_STREAM_CORE_V4, natural, 1e6);
+    runtime.stepCore(coreModule.JET_STREAM_CORE_V5, natural, 1e6);
   }
   const dual = structuredClone(
     natural.gates.find((g) => g.windows.length === 2),
@@ -93,7 +93,7 @@ module.exports = (async () => {
         getBoundingClientRect: () => ({ ...viewport, left: 0, top: 0 }),
       };
       const metrics = canvas.configureLogicalCanvas(actualCanvas, 390, 620);
-      const state = coreModule.JET_STREAM_CORE_V4.create("jet-visible-gates");
+      const state = coreModule.JET_STREAM_CORE_V5.create("jet-visible-gates");
       state.gates = [structuredClone(opening), structuredClone(dual)];
       for (const gate of state.gates) {
         assert.ok(gate);
@@ -120,7 +120,7 @@ module.exports = (async () => {
                 if (
                   key === "fillRect" &&
                   obj.fillStyle?.gateGradient &&
-                  args[2] === 30 &&
+                  args[2] === gate.widthMilli / 1000 &&
                   args[3] > 3
                 )
                   bodies.push({
@@ -174,7 +174,7 @@ module.exports = (async () => {
   delete global.window;
   console.log(
     JSON.stringify({
-      variant: "Jet V4 edge presentation",
+      variant: "Jet V5 variable-width edge presentation",
       cases,
       doubleCases,
       viewports: 6,

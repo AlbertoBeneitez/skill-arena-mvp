@@ -472,3 +472,16 @@ válidos predictivos y ajuste de arrastre. Históricos competitivos conservados.
 [Evidencia y límites](releases/v96-mobile.md). Suite completa/typecheck/build y
 QA táctil vertical/horizontal pasan. No se declara completado el backlog general
 ni se promueve el Solitaire legacy a verificación autoritativa.
+
+## v97 · nueva solicitud de seis puntos
+
+Birds5es la excepción autorizada: seis niveles independientes con cámara fija,
+un edificio distinto por nivel y cola/presupuesto compartidos. Roulette3refleja
+velocidades3D contra cono/cuenco según fuerza. Slot2usa−3…+3y prohíbe000;
+Dardos conserva clavados y muestra puntos de cada tiro. Jet5dura270segundos,
+varía grosor de tubos e incorpora relojes a media velocidad durante4segundos.
+Flecha circular de avatar abre subir foto directamente; recorte/error/reselección
+comprobados. Las16imágenes originales no están en adjuntos/repositorio; ese
+material sigue pendiente y no se marca incluido. [Evidencia](releases/v97-mobile.md).
+Históricos preservados; suite completa/typecheck/build y QA táctil de unidades
+pasan. Se comprueban CI/Vercel del commit antes de avanzar mobile-test.

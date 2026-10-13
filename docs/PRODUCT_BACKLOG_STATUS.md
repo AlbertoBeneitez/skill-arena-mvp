@@ -528,3 +528,14 @@ Solitaire0.2con tap predictivo, secuencias legales, bases por palo y snap drag.
 hasta comprobar CI/Vercel del commit exacto; mobile-test no se avanza antes.
 Los límites de producción y el audit de scoring/end-condition Solitaire siguen
 abiertos; este cambio de entradas no altera su madurez legacy.
+
+## v97 · niveles Birds, rebotes3D, Slot y Jet
+
+Solicitud implementada en nuevos cores: Birds5con seis niveles fijos;
+Roulette3con reflexión contra normales inclinadas/fuerza vertical; Slot2con
+avances−3…+3y bloqueo autoritativo000; Jet5con270segundos, tubos gruesos variables
+y relojes de ralentización4segundos. Dardos muestra la puntuación de cada impacto.
+Acceso: flecha circular abre el selector de foto sin panel intermedio. Avatares16
+originales siguen ausentes de archivos/adjuntos; integración incompleta hasta
+recibirlos. [Pruebas y límites](releases/v97-mobile.md). Backend/replays/históricos
+conservados. CI/preview del commit exacto preceden la promoción de mobile-test.

@@ -113,6 +113,18 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
     }
     drawDart(ctx, pose);
   }
+  const hit = s.impacts.at(-1);
+  if (hit && s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks) {
+    ctx.fillStyle = hit.points ? "#a1eed3" : "#e6b597";
+    ctx.textAlign = "center";
+    ctx.font = "900 32px system-ui";
+    ctx.fillText(`${hit.points} PUNTOS`, cx, 500);
+  } else if (s.phase === "aim" && hit && !hit.timeout) {
+    ctx.fillStyle = "#a1eed3";
+    ctx.textAlign = "center";
+    ctx.font = "bold 20px system-ui";
+    ctx.fillText(`ÚLTIMO: ${hit.points}`, cx, 480);
+  }
   ctx.fillStyle = "#b4d3df";
   ctx.textAlign = "center";
   ctx.font = "bold 13px system-ui";

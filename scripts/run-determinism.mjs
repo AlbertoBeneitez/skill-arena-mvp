@@ -9,6 +9,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-command-repository.js");
   await import("../.det-test/scripts/verify-persisted-hidden-training.js");
 } else {
+  await import("../.det-test/scripts/verify-v97-games.js");
   await import("../.det-test/scripts/verify-birds-v1.js");
   await import("../.det-test/scripts/verify-birds-v2.js");
   await import("../.det-test/scripts/verify-birds-v3.js");

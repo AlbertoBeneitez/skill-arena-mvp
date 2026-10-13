@@ -109,7 +109,13 @@
     "scripts/birds-v4-play-fixture.ts",
     "scripts/verify-interactions-v96.ts",
     "lib/billiardsPullback.ts",
-    "lib/solitaireMoves.ts"
+    "lib/solitaireMoves.ts",
+    "lib/verified/galacticBirdsCore.v5.ts",
+    "lib/verified/galacticRouletteCore.v3.ts",
+    "lib/verified/galacticSlotCore.v2.ts",
+    "lib/verified/jetStreamCore.v5.ts",
+    "lib/slotPresentation.v2.ts",
+    "scripts/verify-v97-games.ts"
   ],
   "exclude": ["node_modules", ".det-test"]
 }

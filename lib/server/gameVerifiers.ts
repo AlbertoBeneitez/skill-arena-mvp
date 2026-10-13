@@ -1,3 +1,7 @@
+import { BIRDS_CORE_V5 } from "../verified/galacticBirdsCore.v5";
+import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
+import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
+import { JET_STREAM_CORE_V5 } from "../verified/jetStreamCore.v5";
 import { BILLIARDS_CORE_V3 } from "../verified/billiardsCore.v3";
 import { BIRDS_CORE as BIRDS_CORE_V4 } from "../verified/galacticBirdsCore.v4";
 import { ROULETTE_CORE_V2 } from "../verified/galacticRouletteCore.v2";
@@ -390,10 +394,13 @@ function adapterKey(gameId: string, gameVersion: string) {
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BIRDS_CORE.gameId, BIRDS_CORE.gameVersion)]: coreAdapter(BIRDS_CORE),
   [adapterKey(BIRDS_CORE_V2.gameId, BIRDS_CORE_V2.gameVersion)]: coreAdapter(BIRDS_CORE_V2),
+  [adapterKey(BIRDS_CORE_V5.gameId,BIRDS_CORE_V5.gameVersion)]: coreAdapter(BIRDS_CORE_V5),
   [adapterKey(BIRDS_CORE_V4.gameId, BIRDS_CORE_V4.gameVersion)]: coreAdapter(BIRDS_CORE_V4),
   [adapterKey(BIRDS_CORE_V3.gameId, BIRDS_CORE_V3.gameVersion)]: coreAdapter(BIRDS_CORE_V3),
   [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
+  [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
+  [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
   [adapterKey(SLOT_CORE.gameId, SLOT_CORE.gameVersion)]: coreAdapter(SLOT_CORE),
   [adapterKey(ALIEN_DASH_CORE_V3.gameId, ALIEN_DASH_CORE_V3.gameVersion)]: coreAdapter(ALIEN_DASH_CORE_V3),
   [adapterKey(MEMORY_CORE.gameId, MEMORY_CORE.gameVersion)]: coreAdapter(MEMORY_CORE),
@@ -414,6 +421,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PHALANX_V2_CORE.gameId, PHALANX_V2_CORE.gameVersion)]: coreAdapter(PHALANX_V2_CORE),
   [adapterKey(PHALANX_V3_CORE.gameId, PHALANX_V3_CORE.gameVersion)]: coreAdapter(PHALANX_V3_CORE),
   [adapterKey(STACK_SHIFT_CORE.gameId, STACK_SHIFT_CORE.gameVersion)]: coreAdapter(STACK_SHIFT_CORE),
+  [adapterKey(JET_STREAM_CORE_V5.gameId,JET_STREAM_CORE_V5.gameVersion)]: coreAdapter(JET_STREAM_CORE_V5),
   [adapterKey(JET_STREAM_CORE_V4.gameId, JET_STREAM_CORE_V4.gameVersion)]: coreAdapter(JET_STREAM_CORE_V4),
   [adapterKey(JET_STREAM_CORE_V3.gameId, JET_STREAM_CORE_V3.gameVersion)]: coreAdapter(JET_STREAM_CORE_V3),
   [adapterKey(ALIEN_DASH_CORE.gameId, ALIEN_DASH_CORE.gameVersion)]: coreAdapter(ALIEN_DASH_CORE),

@@ -2,11 +2,11 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V2,
+  ROULETTE_CORE_V3,
   ROULETTE_WHEEL,
   ROULETTE_RED,
   type RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v2";
+} from "@/lib/verified/galacticRouletteCore.v3";
 import { ROULETTE_BETS_V2 } from "@/lib/verified/galacticRouletteProtocol.v2";
 import {
   ROULETTE_BALL_DOCK,
@@ -122,7 +122,9 @@ function render(
     : idle ? (drag?.y ?? ROULETTE_BALL_DOCK.y) : s.ballY / 1000;
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
-  const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - 6);
+  const radius = Math.hypot(x - cx, y - cy);
+  const surface = s.inBowl && radius <= 151 ? radius < 90 ? (90 - radius) * 0.35 : Math.max(0, (radius - 115) * 0.35) : 0;
+  const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - 6);
   if (idle && !drag) {
     ctx.strokeStyle = "rgba(169,219,238,.6)";
     ctx.lineWidth = 2;
@@ -138,12 +140,12 @@ function render(
   }
   ctx.fillStyle = "rgba(0,4,14,.45)";
   ctx.beginPath();
-  ctx.ellipse(x + 2 + height * 0.12, y + 3 + height * 0.15,
+  ctx.ellipse(x + 2 + height * 0.20, y + 3 + height * 0.26,
     6 + height * 0.07, 4 + height * 0.04, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#f0f7ff";
   ctx.beginPath();
-  ctx.arc(x, y, 6 + height * 0.04, 0, Math.PI * 2);
+  ctx.arc(x, y, 6 + Math.min(height, 130) * 0.07, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
@@ -300,7 +302,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V2}
+        core={ROULETTE_CORE_V3}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -311,7 +313,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V2.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V3.canApply(s, "TOSS_D00_P00") &&
               rouletteTossCanGrab(p)
                 ? p
                 : null;

@@ -1,12 +1,8 @@
 "use client";
 import { useRef, useEffect, useCallback } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
-import {
-  BIRDS_CORE,
-  BIRDS_RULES,
-  type BirdKind,
-  type BirdsState,
-} from "@/lib/verified/galacticBirdsCore.v4";
+import type { BirdKind } from "@/lib/verified/galacticBirdsCore.v4";
+import { BIRDS_CORE_V5, type BirdsV5State as BirdsState } from "@/lib/verified/galacticBirdsCore.v5";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -15,8 +11,8 @@ import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { BIRDS_SCENE_LIFT, drawSpacePig } from "@/lib/birdsPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const hudLabel = (s: Readonly<BirdsState>) =>
-  `${s.kills}/${s.enemies.length} CERDOS · ${s.ammo} TIROS`;
-const feedbackScore = (s: Readonly<BirdsState>) => s.kills * 10 + s.destroyed;
+  `NIVEL ${s.level + 1}/6 · ${s.kills}/2 CERDOS · ${s.ammo} TIROS`;
+const feedbackScore = (s: Readonly<BirdsState>) => (s.completedKills + s.kills) * 10 + s.completedDestroyed + s.destroyed;
 const inputTones = { SHOOT: "tap" } as const;
 const materials = {
   glass: { fill: "rgba(124,225,249,.48)", edge: "#91d8e7" },
@@ -102,10 +98,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       viewport: { width: number; height: number },
     ) => {
       const width = viewport.width,
-        camera = Math.max(
-          0,
-          Math.min(1600000 - width * 1000, (s.bird?.x ?? s.launcherX) - 110000),
-        ),
+        camera = 0,
         worldX = (x: number) => (x - camera) / 1000;
       launcher.current = { x: worldX(s.launcherX), y: 520 - BIRDS_SCENE_LIFT };
       drawSpaceBackdrop(ctx, width, 620, 2, s.tick);
@@ -252,57 +245,14 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         }
         ctx.globalAlpha = 1;
       }
-      // Radar shows the actual complete demolition field, never a predicted shot.
-      const mapLeft = 18,
-        mapTop = 74,
-        mapWidth = width - 36,
-        mapHeight = 78,
-        mapScale = mapWidth / 1600;
-      ctx.fillStyle = "rgba(5,16,30,.84)";
-      ctx.strokeStyle = "#537488";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(mapLeft, mapTop, mapWidth, mapHeight, 9);
-      ctx.fill();
-      ctx.stroke();
-      for (const body of s.bodies) {
-        if (!body.alive) continue;
-        ctx.fillStyle =
-          body.material === "glass"
-            ? "#69b9c8"
-            : body.material === "ceramic"
-              ? "#8d9abf"
-              : "#65829a";
-        ctx.fillRect(
-          mapLeft + ((body.x - body.w / 2) / 1000) * mapScale,
-          mapTop +
-            mapHeight -
-            8 -
-            ((560000 - body.y + body.h / 2) / 1000) * 0.2,
-          Math.max(2, (body.w / 1000) * mapScale),
-          (body.h / 1000) * 0.2,
-        );
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#e4d4ad";
+      ctx.font = "bold 18px system-ui";
+      ctx.fillText(`NIVEL ${s.level + 1}`, width / 2, 96);
+      if (s.phase === "clearing") {
+        ctx.fillStyle = "#9dedd3";
+        ctx.fillText(s.level === 5 ? "COMPLETADO" : "NIVEL COMPLETADO", width / 2, 134);
       }
-      for (const enemy of s.enemies) {
-        if (!enemy.alive) continue;
-        ctx.fillStyle = "#f0b3bd";
-        ctx.beginPath();
-        ctx.arc(
-          mapLeft + (enemy.x / 1000) * mapScale,
-          mapTop + mapHeight - 8 - ((560000 - enemy.y) / 1000) * 0.2,
-          3,
-          0,
-          Math.PI * 2,
-        );
-        ctx.fill();
-      }
-      ctx.strokeStyle = "#deca94";
-      ctx.strokeRect(
-        mapLeft + (camera / 1000) * mapScale,
-        mapTop + 4,
-        Math.min(mapWidth, width * mapScale),
-        mapHeight - 8,
-      );
       const names = { scout: "EXPLORADOR", dart: "RÁPIDO", meteor: "PESADO" };
       for (const [i, kind] of (
         ["scout", "dart", "meteor"] as const
@@ -338,11 +288,10 @@ export default function GalacticBirds(props: GameRuntimeProps) {
     <div className="birdsVerified">
       <CoreCanvasGame
         {...props}
-        core={BIRDS_CORE}
+        core={BIRDS_CORE_V5}
         name="Galactic Birds"
         instruction=""
         render={render}
-        expandHorizontalViewport
         hideHudScore
         hudLabel={hudLabel}
         feedbackScore={feedbackScore}

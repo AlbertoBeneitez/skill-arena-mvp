@@ -1,12 +1,12 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  JET_STREAM_CORE_V4,
-  type JetStreamV4State,
-} from "@/lib/verified/jetStreamCore.v4";
+  JET_STREAM_CORE_V5,
+  type JetStreamV5State,
+} from "@/lib/verified/jetStreamCore.v5";
 import { drawJetBackground, drawJetShip } from "./jet-stream/presentation";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, state: JetStreamV4State) {
+function render(ctx: CanvasRenderingContext2D, state: JetStreamV5State) {
   drawJetBackground(ctx, state);
   // Extend only the opaque bodies through visual letterboxing. The signed
   // 390×620 field, windows and colliders stay exactly V4 in every viewport.
@@ -19,21 +19,22 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV4State) {
       : 620;
   for (const gate of state.gates) {
     const x = (gate.worldXMilli - state.scrollMilli) / 1000;
-    if (x < -50 || x > 420) continue;
+    const width = gate.widthMilli / 1000;
+    if (x < -width - 20 || x > 420) continue;
     const segment = (top: number, bottom: number) => {
       if (bottom <= top) return;
-      const gradient = ctx.createLinearGradient(x, 0, x + 30, 0);
+      const gradient = ctx.createLinearGradient(x, 0, x + width, 0);
       gradient.addColorStop(0, gate.damaged ? "#744368" : "#1c4d66");
       gradient.addColorStop(0.5, gate.damaged ? "#b77279" : "#3498b3");
       gradient.addColorStop(1, "#153147");
       ctx.fillStyle = gradient;
-      ctx.fillRect(x, top, 30, bottom - top);
+      ctx.fillRect(x, top, width, bottom - top);
       ctx.strokeStyle = "#86d8df";
       ctx.lineWidth = 2;
-      ctx.strokeRect(x + 1, top + 1, 28, bottom - top - 2);
+      ctx.strokeRect(x + 1, top + 1, width - 2, bottom - top - 2);
       ctx.fillStyle = "#b9ffff";
-      ctx.fillRect(x, top, 30, 3);
-      ctx.fillRect(x, bottom - 3, 30, 3);
+      ctx.fillRect(x, top, width, 3);
+      ctx.fillRect(x, bottom - 3, width, 3);
     };
     let previous = topOfCanvas;
     for (const window of gate.windows) {
@@ -43,10 +44,21 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV4State) {
       previous = bottom;
     }
     segment(previous, bottomOfCanvas);
+    if (gate.clock && !gate.clockCollected) {
+      ctx.save();
+      ctx.translate(x + width / 2, gate.centerYMilli / 1000);
+      ctx.fillStyle = "#dec88b";
+      ctx.strokeStyle = "#fff3c9";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "#273d55";
+      ctx.beginPath(); ctx.moveTo(0,-8); ctx.lineTo(0,0); ctx.lineTo(6,4); ctx.stroke();
+      ctx.restore();
+    }
     if (gate.pickup && !gate.collected) {
       const y = gate.centerYMilli / 1000;
       ctx.save();
-      ctx.translate(x + 15, y);
+      ctx.translate(x + width / 2, y);
       ctx.shadowColor = "#77ffc5";
       ctx.shadowBlur = 16;
       ctx.fillStyle = "#9affd3";
@@ -78,13 +90,19 @@ function render(ctx: CanvasRenderingContext2D, state: JetStreamV4State) {
     195,
     82,
   );
+  if (state.tick < state.slowUntilTick) {
+    ctx.fillStyle = "#e7d596";
+    ctx.fillText(`◷ ${(Math.max(0,state.slowUntilTick-state.tick)/120).toFixed(1)}s`,195,104);
+  }
+  ctx.fillStyle = "#b9e8ff";
+  ctx.fillText(`${Math.ceil(Math.max(0,32400-state.tick)/120)}s`,195,55);
   ctx.textAlign = "left";
 }
 const failureFinale = {
   durationMs: 720,
   render(
     ctx: CanvasRenderingContext2D,
-    state: JetStreamV4State,
+    state: JetStreamV5State,
     elapsedMs: number,
   ) {
     const t = Math.min(1, elapsedMs / 720),
@@ -122,7 +140,7 @@ export default function JetStreamV3(props: GameRuntimeProps) {
   return (
     <CoreCanvasGame
       {...props}
-      core={JET_STREAM_CORE_V4}
+      core={JET_STREAM_CORE_V5}
       name="Jet Stream"
       hideHudLabel
       hideHudScore
