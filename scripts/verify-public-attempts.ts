@@ -140,6 +140,22 @@ try {
   assert.ok(repeated.every((r) => r.ticket.attempt_id === a.ticket.attempt_id));
   assert.equal(a.manifest.manifest_version, 3);
   assert.equal(a.manifest.competition.target_score, 1e9);
+  const metadata = GAMES.find(
+    (g) => g.id === "precision-stack",
+  )! as unknown as { version: string; enabled: boolean };
+  const savedMetadata = { ...metadata };
+  try {
+    metadata.version = "999.0.0";
+    metadata.enabled = false;
+    assert.equal(
+      (await start(actor, "precision-stack", key)).manifest.game_version,
+      a.manifest.game_version,
+      "retry must recover its pinned match across catalogue upgrades/retirement",
+    );
+  } finally {
+    metadata.version = savedMetadata.version;
+    metadata.enabled = savedMetadata.enabled;
+  }
   await rejects(() => start(actor, "billiards", key), "START_KEY_CONFLICT");
   await rejects(() => start(actor), "ATTEMPT_ALREADY_ACTIVE");
   await rejects(

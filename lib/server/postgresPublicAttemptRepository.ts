@@ -112,6 +112,18 @@ export class PostgresPublicAttemptRepository
     }
     return row;
   }
+  async recoverStart(actor: string, key: string, requestHash: string) {
+    return this.tx(async (c) => {
+      const r = await c.query<PublicAttempt>(
+        `${queryAttempt} WHERE a.player_id=$1 AND a.start_key=$2 FOR UPDATE OF a`,
+        [actor, key],
+      );
+      if (!r.rows[0]) return null;
+      if (r.rows[0].request_hash !== requestHash)
+        throw new PublicAttemptError("START_KEY_CONFLICT");
+      return this.expire(c, r.rows[0]);
+    });
+  }
   async start(args: StartPublicAttempt) {
     return this.tx(async (c) => {
       // Training-only storage quota and ordering; not a substitute for production abuse controls.

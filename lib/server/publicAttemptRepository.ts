@@ -32,6 +32,11 @@ export type StartPublicAttempt = {
   ticket(manifest: MatchManifest, slot: "A" | "B"): AttemptTicket;
 };
 export interface PublicAttemptRepository {
+  recoverStart(
+    actor: string,
+    key: string,
+    requestHash: string,
+  ): Promise<PublicAttempt | null>;
   inspect(actor: string, id: string): Promise<PublicAttempt>;
   recent(actor: string): Promise<PublicAttempt[]>;
   start(args: StartPublicAttempt): Promise<PublicAttempt>;

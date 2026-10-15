@@ -43,6 +43,15 @@ export class PublicMatchService {
       !isAllowedStakeMinor(body.stake_minor as number)
     )
       throw new PublicAttemptError("INVALID_START", 400);
+    const requestHash = sha256(
+      canonicalJson({ game: body.game_id, stake: body.stake_minor }),
+    );
+    const recovered = await this.repository.recoverStart(
+      actor,
+      body.start_key,
+      requestHash,
+    );
+    if (recovered) return this.started(recovered);
     const game = getGameDefinition(body.game_id),
       adapter = getServerGameAdapter(body.game_id);
     if (
@@ -54,13 +63,7 @@ export class PublicMatchService {
     const row = await this.repository.start({
       actor,
       key: body.start_key,
-      requestHash: sha256(
-        canonicalJson({
-          game: game.id,
-          version: game.version,
-          stake: body.stake_minor,
-        }),
-      ),
+      requestHash,
       gameId: game.id,
       gameVersion: game.version,
       stake: body.stake_minor as number,
@@ -90,6 +93,9 @@ export class PublicMatchService {
       ticket: (manifest, slot) =>
         issueAttemptTicket({ manifest, playerId: actor, slot, ttlMinutes: 30 }),
     });
+    return this.started(row);
+  }
+  private started(row: PublicAttempt) {
     return {
       ok: true,
       manifest: row.manifest,
