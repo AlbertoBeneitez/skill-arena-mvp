@@ -1,8 +1,10 @@
 "use client";
-import { GAMES, modeForStake, type GameMeta, type Stake } from "@/lib/games";
+import { GAMES, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
 type Props = {
   stake: Stake;
+  serverOnly?: boolean;
+  modes?: Partial<Record<GameId,MatchMode>>;
   balance: number;
   nextTurn: "create" | "existing";
   startingGameId: string | null;
@@ -26,7 +28,7 @@ export default function CatalogBrowser(props: Props) {
                 loading="lazy"
                 decoding="async"
               />
-              {modeForStake(game, props.stake, props.nextTurn) ===
+              {!props.serverOnly && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) ===
                 "existing" && (
                 <button
                   type="button"
@@ -43,7 +45,7 @@ export default function CatalogBrowser(props: Props) {
               className={styles.play}
               type="button"
               disabled={
-                props.stake > props.balance || props.startingGameId !== null
+                props.stake > props.balance || props.startingGameId !== null || (props.serverOnly === true && props.stake > 0 && game.competition.verification !== "server-replay")
               }
               aria-label={`Jugar a ${game.name}`}
               aria-busy={props.startingGameId === game.id}

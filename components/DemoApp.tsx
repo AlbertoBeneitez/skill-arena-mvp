@@ -5,9 +5,11 @@ import CatalogBrowser from "./CatalogBrowser";
 import shellStyles from "./ProductShell.module.css";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePublicMatchAvailability, usePendingMatchResolution } from "@/lib/usePublicMatchState";
 import GalacticMark from "./GalacticMark";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
+import RecentAttempts from "./RecentAttempts";
 import GlobalRanking from "./GlobalRanking";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
@@ -230,6 +232,8 @@ export default function DemoApp() {
   const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
   const matchStartLockRef = useRef(false);
   const [startingGameId, setStartingGameId] = useState<string | null>(null);
+  const [matchStartError,setMatchStartError]=useState("");
+  const settledMatchesRef=useRef(new Set<string>());
   const [balance, setBalance] = useState(START_BALANCE);
   const [netEarnings, setNetEarnings] = useState(0);
   const [nextTurn, setNextTurn] = useState<Turn>("create");
@@ -571,7 +575,7 @@ export default function DemoApp() {
       groupCompetition.type === "quick" ||
       groupStage === 1;
 
-    if (selectedStake > 0 && !result && entryWasCharged) {
+    if (selectedStake > 0 && !result && entryWasCharged && !activeGame) {
       setBalance((value) => Number((value + selectedStake).toFixed(2)));
       setMovements((items) => [
         {
@@ -582,6 +586,7 @@ export default function DemoApp() {
       ].slice(0, 20));
     }
 
+    if(!result&&activeGame){setLosses(value=>value+1);setStreak(0);}
     matchStartLockRef.current = false;
     setStartingGameId(null);
     setActiveGame(false);
@@ -704,12 +709,19 @@ export default function DemoApp() {
     setGhostEnabled(mode === "existing");
   }
 
+  const {persistentTraining,liveModes}=usePublicMatchAvailability(isLoaded&&onboarded,screen==="home",selectedStake);
+  usePendingMatchResolution(screen==="game"&&result!==null,attemptSummary,finishMatch);
+
   function startMatch(gameOverride?: GameMeta) {
     const game = gameOverride ?? selectedGame;
     const stake = selectedStake;
-    const mode = modeForStake(game, stake as Stake, nextTurn);
+    const mode = persistentTraining ? (liveModes[game.id]??"create") : modeForStake(game, stake as Stake, nextTurn);
 
     if (matchStartLockRef.current || stake > balance) return;
+    if(persistentTraining && stake>0 && game.competition.verification!=="server-replay"){
+      setMatchStartError("Este juego solo admite entrenamiento local");return;
+    }
+    setMatchStartError("");
 
     matchStartLockRef.current = true;
     setStartingGameId(game.id);
@@ -719,7 +731,7 @@ export default function DemoApp() {
     setSelectedMode(mode);
     setGhostEnabled(mode === "existing");
     setMatchScope("duel");
-    setMatchTargetScore(game.rivalScore);
+    setMatchTargetScore(persistentTraining ? 1_000_000_000 : game.rivalScore);
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
 
@@ -748,29 +760,25 @@ export default function DemoApp() {
     setActiveGame(false);
 
     if (selectedGame.competition.verification === "server-replay" && gameResult.verified !== true) {
-      const entryWasCharged =
-        matchScope !== "group" ||
-        !groupCompetition ||
-        groupCompetition.type === "quick" ||
-        groupStage === 1;
-
-      if (selectedStake > 0 && entryWasCharged) {
-        setBalance((value) => Number((value + selectedStake).toFixed(2)));
-        setMovements((items) => [
-          {
-            label: `${selectedGame.name} · devolución verificación`,
-            amount: selectedStake,
-          },
-          ...items,
-        ].slice(0, 20));
-      }
+      // A started attempt is lost on disconnect/failed verification, never refunded by UI.
+      setLosses(value=>value+1);setStreak(0);
       setResult({
         ...gameResult,
         won: false,
         score: 0,
         verified: false,
+        forfeited: gameResult.forfeited || gameResult.verificationError === "ATTEMPT_FORFEITED",
       });
       return;
+    }
+
+    if(gameResult.serverMatch){
+      setAttemptSummary(gameResult);
+      if(gameResult.serverMatch.status==="waiting"){
+        setSelectedMode("create");setResult({...gameResult,won:false});return;
+      }
+      if(settledMatchesRef.current.has(gameResult.serverMatch.matchId))return;
+      settledMatchesRef.current.add(gameResult.serverMatch.matchId);
     }
 
     setAttemptSummary(gameResult);
@@ -779,8 +787,9 @@ export default function DemoApp() {
       matchScope === "duel" &&
       (selectedMode === "existing" || selectedMode === "waiting");
 
-    const didWin =
-      selectedStake === 0
+    const didWin = gameResult.serverMatch
+      ? gameResult.serverMatch.winnerSlot === gameResult.serverMatch.slot
+      : selectedStake === 0
         ? gameResult.won
         : matchScope === "group"
           ? gameResult.won || gameResult.score >= matchTargetScore
@@ -788,6 +797,12 @@ export default function DemoApp() {
             ? gameResult.won || gameResult.score >= matchTargetScore
             : false;
     const resolvedResult = { ...gameResult, won: didWin };
+    setAttemptSummary(resolvedResult);
+    if(gameResult.serverMatch?.reason==="exact-tie"){
+      setResult(resolvedResult);
+      if(selectedStake>0)setBalance(value=>Number((value+selectedStake).toFixed(2)));
+      return;
+    }
     if (didWin) setShowWinAnimation(true);
     setResult(resolvedResult);
 
@@ -939,6 +954,8 @@ export default function DemoApp() {
     ) {
       return;
     }
+    if(persistentTraining!==false){setMatchStartError("Grupos no disponibles en esta sesión");return;}
+    setMatchStartError("");
     const nextStage = options?.nextStage ?? 1;
 
     matchStartLockRef.current = true;
@@ -1208,10 +1225,12 @@ export default function DemoApp() {
               ))}
             </div>
 
-            <CatalogBrowser stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
+            {matchStartError && <p role="status">{matchStartError}</p>}
+            <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
           </section>
         )}
 
+        {screen === "group" && matchStartError && <p role="status">{matchStartError}</p>}
         {screen === "group" && (
           <GroupHub
             group={group}
@@ -1256,7 +1275,7 @@ export default function DemoApp() {
                 >
                   {musicOn ? "🔊" : "🔇"}
                 </GameActionButton>
-                {selectedMode === "existing" && matchScope === "duel" && (
+                {!persistentTraining && selectedMode === "existing" && matchScope === "duel" && (
                   <button
                     className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
                     onClick={() => setGhostEnabled((value) => !value)}
@@ -1274,11 +1293,11 @@ export default function DemoApp() {
                 game={selectedGame}
                 active={activeGame}
                 stake={selectedStake}
-                ghostEnabled={selectedMode === "existing" && ghostEnabled}
+                ghostEnabled={!persistentTraining && selectedMode === "existing" && ghostEnabled}
                 instanceKey={gameKey}
                 targetScore={matchTargetScore}
                 stopOnTarget={
-                  matchScope === "duel" &&
+                  !persistentTraining && matchScope === "duel" &&
                   (selectedMode === "existing" ||
                     selectedMode === "waiting")
                 }
@@ -1307,9 +1326,9 @@ export default function DemoApp() {
                 <div className="gameExitCard">
                   <strong>SALIR DE LA PARTIDA</strong>
                   <p>
-                    {selectedStake > 0
-                      ? "Se devolverá la entrada ficticia al salir."
-                      : "La partida actual se cancelará."}
+                    {activeGame
+                      ? "La partida contará como perdida."
+                      : "Se cancelará el inicio."}
                   </p>
                   <div>
                     <button type="button" onClick={() => setExitConfirmOpen(false)}>SEGUIR JUGANDO</button>
@@ -1333,14 +1352,14 @@ export default function DemoApp() {
                   resultPointerReadyRef.current = false;
                 }}
               >
-                {result.verified === false ? (
+                {result.forfeited ? <GameResultSummary result={result} gameName={selectedGame.name} resultMetric={selectedGame.resultMetric} /> : result.verified === false ? (
                   <>
                     <div className="resultIcon">⚠</div>
                     <b>RESULTADO NO VERIFICADO</b>
                   </>
                 ) : (
                   <>
-                    <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} resultMetric={selectedGame.resultMetric} waitingForRival={selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
+                    <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} resultMetric={selectedGame.resultMetric} waitingForRival={result.serverMatch ? result.serverMatch.status === "waiting" : selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
                   </>
                 )}
                 <fieldset className="resultActions" disabled={!resultActionsReady} aria-label="Acciones del resultado">
@@ -1444,6 +1463,7 @@ export default function DemoApp() {
               </div>
             </section>
 
+            {persistentTraining && <RecentAttempts />}
             <div className="chartPanel">
               <div className="chartHead"><span>BENEFICIO NETO FICTICIO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
               <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Beneficio neto ficticio de partidas a lo largo del tiempo">

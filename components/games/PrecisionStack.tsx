@@ -122,6 +122,7 @@ export default function PrecisionStack({
     state: attemptState,
     recordInput,
     verifyAttempt,
+    simulationTarget,
   } = verifiedAttempt;
 
   useEffect(() => {
@@ -441,6 +442,7 @@ export default function PrecisionStack({
         score: result.score ?? 0,
         timeMs: result.time_ms ?? 0,
         verified: true,
+        serverMatch: result.match,
         failureReason: result.failure ?? null,
       });
     },
@@ -456,9 +458,9 @@ export default function PrecisionStack({
       attemptState.status === "ready"
         ? attemptState.manifest.seed
         : "inactive",
-      targetScore
+      simulationTarget
     );
-  }, [attemptState, targetScore]);
+  }, [attemptState, simulationTarget]);
 
   const loop = useCallback(
     (now: number) => {
@@ -614,7 +616,7 @@ export default function PrecisionStack({
     dropPrecisionStack(
       state,
       attemptState.manifest.seed,
-      targetScore
+      simulationTarget
     );
 
     const placement = state.lastPlacement;
@@ -713,7 +715,7 @@ export default function PrecisionStack({
     attemptState,
     draw,
     recordInput,
-    targetScore,
+    simulationTarget,
   ]);
 
   return (

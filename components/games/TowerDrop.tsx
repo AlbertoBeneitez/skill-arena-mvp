@@ -89,6 +89,7 @@ export default function TowerDrop({
     state: attemptState,
     recordInput,
     verifyAttempt,
+    simulationTarget,
   } = verifiedAttempt;
 
   useEffect(() => {
@@ -379,6 +380,7 @@ export default function TowerDrop({
         score: data.score ?? 0,
         timeMs: data.time_ms ?? 0,
         verified: true,
+        serverMatch: data.match,
         failureReason: data.failure ?? null,
       });
     },
@@ -392,7 +394,7 @@ export default function TowerDrop({
     const beforeBlocks = s.blocks.length;
     const beforePhase = s.phase;
 
-    const stepped = stepTowerDrop(s, targetScore);
+    const stepped = stepTowerDrop(s, simulationTarget);
 
     if (stepped.blocks.length > beforeBlocks) {
       gameTone(stepped.combo > 0 ? "good" : "tap");
@@ -412,7 +414,7 @@ export default function TowerDrop({
       draw();
       void submitReplay(stepped);
     }
-  }, [draw, submitReplay, targetScore]);
+  }, [draw, submitReplay, simulationTarget]);
 
   const loop = useCallback(
     (now: number) => {
@@ -564,10 +566,10 @@ export default function TowerDrop({
       ) +
       5;
 
-    dropTowerBlock(s, targetScore);
+    dropTowerBlock(s, simulationTarget);
     gameTone("tap");
     haptic(4);
-  }, [attemptState.status, recordInput, targetScore]);
+  }, [attemptState.status, recordInput, simulationTarget]);
 
   return (
     <div className="gameStage skillGameStage towerDropArena verifiedArena">

@@ -1,5 +1,6 @@
 "use client";
 
+import { HEARTBEAT_MS } from "../publicMatch";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameId } from "@/lib/games";
 import type {
@@ -9,6 +10,7 @@ import type {
   VerifiedAttemptResult,
 } from "./contracts";
 import type { ReplayInput } from "./inputValidation";
+import { ensureAttemptSession, submitAttemptRecord } from "./attemptTransport";
 import { SubmissionGate } from "./submissionGate";
 
 type AttemptState =
@@ -45,6 +47,7 @@ type Options = {
 };
 
 type Session = {
+  durable?: boolean;
   manifest: MatchManifest;
   ticket: AttemptTicket;
 };
@@ -67,6 +70,9 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
   const [stateKey, setStateKey] = useState(optionsKey);
   const currentState: AttemptState =
     stateKey === optionsKey ? state : { status: "idle" };
+  const startKeyRef = useRef<{ key: string; id: string } | null>(null);
+  if (startKeyRef.current?.key !== optionsKey)
+    startKeyRef.current = { key: optionsKey, id: crypto.randomUUID() };
   const sessionRef = useRef<Session | null>(null);
   const inputsRef = useRef<TInput[]>([]);
   const requestRef = useRef<AbortController | null>(null);
@@ -91,8 +97,9 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
       const generation = generationRef.current;
       closedRef.current = true;
       const body = JSON.stringify({
-        manifest: session.manifest,
-        ticket: session.ticket,
+        ...(session.durable
+          ? { attempt_id: session.ticket.attempt_id }
+          : { manifest: session.manifest, ticket: session.ticket }),
         inputs: inputsRef.current.map((input) => ({ ...input })),
         final_tick: finalTick,
         ...(abandoned ? { record_kind: "abandoned" } : {}),
@@ -108,16 +115,11 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
           if (!abandoned && generation === generationRef.current)
             setState({ status: "verifying", ...session });
           try {
-            const response = await fetch("/api/verified-match/verify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
+            const { response, result } = await submitAttemptRecord(
               body,
               signal,
-              // Browser keepalive has a bounded aggregate quota. Larger histories
-              // use normal transport; durable delivery remains a separate concern.
-              keepalive: new TextEncoder().encode(body).byteLength <= 60_000,
-            });
-            const result = (await response.json()) as AttemptRecordResponse;
+              session.durable === true,
+            );
             if (generation !== generationRef.current || signal.aborted)
               return cancelled();
             // An abandonment receipt is never a competitive result or a UI failure.
@@ -129,7 +131,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
                   ? (result.error ?? "REPLAY_MISMATCH")
                   : "REPLAY_MISMATCH";
               setState({ status: "rejected", reason, ...session });
-              return { ok: false, verified: false, error: reason };
+              return { ...result, ok: false, verified: false, error: reason };
             }
             setState({ status: "verified", ...session, result });
             return result;
@@ -149,7 +151,9 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
   );
 
   const commitCheckpoint = useCallback(() => {
-    const checkpoint = checkpointRef.current;
+    const checkpoint =
+      checkpointRef.current ??
+      (sessionRef.current?.durable ? { tick: 0, terminal: false } : null);
     if (!closedRef.current && sessionRef.current && checkpoint)
       void commitRecord(checkpoint.tick, !checkpoint.terminal);
   }, [commitRecord]);
@@ -200,19 +204,68 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
       return;
     }
 
+    let heartbeat: ReturnType<typeof setTimeout> | undefined;
+    let heartbeatController: AbortController | undefined;
+    const loseConnection = () => {
+      const session = sessionRef.current;
+      if (
+        !session?.durable ||
+        closedRef.current ||
+        generation !== generationRef.current
+      )
+        return;
+      void commitRecord(checkpointRef.current?.tick ?? 0, true);
+      setState({ status: "rejected", reason: "ATTEMPT_FORFEITED", ...session });
+    };
+    const scheduleHeartbeat = () => {
+      heartbeat = setTimeout(async () => {
+        if (closedRef.current || generation !== generationRef.current) return;
+        heartbeatController = new AbortController();
+        const timeout = setTimeout(
+          () => heartbeatController?.abort(),
+          HEARTBEAT_MS,
+        );
+        try {
+          const response = await fetch("/api/verified-match/attempt", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              attempt_id: sessionRef.current?.ticket.attempt_id,
+              action: "heartbeat",
+            }),
+            signal: heartbeatController.signal,
+          });
+          const result = await response.json();
+          if (!response.ok || result.forfeited) {
+            loseConnection();
+            return;
+          }
+          if (result.state === "playing") scheduleHeartbeat();
+        } catch {
+          loseConnection();
+        } finally {
+          clearTimeout(timeout);
+        }
+      }, HEARTBEAT_MS);
+    };
     const controller = new AbortController();
     requestRef.current = controller;
     setState({ status: "starting" });
 
     void (async () => {
       try {
+        const capability = await ensureAttemptSession();
+        if (generation !== generationRef.current || controller.signal.aborted)
+          return;
         const response = await fetch("/api/verified-match/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             game_id: gameId,
             stake_minor: stakeMinor,
-            target_score: targetScore,
+            ...(capability.durable
+              ? { start_key: startKeyRef.current!.id }
+              : { target_score: targetScore }),
           }),
           signal: controller.signal,
         });
@@ -222,6 +275,8 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
           error?: string;
           manifest?: MatchManifest;
           ticket?: AttemptTicket;
+          state?: string;
+          persistence?: { durable?: boolean };
         };
 
         if (generation !== generationRef.current || controller.signal.aborted) {
@@ -239,10 +294,20 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
         const session = {
           manifest: data.manifest,
           ticket: data.ticket,
+          durable: data.persistence?.durable === true,
         };
         sessionRef.current = session;
         inputsRef.current = [];
+        if (session.durable && data.state !== "playing") {
+          setState({
+            status: "rejected",
+            reason: "ATTEMPT_FORFEITED",
+            ...session,
+          });
+          return;
+        }
         setState({ status: "ready", ...session });
+        if (session.durable) scheduleHeartbeat();
       } catch (error) {
         if (generation !== generationRef.current || controller.signal.aborted) {
           return;
@@ -264,8 +329,22 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
     const pageshow = (event: PageTransitionEvent) => {
       // BFCache restores the component too. A committed record cannot resume:
       // request a fresh attempt instead of appending inputs to its old snapshot.
-      if (event.persisted) setResumeToken((token) => token + 1);
+      if (event.persisted) {
+        const session = sessionRef.current;
+        if (session?.durable)
+          setState({
+            status: "rejected",
+            reason: "ATTEMPT_FORFEITED",
+            ...session,
+          });
+        else setResumeToken((token) => token + 1);
+      }
     };
+    const visibility = () => {
+      if (document.hidden) loseConnection();
+    };
+    document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("offline", loseConnection);
     window.addEventListener("pagehide", pagehide);
     window.addEventListener("pageshow", pageshow);
 
@@ -274,6 +353,10 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
       // A terminal detected by an input/sync before RAF takes the terminal path.
       // A request already committed wins; cleanup cannot submit a second record.
       commitCheckpoint();
+      clearTimeout(heartbeat);
+      heartbeatController?.abort();
+      document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("offline", loseConnection);
       window.removeEventListener("pagehide", pagehide);
       window.removeEventListener("pageshow", pageshow);
       generationRef.current += 1;
@@ -283,7 +366,15 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
         requestRef.current = null;
       }
     };
-  }, [active, gameId, stakeMinor, targetScore, optionsKey, commitCheckpoint]);
+  }, [
+    active,
+    gameId,
+    stakeMinor,
+    targetScore,
+    optionsKey,
+    commitCheckpoint,
+    commitRecord,
+  ]);
 
   const recordInput = useCallback(
     (input: Omit<TInput, "seq">, attemptId?: string) => {
@@ -324,6 +415,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
 
   return {
     state: currentState,
+    simulationTarget: ("manifest" in currentState ? currentState.manifest?.competition.target_score : undefined) ?? targetScore,
     manifest:
       currentState.status === "ready" ||
       currentState.status === "verifying" ||

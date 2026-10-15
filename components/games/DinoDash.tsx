@@ -74,6 +74,7 @@ export default function DinoDash({
     state: attemptState,
     recordInput,
     verifyAttempt,
+    simulationTarget,
   } = verifiedAttempt;
 
   useEffect(() => {
@@ -194,6 +195,7 @@ export default function DinoDash({
         score: result.score ?? 0,
         timeMs: result.time_ms ?? 0,
         verified: true,
+        serverMatch: result.match,
         failureReason: result.failure ?? null,
       });
     },
@@ -247,7 +249,7 @@ export default function DinoDash({
 
     flushPendingDuckAction();
     const beforePassed = state.passedCount;
-    stepDinoDash(state, targetScore);
+    stepDinoDash(state, simulationTarget);
 
     if (state.passedCount > beforePassed) {
       gameTone("good");
@@ -261,7 +263,7 @@ export default function DinoDash({
     attemptState.status,
     flushPendingDuckAction,
     markTerminalFeedback,
-    targetScore,
+    simulationTarget,
   ]);
 
   const loop = useCallback(

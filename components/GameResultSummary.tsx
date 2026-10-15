@@ -28,13 +28,17 @@ export default function GameResultSummary({
   return (
     <section className="gameResultSummary" aria-label="Resumen del intento">
       <span className="resultSourceBadge">
-        {result.verified === true
+        {result.forfeited
+          ? "PARTIDA PERDIDA"
+          : result.verified === true
           ? "ENTRENAMIENTO · REPLAY DE SERVIDOR"
           : "ENTRENAMIENTO · RESULTADO LOCAL"}
       </span>
       <p className="resultGameName">{gameName}</p>
       <h2>
-        {waitingForRival
+        {result.forfeited
+          ? "Partida perdida"
+          : waitingForRival
           ? "Marca registrada"
           : balance
             ? reach === 0

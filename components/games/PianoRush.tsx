@@ -76,6 +76,7 @@ export default function PianoRush({
     state: attemptState,
     recordInput,
     verifyAttempt,
+    simulationTarget,
   } = verifiedAttempt;
 
   useEffect(() => {
@@ -189,6 +190,7 @@ export default function PianoRush({
         score: result.score ?? 0,
         timeMs: result.time_ms ?? 0,
         verified: true,
+        serverMatch: result.match,
         failureReason: result.failure ?? null,
       });
     },
@@ -217,12 +219,12 @@ export default function PianoRush({
     const state = stateRef.current;
     if (state.status !== "running") return;
 
-    stepPianoRush(state, targetScore);
+    stepPianoRush(state, simulationTarget);
 
     if (state.status !== "running") {
       markTerminalFeedback(performance.now());
     }
-  }, [markTerminalFeedback, targetScore]);
+  }, [markTerminalFeedback, simulationTarget]);
 
   const loop = useCallback(
     (now: number) => {
@@ -373,7 +375,7 @@ export default function PianoRush({
       });
       if (!accepted) return;
 
-      tapPianoRush(state, action, targetScore);
+      tapPianoRush(state, action, simulationTarget);
 
       const now = performance.now();
       if (pianoStatus(state) === "failed") {
@@ -407,7 +409,7 @@ export default function PianoRush({
       draw,
       markTerminalFeedback,
       recordInput,
-      targetScore,
+      simulationTarget,
     ]
   );
 

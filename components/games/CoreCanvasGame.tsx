@@ -276,6 +276,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
             height: result.verified ? result.height : undefined,
             timeMs: result.verified ? result.time_ms ?? 0 : 0,
             verified: result.verified,
+            serverMatch: result.match,
+            forfeited: result.forfeited,
             verificationError: result.error,
             failureReason: result.failure ?? null,
           });

@@ -71,6 +71,7 @@ export default function JetStream({
     state: attemptState,
     recordInput,
     verifyAttempt,
+    simulationTarget,
   } = verifiedAttempt;
 
   useEffect(() => {
@@ -164,6 +165,7 @@ export default function JetStream({
         score: result.score ?? 0,
         timeMs: result.time_ms ?? 0,
         verified: true,
+        serverMatch: result.match,
         failureReason: result.failure ?? null,
       });
     },
@@ -202,7 +204,7 @@ export default function JetStream({
     stepJetStream(
       state,
       attemptState.manifest.seed,
-      targetScore
+      simulationTarget
     );
 
     if (state.passed > beforePassed) {
@@ -216,7 +218,7 @@ export default function JetStream({
   }, [
     attemptState,
     markTerminalFeedback,
-    targetScore,
+    simulationTarget,
   ]);
 
   const loop = useCallback(
