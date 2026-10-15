@@ -9,6 +9,11 @@ The v97 [production architecture review](PRODUCTION_ARCHITECTURE_REVIEW.md)
 checks the actual record/replay/storage/wallet path, availability and notifications,
 and prioritizes the missing integration without replacing these game boundaries.
 
+The v98 [durable public-match integration](PERSISTED_PUBLIC_MATCHES.md) implements
+server-issued shared scenarios, persisted records/results, idempotency and the
+owner-approved exit/disconnection policy. It is explicitly PostgreSQL training;
+production identity, financial settlement and provider activation remain separate.
+
 ## Boundaries
 
 ```text

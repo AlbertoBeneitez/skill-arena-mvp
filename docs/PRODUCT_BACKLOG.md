@@ -20,6 +20,12 @@ Production integration priorities were reviewed against the actual v97 code on
 15 October 2026: [architecture findings and delivery units](PRODUCTION_ARCHITECTURE_REVIEW.md).
 This review does not activate real identity, money or settlement.
 
+v98 connects the compatible public-game path under explicit PostgreSQL training:
+[ADR007](adr/007-durable-public-attempts.md) and
+[integration/security/remaining activation limits](PERSISTED_PUBLIC_MATCHES.md).
+S3b/S4/S5 now have end-to-end training implementations; authenticated production
+activation, ledger, hidden legacy migrations and real groups remain open.
+
 Do not promote a legacy game to VERIFIED through presentation changes. Do not
 change a published competitive core in place. Preserve historical verifier
 adapters and their golden fixtures. No new third-party code or assets have

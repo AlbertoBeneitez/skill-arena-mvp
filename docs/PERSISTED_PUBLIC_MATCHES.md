@@ -34,6 +34,8 @@ para el enlace Vercel. No se han solicitado/añadido secretos de producción.
 - POST `/api/verified-match/attempt`: `attempt_id, action: heartbeat|abandon`.
   Lease5s/20s, ningún resultado cerrado puede reabrirse. GET permite recuperar
   resultado/trabajo pendiente y la resolución propia, sin información oculta rival.
+  Sin attempt_id devuelve los últimos20intentos propios para Avatar/recarga.
+  Las consultas no renuevan la conexión del intento.
 - GET `/api/verified-match/availability?stake_minor=…`: proyección real del pool,
   por juego/versión actual y condiciones; el catálogo usa esa proyección.
 
@@ -84,5 +86,6 @@ Se ejecuta en `pnpm test:repository`, junto a los repositorios anteriores.
 
 `qa-public-matches.cjs`: dos jugadores táctiles vertical/horizontal, veinte dardos
 cada uno, comparación real y reenvío, desconexión/salida/reinicio variado, CSRF,
-outsider, tamaño de body y score añadido. Sólo acepta localhost; no prueba wallets
+outsider, tamaño de body y score añadido. Incluye rotación, eventos BFCache, historial tras recarga y un modo Stack táctil
+para los adapters previos. Sólo acepta localhost; no prueba wallets
 ni usa sesiones de jugadores reales. Estado final de validación en release/ledger.

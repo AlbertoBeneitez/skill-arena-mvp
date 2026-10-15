@@ -1,4 +1,4 @@
-# GALACTIC GAMES · Seguimiento de v95-mobile
+# GALACTIC GAMES · Seguimiento de v98-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
@@ -34,7 +34,7 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | Login/onboarding | Entrada local honesta, avatar/nombre; v84 título Elige tu identidad blanco, QA vertical/horizontal/320px | Las16 imágenes solicitadas no están adjuntas a esta sesión; no se sustituyen por otras. OAuth/auth real requiere proveedor, sin simularlo |
 | UI global | v38 resultados fieles; v45 catálogo/navegación; v48 perfil y secciones demo legibles, saldos/acciones explícitos, eje de beneficio corregido, preferencias/reset/logout QA | v52 grupos demo explícitos, formularios/feedback/portapapeles y QA vertical/horizontal; quedan restantes layouts y grupos reales con identidad/persistencia; revisión jurídica de producción al configurar servicio; QA humana |
 | Ranking | Beneficio neto exacto, paginación/snapshot/PG, demo aislada y sección visible | v76 pantalla completa dentro de Avatar mediante selector Perfil/Ranking, misma paginación/API y fuentes aisladas, QA vertical/horizontal/320px; quedan posición propia autenticada y activar read model solo con datos reales |
-| Escenarios / autoridad | Seeds/versiones públicas V3, históricos V2, privado V3/command CAS/PG desacoplado | Pairing real, identidad, consumo durable de resultados e integración HTTP producción |
+| Escenarios / autoridad | v98: circuito público PG de entrenamiento, rotación1000, pairing A/B compartido, registros/replays/resultados durables, idempotencia y forfeit versionado; privado V3/CAS y V2 archivados preservados | Configurar PG alojado, identidad real, operación/retención y ledger; no activar producción por tener transporte durable |
 | RGPD | Ideas compatibles, borrado idempotente de intentos, ningún ZIP sin licencia importado | Consentimiento versionado y política completa identidad/ledger/retención al integrar proveedores |
 
 Los 23 juegos activos incluyen 21 VERIFIED por replay y dos INTEGRATED. Mine privado V1/V2 es candidato adicional, no se cuenta como activo. PostgreSQL/identidad/ledger reales no están configurados; no se inventan usuarios, beneficios ni autenticación. Los datos demo no entran en el ranking de producción.
@@ -557,3 +557,19 @@ no se confunde replay válido con resultado almacenado o liquidación.
 [Hallazgos priorizados, reproducciones y siguiente unidad](PRODUCTION_ARCHITECTURE_REVIEW.md).
 Esta tarea es una auditoría documental, sin nueva versión jugable ni cambios
 en cores, carteras o producción.
+
+
+## v98 · partidas durables y seguridad
+
+Circuito común de21juegos VERIFIED conectado a almacenamiento PG y resolución
+idempotente; condiciones iniciales versionadas compartidas, rotación1000 y
+partida perdida por salida/desconexión según nueva política. Historial propio
+en Avatar y disponibilidad de servidor. Históricos conservados, sin otro motor.
+[Integración y activación pendiente](PERSISTED_PUBLIC_MATCHES.md),
+[seguridad](SECURITY_REVIEW_V98.md), [evidencia](releases/v98-mobile.md).
+Suite determinista, typecheck/build y pruebas PG reales pasan; QA completa
+de ambos jugadores, rotación, eventos BFCache, historial tras recarga y ataques
+HTTP pasan. Stack táctil completo también pasa en ambas orientaciones.
+Sin configurar PostgreSQL externo, el enlace conserva entrenamiento legacy;
+no se afirma que el backend durable esté activado en Vercel. Auth/ledger/pagos/
+notificaciones y migraciones ocultas/grupos reales siguen pendientes.
