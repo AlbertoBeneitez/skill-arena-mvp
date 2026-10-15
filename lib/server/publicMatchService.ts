@@ -263,7 +263,13 @@ export class PublicMatchService {
         };
   }
   async recent(actor: string) {
-    const rows = await this.repository.recent(actor);
+    let rows = await this.repository.recent(actor);
+    // Recover one durable job per history read; bounded CPU, no client replay logic.
+    const pending = rows.find((row) => row.state === "received");
+    if (pending) {
+      await this.verify(actor, pending);
+      rows = await this.repository.recent(actor);
+    }
     return Promise.all(
       rows.map(async (row) => ({
         attemptId: row.attempt_id,

@@ -35,7 +35,9 @@ para el enlace Vercel. No se han solicitado/añadido secretos de producción.
   Lease5s/20s, ningún resultado cerrado puede reabrirse. GET permite recuperar
   resultado/trabajo pendiente y la resolución propia, sin información oculta rival.
   Sin attempt_id devuelve los últimos20intentos propios para Avatar/recarga.
-  Las consultas no renuevan la conexión del intento.
+  Las consultas no renuevan la conexión del intento. El historial recupera
+  un trabajo durable pendiente por petición para resolver interrupciones largas
+  cuando el usuario vuelve, con replay en servidor y CPU acotada.
 - GET `/api/verified-match/availability?stake_minor=…`: proyección real del pool,
   por juego/versión actual y condiciones; el catálogo usa esa proyección.
 

@@ -376,6 +376,13 @@ try {
     recoveryRecord,
   );
   offset = 40 * 60 * 1000;
+  const recoveredHistory = await restarted.recent("worker-recovery");
+  assert.equal(
+    recoveredHistory.find((r) => r.attemptId === recovery.ticket.attempt_id)
+      ?.state,
+    "verified",
+    "returning to Avatar must recover a queued record",
+  );
   const recovered = await restarted.read(
     "worker-recovery",
     recovery.ticket.attempt_id,
