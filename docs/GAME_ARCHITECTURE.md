@@ -4,6 +4,11 @@ Status: **STABLE**. Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream
 
 Promotion beyond `INTEGRATED` follows the mandatory cycle in `docs/GAME_PROFESSIONALIZATION_CYCLE.md`.
 
+The stable game contract does not imply production readiness of the platform.
+The v97 [production architecture review](PRODUCTION_ARCHITECTURE_REVIEW.md)
+checks the actual record/replay/storage/wallet path, availability and notifications,
+and prioritizes the missing integration without replacing these game boundaries.
+
 ## Boundaries
 
 ```text

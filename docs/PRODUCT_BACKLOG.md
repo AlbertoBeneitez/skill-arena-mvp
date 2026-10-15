@@ -16,6 +16,10 @@ build, mobile/browser QA, review provenance, and commit. Continue with the next
 unit unless an architecture, fairness, security, compatibility or data decision
 needs the owner's input. Passing automation does not replace human device QA.
 
+Production integration priorities were reviewed against the actual v97 code on
+15 October 2026: [architecture findings and delivery units](PRODUCTION_ARCHITECTURE_REVIEW.md).
+This review does not activate real identity, money or settlement.
+
 Do not promote a legacy game to VERIFIED through presentation changes. Do not
 change a published competitive core in place. Preserve historical verifier
 adapters and their golden fixtures. No new third-party code or assets have

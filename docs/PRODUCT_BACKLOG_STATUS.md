@@ -545,3 +545,15 @@ reinicio; clic de compatibilidad posterior no puede activar Grupo. Derrota Jet
 horizontal/reinicio/envío único y49apuestas Roulette vertical/horizontal pasan.
 La versión base a90ca40 pasó CI38443118376ypreviewReady; se comprueba el commit
 con esta corrección antes de promover mobile-test.
+
+## Revisión de producción · 15 octubre 2026
+
+Base real: v97/f986b28, coincidente con mobile-test. Revisión de código y pruebas
+de contratos, registros, escenarios, lifecycle, autoridad privada, ranking y
+PostgreSQL reales completadas; typecheck/build correctos. La arquitectura de
+juegos se conserva. Persistencia/consumo de intentos públicos, identidad real,
+disponibilidad compartida, resolución/ledger y notificaciones siguen pendientes;
+no se confunde replay válido con resultado almacenado o liquidación.
+[Hallazgos priorizados, reproducciones y siguiente unidad](PRODUCTION_ARCHITECTURE_REVIEW.md).
+Esta tarea es una auditoría documental, sin nueva versión jugable ni cambios
+en cores, carteras o producción.
