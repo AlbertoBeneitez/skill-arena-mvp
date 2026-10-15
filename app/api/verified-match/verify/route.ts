@@ -1,42 +1,38 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { processAttemptRecord } from "@/lib/server/verifiedMatch";
 
+import {
+  persistentMatchesRequested,
+  getPublicMatchService,
+  actorFromRequest,
+  sameOrigin,
+  readBoundedJson,
+  publicMatchError,
+} from "@/lib/server/publicMatchHttp";
 export const runtime = "nodejs";
 
-const MAX_VERIFY_BODY_BYTES = 256_000;
+import { MAX_ATTEMPT_RECORD_BYTES } from "@/lib/publicMatch";
 
-function reject(error: string, status = 400) {
-  return NextResponse.json(
-    { ok: false, verified: false, error },
-    { status }
-  );
-}
-
-export async function POST(request: Request) {
-  const declaredLength = Number(
-    request.headers.get("content-length") ?? 0
-  );
-  if (
-    Number.isFinite(declaredLength) &&
-    declaredLength > MAX_VERIFY_BODY_BYTES
-  ) {
-    return reject("PAYLOAD_TOO_LARGE", 413);
-  }
-
-  let raw: unknown;
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.text();
-    if (
-      new TextEncoder().encode(body).byteLength >
-      MAX_VERIFY_BODY_BYTES
-    ) {
-      return reject("PAYLOAD_TOO_LARGE", 413);
+    sameOrigin(request);
+    const raw = await readBoundedJson(request, MAX_ATTEMPT_RECORD_BYTES);
+    if (persistentMatchesRequested()) {
+      const result = await getPublicMatchService().submit(
+        actorFromRequest(request),
+        raw,
+      );
+      return NextResponse.json(result.body, {
+        status: result.status,
+        headers: { "Cache-Control": "no-store" },
+      });
     }
-    raw = JSON.parse(body);
-  } catch {
-    return reject("INVALID_JSON");
+    const { status, body } = processAttemptRecord(raw);
+    return NextResponse.json(body, {
+      status,
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (e) {
+    return publicMatchError(e);
   }
-
-  const { status, body } = processAttemptRecord(raw);
-  return NextResponse.json(body, { status });
 }

@@ -101,6 +101,10 @@ On exit, send the last actually simulated unfinished prefix through the same
 endpoint as an explicit abandoned record. Its processing receipt is separate
 from verification and must never adjudicate a winner, ranking or settlement.
 
+For new durable attempts, the owner approved loss on exit/disconnection on
+15 October 2026. Apply the versioned server policy in ADR007; preserve historical
+V2 receipt semantics and never treat a browser receipt as a financial instruction.
+
 Never downgrade a `VERIFIED` game to client-trusted scoring.
 
 ## Versioning

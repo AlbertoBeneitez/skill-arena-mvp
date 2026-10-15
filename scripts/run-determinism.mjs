@@ -4,6 +4,7 @@ import { register } from "node:module";
 writeFileSync(new URL("../.det-test/package.json", import.meta.url), '{"type":"module"}\n');
 register("./determinism-loader.mjs", import.meta.url);
 if (process.argv[2] === "repository") {
+  await import("../.det-test/scripts/verify-public-attempts.js");
   await import("../.det-test/scripts/verify-match-repository.js");
   await import("../.det-test/scripts/verify-ranking-repository.js");
   await import("../.det-test/scripts/verify-command-repository.js");

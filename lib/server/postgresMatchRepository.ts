@@ -13,7 +13,7 @@ interface MatchRow extends QueryResultRow {
   manifest: MatchManifest;
   manifest_hash: string;
   player_a: string;
-  player_b: string;
+  player_b: string | null;
   stored_at: Date;
 }
 

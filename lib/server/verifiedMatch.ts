@@ -189,7 +189,8 @@ export function issueAttemptTicket(args: {
 
 export function verifyAttemptTicket(
   ticket: AttemptTicket,
-  manifest: MatchManifest
+  manifest: MatchManifest,
+  now = Date.now()
 ) {
   if (!isAttemptTicketShape(ticket)) {
     return { ok: false as const, error: "INVALID_TICKET" };
@@ -221,7 +222,7 @@ export function verifyAttemptTicket(
     return { ok: false as const, error: "INVALID_TICKET" };
   }
 
-  if (Date.now() > expiresAt) {
+  if (now > expiresAt) {
     return { ok: false as const, error: "ATTEMPT_EXPIRED" };
   }
 
@@ -374,7 +375,7 @@ export function hashReplay(args: {
 }
 
 /** Shared bounded HTTP semantics. An unfinished receipt never settles a result. */
-export function processAttemptRecord(raw: unknown): {
+export function processAttemptRecord(raw: unknown, options: { allowV3?: boolean; verificationTime?: number } = {}): {
   status: number;
   body: AttemptRecordResponse;
 } {
@@ -397,9 +398,9 @@ export function processAttemptRecord(raw: unknown): {
   const finalTick = payload.final_tick;
   const abandoned = raw.record_kind === "abandoned";
 
-  const manifestCheck = validateManifest(manifest);
+  const manifestCheck = validateManifest(manifest, { allowV3: options.allowV3 });
   if (!manifestCheck.ok) return reject(manifestCheck.error);
-  const ticketCheck = verifyAttemptTicket(ticket, manifest);
+  const ticketCheck = verifyAttemptTicket(ticket, manifest, options.verificationTime);
   if (!ticketCheck.ok) return reject(ticketCheck.error, 401);
 
   const adapter = manifestCheck.adapter;
@@ -417,7 +418,7 @@ export function processAttemptRecord(raw: unknown): {
     return reject(replay.error ?? "REPLAY_MISMATCH");
   }
 
-  const elapsedWallMs = Date.now() - ticketCheck.issuedAt;
+  const elapsedWallMs = (options.verificationTime ?? Date.now()) - ticketCheck.issuedAt;
   const maxClockLeadMs = 2_500;
   if (replay.timeMs > elapsedWallMs + maxClockLeadMs) {
     return reject("SIMULATION_FASTER_THAN_REAL_TIME", 409);

@@ -1,4 +1,6 @@
 export type GameResult = {
+  serverMatch?: import("./publicMatch").PublicMatchView;
+  forfeited?: boolean;
   won: boolean;
   score: number;
   /** High-water reach reconstructed by the server, when supplied by the core. */

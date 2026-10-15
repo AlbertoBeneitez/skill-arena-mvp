@@ -89,6 +89,11 @@ export type AbandonedAttemptReceipt = {
 };
 
 export type VerifiedAttemptResult = {
+  durable?: boolean;
+  forfeited?: boolean;
+  attempt_id?: string;
+  processing?: boolean;
+  match?: import("../publicMatch").PublicMatchView;
   ok: boolean;
   verified: boolean;
   error?: string;

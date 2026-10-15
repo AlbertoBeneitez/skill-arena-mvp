@@ -4,7 +4,7 @@ export type MatchParticipants = Readonly<{ A: string; B: string }>;
 export type StoredMatch = Readonly<{
   manifest: MatchManifest;
   manifestHash: string;
-  participants: MatchParticipants;
+  participants: Readonly<{ A: string; B: string | null }>;
   storedAt: string;
 }>;
 
