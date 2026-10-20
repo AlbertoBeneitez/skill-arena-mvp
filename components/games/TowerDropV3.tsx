@@ -92,10 +92,28 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   ctx.moveTo(195, pivotY);
   ctx.lineTo(hookX, hookY);
   ctx.stroke();
+  // Two independent gripping jaws: closed while carrying the block,
+  // visibly opened after the DROP input. Purely presentational; the
+  // authoritative pendulum, release and landing remain in the V3 core.
+  const gripping = state.phase === "swing";
+  const jawSpread = gripping ? 0 : 13;
+  const halfWidth = Math.min(22, state.movingWMilli / 1000 / 4);
+  ctx.strokeStyle = "#a4f9ed";
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(hookX + side * 5, hookY);
+    ctx.lineTo(hookX + side * (halfWidth + jawSpread), hookY + 9);
+    ctx.lineTo(hookX + side * (halfWidth + jawSpread), hookY + 23);
+    if (gripping) ctx.lineTo(hookX + side * (halfWidth - 4), hookY + 25);
+    ctx.stroke();
+  }
   ctx.fillStyle = "#88fff2";
   ctx.beginPath();
   ctx.arc(hookX, hookY, 5, 0, Math.PI * 2);
   ctx.fill();
+  ctx.lineCap = "butt";
   if (state.phase === "swing") {
     block(
       state.movingXMilli / 1000,
