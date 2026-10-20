@@ -36,6 +36,11 @@ function ring(
 }
 function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   drawSpaceBackdrop(ctx, 390, 620, 0, s.tick);
+  // Enlarged dartboard and embedded impacts; keep the V3 scoring geometry.
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(1.09, 1.09);
+  ctx.translate(-cx, -cy);
   const stage = dartsStageV3(s),
     remaining = Math.max(
       0,
@@ -113,6 +118,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
     }
     drawDart(ctx, pose);
   }
+  ctx.restore();
   const hit = s.impacts.at(-1);
   if (hit && s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks) {
     ctx.fillStyle = hit.points ? "#a1eed3" : "#e6b597";
@@ -149,14 +155,17 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   ctx.textAlign = "left";
 }
 function aimActions(point: CorePoint) {
+  // Inverse of the visual board enlargement: the cursor and actual aim agree.
+  const boardX = cx + (point.x - cx) / 1.09;
+  const boardY = cy + (point.y - cy) / 1.09;
   return [
     dartsAimAction(
       "X",
-      Math.max(0, Math.min(60, Math.round((point.x - cx) / 5) + 30)),
+      Math.max(0, Math.min(60, Math.round((boardX - cx) / 5) + 30)),
     ),
     dartsAimAction(
       "Y",
-      Math.max(0, Math.min(60, Math.round((point.y - cy) / 5) + 30)),
+      Math.max(0, Math.min(60, Math.round((boardY - cy) / 5) + 30)),
     ),
   ];
 }
