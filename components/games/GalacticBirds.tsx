@@ -179,10 +179,16 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       ctx.moveTo(lx, 535 - BIRDS_SCENE_LIFT);
       ctx.lineTo(lx + 14, 512 - BIRDS_SCENE_LIFT);
       ctx.stroke();
-      const pulled = s.phase === "aim" ? drag.current : null,
-        px = pulled ? lx + pulled.to.x - pulled.from.x : lx,
-        py =
-          (pulled ? 520 + pulled.to.y - pulled.from.y : 520) - BIRDS_SCENE_LIFT;
+      const pulled = s.phase === "aim" ? drag.current : null;
+      // The elastic band remains short and inside the frame even when the
+      // pointer travels far beyond the launcher (portrait/mobile dragging).
+      const rawDx = pulled ? pulled.to.x - pulled.from.x : 0,
+        rawDy = pulled ? pulled.to.y - pulled.from.y : 0,
+        tension = Math.hypot(rawDx, rawDy),
+        factor = tension > 48 ? 48 / tension : 1,
+        px = Math.max(18, Math.min(width - 18, lx + rawDx * factor)),
+        py = Math.max(22, Math.min(540 - BIRDS_SCENE_LIFT,
+          520 - BIRDS_SCENE_LIFT + rawDy * factor));
       if (s.phase === "aim") {
         ctx.strokeStyle = "#d6c28c";
         ctx.lineWidth = 3;
