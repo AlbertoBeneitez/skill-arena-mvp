@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameResult } from "@/lib/types";
-import { mineChallengeFor } from "@/lib/deterministic/challengeSets";
+import {
+  MINE_CHALLENGES,
+  mineChallengeFor,
+  type MineChallenge,
+} from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
 type Props = {
@@ -96,10 +100,12 @@ export default function MineGrid({
   seed,
   onFinish,
 }: Props) {
-  const challenge = useMemo(
-    () => mineChallengeFor(seed),
-    [seed]
+  // Training only (client-result): every attempt draws one of the validated,
+  // guess-free boards. Competition will use a server-held board instead.
+  const [challenge, setChallenge] = useState<MineChallenge>(() =>
+    mineChallengeFor(seed)
   );
+  const lastBoardRef = useRef(challenge.id);
 
   const board = useMemo(
     () =>
@@ -125,6 +131,17 @@ export default function MineGrid({
   const startRef = useRef(0);
 
   useEffect(() => {
+    if (active) {
+      const pool = MINE_CHALLENGES.filter(
+        (item) => item.id !== lastBoardRef.current
+      );
+      const pick = new Uint32Array(1);
+      if (typeof crypto !== "undefined") crypto.getRandomValues(pick);
+      else pick[0] = Math.floor(Math.random() * 2 ** 32);
+      const next = pool[pick[0] % pool.length];
+      lastBoardRef.current = next.id;
+      setChallenge(next);
+    }
     setRevealed(new Set());
     setFlagged(new Set());
     setStarted(false);
@@ -290,6 +307,14 @@ export default function MineGrid({
       <div className="gameTimerChip mineTimerChip">
         {String(Math.floor(elapsedMs / 60000)).padStart(2, "0")}:
         {String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0")}
+      </div>
+      <div className="gameTimerChip mineTimerChip" style={{ left: 12, right: "auto" }}>
+        {challenge.id} ·{" "}
+        {challenge.deductionRounds <= 9
+          ? "FÁCIL"
+          : challenge.deductionRounds <= 12
+            ? "MEDIO"
+            : "DIFÍCIL"}
       </div>
       <div
         className="mineGridBoard"
