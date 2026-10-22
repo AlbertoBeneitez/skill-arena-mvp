@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Application dependencies are pinned to exact versions; Dependabot proposes
+  # each bump as a pull request so CI (determinism, PostgreSQL, build) vets it.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Keeps the SHA-pinned workflow actions current.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

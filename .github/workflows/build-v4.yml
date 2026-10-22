@@ -5,19 +5,30 @@ on:
     branches:
       - main
       - develop
+      - mobile-test
       - "feature/**"
       - "fix/**"
       - "refactor/**"
+      - "audit/**"
+      - "qa/**"
       - "v*-mobile"
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# A newer push to the same ref makes the older run redundant. Stable branches
+# are never cancelled so their result is always recorded.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/mobile-test' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # The determinism suite alone takes ~5.5 min on a fast machine.
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
@@ -33,16 +44,16 @@ jobs:
           --health-retries 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
         with:
           version: 12.7.0
           run_install: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: pnpm
@@ -63,3 +74,9 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # Informational: a newly published advisory should not block unrelated work.
+      # Dependabot opens the fixing pull request.
+      - name: Dependency audit (informational)
+        run: pnpm audit --prod --audit-level=high
+        continue-on-error: true
