@@ -18,7 +18,8 @@ import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const cx = 195,
-  cy = 285;
+  cy = 285,
+  BOARD_SCALE = 1.08;
 function ring(
   ctx: CanvasRenderingContext2D,
   r1: number,
@@ -43,7 +44,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
     );
   ctx.fillStyle = "#0a192a";
   ctx.beginPath();
-  ctx.arc(cx, cy, 161, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 161 * BOARD_SCALE, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#547689";
   ctx.lineWidth = 2;
@@ -51,14 +52,41 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   for (let i = 0; i < 20; i++) {
     const a = -Math.PI / 2 + (i * Math.PI) / 10 - Math.PI / 20,
       b = a + Math.PI / 10;
-    ring(ctx, 24, 140, a, b, i % 2 ? "#c2ced1" : "#183444");
-    ring(ctx, 78, 88, a, b, i % 2 ? "#d58a58" : "#37b89e");
-    ring(ctx, 129, 140, a, b, i % 2 ? "#d58a58" : "#37b89e");
+    ring(
+      ctx,
+      24 * BOARD_SCALE,
+      140 * BOARD_SCALE,
+      a,
+      b,
+      i % 2 ? "#c2ced1" : "#183444",
+    );
+    ring(
+      ctx,
+      78 * BOARD_SCALE,
+      88 * BOARD_SCALE,
+      a,
+      b,
+      i % 2 ? "#d58a58" : "#37b89e",
+    );
+    ring(
+      ctx,
+      129 * BOARD_SCALE,
+      140 * BOARD_SCALE,
+      a,
+      b,
+      i % 2 ? "#d58a58" : "#37b89e",
+    );
     ctx.strokeStyle = "rgba(2,15,27,.5)";
     ctx.lineWidth = 0.8;
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(a) * 24, cy + Math.sin(a) * 24);
-    ctx.lineTo(cx + Math.cos(a) * 140, cy + Math.sin(a) * 140);
+    ctx.moveTo(
+      cx + Math.cos(a) * 24 * BOARD_SCALE,
+      cy + Math.sin(a) * 24 * BOARD_SCALE,
+    );
+    ctx.lineTo(
+      cx + Math.cos(a) * 140 * BOARD_SCALE,
+      cy + Math.sin(a) * 140 * BOARD_SCALE,
+    );
     ctx.stroke();
     const angle = (a + b) / 2;
     ctx.fillStyle = "#d3e8ee";
@@ -66,17 +94,17 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
     ctx.font = "bold 10px system-ui";
     ctx.fillText(
       String(DARTS_SECTORS[i]),
-      cx + Math.cos(angle) * 151,
-      cy + Math.sin(angle) * 151 + 3,
+      cx + Math.cos(angle) * 151 * BOARD_SCALE,
+      cy + Math.sin(angle) * 151 * BOARD_SCALE + 3,
     );
   }
   ctx.fillStyle = "#3abb9f";
   ctx.beginPath();
-  ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 24 * BOARD_SCALE, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#e3a16e";
   ctx.beginPath();
-  ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 10 * BOARD_SCALE, 0, Math.PI * 2);
   ctx.fill();
 
   // The tip stays at the server-owned impact. Never display the newest
@@ -85,11 +113,15 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
     const hit = s.impacts[i];
     const flying = i === s.impacts.length - 1 && s.phase === "flight";
     if (hit.timeout || (flying && s.phaseTicks < DARTS_RULES_V3.impactTicks)) continue;
-    const pose = dartPerspectiveFlight(cx + hit.x / 1000, cy + hit.y / 1000, DARTS_RULES_V3.impactTicks);
+    const pose = dartPerspectiveFlight(
+      cx + (hit.x / 1000) * BOARD_SCALE,
+      cy + (hit.y / 1000) * BOARD_SCALE,
+      DARTS_RULES_V3.impactTicks,
+    );
     drawDart(ctx, { ...pose, scale: 0.52 }, i % 2 ? "#dfb885" : "#6bdde2");
   }
   const pose = s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks
-    ? null : dartPerspectivePose(s);
+    ? null : dartPerspectivePose(s, BOARD_SCALE);
   if (pose) {
     const impact = s.impacts.at(-1);
     if (s.phase === "flight" && s.phaseTicks < 120 && impact) {
@@ -102,8 +134,8 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
         age += 2
       ) {
         const p = dartPerspectiveFlight(
-          cx + impact.x / 1000,
-          cy + impact.y / 1000,
+          cx + (impact.x / 1000) * BOARD_SCALE,
+          cy + (impact.y / 1000) * BOARD_SCALE,
           age,
         );
         if (age === Math.max(0, s.phaseTicks - 6)) ctx.moveTo(p.x, p.y);
@@ -152,11 +184,23 @@ function aimActions(point: CorePoint) {
   return [
     dartsAimAction(
       "X",
-      Math.max(0, Math.min(60, Math.round((point.x - cx) / 5) + 30)),
+      Math.max(
+        0,
+        Math.min(
+          60,
+          Math.round((point.x - cx) / (5 * BOARD_SCALE)) + 30,
+        ),
+      ),
     ),
     dartsAimAction(
       "Y",
-      Math.max(0, Math.min(60, Math.round((point.y - cy) / 5) + 30)),
+      Math.max(
+        0,
+        Math.min(
+          60,
+          Math.round((point.y - cy) / (5 * BOARD_SCALE)) + 30,
+        ),
+      ),
     ),
   ];
 }

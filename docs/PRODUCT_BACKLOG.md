@@ -26,6 +26,13 @@ v98 connects the compatible public-game path under explicit PostgreSQL training:
 S3b/S4/S5 now have end-to-end training implementations; authenticated production
 activation, ledger, hidden legacy migrations and real groups remain open.
 
+v99 versions the requested gameplay changes without editing published cores:
+Birds6 selection/minimum support, Roulette4 outer-rim rebound/natural capture and
+Tower4 articulated hook/slower descent. Darts keeps V3 rules with an8% presentation
+scale, and Mine exposes each safe initial condition without leaking hidden state.
+[Release evidence](releases/v99-mobile.md). Physical-device acceptance and all
+production identity/ledger activation remain open.
+
 Do not promote a legacy game to VERIFIED through presentation changes. Do not
 change a published competitive core in place. Preserve historical verifier
 adapters and their golden fixtures. No new third-party code or assets have

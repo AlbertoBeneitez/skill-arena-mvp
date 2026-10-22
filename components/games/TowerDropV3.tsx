@@ -2,12 +2,14 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  TOWER_DROP_CORE_V3,
+  TOWER_DROP_CORE_V4,
+  type TowerDropV4State,
+} from "@/lib/verified/towerDropCore.v4";
+import {
   TOWER_DROP_V3,
-  type TowerDropV3State,
 } from "@/lib/verified/towerDropCore.v3";
 import CoreCanvasGame from "./CoreCanvasGame";
-function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
+function render(ctx: CanvasRenderingContext2D, state: TowerDropV4State) {
   drawSpaceBackdrop(ctx, 390, 620, 1, state.tick);
   const floor = 540,
     blockH = 30,
@@ -86,16 +88,44 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   ctx.fillRect(183, pivotY - 24, 24, 24);
   const hookX = (state.movingXMilli + state.movingWMilli / 2) / 1000,
     hookY = floor - blockH - 320 - state.hookRiseMilli / 1000;
+  const released = state.phase !== "swing",
+    visibleHookX = released ? state.releaseHookXMilli / 1000 : hookX,
+    visibleHookY =
+      floor -
+      blockH -
+      320 -
+      (released ? state.releaseHookRiseMilli : state.hookRiseMilli) / 1000,
+    hookOpen = released ? state.hookOpenMilli / 1000 : 0,
+    gripHalf = state.movingWMilli / 2000 - 10,
+    openOffset = 22 * hookOpen;
   ctx.strokeStyle = "#d2effb";
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(195, pivotY);
-  ctx.lineTo(hookX, hookY);
+  ctx.lineTo(visibleHookX, visibleHookY - 11);
   ctx.stroke();
-  ctx.fillStyle = "#88fff2";
+  ctx.fillStyle = "#53788d";
+  ctx.strokeStyle = "#9ef8ee";
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(hookX, hookY, 5, 0, Math.PI * 2);
+  ctx.roundRect(visibleHookX - 11, visibleHookY - 16, 22, 15, 5);
   ctx.fill();
+  ctx.stroke();
+  ctx.lineCap = "round";
+  for (const direction of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(visibleHookX + direction * 7, visibleHookY - 2);
+    ctx.lineTo(
+      visibleHookX + direction * (gripHalf + openOffset),
+      visibleHookY + 8 - hookOpen * 12,
+    );
+    ctx.lineTo(
+      visibleHookX + direction * (gripHalf + 2 + openOffset),
+      visibleHookY + 16 - hookOpen * 15,
+    );
+    ctx.stroke();
+  }
+  ctx.lineCap = "butt";
   if (state.phase === "swing") {
     block(
       state.movingXMilli / 1000,
@@ -130,7 +160,7 @@ export default function TowerDropV3(props: GameRuntimeProps) {
   return (
     <CoreCanvasGame
       {...props}
-      core={TOWER_DROP_CORE_V3}
+      core={TOWER_DROP_CORE_V4}
       name="Tower Drop"
       hideHudScore
       render={render}

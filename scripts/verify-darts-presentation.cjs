@@ -42,6 +42,7 @@ module.exports = (async () => {
       "./CoreCanvasGame": () => null,
     },
     exports = {};
+  const BOARD_SCALE = 1.08;
   new Function("require", "exports", compiled.code)(
     (id) => deps[id] || req(id),
     exports,
@@ -100,11 +101,11 @@ module.exports = (async () => {
       assert.ok(!r.texts.some((t) => t.includes("OBJETIVO")));
       const flight = s.phase === "flight" && s.phaseTicks < 120;
       const landed = s.impacts.filter((hit, i) => !hit.timeout && !(i === s.impacts.length - 1 && flight));
-      const p = s.phase === "flight" && s.phaseTicks >= 120 ? null : visual.dartPerspectivePose(s);
+      const p = s.phase === "flight" && s.phaseTicks >= 120 ? null : visual.dartPerspectivePose(s, BOARD_SCALE);
       assert.equal(r.sprites.length, landed.length + (p ? 1 : 0));
       landed.forEach((hit, i) => {
-        assert.equal(r.sprites[i].x, 195 + hit.x / 1000);
-        assert.equal(r.sprites[i].y, 285 + hit.y / 1000);
+        assert.equal(r.sprites[i].x, 195 + (hit.x / 1000) * BOARD_SCALE);
+        assert.equal(r.sprites[i].y, 285 + (hit.y / 1000) * BOARD_SCALE);
       });
       if (p) {
         assert.ok(Math.abs(p.x - r.sprites.at(-1).x) < 1e-9);
@@ -120,14 +121,14 @@ module.exports = (async () => {
     const angles = new Set();
     for (let age = 0; age < 144; age++) {
       check();
-      const p = visual.dartPerspectivePose(s);
+      const p = visual.dartPerspectivePose(s, BOARD_SCALE);
       if (age <= 120) {
         assert.ok(p.scale <= lastScale);
         lastScale = p.scale;
         angles.add(p.angle.toFixed(3));
         if (age === 120) {
-          assert.equal(p.x, 195 + hit.x / 1000);
-          assert.equal(p.y, 285 + hit.y / 1000);
+          assert.equal(p.x, 195 + (hit.x / 1000) * BOARD_SCALE);
+          assert.equal(p.y, 285 + (hit.y / 1000) * BOARD_SCALE);
           assert.equal(s.total, hit.points);
         }
       }
@@ -156,7 +157,7 @@ module.exports = (async () => {
   assert.ok(source.includes("i < s.impacts.length"), "landed darts remain on board");
   console.log(
     JSON.stringify({
-      variant: "Darts V3",
+      variant: "Darts V3 enlarged board presentation",
       frames,
       openingSprite: true,
       impactTick: 120,

@@ -2,7 +2,10 @@
 import { useRef, useEffect, useCallback } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import type { BirdKind } from "@/lib/verified/galacticBirdsCore.v4";
-import { BIRDS_CORE_V5, type BirdsV5State as BirdsState } from "@/lib/verified/galacticBirdsCore.v5";
+import {
+  BIRDS_CORE_V6,
+  type BirdsV6State as BirdsState,
+} from "@/lib/verified/galacticBirdsCore.v6";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -14,6 +17,12 @@ const hudLabel = (s: Readonly<BirdsState>) =>
   `NIVEL ${s.level + 1}/6 · ${s.kills}/2 CERDOS · ${s.ammo} TIROS`;
 const feedbackScore = (s: Readonly<BirdsState>) => (s.completedKills + s.kills) * 10 + s.completedDestroyed + s.destroyed;
 const inputTones = { SHOOT: "tap" } as const;
+const SELECT_ACTIONS = {
+  scout: "SELECT_SCOUT",
+  dart: "SELECT_DART",
+  meteor: "SELECT_METEOR",
+} as const;
+const MAX_SLING_PULL = 54;
 const materials = {
   glass: { fill: "rgba(124,225,249,.48)", edge: "#91d8e7" },
   ceramic: { fill: "#637aa1", edge: "#b3bbd7" },
@@ -257,13 +266,18 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       for (const [i, kind] of (
         ["scout", "dart", "meteor"] as const
       ).entries()) {
-        const count = s.queue.slice(s.shots).filter((k) => k === kind).length;
+        const count = s.remaining[kind];
         const x = ((i + 0.5) * width) / 3;
-        const next = s.queue[s.shots] === kind && s.phase === "aim";
+        const next = s.selectedKind === kind && s.phase === "aim";
         ctx.fillStyle = next ? "rgba(56,84,96,.8)" : "rgba(12,30,48,.7)";
         ctx.beginPath();
         ctx.roundRect(x - width / 6 + 8, 564, width / 3 - 16, 54, 8);
         ctx.fill();
+        if (next) {
+          ctx.strokeStyle = "#f0d69c";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
         falcon(ctx, x - 18, 580, 0, kind, true);
         ctx.fillStyle = count ? "#ecdfb4" : "#71899b";
         ctx.textAlign = "center";
@@ -288,7 +302,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
     <div className="birdsVerified">
       <CoreCanvasGame
         {...props}
-        core={BIRDS_CORE_V5}
+        core={BIRDS_CORE_V6}
         name="Galactic Birds"
         instruction=""
         render={render}
@@ -302,6 +316,9 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           ArrowUp: "POWER_UP",
           ArrowDown: "POWER_DOWN",
           " ": "SHOOT",
+          "1": "SELECT_SCOUT",
+          "2": "SELECT_DART",
+          "3": "SELECT_METEOR",
         }}
         pointAction={(p, phase, s) => {
           if (s.phase !== "aim") {
@@ -309,6 +326,12 @@ export default function GalacticBirds(props: GameRuntimeProps) {
             return null;
           }
           if (phase === "down") {
+            if (p.y >= 558) {
+              drag.current = null;
+              const kind: BirdKind =
+                p.x < 130 ? "scout" : p.x < 260 ? "dart" : "meteor";
+              return s.remaining[kind] > 0 ? SELECT_ACTIONS[kind] : null;
+            }
             drag.current =
               Math.hypot(p.x - launcher.current.x, p.y - launcher.current.y) <
               64
@@ -317,7 +340,23 @@ export default function GalacticBirds(props: GameRuntimeProps) {
             return null;
           }
           if (!drag.current) return null;
-          drag.current.to = p;
+          const pullX = p.x - drag.current.from.x,
+            pullY = p.y - drag.current.from.y,
+            pullDistance = Math.hypot(pullX, pullY),
+            pullScale = Math.min(1, MAX_SLING_PULL / Math.max(1, pullDistance));
+          drag.current.to = {
+            x: Math.max(
+              12,
+              Math.min(
+                BIRDS_CORE_V6.width - 12,
+                drag.current.from.x + pullX * pullScale,
+              ),
+            ),
+            y: Math.max(
+              462,
+              Math.min(552, drag.current.from.y + pullY * pullScale),
+            ),
+          };
           if (phase !== "up") return null;
           const { from, to } = drag.current;
           drag.current = null;
@@ -332,7 +371,10 @@ export default function GalacticBirds(props: GameRuntimeProps) {
                 Math.round((Math.atan2(dy, dx) * 180) / Math.PI) - 10,
               ),
             ),
-            power = Math.max(0, Math.min(12, Math.round((distance - 15) / 7)));
+            power = Math.max(
+              0,
+              Math.min(12, Math.round(((distance - 12) * 12) / 42)),
+            );
           return [birdsAimAction(aim), birdsPowerAction(power), "SHOOT"];
         }}
       />

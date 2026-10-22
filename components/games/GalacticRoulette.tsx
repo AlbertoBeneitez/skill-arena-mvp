@@ -2,11 +2,11 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V3,
+  ROULETTE_CORE_V4,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v3";
+  type RouletteStateV4,
+} from "@/lib/verified/galacticRouletteCore.v4";
 import { ROULETTE_BETS_V2 } from "@/lib/verified/galacticRouletteProtocol.v2";
 import {
   ROULETTE_BALL_DOCK,
@@ -19,7 +19,7 @@ const cx = 195,
   cy = 195;
 function render(
   ctx: CanvasRenderingContext2D,
-  s: RouletteStateV2,
+  s: RouletteStateV4,
   drag: CorePoint | null = null,
 ) {
   drawSpaceBackdrop(ctx, 390, 400, 1, s.tick);
@@ -195,9 +195,9 @@ function render(
     ctx.fillText(`+${s.lastPayout / 100}€`, cx, 103);
   }
 }
-const hudLabel = (s: Readonly<RouletteStateV2>) =>
+const hudLabel = (s: Readonly<RouletteStateV4>) =>
   `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
-const feedbackScore = (s: Readonly<RouletteStateV2>) => s.balanceMinor;
+const feedbackScore = (s: Readonly<RouletteStateV4>) => s.balanceMinor;
 const betLabels: Record<string, string> = {
   RED: "VERDE",
   BLACK: "AZUL",
@@ -212,6 +212,7 @@ const betLabels: Record<string, string> = {
 const choiceControl = {
   label: "Tapete de apuestas",
   presentation: "grid" as const,
+  initiallyOpen: true,
   columns: 5,
   options: ROULETTE_BETS_V2.map((bet) => {
     if (bet.startsWith("NUMBER_")) {
@@ -259,15 +260,15 @@ const choiceControl = {
       },
     };
   }),
-  value: (s: RouletteStateV2) => `BET_${s.bet}`,
-  disabled: (s: RouletteStateV2) =>
-    s.landingTick !== -1 || s.status !== "running" || s.tick + 720 > 21600,
+  value: (s: RouletteStateV4) => `BET_${s.bet}`,
+  disabled: (s: RouletteStateV4) =>
+    s.landingTick !== -1 || s.status !== "running" || s.tick + 960 > 21600,
 };
 export default function GalacticRoulette(props: GameRuntimeProps) {
   const origin = useRef<CorePoint | null>(null),
     drag = useRef<CorePoint | null>(null);
   const canvasRender = useCallback(
-    (ctx: CanvasRenderingContext2D, s: RouletteStateV2) => {
+    (ctx: CanvasRenderingContext2D, s: RouletteStateV4) => {
       if (s.landingTick !== -1) drag.current = null;
       render(ctx, s, drag.current);
     },
@@ -302,7 +303,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V3}
+        core={ROULETTE_CORE_V4}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -313,7 +314,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V3.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V4.canApply(s, "TOSS_D00_P00") &&
               rouletteTossCanGrab(p)
                 ? p
                 : null;

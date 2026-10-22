@@ -91,6 +91,7 @@ function recorder() {
     "arc",
     "fill",
     "ellipse",
+    "roundRect",
     "closePath",
     "rect",
     "clip",
@@ -124,9 +125,13 @@ async function loadRenderer(file, importedCore) {
 }
 module.exports = (async () => {
   await swc.loadBindings();
-  const tower = await import(
+  const towerV3 = await import(
     pathToFileURL(path.join(root, ".det-test/lib/verified/towerDropCore.v3.js"))
   );
+  const towerV4 = await import(
+    pathToFileURL(path.join(root, ".det-test/lib/verified/towerDropCore.v4.js"))
+  );
+  const tower = { ...towerV3, ...towerV4 };
   const stack = await import(
     pathToFileURL(
       path.join(root, ".det-test/lib/verified/precisionStackCore.v3.js"),
@@ -144,7 +149,7 @@ module.exports = (async () => {
     path.join(sourceDir, "components/games/Stack3D.tsx"),
     stack,
   );
-  const state = tower.createTowerDropV3(
+  const state = tower.createTowerDropV4(
     "9cfe3ebfbb7a58e46db026a8cf3840d88b06df9f171ec6f025b124b29f0046bf",
   );
   const inputs = [],
@@ -167,11 +172,11 @@ module.exports = (async () => {
         ) < 2000
       ) {
         inputs.push({ seq: inputs.length, tick: state.tick, action: "DROP" });
-        runtime.applyCoreInput(tower.TOWER_DROP_CORE_V3, state, "DROP", 1e9);
+        runtime.applyCoreInput(tower.TOWER_DROP_CORE_V4, state, "DROP", 1e9);
       }
     }
     if (state.status === "running")
-      runtime.stepCore(tower.TOWER_DROP_CORE_V3, state, 1e9);
+      runtime.stepCore(tower.TOWER_DROP_CORE_V4, state, 1e9);
     realHeights.add(state.blocks.length);
   }
   assert.ok(
@@ -231,7 +236,7 @@ module.exports = (async () => {
   assert.equal(JSON.stringify(state), before);
   assert.deepEqual(
     runtime.replayCore(
-      tower.TOWER_DROP_CORE_V3,
+      tower.TOWER_DROP_CORE_V4,
       inputs,
       state.tick,
       state.seed,

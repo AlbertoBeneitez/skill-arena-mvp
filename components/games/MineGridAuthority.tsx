@@ -81,6 +81,10 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
         <strong>{view.reach} CASILLAS</strong>
         <span>ESCUDOS {view.lives}</span>
       </div>
+      <div className="mineScenarioChip mineAuthorityScenario">
+        <strong>{session.scenarioId.slice(-8).toUpperCase()}</strong>
+        <span>{view.cols}×{view.rows} · APERTURA {view.startIndex + 1}</span>
+      </div>
       <div className="mineAuthorityBoardViewport">
         <div
           className="mineAuthorityBoard"

@@ -1,14 +1,14 @@
-# GALACTIC GAMES · Seguimiento de v98-mobile
+# GALACTIC GAMES · Seguimiento de v99-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
 
 | Juego / área | Trabajo preservado y validado | Pendiente |
 | --- | --- | --- |
 | Galactic Slot | v89: V1 VERIFIED conservado; referencia fija alineada visible10s, máquina ampliada después, avance0 visible/inmóvil equivalente al wrap histórico; QA táctil completa53tiradas/180s y insolvencia20tiradas, ambas vistas, reinicio/rotación/abandono y320px | Sin dinero real ni pairing/consumo durable; seguimiento físico |
-| Galactic Roulette | v94: V2 VERIFIED, suelta XY/dirección/impulso por ticks, física cartesiana3D de vuelo/gravedad/contacto/rodadura; tapete plegable49apuestas/columnas, objetivos48px, touch fiable;32wins/8losses/golden/servidor/render, QA completa70/68tiradas180s y20tiradas de insolvencia, ambas vistas/reinicio/rotación/recibos. V1 preservada | Aproximación arcade, una apuesta por tiro sin splits/corners/múltiples chips; sin dinero real/pairing durable |
-| Galactic Birds | v93: V3 VERIFIED, seis andamios persistentes2–4alturas/58piezas, soportes y plataformas físicos, doce cerdos; restantes por cada tipo de pájaro;1000campos,8clears/32inicios estables/golden/replay/inputs/servidor/render y QA táctil win/loss/reinicio/rotación/recibo ambas vistas. V1/V2 preservados | Física AABB translacional sin rotación; seguimiento físico/comparación común |
+| Galactic Roulette | v99: V4 VERIFIED, tapete49apuestas abierto y ficha por pulsación; liberación XY exacta, aro exterior alto/elástico, rebotes repetidos y captura por velocidad tras420–960ticks. Replay/servidor/render móvil y V1–V3 preservados | Una apuesta por tiro sin splits/corners/múltiples chips; sin dinero real/pairing durable; seguimiento físico |
+| Galactic Birds | v99: V6 VERIFIED, selección de tres pájaros con10unidades cada uno, goma acotada54px, seis niveles fijos y apoyo mínimo18% con deslizamiento determinista.576frames/replay/timeout/32aperturas estables; V1–V5 preservados | Física AABB translacional sin rotación; seguimiento físico/comparación común |
 | Stack | Core 3D X/Z, recorte, replay; cámara/sombra/altura y partidas táctiles; v65 retira texto de ejes, mantiene orientación visual | Revisar legibilidad de alternancia X/Z sin texto; seguimiento físico |
-| Tower Drop | Péndulo reproducible, composición móvil, retirada de texto/score distractor; v65 mantiene base/capas inferiores con perspectiva compacta y QA táctil/reinicio | Nueva versión para bloques de tamaño constante/estabilidad y plataforma de lanzamiento cuidada; conservar base y replay |
+| Tower Drop | v99: V4 VERIFIED conserva péndulo/soporte/resultado V3, añade gancho articulado que se abre y descenso a media cadencia; replay idéntico y stress visual501capas | Seguimiento físico de ritmo y legibilidad; bloques de tamaño constante/plataforma pueden requerir otra versión |
 | Jet Stream | v63: V4 VERIFIED, dos pasos de aprendizaje y desplazamientos de altura crecientes/reflejados, ventanas/vidas/dobles pasos inmutables, avance por portales, replay y QA táctil de180s. V1/V2/V3 archivados; v73 extiende cuerpos hasta ambos bordes reales del canvas, huecos V4 exactos y QA180s en ambas orientaciones | Rotación1000 y comparación común pendientes |
 | Alien Dash | v67: V3 VERIFIED, patrones encadenados de salto/agachado, tejados/puentes, centinelas y recuperaciones, avance por actores pasados y cámara horizontal con FOV igual; replay/QA táctil120s. V1/V2 archivados | Más decisiones opcionales de altura/plataformas en nueva versión progresiva; rotación1000 y comparación común pendientes |
 | Orb Burst | v70: V2 VERIFIED, campo continuo de108 originales, suministro sin resets, avance sin farming, presión4→3, disparo al soltar sin botón, cámara horizontal y replay/QA táctil completos. V1 archivada | Rotación1000 sin repetición y comparación común pendientes; seguimiento físico |
@@ -16,8 +16,8 @@ Este documento distingue validación técnica/jugable automatizada de aceptació
 | River Dash | v87: V4 VERIFIED, filas generadas sin meta65, velocidades/longitudes/huecos variables y dificultad suave; alcance terminal sin farming ni cierre por target;1000courses,384starts,golden/replay y partidas táctiles reach80/derrotas/reinicio/abandono ambas vistas; V1–V3 archivados | Sesión limitada técnicamente a seis minutos; comparación real por avance/tiempo y seguimiento físico pendientes |
 | Serpent | v75: V2 VERIFIED, cadencia18→10ticks frente17→9V1, botones72px y campo ampliado, avance por núcleos, 32 recorridos equivalentes al kernelV1 y 8 derrotas; QA táctil victoria/derrota/reinicio en ambas orientaciones, históricoV1 archivado | Seguimiento físico y comparación común pendientes |
 | Billar | v68: V2 VERIFIED, una mesa de10bolas/18tiros, posiciones persistentes, colisiones/bandas/fricción V1, avance por embocadas únicas, cámara horizontal y replay/QA táctil completos. V1 archivada | Gesto único de dirección/retroceso/potencia y disparo al soltar; preservar físicaV2 |
-| Dardos | v85: V3 VERIFIED,20swipes/suma cruda sin bonus ni objetivos, oscilación1000perfiles, vuelo1s/arco/profundidad sin previsión ni marcas antiguas,64victorias/ocho derrotas/timeout/golden/render y QA táctil completa/rotación/reinicio. V1/V2 preservados | Seguimiento físico; comparación común y consumo durable pendientes |
-| Mine Grid | v88: Mine2.0 privado conserva1000campos no-guess/goldens; integración opcional del catálogo con PostgreSQL transaccional/CAS, cookies opacas, cuerpos limitados, registros al salir, recuperación entre workers y partidas táctiles completas ambas vistas | Activación pública pendiente de DATABASE_URL/proveedor y migraciones explícitas; Vercel actual conserva0.1/setup fijo. Sin autenticación/dinero/competición real; reloj ordinal no ofrece desempate por tiempo real |
+| Dardos | v99: presentación V3 amplía diana/impactos8% y remapea el toque de forma inversa;6336frames, core/sway/puntuación/replay intactos. V1/V2 preservados | Seguimiento físico; comparación común y consumo durable pendientes |
+| Mine Grid | v99: cada seed muestra apertura segura e identificación de condición inicial; privada muestra escenario/dimensiones sin filtrar seed/minas. Mine2.0 conserva1000campos no-guess/goldens e integración PG opcional | Activación pública pendiente de DATABASE_URL/proveedor y migraciones explícitas; sin autenticación/dinero/competición real; reloj ordinal no ofrece desempate por tiempo real |
 | Solitaire Sprint | Portadav76/QA preservados; v80 generador privado candidato,1000repartos iniciales distintos reproducibles,52cartas únicas/proyección oculta/golden, sin templates públicos recuperables | Resolver policy de resolubilidad, core privado/cierre52bases/farming, QA completa e integración durable pública; catálogo0.1 conserva setup fijo |
 | Sky Hop | v69: V3 VERIFIED conserva75 apoyos/física/recuperaciónV2; marcianos bajo bordes, aviso1s, stomp de rescate y daño con checkpoint sin farming, META75 visible, altura/replay y QA táctil completos. V1/V2 archivados | Nueva versión sin meta75, curso continuo con dificultad gradual; históricos/seguridad de replay intactos |
 | Metro Shift | v46: core 1.0 VERIFIED, 60 grupos/tres sectores, ocho segundos de aprendizaje, saltos/vallas/muros, recargas/escudos y replay | Nueva versión más variada/rápida con apertura justa y transiciones superables |
@@ -573,3 +573,14 @@ HTTP pasan. Stack táctil completo también pasa en ambas orientaciones.
 Sin configurar PostgreSQL externo, el enlace conserva entrenamiento legacy;
 no se afirma que el backend durable esté activado en Vercel. Auth/ledger/pagos/
 notificaciones y migraciones ocultas/grupos reales siguen pendientes.
+
+## v99 · controles, física y condiciones iniciales
+
+Birds6 permite elegir los tres pájaros, limita la goma al lienzo e introduce un
+umbral determinista de apoyo; Roulette4 abre el tapete para apostar por pulsación,
+contiene la bola en el aro y alarga rebotes/asentamiento; Tower4 muestra un gancho
+que se abre y baja el bloque a media cadencia. Dardos amplía un8% la presentación
+con hitbox coherente y Mine muestra aperturas/identificadores de escenarios.
+Históricos y adaptadores preservados. Suite determinista completa por tramos,
+typecheck y build pasan. [Evidencia y límites](releases/v99-mobile.md). La rama
+QA se publica sin mover `main` ni `mobile-test`; QA física sigue pendiente.

@@ -111,6 +111,18 @@ export default function MineGrid({
     [challenge]
   );
 
+  const initialOpening = useMemo(() => {
+    const opening = new Set<number>();
+    revealFlood(
+      board,
+      opening,
+      challenge.startIndex,
+      challenge.cols,
+      challenge.rows,
+    );
+    return opening;
+  }, [board, challenge]);
+
   const [revealed, setRevealed] = useState<Set<number>>(
     new Set()
   );
@@ -125,9 +137,11 @@ export default function MineGrid({
   const startRef = useRef(0);
 
   useEffect(() => {
-    setRevealed(new Set());
+    // Every seeded field starts with its validated safe opening already
+    // exposed. The different clue silhouettes are visible before input.
+    setRevealed(new Set(initialOpening));
     setFlagged(new Set());
-    setStarted(false);
+    setStarted(true);
     setFlagMode(false);
     setElapsedMs(0);
 
@@ -149,7 +163,7 @@ export default function MineGrid({
       window.clearInterval(timer);
       runningRef.current = false;
     };
-  }, [active, seed]);
+  }, [active, seed, initialOpening]);
 
   function finish(
     won: boolean,
@@ -291,6 +305,10 @@ export default function MineGrid({
         {String(Math.floor(elapsedMs / 60000)).padStart(2, "0")}:
         {String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0")}
       </div>
+      <div className="mineScenarioChip" aria-label={`Escenario ${challenge.id}`}>
+        <strong>{challenge.id}</strong>
+        <span>{initialOpening.size} INICIALES · {MINES} MINAS</span>
+      </div>
       <div
         className="mineGridBoard"
         style={{
@@ -300,9 +318,7 @@ export default function MineGrid({
         {board.map((value, index) => {
           const open = revealed.has(index);
           const isFlagged = flagged.has(index);
-          const isStart =
-            !started &&
-            index === challenge.startIndex;
+          const isStart = !started && index === challenge.startIndex;
 
           return (
             <button

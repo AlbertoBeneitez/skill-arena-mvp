@@ -45,16 +45,21 @@ export function dartPerspectiveFlight(
 }
 export function dartPerspectivePose(
   s: Readonly<DartsStateV3>,
+  boardScale = 1,
 ): DartPose | null {
   if (s.phase === "aim") {
     const r = dartsReticleV3(s);
-    return dartPerspectiveFlight(195 + r.x / 1000, 285 + r.y / 1000, 0);
+    return dartPerspectiveFlight(
+      195 + (r.x / 1000) * boardScale,
+      285 + (r.y / 1000) * boardScale,
+      0,
+    );
   }
   const hit = s.impacts.at(-1);
   return hit && !hit.timeout && s.phaseTicks < 132
     ? dartPerspectiveFlight(
-        195 + hit.x / 1000,
-        285 + hit.y / 1000,
+        195 + (hit.x / 1000) * boardScale,
+        285 + (hit.y / 1000) * boardScale,
         s.phaseTicks,
       )
     : null;

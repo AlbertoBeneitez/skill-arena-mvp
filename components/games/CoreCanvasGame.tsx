@@ -32,7 +32,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
   /** A native choice emits actions through the same input queue and recorder. */
-  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string; tone?: string; placement?: {row:number;column:number;rowSpan?:number;columnSpan?:number} }[]; presentation?: "grid"; columns?: number; value(state: S): string; disabled?(state: S): boolean }>;
+  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string; tone?: string; placement?: {row:number;column:number;rowSpan?:number;columnSpan?:number} }[]; presentation?: "grid"; columns?: number; initiallyOpen?: boolean; value(state: S): string; disabled?(state: S): boolean }>;
   /** Actions still pass through the shared recorder and server replay. */
   directionalJoystick?: boolean;
   hideHudLabel?: boolean;
@@ -52,7 +52,9 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const choicePanelRef = useRef<HTMLDivElement>(null);
   const choiceSummaryRef = useRef<HTMLSpanElement>(null);
   const choiceStateRef = useRef("");
-  const [choiceOpen, setChoiceOpen] = useState(false);
+  const [choiceOpen, setChoiceOpen] = useState(
+    props.choiceControl?.initiallyOpen ?? false,
+  );
   const metricsRef = useRef<CanvasViewportMetrics | null>(null);
   const [preview] = useState(() => core.create("preview"));
   const stateRef = useRef<S>(preview);
@@ -77,6 +79,9 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const attemptId = "ticket" in attempt.state ? attempt.state.ticket?.attempt_id : undefined;
 
   useEffect(() => { finishRef.current = props.onFinish; }, [props.onFinish]);
+  useEffect(() => {
+    setChoiceOpen(props.choiceControl?.initiallyOpen ?? false);
+  }, [active, props.choiceControl]);
   useEffect(() => {
     generationRef.current += 1;
     finishedRef.current = false;

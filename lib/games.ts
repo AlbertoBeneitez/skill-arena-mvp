@@ -1,5 +1,5 @@
 import { ROULETTE_ACTIONS_V2 } from "./verified/galacticRouletteProtocol.v2";
-import { BIRDS_ACTIONS } from "./verified/galacticBirdsProtocol.v1";
+import { BIRDS_ACTIONS_V2 } from "./verified/galacticBirdsProtocol.v2";
 import { ROULETTE_ACTIONS } from "./verified/galacticRouletteProtocol.v1";
 import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
 import { PIANO_V2_ACTIONS } from "./verified/pianoRushProtocol.v2";
@@ -91,8 +91,8 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  {id:"galactic-birds",version:"5.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:1,allowedActions:BIRDS_ACTIONS},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Seis niveles fijos con12drones, estructuras de vidrio/cerámica/aleación y30tiros. Cola de exploradores, rápidos y pesados; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
-  { id: "galactic-roulette", version: "3.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V2}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único: apuestas de5€ ficticios,100€ iniciales, tres minutos o insolvencia. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
+  {id:"galactic-birds",version:"6.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:BIRDS_ACTIONS_V2},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Seis niveles fijos con12drones y30tiros. Elige explorador, rápido o pesado antes de cada lanzamiento; estructuras con soporte mínimo, colapso y replay autoritativo; máximo cuatro minutos."},
+  { id: "galactic-roulette", version: "4.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V2}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único: tapete directo, apuestas de5€ ficticios,100€ iniciales, tres minutos o insolvencia. Rebotes exteriores, fricción y saldo terminal por replay." },
   {
     id: "galactic-slot", version: "2.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
@@ -125,7 +125,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "tower-drop",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/TowerDropV3")),
     competition: {
@@ -146,7 +146,7 @@ const GAME_DEFINITIONS = [
     rivalName: "ATLAS",
     rivalAvatar: "/avatars/avatar-7.svg",
     instruction: "Toca para soltar. Alinea el apoyo sobre la torre.",
-    scoring: "Sigue apilando hasta fallar.",
+    scoring: "Gancho articulado y descenso progresivo. Sigue apilando hasta fallar.",
   },
   {
     id: "jet-stream",
