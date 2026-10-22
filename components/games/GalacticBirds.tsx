@@ -2,7 +2,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import type { BirdKind } from "@/lib/verified/galacticBirdsCore.v4";
-import { BIRDS_CORE_V5, type BirdsV5State as BirdsState } from "@/lib/verified/galacticBirdsCore.v5";
+import { BIRDS_CORE_V6, BIRDS_KINDS, type BirdsV6State as BirdsState } from "@/lib/verified/galacticBirdsCore.v6";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -10,6 +10,9 @@ import {
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { BIRDS_SCENE_LIFT, drawSpacePig } from "@/lib/birdsPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+// The elastic band stays short and always inside the frame.
+const BAND_MAX_PX = 38,
+  BAND_FULL_PULL = 99;
 const hudLabel = (s: Readonly<BirdsState>) =>
   `NIVEL ${s.level + 1}/6 · ${s.kills}/2 CERDOS · ${s.ammo} TIROS`;
 const feedbackScore = (s: Readonly<BirdsState>) => (s.completedKills + s.kills) * 10 + s.completedDestroyed + s.destroyed;
@@ -91,6 +94,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       drag.current = null;
     };
   }, [props.active]);
+  const viewportWidth = useRef(390);
   const render = useCallback(
     (
       ctx: CanvasRenderingContext2D,
@@ -98,8 +102,9 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       viewport: { width: number; height: number },
     ) => {
       const width = viewport.width,
-        camera = 0,
-        worldX = (x: number) => (x - camera) / 1000;
+        camera = 0;
+      viewportWidth.current = width;
+      const worldX = (x: number) => (x - camera) / 1000;
       launcher.current = { x: worldX(s.launcherX), y: 520 - BIRDS_SCENE_LIFT };
       drawSpaceBackdrop(ctx, width, 620, 2, s.tick);
       ctx.fillStyle = "rgba(15,35,51,.94)";
@@ -185,8 +190,10 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       const rawDx = pulled ? pulled.to.x - pulled.from.x : 0,
         rawDy = pulled ? pulled.to.y - pulled.from.y : 0,
         tension = Math.hypot(rawDx, rawDy),
-        factor = tension > 48 ? 48 / tension : 1,
-        px = Math.max(18, Math.min(width - 18, lx + rawDx * factor)),
+        // Full power (drag of BAND_FULL_PULL px) shows a band of only BAND_MAX_PX.
+        shown = Math.min(BAND_MAX_PX, (Math.min(tension, BAND_FULL_PULL) * BAND_MAX_PX) / BAND_FULL_PULL),
+        factor = tension > 0 ? shown / tension : 1,
+        px = Math.max(30, Math.min(width - 30, lx + rawDx * factor)),
         py = Math.max(22, Math.min(540 - BIRDS_SCENE_LIFT,
           520 - BIRDS_SCENE_LIFT + rawDy * factor));
       if (s.phase === "aim") {
@@ -197,7 +204,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         ctx.lineTo(px, py);
         ctx.lineTo(lx + 14, 512 - BIRDS_SCENE_LIFT);
         ctx.stroke();
-        falcon(ctx, px, py, (-(10 + s.aim) * Math.PI) / 180, s.queue[s.shots]);
+        falcon(ctx, px, py, (-(10 + s.aim) * Math.PI) / 180, s.selected);
       }
       if (s.bird) {
         const b = s.bird,
@@ -260,22 +267,27 @@ export default function GalacticBirds(props: GameRuntimeProps) {
         ctx.fillText(s.level === 5 ? "COMPLETADO" : "NIVEL COMPLETADO", width / 2, 134);
       }
       const names = { scout: "EXPLORADOR", dart: "RÁPIDO", meteor: "PESADO" };
-      for (const [i, kind] of (
-        ["scout", "dart", "meteor"] as const
-      ).entries()) {
-        const count = s.queue.slice(s.shots).filter((k) => k === kind).length;
-        const x = ((i + 0.5) * width) / 3;
-        const next = s.queue[s.shots] === kind && s.phase === "aim";
-        ctx.fillStyle = next ? "rgba(56,84,96,.8)" : "rgba(12,30,48,.7)";
+      for (const [i, kind] of BIRDS_KINDS.entries()) {
+        const count = s.stock[kind],
+          x = ((i + 0.5) * width) / 3,
+          chosen = s.selected === kind;
+        ctx.fillStyle = chosen ? "rgba(76,118,132,.92)" : "rgba(12,30,48,.7)";
         ctx.beginPath();
         ctx.roundRect(x - width / 6 + 8, 564, width / 3 - 16, 54, 8);
         ctx.fill();
+        if (chosen) {
+          ctx.strokeStyle = "#ecce99";
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        }
+        ctx.globalAlpha = count ? 1 : 0.35;
         falcon(ctx, x - 18, 580, 0, kind, true);
+        ctx.globalAlpha = 1;
         ctx.fillStyle = count ? "#ecdfb4" : "#71899b";
         ctx.textAlign = "center";
         ctx.font = "700 17px system-ui";
         ctx.fillText(`×${count}`, x + 18, 586);
-        ctx.fillStyle = "#e1edf2";
+        ctx.fillStyle = chosen ? "#fff3d1" : "#e1edf2";
         ctx.font = `bold ${Math.min(18, (14 * width) / 390)}px system-ui`;
         ctx.fillText(names[kind], x, 614);
       }
@@ -294,7 +306,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
     <div className="birdsVerified">
       <CoreCanvasGame
         {...props}
-        core={BIRDS_CORE_V5}
+        core={BIRDS_CORE_V6}
         name="Galactic Birds"
         instruction=""
         render={render}
@@ -308,11 +320,20 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           ArrowUp: "POWER_UP",
           ArrowDown: "POWER_DOWN",
           " ": "SHOOT",
+          "1": "BIRD_SCOUT",
+          "2": "BIRD_DART",
+          "3": "BIRD_METEOR",
         }}
         pointAction={(p, phase, s) => {
           if (s.phase !== "aim") {
             drag.current = null;
             return null;
+          }
+          if (phase === "down" && p.y >= 562) {
+            // The tray is the bird chooser: one tap selects a type with stock left.
+            drag.current = null;
+            const kind = BIRDS_KINDS[Math.max(0, Math.min(2, Math.floor((p.x / viewportWidth.current) * 3)))];
+            return s.stock[kind] > 0 && s.selected !== kind ? [`BIRD_${kind.toUpperCase()}`] : null;
           }
           if (phase === "down") {
             drag.current =

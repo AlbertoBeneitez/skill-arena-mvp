@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p))),
-    v2 = await load("lib/verified/galacticBirdsCore.v5.js"),
+    v2 = await load("lib/verified/galacticBirdsCore.v6.js"),
     presentation = await load("lib/birdsPresentation.js"),
     protocol = await load("lib/verified/galacticBirdsProtocol.v1.js"),
     runtime = await load("lib/verified/coreRuntime.v1.js");
@@ -34,8 +34,9 @@ module.exports = (async () => {
         useCallback: (f) => f,
       },
       "@/lib/verified/galacticBirdsCore.v4": await load("lib/verified/galacticBirdsCore.v4.js"),
-      "@/lib/verified/galacticBirdsCore.v5": v2,
+      "@/lib/verified/galacticBirdsCore.v6": v2,
       "@/lib/verified/galacticBirdsProtocol.v1": protocol,
+      "@/lib/verified/galacticBirdsProtocol.v2": await load("lib/verified/galacticBirdsProtocol.v2.js"),
       "@/lib/birdsPresentation": presentation,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "./CoreCanvasGame": () => null,
@@ -57,13 +58,13 @@ module.exports = (async () => {
   for (let seed = 0; seed < 32; seed++)
     for (const width of [390, 993, 1438])
       for (let shot = 0; shot < 3; shot++) {
-        const s = v2.BIRDS_CORE_V5.create(`birds-v3-visual-${seed}`);
+        const s = v2.BIRDS_CORE_V6.create(`birds-v3-visual-${seed}`);
         s.shots = shot;
         s.ammo -= shot;
         for (const phase of ["aim", "flight"]) {
           if (phase === "flight") {
-            runtime.applyCoreInput(v2.BIRDS_CORE_V5, s, "SHOOT", 1e9);
-            runtime.advanceCoreToTick(v2.BIRDS_CORE_V5, s, 20, 1e9);
+            runtime.applyCoreInput(v2.BIRDS_CORE_V6, s, "SHOOT", 1e9);
+            runtime.advanceCoreToTick(v2.BIRDS_CORE_V6, s, 20, 1e9);
           }
           const before = JSON.stringify(s),
             stack = [],
@@ -123,9 +124,9 @@ module.exports = (async () => {
           for (const kind of ["scout", "dart", "meteor"]) {
             assert.ok(
               texts.includes(
-                `×${s.queue.slice(s.shots).filter((k) => k === kind).length}`,
+                `×${s.stock[kind]}`,
               ),
-              "remaining type count excludes launched bird",
+              "remaining stock per type excludes the launched bird",
             );
           }
           frames++;
@@ -133,7 +134,7 @@ module.exports = (async () => {
       }
   console.log(
     JSON.stringify({
-      variant: "Birds V5 fixed levels",
+      variant: "Birds V6 selectable tray, fixed levels",
       frames,
       allStructuresVisible: true,
       typedQueue: true,
