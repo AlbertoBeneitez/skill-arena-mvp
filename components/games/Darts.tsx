@@ -34,12 +34,15 @@ function ring(
   ctx.closePath();
   ctx.fill();
 }
+// Visual zoom only (outer ring 161 * 1.15 = 185 of 195 half-width); aim input
+// uses the inverse, so authoritative coordinates are unchanged.
+const BOARD_ZOOM = 1.15;
 function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   drawSpaceBackdrop(ctx, 390, 620, 0, s.tick);
   // Enlarged dartboard and embedded impacts; keep the V3 scoring geometry.
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.scale(1.09, 1.09);
+  ctx.scale(BOARD_ZOOM, BOARD_ZOOM);
   ctx.translate(-cx, -cy);
   const stage = dartsStageV3(s),
     remaining = Math.max(
@@ -156,8 +159,8 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
 }
 function aimActions(point: CorePoint) {
   // Inverse of the visual board enlargement: the cursor and actual aim agree.
-  const boardX = cx + (point.x - cx) / 1.09;
-  const boardY = cy + (point.y - cy) / 1.09;
+  const boardX = cx + (point.x - cx) / BOARD_ZOOM;
+  const boardY = cy + (point.y - cy) / BOARD_ZOOM;
   return [
     dartsAimAction(
       "X",

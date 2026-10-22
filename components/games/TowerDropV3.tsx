@@ -7,6 +7,26 @@ import {
   type TowerDropV3State,
 } from "@/lib/verified/towerDropCore.v3";
 import CoreCanvasGame from "./CoreCanvasGame";
+// Presentation-only smoothing. Never read by the core; a new run (tick going
+// backwards) resets it, so replays and previews stay deterministic.
+const motion = { tick: -1, offsetY: Number.NaN, jaw: 1 };
+function ease(state: TowerDropV3State, offsetY: number, gripping: boolean) {
+  // Backwards or repeated ticks (new run, resize redraw, test) snap in place.
+  if (state.tick <= motion.tick || Number.isNaN(motion.offsetY)) {
+    motion.offsetY = offsetY;
+    motion.jaw = gripping ? 0 : 1;
+  } else if (state.tick !== motion.tick) {
+    const steps = Math.min(8, state.tick - motion.tick);
+    for (let n = 0; n < steps; n++) {
+      // The tower glides down instead of jumping when a layer is added.
+      motion.offsetY += (offsetY - motion.offsetY) * 0.07;
+      motion.jaw += ((gripping ? 0 : 1) - motion.jaw) * 0.22;
+    }
+    if (Math.abs(offsetY - motion.offsetY) < 0.05) motion.offsetY = offsetY;
+  }
+  motion.tick = state.tick;
+  return motion.offsetY;
+}
 function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   drawSpaceBackdrop(ctx, 390, 620, 1, state.tick);
   const floor = 540,
@@ -35,8 +55,9 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
       state.blocks.length > 1
         ? (groundY - floor - blockH) / (state.blocks.length - 1)
         : blockH;
+  const easedOffsetY = ease(state, offsetY, state.phase === "swing");
   ctx.save();
-  ctx.translate(195 * (1 - scale), offsetY);
+  ctx.translate(195 * (1 - scale), easedOffsetY);
   ctx.scale(scale, scale);
   const block = (
     x: number,
@@ -92,28 +113,6 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   ctx.moveTo(195, pivotY);
   ctx.lineTo(hookX, hookY);
   ctx.stroke();
-  // Two independent gripping jaws: closed while carrying the block,
-  // visibly opened after the DROP input. Purely presentational; the
-  // authoritative pendulum, release and landing remain in the V3 core.
-  const gripping = state.phase === "swing";
-  const jawSpread = gripping ? 0 : 13;
-  const halfWidth = Math.min(22, state.movingWMilli / 1000 / 4);
-  ctx.strokeStyle = "#a4f9ed";
-  ctx.lineWidth = 4;
-  ctx.lineCap = "round";
-  for (const side of [-1, 1]) {
-    ctx.beginPath();
-    ctx.moveTo(hookX + side * 5, hookY);
-    ctx.lineTo(hookX + side * (halfWidth + jawSpread), hookY + 9);
-    ctx.lineTo(hookX + side * (halfWidth + jawSpread), hookY + 23);
-    if (gripping) ctx.lineTo(hookX + side * (halfWidth - 4), hookY + 25);
-    ctx.stroke();
-  }
-  ctx.fillStyle = "#88fff2";
-  ctx.beginPath();
-  ctx.arc(hookX, hookY, 5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.lineCap = "butt";
   if (state.phase === "swing") {
     block(
       state.movingXMilli / 1000,
@@ -136,6 +135,30 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
       ctx.restore();
     } else block(x, y, state.movingWMilli / 1000, state.height + 1);
   }
+  // Two hinged claw arms drawn over the block so they stay visible: they close
+  // around it while it swings and swing open after DROP. Presentation only.
+  const open = motion.jaw,
+    reach = Math.max(18, state.movingWMilli / 1000 / 2);
+  ctx.strokeStyle = "#a4f9ed";
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  for (const side of [-1, 1]) {
+    const swing = (0.18 + open * 0.75) * side,
+      tipX = hookX + side * (reach - 3) + Math.sin(swing) * 10 * open,
+      kneeX = hookX + side * (reach * 0.55 + open * 12);
+    ctx.beginPath();
+    ctx.moveTo(hookX, hookY + 2);
+    ctx.lineTo(kneeX, hookY + 8);
+    ctx.lineTo(tipX + side * open * 14, hookY + 8 + 16 - open * 3);
+    ctx.lineTo(tipX - side * (1 - open) * 7, hookY + 12 + 14 * (1 - open) + 6);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#88fff2";
+  ctx.beginPath();
+  ctx.arc(hookX, hookY, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineCap = "butt";
   ctx.font = "bold 13px system-ui";
   ctx.textAlign = "center";
   ctx.fillStyle = "#c4f1fa";
