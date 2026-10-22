@@ -6267,4 +6267,4 @@ html, body, .arenaOnboarding, .gameScreen {
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button {min-height:0;min-width:0;height:100%;padding:0;font-size:12px;line-height:1;touch-action:manipulation;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="BET_DOZEN_"] {writing-mode:horizontal-tb;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice="BET_NUMBER_00"] {border-radius:12px 0 0 12px;}
-.rouletteVerified .coreChoiceTable .coreChoiceGrid button[aria-pressed="true"]::after {right:auto;bottom:auto;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);border-width:2px;}
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[aria-pressed="true"]::after {right:2px;bottom:2px;width:11px;height:11px;border-width:2px;}

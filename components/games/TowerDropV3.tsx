@@ -135,29 +135,44 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
       ctx.restore();
     } else block(x, y, state.movingWMilli / 1000, state.height + 1);
   }
-  // Two hinged claw arms drawn over the block so they stay visible: they close
-  // around it while it swings and swing open after DROP. Presentation only.
+  // Hinged claw: the arms clamp the block's top corners while it swings and
+  // swing upward and outward after DROP, so the release is visible. Presentation only.
   const open = motion.jaw,
-    reach = Math.max(18, state.movingWMilli / 1000 / 2);
-  ctx.strokeStyle = "#a4f9ed";
-  ctx.lineWidth = 4;
+    reach = Math.max(24, state.movingWMilli / 1000 / 2),
+    tilt = open * 0.95;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   for (const side of [-1, 1]) {
-    const swing = (0.18 + open * 0.75) * side,
-      tipX = hookX + side * (reach - 3) + Math.sin(swing) * 10 * open,
-      kneeX = hookX + side * (reach * 0.55 + open * 12);
+    const local: [number, number][] = [
+      [0, 0],
+      [reach * 0.5, -4],
+      [reach, 2],
+      [reach - 1, 24],
+    ];
+    const tip = local.map(([lx, ly]) => [
+      hookX + side * (lx * Math.cos(tilt) + ly * Math.sin(tilt)),
+      hookY - 2 + (-lx * Math.sin(tilt) + ly * Math.cos(tilt)),
+    ]);
+    for (const [color, width] of [["#0a2b3e", 8], ["#a4f9ed", 4.5]] as const) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(tip[0][0], tip[0][1]);
+      for (const point of tip.slice(1)) ctx.lineTo(point[0], point[1]);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "#fff3c4";
     ctx.beginPath();
-    ctx.moveTo(hookX, hookY + 2);
-    ctx.lineTo(kneeX, hookY + 8);
-    ctx.lineTo(tipX + side * open * 14, hookY + 8 + 16 - open * 3);
-    ctx.lineTo(tipX - side * (1 - open) * 7, hookY + 12 + 14 * (1 - open) + 6);
-    ctx.stroke();
+    ctx.arc(tip[3][0], tip[3][1], 3, 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.fillStyle = "#88fff2";
+  ctx.strokeStyle = "#0a2b3e";
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(hookX, hookY, 6, 0, Math.PI * 2);
+  ctx.arc(hookX, hookY - 2, 7, 0, Math.PI * 2);
   ctx.fill();
+  ctx.stroke();
   ctx.lineCap = "butt";
   ctx.font = "bold 13px system-ui";
   ctx.textAlign = "center";

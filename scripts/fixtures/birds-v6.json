@@ -4,12 +4,12 @@
     {
       "seq": 0,
       "tick": 0,
-      "action": "AIM_00"
+      "action": "AIM_02"
     },
     {
       "seq": 1,
       "tick": 1,
-      "action": "POWER_10"
+      "action": "POWER_11"
     },
     {
       "seq": 2,
@@ -18,183 +18,128 @@
     },
     {
       "seq": 3,
-      "tick": 204,
-      "action": "BIRD_METEOR"
+      "tick": 281,
+      "action": "AIM_06"
     },
     {
       "seq": 4,
-      "tick": 205,
-      "action": "AIM_04"
+      "tick": 282,
+      "action": "POWER_12"
     },
     {
       "seq": 5,
-      "tick": 206,
-      "action": "POWER_12"
+      "tick": 283,
+      "action": "SHOOT"
     },
     {
       "seq": 6,
-      "tick": 207,
-      "action": "SHOOT"
+      "tick": 524,
+      "action": "AIM_06"
     },
     {
       "seq": 7,
-      "tick": 343,
-      "action": "BIRD_SCOUT"
+      "tick": 525,
+      "action": "POWER_12"
     },
     {
       "seq": 8,
-      "tick": 344,
-      "action": "AIM_08"
+      "tick": 526,
+      "action": "SHOOT"
     },
     {
       "seq": 9,
-      "tick": 345,
-      "action": "POWER_12"
+      "tick": 808,
+      "action": "BIRD_METEOR"
     },
     {
       "seq": 10,
-      "tick": 346,
-      "action": "SHOOT"
+      "tick": 809,
+      "action": "AIM_22"
     },
     {
       "seq": 11,
-      "tick": 748,
-      "action": "BIRD_DART"
-    },
-    {
-      "seq": 12,
-      "tick": 749,
-      "action": "AIM_38"
-    },
-    {
-      "seq": 13,
-      "tick": 750,
-      "action": "POWER_11"
-    },
-    {
-      "seq": 14,
-      "tick": 751,
-      "action": "SHOOT"
-    },
-    {
-      "seq": 15,
-      "tick": 1050,
-      "action": "BIRD_METEOR"
-    },
-    {
-      "seq": 16,
-      "tick": 1051,
-      "action": "AIM_14"
-    },
-    {
-      "seq": 17,
-      "tick": 1052,
-      "action": "POWER_11"
-    },
-    {
-      "seq": 18,
-      "tick": 1053,
-      "action": "SHOOT"
-    },
-    {
-      "seq": 19,
-      "tick": 1372,
-      "action": "BIRD_SCOUT"
-    },
-    {
-      "seq": 20,
-      "tick": 1373,
-      "action": "AIM_56"
-    },
-    {
-      "seq": 21,
-      "tick": 1374,
-      "action": "POWER_09"
-    },
-    {
-      "seq": 22,
-      "tick": 1375,
-      "action": "SHOOT"
-    },
-    {
-      "seq": 23,
-      "tick": 1713,
-      "action": "AIM_60"
-    },
-    {
-      "seq": 24,
-      "tick": 1714,
-      "action": "POWER_08"
-    },
-    {
-      "seq": 25,
-      "tick": 1715,
-      "action": "SHOOT"
-    },
-    {
-      "seq": 26,
-      "tick": 2090,
-      "action": "BIRD_METEOR"
-    },
-    {
-      "seq": 27,
-      "tick": 2091,
-      "action": "AIM_60"
-    },
-    {
-      "seq": 28,
-      "tick": 2092,
-      "action": "POWER_11"
-    },
-    {
-      "seq": 29,
-      "tick": 2093,
-      "action": "SHOOT"
-    },
-    {
-      "seq": 30,
-      "tick": 2484,
-      "action": "BIRD_SCOUT"
-    },
-    {
-      "seq": 31,
-      "tick": 2485,
-      "action": "AIM_16"
-    },
-    {
-      "seq": 32,
-      "tick": 2486,
-      "action": "POWER_10"
-    },
-    {
-      "seq": 33,
-      "tick": 2487,
-      "action": "SHOOT"
-    },
-    {
-      "seq": 34,
-      "tick": 2814,
-      "action": "BIRD_DART"
-    },
-    {
-      "seq": 35,
-      "tick": 2815,
-      "action": "AIM_18"
-    },
-    {
-      "seq": 36,
-      "tick": 2816,
+      "tick": 810,
       "action": "POWER_12"
     },
     {
-      "seq": 37,
-      "tick": 2817,
+      "seq": 12,
+      "tick": 811,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 13,
+      "tick": 1167,
+      "action": "BIRD_DART"
+    },
+    {
+      "seq": 14,
+      "tick": 1168,
+      "action": "AIM_44"
+    },
+    {
+      "seq": 15,
+      "tick": 1169,
+      "action": "POWER_08"
+    },
+    {
+      "seq": 16,
+      "tick": 1170,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 17,
+      "tick": 1876,
+      "action": "BIRD_METEOR"
+    },
+    {
+      "seq": 18,
+      "tick": 1877,
+      "action": "AIM_48"
+    },
+    {
+      "seq": 19,
+      "tick": 1878,
+      "action": "POWER_12"
+    },
+    {
+      "seq": 20,
+      "tick": 1879,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 21,
+      "tick": 2299,
+      "action": "AIM_46"
+    },
+    {
+      "seq": 22,
+      "tick": 2300,
+      "action": "POWER_05"
+    },
+    {
+      "seq": 23,
+      "tick": 2301,
+      "action": "SHOOT"
+    },
+    {
+      "seq": 24,
+      "tick": 2657,
+      "action": "AIM_26"
+    },
+    {
+      "seq": 25,
+      "tick": 2658,
+      "action": "POWER_12"
+    },
+    {
+      "seq": 26,
+      "tick": 2659,
       "action": "SHOOT"
     }
   ],
-  "finalTick": 3232,
-  "score": 6910,
+  "finalTick": 3018,
+  "score": 6980,
   "status": "won",
   "failure": null,
-  "hash": "sha256:bb552060f09def6046e216cd89218175d350566fa3eb62fde3905c04dde891bd"
+  "hash": "sha256:8734972f4d119f446fd6e24f4726084e9a50ad49f526848579f732db12834547"
 }

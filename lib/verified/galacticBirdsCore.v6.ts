@@ -54,13 +54,18 @@ export function birdsFieldV6(seed: string, level: number) {
     enemies: BirdsEnemy[] = [];
   const vary = (m: "glass" | "ceramic") =>
     rng.nextInt(2) ? m : m === "glass" ? "ceramic" : "glass";
+  // Heights are stretched 27/20 so the assemblies fill the fixed screen.
+  const tall = (px: number) => roundDiv(px * 27 * K, 20);
   const add = (cx: number, bottom: number, w: number, h: number, material: BirdsBody["material"]) => {
+    const base = GROUND / K,
+      height = tall(h),
+      floor = GROUND - tall(base - bottom);
     bodies.push({
       id: bodies.length,
       x: (cx + shift) * K,
-      y: (bottom - h / 2) * K,
+      y: floor - roundDiv(height, 2),
       w: w * K,
-      h: h * K,
+      h: height,
       vx: 0,
       vy: 0,
       hp: HP[material],
@@ -69,8 +74,17 @@ export function birdsFieldV6(seed: string, level: number) {
       alive: true,
     });
   };
-  const pig = (cx: number, cy: number) =>
-    enemies.push({ id: enemies.length, x: (cx + shift) * K, y: cy * K, vy: 0, alive: true, approachGap: 0 });
+  const pig = (cx: number, cy: number) => {
+    const top = (cy + 18) * K;
+    enemies.push({
+      id: enemies.length,
+      x: (cx + shift) * K,
+      y: GROUND - tall((GROUND - top) / K) - 18 * K,
+      vy: 0,
+      alive: true,
+      approachGap: 0,
+    });
+  };
   const G = GROUND / K;
   switch (level) {
     case 0: {
