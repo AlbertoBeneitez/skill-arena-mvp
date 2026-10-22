@@ -282,6 +282,19 @@ export default function TowerDrop({
       ctx.lineTo(centerX, hookWorldY);
       ctx.stroke();
 
+      // Mechanical release: two closed jaws grip the cargo until DROP.
+      ctx.strokeStyle = "#87d7e2";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(centerX - 13, hookWorldY - 2);
+      ctx.lineTo(centerX - 13, hookWorldY + 13);
+      ctx.lineTo(centerX - 8, hookWorldY + 18);
+      ctx.moveTo(centerX + 13, hookWorldY - 2);
+      ctx.lineTo(centerX + 13, hookWorldY + 13);
+      ctx.lineTo(centerX + 8, hookWorldY + 18);
+      ctx.stroke();
+      ctx.lineCap = "butt";
       ctx.fillStyle = "#344760";
       ctx.beginPath();
       ctx.arc(centerX, hookWorldY, 6, 0, Math.PI * 2);
@@ -308,10 +321,27 @@ export default function TowerDrop({
       );
       const releaseScreenY = releaseScreenYRef.current;
       const targetScreenY = targetY + cameraY;
+      // Visually accelerate the descent rather than teleport the cargo.
+      // Collision, release tick, scoring and server replay are unchanged.
+      const easedProgress = progress * progress * (3 - 2 * progress);
       const screenY =
         releaseScreenY +
-        (targetScreenY - releaseScreenY) * progress;
+        (targetScreenY - releaseScreenY) * easedProgress;
       const y = screenY - cameraY;
+
+      // Open jaws remain at the release point as the module drops away.
+      const releaseX = s.fallXMilli / 1000 + blockWidth / 2;
+      const jawY = releaseScreenY - cameraY;
+      ctx.strokeStyle = "#87d7e2";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(releaseX - 6, jawY - 9);
+      ctx.lineTo(releaseX - 22, jawY + 6);
+      ctx.moveTo(releaseX + 6, jawY - 9);
+      ctx.lineTo(releaseX + 22, jawY + 6);
+      ctx.stroke();
+      ctx.lineCap = "butt";
 
       drawBlock(
         ctx,
