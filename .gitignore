@@ -6,3 +6,11 @@ node_modules/
 .vercel/
 .DS_Store
 *.log
+
+# Cualquier variante de .env queda fuera del repositorio, salvo la plantilla
+.env*
+!.env.example
+
+# Artefactos de las pruebas y de TypeScript
+.det-test/
+*.tsbuildinfo

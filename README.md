@@ -1,109 +1,74 @@
-# GALACTIC GAMES — demo mobile-first
+# GALACTIC GAMES
 
-GALACTIC GAMES está pensada para probar producto, arquitectura competitiva y UX móvil antes de conectar autenticación real, PostgreSQL, ledger o pagos.
+Plataforma web móvil (PWA) de minijuegos de habilidad 1 contra 1, pensada para competir en partidas cortas con resultados verificables.
 
-## Qué incluye
+**Estado: entrenamiento con saldo ficticio.** No hay autenticación real, ni cartera, ni pagos, ni KYC, ni dinero real. Google y Apple se muestran como «próximamente» sin simular el acceso. Antes de activar cualquier competición con dinero hacen falta identidad de producción, PostgreSQL alojado, liquidación en servidor y revisión jurídica (ver `docs/PRODUCTION_ARCHITECTURE_REVIEW.md` y `docs/SECURITY_REVIEW_V98.md`).
 
-- Onboarding: GALACTIC GAMES → entrar en modo demo → elegir nombre/avatar → jugar. Google y Apple se muestran como próximos, sin autenticación simulada.
-- Galería de avatares y subida de foto con recorte local; sin generación de avatar por IA en esta fase.
-- Panel de jugador horizontal: imagen, nombre, ranking y dinero ganado/perdido.
-- Catálogo modular de juegos 1 vs 1 con carga bajo demanda; Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1 y Dino Dash V1 usan verificación server-side.
-- Portada/cover de cada juego antes de jugar.
-- Stakes: 0 €, 1 €, 5 €, 10 € y 50 €.
-- Estado de matchmaking por color de todo el botón:
-  - verde = jugada inicial;
-  - azul = jugada existente;
-  - morado = jugador esperando.
-- Alternancia automática inicial → existente → inicial → existente.
-- Wallet demo e historial.
-- Avatar/perfil con gráfico de beneficio/pérdida acumulada.
-- Reset competitivo de avatar sin borrar el saldo demo.
-- Música ON/OFF como preferencia preparada para la integración futura.
-- Zona legal placeholder.
+## Catálogo
 
-## Arquitectura de juegos
+23 juegos activos en `lib/games.ts`:
 
-`lib/games.ts` es el registro tipado único del catálogo: identidad, versión,
-madurez, metadata, lazy loader y capacidad competitiva. `GameLoader.tsx`
-deriva la carga dinámica desde ese registro y no contiene un switch por juego.
+- **21 verificados por replay en servidor** (`server-replay`): el navegador envía solo los inputs ordenados y el servidor repite la partida con un núcleo determinista y versionado.
+- **2 integrados con resultado en el cliente** (`client-result`): Solitaire Sprint y Mine Grid. Son solo entrenamiento; su tablero de partida es fijo hasta configurar la base de datos (ver abajo) y no deben usarse en competición.
 
-Los juegos competitivos verificados utilizan un core puro y versionado,
-inputs ordenados por tick, seed emitido por servidor, manifest firmado,
-replay server-side y resultado autoritativo. Tower Drop V2, Precision Stack V2, Piano Rush V1, Jet Stream V1 y Dino Dash V1 son las implementaciones de referencia.
+Memory Match está retirado del catálogo; sus núcleos se conservan para reproducir registros históricos.
 
-La especificación estable está en `docs/GAME_ARCHITECTURE.md`, el ciclo obligatorio de calidad en `docs/GAME_PROFESSIONALIZATION_CYCLE.md` y las decisiones irreversibles se registran en `docs/adr/`.
+## Arquitectura
+
+- Registro tipado único: `lib/games.ts`. Carga bajo demanda: `components/GameLoader.tsx`.
+- Núcleos puros y versionados: `lib/verified/*Core.v*.ts`. Una vez publicada, una versión competitiva es inmutable; cualquier cambio de física, puntuación o generación crea una versión nueva.
+- Contrato competitivo: `gameId + gameVersion + scenarioId + seed` → inputs ordenados → núcleo determinista → replay → verificación en servidor → resultado autoritativo.
+- Verificación en servidor: `lib/server/verifiedMatch.ts` y `lib/server/gameVerifiers.ts`. Persistencia PostgreSQL por interfaces en `lib/server/`, con migraciones explícitas en `db/migrations/`.
+
+Especificación: `docs/GAME_ARCHITECTURE.md`. Ciclo de calidad por juego: `docs/GAME_PROFESSIONALIZATION_CYCLE.md`. Decisiones: `docs/adr/`. Reglas para agentes de código: `AGENTS.md`.
 
 ## Desarrollo
 
+Requisitos: Node ≥ 22.13 y pnpm 12.7.0.
+
 ```bash
 pnpm install
-pnpm dev
+pnpm dev        # http://localhost:3000
 ```
 
-Después abre el puerto 3000.
+## Comprobaciones
 
-## Importante
+| Comando | Qué hace |
+| --- | --- |
+| `pnpm lint` | Comprobación de tipos (`tsc --noEmit`). No es un linter de reglas. |
+| `pnpm test:determinism` | Núcleos, replays, ficheros de referencia, entradas inválidas y puertas de producción. Unos 5–6 minutos. |
+| `pnpm test:repository` | Adaptadores PostgreSQL. Requiere `TEST_DATABASE_URL` apuntando a una base de pruebas. |
+| `pnpm build` | Compilación de producción. |
+| `pnpm check` | `lint` + `test:determinism`. |
 
-Google/Apple, dinero, matchmaking, ranking y legal siguen siendo simulaciones de producto. No hay autenticación real, PostgreSQL, EMI, KYC ni pagos reales.
+La CI (`.github/workflows/build-v4.yml`) ejecuta todo lo anterior sobre PostgreSQL 17, en cada `push` a las ramas de trabajo y en pull requests. `codeql.yml` añade análisis estático de seguridad y `dependabot.yml` propone actualizaciones.
 
+## Configuración y despliegue
 
-## V12
+Las variables se definen en el proveedor de alojamiento (en Vercel: Project → Settings → Environment Variables, para los entornos *Production* y *Preview*). Nunca se escriben en el repositorio ni en el chat. `.env.example` lista sus nombres.
 
-- Se elimina Helix Dive del catálogo.
-- Se elimina la generación de avatar por IA para evitar dependencias de pago innecesarias.
-- Tower Drop incorpora caída más lenta y cámara progresiva para mantener la torre bajo la grúa.
-- Jet Stream aprovecha toda la superficie vertical disponible en móvil.
-- Pulse Runner se rediseña como auto-runner rítmico con patrones deterministas y dificultad progresiva.
-- Metro Shift mantiene avance continuo y responde al gesto durante el swipe.
-- El percentil demo se muestra como “Mejor que X% de los intentos demo”.
+| Variable | Para qué sirve |
+| --- | --- |
+| `MATCH_SIGNING_SECRET` | **Obligatoria en producción.** Clave con la que se firman los tickets de partida; al menos 32 caracteres aleatorios (por ejemplo `openssl rand -hex 32`). Sin ella, o si es demasiado corta, los endpoints responden 503 en lugar de usar la clave pública de entrenamiento. |
+| `ALLOW_LEGACY_STATELESS_TRAINING` | `1` mantiene en producción el entrenamiento sin base de datos, que no guarda las partidas y acepta repetir un mismo registro. Sin esta variable ni PostgreSQL, las partidas verificadas no pueden empezar en producción. |
+| `DATABASE_URL` | PostgreSQL. Fuera de localhost exige `?sslmode=verify-full`. |
+| `ALLOW_PERSISTED_MATCH_TRAINING` | `1` activa las partidas duraderas con PostgreSQL (migraciones `001` y `003`). |
+| `ALLOW_PERSISTED_HIDDEN_TRAINING` | `1` activa la autoridad privada de Mine Grid con tableros distintos en cada intento (migraciones `001` y `002`). |
+| `RANKING_READ_MODEL_READY`, `COMMAND_AUTHORITY_READY` | Interruptores de puertos preparados; no se activan solo con `DATABASE_URL`. |
+| `ALLOW_LOCAL_HIDDEN_GAMES` | Solo QA local de juegos de información oculta; se ignora en Vercel. |
+| `ALLOW_DEMO_SIGNING_KEY` | Solo para probar una build de producción en un equipo propio con la clave pública; nunca en Vercel. |
 
+Las migraciones SQL se aplican **a mano** (por ejemplo con `psql`) y nunca durante el arranque o la compilación.
 
-## V13
+## Enlaces de prueba
 
-- Tower Drop y Metro Shift ocupan todo el viewport de juego, sin bandas negras.
-- Tower Drop permite hasta 5 minutos de inactividad por bloque antes del timeout verificado.
-- El encabezado 1 vs 1 muestra los avatares de ambos jugadores junto al nombre.
-- Jet Stream incorpora HUD de puertas, puntos, ritmo y proximidad a la siguiente puerta.
-- Metro Shift mantiene los obstáculos visibles y desplazándose después de superarlos, añade sensación de velocidad continua y sustituye el indicador de carril por un HUD de superados, puntos y ritmo.
-- Se amplían los objetivos táctiles principales: volver, jugar y navegación JUGAR/CUENTA.
+- `?fresh=1`: fuerza el flujo de bienvenida y avatar aunque ya exista una cuenta local. Conserva saldo, historial y grupo.
+- `?reset=1`: elimina los datos locales de GALACTIC GAMES en ese navegador y simula una instalación nueva.
 
+La consulta se conserva al cambiar de pantalla, así que al recargar el mismo enlace el modo de prueba se vuelve a aplicar.
 
-## V14
+## Licencias y terceros
 
-- Los nombres de avatar admiten espacios simples, manteniendo validación de 3–18 caracteres.
-- Control de sonido simplificado con botón de altavoz visible en cabecera y durante la partida.
-- SFX arcade originales generados con Web Audio, sin assets de terceros ni costes/licencias.
-- Se eliminan los marcadores internos de puntuación de los cinco juegos para limpiar la superficie de juego.
-- Nueva pestaña GRUPO con sala cerrada, código privado, stake configurable y modo 1 vs todos los integrantes.
-- La lógica de grupo se separa en `lib/groupPlay.ts` y la UI en `components/GroupHub.tsx`.
-- Metro Shift incorpora física lateral con velocidad/inercia y movimiento de obstáculos con aceleración visual por perspectiva.
-- Los cinco juegos terminan al alcanzar la marca objetivo; la victoria muestra una animación común a nivel de producto.
-- Tower Drop v1.1 conserva verificación server-side y admite cierre autoritativo por objetivo alcanzado o primer fallo.
+Ver `THIRD_PARTY_NOTICES.md` (por ejemplo, la mecánica de Tower Drop se inspira en `iamkun/tower_game`, MIT; no se reutilizan sus recursos). El repositorio aún no declara una licencia propia; mientras el propietario no elija una, rige el copyright por defecto del autor.
 
-
-## Tower Drop v2
-
-Tower Drop usa ahora un motor determinista v2 con péndulo, caída acelerada,
-apoyo parcial, estabilidad por centro de masas y vuelco alrededor del borde.
-El resultado competitivo sigue verificándose mediante replay server-side a
-120 Hz.
-
-La mecánica toma inspiración de `iamkun/tower_game` (MIT, Copyright 2018
-BMQB, Inc). No se reutilizan sus assets, audio, interfaz ni marca. Consulta
-`THIRD_PARTY_NOTICES.md` y `docs/TOWER_DROP_V2.md` para la procedencia y
-separación entre mecánica MIT y código propio.
-
-
-## URLs de prueba
-
-La demo admite dos modos de QA mediante query string:
-
-- `?fresh=1`: fuerza el flujo de bienvenida/acceso/avatar aunque ya exista una
-  cuenta local. Conserva saldo, historial, estadísticas y grupo. Si se cierra
-  la pestaña antes de terminar el onboarding, no sobrescribe el perfil
-  guardado.
-- `?reset=1`: elimina todos los datos locales de GALACTIC GAMES en ese navegador
-  y simula una instalación completamente nueva.
-
-La query se conserva al cambiar de pantalla mediante hash, por lo que al
-recargar o volver a abrir el mismo enlace el modo de prueba vuelve a aplicarse.
+Notas históricas de versiones antiguas: `docs/releases/early-readme-notes-v12-v14.md`.
