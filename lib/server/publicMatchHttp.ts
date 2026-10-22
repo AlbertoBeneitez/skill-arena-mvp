@@ -5,9 +5,21 @@ import { getProductionPostgresPool } from "./postgresPool";
 import { PostgresPublicAttemptRepository } from "./postgresPublicAttemptRepository";
 import { PublicMatchService } from "./publicMatchService";
 import { PublicAttemptError } from "./publicAttemptRepository";
+import {
+  SigningKeyUnavailableError,
+  legacyStatelessTrainingAllowed,
+} from "./runtimeMode";
 export const PUBLIC_ACTOR_COOKIE = "arena_match_training";
 export const persistentMatchesRequested = () =>
   process.env.ALLOW_PERSISTED_MATCH_TRAINING === "1";
+/**
+ * Gate for the stateless training path (no database, no stored attempt).
+ * Closed in production unless ALLOW_LEGACY_STATELESS_TRAINING=1.
+ */
+export function requireLegacyStatelessTraining() {
+  if (!legacyStatelessTrainingAllowed())
+    throw new PublicAttemptError("LEGACY_TRAINING_DISABLED", 503);
+}
 export function getPublicMatchService() {
   if (!persistentMatchesRequested() || !process.env.DATABASE_URL)
     throw new PublicAttemptError("MATCH_STORAGE_UNAVAILABLE", 503);
@@ -86,7 +98,9 @@ export function publicMatchError(error: unknown) {
   const e =
     error instanceof PublicAttemptError
       ? error
-      : new PublicAttemptError("MATCH_STORAGE_UNAVAILABLE", 503);
+      : error instanceof SigningKeyUnavailableError
+        ? new PublicAttemptError(error.code, 503)
+        : new PublicAttemptError("MATCH_STORAGE_UNAVAILABLE", 503);
   return Response.json(
     { ok: false, verified: false, error: e.code },
     { status: e.status, headers: { "Cache-Control": "no-store" } },

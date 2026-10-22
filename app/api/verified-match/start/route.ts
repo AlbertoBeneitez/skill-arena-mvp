@@ -15,6 +15,7 @@ import {
   sameOrigin,
   readBoundedJson,
   publicMatchError,
+  requireLegacyStatelessTraining,
 } from "@/lib/server/publicMatchHttp";
 export const runtime = "nodejs";
 type StartRequest = {
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
   }
   let body: StartRequest = {};
   try {
+    requireLegacyStatelessTraining();
     sameOrigin(request);
     const parsed = await readBoundedJson(request, 4096);
     body =
@@ -91,12 +93,17 @@ export async function POST(request: NextRequest) {
     targetScore,
   });
 
-  const ticket = issueAttemptTicket({
-    manifest,
-    playerId: `demo-player:${randomUUID()}`,
-    slot: "A",
-    ttlMinutes: 15,
-  });
+  let ticket;
+  try {
+    ticket = issueAttemptTicket({
+      manifest,
+      playerId: `demo-player:${randomUUID()}`,
+      slot: "A",
+      ttlMinutes: 15,
+    });
+  } catch (e) {
+    return publicMatchError(e);
+  }
 
   return NextResponse.json(
     {

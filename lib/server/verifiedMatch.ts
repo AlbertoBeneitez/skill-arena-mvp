@@ -19,6 +19,12 @@ import {
 import { getServerGameAdapter } from "./gameVerifiers";
 import { hashManifest, sha256, signAttemptTicket } from "./matchIntegrity";
 import { resolveScenario, isPrivateScenario } from "./scenarios";
+import {
+  MIN_PRODUCTION_SIGNING_SECRET_LENGTH,
+  SigningKeyUnavailableError,
+  demoSigningKeyAllowed,
+  isProductionRuntime,
+} from "./runtimeMode";
 
 export { hashManifest } from "./matchIntegrity";
 
@@ -60,12 +66,23 @@ export function isAllowedStakeMinor(value: number) {
   return Number.isInteger(value) && ALLOWED_STAKES_MINOR.has(value);
 }
 
+/**
+ * Ticket signing key. Production never falls back to the public training key:
+ * a missing or too-short secret fails closed (503) instead of issuing tickets
+ * that anyone can forge.
+ */
 function signingSecret() {
   const configured = process.env.MATCH_SIGNING_SECRET;
-  return {
-    value: configured || DEMO_SIGNING_SECRET,
-    mode: configured ? ("production" as const) : ("demo" as const),
-  };
+  if (configured) {
+    if (
+      isProductionRuntime() &&
+      configured.length < MIN_PRODUCTION_SIGNING_SECRET_LENGTH
+    )
+      throw new SigningKeyUnavailableError();
+    return { value: configured, mode: "production" as const };
+  }
+  if (!demoSigningKeyAllowed()) throw new SigningKeyUnavailableError();
+  return { value: DEMO_SIGNING_SECRET, mode: "demo" as const };
 }
 
 export function expectedGameplayContentHash(
@@ -384,6 +401,13 @@ export function processAttemptRecord(raw: unknown, options: { allowV3?: boolean;
     body: { ok: false, verified: false, error },
   });
 
+  try {
+    signingSecret();
+  } catch (error) {
+    if (error instanceof SigningKeyUnavailableError)
+      return reject(error.code, 503);
+    throw error;
+  }
   if (!isRecord(raw)) return reject("INVALID_PAYLOAD");
   if (
     !raw.manifest || typeof raw.manifest !== "object" ||

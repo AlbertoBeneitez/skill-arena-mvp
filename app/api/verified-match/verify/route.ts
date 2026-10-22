@@ -8,6 +8,7 @@ import {
   sameOrigin,
   readBoundedJson,
   publicMatchError,
+  requireLegacyStatelessTraining,
 } from "@/lib/server/publicMatchHttp";
 export const runtime = "nodejs";
 
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
         headers: { "Cache-Control": "no-store" },
       });
     }
+    requireLegacyStatelessTraining();
     const { status, body } = processAttemptRecord(raw);
     return NextResponse.json(body, {
       status,
