@@ -2,11 +2,12 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V3,
+  ROULETTE_CORE_V4,
+  ROULETTE_RULES_V4,
   ROULETTE_WHEEL,
   ROULETTE_RED,
   type RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v3";
+} from "@/lib/verified/galacticRouletteCore.v4";
 import { ROULETTE_BETS_V2 } from "@/lib/verified/galacticRouletteProtocol.v2";
 import {
   ROULETTE_BALL_DOCK,
@@ -98,6 +99,12 @@ function render(
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.stroke();
   }
+  // Solid outer wall the ball bounces off (core V4 wallRadius 148).
+  ctx.strokeStyle = "#e9d9b0";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 149, 0, Math.PI * 2);
+  ctx.stroke();
   for (let i = 0; i < 8; i++) {
     const a = (i * Math.PI) / 4;
     ctx.save();
@@ -209,10 +216,12 @@ const betLabels: Record<string, string> = {
   DOZEN_2: "13–24",
   DOZEN_3: "25–36",
 };
+// Landscape casino cloth shown permanently under the wheel: zero spans the three
+// number rows, then dozens, columns and outside bets. One tap places the chip.
 const choiceControl = {
   label: "Tapete de apuestas",
-  presentation: "grid" as const,
-  columns: 5,
+  presentation: "table" as const,
+  columns: 13,
   options: ROULETTE_BETS_V2.map((bet) => {
     if (bet.startsWith("NUMBER_")) {
       const n = Number(bet.slice(7));
@@ -227,8 +236,8 @@ const choiceControl = {
               : "#102d50",
         placement:
           n === 0
-            ? { row: 1, column: 1, columnSpan: 3 }
-            : { row: 2 + Math.floor((n - 1) / 3), column: 1 + ((n - 1) % 3) },
+            ? { row: 1, column: 1, rowSpan: 3 }
+            : { row: 3 - ((n - 1) % 3), column: 2 + Math.floor((n - 1) / 3) },
       };
     }
     if (bet.startsWith("DOZEN_")) {
@@ -237,31 +246,31 @@ const choiceControl = {
         action: `BET_${bet}`,
         label: betLabels[bet],
         tone: "#173e42",
-        placement: { row: 2 + (n - 1) * 4, column: 4, rowSpan: 4 },
+        placement: { row: 4, column: 2 + (n - 1) * 4, columnSpan: 4 },
       };
     }
-    if (bet.startsWith("COLUMN_"))
+    if (bet.startsWith("COLUMN_")) {
+      const n = Number(bet.slice(7));
       return {
         action: `BET_${bet}`,
-        label: `C${Number(bet.slice(7))} 2:1`,
+        label: `C${n} 2:1`,
         tone: "#173e42",
-        placement: { row: 14, column: Number(bet.slice(7)) },
+        placement: { row: 5, column: 2 + (n - 1) * 4, columnSpan: 4 },
       };
+    }
     const i = ["LOW", "EVEN", "RED", "BLACK", "ODD", "HIGH"].indexOf(bet);
     return {
       action: `BET_${bet}`,
       label: betLabels[bet],
       tone: bet === "RED" ? "#176f5a" : bet === "BLACK" ? "#102d50" : "#173e42",
-      placement: {
-        row: 2 + i * 2,
-        column: 5,
-        rowSpan: 2,
-      },
+      placement: { row: 6, column: 2 + i * 2, columnSpan: 2 },
     };
   }),
   value: (s: RouletteStateV2) => `BET_${s.bet}`,
   disabled: (s: RouletteStateV2) =>
-    s.landingTick !== -1 || s.status !== "running" || s.tick + 720 > 21600,
+    s.landingTick !== -1 ||
+    s.status !== "running" ||
+    s.tick + ROULETTE_RULES_V4.maximumFlightTicks > 21600,
 };
 export default function GalacticRoulette(props: GameRuntimeProps) {
   const origin = useRef<CorePoint | null>(null),
@@ -302,7 +311,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V3}
+        core={ROULETTE_CORE_V4}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -313,7 +322,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V3.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V4.canApply(s, "TOSS_D00_P00") &&
               rouletteTossCanGrab(p)
                 ? p
                 : null;

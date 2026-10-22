@@ -1,4 +1,5 @@
 import { BIRDS_CORE_V5 } from "../verified/galacticBirdsCore.v5";
+import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
 import { JET_STREAM_CORE_V5 } from "../verified/jetStreamCore.v5";
@@ -398,6 +399,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BIRDS_CORE_V4.gameId, BIRDS_CORE_V4.gameVersion)]: coreAdapter(BIRDS_CORE_V4),
   [adapterKey(BIRDS_CORE_V3.gameId, BIRDS_CORE_V3.gameVersion)]: coreAdapter(BIRDS_CORE_V3),
   [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
+  [adapterKey(ROULETTE_CORE_V4.gameId,ROULETTE_CORE_V4.gameVersion)]: coreAdapter(ROULETTE_CORE_V4),
   [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),

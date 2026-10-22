@@ -32,7 +32,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
   /** A native choice emits actions through the same input queue and recorder. */
-  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string; tone?: string; placement?: {row:number;column:number;rowSpan?:number;columnSpan?:number} }[]; presentation?: "grid"; columns?: number; value(state: S): string; disabled?(state: S): boolean }>;
+  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string; tone?: string; placement?: {row:number;column:number;rowSpan?:number;columnSpan?:number} }[]; presentation?: "grid" | "table"; columns?: number; value(state: S): string; disabled?(state: S): boolean }>;
   /** Actions still pass through the shared recorder and server replay. */
   directionalJoystick?: boolean;
   hideHudLabel?: boolean;
@@ -193,7 +193,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     const resize = () => {
       metricsRef.current = configureLogicalCanvas(canvas, core.width, core.height, 2, viewportPolicy);
       const panel=choicePanelRef.current, grid=panel?.querySelector<HTMLElement>(".coreChoiceGrid");
-      if(grid)grid.style.maxHeight=`${Math.max(88,(panel?.parentElement?.clientHeight ?? 300)-64)}px`;
+      if(grid&&props.choiceControl?.presentation!=="table")grid.style.maxHeight=`${Math.max(88,(panel?.parentElement?.clientHeight ?? 300)-64)}px`;
       draw();
     };
     resize();
@@ -361,7 +361,12 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     />
     <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
-    {props.choiceControl && (props.choiceControl.presentation === "grid" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel">
+    {props.choiceControl && (props.choiceControl.presentation === "table" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel coreChoiceTable">
+      {/* Always visible: one tap places the chip, no panel to open or close. */}
+      <div className="coreChoiceGrid" role="group" aria-label={props.choiceControl.label} style={{gridTemplateColumns:`repeat(${props.choiceControl.columns ?? 3},minmax(0,1fr))`}}>
+        {props.choiceControl.options.map(option => <GameActionButton key={option.action} data-choice={option.action} aria-pressed={option.action === props.choiceControl!.value(preview)} style={{background:option.tone,gridRow:option.placement ? `${option.placement.row} / span ${option.placement.rowSpan ?? 1}` : undefined,gridColumn:option.placement ? `${option.placement.column} / span ${option.placement.columnSpan ?? 1}` : undefined}} onActivate={()=>send(option.action)}>{option.label}</GameActionButton>)}
+      </div>
+    </div> : props.choiceControl.presentation === "grid" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel">
       <GameActionButton className="coreChoiceTrigger" aria-label={props.choiceControl.label} aria-expanded={choiceOpen} onActivate={()=>{
         const panel=choicePanelRef.current, grid=panel?.querySelector<HTMLElement>(".coreChoiceGrid");
         if(!runningRef.current || props.choiceControl?.disabled?.(stateRef.current))return;

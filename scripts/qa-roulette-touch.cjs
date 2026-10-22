@@ -9,8 +9,8 @@ const { chromium } = require(
 register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
 (async () => {
   const b = pathToFileURL(path.join(__dirname, "../.det-test/")).href;
-  const { ROULETTE_CORE_V3: core } = await import(
-      b + "lib/verified/galacticRouletteCore.v3.js"
+  const { ROULETTE_CORE_V4: core } = await import(
+      b + "lib/verified/galacticRouletteCore.v4.js"
     ),
     { replayCore } = await import(b + "lib/verified/coreRuntime.v1.js");
   const browser = await chromium.launch({
