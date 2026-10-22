@@ -573,3 +573,6 @@ HTTP pasan. Stack táctil completo también pasa en ambas orientaciones.
 Sin configurar PostgreSQL externo, el enlace conserva entrenamiento legacy;
 no se afirma que el backend durable esté activado en Vercel. Auth/ledger/pagos/
 notificaciones y migraciones ocultas/grupos reales siguen pendientes.
+
+## v100-mobile (local)
+Cimientos de seguridad (firma obligatoria, puerta de entrenamiento sin base de datos, cabeceras, CI/CodeQL/Dependabot) y mejoras: Roulette 4.0.0, Birds 6.0.0 (protocolo 2), Dardos 115 %, Tower Drop con garra y descenso suave, Mine Grid con tableros distintos en entrenamiento. Detalle en [v100-mobile](releases/v100-mobile.md).
