@@ -501,3 +501,8 @@ resultado; CAMBIAR abría Grupo accidentalmente tras volver al catálogo. Guard
 transitorio consume solo ese clic y se limpia ante un nuevo gesto físico.
 QA táctil de derrota/reinicio Jet horizontal y49apuestas Roulette en ambas
 orientaciones pasan; sin cambiar el tick de activación táctil ni los cores.
+
+Revisión Alien/Sky/River sobre v100: mejora de lectura de peligros, apoyos y
+respuesta visual, River con controles separados del canvas. Cores y replays
+preservados. Evidencia y límites en [ALIEN_SKY_RIVER_POLISH.md](ALIEN_SKY_RIVER_POLISH.md).
+No cierra las evoluciones de reglas pendientes del ledger.

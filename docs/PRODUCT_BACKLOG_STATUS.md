@@ -576,3 +576,8 @@ notificaciones y migraciones ocultas/grupos reales siguen pendientes.
 
 ## v100-mobile (local)
 Cimientos de seguridad (firma obligatoria, puerta de entrenamiento sin base de datos, cabeceras, CI/CodeQL/Dependabot) y mejoras: Roulette 4.0.0, Birds 6.0.0 (protocolo 2), Dardos 115 %, Tower Drop con garra y descenso suave, Mine Grid con tableros distintos en entrenamiento. Detalle en [v100-mobile](releases/v100-mobile.md).
+
+Revisión de claridad Alien/Sky/River sobre v100: apoyos/sombra y amenazas de
+Alien, rotura/recogibles/caída de Sky, tráfico/corriente/salto y campo sin controles
+superpuestos de River. [Alcance y validación](ALIEN_SKY_RIVER_POLISH.md).
+Se mantienen las versiones competitivas y las evoluciones pendientes de la tabla.
