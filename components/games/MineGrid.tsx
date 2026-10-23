@@ -308,7 +308,7 @@ export default function MineGrid({
         {String(Math.floor(elapsedMs / 60000)).padStart(2, "0")}:
         {String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0")}
       </div>
-      <div className="gameTimerChip mineTimerChip" style={{ left: 12, right: "auto" }}>
+      <div className="gameTimerChip mineTimerChip" style={{ left: 12, right: "auto", transform: "none" }}>
         {challenge.id} ·{" "}
         {challenge.deductionRounds <= 9
           ? "FÁCIL"
@@ -363,7 +363,7 @@ export default function MineGrid({
 
       <div className="mineModeControl">
         {!started ? (
-          <span aria-hidden="true">◆</span>
+          <span className="mineStartHint">Toca la casilla dorada para empezar</span>
         ) : (
           <>
             <button

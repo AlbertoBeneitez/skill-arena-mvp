@@ -6268,3 +6268,5 @@ html, body, .arenaOnboarding, .gameScreen {
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="BET_DOZEN_"] {writing-mode:horizontal-tb;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice="BET_NUMBER_00"] {border-radius:12px 0 0 12px;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[aria-pressed="true"]::after {right:2px;bottom:2px;width:11px;height:11px;border-width:2px;}
+
+.mineModeControl .mineStartHint { font-size:12px; font-weight:700; letter-spacing:.04em; color:#f2d98a; text-align:center; padding:0 12px; }
