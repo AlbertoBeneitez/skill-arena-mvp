@@ -1,12 +1,11 @@
 const isProduction = process.env.NODE_ENV === "production";
 
 /**
- * Full content policy, delivered as Report-Only first: Next.js hydration needs
- * inline scripts until nonces are introduced, so this reports violations in the
- * browser console without breaking canvas, audio or the manifest. Promote it to
- * an enforced header once a mobile QA pass shows no violations.
+ * Content policy, enforced. It ran as Report-Only through a mobile QA pass over
+ * the catalogue and ten representative games with zero violations. Next.js
+ * hydration still needs inline scripts until nonces are introduced.
  */
-const reportOnlyPolicy = [
+const contentPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline'",
@@ -22,17 +21,8 @@ const reportOnlyPolicy = [
   "frame-ancestors 'none'",
 ].join("; ");
 
-/** The directives that are safe to enforce today: no framing, plugins or base hijacking. */
-const enforcedPolicy = [
-  "frame-ancestors 'none'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join("; ");
-
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: enforcedPolicy },
-  { key: "Content-Security-Policy-Report-Only", value: reportOnlyPolicy },
+  { key: "Content-Security-Policy", value: contentPolicy },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

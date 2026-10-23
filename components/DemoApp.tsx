@@ -51,6 +51,8 @@ function isScreen(value: unknown): value is Screen {
 }
 
 const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
+/** Small variant for grids/lists; the full 512 px image is only used for the large preview. */
+const avatarThumb = (src: string) => (/\/portrait-\d{2}\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 const START_BALANCE = 25;
 const APP_ITERATION = "v12";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
@@ -1066,7 +1068,7 @@ export default function DemoApp() {
       <main className="onboarding arenaOnboarding">
         <section className="welcomeCard welcomeCardCompact">
           <GalacticMark className="galacticWelcomeMark" />
-          <div className="wordmark">{PRODUCT_NAME}</div>
+          <h1 className="wordmark">{PRODUCT_NAME}</h1>
           <div className="authStack">
 
             <div className="galacticProviderRow">
@@ -1107,7 +1109,7 @@ export default function DemoApp() {
             />
           </div>
 
-          <div className="galacticAvatarChoices" aria-label="Avatares disponibles">{AVATARS.map((src,index)=><button key={src} type="button" aria-label={`Avatar ${index+1}`} aria-pressed={avatarSrc===src} onClick={()=>{setAvatarId(index);setAvatarSrc(src);}}><img src={src} alt=""/></button>)}</div>
+          <div className="galacticAvatarChoices" aria-label="Avatares disponibles">{AVATARS.map((src,index)=><button key={src} type="button" aria-label={`Avatar ${index+1}`} aria-pressed={avatarSrc===src} onClick={()=>{setAvatarId(index);setAvatarSrc(src);}}><img src={avatarThumb(src)} alt="" width={96} height={96} loading="lazy" decoding="async"/></button>)}</div>
           <label className="galacticNameLabel" htmlFor="avatar-name">Nombre de jugador</label>
           <input
             autoComplete="nickname"
