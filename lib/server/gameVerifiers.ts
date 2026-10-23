@@ -1,3 +1,4 @@
+import { BIRDS_CORE_V7 } from "../verified/galacticBirdsCore.v7";
 import { BIRDS_CORE_V6 } from "../verified/galacticBirdsCore.v6";
 import { BIRDS_CORE_V5 } from "../verified/galacticBirdsCore.v5";
 import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
@@ -397,6 +398,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BIRDS_CORE.gameId, BIRDS_CORE.gameVersion)]: coreAdapter(BIRDS_CORE),
   [adapterKey(BIRDS_CORE_V2.gameId, BIRDS_CORE_V2.gameVersion)]: coreAdapter(BIRDS_CORE_V2),
   [adapterKey(BIRDS_CORE_V6.gameId,BIRDS_CORE_V6.gameVersion)]: coreAdapter(BIRDS_CORE_V6),
+  [adapterKey(BIRDS_CORE_V7.gameId,BIRDS_CORE_V7.gameVersion)]: coreAdapter(BIRDS_CORE_V7),
   [adapterKey(BIRDS_CORE_V5.gameId,BIRDS_CORE_V5.gameVersion)]: coreAdapter(BIRDS_CORE_V5),
   [adapterKey(BIRDS_CORE_V4.gameId, BIRDS_CORE_V4.gameVersion)]: coreAdapter(BIRDS_CORE_V4),
   [adapterKey(BIRDS_CORE_V3.gameId, BIRDS_CORE_V3.gameVersion)]: coreAdapter(BIRDS_CORE_V3),

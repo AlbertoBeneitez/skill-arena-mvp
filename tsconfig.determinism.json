@@ -109,6 +109,7 @@
     "scripts/verify-birds-demolition.ts",
     "scripts/verify-birds-v4.ts",
     "scripts/verify-birds-v6.ts",
+    "scripts/verify-birds-v7.ts",
     "scripts/birds-v4-play-fixture.ts",
     "scripts/verify-interactions-v96.ts",
     "lib/billiardsPullback.ts",

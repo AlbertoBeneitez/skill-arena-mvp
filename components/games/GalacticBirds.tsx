@@ -2,7 +2,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import type { BirdKind } from "@/lib/verified/galacticBirdsCore.v4";
-import { BIRDS_CORE_V6, BIRDS_KINDS, type BirdsV6State as BirdsState } from "@/lib/verified/galacticBirdsCore.v6";
+import { BIRDS_CORE_V7, BIRDS_KINDS, type BirdsV7State as BirdsState } from "@/lib/verified/galacticBirdsCore.v7";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -14,13 +14,14 @@ import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const BAND_MAX_PX = 38,
   BAND_FULL_PULL = 99;
 const hudLabel = (s: Readonly<BirdsState>) =>
-  `NIVEL ${s.level + 1}/6 · ${s.kills}/2 CERDOS · ${s.ammo} TIROS`;
+  `NIVEL ${s.level + 1}/6 · ${s.kills}/${s.enemies.length} CERDOS · ${s.ammo} TIROS`;
 const feedbackScore = (s: Readonly<BirdsState>) => (s.completedKills + s.kills) * 10 + s.completedDestroyed + s.destroyed;
 const inputTones = { SHOOT: "tap" } as const;
 const materials = {
   glass: { fill: "rgba(124,225,249,.48)", edge: "#91d8e7" },
   ceramic: { fill: "#637aa1", edge: "#b3bbd7" },
   alloy: { fill: "#364a60", edge: "#8facca" },
+  tnt: { fill: "#8c2f2f", edge: "#ffb35c" },
 };
 function falcon(
   ctx: CanvasRenderingContext2D,
@@ -156,6 +157,12 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           ctx.lineTo(x + w / 2 - 6, y);
         }
         ctx.stroke();
+        if (b.material === "tnt") {
+          ctx.fillStyle = "#ffd27a";
+          ctx.font = "bold 9px system-ui";
+          ctx.textAlign = "center";
+          ctx.fillText("TNT", x, y + 3);
+        }
         ctx.fillStyle = c.edge;
         for (const sign of [-1, 1])
           ctx.fillRect(x + sign * (w / 2 - 4) - 1, y - h / 2 + 3, 2, 2);
@@ -229,7 +236,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           e.kind === "enemy" ? "#f0bfc2" : materials[e.kind].edge;
         ctx.lineWidth = 2 * (1 - p) + 0.5;
         ctx.beginPath();
-        ctx.arc(x, y, 8 + 30 * p, 0, Math.PI * 2);
+        ctx.arc(x, y, 8 + (e.kind === "tnt" ? 44 : 30) * p, 0, Math.PI * 2);
         ctx.stroke();
         ctx.fillStyle = ctx.strokeStyle;
         // Material shards tumble, settle into rubble, and outlast the flash.
@@ -262,6 +269,11 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       ctx.fillStyle = "#e4d4ad";
       ctx.font = "bold 18px system-ui";
       ctx.fillText(`NIVEL ${s.level + 1}`, width / 2, 96);
+      if (s.wind !== 0) {
+        ctx.fillStyle = "#9ad8ff";
+        ctx.font = "bold 12px system-ui";
+        ctx.fillText(`VIENTO ${s.wind > 0 ? "→" : "←"} ${Math.abs(s.wind)}`, width / 2, 114);
+      }
       if (s.phase === "clearing") {
         ctx.fillStyle = "#9dedd3";
         ctx.fillText(s.level === 5 ? "COMPLETADO" : "NIVEL COMPLETADO", width / 2, 134);
@@ -306,7 +318,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
     <div className="birdsVerified">
       <CoreCanvasGame
         {...props}
-        core={BIRDS_CORE_V6}
+        core={BIRDS_CORE_V7}
         name="Galactic Birds"
         instruction=""
         render={render}

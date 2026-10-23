@@ -29,3 +29,13 @@ Ver el apartado de validación del resumen final. No promover a `main` ni a `mob
 - **Mine Grid:** el chip de tablero/dificultad ya no se recorta por la izquierda y la barra inferior muestra la pista «Toca la casilla dorada para empezar».
 - **QA:** barrido móvil (390 px) de 22 juegos: sin errores de consola ni desbordamiento horizontal; todos los tests de presentación pasan tras fusionar el commit remoto de Tower Drop.
 - Rama `v100-mobile` publicada en GitHub.
+
+## Birds V7 (23-oct-2026)
+
+Versión nueva (V1–V6 intactas): niveles más complejos.
+- 19 cerdos en 6 niveles (3,3,3,3,3,4) y 12–13 piezas por estructura.
+- **Cajas de TNT** (14 PV): al destruirse explotan (radio 40 px), dañan y empujan piezas, matan cerdos a menos de 28 px y encadenan otras cajas.
+- **Viento por nivel** (0, 0, ←2, →2, ←3, →3) que desvía a todos los pájaros; indicador «VIENTO» en pantalla.
+- Materiales más resistentes (vidrio 24, cerámica 100, aleación 280) y 24 tiros (10 exploradores, 9 rápidos, 5 pesados).
+- Balance: un solver voraz que prueba 1.209 tiros por disparo necesita 16 de los 24 tiros; un jugador humano tendrá poco margen.
+- Fixture dorada `scripts/fixtures/birds-v7.json`, test `verify-birds-v7.ts` (TNT, viento, estabilidad en 24 semillas), adaptador de servidor registrado. Suite de determinismo completa sin errores.

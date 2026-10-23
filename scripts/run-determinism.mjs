@@ -16,6 +16,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-birds-v3.js");
   await import("../.det-test/scripts/verify-birds-v4.js");
   await import("../.det-test/scripts/verify-birds-v6.js");
+  await import("../.det-test/scripts/verify-birds-v7.js");
   await import("../.det-test/scripts/verify-interactions-v96.js");
   await import("../.det-test/scripts/verify-birds-demolition.js");
   await (await import("./verify-birds-presentation.cjs")).default;
