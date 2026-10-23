@@ -52,10 +52,51 @@ async function check(browser, name) {
   return problems;
 }
 
+/** Resilience: blocked storage must not break onboarding; normal storage must persist the profile. */
+async function checkStorage(browser) {
+  const problems = [];
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, locale: "es-ES" });
+  const blocked = await ctx.newPage();
+  await ctx.addInitScript(() => {
+    if (!window.__blockStorage) return;
+    const deny = () => { throw new DOMException("denied", "SecurityError"); };
+    Object.defineProperty(window, "localStorage", { get: deny });
+    Object.defineProperty(window, "sessionStorage", { get: deny });
+  });
+  await blocked.addInitScript(() => { window.__blockStorage = true; });
+  try {
+    await blocked.goto(BASE + "/", { waitUntil: "networkidle" });
+    await blocked.getByText("INICIAR SESIÓN").first().click({ timeout: 10000 });
+    await blocked.getByPlaceholder("Nombre de avatar").fill("Sin");
+    await blocked.getByText("CONTINUAR").click();
+    await blocked.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
+  } catch (e) {
+    problems.push("blocked storage: " + String(e.message).split("\n")[0].slice(0, 120));
+  }
+  await ctx.close();
+  const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, locale: "es-ES" });
+  const page = await ctx2.newPage();
+  try {
+    await page.goto(BASE + "/?reset=1", { waitUntil: "networkidle" });
+    await page.getByText("INICIAR SESIÓN").first().click();
+    await page.getByPlaceholder("Nombre de avatar").fill("Persiste");
+    await page.getByText("CONTINUAR").click();
+    await page.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
+    await page.goto(BASE + "/", { waitUntil: "networkidle" });
+    await page.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
+  } catch (e) {
+    problems.push("profile not persisted: " + String(e.message).split("\n")[0].slice(0, 120));
+  }
+  await ctx2.close();
+  return problems;
+}
+
 (async () => {
   const browser = await chromium.launch();
+  const storage = await checkStorage(browser);
+  console.log((storage.length ? "FAIL " : "ok   ") + "storage resilience" + (storage.length ? " — " + storage.join("; ") : ""));
   const queue = [...GAMES];
-  const failures = [];
+  const failures = storage.length ? ["storage"] : [];
   await Promise.all(
     Array.from({ length: CONCURRENCY }, async () => {
       while (queue.length) {

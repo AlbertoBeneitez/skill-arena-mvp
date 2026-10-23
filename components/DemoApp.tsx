@@ -1,5 +1,6 @@
 "use client";
 import GameResultSummary from "./GameResultSummary";
+import { safeStorage } from "@/lib/safeStorage";
 import GameActionButton from "./GameActionButton";
 import CatalogBrowser from "./CatalogBrowser";
 import shellStyles from "./ProductShell.module.css";
@@ -289,14 +290,7 @@ export default function DemoApp() {
     freshOnboardingRef.current = freshMode;
 
     if (resetMode) {
-      const keysToRemove: string[] = [];
-      for (let index = 0; index < localStorage.length; index += 1) {
-        const key = localStorage.key(index);
-        if (key?.startsWith("skill-arena-")) {
-          keysToRemove.push(key);
-        }
-      }
-      keysToRemove.forEach((key) => localStorage.removeItem(key));
+      safeStorage.keys().filter((key) => key.startsWith("skill-arena-")).forEach((key) => safeStorage.removeItem(key));
 
       setOnboarded(false);
       setProvider(null);
@@ -343,7 +337,7 @@ export default function DemoApp() {
     }
 
     let restoredOnboarded = false;
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = safeStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
         const data = JSON.parse(raw) as Partial<PersistedState>;
@@ -400,7 +394,7 @@ export default function DemoApp() {
       } catch {}
     }
 
-    setTutorialSeen(localStorage.getItem(TUTORIAL_KEY) === "1");
+    setTutorialSeen(safeStorage.getItem(TUTORIAL_KEY) === "1");
 
     if (freshMode) {
       // Repite solo el onboarding. El resto de la cuenta se conserva hasta
@@ -448,7 +442,7 @@ export default function DemoApp() {
       group,
     };
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      safeStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
@@ -1040,9 +1034,9 @@ export default function DemoApp() {
   }
 
   function logoutDemo() {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(TUTORIAL_KEY);
-    localStorage.removeItem("skill-arena-v10");
+    safeStorage.removeItem(STORAGE_KEY);
+    safeStorage.removeItem(TUTORIAL_KEY);
+    safeStorage.removeItem("skill-arena-v10");
     setOnboarded(false);
     setProvider(null);
     setPlayerName("");
