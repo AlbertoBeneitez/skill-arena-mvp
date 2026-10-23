@@ -17,6 +17,7 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
   const ox = 15,
     oy = 58,
     cell = 44;
+  // A contained field keeps every playable edge visible above the touch controls.
   ctx.save();
   ctx.beginPath();
   ctx.rect(ox, oy, 360, 484);
@@ -37,6 +38,25 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
     ctx.moveTo(ox, y);
     ctx.lineTo(375, y);
     ctx.stroke();
+    if (lane.kind === "river") {
+      // Flow lines move with the actual lane direction. They never resemble solid support.
+      ctx.strokeStyle = "rgba(91,168,228,.23)";
+      ctx.lineWidth = 1;
+      const phase = (state.tick * lane.speedMilli / 120000 * lane.direction) % 64;
+      for (let k = -1; k < 7; k++) {
+        const fx = ox + k * 64 + phase;
+        ctx.beginPath();
+        ctx.moveTo(fx, y + 17);
+        ctx.lineTo(fx + 24, y + 17);
+        ctx.moveTo(fx + 13, y + 32);
+        ctx.lineTo(fx + 44, y + 32);
+        ctx.stroke();
+      }
+    }
+    if (lane.kind === "road") {
+      ctx.fillStyle = "rgba(185,204,226,.22)";
+      for (let k = 0; k < 9; k++) ctx.fillRect(ox + k * 44 + 8, y + 21, 19, 2);
+    }
     if (lane.kind === "safe") {
       ctx.fillStyle = "rgba(145,247,229,.3)";
       for (let x = ox + 9; x < 375; x += 40)
@@ -59,8 +79,28 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
       ctx.stroke();
       ctx.fillStyle = lane.kind === "river" ? "#91ebe3" : "#ffd5be";
       ctx.fillRect(x + 7, y + 12, Math.max(5, w - 14), 3);
-      ctx.fillStyle = "#173548";
-      ctx.fillRect(x + w * 0.35, y + 19, w * 0.3, 8);
+      if (lane.kind === "river") {
+        // Deck ribs distinguish rideable platforms from traffic, even without colour.
+        ctx.strokeStyle = "rgba(153,233,238,.42)";
+        ctx.lineWidth = 1;
+        for (let rib = 17; rib < w - 7; rib += 22) {
+          ctx.beginPath();
+          ctx.moveTo(x + rib, y + 17);
+          ctx.lineTo(x + rib, y + 33);
+          ctx.stroke();
+        }
+      } else {
+        const front = lane.direction > 0 ? x + w - 5 : x + 2;
+        const rear = lane.direction > 0 ? x + 2 : x + w - 5;
+        ctx.fillStyle = "#173548";
+        ctx.fillRect(x + w * .3, y + 18, w * .4, 12);
+        ctx.fillStyle = "#fff0b7";
+        ctx.fillRect(front, y + 12, 3, 5);
+        ctx.fillRect(front, y + 28, 3, 5);
+        ctx.fillStyle = "#e74f79";
+        ctx.fillRect(rear, y + 13, 3, 4);
+        ctx.fillRect(rear, y + 29, 3, 4);
+      }
     }
     ctx.restore();
   });
@@ -68,7 +108,13 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
       15 + (state.fromXMilli + (state.xMilli - state.fromXMilli) * ease) / 1000,
     y = oy + (10 - (rowPosition) + cameraRows + 0.5) * cell;
   ctx.save();
-  ctx.translate(x, y);
+  // Ground shadow stays on the lane; the ship has a short, readable hop arc.
+  const hop = state.status === "running" ? Math.sin(age * Math.PI) * 7 : 0;
+  ctx.fillStyle = "rgba(0,0,0,.38)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 7, 11 - hop * .35, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.translate(x, y - hop);
   ctx.shadowColor = state.status === "failed" ? "#ef8098" : "#9effde";
   ctx.shadowBlur = 12;
   ctx.fillStyle = state.status === "failed" ? "#f4a9bd" : "#b2ffda";
@@ -78,6 +124,11 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
   ctx.lineTo(0, 5);
   ctx.lineTo(-11, 8);
   ctx.closePath();
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#214f67";
+  ctx.beginPath();
+  ctx.ellipse(0, -3, 3, 5, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
   ctx.restore();

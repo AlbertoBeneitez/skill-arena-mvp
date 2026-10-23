@@ -138,6 +138,12 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       points[action] = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     }
     const canvas = await page.locator("canvas.gameCanvas").boundingBox();
+    for (const name of Object.values(names)) {
+      const button = await page.getByRole("button", { name, exact: true }).boundingBox();
+      assert.ok(button.x >= canvas.x + canvas.width || button.y >= canvas.y + canvas.height ||
+        button.x + button.width <= canvas.x || button.y + button.height <= canvas.y,
+        "River controls must not cover any part of the playable canvas");
+    }
     await cdp.send("Input.dispatchTouchEvent", {
       type: "touchStart",
       touchPoints: [
@@ -215,7 +221,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         if (loss || s.height >= 80) {
           // Deliberately enter the visible opening traffic from its spawn edge.
           const left = s.lanes[s.row].kind === "safe" ? s.lanes[s.row + 1].direction === 1 : s.lanes[s.row].direction === 1;
-          const atEdge = left ? s.xMilli <= 20000 : s.xMilli >= 340000;
+          const atEdge = !core.canApply({ ...s, lastMoveTick: s.tick - 24 }, left ? "LEFT" : "RIGHT");
           await tap(atEdge ? "UP" : left ? "LEFT" : "RIGHT");
           lastTap = clock.now;
         } else {

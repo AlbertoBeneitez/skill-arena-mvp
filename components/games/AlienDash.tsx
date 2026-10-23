@@ -113,6 +113,16 @@ function renderWorld(ctx: CanvasRenderingContext2D, s: AlienStateV3) {
       ctx.fillRect(x + w * 0.3, y + h * 0.25, w * 0.4, 4);
       ctx.fillStyle = "#60dbd0";
       ctx.fillRect(x + w * 0.35, y + h, w * 0.3, 3);
+      // A solid rim communicates the entire dangerous body, separate from exhaust.
+      ctx.strokeStyle = "#ead6ff";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x + .75, y + .75, w - 1.5, h - 1.5);
+      ctx.fillStyle = "rgba(96,219,208,.28)";
+      ctx.beginPath();
+      ctx.moveTo(x + w * .35, y + h + 3);
+      ctx.lineTo(x + w * .5, y + h + 9 + Math.sin(s.tick * .2) * 2);
+      ctx.lineTo(x + w * .65, y + h + 3);
+      ctx.fill();
     } else {
       ctx.fillStyle = "#cb977d";
       ctx.beginPath();
@@ -174,6 +184,10 @@ function renderWorld(ctx: CanvasRenderingContext2D, s: AlienStateV3) {
     ctx.moveTo(x + 10, y - 7);
     ctx.lineTo(x - 4, y + 2);
     ctx.stroke();
+    ctx.fillStyle = "#fff0d6";
+    ctx.beginPath();
+    ctx.arc(x - 4, y + 2, 2.5, 0, Math.PI * 2);
+    ctx.fill();
   }
   const duck = s.ducking && s.grounded,
     h = duck ? 29 : 46,
@@ -183,7 +197,17 @@ function renderWorld(ctx: CanvasRenderingContext2D, s: AlienStateV3) {
   if (blink) ctx.globalAlpha = 0.45;
   ctx.fillStyle = "rgba(0,0,0,.3)";
   ctx.beginPath();
-  ctx.ellipse(90, 508, 23, 5, 0, 0, Math.PI * 2);
+  // The shadow follows the top of the supporting deck, including raised platforms.
+  let supportY = 508;
+  for (const actor of s.actors) {
+    if (actor.kind !== "platform") continue;
+    const left = (actor.x - s.scroll) / 1000;
+    const top = (actor.bottom - actor.height) / 1000;
+    if (left <= 90 && left + actor.width / 1000 >= 90 && top >= s.feet / 1000 - 1)
+      supportY = Math.min(supportY, top);
+  }
+  const airborne = Math.max(0, supportY - s.feet / 1000);
+  ctx.ellipse(90, supportY, Math.max(9, 23 - airborne * .06), 4, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#667eb4";
   ctx.beginPath();

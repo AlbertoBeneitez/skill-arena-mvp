@@ -200,8 +200,23 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopV3State) {
   for (let i = 0; i < s.platforms.length; i++) {
     const p = s.platforms[i],
       y = (p.y - s.camera) / 1000;
-    if (y < -30 || y > 660 || (s.brokenAt[i] >= 0 && s.tick >= s.brokenAt[i]))
+    if (y < -60 || y > 660) continue;
+    if (s.brokenAt[i] >= 0 && s.tick >= s.brokenAt[i]) {
+      // Disintegration is visual only: support disappears at the original core tick.
+      const age = s.tick - s.brokenAt[i];
+      if (age < 48) {
+        const x = hopPlatformX(p, s.brokenAt[i]) / 1000;
+        ctx.save();
+        ctx.globalAlpha = (1 - age / 48) * .65;
+        ctx.fillStyle = "#ef94aa";
+        for (let k = 0; k < 6; k++) {
+          const spread = (k - 2.5) * age * .12;
+          ctx.fillRect(x + (k + .5) * p.width / 6000 + spread, y + age * age * .018, 6, 3);
+        }
+        ctx.restore();
+      }
       continue;
+    }
     const x = hopPlatformX(p, s.tick) / 1000,
       w = p.width / 1000;
     const color =
@@ -241,6 +256,12 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopV3State) {
         ctx.stroke();
       }
     }
+    if (p.kind === "crumble" && s.brokenAt[i] > s.tick) {
+      // A shrinking solid edge shows the remaining lifetime after a landing.
+      const remaining = Math.min(1, (s.brokenAt[i] - s.tick) / 72);
+      ctx.fillStyle = "#ffe7ed";
+      ctx.fillRect(x, y, w * remaining, 2);
+    }
     if (p.kind === "moving") {
       ctx.font = "bold 13px system-ui";
       ctx.fillStyle = color;
@@ -278,6 +299,11 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopV3State) {
       ctx.fillStyle = "#183d39";
       ctx.fillRect(x + w / 2 - 1, y - 28, 2, 10);
       ctx.fillRect(x + w / 2 - 5, y - 24, 10, 2);
+      ctx.strokeStyle = "rgba(180,242,210,.5)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x + w / 2, y - 23, 11 + Math.sin(s.tick / 18) * 1.5, 0, Math.PI * 2);
+      ctx.stroke();
     }
     const age = s.tick - s.lastLandingTick;
     if (i === s.lastLandingIndex && age >= 0 && age < 24) {
@@ -344,6 +370,21 @@ const failureFinale = {
     s: Readonly<SkyHopV3State>,
     elapsedMs: number,
   ) {
+    if (s.failure === "FALLEN") {
+      // Falling previously cut directly to the result. Anchor the effect at the
+      // lower visible edge while keeping the terminal simulation frozen.
+      const progress = Math.min(1, Math.max(0, elapsedMs) / 300);
+      const x = s.x / 1000;
+      ctx.save();
+      ctx.globalAlpha = 1 - progress;
+      ctx.strokeStyle = "#9edbfa";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(x, 608, 14 + progress * 30, 4 + progress * 7, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
     if (s.failure !== "ALIEN_CONTACT") return;
     const enemy = s.enemies[s.lastEnemyHitIndex];
     if (!enemy) return;
