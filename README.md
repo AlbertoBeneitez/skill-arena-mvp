@@ -39,6 +39,7 @@ pnpm dev        # http://localhost:3000
 | `pnpm test:determinism` | Núcleos, replays, ficheros de referencia, entradas inválidas y puertas de producción. Unos 5–6 minutos. |
 | `pnpm test:repository` | Adaptadores PostgreSQL. Requiere `TEST_DATABASE_URL` apuntando a una base de pruebas. |
 | `pnpm build` | Compilación de producción. |
+| `node scripts/qa-smoke-all.cjs` | Abre los 23 juegos en móvil (390×844) contra un servidor de producción en marcha (`BASE_URL`, Playwright en `NODE_PATH`) y falla ante errores de consola, violaciones de CSP, desbordes o almacenamiento bloqueado. La CI lo ejecuta en el trabajo `mobile-smoke`. |
 | `pnpm check` | `lint` + `test:determinism`. |
 
 La CI (`.github/workflows/build-v4.yml`) ejecuta todo lo anterior sobre PostgreSQL 17, en cada `push` a las ramas de trabajo y en pull requests. `codeql.yml` añade análisis estático de seguridad y `dependabot.yml` propone actualizaciones.
@@ -50,6 +51,7 @@ Las variables se definen en el proveedor de alojamiento (en Vercel: Project → 
 | Variable | Para qué sirve |
 | --- | --- |
 | `MATCH_SIGNING_SECRET` | **Obligatoria en producción.** Clave con la que se firman los tickets de partida; al menos 32 caracteres aleatorios (por ejemplo `openssl rand -hex 32`). Sin ella, o si es demasiado corta, los endpoints responden 503 en lugar de usar la clave pública de entrenamiento. |
+| `NEXT_PUBLIC_SITE_URL` | Opcional. URL pública para la imagen al compartir, `robots.txt` y `sitemap.xml`. |
 | `ALLOW_LEGACY_STATELESS_TRAINING` | `1` mantiene en producción el entrenamiento sin base de datos, que no guarda las partidas y acepta repetir un mismo registro. Sin esta variable ni PostgreSQL, las partidas verificadas no pueden empezar en producción. |
 | `DATABASE_URL` | PostgreSQL. Fuera de localhost exige `?sslmode=verify-full`. |
 | `ALLOW_PERSISTED_MATCH_TRAINING` | `1` activa las partidas duraderas con PostgreSQL (migraciones `001` y `003`). |
