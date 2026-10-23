@@ -4884,9 +4884,13 @@ html, body {
 }
 
 .mineCell.flagged {
-  background: linear-gradient(180deg,#7b648f,#5d496f);
-  color: #fff;
+  background: linear-gradient(180deg,#e0a43b,#b97a1d);
+  box-shadow: inset 0 0 0 2px #ffe0a1;
+  color: #2a1700;
 }
+.mineCell { touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: background .12s, transform .12s; }
+.mineCell.pressing { background: linear-gradient(180deg,#e0a43b,#b97a1d); transform: scale(.9); transition: background .38s linear, transform .38s linear; }
+.mineCell.hit { background: #ff4f5e; box-shadow: 0 0 0 3px #fff, 0 0 14px #ff4f5e; z-index: 2; }
 
 @keyframes mineStartPulse {
   from { transform: scale(.96); }
@@ -6254,7 +6258,7 @@ html, body, .arenaOnboarding, .gameScreen {
 .rouletteVerified .coreChoiceGrid button[data-choice^="BET_DOZEN_"] {writing-mode:vertical-rl;}
 .rouletteVerified .coreChoiceGrid button[data-choice="BET_NUMBER_00"] {border-radius:32% 32% 0 0;color:#102d50;}
 .rouletteVerified .coreChoiceGrid button[aria-pressed="true"] {box-shadow:inset 0 0 0 2px #ffebbd;}
-.rouletteVerified .coreChoiceGrid button[aria-pressed="true"]::after {content:"";position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:50%;border:3px dashed #143944;background:#e7c780;box-shadow:0 2px 4px #0009;pointer-events:none;}
+.rouletteVerified .coreChoiceGrid button[data-chips]::after {content:attr(data-chips);position:absolute;right:2px;bottom:2px;min-width:17px;height:17px;padding:0 3px;box-sizing:border-box;border-radius:9px;border:2px dashed #143944;background:#e7c780;color:#143944;font-size:10px;font-weight:900;line-height:13px;text-align:center;box-shadow:0 2px 4px #0009;pointer-events:none;}
 
 .solitaireSprint .solitaireCard.faceUp,.solitaireSprint .solitairePile.waste {touch-action:none;cursor:grab;}
 .solitaireSprint .solitaireCard.selected,.solitaireSprint .solitairePile.waste.selected {cursor:grabbing;}
@@ -6267,14 +6271,14 @@ html, body, .arenaOnboarding, .gameScreen {
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button {min-height:0;min-width:0;height:100%;padding:0;font-size:12px;line-height:1;touch-action:manipulation;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="BET_DOZEN_"] {writing-mode:horizontal-tb;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice="BET_NUMBER_00"] {border-radius:12px 0 0 12px;}
-.rouletteVerified .coreChoiceTable .coreChoiceGrid button[aria-pressed="true"]::after {right:2px;bottom:2px;width:11px;height:11px;border-width:2px;}
+
 
 .mineModeControl .mineStartHint { font-size:12px; font-weight:700; letter-spacing:.04em; color:#f2d98a; text-align:center; padding:0 12px; }
 
 /* Keep the starting bank and every River Dash lane clear of the touch dock. */
 .riverVerified .coreGameSurface .deterministicCanvas {height:calc(100% - 104px) !important;}
-.riverVerified .coreControls {bottom:20px;gap:10px;}
-.riverVerified .coreControls button {width:64px;height:60px;}
+.riverVerified .coreControls {bottom:20px;gap:28px;}
+.riverVerified .coreControls button {width:128px;height:62px;font-size:30px;}
 :is(.riverVerified,.skyHopVerified,.alienDashVerified) .coreControls button {
   box-shadow:inset 0 1px 0 rgba(206,255,248,.15),0 5px 14px rgba(0,0,0,.2);
   -webkit-tap-highlight-color:transparent;
@@ -6288,8 +6292,8 @@ html, body, .arenaOnboarding, .gameScreen {
   .riverVerified .coreControls button {width:60px;height:48px;}
 }
 @media (max-width:350px) and (orientation:portrait) {
-  .riverVerified .coreControls {left:8px;right:8px;gap:8px;}
-  .riverVerified .coreControls button {width:calc((100vw - 56px)/4);}
+  .riverVerified .coreControls {left:8px;right:8px;gap:12px;}
+  .riverVerified .coreControls button {width:calc((100vw - 44px)/2);}
 }
 
 /* Error / not-found pages */

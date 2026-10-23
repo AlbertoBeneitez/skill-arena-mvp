@@ -15,10 +15,10 @@ module.exports = (async () => {
     );
     return exports.paint;
   }
-  const river = await core('riverDashCore.v4.js');
+  const river = await core('riverDashCore.v5.js');
   const alien = await core('alienDashCore.v3.js');
   const common = { '@/lib/spaceBackdrop': { drawSpaceBackdrop() {} }, './CoreCanvasGame': { default() {} } };
-  const paintRiver = await renderer('RiverDashVerified.tsx', { ...common, '@/lib/verified/riverDashCore.v4': river }, 'render');
+  const paintRiver = await renderer('RiverDashVerified.tsx', { ...common, '@/lib/verified/riverDashCore.v5': river }, 'render');
   const paintAlien = await renderer('AlienDash.tsx', {
     ...common, '@/lib/verified/alienDashCore.v3': alien,
     './alien-dash/presentation': { withAlienCamera(ctx, viewport, draw) { draw(); return { horizontal: false, left: 0, scale: 1 }; }, alienCssScale() { return 1; } },
@@ -43,7 +43,7 @@ module.exports = (async () => {
   ctx = draw(paintAlien, state);
   assert.ok(ctx.calls.some(c => c.op === 'ellipse' && c.args[0] === 90 && c.args[1] === 508), 'shadow must return to ground');
   for (let seed = 0; seed < 8; seed++) {
-    const r = river.RIVER_DASH_CORE_V4.create(`presentation-${seed}`);
+    const r = river.RIVER_DASH_CORE_V5.create(`presentation-${seed}`);
     for (const tick of [0, 1, 6, 12, 240, 1800]) {
       r.tick = tick;
       draw(paintRiver, r);

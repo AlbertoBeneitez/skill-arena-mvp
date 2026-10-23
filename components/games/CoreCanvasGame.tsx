@@ -32,7 +32,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   keyReleases?: Readonly<Record<string, string>>;
   controls?: readonly Control[];
   /** A native choice emits actions through the same input queue and recorder. */
-  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string; tone?: string; placement?: {row:number;column:number;rowSpan?:number;columnSpan?:number} }[]; presentation?: "grid" | "table"; columns?: number; value(state: S): string; disabled?(state: S): boolean }>;
+  choiceControl?: Readonly<{ label: string; options: readonly { action: string; label: string; tone?: string; placement?: {row:number;column:number;rowSpan?:number;columnSpan?:number} }[]; presentation?: "grid" | "table"; columns?: number; value(state: S): string; /** Per-action counters (chips on a cloth cell); presentation only. */ badges?(state: S): Readonly<Record<string, number>>; disabled?(state: S): boolean }>;
   /** Actions still pass through the shared recorder and server replay. */
   directionalJoystick?: boolean;
   hideHudLabel?: boolean;
@@ -99,12 +99,16 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     }
     if (choicePanelRef.current && props.choiceControl) {
       const value = props.choiceControl.value(stateRef.current), disabled = !runningRef.current || (props.choiceControl.disabled?.(stateRef.current) ?? false);
-      const signature = `${value}:${disabled}`;
+      const badges = props.choiceControl.badges?.(stateRef.current);
+      const signature = `${value}:${disabled}:${badges ? JSON.stringify(badges) : ""}`;
       if (signature !== choiceStateRef.current) {
         choiceStateRef.current = signature;
         for (const button of choicePanelRef.current.querySelectorAll<HTMLButtonElement>("button[data-choice]")) {
           button.disabled = disabled;
-          button.setAttribute("aria-pressed", String(button.dataset.choice === value));
+          const count = badges ? (badges[button.dataset.choice ?? ""] ?? 0) : 0;
+          if (count > 0) button.dataset.chips = String(count);
+          else delete button.dataset.chips;
+          button.setAttribute("aria-pressed", String(badges ? count > 0 : button.dataset.choice === value));
         }
         if (choiceSummaryRef.current) choiceSummaryRef.current.textContent = props.choiceControl.options.find(option => option.action === value)?.label ?? "";
         const trigger=choicePanelRef.current.querySelector<HTMLButtonElement>(".coreChoiceTrigger");

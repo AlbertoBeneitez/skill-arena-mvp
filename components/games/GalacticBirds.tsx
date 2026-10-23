@@ -2,7 +2,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import type { BirdKind } from "@/lib/verified/galacticBirdsCore.v4";
-import { BIRDS_CORE_V7, BIRDS_KINDS, type BirdsV7State as BirdsState } from "@/lib/verified/galacticBirdsCore.v7";
+import { BIRDS_CORE_V8, BIRDS_KINDS, type BirdsV8State as BirdsState } from "@/lib/verified/galacticBirdsCore.v8";
 import {
   birdsAimAction,
   birdsPowerAction,
@@ -10,9 +10,10 @@ import {
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { BIRDS_SCENE_LIFT, drawSpacePig } from "@/lib/birdsPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
-// The elastic band stays short and always inside the frame.
-const BAND_MAX_PX = 38,
+// The elastic band stretches visibly (rubber-like) but always stays inside the frame.
+const BAND_MAX_PX = 76,
   BAND_FULL_PULL = 99;
+const SNAP_MS = 320;
 const hudLabel = (s: Readonly<BirdsState>) =>
   `NIVEL ${s.level + 1}/6 · ${s.kills}/${s.enemies.length} CERDOS · ${s.ammo} TIROS`;
 const feedbackScore = (s: Readonly<BirdsState>) => (s.completedKills + s.kills) * 10 + s.completedDestroyed + s.destroyed;
@@ -96,6 +97,9 @@ export default function GalacticBirds(props: GameRuntimeProps) {
     };
   }, [props.active]);
   const viewportWidth = useRef(390);
+  // Presentation only: last stretched pouch position and the snap-back after release.
+  const pouch = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
+  const snap = useRef<{ dx: number; dy: number; t0: number } | null>(null);
   const render = useCallback(
     (
       ctx: CanvasRenderingContext2D,
@@ -192,26 +196,45 @@ export default function GalacticBirds(props: GameRuntimeProps) {
       ctx.lineTo(lx + 14, 512 - BIRDS_SCENE_LIFT);
       ctx.stroke();
       const pulled = s.phase === "aim" ? drag.current : null;
-      // The elastic band remains short and inside the frame even when the
+      const restX = lx,
+        restY = 520 - BIRDS_SCENE_LIFT;
+      // The band stretches like rubber and stays inside the frame even when the
       // pointer travels far beyond the launcher (portrait/mobile dragging).
       const rawDx = pulled ? pulled.to.x - pulled.from.x : 0,
         rawDy = pulled ? pulled.to.y - pulled.from.y : 0,
         tension = Math.hypot(rawDx, rawDy),
-        // Full power (drag of BAND_FULL_PULL px) shows a band of only BAND_MAX_PX.
-        shown = Math.min(BAND_MAX_PX, (Math.min(tension, BAND_FULL_PULL) * BAND_MAX_PX) / BAND_FULL_PULL),
+        stretch = Math.min(tension, BAND_FULL_PULL) / BAND_FULL_PULL,
+        shown = BAND_MAX_PX * (1 - Math.pow(1 - stretch, 1.35)),
         factor = tension > 0 ? shown / tension : 1,
-        px = Math.max(30, Math.min(width - 30, lx + rawDx * factor)),
-        py = Math.max(22, Math.min(540 - BIRDS_SCENE_LIFT,
-          520 - BIRDS_SCENE_LIFT + rawDy * factor));
-      if (s.phase === "aim") {
-        ctx.strokeStyle = "#d6c28c";
-        ctx.lineWidth = 3;
+        px = Math.max(30, Math.min(width - 30, restX + rawDx * factor)),
+        py = Math.max(22, Math.min(540 - BIRDS_SCENE_LIFT, restY + rawDy * factor));
+      const strands = (x: number, y: number, widthPx: number, color: string) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = widthPx;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         ctx.beginPath();
         ctx.moveTo(lx - 14, 512 - BIRDS_SCENE_LIFT);
-        ctx.lineTo(px, py);
+        ctx.lineTo(x, y);
         ctx.lineTo(lx + 14, 512 - BIRDS_SCENE_LIFT);
         ctx.stroke();
+        ctx.lineCap = "butt";
+      };
+      if (s.phase === "aim") {
+        pouch.current = { dx: px - restX, dy: py - restY };
+        // The rubber thins and brightens as it stretches.
+        const k = shown / BAND_MAX_PX;
+        strands(px, py, 5.5 - 2.6 * k, `rgb(${Math.round(190 + 50 * k)},${Math.round(160 + 55 * k)},${Math.round(110 + 40 * k)})`);
         falcon(ctx, px, py, (-(10 + s.aim) * Math.PI) / 180, s.selected);
+      } else if (snap.current) {
+        // After release the band overshoots and settles, like real rubber.
+        const t = performance.now() - snap.current.t0;
+        if (t >= SNAP_MS) snap.current = null;
+        else {
+          const decay = Math.exp(-t / 70),
+            wave = Math.cos(t / 20) * decay;
+          strands(restX + snap.current.dx * wave, restY + snap.current.dy * wave, 4.4, "#d6c28c");
+        }
       }
       if (s.bird) {
         const b = s.bird,
@@ -318,7 +341,7 @@ export default function GalacticBirds(props: GameRuntimeProps) {
     <div className="birdsVerified">
       <CoreCanvasGame
         {...props}
-        core={BIRDS_CORE_V7}
+        core={BIRDS_CORE_V8}
         name="Galactic Birds"
         instruction=""
         render={render}
@@ -360,6 +383,8 @@ export default function GalacticBirds(props: GameRuntimeProps) {
           if (phase !== "up") return null;
           const { from, to } = drag.current;
           drag.current = null;
+          const releaseShot = Math.hypot(from.x - to.x, to.y - from.y) >= 15 && from.x - to.x > 0;
+          if (releaseShot) snap.current = { dx: pouch.current.dx, dy: pouch.current.dy, t0: performance.now() };
           const dx = from.x - to.x,
             dy = to.y - from.y,
             distance = Math.hypot(dx, dy);

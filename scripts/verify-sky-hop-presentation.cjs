@@ -196,11 +196,19 @@ module.exports = (async () => {
     "./skyHopCore.v1": v1,
     "./skyHopCore.v2": v2,
   });
+  const v4 = await load(path.join(root, "lib/verified/skyHopCore.v4.ts"), {
+    "../deterministic/seeded": rng,
+    "../deterministic/integerMath": integer,
+    "./skyHopCore.v1": v1,
+    "./skyHopCore.v2": v2,
+    "./skyHopCore.v3": v3,
+  });
   const ui = await load(
     uiFile,
     {
       "@/lib/verified/skyHopCore.v1": v1,
       "@/lib/verified/skyHopCore.v3": v3,
+      "@/lib/verified/skyHopCore.v4": v4,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "./CoreCanvasGame": { default() {} },
     },
@@ -309,12 +317,15 @@ module.exports = (async () => {
     0,
     "old contact painted onto respawn camera",
   );
-  const goal = { ...initial, camera: initial.platforms.at(-1).y - 300000 };
-  const goalCtx = draw(goal, 1, ui.render);
+  // Endless course: the last generated platform is not a finish line.
+  const endless = v4.SKY_HOP_CORE_V4.create("public-presentation-regression"),
+    top = { ...endless, camera: endless.platforms.at(-1).y - 300000 };
+  const goalCtx = draw(top, 1, ui.render);
   assert.equal(
     goalCtx.calls.filter((c) => c.op === "fillText" && c.args[0] === "META")
       .length,
-    1,
+    0,
+    "no finish line in the endless course",
   );
   assert.ok(
     !goalCtx.calls.some(
@@ -345,7 +356,7 @@ module.exports = (async () => {
         "enemy transform leaked into ship",
       );
   }
-  assert.equal(ui.hudLabel({ ...initial, highest: 27 }), "ALTURA 27/75");
+  assert.equal(ui.hudLabel({ ...initial, highest: 27 }), "ALTURA 27");
   assert.equal(ui.feedbackScore(initial), 0);
   assert.ok(ui.feedbackScore({ ...initial, stomps: 1 }) > 0);
   assert.ok(

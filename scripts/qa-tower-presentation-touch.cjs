@@ -11,8 +11,8 @@ const { chromium } = require(
 );
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 (async () => {
-  const { TOWER_DROP_CORE_V3: core, forecastTowerLanding } = await import(
-    pathToFileURL(path.join(root, ".det-test/lib/verified/towerDropCore.v3.js"))
+  const { TOWER_DROP_CORE_V4: core, forecastTowerLanding } = await import(
+    pathToFileURL(path.join(root, ".det-test/lib/verified/towerDropCore.v4.js"))
   );
   const { advanceCoreToTick, applyCoreInput, replayCore } = await import(
     pathToFileURL(path.join(root, ".det-test/lib/verified/coreRuntime.v1.js"))

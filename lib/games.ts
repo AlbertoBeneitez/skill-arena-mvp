@@ -1,4 +1,4 @@
-import { ROULETTE_ACTIONS_V2 } from "./verified/galacticRouletteProtocol.v2";
+import { ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v3";
 import { BIRDS_ACTIONS_V2 } from "./verified/galacticBirdsProtocol.v2";
 import { ROULETTE_ACTIONS } from "./verified/galacticRouletteProtocol.v1";
 import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
@@ -7,7 +7,7 @@ import { ORBIT_ACTIONS } from "./verified/orbitShiftProtocol.v1";
 import { MEMORY_ACTIONS } from "./verified/memoryMatchProtocol.v1";
 import { MAZE_ACTIONS } from "./verified/mazeRushProtocol.v1";
 import { BRICK_V2_ACTIONS } from "./verified/brickRelayProtocol.v2";
-import { METRO_ACTIONS } from "./verified/metroShiftProtocol.v1";
+import { METRO_ACTIONS_V2 } from "./verified/metroShiftProtocol.v2";
 import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
 import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
 import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
@@ -91,8 +91,8 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  {id:"galactic-birds",version:"7.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:BIRDS_ACTIONS_V2},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Seis niveles fijos con 19 drones, estructuras densas de vidrio/cerámica/aleación y cajas de TNT que explotan en cadena. Hay viento distinto en cada nivel y 24 tiros: eliges el pájaro (10 exploradores, 9 rápidos, 5 pesados); lo que no se apoya cae; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
-  { id: "galactic-roulette", version: "4.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V2}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único: apuestas de5€ ficticios,100€ iniciales, tres minutos o insolvencia. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
+  {id:"galactic-birds",version:"8.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:BIRDS_ACTIONS_V2},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Seis niveles fijos con 17 drones, estructuras sencillas de vidrio/cerámica/aleación y alguna caja de TNT que explota en cadena. Tienes 24 tiros: eliges el pájaro (10 exploradores, 9 rápidos, 5 pesados); lo que no se apoya cae; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
+  { id: "galactic-roulette", version: "5.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca las fichas que quieras en el tapete y lanza la bola desde el lanzador exterior. Tres minutos o quedarte sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
     id: "galactic-slot", version: "2.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
@@ -125,7 +125,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "tower-drop",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/TowerDropV3")),
     competition: {
@@ -146,7 +146,7 @@ const GAME_DEFINITIONS = [
     rivalName: "ATLAS",
     rivalAvatar: "/avatars/avatar-7.svg",
     instruction: "Toca para soltar. Alinea el apoyo sobre la torre.",
-    scoring: "Sigue apilando hasta fallar.",
+    scoring: "Sigue apilando: tienes tres vidas y pierdes una cada vez que un bloque falla o se vuelca.",
   },
   {
     id: "jet-stream",
@@ -175,23 +175,23 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "metro-shift",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
-    loadComponent: adaptGameComponent(() => import("@/components/games/MetroShiftVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: METRO_ACTIONS },
+    loadComponent: adaptGameComponent(() => import("@/components/games/MetroRunner")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: METRO_ACTIONS_V2 },
     name: "Metro Shift",
     cover: "/covers/metro-shift.svg",
     enabled: true,
     waitingStakes: [10, 50],
     category: "REACCIÓN",
-    tagline: "Siete carriles. Decide antes de que llegue la ola.",
+    tagline: "Tres vías, trenes y cero frenos.",
     difficulty: "ALTA",
     skillLabel: "LECTURA + REACCIÓN",
-    rivalScore: 42000,
+    rivalScore: 2400,
     rivalName: "MIRA",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Desliza a izquierda o derecha entre siete carriles y hacia arriba para saltar.",
-    scoring: "60 formaciones en un recorrido reproducible, saltos, recargas y tres escudos; score por replay de servidor.",
+    instruction: "Desliza a los lados para cambiar de vía, arriba para saltar y abajo para deslizarte.",
+    scoring: "Carrera infinita que va acelerando: suma metros y monedas. Salta las vallas bajas, deslízate bajo las vigas, esquiva trenes y coge el jet. Tres escudos; replay de servidor.",
   },
   {
     id: "orbit-shift",
@@ -236,7 +236,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "mine-grid",
-    version: "0.1.0",
+    version: "0.2.0",
     status: "INTEGRATED",
     loadComponent: adaptGameComponent(() => import("@/components/games/MineGridEntry")),
     competition: { verification: "client-result" },
@@ -248,11 +248,11 @@ const GAME_DEFINITIONS = [
     tagline: "Mismo campo. Cada decisión cuenta.",
     difficulty: "MEDIA",
     skillLabel: "DEDUCCIÓN + VELOCIDAD",
-    rivalScore: 8600,
+    rivalScore: 6000,
     rivalName: "NODE",
     rivalAvatar: "/avatars/avatar-4.svg",
-    instruction: "Destapa casillas. Ambos jugadores reciben exactamente el mismo campo de minas.",
-    scoring: "Suma casillas seguras sin tocar una mina.",
+    instruction: "Toca para destapar y mantén pulsada una casilla para marcarla. Ambos jugadores reciben el mismo campo.",
+    scoring: "Si no lo resuelves, puntúan las casillas bien asignadas. Si lo resuelves, puntúa el tiempo: cuanto más rápido, más puntos.",
     deterministicSeed: "mine-grid-arena-001",
   },
   {
@@ -360,7 +360,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "river-dash",
-    version: "4.0.0",
+    version: "5.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/RiverDashVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 4, allowedActions: ["UP","DOWN","LEFT","RIGHT"] },
@@ -372,10 +372,10 @@ const GAME_DEFINITIONS = [
     tagline: "Mismos carriles. El timing decide.",
     difficulty: "MEDIA",
     skillLabel: "TIMING + LECTURA",
-    rivalScore: 90,
+    rivalScore: 55,
     rivalName: "FORD",
     rivalAvatar: "/avatars/avatar-2.svg",
-    instruction: "Desliza o usa la cruceta para cruzar carretera y río.",
+    instruction: "Desliza a los lados y usa los botones para subir y bajar.",
     scoring: "Ambos jugadores reciben idénticas velocidades, fases y carriles.",
   },
   {
@@ -497,7 +497,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "sky-hop",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/SkyHopVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SKY_HOP_ACTIONS },
@@ -509,11 +509,11 @@ const GAME_DEFINITIONS = [
     tagline: "Rebota y sigue subiendo.",
     difficulty: "ALTA",
     skillLabel: "CONTROL + ANTICIPACIÓN",
-    rivalScore: 43000,
+    rivalScore: 22000,
     rivalName: "HOP",
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Mantén izquierda o derecha para dirigir el salto automático.",
-    scoring: "75 apoyos continuos, balizas, recogibles y marcianos anticipados bajo los bordes. Avance por altura nueva; replay de servidor.",
+    scoring: "Ascenso infinito: sin meta, el recorrido se genera con la semilla y se endurece con la altura (apoyos más pequeños y móviles, saltos largos, apoyos que se rompen y marcianos anticipados bajo los bordes). Tres vidas, balizas y recogibles. Avance por altura nueva; replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];

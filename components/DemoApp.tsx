@@ -53,9 +53,6 @@ function isScreen(value: unknown): value is Screen {
 
 const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
 /** Small variant for grids/lists; the full 512 px image is only used for the large preview. */
-/** Slot simulates a game of chance (fictitious balance only): ask for age once. */
-const AGE_GATED_GAMES = new Set(["galactic-slot"]);
-const AGE_CONFIRMED_KEY = "skill-arena-age-18";
 const avatarThumb = (src: string) => (/\/portrait-\d{2}\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 const START_BALANCE = 25;
 const APP_ITERATION = "v12";
@@ -231,8 +228,6 @@ export default function DemoApp() {
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [ageDialogOpen, setAgeDialogOpen] = useState(false);
-  const ageActionRef = useRef<(() => void) | null>(null);
   const cropCanvasRef = useRef<HTMLCanvasElement>(null);
   const cropDragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const [cropSource, setCropSource] = useState<string | null>(null);
@@ -300,8 +295,9 @@ export default function DemoApp() {
       setOnboarded(false);
       setProvider(null);
       setPlayerName("");
-      setAvatarId(0);
-      setAvatarSrc(AVATARS[0]);
+      const randomAvatar = Math.floor(Math.random() * AVATARS.length);
+      setAvatarId(randomAvatar);
+      setAvatarSrc(AVATARS[randomAvatar]);
       setAvatarEditorOpen(true);
       setAvatarError("");
       setBalance(START_BALANCE);
@@ -328,8 +324,9 @@ export default function DemoApp() {
       setOnboarded(false);
       setProvider(null);
       setPlayerName("");
-      setAvatarId(0);
-      setAvatarSrc(AVATARS[0]);
+      const randomAvatar = Math.floor(Math.random() * AVATARS.length);
+      setAvatarId(randomAvatar);
+      setAvatarSrc(AVATARS[randomAvatar]);
       setAvatarEditorOpen(true);
       setAvatarError("");
       setScreen("welcome");
@@ -407,8 +404,9 @@ export default function DemoApp() {
       setOnboarded(false);
       setProvider(null);
       setPlayerName("");
-      setAvatarId(0);
-      setAvatarSrc(AVATARS[0]);
+      const randomAvatar = Math.floor(Math.random() * AVATARS.length);
+      setAvatarId(randomAvatar);
+      setAvatarSrc(AVATARS[randomAvatar]);
       setAvatarEditorOpen(true);
       setAvatarError("");
       setScreen("welcome");
@@ -661,8 +659,9 @@ export default function DemoApp() {
 
   function continueWithoutProvider() {
     setProvider(null);
-    setAvatarId(0);
-    setAvatarSrc(AVATARS[0]);
+    const firstAvatar = Math.floor(Math.random() * AVATARS.length);
+    setAvatarId(firstAvatar);
+    setAvatarSrc(AVATARS[firstAvatar]);
     setAvatarEditorOpen(false);
     setAvatarError("");
     navigate("avatar-setup");
@@ -732,17 +731,8 @@ export default function DemoApp() {
   const {persistentTraining,liveModes}=usePublicMatchAvailability(isLoaded&&onboarded,screen==="home",selectedStake);
   usePendingMatchResolution(screen==="game"&&result!==null,attemptSummary,finishMatch);
 
-  /** Returns true when the age question is shown instead; the action resumes after confirming. */
-  function ageGate(game: GameMeta, proceed: () => void) {
-    if (!AGE_GATED_GAMES.has(game.id) || safeStorage.getItem(AGE_CONFIRMED_KEY) === "1") return false;
-    ageActionRef.current = proceed;
-    setAgeDialogOpen(true);
-    return true;
-  }
-
   function startMatch(gameOverride?: GameMeta) {
     const game = gameOverride ?? selectedGame;
-    if (ageGate(game, () => startMatch(gameOverride))) return;
     const stake = selectedStake;
     const mode = persistentTraining ? (liveModes[game.id]??"create") : modeForStake(game, stake as Stake, nextTurn);
 
@@ -975,7 +965,6 @@ export default function DemoApp() {
     config: GroupCompetitionConfig,
     options?: { chargeEntry?: boolean; nextStage?: number }
   ) {
-    if (ageGate(game, () => startGroupCompetition(game, config, options))) return;
     const chargeEntry = options?.chargeEntry ?? true;
     if (
       !group ||
@@ -1551,32 +1540,6 @@ export default function DemoApp() {
           </section>
         )}
       </div>
-
-      {ageDialogOpen && (
-        <div className="gameExitOverlay ageOverlay" role="dialog" aria-modal="true" aria-labelledby="age-title">
-          <div className="gameExitCard">
-            <strong id="age-title">SOLO PARA MAYORES DE 18</strong>
-            <p>Galactic Slot simula un juego de azar con saldo ficticio. No se juega con dinero real ni se pueden ganar premios.</p>
-            <p>¿Confirmas que tienes al menos 18 años?</p>
-            <div>
-              <button type="button" onClick={() => { ageActionRef.current = null; setAgeDialogOpen(false); }}>VOLVER</button>
-              <button
-                type="button"
-                data-testid="age-confirm"
-                onClick={() => {
-                  safeStorage.setItem(AGE_CONFIRMED_KEY, "1");
-                  setAgeDialogOpen(false);
-                  const resume = ageActionRef.current;
-                  ageActionRef.current = null;
-                  resume?.();
-                }}
-              >
-                SÍ, TENGO 18 O MÁS
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {screen !== "game" && screen !== "legal" && (
         <nav className="bottomNav bottomNavThree" aria-label="Navegación principal">

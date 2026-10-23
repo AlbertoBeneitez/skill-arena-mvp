@@ -2,10 +2,10 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  TOWER_DROP_CORE_V3,
+  TOWER_DROP_CORE_V4,
   TOWER_DROP_V3,
-  type TowerDropV3State,
-} from "@/lib/verified/towerDropCore.v3";
+  type TowerDropV4State as TowerDropV3State,
+} from "@/lib/verified/towerDropCore.v4";
 import CoreCanvasGame from "./CoreCanvasGame";
 // Presentation-only smoothing. Never read by the core; a new run (tick going
 // backwards) resets it, so replays and previews stay deterministic.
@@ -180,13 +180,30 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   if (state.combo > 1) ctx.fillText(`PERFECTO ×${state.combo}`, 195, 112);
   ctx.textAlign = "left";
   ctx.restore();
+  // Lives: three hearts, the lost ones dim; a red pulse right after a loss.
+  const sinceLoss = state.lastLossTick >= 0 ? state.tick - state.lastLossTick : Infinity;
+  for (let n = 0; n < 3; n++) {
+    const cx = 330 + n * 20,
+      cy = 26,
+      alive = n < state.lives,
+      pulse = !alive && sinceLoss < 90 ? 1 - sinceLoss / 90 : 0;
+    ctx.fillStyle = alive ? "#ff6f8e" : `rgba(120,140,160,${0.28 + pulse * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(cx - 3.2, cy - 1.5, 4.2, 0, Math.PI * 2);
+    ctx.arc(cx + 3.2, cy - 1.5, 4.2, 0, Math.PI * 2);
+    ctx.moveTo(cx - 7.2, cy - 0.2);
+    ctx.lineTo(cx, cy + 8);
+    ctx.lineTo(cx + 7.2, cy - 0.2);
+    ctx.closePath();
+    ctx.fill();
+  }
 }
 const keys = { " ": "DROP", Enter: "DROP" } as const;
 export default function TowerDropV3(props: GameRuntimeProps) {
   return (
     <CoreCanvasGame
       {...props}
-      core={TOWER_DROP_CORE_V3}
+      core={TOWER_DROP_CORE_V4}
       name="Tower Drop"
       hideHudScore
       render={render}

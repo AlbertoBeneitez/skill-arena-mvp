@@ -333,12 +333,12 @@ register(pathToFileURL(path.join(repo, "scripts/determinism-loader.mjs")));
     }
     async function hud() {
       const text = await page.locator(".skyHopVerified .coreHud").innerText();
-      const height = text.match(/ALTURA\s+(\d+)\s*\/\s*(\d+)/),
+      const height = text.match(/ALTURA\s+(\d+)/),
         lives = text.match(/VIDAS\s+(\d+)/);
       assert.ok(height && lives, `observable physical HUD: ${text}`);
       return {
         height: Number(height[1]),
-        goal: Number(height[2]),
+        goal: 0,
         lives: Number(lives[1]),
       };
     }

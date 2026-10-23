@@ -1,0 +1,55 @@
+{
+  "seed": "metro2-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 1597,
+      "action": "JUMP"
+    },
+    {
+      "seq": 1,
+      "tick": 2202,
+      "action": "SLIDE"
+    },
+    {
+      "seq": 2,
+      "tick": 2590,
+      "action": "LEFT"
+    },
+    {
+      "seq": 3,
+      "tick": 3199,
+      "action": "SLIDE"
+    },
+    {
+      "seq": 4,
+      "tick": 5215,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 5,
+      "tick": 5384,
+      "action": "JUMP"
+    },
+    {
+      "seq": 6,
+      "tick": 5737,
+      "action": "LEFT"
+    },
+    {
+      "seq": 7,
+      "tick": 6536,
+      "action": "RIGHT"
+    },
+    {
+      "seq": 8,
+      "tick": 6937,
+      "action": "RIGHT"
+    }
+  ],
+  "finalTick": 7402,
+  "score": 2008,
+  "hash": "sha256:9248b061241805e5c3bfe4476fe5f29c81c5c57c5c555310b78c701e8b7eb40f",
+  "failure": null,
+  "status": "won"
+}

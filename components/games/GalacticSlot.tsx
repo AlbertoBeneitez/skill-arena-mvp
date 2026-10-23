@@ -111,12 +111,12 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
     ctx.fillStyle = "#d8e7f4";
     ctx.textAlign = "left";
     ctx.font = "bold 11px system-ui";
-    ctx.fillText(`×3  ${SLOT_RULES.tripleMultipliers[id] * 5}€`, x + 3, y + 4);
+    ctx.fillText(`×3  ${SLOT_RULES.tripleMultipliers[id] * 5}`, x + 3, y + 4);
   }
   ctx.textAlign = "center";
   for (const [x, label, amount] of [
-    [107, "Pareja", "10 €"],
-    [280, "7 sin pareja", "5 €"],
+    [107, "Pareja", "10"],
+    [280, "7 sin pareja", "5"],
   ] as const) {
     ctx.fillStyle = "#a5b9cd";
     ctx.font = "400 10px system-ui";
@@ -161,11 +161,11 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   if (lit) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 18px system-ui";
-    ctx.fillText(`+${s.lastPayout / 100}€`, 195, layout.top - 8);
+    ctx.fillText(`+${s.lastPayout / 100} fichas`, 195, layout.top - 8);
   }
 }
 const hudLabel = (s: Readonly<SlotState>) =>
-  `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s${s.steps.every(step => step === 0) ? " · 000 NO PERMITIDO" : ""}`;
+  `${(s.balanceMinor / 100).toFixed(2)} FICHAS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s${s.steps.every(step => step === 0) ? " · 000 NO PERMITIDO" : ""}`;
 const feedbackScore = (s: Readonly<SlotState>) => s.balanceMinor;
 export default function GalacticSlot(props: GameRuntimeProps) {
   return (
@@ -214,7 +214,7 @@ export default function GalacticSlot(props: GameRuntimeProps) {
           {
             action: "SPIN",
             label: "Girar ruletas por 5 euros ficticios",
-            symbol: "⟳ 5€",
+            symbol: "⟳ 5 fichas",
           },
         ]}
       />

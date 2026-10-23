@@ -126,6 +126,12 @@ export default function MineGrid({
   const [started, setStarted] = useState(false);
   const [flagMode, setFlagMode] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
+  // After a mine the board stays exactly as it was so the player can study it.
+  const [ended, setEnded] = useState<
+    null | { won: boolean; solved: boolean; score: number; timeMs: number; hit: number | null }
+  >(null);
+  const [pressing, setPressing] = useState<number | null>(null);
+  const holdRef = useRef<{ timer: number; index: number; fired: boolean } | null>(null);
 
   const runningRef = useRef(false);
   const startRef = useRef(0);
@@ -147,6 +153,8 @@ export default function MineGrid({
     setStarted(false);
     setFlagMode(false);
     setElapsedMs(0);
+    setEnded(null);
+    setPressing(null);
 
     runningRef.current = active;
 
@@ -168,33 +176,37 @@ export default function MineGrid({
     };
   }, [active, seed]);
 
+  // Correct assignments: safe cells opened plus flags that sit on real mines.
+  function correctCells(nextRevealed: Set<number>, nextFlagged: Set<number>) {
+    let count = 0;
+    for (const index of nextRevealed) if (board[index] !== -1) count += 1;
+    for (const index of nextFlagged) if (board[index] === -1) count += 1;
+    return count;
+  }
+
   function finish(
     won: boolean,
-    nextRevealed: Set<number>
+    nextRevealed: Set<number>,
+    hit: number | null = null
   ) {
     if (!runningRef.current) return;
 
     runningRef.current = false;
 
-    const safeCount = [...nextRevealed].filter(
-      (index) => board[index] !== -1
-    ).length;
-
-    const score =
-      safeCount * 160 +
-      flagged.size * 18 +
-      challenge.deductionRounds * 40;
+    const timeMs = Math.round(performance.now() - startRef.current);
+    // Unsolved: correctly assigned cells. Solved: the faster, the higher.
+    const score = won
+      ? Math.max(1000, 12000 - Math.floor(timeMs / 10))
+      : correctCells(nextRevealed, flagged);
 
     gameTone(won ? "win" : "bad");
     haptic(won ? [18, 25, 45] : 28);
 
-    onFinish({
-      won,
-      score,
-      timeMs: Math.round(
-        performance.now() - startRef.current
-      ),
-    });
+    const result = { won: won && score >= targetScore, solved: won, score, timeMs, hit };
+    setElapsedMs(timeMs);
+    setEnded(result);
+    // A win goes straight on; a mine waits for the player to look at the board.
+    if (won) window.setTimeout(() => onFinish({ won: result.won, score, timeMs }), 900);
   }
 
   function reveal(index: number) {
@@ -222,7 +234,7 @@ export default function MineGrid({
     if (board[index] === -1) {
       next.add(index);
       setRevealed(next);
-      finish(false, next);
+      finish(false, next, index);
       return;
     }
 
@@ -240,21 +252,8 @@ export default function MineGrid({
       (cell) => board[cell] !== -1
     ).length;
 
-    const currentScore =
-      safeCount * 160 +
-      flagged.size * 18 +
-      challenge.deductionRounds * 40;
-
-    if (currentScore >= targetScore) {
+    if (safeCount === challenge.cols * challenge.rows - MINES) {
       finish(true, next);
-      return;
-    }
-
-    if (
-      safeCount ===
-      challenge.cols * challenge.rows - MINES
-    ) {
-      finish(false, next);
       return;
     }
 
@@ -283,7 +282,37 @@ export default function MineGrid({
     haptic(3);
   }
 
+  function holdStart(index: number) {
+    if (!runningRef.current || !started || revealed.has(index)) return;
+    holdEnd(false);
+    setPressing(index);
+    const hold = {
+      index,
+      fired: false,
+      timer: window.setTimeout(() => {
+        hold.fired = true;
+        setPressing(null);
+        toggleFlag(index);
+        haptic([6, 20, 6]);
+      }, 380),
+    };
+    holdRef.current = hold;
+  }
+
+  function holdEnd(keepFired: boolean) {
+    const hold = holdRef.current;
+    if (!hold) return;
+    window.clearTimeout(hold.timer);
+    setPressing(null);
+    if (!keepFired) holdRef.current = null;
+  }
+
   function interact(index: number) {
+    // A press that already marked the cell must not also open/toggle it.
+    if (holdRef.current?.fired && holdRef.current.index === index) {
+      holdRef.current = null;
+      return;
+    }
     if (
       !started &&
       index === challenge.startIndex
@@ -298,6 +327,8 @@ export default function MineGrid({
       reveal(index);
     }
   }
+
+  const hudCorrect = correctCells(revealed, flagged);
 
   return (
     <div
@@ -325,6 +356,7 @@ export default function MineGrid({
         {board.map((value, index) => {
           const open = revealed.has(index);
           const isFlagged = flagged.has(index);
+          const isHit = ended?.hit === index;
           const isStart =
             !started &&
             index === challenge.startIndex;
@@ -333,8 +365,13 @@ export default function MineGrid({
             <button
               key={index}
               type="button"
-              className={`mineCell ${open ? "open" : ""} ${open && value === -1 ? "mine" : ""} ${isStart ? "startCell" : ""} ${isFlagged ? "flagged" : ""}`}
-              onClick={() => interact(index)}
+              className={`mineCell ${open ? "open" : ""} ${open && value === -1 ? "mine" : ""} ${isHit ? "hit" : ""} ${isStart ? "startCell" : ""} ${isFlagged ? "flagged" : ""} ${pressing === index ? "pressing" : ""}`}
+              onClick={() => (ended ? undefined : interact(index))}
+              onPointerDown={() => holdStart(index)}
+              onPointerUp={() => holdEnd(true)}
+              onPointerLeave={() => holdEnd(false)}
+              onPointerCancel={() => holdEnd(false)}
+              onContextMenu={(event) => event.preventDefault()}
               aria-label={
                 isStart
                   ? "Casilla inicial obligatoria"
@@ -362,10 +399,20 @@ export default function MineGrid({
       </div>
 
       <div className="mineModeControl">
-        {!started ? (
+        {ended && !ended.solved ? (
+          <>
+            <span className="mineStartHint">
+              MINA · {ended.score} {ended.score === 1 ? "CASILLA BIEN ASIGNADA" : "CASILLAS BIEN ASIGNADAS"}
+            </span>
+            <button type="button" className="active" onClick={() => onFinish({ won: false, score: ended.score, timeMs: ended.timeMs })}>
+              VER RESULTADO
+            </button>
+          </>
+        ) : !started ? (
           <span className="mineStartHint">Toca la casilla dorada para empezar</span>
         ) : (
           <>
+            <span className="mineStartHint">{hudCorrect} OK</span>
             <button
               type="button"
               className={!flagMode ? "active" : ""}

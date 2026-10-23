@@ -2,18 +2,18 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V4,
-  ROULETTE_RULES_V4,
+  ROULETTE_CORE_V5,
+  ROULETTE_RULES_V5,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v4";
-import { ROULETTE_BETS_V2 } from "@/lib/verified/galacticRouletteProtocol.v2";
+  type RouletteStateV5 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v5";
+import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import {
   ROULETTE_BALL_DOCK,
-  rouletteTossCanGrab,
-  rouletteHandToss,
-} from "@/lib/rouletteTossGesture";
+  rouletteLauncherCanGrab,
+  rouletteLauncherToss,
+} from "@/lib/rouletteLaunchGesture";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const cx = 195,
@@ -123,26 +123,59 @@ function render(
   const idle = s.landingTick === -1;
   const settled = idle && !drag && s.lastNumber !== null && !s.lastMiss;
   const pocketAngle = rotation + ROULETTE_WHEEL.findIndex(n => n === s.lastNumber) * Math.PI * 2 / 37;
+  // The ball waits on the launcher outside the wheel; a swipe only aims it.
   const x = settled ? cx + Math.cos(pocketAngle) * 104
-    : idle ? (drag?.x ?? ROULETTE_BALL_DOCK.x) : s.ballX / 1000;
+    : idle ? ROULETTE_BALL_DOCK.x : s.ballX / 1000;
   const y = settled ? cy + Math.sin(pocketAngle) * 104
-    : idle ? (drag?.y ?? ROULETTE_BALL_DOCK.y) : s.ballY / 1000;
+    : idle ? ROULETTE_BALL_DOCK.y : s.ballY / 1000;
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
   const radius = Math.hypot(x - cx, y - cy);
   const surface = s.inBowl && radius <= 151 ? radius < 90 ? (90 - radius) * 0.35 : Math.max(0, (radius - 115) * 0.35) : 0;
   const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - 6);
-  if (idle && !drag) {
-    ctx.strokeStyle = "rgba(169,219,238,.6)";
+  // Launcher plate outside the wheel (the ball can only be thrown from here).
+  if (idle || s.tick - s.flightStart < 40) {
+    ctx.fillStyle = "rgba(14,38,52,.92)";
+    ctx.strokeStyle = "rgba(169,219,238,.65)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 28, 0, Math.PI * 2);
+    ctx.roundRect(ROULETTE_BALL_DOCK.x - 34, ROULETTE_BALL_DOCK.y - 34, 68, 68, 16);
+    ctx.fill();
     ctx.stroke();
-    if (settled) {
-      ctx.fillStyle = "rgba(240,247,255,.28)";
+    ctx.strokeStyle = "rgba(169,219,238,.4)";
+    ctx.beginPath();
+    ctx.arc(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 22, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  if (idle && drag) {
+    // Aim guide: direction and length of the throw (quantised like the real action).
+    const dx = drag.x - ROULETTE_BALL_DOCK.x,
+      dy = drag.y - ROULETTE_BALL_DOCK.y,
+      length = Math.hypot(dx, dy);
+    if (length >= 28) {
+      const power = Math.max(0, Math.min(15, Math.round((length - 24) / 12)));
+      const ux = dx / length,
+        uy = dy / length,
+        reach = 40 + power * 9;
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,233,164,.85)";
+      ctx.fillStyle = "rgba(255,233,164,.85)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([7, 6]);
       ctx.beginPath();
-      ctx.arc(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 6, 0, Math.PI * 2);
+      ctx.moveTo(ROULETTE_BALL_DOCK.x + ux * 14, ROULETTE_BALL_DOCK.y + uy * 14);
+      ctx.lineTo(ROULETTE_BALL_DOCK.x + ux * reach, ROULETTE_BALL_DOCK.y + uy * reach);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      const tx = ROULETTE_BALL_DOCK.x + ux * (reach + 8),
+        ty = ROULETTE_BALL_DOCK.y + uy * (reach + 8);
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - ux * 12 - uy * 7, ty - uy * 12 + ux * 7);
+      ctx.lineTo(tx - ux * 12 + uy * 7, ty - uy * 12 - ux * 7);
+      ctx.closePath();
       ctx.fill();
+      ctx.restore();
     }
   }
   ctx.fillStyle = "rgba(0,4,14,.45)";
@@ -180,30 +213,19 @@ function render(
   ctx.fillText(s.lastNumber === null ? "" : String(s.lastNumber), cx, 270);
   ctx.fillStyle = "#a8c6d5";
   ctx.font = "bold 14px system-ui";
-  const bet = s.bet.startsWith("NUMBER_")
-    ? s.bet.slice(7)
-    : (
-        {
-          RED: "VERDE",
-          BLACK: "AZUL",
-          EVEN: "PAR",
-          ODD: "IMPAR",
-          LOW: "1–18",
-          HIGH: "19–36",
-          DOZEN_1: "1–12",
-          DOZEN_2: "13–24",
-          DOZEN_3: "25–36",
-        } as Record<string, string>
-      )[s.bet];
-  ctx.fillText(`${bet ?? "2:1"} · 5€`, cx, 377);
+  ctx.fillText(
+    s.chips.length ? `${s.chips.length} ${s.chips.length === 1 ? "FICHA" : "FICHAS"} EN LA MESA` : "SIN FICHAS EN LA MESA",
+    cx,
+    377,
+  );
   if (s.lastPayout > 0 && s.tick - s.lastLandingTick < 120) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 19px system-ui";
-    ctx.fillText(`+${s.lastPayout / 100}€`, cx, 103);
+    ctx.fillText(`+${s.lastPayout / 100} fichas`, cx, 103);
   }
 }
 const hudLabel = (s: Readonly<RouletteStateV2>) =>
-  `${(s.balanceMinor / 100).toFixed(2)} € FICTICIOS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
+  `${s.balanceMinor / 100} FICHAS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s`;
 const feedbackScore = (s: Readonly<RouletteStateV2>) => s.balanceMinor;
 const betLabels: Record<string, string> = {
   RED: "VERDE",
@@ -216,61 +238,61 @@ const betLabels: Record<string, string> = {
   DOZEN_2: "13–24",
   DOZEN_3: "25–36",
 };
-// Landscape casino cloth shown permanently under the wheel: zero spans the three
-// number rows, then dozens, columns and outside bets. One tap places the chip.
+// Casino cloth shown permanently under the wheel: zero spans the three number
+// rows, then dozens and outside bets. Every tap stacks one chip on that cell.
 const choiceControl = {
   label: "Tapete de apuestas",
   presentation: "table" as const,
   columns: 13,
-  options: ROULETTE_BETS_V2.map((bet) => {
-    if (bet.startsWith("NUMBER_")) {
-      const n = Number(bet.slice(7));
-      return {
-        action: `BET_${bet}`,
-        label: String(n),
-        tone:
-          n === 0
-            ? "#e9eeed"
-            : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number])
-              ? "#176f5a"
-              : "#102d50",
-        placement:
-          n === 0
-            ? { row: 1, column: 1, rowSpan: 3 }
-            : { row: 3 - ((n - 1) % 3), column: 2 + Math.floor((n - 1) / 3) },
-      };
-    }
-    if (bet.startsWith("DOZEN_")) {
-      const n = Number(bet.slice(6));
+  options: [
+    ...ROULETTE_BETS.map((bet) => {
+      if (bet.startsWith("NUMBER_")) {
+        const n = Number(bet.slice(7));
+        return {
+          action: `BET_${bet}`,
+          label: String(n),
+          tone:
+            n === 0
+              ? "#e9eeed"
+              : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number])
+                ? "#176f5a"
+                : "#102d50",
+          placement:
+            n === 0
+              ? { row: 1, column: 1, rowSpan: 3 }
+              : { row: 3 - ((n - 1) % 3), column: 2 + Math.floor((n - 1) / 3) },
+        };
+      }
+      if (bet.startsWith("DOZEN_")) {
+        const n = Number(bet.slice(6));
+        return {
+          action: `BET_${bet}`,
+          label: betLabels[bet],
+          tone: "#173e42",
+          placement: { row: 4, column: 2 + (n - 1) * 4, columnSpan: 4 },
+        };
+      }
+      const i = ["LOW", "EVEN", "RED", "BLACK", "ODD", "HIGH"].indexOf(bet);
       return {
         action: `BET_${bet}`,
         label: betLabels[bet],
-        tone: "#173e42",
-        placement: { row: 4, column: 2 + (n - 1) * 4, columnSpan: 4 },
+        tone: bet === "RED" ? "#176f5a" : bet === "BLACK" ? "#102d50" : "#173e42",
+        placement: { row: 5, column: 2 + i * 2, columnSpan: 2 },
       };
-    }
-    if (bet.startsWith("COLUMN_")) {
-      const n = Number(bet.slice(7));
-      return {
-        action: `BET_${bet}`,
-        label: `C${n} 2:1`,
-        tone: "#173e42",
-        placement: { row: 5, column: 2 + (n - 1) * 4, columnSpan: 4 },
-      };
-    }
-    const i = ["LOW", "EVEN", "RED", "BLACK", "ODD", "HIGH"].indexOf(bet);
-    return {
-      action: `BET_${bet}`,
-      label: betLabels[bet],
-      tone: bet === "RED" ? "#176f5a" : bet === "BLACK" ? "#102d50" : "#173e42",
-      placement: { row: 6, column: 2 + i * 2, columnSpan: 2 },
-    };
-  }),
-  value: (s: RouletteStateV2) => `BET_${s.bet}`,
+    }),
+    { action: "BETS_UNDO", label: "↶ QUITAR FICHA", tone: "#3b3f2f", placement: { row: 6, column: 1, columnSpan: 7 } },
+    { action: "BETS_CLEAR", label: "LIMPIAR MESA", tone: "#4a2f35", placement: { row: 6, column: 8, columnSpan: 6 } },
+  ],
+  value: (s: RouletteStateV2) => (s.chips.length ? `BET_${s.chips[s.chips.length - 1]}` : ""),
+  badges: (s: RouletteStateV2) => {
+    const counts: Record<string, number> = {};
+    for (const bet of s.chips) counts[`BET_${bet}`] = (counts[`BET_${bet}`] ?? 0) + 1;
+    return counts;
+  },
   disabled: (s: RouletteStateV2) =>
     s.landingTick !== -1 ||
     s.status !== "running" ||
-    s.tick + ROULETTE_RULES_V4.maximumFlightTicks > 21600,
+    s.tick + ROULETTE_RULES_V5.maximumFlightTicks > 21600,
 };
 export default function GalacticRoulette(props: GameRuntimeProps) {
   const origin = useRef<CorePoint | null>(null),
@@ -311,7 +333,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V4}
+        core={ROULETTE_CORE_V5}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -322,8 +344,8 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V4.canApply(s, "TOSS_D00_P00") &&
-              rouletteTossCanGrab(p)
+              ROULETTE_CORE_V5.canApply(s, "TOSS_D00_P00") &&
+              rouletteLauncherCanGrab(p)
                 ? p
                 : null;
             drag.current = origin.current ? p : null;
@@ -336,9 +358,8 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           }
           const from = origin.current;
           origin.current = null;
-          const actions = rouletteHandToss(from, p);
-          drag.current = actions ? p : null;
-          return actions;
+          drag.current = null;
+          return rouletteLauncherToss(from, p);
         }}
       />
     </div>

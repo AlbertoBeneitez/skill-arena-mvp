@@ -1,0 +1,285 @@
+{
+  "seed": "roulette-v5-golden",
+  "inputs": [
+    {
+      "seq": 0,
+      "tick": 0,
+      "action": "BET_RED"
+    },
+    {
+      "seq": 1,
+      "tick": 1,
+      "action": "BET_RED"
+    },
+    {
+      "seq": 2,
+      "tick": 2,
+      "action": "BET_NUMBER_17"
+    },
+    {
+      "seq": 3,
+      "tick": 3,
+      "action": "BET_DOZEN_2"
+    },
+    {
+      "seq": 4,
+      "tick": 4,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 5,
+      "tick": 448,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 6,
+      "tick": 892,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 7,
+      "tick": 1336,
+      "action": "BETS_UNDO"
+    },
+    {
+      "seq": 8,
+      "tick": 1337,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 9,
+      "tick": 1781,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 10,
+      "tick": 2225,
+      "action": "BETS_CLEAR"
+    },
+    {
+      "seq": 11,
+      "tick": 2226,
+      "action": "BET_BLACK"
+    },
+    {
+      "seq": 12,
+      "tick": 2227,
+      "action": "BET_LOW"
+    },
+    {
+      "seq": 13,
+      "tick": 2228,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 14,
+      "tick": 2672,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 15,
+      "tick": 3116,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 16,
+      "tick": 3560,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 17,
+      "tick": 4004,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 18,
+      "tick": 4448,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 19,
+      "tick": 4892,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 20,
+      "tick": 5336,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 21,
+      "tick": 5780,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 22,
+      "tick": 6224,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 23,
+      "tick": 6668,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 24,
+      "tick": 7112,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 25,
+      "tick": 7556,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 26,
+      "tick": 8001,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 27,
+      "tick": 8445,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 28,
+      "tick": 8889,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 29,
+      "tick": 9333,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 30,
+      "tick": 9777,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 31,
+      "tick": 10221,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 32,
+      "tick": 10665,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 33,
+      "tick": 11109,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 34,
+      "tick": 11553,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 35,
+      "tick": 11997,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 36,
+      "tick": 12441,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 37,
+      "tick": 12885,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 38,
+      "tick": 13329,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 39,
+      "tick": 13773,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 40,
+      "tick": 14217,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 41,
+      "tick": 14662,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 42,
+      "tick": 15106,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 43,
+      "tick": 15550,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 44,
+      "tick": 15994,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 45,
+      "tick": 16438,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 46,
+      "tick": 16882,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 47,
+      "tick": 17326,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 48,
+      "tick": 17770,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 49,
+      "tick": 18214,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 50,
+      "tick": 18658,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 51,
+      "tick": 19102,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 52,
+      "tick": 19546,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 53,
+      "tick": 19990,
+      "action": "TOSS_D20_P08"
+    },
+    {
+      "seq": 54,
+      "tick": 20434,
+      "action": "TOSS_D20_P08"
+    }
+  ],
+  "finalTick": 21600,
+  "score": 8900,
+  "status": "won",
+  "failure": null,
+  "hash": "sha256:09632b583575af74214707d117a4b50b2f71baab76f3a3badef22662c4252b44"
+}

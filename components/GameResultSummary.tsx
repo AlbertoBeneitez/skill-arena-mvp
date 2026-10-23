@@ -42,8 +42,8 @@ export default function GameResultSummary({
           ? "Marca registrada"
           : balance
             ? reach === 0
-              ? "Saldo agotado"
-              : "Saldo registrado"
+              ? "Sin fichas"
+              : "Fichas registradas"
             : result.won
               ? "Reto superado"
               : "Inténtalo de nuevo"}
@@ -52,7 +52,7 @@ export default function GameResultSummary({
         <div>
           <dt>
             {balance
-              ? "Saldo ficticio final"
+              ? "Fichas finales"
               : reach !== undefined
                 ? "Avance alcanzado"
                 : "Puntos"}
@@ -60,14 +60,14 @@ export default function GameResultSummary({
           <dd
             aria-label={
               balance
-                ? "Saldo ficticio del intento"
+                ? "Fichas del intento"
                 : reach !== undefined
                   ? "Avance del intento"
                   : "Puntuación del intento"
             }
           >
             {balance
-              ? `${((reach ?? result.score) / 100).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`
+              ? `${((reach ?? result.score) / 100).toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} fichas`
               : (reach ?? result.score).toLocaleString("es-ES")}
           </dd>
         </div>

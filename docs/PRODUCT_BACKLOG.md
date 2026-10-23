@@ -516,3 +516,10 @@ sociales, páginas de error, CSP completa aplicada, Next.js 16.4.2 (audit limpio
 smoke móvil de 23 juegos + flujo verificado en CI. Pendientes del propietario y
 decisiones: [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md). No se activan cuentas,
 base de datos ni dinero real.
+
+## v101-mobile · ajustes de jugabilidad (23-oct-2026)
+
+Birds 8, Tower Drop 4, Roulette 5 (fichas, multi-apuesta, lanzador exterior), River Dash 5,
+Metro Shift 2 (runner de tres vías), Sky Hop 4 (sin meta) y Mine Grid 0.2 (tablero visible tras
+la mina, puntuación casillas/tiempo, marcar con pulsación larga). Detalle y límites en
+[releases/v101-mobile.md](releases/v101-mobile.md).

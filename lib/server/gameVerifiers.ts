@@ -1,6 +1,8 @@
 import { BIRDS_CORE_V7 } from "../verified/galacticBirdsCore.v7";
+import { BIRDS_CORE_V8 } from "../verified/galacticBirdsCore.v8";
 import { BIRDS_CORE_V6 } from "../verified/galacticBirdsCore.v6";
 import { BIRDS_CORE_V5 } from "../verified/galacticBirdsCore.v5";
+import { ROULETTE_CORE_V5 } from "../verified/galacticRouletteCore.v5";
 import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
@@ -25,9 +27,11 @@ import { MAZE_CORE_V2 } from "../verified/mazeRushCore.v2";
 import { BRICK_RELAY_CORE } from "../verified/brickRelayCore.v1";
 import { BRICK_RELAY_CORE as BRICK_RELAY_V2_CORE } from "../verified/brickRelayCore.v2";
 import { METRO_CORE } from "../verified/metroShiftCore.v1";
+import { METRO_CORE_V2 } from "../verified/metroShiftCore.v2";
 import { SKY_HOP_CORE } from "../verified/skyHopCore.v1";
 import { SKY_HOP_CORE_V2 } from "../verified/skyHopCore.v2";
 import { SKY_HOP_CORE_V3 } from "../verified/skyHopCore.v3";
+import { SKY_HOP_CORE_V4 } from "../verified/skyHopCore.v4";
 import { PHALANX_CORE } from "../verified/starPhalanxCore.v1";
 import { PHALANX_CORE as PHALANX_V3_CORE } from "../verified/starPhalanxCore.v3";
 import { PHALANX_CORE as PHALANX_V2_CORE } from "../verified/starPhalanxCore.v2";
@@ -49,11 +53,13 @@ import { ORB_BURST_CORE_V2 } from "../verified/orbBurstCore.v2";
 import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
 import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
+import { TOWER_DROP_CORE_V4 } from "../verified/towerDropCore.v4";
 import { JET_STREAM_CORE_V2 } from "../verified/jetStreamCore.v2";
 import { SERPENT_CORE } from "../verified/serpentCore.v1";
 import { SERPENT_CORE_V2 } from "../verified/serpentCore.v2";
 import { RIVER_DASH_CORE_V2 } from "../verified/riverDashCore.v2";
 import { RIVER_DASH_CORE_V4 } from "../verified/riverDashCore.v4";
+import { RIVER_DASH_CORE_V5 } from "../verified/riverDashCore.v5";
 import { RIVER_DASH_CORE_V3 } from "../verified/riverDashCore.v3";
 import { RIVER_DASH_CORE } from "../verified/riverDashCore.v1";
 import { STACK_3D_CORE } from "../verified/precisionStackCore.v3";
@@ -399,11 +405,13 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BIRDS_CORE_V2.gameId, BIRDS_CORE_V2.gameVersion)]: coreAdapter(BIRDS_CORE_V2),
   [adapterKey(BIRDS_CORE_V6.gameId,BIRDS_CORE_V6.gameVersion)]: coreAdapter(BIRDS_CORE_V6),
   [adapterKey(BIRDS_CORE_V7.gameId,BIRDS_CORE_V7.gameVersion)]: coreAdapter(BIRDS_CORE_V7),
+  [adapterKey(BIRDS_CORE_V8.gameId,BIRDS_CORE_V8.gameVersion)]: coreAdapter(BIRDS_CORE_V8),
   [adapterKey(BIRDS_CORE_V5.gameId,BIRDS_CORE_V5.gameVersion)]: coreAdapter(BIRDS_CORE_V5),
   [adapterKey(BIRDS_CORE_V4.gameId, BIRDS_CORE_V4.gameVersion)]: coreAdapter(BIRDS_CORE_V4),
   [adapterKey(BIRDS_CORE_V3.gameId, BIRDS_CORE_V3.gameVersion)]: coreAdapter(BIRDS_CORE_V3),
   [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
   [adapterKey(ROULETTE_CORE_V4.gameId,ROULETTE_CORE_V4.gameVersion)]: coreAdapter(ROULETTE_CORE_V4),
+  [adapterKey(ROULETTE_CORE_V5.gameId,ROULETTE_CORE_V5.gameVersion)]: coreAdapter(ROULETTE_CORE_V5),
   [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
@@ -420,9 +428,11 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BRICK_RELAY_CORE.gameId, BRICK_RELAY_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_CORE),
   [adapterKey(BRICK_RELAY_V2_CORE.gameId, BRICK_RELAY_V2_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_V2_CORE),
   [adapterKey(METRO_CORE.gameId, METRO_CORE.gameVersion)]: coreAdapter(METRO_CORE),
+  [adapterKey(METRO_CORE_V2.gameId, METRO_CORE_V2.gameVersion)]: coreAdapter(METRO_CORE_V2),
   [adapterKey(SKY_HOP_CORE.gameId, SKY_HOP_CORE.gameVersion)]: coreAdapter(SKY_HOP_CORE),
   [adapterKey(SKY_HOP_CORE_V2.gameId, SKY_HOP_CORE_V2.gameVersion)]: coreAdapter(SKY_HOP_CORE_V2),
   [adapterKey(SKY_HOP_CORE_V3.gameId, SKY_HOP_CORE_V3.gameVersion)]: coreAdapter(SKY_HOP_CORE_V3),
+  [adapterKey(SKY_HOP_CORE_V4.gameId, SKY_HOP_CORE_V4.gameVersion)]: coreAdapter(SKY_HOP_CORE_V4),
   [adapterKey(PHALANX_CORE.gameId, PHALANX_CORE.gameVersion)]: coreAdapter(PHALANX_CORE),
   [adapterKey(PHALANX_V2_CORE.gameId, PHALANX_V2_CORE.gameVersion)]: coreAdapter(PHALANX_V2_CORE),
   [adapterKey(PHALANX_V3_CORE.gameId, PHALANX_V3_CORE.gameVersion)]: coreAdapter(PHALANX_V3_CORE),
@@ -446,7 +456,9 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(RIVER_DASH_CORE_V2.gameId,RIVER_DASH_CORE_V2.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V2),
   [adapterKey(RIVER_DASH_CORE_V3.gameId,RIVER_DASH_CORE_V3.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V3),
   [adapterKey(RIVER_DASH_CORE_V4.gameId,RIVER_DASH_CORE_V4.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V4),
+  [adapterKey(RIVER_DASH_CORE_V5.gameId,RIVER_DASH_CORE_V5.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V5),
   [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
+  [adapterKey(TOWER_DROP_CORE_V4.gameId,TOWER_DROP_CORE_V4.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V4),
   [adapterKey(JET_STREAM_CORE_V2.gameId,JET_STREAM_CORE_V2.gameVersion)]: coreAdapter(JET_STREAM_CORE_V2),
   [adapterKey(SERPENT_CORE.gameId,SERPENT_CORE.gameVersion)]: coreAdapter(SERPENT_CORE),
   [adapterKey(SERPENT_CORE_V2.gameId, SERPENT_CORE_V2.gameVersion)]: coreAdapter(SERPENT_CORE_V2),

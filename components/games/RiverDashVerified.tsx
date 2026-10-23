@@ -2,29 +2,32 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  RIVER_DASH_CORE_V4,
-  type RiverV4State,
-  riverRectsV4,
-} from "@/lib/verified/riverDashCore.v4";
+  RIVER_DASH_CORE_V5,
+  type RiverV5State as RiverV4State,
+  riverRectsV5 as riverRectsV4,
+} from "@/lib/verified/riverDashCore.v5";
 import CoreCanvasGame from "./CoreCanvasGame";
 function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
   // Arrival/camera only: the core has already evaluated the destination.
   const age = Math.max(0, Math.min(1, (state.tick - state.lastMoveTick) / 12));
   const ease = state.status === "running" ? 1 - (1 - age) ** 3 : 1;
   const rowPosition = state.fromRow + (state.row - state.fromRow) * ease;
-  const cameraRows = Math.max(0, rowPosition - 4);
+  const cameraRows = Math.max(0, rowPosition - 3);
   drawSpaceBackdrop(ctx, 390, 620, cameraRows * 15, state.tick);
   const ox = 15,
-    oy = 58,
+    oy = 48,
     cell = 44;
-  // A contained field keeps every playable edge visible above the touch controls.
+  // Twelve whole rows: the field is framed between the HUD and the touch buttons.
   ctx.save();
   ctx.beginPath();
-  ctx.rect(ox, oy, 360, 484);
+  ctx.rect(ox, oy, 360, 528);
+  ctx.strokeStyle = "rgba(140,226,236,.35)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(ox - 1, oy - 1, 362, 530);
   ctx.clip();
   state.lanes.forEach((lane, row) => {
-    const y = oy + (10 - (row) + cameraRows) * cell;
-    if (y + cell < oy || y > oy + 484) return;
+    const y = oy + (11 - row + cameraRows) * cell;
+    if (y + cell < oy || y > oy + 528) return;
     ctx.fillStyle =
       lane.kind === "safe"
         ? "rgba(18,64,65,.95)"
@@ -106,7 +109,7 @@ function render(ctx: CanvasRenderingContext2D, state: RiverV4State) {
   });
   const x =
       15 + (state.fromXMilli + (state.xMilli - state.fromXMilli) * ease) / 1000,
-    y = oy + (10 - (rowPosition) + cameraRows + 0.5) * cell;
+    y = oy + (11 - rowPosition + cameraRows + 0.5) * cell;
   ctx.save();
   // Ground shadow stays on the lane; the ship has a short, readable hop arc.
   const hop = state.status === "running" ? Math.sin(age * Math.PI) * 7 : 0;
@@ -139,9 +142,9 @@ const failureFinale = {
   render(ctx: CanvasRenderingContext2D, state: RiverV4State, elapsedMs: number) {
     render(ctx, state);
     const progress = Math.min(1, elapsedMs / 420);
-    const cameraRows = Math.max(0, state.row - 4);
+    const cameraRows = Math.max(0, state.row - 3);
     const x = 15 + state.xMilli / 1000;
-    const y = 58 + (10 - (state.row) + cameraRows + .5) * 44;
+    const y = 48 + (11 - state.row + cameraRows + .5) * 44;
     ctx.save();
     ctx.globalAlpha = 1 - progress;
     ctx.strokeStyle = "#e6b8bd";
@@ -167,18 +170,17 @@ const keys = {
   a: "LEFT",
   d: "RIGHT",
 } as const;
+// Up/down are buttons; left/right are swipes (and keys).
 const controls = [
-  { action: "LEFT", label: "Izquierda", symbol: "←" },
-  { action: "UP", label: "Arriba", symbol: "↑" },
   { action: "DOWN", label: "Abajo", symbol: "↓" },
-  { action: "RIGHT", label: "Derecha", symbol: "→" },
+  { action: "UP", label: "Arriba", symbol: "↑" },
 ] as const;
 export default function RiverDashVerified(props: GameRuntimeProps) {
   return (
     <div className="riverVerified">
       <CoreCanvasGame
         {...props}
-        core={RIVER_DASH_CORE_V4}
+        core={RIVER_DASH_CORE_V5}
         name="River Dash"
         render={render}
         keys={keys}
@@ -189,14 +191,9 @@ export default function RiverDashVerified(props: GameRuntimeProps) {
         gestureAction={(a, b) => {
           const dx = b.x - a.x,
             dy = b.y - a.y;
-          if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return null;
-          return Math.abs(dx) > Math.abs(dy)
-            ? dx > 0
-              ? "RIGHT"
-              : "LEFT"
-            : dy > 0
-              ? "DOWN"
-              : "UP";
+          // Only horizontal slides move sideways; vertical movement uses the buttons.
+          if (Math.abs(dx) < 22 || Math.abs(dx) < Math.abs(dy) * 1.2) return null;
+          return dx > 0 ? "RIGHT" : "LEFT";
         }}
         instruction="Evita el tráfico. Apóyate por completo y avanza con las plataformas."
       />

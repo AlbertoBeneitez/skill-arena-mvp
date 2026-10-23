@@ -10,7 +10,9 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
       active: props.active,
       gameId: "mine-grid",
     }),
-    [flagMode, setFlagMode] = useState(false);
+    [flagMode, setFlagMode] = useState(false),
+    [dismissed, setDismissed] = useState(false),
+    hold = useRef<{ timer: number; index: number; fired: boolean } | null>(null);
   const finish = useRef(props.onFinish),
     finished = useRef(false),
     last = useRef<{ revision: number; score: number } | null>(null);
@@ -21,6 +23,7 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
     finished.current = false;
     last.current = null;
     setFlagMode(false);
+    setDismissed(false);
   }, [props.active]);
   useEffect(() => {
     if (!session) return;
@@ -39,7 +42,8 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
       );
       haptic(session.view.event === "BOMB" ? [12, 12, 18] : 3);
     }
-    if (session.status !== "running" && session.verified && !finished.current) {
+    // Won: carry on automatically. Lost: the board stays until the player continues.
+    if (session.status === "won" && session.verified && !finished.current) {
       const timer = setTimeout(() => {
         finished.current = true;
         finish.current({
@@ -54,6 +58,18 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
       return () => clearTimeout(timer);
     }
   }, [session]);
+  const finishNow = () => {
+    if (!session || finished.current) return;
+    finished.current = true;
+    finish.current({
+      won: session.status === "won",
+      score: session.score,
+      timeMs: 0,
+      verified: true,
+      height: session.view.reach,
+      failureReason: session.failure,
+    });
+  };
   if (phase === "unavailable")
     return (
       <div className="hiddenMineEmpty">
@@ -106,9 +122,29 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
                 (!flagMode && view.flagged[index])
               }
               aria-label={`Casilla ${index + 1}${value === null ? " oculta" : value === -1 ? " mina" : `, ${value} minas cercanas`}`}
-              onClick={() =>
-                void send(mineAction(flagMode ? "FLAG" : "OPEN", index))
-              }
+              onPointerDown={() => {
+                if (!view.started || busy || session.status !== "running" || value !== null) return;
+                if (hold.current) window.clearTimeout(hold.current.timer);
+                const h = { index, fired: false, timer: 0 };
+                h.timer = window.setTimeout(() => {
+                  h.fired = true;
+                  haptic([6, 20, 6]);
+                  void send(mineAction("FLAG", index));
+                }, 380);
+                hold.current = h;
+              }}
+              onPointerUp={() => hold.current && window.clearTimeout(hold.current.timer)}
+              onPointerLeave={() => {
+                if (hold.current && !hold.current.fired) window.clearTimeout(hold.current.timer);
+              }}
+              onContextMenu={(event) => event.preventDefault()}
+              onClick={() => {
+                if (hold.current?.fired && hold.current.index === index) {
+                  hold.current = null;
+                  return;
+                }
+                void send(mineAction(flagMode ? "FLAG" : "OPEN", index));
+              }}
             >
               {value === -1
                 ? "✦"
@@ -140,6 +176,13 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
           MARCAR
         </button>
       </div>
+      {session.status === "failed" && !dismissed ? (
+        <div className="mineAuthorityModes">
+          <button type="button" aria-pressed="true" onClick={finishNow}>
+            VER RESULTADO
+          </button>
+        </div>
+      ) : null}
       <p className="mineAuthorityDemo">ENTRENAMIENTO · RESULTADO DE SERVIDOR</p>
     </div>
   );

@@ -3,13 +3,13 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { hopPlatformX, SKY_HOP_RULES } from "@/lib/verified/skyHopCore.v1";
 import {
-  SKY_HOP_CORE_V3,
   SKY_HOP_ENEMY_RULES,
   hopEnemyX,
   hopEnemyVisible,
   hopEnemyActive,
   type SkyHopV3State,
 } from "@/lib/verified/skyHopCore.v3";
+import { SKY_HOP_CORE_V4 } from "@/lib/verified/skyHopCore.v4";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
 
@@ -220,9 +220,7 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopV3State) {
     const x = hopPlatformX(p, s.tick) / 1000,
       w = p.width / 1000;
     const color =
-      i === s.platforms.length - 1
-        ? "#a8f0d6"
-        : p.kind === "boost"
+      p.kind === "boost"
           ? "#a999fa"
           : p.kind === "moving"
             ? "#f4c272"
@@ -277,19 +275,11 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopV3State) {
         ctx.stroke();
       }
     }
-    if (p.kind === "checkpoint" || i === s.platforms.length - 1) {
+    if (p.kind === "checkpoint") {
       ctx.fillStyle = color;
       ctx.font = "bold 10px system-ui";
       ctx.textAlign = "center";
-      ctx.fillText(
-        i === s.platforms.length - 1
-          ? "META"
-          : i === 0
-            ? "DESPEGUE"
-            : `BALIZA ${i}`,
-        x + w / 2,
-        y + 26,
-      );
+      ctx.fillText(i === 0 ? "DESPEGUE" : `BALIZA ${i}`, x + w / 2, y + 26);
     }
     if (p.pickup && !s.collected[i]) {
       ctx.fillStyle = "#b4f2d2";
@@ -358,7 +348,7 @@ function render(ctx: CanvasRenderingContext2D, s: SkyHopV3State) {
   }
 }
 const hudLabel = (s: Readonly<SkyHopV3State>) =>
-  `ALTURA ${s.highest}/${s.platforms.length - 1}`;
+  `ALTURA ${s.highest}`;
 // Presentation-only signal: life loss wins over concurrent ascent or stomps.
 // It never becomes score, progress, replay input or an authoritative result.
 const feedbackScore = (s: Readonly<SkyHopV3State>) =>
@@ -434,7 +424,7 @@ export default function SkyHopVerified(props: GameRuntimeProps) {
     <div className="skyHopVerified">
       <CoreCanvasGame
         {...props}
-        core={SKY_HOP_CORE_V3}
+        core={SKY_HOP_CORE_V4}
         name="Sky Hop"
         render={render}
         hudLabel={hudLabel}

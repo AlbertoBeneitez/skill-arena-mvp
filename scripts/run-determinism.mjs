@@ -17,12 +17,14 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-birds-v4.js");
   await import("../.det-test/scripts/verify-birds-v6.js");
   await import("../.det-test/scripts/verify-birds-v7.js");
+  await import("../.det-test/scripts/verify-birds-v8.js");
   await import("../.det-test/scripts/verify-interactions-v96.js");
   await import("../.det-test/scripts/verify-birds-demolition.js");
   await (await import("./verify-birds-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-roulette-v1.js");
   await import("../.det-test/scripts/verify-roulette-v2.js");
   await import("../.det-test/scripts/verify-roulette-v4.js");
+  await import("../.det-test/scripts/verify-roulette-v5.js");
   await (await import("./verify-roulette-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-roulette-gesture.js");
   await import("../.det-test/scripts/verify-slot-v1.js");
@@ -44,9 +46,11 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-sky-hop-v1.js");
   await import("../.det-test/scripts/verify-sky-hop-v2.js");
   await import("../.det-test/scripts/verify-sky-hop-v3.js");
+  await import("../.det-test/scripts/verify-sky-hop-v4.js");
   await (await import("./verify-sky-hop-presentation.cjs")).default;
   await (await import("./verify-arcade-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-metro-v1.js");
+  await import("../.det-test/scripts/verify-metro-v2.js");
   await import("../.det-test/scripts/verify-brick-v1.js");
   await import("../.det-test/scripts/verify-brick-v2.js");
   await import("../.det-test/scripts/verify-maze-v1.js");
@@ -59,6 +63,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-piano-v2.js");
   await import("../.det-test/scripts/verify-piano-v3.js");
   await import("../.det-test/scripts/verify-tower-v3.js");
+  await import("../.det-test/scripts/verify-tower-v4.js");
   await (await import("./verify-tower-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-jet-v2.js");
   await import("../.det-test/scripts/verify-jet-v3.js");
@@ -70,6 +75,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-river-v2.js");
   await import("../.det-test/scripts/verify-river-v3.js");
   await import("../.det-test/scripts/verify-river-v4.js");
+  await import("../.det-test/scripts/verify-river-v5.js");
   await import("../.det-test/scripts/verify-ranking.js");
   await import("../.det-test/scripts/verify-orb-v1.js");
   await import("../.det-test/scripts/verify-orb-v2.js");

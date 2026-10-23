@@ -50,9 +50,6 @@ function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
     if(cutZ>0){const piece={...src,dMilli:cutZ,zMilli:src.zMilli<land.zMilli?src.zMilli:land.zMilli+land.dMilli};solid(piece,state.height,-age*age*.018,Math.max(0,1-age/75));}
     ctx.fillStyle=last.perfect?"#baffdc":"#ddefff";ctx.font="bold 16px system-ui";ctx.textAlign="center";ctx.fillText(last.perfect?`PERFECTO ×${state.combo}`:`+${last.scoreDelta}`,W/2,108);ctx.textAlign="left";
   }
-  ctx.save();ctx.translate(110,72);ctx.rotate(state.axis==="x"?Math.PI/6:-Math.PI/6);
-  ctx.strokeStyle="#a8dcea";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(10,0);
-  ctx.moveTo(-5,-4);ctx.lineTo(-10,0);ctx.lineTo(-5,4);ctx.moveTo(5,-4);ctx.lineTo(10,0);ctx.lineTo(5,4);ctx.stroke();ctx.restore();
   ctx.restore();
 }
 const keys = { " ": "DROP", Enter: "DROP" } as const;
