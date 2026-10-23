@@ -81,19 +81,49 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV2State) {
   if (dy > 0) railContact((BILLIARDS_RULES.bottom / 1000 - radius - y) / dy);
   else if (dy < 0) railContact((BILLIARDS_RULES.top / 1000 + radius - y) / dy);
 
+  // The cue stick is drawn over the rail and outside the cloth, so it stays
+  // visible when the ball is far from the middle (it used to be clipped).
+  // Its pullback shows the selected power, without predicting an outcome.
+  const pullback = 16 + s.power * 6,
+    cueLength = 150,
+    tipX = x - dx * pullback,
+    tipY = y - dy * pullback,
+    buttX = x - dx * (pullback + cueLength),
+    buttY = y - dy * (pullback + cueLength),
+    nx = -dy,
+    ny = dx;
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(0,0,0,.35)";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(tipX + 2, tipY + 4);
+  ctx.lineTo(buttX + 2, buttY + 4);
+  ctx.stroke();
+  ctx.fillStyle = "#e9d7a4";
+  ctx.beginPath();
+  ctx.moveTo(tipX + nx * 1.8, tipY + ny * 1.8);
+  ctx.lineTo(tipX - nx * 1.8, tipY - ny * 1.8);
+  ctx.lineTo(buttX - nx * 4.2, buttY - ny * 4.2);
+  ctx.lineTo(buttX + nx * 4.2, buttY + ny * 4.2);
+  ctx.fill();
+  ctx.strokeStyle = "#7a4d2c";
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(x - dx * (pullback + cueLength * 0.62), y - dy * (pullback + cueLength * 0.62));
+  ctx.lineTo(buttX, buttY);
+  ctx.stroke();
+  ctx.strokeStyle = "#8fe3ff";
+  ctx.lineWidth = 3.4;
+  ctx.beginPath();
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(tipX - dx * 5, tipY - dy * 5);
+  ctx.stroke();
+  ctx.restore();
   ctx.save();
   ctx.beginPath();
   ctx.rect(42, 94, 306, 410);
   ctx.clip();
-  // The cue's pullback shows selected power, without predicting an outcome.
-  const pullback = 16 + s.power * 6;
-  ctx.strokeStyle = "rgba(233,228,198,.85)";
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(x - dx * pullback, y - dy * pullback);
-  ctx.lineTo(x - dx * (pullback + 64), y - dy * (pullback + 64));
-  ctx.stroke();
   if (distance > radius + 2) {
     ctx.strokeStyle = "rgba(220,254,248,.65)";
     ctx.lineWidth = 1.5;

@@ -39,6 +39,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-canvas-viewport.js");
   await import("../.det-test/scripts/verify-stack-v3.js");
   await import("../.det-test/scripts/verify-stack-shift-v1.js");
+  await import("../.det-test/scripts/verify-stack-shift-v2.js");
   await import("../.det-test/scripts/verify-phalanx-v1.js");
   await import("../.det-test/scripts/verify-phalanx-v2.js");
   await import("../.det-test/scripts/verify-phalanx-v3.js");
@@ -79,12 +80,14 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-ranking.js");
   await import("../.det-test/scripts/verify-orb-v1.js");
   await import("../.det-test/scripts/verify-orb-v2.js");
+  await import("../.det-test/scripts/verify-orb-v3.js");
   await (await import("./verify-orb-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-alien-v2.js");
   await import("../.det-test/scripts/verify-alien-v3.js");
   await (await import("./verify-alien-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-gallery-v1.js");
   await import("../.det-test/scripts/verify-gallery-v2.js");
+  await import("../.det-test/scripts/verify-gallery-v3.js");
   await (await import("./verify-gallery-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-darts-v1.js");
   await import("../.det-test/scripts/verify-darts-v2.js");

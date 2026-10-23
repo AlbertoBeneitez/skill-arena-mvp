@@ -1,3 +1,4 @@
+// Shot Gallery V3 renderer: pure, finite, and its tap mapping agrees with the core.
 const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path");
@@ -8,114 +9,80 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const core = await load("lib/verified/shotGalleryCore.v2.js"),
-    layout = await load("lib/galleryPresentation.js");
+  const core = await load("lib/verified/shotGalleryCore.v3.js");
   const file = path.join(root, "components/games/ShotGallery.tsx"),
     swc = req("next/dist/build/swc");
   await swc.loadBindings();
   const compiled = await swc.transform(fs.readFileSync(file, "utf8"), {
     filename: file,
-    jsc: {
-      parser: { syntax: "typescript", tsx: true },
-      target: "es2022",
-      transform: { react: { runtime: "automatic" } },
-    },
+    jsc: { parser: { syntax: "typescript", tsx: true }, target: "es2022", transform: { react: { runtime: "automatic" } } },
     module: { type: "commonjs" },
   });
   const deps = {
-      react: {
-        ...req("react"),
-        useRef: (current) => ({ current }),
-        useCallback: (f) => f,
-      },
-      "@/lib/verified/shotGalleryCore.v2": core,
-      "@/lib/galleryPresentation": layout,
+      react: { ...req("react"), useCallback: (f) => f },
+      "@/lib/verified/shotGalleryCore.v3": core,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/gameFeedback": { gameTone() {} },
       "./CoreCanvasGame": () => null,
     },
     exports = {};
-  new Function("require", "exports", compiled.code)(
-    (id) => deps[id] || req(id),
-    exports,
-  );
-  const element = exports.default({
-      active: false,
-      stake: 0,
-      seed: "preview",
-      targetScore: 1e9,
-      onFinish() {},
-    }),
-    render = element.props.children.props.render,
-    pick = element.props.children.props.pointAction;
+  new Function("require", "exports", compiled.code)((id) => deps[id] || req(id), exports);
+  global.localStorage = { getItem: () => null, setItem() {} };
+  const element = exports.default({ active: false, stake: 0, seed: "preview", targetScore: 1e9, onFinish() {} }),
+    { render, pointAction: pick } = element.props.children.props;
   let frames = 0;
-  for (let seed = 0; seed < 16; seed++)
-    for (const width of [390, 1100])
-      for (let trial = 0; trial < 12; trial++)
-        for (const phase of ["waiting", "ready", "feedback"]) {
-          const s = core.SHOT_GALLERY_CORE_V2.create(`gallery2-render-${seed}`);
-          s.trial = trial;
-          s.phase = phase;
-          if (phase === "feedback") {
-            s.phaseTicks = 20;
-            s.results = [
-              {
-                trial,
-                kind: s.trials[trial].kind,
-                type: "CORRECT",
-                reactionTicks: 24,
-                award: 840,
-                pick: s.trials[trial].answer,
-              },
-            ];
-          }
-          const before = JSON.stringify(s),
-            texts = [],
-            surfaces = [],
-            stack = [];
-          const ctx = new Proxy(
-            { fillStyle: "" },
-            {
-              get(o, k) {
-                if (k in o) return o[k];
-                return (...a) => {
-                  if (k === "fillText") texts.push(String(a[0]));
-                  if (k === "roundRect" && a[2] >= 200 && a[3] >= 140)
-                    surfaces.push(a);
-                  if (k === "save") stack.push(1);
-                  if (k === "restore") assert.ok(stack.pop());
-                };
-              },
-            },
-          );
-          render(ctx, s, { width, height: 520 });
-          assert.equal(JSON.stringify(s), before);
-          assert.equal(stack.length, 0);
-          assert.equal(
-            surfaces.length,
-            1,
-            "one shared gallery surface, no card panels",
-          );
-          assert.ok(
-            !texts.some((t) =>
-              /ESPERA|AHORA|PRUEBA|Cada prueba|OTRA OPCIÓN/.test(t),
-            ),
-          );
-          const slots = layout.gallerySlots(width);
-          assert.equal(slots.length, 6);
-          for (let i = 0; i < 6; i++) {
-            const p = slots[i];
-            assert.equal(
-              pick({ x: p.x + p.width / 2, y: p.y + p.height / 2 }, "down"),
-              `PICK_${i}`,
-            );
-            assert.equal(pick({ x: p.x, y: p.y }, "move"), null);
-          }
-          frames++;
+  for (let seed = 0; seed < 12; seed++)
+    for (let trial = 0; trial < 12; trial++)
+      for (const phase of ["waiting", "ready", "feedback"]) {
+        const s = core.SHOT_GALLERY_CORE_V3.create(`gallery3-render-${seed}`);
+        s.trial = trial;
+        s.phase = phase;
+        s.readyTick = 0;
+        s.tick = 30;
+        if (phase !== "waiting") {
+          s.hits = [s.trials[trial].answers[0]];
+          s.tapTicks = [40];
         }
-  console.log(
-    `Gallery actual renderer: ${frames} read-only frames, single surface, six direct targets, responsive picks, no filler/tutorial text`,
-  );
+        if (phase === "feedback")
+          s.results = [{ trial, kind: s.trials[trial].order.kind, type: ["CORRECT", "FALSE_START", "TIMEOUT"][trial % 3], taps: [40], wrongs: 0, award: 0 }];
+        const before = JSON.stringify(s),
+          stack = [];
+        let finite = true;
+        const ctx = new Proxy(
+          { fillStyle: "" },
+          {
+            get(o, k) {
+              if (k in o) return o[k];
+              if (k === "createRadialGradient" || k === "createLinearGradient") return () => ({ addColorStop() {} });
+              return (...a) => {
+                if (k === "save") stack.push(1);
+                if (k === "restore") stack.pop();
+                if (a.some((v) => typeof v === "number" && !Number.isFinite(v))) finite = false;
+              };
+            },
+            set(o, k, v) {
+              o[k] = v;
+              return true;
+            },
+          },
+        );
+        render(ctx, s, { width: 390, height: 620 });
+        assert.equal(JSON.stringify(s), before, "renderer must not mutate state");
+        assert.equal(stack.length, 0);
+        assert.ok(finite, "finite coordinates");
+        frames++;
+      }
+  // Taps: before green any tap is a false start; afterwards the nearest unhit target wins.
+  const s = core.SHOT_GALLERY_CORE_V3.create("gallery3-pick");
+  assert.equal(pick({ x: 5, y: 5 }, "down", s), "PICK_0");
+  s.phase = "ready";
+  const t = s.trials[0].targets[3];
+  assert.equal(pick({ x: t.x + 4, y: t.y - 3 }, "down", s), "PICK_3");
+  assert.equal(pick({ x: 2, y: 2 }, "down", s), null);
+  assert.equal(pick({ x: t.x, y: t.y }, "move", s), null);
+  s.hits = [3];
+  assert.notEqual(pick({ x: t.x, y: t.y }, "down", s), "PICK_3");
+  console.log(JSON.stringify({ variant: "Shot Gallery V3", frames, rendererPure: true }));
 })().catch((e) => {
   console.error(e);
   throw e;

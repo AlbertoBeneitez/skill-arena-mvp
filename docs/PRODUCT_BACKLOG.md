@@ -523,3 +523,10 @@ Birds 8, Tower Drop 4, Roulette 5 (fichas, multi-apuesta, lanzador exterior), Ri
 Metro Shift 2 (runner de tres vías), Sky Hop 4 (sin meta) y Mine Grid 0.2 (tablero visible tras
 la mina, puntuación casillas/tiempo, marcar con pulsación larga). Detalle y límites en
 [releases/v101-mobile.md](releases/v101-mobile.md).
+
+## v102-saturn · versión SATURN (23-oct-2026)
+
+Catálogo reducido a 11 juegos (12 archivados en `archive/pre-saturn`), Lanzadera/Saturno, nombre de avatar en la
+pestaña, gráficas de beneficio en el ranking de ejemplo, Grupo guiado, y cambios en Dardos, Slot, Shot Gallery 3,
+Orb Burst 3, Stack Shift 2, Solitaire y Billar. Pendiente: compra/cobro de fichas de Saturno. Detalle en
+[releases/v102-saturn.md](releases/v102-saturn.md).

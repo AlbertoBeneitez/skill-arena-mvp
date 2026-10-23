@@ -12,10 +12,10 @@ import { SKY_HOP_ACTIONS } from "./verified/skyHopProtocol.v1";
 import { PHALANX_ACTIONS } from "./verified/starPhalanxProtocol.v1";
 import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
 import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
-import { SHOT_GALLERY_ACTIONS_V2 as SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v2";
+import { SHOT_GALLERY_ACTIONS_V3 as SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v3";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
-import { ORB_ACTIONS } from "./verified/orbBurstProtocol.v1";
+import { ORB_ACTIONS_V3 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v3";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -299,7 +299,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "stack-shift",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/StackShiftVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: STACK_SHIFT_ACTIONS },
@@ -380,10 +380,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orb-burst",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: ORB_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: ORB_ACTIONS },
     name: "Orb Burst",
     cover: "/covers/orb-burst.svg",
     enabled: true,
@@ -395,8 +395,8 @@ const GAME_DEFINITIONS = [
     rivalScore: 108,
     rivalName: "ORB",
     rivalAvatar: "/avatars/avatar-5.svg",
-    instruction: "Apunta arrastrando y suelta para lanzar. Junta tres o más.",
-    scoring: "Avance por los 108 orbes originales retirados de un campo continuo; disparos y presión no dan avance. Replay de servidor.",
+    instruction: "Apunta arrastrando y suelta para lanzar. Junta tres o más. Cambia la bola cuando te convenga y usa las bombas.",
+    scoring: "Avance por los 108 orbes originales retirados (los asteroides solo caen al quedar sueltos; las bombas limpian alrededor). Cambios limitados. Replay de servidor.",
 
   },
   {
@@ -477,10 +477,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: SHOT_GALLERY_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
     name: "Shot Gallery",
     cover: "/covers/shot-gallery.svg",
     enabled: true,
@@ -489,11 +489,11 @@ const GAME_DEFINITIONS = [
     tagline: "Reconoce el objetivo. Reacciona con precisión.",
     difficulty: "ALTA",
     skillLabel: "REACCIÓN + RECONOCIMIENTO",
-    rivalScore: 7500,
+    rivalScore: 6000,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Lee la regla. Espera a la activación y toca el objetivo correcto.",
-    scoring: "Suma de doce pruebas: colores, formas, números y combinaciones. Anticiparse y fallar penaliza.",
+    instruction: "Espera al punto verde y toca los objetivos que pide la orden: una mancha de color o una figura.",
+    scoring: "Doce órdenes mezcladas de color y figura sobre objetivos repartidos al azar; algunas piden tocar varios. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
   },
   {
     id: "sky-hop",
@@ -525,30 +525,21 @@ export const GAME_REGISTRY = Object.fromEntries(
   GAME_DEFINITIONS.map((game) => [game.id, game])
 ) as unknown as Record<GameId, GameMeta>;
 
+// SATURN: Galactic Birds, Jet Stream, Piano Rush, Alien Dash, River Dash, Sky Hop, Metro Shift,
+// Orbit Shift, Serpent, Brick Relay, Maze Rush and Star Phalanx are archived (tag archive/pre-saturn).
+// Their code stays registered so historical replays keep verifying; they are just not offered.
 const CATALOG_ORDER: GameId[] = [
-  "galactic-birds",
   "galactic-roulette",
   "galactic-slot",
   "darts",
   "billiards",
   "precision-stack",
   "tower-drop",
-  "jet-stream",
-  "piano-rush",
-  "dino-dash",
   "orb-burst",
   "reaction-test",
-  "river-dash",
-  "sky-hop",
-  "metro-shift",
-  "orbit-shift",
   "solitaire-sprint",
   "mine-grid",
-  "grid-serpent",
-  "brick-relay",
   "stack-shift",
-  "maze-rush",
-  "star-phalanx",
 ];
 
 export const GAMES: GameMeta[] = CATALOG_ORDER.map(

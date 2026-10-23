@@ -10,8 +10,8 @@ const root = process.env.ORB_UI_REPO || path.resolve(__dirname, ".."),
     path.join(root, "components/games/OrbBurstVerified.tsx"),
   cameraDir = process.env.ORB_CAMERA_DIR || path.join(root, "lib"),
   coreSource =
-    process.env.ORB_V2_SOURCE ||
-    path.join(root, "lib/verified/orbBurstCore.v2.ts");
+    process.env.ORB_V3_SOURCE ||
+    path.join(root, "lib/verified/orbBurstCore.v3.ts");
 const req = createRequire(path.join(root, "package.json")),
   swc = req("next/dist/build/swc");
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
@@ -201,6 +201,11 @@ module.exports = (async () => {
         path.join(root, ".det-test/lib/verified/orbBurstProtocol.v1.js"),
       )
     ),
+    protocol3 = await import(
+      pathToFileURL(
+        path.join(root, ".det-test/lib/verified/orbBurstProtocol.v3.js"),
+      )
+    ),
     rng = await import(
       pathToFileURL(path.join(root, ".det-test/lib/deterministic/seeded.js"))
     ),
@@ -221,6 +226,7 @@ module.exports = (async () => {
     "../deterministic/integerMath": integer,
     "./orbBurstCore.v1": v1,
     "./orbBurstProtocol.v1": protocol,
+    "./orbBurstProtocol.v3": protocol3,
   });
   const ui = await load(
     uiSource,
@@ -228,17 +234,17 @@ module.exports = (async () => {
       react: { useMemo: (factory) => factory() },
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/verified/orbBurstCore.v1": v1,
-      "@/lib/verified/orbBurstCore.v2": v2,
+      "@/lib/verified/orbBurstCore.v3": v2,
       "@/lib/verified/orbBurstProtocol.v1": protocol,
       "@/lib/orbPresentation": camera,
       "./CoreCanvasGame": { default() {} },
     },
     "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.pointAction=pointAction;exports.hudLabel=hudLabel;exports.feedbackScore=feedbackScore;",
   );
-  const state = v2.ORB_BURST_CORE_V2.create("public-presentation-regression");
+  const state = v2.ORB_BURST_CORE_V3.create("public-presentation-regression");
   assert.equal(state.height, 0);
   assert.equal(state.bubbles.length, 36);
-  assert.equal(v2.ORB_V2_RULES.sourceGoal, 108);
+  assert.equal(v2.ORB_V3_RULES.sourceGoal, 108);
   for (const rotated of [false, true])
     for (const scale of [0.1, 1, 1.235])
       for (const point of [
@@ -458,8 +464,8 @@ module.exports = (async () => {
       lastInsertionTick: 100,
       settleRemaining: 18,
     },
-    oldPoint = v2.orbCenterV2(state, single.row, single.col),
-    actualPoint = v2.orbCenterV2(inserted, single.row + 1, single.col);
+    oldPoint = v2.orbCenterV3(state, single.row, single.col),
+    actualPoint = v2.orbCenterV3(inserted, single.row + 1, single.col);
   assert.equal(oldPoint.xMilli, actualPoint.xMilli);
   for (const age of [0, 6, 12, 18]) {
     const s = {
@@ -550,14 +556,14 @@ module.exports = (async () => {
     targetScore: 108,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core, v2.ORB_BURST_CORE_V2);
+  assert.equal(surface.core, v2.ORB_BURST_CORE_V3);
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.instruction, "");
   assert.equal(surface.expandHorizontalViewport, true);
-  assert.equal(
-    surface.controls,
-    undefined,
-    "release launches without a separate button",
+  assert.deepEqual(
+    surface.controls.map((c) => c.action),
+    ["SWAP"],
+    "release launches without a separate button; only the swap choice has one",
   );
   assert.equal(surface.inputTones.SHOOT, "tap");
   const source = fs.readFileSync(uiSource, "utf8");
@@ -566,7 +572,7 @@ module.exports = (async () => {
   );
   console.log(
     JSON.stringify({
-      variant: "Orb V2 continuous presentation",
+      variant: "Orb V3 continuous presentation",
       inputCases,
       viewports: dimensions.length,
       dprCases: 3,

@@ -12,6 +12,7 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GlobalRanking from "./GlobalRanking";
+import ModePicker from "./ModePicker";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
@@ -1228,21 +1229,7 @@ export default function DemoApp() {
               <button type="button" className="globalRankingShortcut" aria-label="Ranking global · Beneficio neto" onClick={()=>navigate("ranking")}>Ranking global →</button>
             </div>
 
-            <div className={shellStyles.modeHeading}><strong>Modo de juego</strong><span>{selectedStake===0?"Entrenamiento gratis":"Saldo y premios ficticios"}</span></div>
-            <div className="quickStakeBar" aria-label="Importe de la partida">
-              {STAKES.map((stake) => (
-                <button
-                  key={stake}
-                  className={selectedStake === stake ? "selected" : ""}
-                  aria-pressed={selectedStake === stake}
-                  aria-label={stake===0?"Entrenamiento gratis":`Reto con ${stake} euros ficticios`}
-                  onClick={() => selectStake(stake)}
-                  disabled={stake > balance}
-                >
-                  {stake === 0 ? "GRATIS" : `${stake}€`}
-                </button>
-              ))}
-            </div>
+            <ModePicker selectedStake={selectedStake} balance={balance} onSelect={selectStake} />
 
             {matchStartError && <p role="status">{matchStartError}</p>}
             <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
@@ -1278,10 +1265,10 @@ export default function DemoApp() {
                 <strong>{selectedGame.name}</strong>
                 <small>
                   {matchScope === "group" && groupCompetition && group
-                    ? `${selectedStake === 0 ? "ENTRENAMIENTO" : `${selectedStake}€ FICTICIOS`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
+                    ? `${selectedStake === 0 ? "LANZADERA" : `SATURNO · ${selectedStake} FICHAS`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
                     : selectedStake === 0
-                      ? "ENTRENAMIENTO"
-                      : `${selectedStake}€ FICTICIOS · 1 VS 1`}
+                      ? "LANZADERA"
+                      : `SATURNO · ${selectedStake} FICHAS · 1 VS 1`}
                 </small>
               </div>
               <div className="gameHeaderActions">
@@ -1550,7 +1537,7 @@ export default function DemoApp() {
             <span>◉</span>GRUPO
           </button>
           <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
-            <img src={avatarSrc} alt="" />AVATAR
+            <img src={avatarSrc} alt="" /><em className="navName">{playerName || "AVATAR"}</em>
           </button>
         </nav>
       )}

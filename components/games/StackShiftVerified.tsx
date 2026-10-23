@@ -1,12 +1,12 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  STACK_SHIFT_CORE,
+  STACK_SHIFT_CORE_V2,
   stackCells,
   stackLandingY,
   stackPiece,
   type StackShiftState,
-} from "@/lib/verified/stackShiftCore.v1";
+} from "@/lib/verified/stackShiftCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
 const colors = [
@@ -98,10 +98,14 @@ function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
   ctx.fillStyle = "#9bc1d5";
   ctx.font = "9px system-ui";
   ctx.fillText("SIGUIENTE", 334, 64);
-  const next = stackPiece(s.seed, s.pieceIndex + 1);
-  for (const [x, y] of stackCells(next)) {
-    ctx.fillStyle = colors[next];
-    ctx.fillRect(336 + x * 12, 74 + y * 12, 10, 10);
+  for (let n = 1; n <= 2; n++) {
+    const next = stackPiece(s.seed, s.pieceIndex + n);
+    ctx.globalAlpha = n === 1 ? 1 : 0.5;
+    for (const [x, y] of stackCells(next)) {
+      ctx.fillStyle = colors[next];
+      ctx.fillRect(336 + x * 12, 74 + (n - 1) * 46 + y * 12, 10, 10);
+    }
+    ctx.globalAlpha = 1;
   }
   if (s.status === "failed") {
     ctx.fillStyle = "rgba(216,81,109,.17)";
@@ -120,6 +124,7 @@ const controls = [
   { action: "LEFT", label: "Mover izquierda", symbol: "←" },
   { action: "ROTATE", label: "Girar pieza", symbol: "↻" },
   { action: "RIGHT", label: "Mover derecha", symbol: "→" },
+  { action: "SOFT_DROP", label: "Bajar una fila", symbol: "↓" },
   { action: "HARD_DROP", label: "Asentar pieza", symbol: "BAJAR" },
 ] as const;
 export default function StackShiftVerified(props: GameRuntimeProps) {
@@ -127,13 +132,13 @@ export default function StackShiftVerified(props: GameRuntimeProps) {
     <div className="stackShiftVerified">
       <CoreCanvasGame
         {...props}
-        core={STACK_SHIFT_CORE}
+        core={STACK_SHIFT_CORE_V2}
         name="Stack Shift"
         hudLabel={hudLabel}
         render={render}
         keys={keys}
         controls={controls}
-        instruction="← → mueve · ↻ gira · BAJAR asienta sobre la silueta"
+        instruction="← → mueve · ↻ gira · ↓ baja una fila · BAJAR asienta sobre la silueta"
       />
     </div>
   );

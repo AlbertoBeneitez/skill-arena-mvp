@@ -6312,3 +6312,115 @@ h1.wordmark { margin-bottom:0; line-height:1.2; }
 .ageOverlay .gameExitCard p { margin:8px 0; }
 
 .resultNote { margin:6px 16px 0; font-size:13px; line-height:1.4; color:#bfd5e5; text-align:center; }
+
+/* SATURN: ranking charts */
+.profitChart { display:block; min-width:60px; }
+.rankingLeaders article .profitChart { margin-top:6px; }
+.rankingSpark { width:84px; padding:2px 4px; }
+.rankingRowToggle { cursor:pointer; }
+.rankingRowToggle:focus-visible { outline:2px solid #9ae5db; outline-offset:-2px; }
+.rankingChartRow td { padding:10px 12px 14px; background:rgba(8,22,40,.7); }
+.rankingChartRow strong { display:block; font-size:13px; margin-bottom:6px; color:#d7f4ff; }
+.rankingChartRow small { color:#9bb8cc; font-size:11px; }
+
+/* SATURN: mode picker */
+.modePicker { position:relative; margin:10px 0 14px; padding:12px; border-radius:22px; overflow:hidden; border:1px solid rgba(140,190,230,.25); background:radial-gradient(120% 140% at 85% 0%,#1c2f58 0%,#0c1630 55%,#070d1e 100%); }
+.modeStars i { position:absolute; width:2px; height:2px; border-radius:50%; background:#dbe9ff; opacity:.5; animation:modeTwinkle 3.2s ease-in-out infinite; }
+@keyframes modeTwinkle { 0%,100% { opacity:.15; } 50% { opacity:.9; } }
+.modeCards { position:relative; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.modeCard { display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 6px 10px; border-radius:18px; border:1px solid rgba(150,190,230,.22); background:rgba(10,20,44,.55); color:#e6f1ff; text-align:center; transition:transform .15s, border-color .15s, background .15s; }
+.modeCard .modeArt { display:block; width:100%; max-width:132px; aspect-ratio:4/3; }
+.modeCard strong { font-size:17px; letter-spacing:.04em; }
+.modeCard small { font-size:12px; color:#9fb8d2; }
+.modeCard.selected { border-color:#9ae5db; background:rgba(26,64,84,.6); box-shadow:0 0 0 1px #9ae5db, 0 8px 24px rgba(60,160,190,.25); transform:translateY(-1px); }
+.modeCard.saturno.selected { border-color:#f1cf8b; box-shadow:0 0 0 1px #f1cf8b, 0 8px 24px rgba(220,170,80,.25); background:rgba(70,52,30,.55); }
+.modeCard:not(.selected) .modeArt { opacity:.72; filter:saturate(.8); }
+.saturnStakes { position:relative; display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.saturnStakes span { font-size:12px; font-weight:800; color:#f1cf8b; letter-spacing:.06em; text-transform:uppercase; margin-right:2px; }
+.saturnStakes button { min-width:48px; min-height:40px; padding:0 12px; border-radius:12px; border:1px solid rgba(241,207,139,.4); background:rgba(40,30,16,.6); color:#ffe9b8; font-weight:900; font-size:15px; }
+.saturnStakes button.selected { background:#f1cf8b; color:#2b1d07; }
+.saturnStakes button:disabled { opacity:.35; }
+.navName { font-style:normal; max-width:84px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:none; }
+
+/* SATURN: groups guided flow */
+.groupHeroLead { margin:6px 0 0; color:#b9d0e6; font-size:14px; }
+.groupHowTo { list-style:none; margin:12px 0 0; padding:0; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.groupHowTo li { display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px; border-radius:14px; background:rgba(12,28,52,.6); border:1px solid rgba(140,190,230,.2); text-align:center; font-size:12px; color:#d6e8f6; }
+.groupHowTo b, .groupStepper b { display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:#9ae5db; color:#0c2a2f; font-size:13px; }
+.groupEntryCards { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+.groupEntryCards button { display:flex; flex-direction:column; align-items:center; gap:2px; padding:14px 8px; min-height:92px; border-radius:16px; border:1px solid rgba(140,190,230,.25); background:rgba(10,22,44,.7); color:#e6f1ff; }
+.groupEntryCards button span { font-size:26px; line-height:1; color:#9ae5db; }
+.groupEntryCards button strong { font-size:15px; }
+.groupEntryCards button small { font-size:12px; color:#9fb8d2; }
+.groupEntryCards button.active { border-color:#9ae5db; background:rgba(28,70,84,.65); box-shadow:0 0 0 1px #9ae5db; }
+.groupStepTitle { margin:0 0 8px; font-size:15px; color:#1c2f4d; font-weight:700; }
+.groupStepTitle b { color:#0f7f73; margin-right:6px; text-transform:uppercase; font-size:12px; letter-spacing:.08em; }
+.groupNameIdeas { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.groupNameIdeas button { min-height:36px; padding:0 12px; border-radius:999px; border:1px solid rgba(140,190,230,.3); background:rgba(14,32,58,.7); color:#cfe6f7; font-size:13px; }
+.groupNextHint { margin:10px 0 0; font-size:12px; color:#9fb8d2; text-align:center; }
+.groupStepper { list-style:none; display:flex; align-items:center; gap:4px; margin:12px 0 6px; padding:0; }
+.groupStepper li { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; color:#8aa3bb; position:relative; }
+.groupStepper li b { background:rgba(120,150,180,.25); color:#c7d9e8; }
+.groupStepper li.current b { background:#f1cf8b; color:#2b1d07; box-shadow:0 0 0 4px rgba(241,207,139,.25); }
+.groupStepper li.current span { color:#f1cf8b; font-weight:800; }
+.groupStepper li.done b { background:#6fe3b4; color:#07291d; }
+.groupStepper li.done span { color:#bfe9d8; }
+.groupNextStep { margin:0 0 10px; padding:10px 12px; border-radius:12px; background:rgba(241,207,139,.1); border:1px solid rgba(241,207,139,.3); color:#ffe9b8; font-size:13px; }
+
+/* SATURN · Solitaire Sprint: four-colour suits, no green frames, flying cards on a solved board. */
+.solitaireSprint .solitaireCard.faceUp,
+.solitaireSprint .solitairePile.waste,
+.solitaireSprint .solitairePile.foundation {
+  --suit: #1c2740;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--suit) 14%, #fffaf0) 0, #fffaf0 62%);
+  border-top: 4px solid var(--suit);
+}
+.solitaireSprint .suitSpade { --suit: #1c2740; color: #1c2740; }
+.solitaireSprint .suitHeart { --suit: #d32f4a; color: #d32f4a; }
+.solitaireSprint .suitDiamond { --suit: #1a6fd6; color: #1a6fd6; }
+.solitaireSprint .suitClub { --suit: #17893f; color: #17893f; }
+.solitaireSprint .solitaireCard.faceUp {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 3px;
+  padding: 3px 4px;
+  font-size: clamp(13px, 3.9vw, 19px);
+}
+.solitaireSprint .solitaireCard.faceUp b { font-size: 1.05em; letter-spacing: -.02em; }
+.solitaireSprint .solitaireCard.faceUp span { font-size: 1.2em; line-height: 1; }
+.solitaireSprint .solitairePile.waste b, .solitaireSprint .solitairePile.foundation b { font-size: 1.15em; }
+.solitaireSprint .solitairePile.waste span, .solitaireSprint .solitairePile.foundation span { font-size: 1.5em; line-height: 1; }
+.solitaireSprint .solitairePile .ghostSuit { opacity: .42; }
+/* No selection rectangle: the picked cards simply lift. */
+.solitaireSprint .solitaireCard.selected,
+.solitaireSprint .solitairePile.selected {
+  outline: none;
+  transform: translateY(-6px);
+  box-shadow: 0 10px 18px rgba(0,0,0,.4);
+}
+.solitaireSprint .validDestination { outline: none; box-shadow: none; }
+.solitaireSprint .solitaireCard { transition: transform .12s, box-shadow .15s; }
+.solitaireFlight {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 3px 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border-top: 4px solid var(--suit, #1c2740);
+  background: #fffaf0;
+  font: 950 17px system-ui;
+  pointer-events: none;
+  box-shadow: 0 12px 26px rgba(0,0,0,.55), 0 0 18px rgba(255,226,140,.55);
+}
+.solitaireFlight.suitSpade { --suit: #1c2740; color: #1c2740; }
+.solitaireFlight.suitHeart { --suit: #d32f4a; color: #d32f4a; }
+.solitaireFlight.suitDiamond { --suit: #1a6fd6; color: #1a6fd6; }
+.solitaireFlight.suitClub { --suit: #17893f; color: #17893f; }
+
+/* Orb Burst V3: the swap button sits at the right, under the next orb. */
+.orbVerified .coreControls { justify-content: flex-end; bottom: 10px; right: 18px; left: auto; }
+.orbVerified .coreControls button { width: 64px; height: 46px; font-size: 26px; }

@@ -127,12 +127,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
     ctx.fillStyle = hit.points ? "#a1eed3" : "#e6b597";
     ctx.textAlign = "center";
     ctx.font = "900 32px system-ui";
-    ctx.fillText(`${hit.points} PUNTOS`, cx, 500);
-  } else if (s.phase === "aim" && hit && !hit.timeout) {
-    ctx.fillStyle = "#a1eed3";
-    ctx.textAlign = "center";
-    ctx.font = "bold 20px system-ui";
-    ctx.fillText(`ÚLTIMO: ${hit.points}`, cx, 480);
+    ctx.fillText(`+${hit.points}`, cx, 500);
   }
   ctx.fillStyle = "#b4d3df";
   ctx.textAlign = "center";
@@ -175,7 +170,7 @@ function aimActions(point: CorePoint) {
 const tones = { THROW: "tap" } as const,
   keys = { " ": "THROW", Enter: "THROW" };
 const feedbackScore = (s: Readonly<DartsStateV3>) => s.total;
-const hudLabel = (s: Readonly<DartsStateV3>) => `TOTAL ${s.total}`;
+const hudLabel = (s: Readonly<DartsStateV3>) => `PUNTOS ${s.total}`;
 export default function Darts(props: GameRuntimeProps) {
   const startRef = useRef<CorePoint | null>(null);
   useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { canPlaceOnTableau, canPlaceOnFoundation, isRed, solitaireDestinations, type Card, type Source, type Suit, type SolitaireDestination } from "@/lib/solitaireMoves";
+import { canPlaceOnTableau, canPlaceOnFoundation, solitaireDestinations, type Card, type Source, type Suit, type SolitaireDestination } from "@/lib/solitaireMoves";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { GameResult } from "@/lib/types";
 import { solitaireChallengeFor } from "@/lib/deterministic/challengeSets";
@@ -15,6 +15,11 @@ type Props = {
 };
 
 const SUITS: Suit[] = ["♠", "♥", "♦", "♣"];
+
+const SUIT_CLASS: Record<Suit, string> = { "♠": "suitSpade", "♥": "suitHeart", "♦": "suitDiamond", "♣": "suitClub" };
+function suitClass(suit: Suit) {
+  return SUIT_CLASS[suit];
+}
 
 function rankLabel(rank: number) {
   if (rank === 1) return "A";
@@ -105,6 +110,8 @@ export default function SolitaireSprint({
   const scoreRef = useRef(0);
   const runningRef = useRef(false);
   const startRef = useRef(0);
+  const solvingRef = useRef(false);
+  const timersRef = useRef<number[]>([]);
 
   useEffect(() => {
     const next = dealVerifiedChallenge(seed);
@@ -121,7 +128,15 @@ export default function SolitaireSprint({
     setElapsedMs(0);
     runningRef.current = active;
 
+    solvingRef.current = false;
+    timersRef.current.forEach(window.clearTimeout);
+    timersRef.current = [];
     if (active) startRef.current = performance.now();
+    return () => {
+      timersRef.current.forEach(window.clearTimeout);
+      timersRef.current = [];
+      solvingRef.current = false;
+    };
   }, [active, seed]);
 
   useEffect(() => {
@@ -134,10 +149,10 @@ export default function SolitaireSprint({
     return () => window.clearInterval(timer);
   }, [active]);
 
-  function finish(won: boolean, finalScore = scoreRef.current) {
-    if (!runningRef.current) return;
+  function finish(won: boolean, finalScore = scoreRef.current, frozenTimeMs?: number) {
+    if (!runningRef.current && frozenTimeMs === undefined) return;
     runningRef.current = false;
-    const timeMs = Math.round(performance.now() - startRef.current);
+    const timeMs = frozenTimeMs ?? Math.round(performance.now() - startRef.current);
     setElapsedMs(timeMs);
     gameTone(won ? "win" : "bad");
     haptic(won ? [18, 28, 45] : 26);
@@ -149,7 +164,7 @@ export default function SolitaireSprint({
     scoreRef.current = next;
     setScore(next);
 
-    if (next >= targetScore) {
+    if (next >= targetScore && !solvingRef.current) {
       finish(true, next);
     }
 
@@ -162,14 +177,107 @@ export default function SolitaireSprint({
     );
   }
 
-  function finishWhenTableauIsOpen(nextTableau: Card[][]) {
+  function flyCard(card: Card, from: Element | null, to: Element | null) {
+    if (!from || !to || typeof document === "undefined") return;
+    const a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
+    const el = document.createElement("div");
+    el.className = `solitaireFlight ${suitClass(card.suit)}`;
+    el.innerHTML = `<b>${rankLabel(card.rank)}</b><span>${card.suit}</span>`;
+    Object.assign(el.style, { left: `${a.left}px`, top: `${a.top}px`, width: `${a.width}px`, height: `${Math.max(a.height, 56)}px` });
+    document.body.appendChild(el);
+    const animation = el.animate?.(
+      [
+        { transform: "translate(0,0) scale(1) rotate(0deg)", opacity: 1 },
+        { transform: `translate(${(b.left - a.left) / 2}px,${(b.top - a.top) / 2 - 26}px) scale(1.18) rotate(-6deg)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(${b.left - a.left}px,${b.top - a.top}px) scale(1) rotate(0deg)`, opacity: 1 },
+      ],
+      { duration: 380, easing: "cubic-bezier(.3,.7,.3,1)", fill: "forwards" },
+    );
+    if (animation) animation.onfinish = () => el.remove();
+    else el.remove();
+    timersRef.current.push(window.setTimeout(() => el.remove(), 700));
+  }
+
+  /**
+   * Solved board: nothing is hidden any more, so the remaining cards fly to their
+   * foundations one by one. The score and the time are frozen at the moment the
+   * board was solved; the animation never changes the result.
+   */
+  function playSolvedAnimation(
+    startTableau: Card[][],
+    startStock: Card[],
+    startWaste: Card[],
+    startFoundations: Card[][],
+  ) {
+    const frozenScore = scoreRef.current,
+      frozenTime = Math.round(performance.now() - startRef.current);
+    solvingRef.current = true;
+    runningRef.current = false;
+    setSelected(null);
+    gameTone("good");
+    const t = startTableau.map(c => c.map(x => ({ ...x })));
+    let st = startStock.map(x => ({ ...x })),
+      w = startWaste.map(x => ({ ...x }));
+    const f = startFoundations.map(p => p.map(x => ({ ...x })));
+    let idle = 0, steps = 0;
+    const done = () => {
+      timersRef.current.push(window.setTimeout(() => {
+        solvingRef.current = false;
+        finish(frozenScore >= targetScore, frozenScore, frozenTime);
+      }, 650));
+    };
+    const tick = () => {
+      steps++;
+      if (steps > 400 || idle > 60) return done();
+      let moved: { card: Card; fromSel: string; foundation: number; apply: () => void } | null = null;
+      const tryCard = (card: Card | undefined, fromSel: string, apply: () => void) => {
+        if (!card || moved) return;
+        const fi = f.findIndex((pile, index) => SUITS[index] === card.suit && canPlaceOnFoundation(card, pile));
+        if (fi >= 0) moved = { card, fromSel, foundation: fi, apply };
+      };
+      tryCard(w[w.length - 1], "[data-solitaire-waste]", () => { w = w.slice(0, -1); });
+      t.forEach((col, ci) => tryCard(col[col.length - 1], `[data-card-id="${col[col.length - 1]?.id}"]`, () => { col.pop(); }));
+      if (moved) {
+        idle = 0;
+        const m = moved as { card: Card; fromSel: string; foundation: number; apply: () => void };
+        flyCard(m.card, surfaceRef.current?.querySelector(m.fromSel) ?? null, surfaceRef.current?.querySelector(`[data-solitaire-destination="foundation-${m.foundation}"]`) ?? null);
+        m.apply();
+        f[m.foundation].push({ ...m.card, faceUp: true });
+        timersRef.current.push(window.setTimeout(() => {
+          setTableau(t.map(c => c.map(x => ({ ...x }))));
+          setWaste([...w]);
+          setFoundations(f.map(p => p.map(x => ({ ...x }))));
+          gameTone("tap");
+        }, 330));
+        if (f.reduce((n, p) => n + p.length, 0) === 52) return done();
+      } else {
+        idle++;
+        if (st.length) {
+          const drawn = { ...st[st.length - 1], faceUp: true };
+          st = st.slice(0, -1);
+          w = [...w, drawn];
+          setStock([...st]);
+          setWaste([...w]);
+        } else if (w.length) {
+          st = [...w].reverse().map(x => ({ ...x, faceUp: false }));
+          w = [];
+          setStock([...st]);
+          setWaste([]);
+        } else return done();
+      }
+      timersRef.current.push(window.setTimeout(tick, moved ? 170 : 60));
+    };
+    timersRef.current.push(window.setTimeout(tick, 350));
+  }
+
+  function finishWhenTableauIsOpen(nextTableau: Card[][], nextFoundations = foundations, nextWaste = waste) {
     if (
       runningRef.current &&
       allTableauRevealed(nextTableau)
     ) {
       // Natural end condition for a score-setting attempt: once there are no
       // hidden tableau cards left, the challenge has produced its result.
-      finish(false, scoreRef.current);
+      playSolvedAnimation(nextTableau, stock, nextWaste, nextFoundations);
       return true;
     }
     return false;
@@ -251,7 +359,7 @@ export default function SolitaireSprint({
     setTableau(nextTableau);
     setSelected(null);
     addScore(40);
-    if (!finishWhenTableauIsOpen(nextTableau)) {
+    if (!finishWhenTableauIsOpen(nextTableau, foundations, source.type === "waste" ? waste.slice(0, -1) : waste)) {
       gameTone("tap");
       haptic(3);
     }
@@ -304,7 +412,7 @@ export default function SolitaireSprint({
     if (foundationCount === 52) {
       finish(false, finalScore);
     } else {
-      finishWhenTableauIsOpen(nextTableau);
+      finishWhenTableauIsOpen(nextTableau, nextFoundations, source.type === "waste" ? waste.slice(0, -1) : waste);
     }
 
     return true;
@@ -314,7 +422,9 @@ export default function SolitaireSprint({
     return destination.type === "foundation" ? moveSelectedToFoundation(destination.index, source) : moveSelectedToTableau(destination.index, source);
   }
   function predictMove(source: Exclude<Source, null>) {
-    const destination = solitaireDestinations(source, tableau, waste, foundations)[0];
+    // Only Aces and cards that go to the foundations move on their own; every
+    // other move needs a second tap (or a drag) on the destination.
+    const destination = solitaireDestinations(source, tableau, waste, foundations).find(d => d.type === "foundation");
     return destination ? moveTo(source, destination) : false;
   }
   function tapWaste() {
@@ -398,6 +508,7 @@ export default function SolitaireSprint({
         <button
           type="button"
           className={`solitairePile waste ${selected?.type === "waste" ? "selected" : ""}`}
+          data-solitaire-waste=""
           onClick={() => clickCard(tapWaste)}
           onPointerDown={event => startDrag(event, {type: "waste"})}
           onPointerMove={continueDrag}
@@ -407,10 +518,10 @@ export default function SolitaireSprint({
         >
           {waste.length ? (
             <>
-              <b className={isRed(waste[waste.length - 1].suit) ? "red" : ""}>
+              <b className={suitClass(waste[waste.length - 1].suit)}>
                 {rankLabel(waste[waste.length - 1].rank)}
               </b>
-              <span className={isRed(waste[waste.length - 1].suit) ? "red" : ""}>
+              <span className={suitClass(waste[waste.length - 1].suit)}>
                 {waste[waste.length - 1].suit}
               </span>
             </>
@@ -432,15 +543,15 @@ export default function SolitaireSprint({
               >
                 {top ? (
                   <>
-                    <b className={isRed(top.suit) ? "red" : ""}>
+                    <b className={suitClass(top.suit)}>
                       {rankLabel(top.rank)}
                     </b>
-                    <span className={isRed(top.suit) ? "red" : ""}>
+                    <span className={suitClass(top.suit)}>
                       {top.suit}
                     </span>
                   </>
                 ) : (
-                  <span className={isRed(suit) ? "red ghostSuit" : "ghostSuit"}>
+                  <span className={`ghostSuit ${suitClass(suit)}`}>
                     {suit}
                   </span>
                 )}
@@ -464,7 +575,8 @@ export default function SolitaireSprint({
               <button
                 type="button"
                 key={item.id}
-                className={`solitaireCard ${item.faceUp ? "faceUp" : "faceDown"} ${selected?.type === "tableau" && selected.column === columnIndex && selected.index === index ? "selected" : ""}`}
+                data-card-id={item.id}
+                className={`solitaireCard ${item.faceUp ? `faceUp ${suitClass(item.suit)}` : "faceDown"} ${selected?.type === "tableau" && selected.column === columnIndex && index >= selected.index ? "selected" : ""}`}
                 style={{ top: index * 31, ...(dragOffset && selected?.type === "tableau" && selected.column === columnIndex && index >= selected.index ? {transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`, zIndex: 30 + index} : {}) }}
                 onPointerDown={event => startDrag(event, {type: "tableau", column: columnIndex, index})}
                 onPointerMove={continueDrag}
@@ -481,10 +593,10 @@ export default function SolitaireSprint({
               >
                 {item.faceUp ? (
                   <>
-                    <b className={isRed(item.suit) ? "red" : ""}>
+                    <b className={suitClass(item.suit)}>
                       {rankLabel(item.rank)}
                     </b>
-                    <span className={isRed(item.suit) ? "red" : ""}>
+                    <span className={suitClass(item.suit)}>
                       {item.suit}
                     </span>
                   </>

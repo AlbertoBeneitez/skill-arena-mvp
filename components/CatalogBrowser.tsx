@@ -55,7 +55,7 @@ export default function CatalogBrowser(props: Props) {
                 ? "ENTRANDO…"
                 : props.stake === 0
                   ? game.name
-                  : `${game.name} · ${props.stake}€ FICTICIOS`}
+                  : `${game.name} · ${props.stake} ${props.stake === 1 ? "FICHA" : "FICHAS"}`}
             </button>
           </article>
         ))}

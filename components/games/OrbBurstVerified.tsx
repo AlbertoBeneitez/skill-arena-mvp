@@ -5,12 +5,12 @@ import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { ORB_RULES, orbDirection } from "@/lib/verified/orbBurstCore.v1";
 import {
-  ORB_BURST_CORE_V2,
-  ORB_V2_RULES,
-  orbCenterV2,
-  orbMissLimitV2,
-  type OrbV2State,
-} from "@/lib/verified/orbBurstCore.v2";
+  ORB_BURST_CORE_V3,
+  ORB_V3_RULES,
+  orbCenterV3,
+  orbMissLimitV3,
+  type OrbV3State,
+} from "@/lib/verified/orbBurstCore.v3";
 import { orbAimAction } from "@/lib/verified/orbBurstProtocol.v1";
 import {
   applyOrbCamera,
@@ -19,7 +19,7 @@ import {
   type OrbCamera,
 } from "@/lib/orbPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
-const colors = ["#66e9ff", "#ff8bbb", "#ffe082", "#a9f786", "#b9a0ff"];
+const colors = ["#66e9ff", "#ff8bbb", "#ffe082", "#a9f786", "#b9a0ff", "#7d8794", "#ff7a3d"];
 function orb(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -28,6 +28,38 @@ function orb(
   r = 17,
   origin?: "source" | "shot" | "pressure",
 ) {
+  if (color === 5 || color === 6) {
+    // Asteroid (never matches, only falls when cut off) and bomb (clears its neighbours).
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color === 5 ? "#59616d" : "#2a1b22";
+    ctx.strokeStyle = color === 5 ? "#aab4c0" : "#ff9a5c";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < 9; i++) {
+      const a = (i * Math.PI * 2) / 9,
+        rr = r * (color === 5 ? (i % 2 ? 0.86 : 1) : 1);
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    if (color === 5) {
+      ctx.fillStyle = "rgba(0,0,0,.28)";
+      ctx.beginPath();
+      ctx.arc(-5, -4, 4, 0, Math.PI * 2);
+      ctx.arc(5, 5, 3, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = "#ffb15e";
+      ctx.font = "900 15px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("✸", 0, 1);
+    }
+    ctx.restore();
+    return;
+  }
   const gradient = ctx.createRadialGradient(
     x - r * 0.3,
     y - r * 0.35,
@@ -95,7 +127,7 @@ function orb(
 }
 function drawAimGuide(
   ctx: CanvasRenderingContext2D,
-  state: Readonly<OrbV2State>,
+  state: Readonly<OrbV3State>,
 ) {
   const direction = orbDirection(state.aimIndex);
   ctx.save();
@@ -116,7 +148,7 @@ function drawAimGuide(
 }
 function renderField(
   ctx: CanvasRenderingContext2D,
-  state: OrbV2State,
+  state: OrbV3State,
   camera: OrbCamera,
 ) {
   ctx.save();
@@ -144,7 +176,7 @@ function renderField(
       ? (ORB_RULES.rowHeightMilli / 1000) * (1 - insertionAge / 12)
       : 0;
   for (const bubble of state.bubbles) {
-    const p = orbCenterV2(state, bubble.row, bubble.col),
+    const p = orbCenterV3(state, bubble.row, bubble.col),
       y = p.yMilli / 1000 - descent;
     if (y < 2 || y > 539) continue;
     orb(ctx, p.xMilli / 1000, y, bubble.color, 17, bubble.origin);
@@ -224,8 +256,19 @@ function renderField(
   ctx.stroke();
   if (!state.shot) orb(ctx, 195, 574, state.currentColor);
   orb(ctx, 286, 574, state.nextColor, 12);
+  // Remaining swaps as pips (no on-canvas text).
+  for (let i = 0; i < ORB_V3_RULES.maxSwaps; i++) {
+    ctx.fillStyle = i < state.swaps ? "#ffe082" : "rgba(139,199,220,.2)";
+    ctx.beginPath();
+    ctx.moveTo(130 + i * 13, 598);
+    ctx.lineTo(135 + i * 13, 603);
+    ctx.lineTo(130 + i * 13, 608);
+    ctx.lineTo(125 + i * 13, 603);
+    ctx.closePath();
+    ctx.fill();
+  }
   // Pressure is an actual state indicator, not an instruction or a forecast.
-  for (let i = 0; i < orbMissLimitV2(state); i++) {
+  for (let i = 0; i < orbMissLimitV3(state); i++) {
     ctx.fillStyle = i < state.misses ? "#ff9dad" : "rgba(139,199,220,.24)";
     ctx.beginPath();
     ctx.arc(49 + i * 14, 546, 4, 0, Math.PI * 2);
@@ -239,7 +282,7 @@ function createPresentation() {
   return {
     render(
       ctx: CanvasRenderingContext2D,
-      state: OrbV2State,
+      state: OrbV3State,
       viewport: LogicalCanvasViewport,
     ) {
       const dpr =
@@ -267,7 +310,7 @@ function createPresentation() {
     pointAction(
       point: CorePoint,
       phase: "down" | "move" | "up",
-      state: OrbV2State,
+      state: OrbV3State,
     ) {
       return pointAction(unprojectOrbPoint(camera, point), phase, state);
     },
@@ -275,7 +318,7 @@ function createPresentation() {
       durationMs: 300,
       render(
         ctx: CanvasRenderingContext2D,
-        state: OrbV2State,
+        state: OrbV3State,
         elapsedMs: number,
       ) {
         if (state.status !== "failed") return;
@@ -296,7 +339,7 @@ function createPresentation() {
 function pointAction(
   point: CorePoint,
   phase: "down" | "move" | "up",
-  state: OrbV2State,
+  state: OrbV3State,
 ) {
   if (phase === "up") return "SHOOT";
   if (state.shot || state.settleRemaining) return null;
@@ -311,12 +354,14 @@ const inputTones = { SHOOT: "tap" } as const;
 const keys = {
   ArrowLeft: "AIM_LEFT",
   ArrowRight: "AIM_RIGHT",
+  s: "SWAP",
+  S: "SWAP",
   " ": "SHOOT",
   Enter: "SHOOT",
 };
-const hudLabel = (state: Readonly<OrbV2State>) =>
-  `AVANCE ${state.height}/${ORB_V2_RULES.sourceGoal}`;
-const feedbackScore = (state: Readonly<OrbV2State>) =>
+const hudLabel = (state: Readonly<OrbV3State>) =>
+  `AVANCE ${state.height}/${ORB_V3_RULES.sourceGoal}`;
+const feedbackScore = (state: Readonly<OrbV3State>) =>
   state.height * 1000 - state.pressureRows;
 export default function OrbBurstVerified(props: GameRuntimeProps) {
   const presentation = useMemo(createPresentation, []);
@@ -324,7 +369,7 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
     <div className="orbVerified">
       <CoreCanvasGame
         {...props}
-        core={ORB_BURST_CORE_V2}
+        core={ORB_BURST_CORE_V3}
         name="Orb Burst"
         render={presentation.render}
         pointAction={presentation.pointAction}
@@ -335,6 +380,9 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
         failureFinale={presentation.failureFinale}
         inputTones={inputTones}
         keys={keys}
+        controls={[
+          { action: "SWAP", label: "Cambiar la bola cargada por la siguiente", symbol: "⇄" },
+        ]}
         instruction=""
       />
     </div>

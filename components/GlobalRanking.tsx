@@ -1,5 +1,6 @@
 "use client";
 import RankingAvatar from "./RankingAvatar";
+import ProfitChart, { profitSeries } from "./ProfitChart";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import { useEffect, useState } from "react";
 import {
@@ -23,6 +24,7 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
     status: "loading",
   });
   const [retry, setRetry] = useState(0);
+  const [openRow, setOpenRow] = useState<string | null>(null);
   const key = `${source}:${cursor ?? ""}`;
   const visible =
     state.key === key ? state : { key, status: "loading" as const };
@@ -153,6 +155,10 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
                     />
                     <strong title={row.playerName}>{row.playerName}</strong>
                     <span>{formatNetProfit(row.netProfitMinor)}</span>
+                    <ProfitChart
+                      values={profitSeries(row.playerId, row.netProfitMinor)}
+                      label={`Evolución de ${row.playerName}`}
+                    />
                   </article>
                 ))}
               </div>
@@ -173,32 +179,52 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
                     <th scope="col">Posición</th>
                     <th scope="col">Jugador</th>
                     <th scope="col">Beneficio neto</th>
+                    <th scope="col">Evolución</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {page.entries.map((row) => (
-                    <tr key={row.playerId}>
-                      <td>#{row.position}</td>
-                      <td>
-                        <span className="rankingPlayer">
-                          <RankingAvatar
-                            name={row.playerName}
-                            avatarKey={row.avatarKey}
-                          />
-                          <span title={row.playerName}>{row.playerName}</span>
-                        </span>
-                      </td>
-                      <td
-                        className={
-                          row.netProfitMinor.startsWith("-")
-                            ? "rankingNegative"
-                            : "rankingPositive"
-                        }
+                  {page.entries.map((row) => {
+                    const values = profitSeries(row.playerId, row.netProfitMinor),
+                      open = openRow === row.playerId;
+                    return [
+                      <tr
+                        key={row.playerId}
+                        className="rankingRowToggle"
+                        tabIndex={0}
+                        aria-expanded={open}
+                        onClick={() => setOpenRow(open ? null : row.playerId)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setOpenRow(open ? null : row.playerId);
+                          }
+                        }}
                       >
-                        {formatNetProfit(row.netProfitMinor)}
-                      </td>
-                    </tr>
-                  ))}
+                        <td>#{row.position}</td>
+                        <td>
+                          <span className="rankingPlayer">
+                            <RankingAvatar name={row.playerName} avatarKey={row.avatarKey} />
+                            <span title={row.playerName}>{row.playerName}</span>
+                          </span>
+                        </td>
+                        <td className={row.netProfitMinor.startsWith("-") ? "rankingNegative" : "rankingPositive"}>
+                          {formatNetProfit(row.netProfitMinor)}
+                        </td>
+                        <td className="rankingSpark">
+                          <ProfitChart values={values} width={96} height={30} label={`Evolución de ${row.playerName}`} />
+                        </td>
+                      </tr>,
+                      open ? (
+                        <tr key={`${row.playerId}-chart`} className="rankingChartRow">
+                          <td colSpan={4}>
+                            <strong>Cómo ha ido ganando · {row.playerName}</strong>
+                            <ProfitChart values={values} width={320} height={130} detailed label={`Gráfica detallada de ${row.playerName}`} />
+                            <small>Importes ficticios · de 0 a {formatNetProfit(row.netProfitMinor)}</small>
+                          </td>
+                        </tr>
+                      ) : null,
+                    ];
+                  })}
                 </tbody>
               </table>
             </div>

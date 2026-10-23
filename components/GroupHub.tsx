@@ -407,35 +407,35 @@ export default function GroupHub({
         <div className="groupHero">
           <span>GRUPOS · RIVALES SIMULADOS</span>
           <h1>Compite con tu gente</h1>
+          <p className="groupHeroLead">Crea un grupo en 3 pasos y juega contra tus amigos.</p>
+          <ol className="groupHowTo">
+            <li><b>1</b><span>Ponle nombre</span></li>
+            <li><b>2</b><span>Comparte el código</span></li>
+            <li><b>3</b><span>Elige juego y a competir</span></li>
+          </ol>
         </div>
 
-        <div
-          className="groupEntryTabs"
-          role="tablist"
-          aria-label="Crear o unirse a un grupo"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={entryMode === "create"}
-            className={entryMode === "create" ? "active" : ""}
-            onClick={() => setEntryMode("create")}
-          >
-            CREAR
+        <div className="groupEntryCards" role="tablist" aria-label="Crear o unirse a un grupo">
+          <button type="button" role="tab" aria-selected={entryMode === "create"} className={entryMode === "create" ? "active" : ""} onClick={() => setEntryMode("create")}>
+            <span aria-hidden="true">＋</span>
+            <strong>Crear un grupo</strong>
+            <small>Eres quien organiza</small>
           </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={entryMode === "join"}
-            className={entryMode === "join" ? "active" : ""}
-            onClick={() => setEntryMode("join")}
-          >
-            UNIRSE
+          <button type="button" role="tab" aria-selected={entryMode === "join"} className={entryMode === "join" ? "active" : ""} onClick={() => setEntryMode("join")}>
+            <span aria-hidden="true">⇢</span>
+            <strong>Tengo un código</strong>
+            <small>Me invitaron a uno</small>
           </button>
         </div>
 
         {entryMode === "create" ? (
           <div className="groupSetupCard">
+            <p className="groupStepTitle"><b>Paso 1</b> Ponle nombre a tu grupo</p>
+            <div className="groupNameIdeas" aria-label="Ideas de nombre">
+              {["Los de siempre", "Familia", "Oficina", "Amigos"].map((idea) => (
+                <button key={idea} type="button" onClick={() => setDraftName(idea)}>{idea}</button>
+              ))}
+            </div>
             <label>
               <span>NOMBRE DEL GRUPO</span>
               <input
@@ -466,9 +466,11 @@ export default function GroupHub({
             >
               CREAR GRUPO
             </button>
+            <p className="groupNextHint">Después te daremos un código para invitar a quien quieras.</p>
           </div>
         ) : (
           <div className="groupSetupCard groupJoinCard">
+            <p className="groupStepTitle"><b>Paso 1</b> Pega el código que te han enviado</p>
             <label>
               <span>CÓDIGO DEL GRUPO</span>
               <input
@@ -525,6 +527,29 @@ export default function GroupHub({
         <span className="groupCodeBadge">{group.code}</span>
       </div>
 
+      <ol className="groupStepper" aria-label="Pasos del grupo">
+        {[
+          { label: "Crear", done: true },
+          { label: "Invitar", done: group.members.length > 1 || copiedCode || copiedLink },
+          { label: "Reglas", done: priceValid && leagueRulesValid && leagueScheduleComplete && tournamentRulesValid && tournamentScheduleComplete },
+          { label: "Jugar", done: allMembersReady },
+        ].map((step, index, all) => {
+          const current = !step.done && all.slice(0, index).every((x) => x.done);
+          return (
+            <li key={step.label} className={step.done ? "done" : current ? "current" : ""} aria-current={current ? "step" : undefined}>
+              <b>{step.done ? "✓" : index + 1}</b>
+              <span>{step.label}</span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="groupNextStep" role="status">
+        {group.members.length < 2 && !copiedCode && !copiedLink
+          ? "Siguiente: copia el código o el enlace y envíalo a tus amigos."
+          : !allMembersReady
+            ? configurationHint
+            : "¡Todo listo! Pulsa empezar al final de la pantalla."}
+      </p>
       <p className="groupDemoNotice">
         Grupo local · rivales simulados · saldo ficticio
       </p>

@@ -6,12 +6,7 @@ import {
 } from "@/lib/verified/galacticSlotCore.v1";
 import { SLOT_CORE_V2 } from "@/lib/verified/galacticSlotCore.v2";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
-import {
-  SLOT_ORDER_PREVIEW_TICKS,
-  slotVisibleSteps,
-  slotReelPosition,
-  slotMachineLayout,
-} from "@/lib/slotPresentation.v2";
+import { slotVisibleSteps, slotReelPosition } from "@/lib/slotPresentation.v2";
 import CoreCanvasGame from "./CoreCanvasGame";
 const colors = [
   "#f7d75f",
@@ -77,37 +72,41 @@ function symbol(
 }
 function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   drawSpaceBackdrop(ctx, 390, 620, 2, s.tick);
-  const layout = slotMachineLayout(s.tick);
-  if (s.tick < SLOT_ORDER_PREVIEW_TICKS) {
-    ctx.fillStyle = "rgba(6,16,34,.88)";
-    ctx.beginPath();
-    ctx.roundRect(24, 45, 342, 223, 18);
-    ctx.fill();
-    for (let i = 0; i < 3; i++) {
-      const x = 85 + i * 110;
-      for (let j = 0; j < 8; j++) {
-        const y = 65 + j * 23;
-        if (s.positions[i] === j) {
-          ctx.fillStyle = "rgba(115,212,255,.2)";
-          ctx.beginPath();
-          ctx.roundRect(x - 40, y - 11, 80, 22, 8);
-          ctx.fill();
-        }
-        symbol(ctx, s.strips[i][j], x, y, 24);
-        ctx.fillStyle = "#a5b9cd";
-        ctx.font = "11px system-ui";
-        ctx.fillText(String(j + 1), x + 25, y + 4);
+  // The three reel tables stay on top for the whole run (they are different in every game:
+  // they come from the match seed). The highlighted row is where each reel sits right now.
+  const layout = { top: 292, height: 150, center: 367, pitch: 70, symbolSize: 56, tableY: 218 };
+  ctx.fillStyle = "rgba(6,16,34,.88)";
+  ctx.beginPath();
+  ctx.roundRect(24, 38, 342, 148, 16);
+  ctx.fill();
+  ctx.fillStyle = "#8fa8bd";
+  ctx.font = "bold 10px system-ui";
+  ctx.textAlign = "center";
+  for (let i = 0; i < 3; i++) {
+    const x = 85 + i * 110;
+    ctx.fillText(`RODILLO ${i + 1}`, x, 52);
+    for (let j = 0; j < 8; j++) {
+      const y = 66 + j * 14.5;
+      if (s.positions[i] === j) {
+        ctx.fillStyle = "rgba(115,212,255,.28)";
+        ctx.beginPath();
+        ctx.roundRect(x - 40, y - 7, 80, 14, 6);
+        ctx.fill();
       }
+      symbol(ctx, s.strips[i][j], x, y, 15);
+      ctx.fillStyle = "#a5b9cd";
+      ctx.font = "10px system-ui";
+      ctx.textAlign = "left";
+      ctx.fillText(String(j + 1), x + 20, y + 3.5);
+      ctx.textAlign = "center";
     }
-    ctx.fillStyle = "#e7f3ff";
-    ctx.textAlign = "right";
-    ctx.font = "bold 14px system-ui";
-    ctx.fillText(`${Math.ceil((1200 - s.tick) / 120)}s`, 351, 255);
+    ctx.fillStyle = "#8fa8bd";
+    ctx.font = "bold 10px system-ui";
   }
   for (let id = 0; id < 8; id++) {
     const x = 47 + (id % 4) * 91,
-      y = layout.tableY + Math.floor(id / 4) * 26;
-    symbol(ctx, id, x - 12, y, 24);
+      y = layout.tableY + Math.floor(id / 4) * 24;
+    symbol(ctx, id, x - 12, y, 22);
     ctx.fillStyle = "#d8e7f4";
     ctx.textAlign = "left";
     ctx.font = "bold 11px system-ui";
@@ -120,10 +119,10 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   ] as const) {
     ctx.fillStyle = "#a5b9cd";
     ctx.font = "400 10px system-ui";
-    ctx.fillText(label, x - 14, layout.tableY + 47);
+    ctx.fillText(label, x - 14, layout.tableY + 46);
     ctx.fillStyle = "#e0d2a6";
     ctx.font = "500 10px system-ui";
-    ctx.fillText(amount, x + 34, layout.tableY + 47);
+    ctx.fillText(amount, x + 34, layout.tableY + 46);
   }
   const lit = s.tick - s.lastSettledTick < 90 && s.lastPayout > 0;
   ctx.fillStyle = "#132940";
@@ -156,7 +155,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
     ctx.fillStyle = "#edf6ff";
     ctx.font = "bold 16px system-ui";
     ctx.textAlign = "center";
-    ctx.fillText(String(slotVisibleSteps(s.steps[i])), x, 490);
+    ctx.fillText(String(slotVisibleSteps(s.steps[i])), x, layout.top + layout.height + 26);
   }
   if (lit) {
     ctx.fillStyle = "#ffe9a4";
