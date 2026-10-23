@@ -22,3 +22,10 @@ Ver el apartado de validación del resumen final. No promover a `main` ni a `mob
 ## Pendiente
 - Vincular GitHub para publicar la rama; configurar `MATCH_SIGNING_SECRET` y `ALLOW_LEGACY_STATELESS_TRAINING=1` en Vercel (Production y Preview) antes de desplegar.
 - Base de datos real, identidad (Google/Apple), revisión jurídica y tableros solucionables de Solitaire.
+
+## Actualización 23-oct-2026
+
+- **Avatares:** los 16 retratos aportados por Alberto (WebP 512 px, ~1,2 MB) son ahora los avatares iniciales (`public/avatars/portrait-01..16.webp`). El ranking acepta claves `portrait-NN`; los SVG `avatar-1..8` se conservan para perfiles ya guardados y rivales.
+- **Mine Grid:** el chip de tablero/dificultad ya no se recorta por la izquierda y la barra inferior muestra la pista «Toca la casilla dorada para empezar».
+- **QA:** barrido móvil (390 px) de 22 juegos: sin errores de consola ni desbordamiento horizontal; todos los tests de presentación pasan tras fusionar el commit remoto de Tower Drop.
+- Rama `v100-mobile` publicada en GitHub.
