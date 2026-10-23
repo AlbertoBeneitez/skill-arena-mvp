@@ -581,3 +581,8 @@ Revisión de claridad Alien/Sky/River sobre v100: apoyos/sombra y amenazas de
 Alien, rotura/recogibles/caída de Sky, tráfico/corriente/salto y campo sin controles
 superpuestos de River. [Alcance y validación](ALIEN_SKY_RIVER_POLISH.md).
 Se mantienen las versiones competitivas y las evoluciones pendientes de la tabla.
+
+## v100-mobile · preparación de lanzamiento (23-oct-2026)
+
+- Validación: `pnpm test:determinism` exit 0 (Next 16.4.2), build, `tsc`, `pnpm audit --prod` sin vulnerabilidades, `scripts/qa-smoke-all.cjs` (23 juegos, almacenamiento bloqueado, persistencia, partida verificada), axe sin fallos, 0 violaciones CSP.
+- Abierto: acceso de solo lectura a Vercel (no aprobado), variables de producción, textos legales, base de datos, cuentas, aceptación en móviles físicos.

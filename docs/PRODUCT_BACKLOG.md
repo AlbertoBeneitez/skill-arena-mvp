@@ -506,3 +506,13 @@ Revisión Alien/Sky/River sobre v100: mejora de lectura de peligros, apoyos y
 respuesta visual, River con controles separados del canvas. Cores y replays
 preservados. Evidencia y límites en [ALIEN_SKY_RIVER_POLISH.md](ALIEN_SKY_RIVER_POLISH.md).
 No cierra las evoluciones de reglas pendientes del ledger.
+
+## v100-mobile · preparación de lanzamiento (23-oct-2026)
+
+Avatares de 16 retratos con miniaturas, Birds V7 (TNT, viento, 19 cerdos), integración
+del pulido de Alien Dash / Sky Hop / River Dash, almacenamiento resistente a
+navegadores que lo bloquean, catálogo que se abre arriba, iconos PNG y metadatos
+sociales, páginas de error, CSP completa aplicada, Next.js 16.4.2 (audit limpio) y
+smoke móvil de 23 juegos + flujo verificado en CI. Pendientes del propietario y
+decisiones: [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md). No se activan cuentas,
+base de datos ni dinero real.
