@@ -30,7 +30,7 @@ Ordenado por urgencia.
    `ALLOW_LEGACY_STATELESS_TRAINING=1`. Sin la primera los endpoints responden 503.
    Opcional: `NEXT_PUBLIC_SITE_URL` cuando exista dominio propio.
 2. **Instalar la app de Claude en GitHub** (o reconectar) para poder abrir PR y que CI/Vercel lo comprueben en el flujo normal.
-3. **Textos legales**: Términos, Privacidad y Cookies de la pantalla «Información de la aplicación» son provisionales y lo dicen. Antes de abrir al público debe revisarlos un profesional (responsable del tratamiento, contacto, conservación, derechos RGPD, aviso de saldo ficticio).
+3. **Textos legales**: la pantalla «Información de la aplicación» ya describe con exactitud lo que hace la app (cookies técnicas, datos enviados) pero sigue siendo provisional. Hay un borrador completo en `docs/legal/BORRADOR_LEGAL.md`; necesito tu nombre/razón social, NIF, domicilio y correo de contacto, y que lo revise un profesional antes de publicarlo.
 4. **Promoción de ramas**: `v100-mobile` → `mobile-test` (solo fast-forward) → `main`. No lo he tocado; indícame cuándo.
 5. **Cortafuegos de Vercel**: activar una regla de límite de peticiones para `/api/*` (por ejemplo 60/min por IP). Es la defensa correcta en serverless; en código solo hay validación y límites de tamaño.
 6. **Observabilidad**: activar Vercel Observability/Web Analytics o elegir un proveedor de errores. Hoy un fallo en producción solo se vería en los logs de Vercel.

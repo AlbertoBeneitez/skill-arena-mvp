@@ -1531,12 +1531,14 @@ export default function DemoApp() {
                 <p>La competición con dinero real no está disponible. Esta información describe la versión actual; no sustituye los términos jurídicos revisados que necesitará el servicio definitivo.</p>
               </>}
               {legalTab === "privacy" && <>
-                <p>Tu nombre, avatar, preferencias y estadísticas locales se guardan en este navegador. Las partidas verificadas envían sus inputs al servidor para reconstruir el resultado.</p>
+                <p>Tu nombre, avatar, preferencias y estadísticas locales se guardan en este navegador. Las partidas verificadas envían sus inputs al servidor para reconstruir el resultado, asociados a un identificador anónimo de sesión; el nombre y el avatar no se envían.</p>
+                <p>El proveedor de alojamiento puede tratar datos técnicos de conexión (como la dirección IP) en sus registros para operar y proteger el servicio.</p>
                 <p>La aplicación no solicita documentos de identidad ni datos de pago. Cerrar sesión elimina el perfil local de este navegador; no equivale a una solicitud de borrado de registros del servidor.</p>
                 <p>Antes de crear cuentas reales, se publicarán la política de privacidad, los plazos de conservación y los medios para ejercer tus derechos.</p>
               </>}
               {legalTab === "cookies" && <>
                 <p>La aplicación utiliza almacenamiento local del navegador para recordar el perfil local y las preferencias. Si lo borras, tendrás que configurar la entrada de nuevo.</p>
+                <p>Además usa cookies técnicas estrictamente necesarias, propias y no publicitarias: <code>arena_match_training</code> (identifica de forma anónima tu sesión de partidas; caduca a las 24 horas) y, solo en Mine Grid, una cookie de sesión de 30 minutos. No se usan cookies de analítica ni de publicidad.</p>
                 <p>La información definitiva sobre cookies y servicios de alojamiento estará disponible antes de activar cuentas reales. Esta versión no presenta un consentimiento de producción.</p>
               </>}
               {legalTab === "rules" && <>
