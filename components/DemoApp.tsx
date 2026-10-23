@@ -53,8 +53,8 @@ function isScreen(value: unknown): value is Screen {
 
 const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
 /** Small variant for grids/lists; the full 512 px image is only used for the large preview. */
-/** Slot and Roulette simulate games of chance (with fictitious balance only): ask for age once. */
-const AGE_GATED_GAMES = new Set(["galactic-slot", "galactic-roulette"]);
+/** Slot simulates a game of chance (fictitious balance only): ask for age once. */
+const AGE_GATED_GAMES = new Set(["galactic-slot"]);
 const AGE_CONFIRMED_KEY = "skill-arena-age-18";
 const avatarThumb = (src: string) => (/\/portrait-\d{2}\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 const START_BALANCE = 25;
@@ -1555,7 +1555,7 @@ export default function DemoApp() {
         <div className="gameExitOverlay ageOverlay" role="dialog" aria-modal="true" aria-labelledby="age-title">
           <div className="gameExitCard">
             <strong id="age-title">SOLO PARA MAYORES DE 18</strong>
-            <p>Galactic Slot y Galactic Roulette simulan juegos de azar con saldo ficticio. No se juega con dinero real ni se pueden ganar premios.</p>
+            <p>Galactic Slot simula un juego de azar con saldo ficticio. No se juega con dinero real ni se pueden ganar premios.</p>
             <p>¿Confirmas que tienes al menos 18 años?</p>
             <div>
               <button type="button" onClick={() => { ageActionRef.current = null; setAgeDialogOpen(false); }}>VOLVER</button>

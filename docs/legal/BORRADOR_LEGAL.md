@@ -12,7 +12,7 @@
 
 ## 2. Términos de uso
 1. **Qué es.** GALACTIC GAMES es una aplicación web de minijuegos de habilidad y entretenimiento. Todos los saldos, apuestas, entradas y beneficios son **ficticios**: no tienen valor económico, no se pueden retirar ni canjear y no se realizan pagos.
-2. **Edad.** Galactic Slot y Galactic Roulette simulan juegos de azar con saldo ficticio y se ofrecen solo a mayores de 18 años (confirmación al abrirlos). El resto de juegos no usan azar con apuesta.
+2. **Edad.** Galactic Slot simula un juego de azar con saldo ficticio y se ofrece solo a mayores de 18 años (confirmación al abrirlo). Galactic Roulette también simula apuestas con saldo ficticio y no lleva confirmación de edad por decisión del titular: conviene que el asesor valore si debe llevarla.
 3. **Resultados.** En los juegos verificados el servidor repite la partida a partir de los datos enviados y calcula el resultado; si la verificación falla no se confirma victoria. El ranking mostrado es de ejemplo mientras no exista un servicio de datos configurado.
 4. **Uso adecuado.** Prohibido manipular el cliente, enviar partidas falsificadas, automatizar el servicio de forma abusiva o intentar acceder a sistemas o datos ajenos.
 5. **Disponibilidad.** Servicio ofrecido «tal cual», en fase de pruebas; puede cambiar o interrumpirse. Las versiones de juego ya publicadas conservan sus reglas.

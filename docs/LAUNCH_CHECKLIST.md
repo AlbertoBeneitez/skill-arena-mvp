@@ -39,7 +39,7 @@ Ordenado por urgencia.
 
 ## 3. Propietario — decisiones de producto (no bloquean el lanzamiento suave)
 
-- **Clasificación por edad**: la confirmación +18 de una sola vez ya está implementada antes de Galactic Slot y Galactic Roulette. Falta decidir qué clasificación declarar si se publica en tiendas de apps.
+- **Clasificación por edad**: la confirmación +18 de una sola vez ya está implementada antes de Galactic Slot (la ruleta no lleva aviso por decisión del propietario). Falta decidir qué clasificación declarar si se publica en tiendas de apps.
 - **Base de datos** (Neon/Supabase/Vercel Postgres…): habilita partidas duraderas, ranking real y Mine Grid competitivo. Sin ella el ranking muestra datos de ejemplo claramente etiquetados.
 - **Cuentas** (Google/Apple hoy «próximamente»): necesarias antes de cualquier competición con premio.
 - **Dinero real**: fuera de alcance hasta tener identidad, liquidación y cumplimiento (regulación del juego en España).
