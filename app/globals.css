@@ -6306,3 +6306,5 @@ h1.wordmark { margin-bottom:0; line-height:1.2; }
 
 .ageOverlay { position:fixed; z-index:100; }
 .ageOverlay .gameExitCard p { margin:8px 0; }
+
+.resultNote { margin:6px 16px 0; font-size:13px; line-height:1.4; color:#bfd5e5; text-align:center; }

@@ -1386,6 +1386,7 @@ export default function DemoApp() {
                   <>
                     <div className="resultIcon">⚠</div>
                     <b>RESULTADO NO VERIFICADO</b>
+                    <p className="resultNote">El servicio de partidas no ha podido confirmar esta partida. Inténtalo de nuevo en unos minutos.</p>
                   </>
                 ) : (
                   <>
