@@ -515,6 +515,25 @@ export default function DemoApp() {
   }, [isLoaded, onboarded, screen, activeGame, countdown, avatarSection]);
 
 
+  // A new screen starts at the top; coming back from a game restores where the
+  // catalogue (or group page) was, so the player does not lose their place.
+  const previousScreenRef = useRef<Screen | null>(null);
+  const scrollMemoryRef = useRef<Partial<Record<Screen, number>>>({});
+  useEffect(() => {
+    const onScroll = () => {
+      const current = previousScreenRef.current;
+      if (current && current !== "game") scrollMemoryRef.current[current] = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  useEffect(() => {
+    const previous = previousScreenRef.current;
+    previousScreenRef.current = screen;
+    if (previous === null || previous === screen || screen === "game") return;
+    window.scrollTo(0, previous === "game" ? (scrollMemoryRef.current[screen] ?? 0) : 0);
+  }, [screen]);
+
   useEffect(() => {
     if (screen !== "game") return;
 

@@ -82,6 +82,9 @@ async function checkStorage(browser) {
     await page.getByPlaceholder("Nombre de avatar").fill("Persiste");
     await page.getByText("CONTINUAR").click();
     await page.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
+    await page.waitForTimeout(500);
+    const y = await page.evaluate(() => window.scrollY);
+    if (y !== 0) problems.push("catalogue opens scrolled by " + y + "px after onboarding");
     await page.goto(BASE + "/", { waitUntil: "networkidle" });
     await page.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
   } catch (e) {
