@@ -32,6 +32,13 @@ async function check(browser, name) {
     await page.getByText("CONTINUAR").click();
     await page.waitForTimeout(700);
     await page.getByText(name, { exact: true }).first().click({ timeout: 15000 });
+    const gated = ["Galactic Slot", "Galactic Roulette"].includes(name);
+    if (gated) {
+      // Games of chance (fictitious balance) ask for age once before opening.
+      const confirm = page.getByTestId("age-confirm");
+      try { await confirm.waitFor({ timeout: 5000 }); } catch { problems.push("age confirmation not shown"); }
+      if (await confirm.isVisible().catch(() => false)) await confirm.click();
+    }
     await page.waitForTimeout(2500);
     const m = await page.evaluate(() => {
       const c = document.querySelector("canvas");
