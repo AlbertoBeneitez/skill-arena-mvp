@@ -16,7 +16,7 @@ export default function RankingAvatar({
   return (
     <span className="rankingAvatar" aria-hidden="true">
       {validRankingAvatar(avatarKey) ? (
-        <img src={`/avatars/${avatarKey}.svg`} alt="" loading="lazy" />
+        <img src={`/avatars/${avatarKey}.${avatarKey.startsWith("portrait-") ? "webp" : "svg"}`} alt="" loading="lazy" />
       ) : (
         <span>{initials || "GG"}</span>
       )}

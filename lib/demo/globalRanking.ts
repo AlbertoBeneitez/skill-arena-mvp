@@ -5,7 +5,7 @@ const players = Array.from({ length: 64 }, (_, i) => ({
   playerId: `demo-pilot-${i + 1}`,
   playerName: `Piloto de ejemplo ${String(i + 1).padStart(2, "0")}`,
   netProfitMinor: String(20000 - i * 450),
-  avatarKey: `avatar-${i % 8 + 1}`,
+  avatarKey: `portrait-${String(i % 16 + 1).padStart(2, "0")}`,
 }));
 export function readDemoRankingPage(
   limit = 25,

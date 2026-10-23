@@ -17,7 +17,7 @@ export type RankingPage = Readonly<{
   nextCursor: string | null;
 }>;
 export function validRankingAvatar(value: unknown): value is string {
-  return typeof value === "string" && /^avatar-[1-8]$/.test(value);
+  return typeof value === "string" && /^(avatar-[1-8]|portrait-(0[1-9]|1[0-6]))$/.test(value);
 }
 export const RANKING_PAGE_LIMIT = 25;
 export const RANKING_MAX_LIMIT = 100;

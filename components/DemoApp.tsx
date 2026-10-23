@@ -50,7 +50,7 @@ function isScreen(value: unknown): value is Screen {
   return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
 }
 
-const AVATARS = Array.from({ length: 8 }, (_, i) => `/avatars/avatar-${i + 1}.svg`);
+const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
 const START_BALANCE = 25;
 const APP_ITERATION = "v12";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
