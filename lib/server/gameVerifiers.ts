@@ -3,11 +3,14 @@ import { BIRDS_CORE_V8 } from "../verified/galacticBirdsCore.v8";
 import { BIRDS_CORE_V6 } from "../verified/galacticBirdsCore.v6";
 import { BIRDS_CORE_V5 } from "../verified/galacticBirdsCore.v5";
 import { ROULETTE_CORE_V5 } from "../verified/galacticRouletteCore.v5";
+import { ROULETTE_CORE_V6 } from "../verified/galacticRouletteCore.v6";
 import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
+import { SLOT_CORE_V3 } from "../verified/galacticSlotCore.v3";
 import { JET_STREAM_CORE_V5 } from "../verified/jetStreamCore.v5";
 import { BILLIARDS_CORE_V3 } from "../verified/billiardsCore.v3";
+import { BILLIARDS_CORE_V4 } from "../verified/billiardsCore.v4";
 import { BIRDS_CORE as BIRDS_CORE_V4 } from "../verified/galacticBirdsCore.v4";
 import { ROULETTE_CORE_V2 } from "../verified/galacticRouletteCore.v2";
 import { BIRDS_CORE as BIRDS_CORE_V3 } from "../verified/galacticBirdsCore.v3";
@@ -37,12 +40,15 @@ import { PHALANX_CORE as PHALANX_V3_CORE } from "../verified/starPhalanxCore.v3"
 import { PHALANX_CORE as PHALANX_V2_CORE } from "../verified/starPhalanxCore.v2";
 import { STACK_SHIFT_CORE } from "../verified/stackShiftCore.v1";
 import { STACK_SHIFT_CORE_V2 } from "../verified/stackShiftCore.v2";
+import { PINBALL_CORE_V1 } from "../verified/pinballCore.v1";
+import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
 import { JET_STREAM_CORE_V4 } from "../verified/jetStreamCore.v4";
 import { JET_STREAM_CORE_V3 } from "../verified/jetStreamCore.v3";
 import { ALIEN_DASH_CORE } from "../verified/alienDashCore.v2";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
 import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
 import { SHOT_GALLERY_CORE_V3 } from "../verified/shotGalleryCore.v3";
+import { SHOT_GALLERY_CORE_V4 } from "../verified/shotGalleryCore.v4";
 import { DARTS_CORE_V3 } from "../verified/dartsCore.v3";
 import { DARTS_CORE_V2 } from "../verified/dartsCore.v2";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
@@ -53,6 +59,7 @@ import { MINE_GRID_CORE_V2 } from "../verified/mineGridCore.v2";
 import { ORB_BURST_CORE } from "../verified/orbBurstCore.v1";
 import { ORB_BURST_CORE_V2 } from "../verified/orbBurstCore.v2";
 import { ORB_BURST_CORE_V3 } from "../verified/orbBurstCore.v3";
+import { ORB_BURST_CORE_V4 } from "../verified/orbBurstCore.v4";
 import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
 import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
@@ -415,9 +422,11 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
   [adapterKey(ROULETTE_CORE_V4.gameId,ROULETTE_CORE_V4.gameVersion)]: coreAdapter(ROULETTE_CORE_V4),
   [adapterKey(ROULETTE_CORE_V5.gameId,ROULETTE_CORE_V5.gameVersion)]: coreAdapter(ROULETTE_CORE_V5),
+  [adapterKey(ROULETTE_CORE_V6.gameId,ROULETTE_CORE_V6.gameVersion)]: coreAdapter(ROULETTE_CORE_V6),
   [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
+  [adapterKey(SLOT_CORE_V3.gameId,SLOT_CORE_V3.gameVersion)]: coreAdapter(SLOT_CORE_V3),
   [adapterKey(SLOT_CORE.gameId, SLOT_CORE.gameVersion)]: coreAdapter(SLOT_CORE),
   [adapterKey(ALIEN_DASH_CORE_V3.gameId, ALIEN_DASH_CORE_V3.gameVersion)]: coreAdapter(ALIEN_DASH_CORE_V3),
   [adapterKey(MEMORY_CORE.gameId, MEMORY_CORE.gameVersion)]: coreAdapter(MEMORY_CORE),
@@ -441,6 +450,8 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PHALANX_V3_CORE.gameId, PHALANX_V3_CORE.gameVersion)]: coreAdapter(PHALANX_V3_CORE),
   [adapterKey(STACK_SHIFT_CORE.gameId, STACK_SHIFT_CORE.gameVersion)]: coreAdapter(STACK_SHIFT_CORE),
   [adapterKey(STACK_SHIFT_CORE_V2.gameId, STACK_SHIFT_CORE_V2.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V2),
+  [adapterKey(PINBALL_CORE_V1.gameId, PINBALL_CORE_V1.gameVersion)]: coreAdapter(PINBALL_CORE_V1),
+  [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
   [adapterKey(JET_STREAM_CORE_V5.gameId,JET_STREAM_CORE_V5.gameVersion)]: coreAdapter(JET_STREAM_CORE_V5),
   [adapterKey(JET_STREAM_CORE_V4.gameId, JET_STREAM_CORE_V4.gameVersion)]: coreAdapter(JET_STREAM_CORE_V4),
   [adapterKey(JET_STREAM_CORE_V3.gameId, JET_STREAM_CORE_V3.gameVersion)]: coreAdapter(JET_STREAM_CORE_V3),
@@ -448,17 +459,20 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
   [adapterKey(SHOT_GALLERY_CORE_V2.gameId,SHOT_GALLERY_CORE_V2.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V2),
   [adapterKey(SHOT_GALLERY_CORE_V3.gameId,SHOT_GALLERY_CORE_V3.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V3),
+  [adapterKey(SHOT_GALLERY_CORE_V4.gameId,SHOT_GALLERY_CORE_V4.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V4),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(DARTS_CORE_V3.gameId,DARTS_CORE_V3.gameVersion)]: coreAdapter(DARTS_CORE_V3),
   [adapterKey(BILLIARDS_CORE.gameId,BILLIARDS_CORE.gameVersion)]: coreAdapter(BILLIARDS_CORE),
   [adapterKey(BILLIARDS_CORE_V3.gameId,BILLIARDS_CORE_V3.gameVersion)]: coreAdapter(BILLIARDS_CORE_V3),
+  [adapterKey(BILLIARDS_CORE_V4.gameId,BILLIARDS_CORE_V4.gameVersion)]: coreAdapter(BILLIARDS_CORE_V4),
   [adapterKey(BILLIARDS_CORE_V2.gameId,BILLIARDS_CORE_V2.gameVersion)]: coreAdapter(BILLIARDS_CORE_V2),
   [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(MINE_GRID_CORE_V2.gameId,MINE_GRID_CORE_V2.gameVersion)]: coreAdapter(MINE_GRID_CORE_V2),
   [adapterKey(ORB_BURST_CORE.gameId,ORB_BURST_CORE.gameVersion)]: coreAdapter(ORB_BURST_CORE),
   [adapterKey(ORB_BURST_CORE_V2.gameId,ORB_BURST_CORE_V2.gameVersion)]: coreAdapter(ORB_BURST_CORE_V2),
   [adapterKey(ORB_BURST_CORE_V3.gameId,ORB_BURST_CORE_V3.gameVersion)]: coreAdapter(ORB_BURST_CORE_V3),
+  [adapterKey(ORB_BURST_CORE_V4.gameId,ORB_BURST_CORE_V4.gameVersion)]: coreAdapter(ORB_BURST_CORE_V4),
   [adapterKey(RIVER_DASH_CORE_V2.gameId,RIVER_DASH_CORE_V2.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V2),
   [adapterKey(RIVER_DASH_CORE_V3.gameId,RIVER_DASH_CORE_V3.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V3),
   [adapterKey(RIVER_DASH_CORE_V4.gameId,RIVER_DASH_CORE_V4.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V4),

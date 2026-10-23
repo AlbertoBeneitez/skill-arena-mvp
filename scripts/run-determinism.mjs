@@ -40,6 +40,8 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-stack-v3.js");
   await import("../.det-test/scripts/verify-stack-shift-v1.js");
   await import("../.det-test/scripts/verify-stack-shift-v2.js");
+  await import("../.det-test/scripts/verify-pinball-v1.js");
+  await import("../.det-test/scripts/verify-stack-shift-v3.js");
   await import("../.det-test/scripts/verify-phalanx-v1.js");
   await import("../.det-test/scripts/verify-phalanx-v2.js");
   await import("../.det-test/scripts/verify-phalanx-v3.js");
@@ -81,6 +83,9 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-orb-v1.js");
   await import("../.det-test/scripts/verify-orb-v2.js");
   await import("../.det-test/scripts/verify-orb-v3.js");
+  await import("../.det-test/scripts/verify-slot-v3.js");
+  await import("../.det-test/scripts/verify-orb-v4.js");
+  await import("../.det-test/scripts/verify-roulette-v6.js");
   await (await import("./verify-orb-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-alien-v2.js");
   await import("../.det-test/scripts/verify-alien-v3.js");
@@ -88,6 +93,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-gallery-v1.js");
   await import("../.det-test/scripts/verify-gallery-v2.js");
   await import("../.det-test/scripts/verify-gallery-v3.js");
+  await import("../.det-test/scripts/verify-gallery-v4.js");
   await (await import("./verify-gallery-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-darts-v1.js");
   await import("../.det-test/scripts/verify-darts-v2.js");
@@ -95,6 +101,7 @@ if (process.argv[2] === "repository") {
   await (await import("./verify-darts-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-billiards-v1.js");
   await import("../.det-test/scripts/verify-billiards-v2.js");
+  await import("../.det-test/scripts/verify-billiards-v4.js");
   await (await import("./verify-billiards-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-mine-v1.js");
   await import("../.det-test/scripts/verify-mine-v2.js");

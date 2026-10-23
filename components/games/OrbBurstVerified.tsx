@@ -5,12 +5,12 @@ import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { ORB_RULES, orbDirection } from "@/lib/verified/orbBurstCore.v1";
 import {
-  ORB_BURST_CORE_V3,
-  ORB_V3_RULES,
-  orbCenterV3,
-  orbMissLimitV3,
-  type OrbV3State,
-} from "@/lib/verified/orbBurstCore.v3";
+  ORB_BURST_CORE_V4,
+  ORB_V4_RULES,
+  orbCenterV4,
+  orbMissLimitV4,
+  type OrbV4State,
+} from "@/lib/verified/orbBurstCore.v4";
 import { orbAimAction } from "@/lib/verified/orbBurstProtocol.v1";
 import {
   applyOrbCamera,
@@ -19,7 +19,8 @@ import {
   type OrbCamera,
 } from "@/lib/orbPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
-const colors = ["#66e9ff", "#ff8bbb", "#ffe082", "#a9f786", "#b9a0ff", "#7d8794", "#ff7a3d"];
+const colors = ["#66e9ff", "#ff8bbb", "#ffe082", "#a9f786", "#b9a0ff", "#7d8794", "#ff7a3d", "#ffffff", "#ffe44d"];
+const specialNames: Record<number, string> = { 6: "BOMBA", 7: "ARCOÍRIS", 8: "RAYO" };
 function orb(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -27,7 +28,50 @@ function orb(
   color: number,
   r = 17,
   origin?: "source" | "shot" | "pressure",
+  ice = 0,
 ) {
+  if (color === 7 || color === 8) {
+    ctx.save();
+    ctx.translate(x, y);
+    if (color === 7) {
+      const rainbow = ["#ff6b6b", "#ffd36b", "#8cf29a", "#6bd4ff", "#b58cff"];
+      rainbow.forEach((c, i) => {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, r, -Math.PI / 2 + (i * Math.PI * 2) / 5, -Math.PI / 2 + ((i + 1) * Math.PI * 2) / 5);
+        ctx.fill();
+      });
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = "#1c2140";
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffe44d";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#ffe44d";
+      ctx.beginPath();
+      ctx.moveTo(3, -r * 0.8);
+      ctx.lineTo(-r * 0.45, 2);
+      ctx.lineTo(-1, 2);
+      ctx.lineTo(-4, r * 0.8);
+      ctx.lineTo(r * 0.5, -3);
+      ctx.lineTo(1, -3);
+      ctx.fill();
+    }
+    ctx.restore();
+    return;
+  }
   if (color === 5 || color === 6) {
     // Asteroid (never matches, only falls when cut off) and bomb (clears its neighbours).
     ctx.save();
@@ -51,11 +95,20 @@ function orb(
       ctx.arc(5, 5, 3, 0, Math.PI * 2);
       ctx.fill();
     } else {
+      ctx.strokeStyle = "#d8c7a0";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(r * 0.3, -r * 0.7);
+      ctx.quadraticCurveTo(r * 0.8, -r * 1.1, r * 0.9, -r * 0.55);
+      ctx.stroke();
       ctx.fillStyle = "#ffb15e";
-      ctx.font = "900 15px system-ui";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("✸", 0, 1);
+      ctx.beginPath();
+      ctx.arc(r * 0.9, -r * 0.6, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.25)";
+      ctx.beginPath();
+      ctx.arc(-r * 0.3, -r * 0.2, r * 0.25, 0, Math.PI * 2);
+      ctx.fill();
     }
     ctx.restore();
     return;
@@ -108,6 +161,27 @@ function orb(
     ctx.strokeRect(-4, -4, 8, 8);
   }
   ctx.restore();
+  if (ice > 0) {
+    ctx.fillStyle = "rgba(190,236,255,.42)";
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(240,252,255,.95)";
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(x - r * 0.55, y - r * 0.2);
+    ctx.lineTo(x - r * 0.1, y - r * 0.55);
+    ctx.moveTo(x + r * 0.2, y - r * 0.6);
+    ctx.lineTo(x + r * 0.55, y - r * 0.15);
+    if (ice > 1) {
+      ctx.moveTo(x - r * 0.5, y + r * 0.45);
+      ctx.lineTo(x + r * 0.05, y + r * 0.1);
+      ctx.lineTo(x + r * 0.5, y + r * 0.5);
+    }
+    ctx.stroke();
+  }
   if (origin === "source") {
     ctx.strokeStyle = "rgba(235,254,255,.85)";
     ctx.lineWidth = 2.2;
@@ -127,7 +201,7 @@ function orb(
 }
 function drawAimGuide(
   ctx: CanvasRenderingContext2D,
-  state: Readonly<OrbV3State>,
+  state: Readonly<OrbV4State>,
 ) {
   const direction = orbDirection(state.aimIndex);
   ctx.save();
@@ -148,7 +222,7 @@ function drawAimGuide(
 }
 function renderField(
   ctx: CanvasRenderingContext2D,
-  state: OrbV3State,
+  state: OrbV4State,
   camera: OrbCamera,
 ) {
   ctx.save();
@@ -176,10 +250,10 @@ function renderField(
       ? (ORB_RULES.rowHeightMilli / 1000) * (1 - insertionAge / 12)
       : 0;
   for (const bubble of state.bubbles) {
-    const p = orbCenterV3(state, bubble.row, bubble.col),
+    const p = orbCenterV4(state, bubble.row, bubble.col),
       y = p.yMilli / 1000 - descent;
     if (y < 2 || y > 539) continue;
-    orb(ctx, p.xMilli / 1000, y, bubble.color, 17, bubble.origin);
+    orb(ctx, p.xMilli / 1000, y, bubble.color, 17, bubble.origin, bubble.ice ?? 0);
   }
   ctx.restore();
   ctx.save();
@@ -254,10 +328,33 @@ function renderField(
     574 + (direction.y / direction.length) * 34,
   );
   ctx.stroke();
-  if (!state.shot) orb(ctx, 195, 574, state.currentColor);
+  if (!state.shot) {
+    orb(ctx, 195, 574, state.currentColor);
+    if (state.currentColor >= 6) {
+      // One short word under a special orb: its name, never a tutorial.
+      ctx.save();
+      ctx.fillStyle = "#ffe9a8";
+      ctx.font = "bold 10px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText(specialNames[state.currentColor], 195, 604);
+      ctx.restore();
+    }
+  }
+  ctx.strokeStyle = "rgba(160,225,240,.55)";
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([3, 4]);
+  ctx.beginPath();
+  ctx.arc(286, 574, 17, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
   orb(ctx, 286, 574, state.nextColor, 12);
+  // Stored power: a gauge that fills one segment per charge.
+  for (let i = 0; i < ORB_V4_RULES.maxPower; i++) {
+    ctx.fillStyle = i < state.power ? "#ff9f43" : "rgba(139,199,220,.2)";
+    ctx.fillRect(100 + i * 14, 560, 10, 6);
+  }
   // Remaining swaps as pips (no on-canvas text).
-  for (let i = 0; i < ORB_V3_RULES.maxSwaps; i++) {
+  for (let i = 0; i < ORB_V4_RULES.maxSwaps; i++) {
     ctx.fillStyle = i < state.swaps ? "#ffe082" : "rgba(139,199,220,.2)";
     ctx.beginPath();
     ctx.moveTo(130 + i * 13, 598);
@@ -268,7 +365,7 @@ function renderField(
     ctx.fill();
   }
   // Pressure is an actual state indicator, not an instruction or a forecast.
-  for (let i = 0; i < orbMissLimitV3(state); i++) {
+  for (let i = 0; i < orbMissLimitV4(state); i++) {
     ctx.fillStyle = i < state.misses ? "#ff9dad" : "rgba(139,199,220,.24)";
     ctx.beginPath();
     ctx.arc(49 + i * 14, 546, 4, 0, Math.PI * 2);
@@ -282,7 +379,7 @@ function createPresentation() {
   return {
     render(
       ctx: CanvasRenderingContext2D,
-      state: OrbV3State,
+      state: OrbV4State,
       viewport: LogicalCanvasViewport,
     ) {
       const dpr =
@@ -310,7 +407,7 @@ function createPresentation() {
     pointAction(
       point: CorePoint,
       phase: "down" | "move" | "up",
-      state: OrbV3State,
+      state: OrbV4State,
     ) {
       return pointAction(unprojectOrbPoint(camera, point), phase, state);
     },
@@ -318,7 +415,7 @@ function createPresentation() {
       durationMs: 300,
       render(
         ctx: CanvasRenderingContext2D,
-        state: OrbV3State,
+        state: OrbV4State,
         elapsedMs: number,
       ) {
         if (state.status !== "failed") return;
@@ -339,7 +436,7 @@ function createPresentation() {
 function pointAction(
   point: CorePoint,
   phase: "down" | "move" | "up",
-  state: OrbV3State,
+  state: OrbV4State,
 ) {
   if (phase === "up") return "SHOOT";
   if (state.shot || state.settleRemaining) return null;
@@ -359,9 +456,9 @@ const keys = {
   " ": "SHOOT",
   Enter: "SHOOT",
 };
-const hudLabel = (state: Readonly<OrbV3State>) =>
-  `AVANCE ${state.height}/${ORB_V3_RULES.sourceGoal}`;
-const feedbackScore = (state: Readonly<OrbV3State>) =>
+const hudLabel = (state: Readonly<OrbV4State>) =>
+  `AVANCE ${state.height}/${ORB_V4_RULES.sourceGoal} · ${state.points} PTS${state.combo > 1 ? ` · COMBO ×${state.combo}` : ""}`;
+const feedbackScore = (state: Readonly<OrbV4State>) =>
   state.height * 1000 - state.pressureRows;
 export default function OrbBurstVerified(props: GameRuntimeProps) {
   const presentation = useMemo(createPresentation, []);
@@ -369,7 +466,7 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
     <div className="orbVerified">
       <CoreCanvasGame
         {...props}
-        core={ORB_BURST_CORE_V3}
+        core={ORB_BURST_CORE_V4}
         name="Orb Burst"
         render={presentation.render}
         pointAction={presentation.pointAction}
@@ -382,6 +479,9 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
         keys={keys}
         controls={[
           { action: "SWAP", label: "Cambiar la bola cargada por la siguiente", symbol: "⇄" },
+          { action: "POWER_RAINBOW", label: "Poder arcoíris, cuesta 1", symbol: "🌈1" },
+          { action: "POWER_BOMB", label: "Poder bomba, cuesta 2", symbol: "💣2" },
+          { action: "POWER_LIGHTNING", label: "Poder rayo, cuesta 3", symbol: "⚡3" },
         ]}
         instruction=""
       />

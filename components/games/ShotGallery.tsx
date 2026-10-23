@@ -4,11 +4,11 @@ import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  SHOT_GALLERY_CORE_V3 as core,
-  GALLERY_V3_COLORS,
-  GALLERY_V3_SHAPES,
-  type GalleryStateV3,
-} from "@/lib/verified/shotGalleryCore.v3";
+  SHOT_GALLERY_CORE_V4 as core,
+  GALLERY_V4_COLORS,
+  GALLERY_V4_SHAPES,
+  type GalleryStateV4,
+} from "@/lib/verified/shotGalleryCore.v4";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 const PAINT = ["#4fa8ff", "#ff7a6b", "#a8e05f", "#a47bff", "#ffd23f", "#ff6fb5", "#2fd9c8", "#ff9a3c"];
@@ -62,16 +62,16 @@ function splash(ctx: CanvasRenderingContext2D, color: string, x: number, y: numb
   ctx.fill();
 }
 
-const hudLabel = (s: Readonly<GalleryStateV3>) => {
+const hudLabel = (s: Readonly<GalleryStateV4>) => {
   const taps = s.results.flatMap((r) => r.taps);
   const avg = taps.length ? ` · MEDIA ${msOf(taps.reduce((a, b) => a + b, 0) / taps.length)} ms` : "";
   return `${s.correct} ACIERTOS · ${Math.min(12, s.trial + 1)}/12${avg}`;
 };
-const feedbackScore = (s: Readonly<GalleryStateV3>) => s.total;
+const feedbackScore = (s: Readonly<GalleryStateV4>) => s.total;
 
 /** Reaction times are kept on this device (last 30 runs): presentation/storage only. */
 let savedSeed = "";
-function persistReactions(s: GalleryStateV3) {
+function persistReactions(s: GalleryStateV4) {
   if (s.status === "running" || savedSeed === s.seed) return;
   savedSeed = s.seed;
   try {
@@ -93,7 +93,7 @@ function persistReactions(s: GalleryStateV3) {
 }
 
 export default function ShotGallery(props: GameRuntimeProps) {
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV3) => {
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV4) => {
     persistReactions(s);
     const trial = s.trials[Math.min(s.trial, 11)],
       order = trial.order,
@@ -114,25 +114,31 @@ export default function ShotGallery(props: GameRuntimeProps) {
     ctx.font = "bold 12px system-ui";
     const need = trial.answers.length;
     ctx.fillText(need > 1 ? `ORDEN · TOCA LOS ${need}` : "ORDEN · TOCA EL", 195, 98);
-    if (order.kind === "COLOR") splash(ctx, colour, 195, 135, 24, order.color + 1);
-    else if (order.kind === "SHAPE") {
-      ctx.fillStyle = "#eaf2f8";
-      figure(ctx, order.shape, 195, 135, 24);
+    // The order shows exactly what to tap: a colour splash, a grey figure, or both (SUM).
+    const GREY = "#aeb7c0";
+    if (order.kind === "COLOR") {
+      splash(ctx, colour, 195, 133, 24, order.color + 1);
+    } else if (order.kind === "SHAPE") {
+      ctx.fillStyle = GREY;
+      figure(ctx, order.shape, 195, 133, 24);
     } else {
-      splash(ctx, `${colour}55`, 195, 135, 30, order.color + 1);
-      ctx.fillStyle = colour;
-      figure(ctx, order.shape, 195, 135, 22);
+      splash(ctx, colour, 140, 133, 22, order.color + 1);
+      ctx.fillStyle = "#eaf2f8";
+      ctx.font = "bold 28px system-ui";
+      ctx.fillText("+", 195, 143);
+      ctx.fillStyle = GREY;
+      figure(ctx, order.shape, 250, 133, 22);
     }
     ctx.fillStyle = "#c6dbe8";
     ctx.font = "bold 12px system-ui";
     ctx.fillText(
       order.kind === "COLOR"
-        ? GALLERY_V3_COLORS[order.color]
+        ? GALLERY_V4_COLORS[order.color]
         : order.kind === "SHAPE"
-          ? GALLERY_V3_SHAPES[order.shape]
-          : `${GALLERY_V3_SHAPES[order.shape]} ${GALLERY_V3_COLORS[order.color]}`,
+          ? GALLERY_V4_SHAPES[order.shape]
+          : `${GALLERY_V4_COLORS[order.color]} + ${GALLERY_V4_SHAPES[order.shape]}`,
       195,
-      168,
+      170,
     );
     // Red → green go signal.
     const pulse = 0.6 + 0.4 * Math.sin(s.tick * 0.12);
@@ -179,11 +185,14 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.beginPath();
       ctx.arc(t.x, t.y, 31, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = PAINT[t.color];
-      figure(ctx, t.shape, t.x, t.y, 22);
-      ctx.strokeStyle = "rgba(0,0,0,.35)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      if (t.type === "SPLASH") splash(ctx, PAINT[t.color], t.x, t.y, 20, t.color + (i % 5));
+      else {
+        ctx.fillStyle = "#aeb7c0";
+        figure(ctx, t.shape, t.x, t.y, 22);
+        ctx.strokeStyle = "rgba(0,0,0,.45)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
       ctx.restore();
       if (hitAt >= 0) {
         ctx.fillStyle = "#f9ecd2";
@@ -206,7 +215,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.fillText(last.type === "FALSE_START" ? "DEMASIADO PRONTO" : "TARDE", 195, f.y0 + f.h / 2);
     }
   }, []);
-  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV3) => {
+  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV4) => {
     if (phase !== "down" || s.phase === "feedback") return null;
     // Tapping before the green dot is a false start wherever the finger lands.
     if (s.phase === "waiting") return "PICK_0";

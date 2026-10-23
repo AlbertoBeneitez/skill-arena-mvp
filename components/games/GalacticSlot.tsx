@@ -4,7 +4,7 @@ import {
   SLOT_RULES,
   type SlotState,
 } from "@/lib/verified/galacticSlotCore.v1";
-import { SLOT_CORE_V2 } from "@/lib/verified/galacticSlotCore.v2";
+import { SLOT_CORE_V3 } from "@/lib/verified/galacticSlotCore.v3";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { slotVisibleSteps, slotReelPosition } from "@/lib/slotPresentation.v2";
 import CoreCanvasGame from "./CoreCanvasGame";
@@ -171,7 +171,7 @@ export default function GalacticSlot(props: GameRuntimeProps) {
     <div className="slotVerified">
       <CoreCanvasGame
         {...props}
-        core={SLOT_CORE_V2}
+        core={SLOT_CORE_V3}
         name="Galactic Slot"
         instruction=""
         render={render}

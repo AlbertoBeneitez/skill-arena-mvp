@@ -157,6 +157,9 @@ module.exports = (async () => {
   const v2 = await import(
     pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v2.js"))
   );
+  const v4 = await import(
+    pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v4.js"))
+  );
   const camera = await import(
     pathToFileURL(path.join(root, ".det-test/lib/billiardsPresentation.js"))
   );
@@ -170,13 +173,14 @@ module.exports = (async () => {
       "@/lib/verified/billiardsCore.v1": v1,
       "@/lib/verified/billiardsCore.v2": v2,
       "@/lib/verified/billiardsProtocol.v1": protocol,
-      "@/lib/verified/billiardsCore.v3": await import(pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v3.js"))),
+      "@/lib/verified/billiardsCore.v4": v4,
       "@/lib/billiardsPullback": await import(pathToFileURL(path.join(root, ".det-test/lib/billiardsPullback.js"))),
       "./CoreCanvasGame": { default() {} },
     },
     "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.hudLabel=hudLabel;",
   );
-  const state = v2.BILLIARDS_CORE_V2.create("ui-public-test");
+  const state = v4.BILLIARDS_CORE_V4.create("ui-public-test");
+  assert.equal(state.bumpers.length, 0);
   assert.equal(state.balls.length, 11);
   assert.equal(state.shotsLeft, 18);
   assert.equal(state.height, 0);
@@ -360,7 +364,7 @@ module.exports = (async () => {
     targetScore: 1e9,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core.gameVersion, "3.0.0");
+  assert.equal(surface.core.gameVersion, "4.0.0");
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.hideHudLabel, undefined);
   assert.equal(surface.expandHorizontalViewport, true);

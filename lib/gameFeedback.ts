@@ -142,6 +142,16 @@ type MusicProfile = {
 };
 
 function profileFor(gameId: string): MusicProfile {
+  // Calm, slow ambience for the lobby, groups and rankings.
+  if (gameId === "menu")
+    return {
+      bpm: 78,
+      root: 174.61,
+      scale: [0, 2, 4, 7, 9, 12],
+      bassEvery: 8,
+      motif: [0, 2, 4, 2, 5, 4, 2, 1, 0, 3, 4, 5, 4, 2, 1, 2],
+      leadType: "sine",
+    };
   if (gameId === "reaction-test")
     return {
       bpm: 144,

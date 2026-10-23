@@ -1,4 +1,4 @@
-import { ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v3";
+import { ROULETTE_ACTIONS_V6 as ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v6";
 import { BIRDS_ACTIONS_V2 } from "./verified/galacticBirdsProtocol.v2";
 import { ROULETTE_ACTIONS } from "./verified/galacticRouletteProtocol.v1";
 import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
@@ -15,7 +15,8 @@ import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
 import { SHOT_GALLERY_ACTIONS_V3 as SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v3";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
-import { ORB_ACTIONS_V3 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v3";
+import { ORB_ACTIONS_V4 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v4";
+import { PINBALL_ACTIONS } from "./verified/pinballProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -92,14 +93,14 @@ function adaptGameComponent<TProps extends object>(
 
 const GAME_DEFINITIONS = [
   {id:"galactic-birds",version:"8.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:BIRDS_ACTIONS_V2},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Seis niveles fijos con 17 drones, estructuras sencillas de vidrio/cerámica/aleación y alguna caja de TNT que explota en cadena. Tienes 24 tiros: eliges el pájaro (10 exploradores, 9 rápidos, 5 pesados); lo que no se apoya cae; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
-  { id: "galactic-roulette", version: "5.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca las fichas que quieras en el tapete y lanza la bola desde el lanzador exterior. Tres minutos o quedarte sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
+  { id: "galactic-roulette", version: "6.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:3,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca las fichas que quieras en el tapete y lanza la bola desde el lanzador exterior. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
-    id: "galactic-slot", version: "2.0.0", status: "VERIFIED",
+    id: "galactic-slot", version: "3.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: SLOT_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SLOT_ACTIONS },
     resultMetric: "fictitious-balance", name: "Galactic Slot", cover: "/covers/galactic-slot.svg", enabled: true,
     waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
-    rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances cortos de −3 a +3 posiciones, sin jugada 000. Servidor reproduce inputs y saldo; sin dinero real.",
+    rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances de −4 a +4 posiciones, sin jugada 000. Servidor reproduce inputs y saldo; sin dinero real.",
   },
 
   {
@@ -118,10 +119,10 @@ const GAME_DEFINITIONS = [
     name: "Dardos", cover: "/covers/darts.svg", enabled: true, waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Veinte lanzamientos, una diana orbital.", difficulty: "MEDIA", skillLabel: "PUNTERÍA + TIMING", rivalScore: 800, rivalName: "NOVA", rivalAvatar: "/avatars/avatar-3.svg", instruction: "Desliza desde abajo hacia la diana y suelta para lanzar.", scoring: "Suma cruda de20tiradas en una diana continua. Sin bonus por objetivos/combo. Swipe ascendente, vuelo1s y progresión suave de estabilidad/presión. Replay autoritativo.",
   },
   {
-    id: "billiards", version: "3.0.0", status: "VERIFIED",
+    id: "billiards", version: "4.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Billiards")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: BILLIARDS_ACTIONS_V3 },
-    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 8000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Tira del taco hacia atrás para ajustar dirección y potencia; suelta para golpear.", scoring: "Diez objetivos, dieciocho tiros y una mesa continua. Avance por embocadas únicas, posiciones conservadas entre tiros.",
+    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 8000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Tira del taco hacia atrás para ajustar dirección y potencia; suelta para golpear.", scoring: "Diez objetivos, dieciocho tiros y una mesa continua sin obstáculos; la disposición inicial cambia en cada partida. Avance por embocadas únicas, posiciones conservadas entre tiros.",
   },
   {
     id: "tower-drop",
@@ -299,7 +300,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "stack-shift",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/StackShiftVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: STACK_SHIFT_ACTIONS },
@@ -380,10 +381,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orb-burst",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: ORB_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 4, allowedActions: ORB_ACTIONS },
     name: "Orb Burst",
     cover: "/covers/orb-burst.svg",
     enabled: true,
@@ -395,8 +396,8 @@ const GAME_DEFINITIONS = [
     rivalScore: 108,
     rivalName: "ORB",
     rivalAvatar: "/avatars/avatar-5.svg",
-    instruction: "Apunta arrastrando y suelta para lanzar. Junta tres o más. Cambia la bola cuando te convenga y usa las bombas.",
-    scoring: "Avance por los 108 orbes originales retirados (los asteroides solo caen al quedar sueltos; las bombas limpian alrededor). Cambios limitados. Replay de servidor.",
+    instruction: "Apunta, suelta y junta tres o más. Gana poderes con los combos y elige cuándo usarlos.",
+    scoring: "Avance por los 108 orbes originales retirados. Fases que aprietan, hielo de dos golpes, asteroides, y poderes (bomba, rayo, arcoíris) que ganas con combos y eliges tú. Replay de servidor.",
 
   },
   {
@@ -477,7 +478,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
@@ -492,8 +493,8 @@ const GAME_DEFINITIONS = [
     rivalScore: 6000,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Espera al punto verde y toca los objetivos que pide la orden: una mancha de color o una figura.",
-    scoring: "Doce órdenes mezcladas de color y figura sobre objetivos repartidos al azar; algunas piden tocar varios. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
+    instruction: "Espera al punto verde y toca lo que pide la orden: manchas de color, figuras grises o la suma de ambas.",
+    scoring: "Doce órdenes (color, figura gris o suma de color y figura por separado) sobre objetivos repartidos al azar; algunas piden tocar varios. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
   },
   {
     id: "sky-hop",
@@ -514,6 +515,27 @@ const GAME_DEFINITIONS = [
     rivalAvatar: "/avatars/avatar-3.svg",
     instruction: "Mantén izquierda o derecha para dirigir el salto automático.",
     scoring: "Ascenso infinito: sin meta, el recorrido se genera con la semilla y se endurece con la altura (apoyos más pequeños y móviles, saltos largos, apoyos que se rompen y marcianos anticipados bajo los bordes). Tres vidas, balizas y recogibles. Avance por altura nueva; replay de servidor.",
+  },
+
+  {
+    id: "pinball",
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS },
+    name: "Pinball",
+    cover: "/covers/pinball.svg",
+    enabled: true,
+    waitingStakes: [5, 10],
+    category: "CONTROL",
+    tagline: "Carga el muelle, domina las palas y encadena multiplicadores.",
+    difficulty: "MEDIA",
+    skillLabel: "REFLEJOS + TIMING",
+    rivalScore: 20000,
+    rivalName: "FLIP",
+    rivalAvatar: "/avatars/avatar-2.svg",
+    instruction: "",
+    scoring: "Tres bolas y 180 s. La potencia del muelle fija el lanzamiento; las palas cierran el centro, así que solo se pierde por los carriles laterales. Puntos por bumpers, dianas, carriles y rampa con multiplicador hasta x5. Replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];
@@ -540,6 +562,7 @@ const CATALOG_ORDER: GameId[] = [
   "solitaire-sprint",
   "mine-grid",
   "stack-shift",
+  "pinball",
 ];
 
 export const GAMES: GameMeta[] = CATALOG_ORDER.map(

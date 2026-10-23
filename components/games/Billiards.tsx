@@ -18,7 +18,7 @@ import {
   BILLIARDS_V2_RULES,
   type BilliardsV2State,
 } from "@/lib/verified/billiardsCore.v2";
-import { BILLIARDS_CORE_V3 } from "@/lib/verified/billiardsCore.v3";
+import { BILLIARDS_CORE_V4 } from "@/lib/verified/billiardsCore.v4";
 import { grabBilliardsCue, pullBilliardsCue, type CueDrag } from "@/lib/billiardsPullback";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
@@ -64,12 +64,6 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV2State) {
     if (ball.id && !ball.potted)
       circleContact(ball.x / 1000, ball.y / 1000, radius * 2);
   }
-  for (const bumper of s.bumpers)
-    circleContact(
-      bumper.x / 1000,
-      bumper.y / 1000,
-      radius + bumper.radius / 1000,
-    );
   const railContact = (travel: number) => {
     if (travel >= 0 && travel < distance) {
       distance = travel;
@@ -213,24 +207,6 @@ function renderTable(
     ctx.beginPath();
     ctx.arc(x, y, 15, 0, Math.PI * 2);
     ctx.stroke();
-  }
-  for (const bumper of s.bumpers) {
-    const x = bumper.x / 1000,
-      y = bumper.y / 1000,
-      r = bumper.radius / 1000;
-    ctx.fillStyle = "rgba(0,0,0,.35)";
-    ctx.beginPath();
-    ctx.ellipse(x + 3, y + 4, r, r * 0.85, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#182231";
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#dfa06e";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.fillStyle = "#e8b986";
-    ctx.fillRect(x - 4, y - 1, 8, 2);
   }
   if (s.phase === "aim") drawAimGuide(ctx, s);
   const recommended = s.balls.find((ball) => ball.id > 0 && !ball.potted);
@@ -404,7 +380,7 @@ export default function Billiards(props: GameRuntimeProps) {
     <div className="billiardsVerified" onPointerCancel={presentation.clear} onLostPointerCapture={presentation.clear}>
       <CoreCanvasGame
         {...props}
-        core={BILLIARDS_CORE_V3}
+        core={BILLIARDS_CORE_V4}
         name="Billar"
         render={presentation.render}
         pointAction={presentation.pointAction}

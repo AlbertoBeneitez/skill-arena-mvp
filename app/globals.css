@@ -6424,3 +6424,32 @@ h1.wordmark { margin-bottom:0; line-height:1.2; }
 /* Orb Burst V3: the swap button sits at the right, under the next orb. */
 .orbVerified .coreControls { justify-content: flex-end; bottom: 10px; right: 18px; left: auto; }
 .orbVerified .coreControls button { width: 64px; height: 46px; font-size: 26px; }
+
+/* v103: the random first avatar is shown alone; the list opens on demand. */
+.avatarListToggle { width:100%; min-height:46px; margin:0 0 12px; border:1px solid #365567; border-radius:14px; background:#132d40; color:#bfeee6; font-weight:800; letter-spacing:.06em; }
+.galacticAvatarChoices[hidden] { display:none; }
+
+/* Orb Burst V4: swap + three power buttons share the bottom row. */
+.orbVerified .coreControls { right: 10px; left: 10px; justify-content: center; gap: 8px; bottom: 8px; }
+.orbVerified .coreControls button { width: 66px; height: 46px; font-size: 18px; }
+
+/* Pinball V1: wide flipper/spring buttons along the bottom. */
+.pinballVerified .coreControls { bottom: 14px; gap: 10px; }
+.pinballVerified .coreControls button { height: 62px; }
+
+/* v103 · experience: gentle entrances, a pop on the countdown and a lift on results. */
+@keyframes gxRise { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes gxPop { 0% { transform: scale(.55); opacity: 0; } 55% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes gxGlow { 0%,100% { box-shadow: 0 0 0 rgba(120,230,214,0); } 50% { box-shadow: 0 0 22px rgba(120,230,214,.35); } }
+main article[aria-label] { animation: gxRise .5s cubic-bezier(.2,.8,.2,1) both; }
+main article[aria-label]:nth-child(2) { animation-delay: .05s; }
+main article[aria-label]:nth-child(3) { animation-delay: .1s; }
+main article[aria-label]:nth-child(4) { animation-delay: .15s; }
+main article[aria-label]:nth-child(5) { animation-delay: .2s; }
+main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
+.countdownOverlay b { animation: gxPop .55s cubic-bezier(.2,.9,.3,1.2) both; }
+.resultPanel, .gameResultSummary { animation: gxRise .45s cubic-bezier(.2,.8,.2,1) both; }
+.modeCard[aria-pressed="true"], .modeCard.selected { animation: gxGlow 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  main article[aria-label], .countdownOverlay b, .resultPanel, .gameResultSummary, .modeCard { animation: none !important; }
+}

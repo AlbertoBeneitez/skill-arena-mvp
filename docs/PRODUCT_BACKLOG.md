@@ -530,3 +530,8 @@ Catálogo reducido a 11 juegos (12 archivados en `archive/pre-saturn`), Lanzader
 pestaña, gráficas de beneficio en el ranking de ejemplo, Grupo guiado, y cambios en Dardos, Slot, Shot Gallery 3,
 Orb Burst 3, Stack Shift 2, Solitaire y Billar. Pendiente: compra/cobro de fichas de Saturno. Detalle en
 [releases/v102-saturn.md](releases/v102-saturn.md).
+
+## v103-saturn · experiencia y ajustes (23-oct-2026)
+
+Pinball nuevo; Roulette 6 (terminar partida), Slot 3 (±4), Billar 4, Shot Gallery 4, Orb Burst 4, Stack Shift 3; avatar inicial,
+música de menú y animaciones; hoja de ruta de arquitectura. Detalle: [releases/v103-saturn.md](releases/v103-saturn.md).

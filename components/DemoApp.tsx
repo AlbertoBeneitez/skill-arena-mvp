@@ -225,6 +225,7 @@ export default function DemoApp() {
   const [playerName, setPlayerName] = useState("");
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
+  const [avatarListOpen, setAvatarListOpen] = useState(false);
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
@@ -469,9 +470,26 @@ export default function DemoApp() {
       return () => stopGameMusic();
     }
 
+    // Outside a game the lobby plays a calm ambient loop (only once onboarding is done).
+    if (musicOn && screen !== "game" && onboarded) {
+      startGameMusic("menu");
+      return () => stopGameMusic();
+    }
+
     stopGameMusic();
     return undefined;
-  }, [screen, activeGame, musicOn, selectedGame.id]);
+  }, [screen, activeGame, musicOn, selectedGame.id, onboarded]);
+
+  // Every button gets the same soft tap sound, so the interface feels alive.
+  useEffect(() => {
+    if (!musicOn) return undefined;
+    const onClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("button, [role=button]") && !target.closest("canvas, .detGameSurface, .coreGameSurface")) gameTone("tap");
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [musicOn]);
 
   useEffect(() => {
     if (!showWinAnimation) return;
@@ -823,7 +841,8 @@ export default function DemoApp() {
       if(selectedStake>0)setBalance(value=>Number((value+selectedStake).toFixed(2)));
       return;
     }
-    if (didWin) setShowWinAnimation(true);
+    // Balance games (slot, roulette) do not celebrate a "challenge cleared".
+    if (didWin && selectedGame.resultMetric !== "fictitious-balance") setShowWinAnimation(true);
     setResult(resolvedResult);
 
     const inGroupCompetition =
@@ -1127,7 +1146,8 @@ export default function DemoApp() {
             />
           </div>
 
-          <div className="galacticAvatarChoices" aria-label="Avatares disponibles">{AVATARS.map((src,index)=><button key={src} type="button" aria-label={`Avatar ${index+1}`} aria-pressed={avatarSrc===src} onClick={()=>{setAvatarId(index);setAvatarSrc(src);}}><img src={avatarThumb(src)} alt="" width={96} height={96} loading="lazy" decoding="async"/></button>)}</div>
+          <button type="button" className="avatarListToggle" aria-expanded={avatarListOpen} onClick={() => setAvatarListOpen((v) => !v)}>{avatarListOpen ? "OCULTAR AVATARES ▴" : "ELEGIR OTRO AVATAR ▾"}</button>
+          <div className="galacticAvatarChoices" hidden={!avatarListOpen} aria-label="Avatares disponibles">{AVATARS.map((src,index)=><button key={src} type="button" aria-label={`Avatar ${index+1}`} aria-pressed={avatarSrc===src} onClick={()=>{setAvatarId(index);setAvatarSrc(src);}}><img src={avatarThumb(src)} alt="" width={96} height={96} loading="lazy" decoding="async"/></button>)}</div>
           <label className="galacticNameLabel" htmlFor="avatar-name">Nombre de jugador</label>
           <input
             autoComplete="nickname"

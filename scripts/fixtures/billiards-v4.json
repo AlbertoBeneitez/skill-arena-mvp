@@ -1,0 +1,565 @@
+{
+ "gameVersion": "4.0.0",
+ "runs": [
+  {
+   "seed": "c1312da8c7d780c50cabaa926fc15c9cef22dea282fc2e578b5a4ebb59d784bc",
+   "finalTick": 7987,
+   "score": 2000,
+   "status": "failed",
+   "failure": "SHOTS_EXHAUSTED",
+   "hash": "sha256:dc86a5e551ed1cc9e39eac1b2b0c2f3f26a9252ece3531043a3b8962053caafc",
+   "inputs": [
+    {
+     "seq": 0,
+     "tick": 0,
+     "action": "AIM_110"
+    },
+    {
+     "seq": 1,
+     "tick": 1,
+     "action": "POWER_04"
+    },
+    {
+     "seq": 2,
+     "tick": 2,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 3,
+     "tick": 463,
+     "action": "AIM_061"
+    },
+    {
+     "seq": 4,
+     "tick": 464,
+     "action": "POWER_05"
+    },
+    {
+     "seq": 5,
+     "tick": 465,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 6,
+     "tick": 950,
+     "action": "AIM_045"
+    },
+    {
+     "seq": 7,
+     "tick": 951,
+     "action": "POWER_06"
+    },
+    {
+     "seq": 8,
+     "tick": 952,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 9,
+     "tick": 1477,
+     "action": "AIM_156"
+    },
+    {
+     "seq": 10,
+     "tick": 1478,
+     "action": "POWER_07"
+    },
+    {
+     "seq": 11,
+     "tick": 1479,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 12,
+     "tick": 1954,
+     "action": "AIM_141"
+    },
+    {
+     "seq": 13,
+     "tick": 1955,
+     "action": "POWER_08"
+    },
+    {
+     "seq": 14,
+     "tick": 1956,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 15,
+     "tick": 2400,
+     "action": "AIM_086"
+    },
+    {
+     "seq": 16,
+     "tick": 2401,
+     "action": "POWER_09"
+    },
+    {
+     "seq": 17,
+     "tick": 2402,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 18,
+     "tick": 2953,
+     "action": "AIM_055"
+    },
+    {
+     "seq": 19,
+     "tick": 2954,
+     "action": "POWER_04"
+    },
+    {
+     "seq": 20,
+     "tick": 2955,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 21,
+     "tick": 3081,
+     "action": "AIM_084"
+    },
+    {
+     "seq": 22,
+     "tick": 3082,
+     "action": "POWER_05"
+    },
+    {
+     "seq": 23,
+     "tick": 3083,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 24,
+     "tick": 3576,
+     "action": "AIM_018"
+    },
+    {
+     "seq": 25,
+     "tick": 3577,
+     "action": "POWER_06"
+    },
+    {
+     "seq": 26,
+     "tick": 3578,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 27,
+     "tick": 4060,
+     "action": "AIM_143"
+    },
+    {
+     "seq": 28,
+     "tick": 4061,
+     "action": "POWER_07"
+    },
+    {
+     "seq": 29,
+     "tick": 4062,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 30,
+     "tick": 4083,
+     "action": "AIM_032"
+    },
+    {
+     "seq": 31,
+     "tick": 4084,
+     "action": "POWER_08"
+    },
+    {
+     "seq": 32,
+     "tick": 4085,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 33,
+     "tick": 4612,
+     "action": "AIM_084"
+    },
+    {
+     "seq": 34,
+     "tick": 4613,
+     "action": "POWER_09"
+    },
+    {
+     "seq": 35,
+     "tick": 4614,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 36,
+     "tick": 5125,
+     "action": "AIM_145"
+    },
+    {
+     "seq": 37,
+     "tick": 5126,
+     "action": "POWER_04"
+    },
+    {
+     "seq": 38,
+     "tick": 5127,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 39,
+     "tick": 5625,
+     "action": "AIM_159"
+    },
+    {
+     "seq": 40,
+     "tick": 5626,
+     "action": "POWER_05"
+    },
+    {
+     "seq": 41,
+     "tick": 5627,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 42,
+     "tick": 6098,
+     "action": "AIM_135"
+    },
+    {
+     "seq": 43,
+     "tick": 6099,
+     "action": "POWER_06"
+    },
+    {
+     "seq": 44,
+     "tick": 6100,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 45,
+     "tick": 6546,
+     "action": "AIM_117"
+    },
+    {
+     "seq": 46,
+     "tick": 6547,
+     "action": "POWER_07"
+    },
+    {
+     "seq": 47,
+     "tick": 6548,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 48,
+     "tick": 7055,
+     "action": "AIM_101"
+    },
+    {
+     "seq": 49,
+     "tick": 7056,
+     "action": "POWER_08"
+    },
+    {
+     "seq": 50,
+     "tick": 7057,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 51,
+     "tick": 7497,
+     "action": "AIM_089"
+    },
+    {
+     "seq": 52,
+     "tick": 7498,
+     "action": "POWER_09"
+    },
+    {
+     "seq": 53,
+     "tick": 7499,
+     "action": "SHOOT"
+    }
+   ]
+  },
+  {
+   "seed": "314ad04250fcd08d4b44494e883dece3a96b44c5676117e0b731b219457e4724",
+   "finalTick": 7865,
+   "score": 4000,
+   "status": "failed",
+   "failure": "SHOTS_EXHAUSTED",
+   "hash": "sha256:8b498d8217eca0e7738cb30f5258fa1d7798ab92f511404815ceafd7a7b5514b",
+   "inputs": [
+    {
+     "seq": 0,
+     "tick": 0,
+     "action": "AIM_061"
+    },
+    {
+     "seq": 1,
+     "tick": 1,
+     "action": "POWER_04"
+    },
+    {
+     "seq": 2,
+     "tick": 2,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 3,
+     "tick": 491,
+     "action": "AIM_133"
+    },
+    {
+     "seq": 4,
+     "tick": 492,
+     "action": "POWER_05"
+    },
+    {
+     "seq": 5,
+     "tick": 493,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 6,
+     "tick": 968,
+     "action": "AIM_108"
+    },
+    {
+     "seq": 7,
+     "tick": 969,
+     "action": "POWER_06"
+    },
+    {
+     "seq": 8,
+     "tick": 970,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 9,
+     "tick": 1470,
+     "action": "AIM_069"
+    },
+    {
+     "seq": 10,
+     "tick": 1471,
+     "action": "POWER_07"
+    },
+    {
+     "seq": 11,
+     "tick": 1472,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 12,
+     "tick": 1963,
+     "action": "AIM_047"
+    },
+    {
+     "seq": 13,
+     "tick": 1964,
+     "action": "POWER_08"
+    },
+    {
+     "seq": 14,
+     "tick": 1965,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 15,
+     "tick": 2508,
+     "action": "AIM_070"
+    },
+    {
+     "seq": 16,
+     "tick": 2509,
+     "action": "POWER_09"
+    },
+    {
+     "seq": 17,
+     "tick": 2510,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 18,
+     "tick": 3014,
+     "action": "AIM_136"
+    },
+    {
+     "seq": 19,
+     "tick": 3015,
+     "action": "POWER_04"
+    },
+    {
+     "seq": 20,
+     "tick": 3016,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 21,
+     "tick": 3520,
+     "action": "AIM_133"
+    },
+    {
+     "seq": 22,
+     "tick": 3521,
+     "action": "POWER_05"
+    },
+    {
+     "seq": 23,
+     "tick": 3522,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 24,
+     "tick": 3950,
+     "action": "AIM_103"
+    },
+    {
+     "seq": 25,
+     "tick": 3951,
+     "action": "POWER_06"
+    },
+    {
+     "seq": 26,
+     "tick": 3952,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 27,
+     "tick": 4426,
+     "action": "AIM_135"
+    },
+    {
+     "seq": 28,
+     "tick": 4427,
+     "action": "POWER_07"
+    },
+    {
+     "seq": 29,
+     "tick": 4428,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 30,
+     "tick": 4962,
+     "action": "AIM_010"
+    },
+    {
+     "seq": 31,
+     "tick": 4963,
+     "action": "POWER_08"
+    },
+    {
+     "seq": 32,
+     "tick": 4964,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 33,
+     "tick": 5086,
+     "action": "AIM_148"
+    },
+    {
+     "seq": 34,
+     "tick": 5087,
+     "action": "POWER_09"
+    },
+    {
+     "seq": 35,
+     "tick": 5088,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 36,
+     "tick": 5307,
+     "action": "AIM_143"
+    },
+    {
+     "seq": 37,
+     "tick": 5308,
+     "action": "POWER_04"
+    },
+    {
+     "seq": 38,
+     "tick": 5309,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 39,
+     "tick": 5510,
+     "action": "AIM_134"
+    },
+    {
+     "seq": 40,
+     "tick": 5511,
+     "action": "POWER_05"
+    },
+    {
+     "seq": 41,
+     "tick": 5512,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 42,
+     "tick": 5966,
+     "action": "AIM_110"
+    },
+    {
+     "seq": 43,
+     "tick": 5967,
+     "action": "POWER_06"
+    },
+    {
+     "seq": 44,
+     "tick": 5968,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 45,
+     "tick": 6428,
+     "action": "AIM_127"
+    },
+    {
+     "seq": 46,
+     "tick": 6429,
+     "action": "POWER_07"
+    },
+    {
+     "seq": 47,
+     "tick": 6430,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 48,
+     "tick": 6860,
+     "action": "AIM_125"
+    },
+    {
+     "seq": 49,
+     "tick": 6861,
+     "action": "POWER_08"
+    },
+    {
+     "seq": 50,
+     "tick": 6862,
+     "action": "SHOOT"
+    },
+    {
+     "seq": 51,
+     "tick": 7353,
+     "action": "AIM_069"
+    },
+    {
+     "seq": 52,
+     "tick": 7354,
+     "action": "POWER_09"
+    },
+    {
+     "seq": 53,
+     "tick": 7355,
+     "action": "SHOOT"
+    }
+   ]
+  }
+ ]
+}
