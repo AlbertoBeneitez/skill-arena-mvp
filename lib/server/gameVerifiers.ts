@@ -1,7 +1,3 @@
-import { BIRDS_CORE_V7 } from "../verified/galacticBirdsCore.v7";
-import { BIRDS_CORE_V8 } from "../verified/galacticBirdsCore.v8";
-import { BIRDS_CORE_V6 } from "../verified/galacticBirdsCore.v6";
-import { BIRDS_CORE_V5 } from "../verified/galacticBirdsCore.v5";
 import { ROULETTE_CORE_V5 } from "../verified/galacticRouletteCore.v5";
 import { ROULETTE_CORE_V6 } from "../verified/galacticRouletteCore.v6";
 import { ROULETTE_CORE_V7 } from "../verified/galacticRouletteCore.v7";
@@ -9,44 +5,18 @@ import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
 import { SLOT_CORE_V3 } from "../verified/galacticSlotCore.v3";
-import { JET_STREAM_CORE_V5 } from "../verified/jetStreamCore.v5";
 import { BILLIARDS_CORE_V3 } from "../verified/billiardsCore.v3";
 import { BILLIARDS_CORE_V4 } from "../verified/billiardsCore.v4";
-import { BIRDS_CORE as BIRDS_CORE_V4 } from "../verified/galacticBirdsCore.v4";
 import { ROULETTE_CORE_V2 } from "../verified/galacticRouletteCore.v2";
-import { BIRDS_CORE as BIRDS_CORE_V3 } from "../verified/galacticBirdsCore.v3";
-import { BIRDS_CORE as BIRDS_CORE_V2 } from "../verified/galacticBirdsCore.v2";
-import { BIRDS_CORE } from "../verified/galacticBirdsCore.v1";
 import { ROULETTE_CORE } from "../verified/galacticRouletteCore.v1";
 import { SLOT_CORE } from "../verified/galacticSlotCore.v1";
-import { ALIEN_DASH_CORE_V3 } from "../verified/alienDashCore.v3";
 import { MEMORY_CORE } from "../verified/memoryMatchCore.v1";
 import { MEMORY_CORE as MEMORY_CORE_V2 } from "../verified/memoryMatchCore.v2";
-import { PIANO_V2_CORE } from "../verified/pianoRushCore.v2";
-import { PIANO_V3_CORE } from "../verified/pianoRushCore.v3";
-import { ORBIT_CORE } from "../verified/orbitShiftCore.v1";
-import { MAZE_CORE } from "../verified/mazeRushCore.v1";
-import { MAZE_CORE_V3 } from "../verified/mazeRushCore.v3";
-import { MAZE_CORE_V2 } from "../verified/mazeRushCore.v2";
-import { BRICK_RELAY_CORE } from "../verified/brickRelayCore.v1";
-import { BRICK_RELAY_CORE as BRICK_RELAY_V2_CORE } from "../verified/brickRelayCore.v2";
-import { METRO_CORE } from "../verified/metroShiftCore.v1";
-import { METRO_CORE_V2 } from "../verified/metroShiftCore.v2";
-import { SKY_HOP_CORE } from "../verified/skyHopCore.v1";
-import { SKY_HOP_CORE_V2 } from "../verified/skyHopCore.v2";
-import { SKY_HOP_CORE_V3 } from "../verified/skyHopCore.v3";
-import { SKY_HOP_CORE_V4 } from "../verified/skyHopCore.v4";
-import { PHALANX_CORE } from "../verified/starPhalanxCore.v1";
-import { PHALANX_CORE as PHALANX_V3_CORE } from "../verified/starPhalanxCore.v3";
-import { PHALANX_CORE as PHALANX_V2_CORE } from "../verified/starPhalanxCore.v2";
 import { STACK_SHIFT_CORE } from "../verified/stackShiftCore.v1";
 import { STACK_SHIFT_CORE_V2 } from "../verified/stackShiftCore.v2";
 import { PINBALL_CORE_V1 } from "../verified/pinballCore.v1";
 import { PINBALL_CORE_V2 } from "../verified/pinballCore.v2";
 import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
-import { JET_STREAM_CORE_V4 } from "../verified/jetStreamCore.v4";
-import { JET_STREAM_CORE_V3 } from "../verified/jetStreamCore.v3";
-import { ALIEN_DASH_CORE } from "../verified/alienDashCore.v2";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
 import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
 import { SHOT_GALLERY_CORE_V3 } from "../verified/shotGalleryCore.v3";
@@ -68,14 +38,6 @@ import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
 import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
 import { TOWER_DROP_CORE_V4 } from "../verified/towerDropCore.v4";
-import { JET_STREAM_CORE_V2 } from "../verified/jetStreamCore.v2";
-import { SERPENT_CORE } from "../verified/serpentCore.v1";
-import { SERPENT_CORE_V2 } from "../verified/serpentCore.v2";
-import { RIVER_DASH_CORE_V2 } from "../verified/riverDashCore.v2";
-import { RIVER_DASH_CORE_V4 } from "../verified/riverDashCore.v4";
-import { RIVER_DASH_CORE_V5 } from "../verified/riverDashCore.v5";
-import { RIVER_DASH_CORE_V3 } from "../verified/riverDashCore.v3";
-import { RIVER_DASH_CORE } from "../verified/riverDashCore.v1";
 import { STACK_3D_CORE } from "../verified/precisionStackCore.v4";
 import { STACK_3D_CORE as STACK_3D_CORE_V3 } from "../verified/precisionStackCore.v3";
 import type { MatchManifest } from "@/lib/verified/contracts";
@@ -98,29 +60,6 @@ import {
   replayPrecisionStack as replayPrecisionStackV2,
   type PrecisionStackInput as PrecisionStackInputV2,
 } from "@/lib/verified/precisionStackCore.v2";
-import {
-  PIANO_RUSH_ACTIONS,
-  PIANO_RUSH_V1,
-  PIANO_RUSH_V1_CONTENT,
-  replayPianoRush,
-  type PianoRushInput,
-} from "@/lib/verified/pianoRushCore.v1";
-import {
-  JET_STREAM_ACTIONS,
-  JET_STREAM_V1,
-  JET_STREAM_V1_CONTENT,
-  replayJetStream,
-  type JetStreamInput,
-} from "@/lib/verified/jetStreamCore.v1";
-
-import {
-  DINO_DASH_ACTIONS,
-  DINO_DASH_V1,
-  DINO_DASH_V1_CONTENT,
-  replayDinoDash,
-  type DinoDashInput,
-} from "@/lib/verified/dinoDashCore.v1";
-
 export type ServerReplayResult = {
   valid: boolean;
   error?: string;
@@ -281,129 +220,6 @@ const precisionStackV2Adapter: VerifiedGameAdapter = {
   },
 };
 
-const pianoRushAdapter: VerifiedGameAdapter = {
-  gameId: "piano-rush",
-  gameVersion: "1.0.0",
-  engineVersion: "skill-core-1",
-  simulation: {
-    tickRate: PIANO_RUSH_V1.tickRate,
-    coordinateWidth: PIANO_RUSH_V1.coordinateWidth,
-    coordinateHeight: PIANO_RUSH_V1.coordinateHeight,
-    endCondition: "FIRST_MISTAKE_OR_TARGET",
-    maxFinalTick: PIANO_RUSH_V1.maxFinalTick,
-  },
-  inputProtocol: {
-    version: PIANO_RUSH_V1.inputProtocolVersion,
-    allowedActions: PIANO_RUSH_ACTIONS,
-    maxInputs: PIANO_RUSH_V1.maxInputs,
-  },
-  rulesDescriptor: {
-    endCondition: "FIRST_MISTAKE_OR_TARGET",
-    scoringAuthority: "SERVER_REPLAY_ONLY",
-    inputClock: "SIMULATION_TICKS",
-  },
-  gameplayContentDescriptor: PIANO_RUSH_V1_CONTENT,
-  replay({ inputs, finalTick, manifest }) {
-    const replay = replayPianoRush(
-      inputs as PianoRushInput[],
-      finalTick,
-      manifest.seed,
-      manifest.competition.target_score
-    );
-
-    return {
-      valid: replay.valid,
-      error: replay.error,
-      score: replay.score,
-      timeMs: replay.timeMs,
-      won: replay.state.status === "won",
-      failure: replay.failure,
-    };
-  },
-};
-
-const jetStreamAdapter: VerifiedGameAdapter = {
-  gameId: "jet-stream",
-  gameVersion: "1.0.0",
-  engineVersion: "skill-core-1",
-  simulation: {
-    tickRate: JET_STREAM_V1.tickRate,
-    coordinateWidth: JET_STREAM_V1.coordinateWidth,
-    coordinateHeight: JET_STREAM_V1.coordinateHeight,
-    endCondition: "FIRST_FAILURE_OR_TARGET",
-    maxFinalTick: JET_STREAM_V1.maxFinalTick,
-  },
-  inputProtocol: {
-    version: JET_STREAM_V1.inputProtocolVersion,
-    allowedActions: JET_STREAM_ACTIONS,
-    maxInputs: JET_STREAM_V1.maxInputs,
-  },
-  rulesDescriptor: {
-    endCondition: "FIRST_FAILURE_OR_TARGET",
-    scoringAuthority: "SERVER_REPLAY_ONLY",
-    inputClock: "SIMULATION_TICKS",
-  },
-  gameplayContentDescriptor: JET_STREAM_V1_CONTENT,
-  replay({ inputs, finalTick, manifest }) {
-    const replay = replayJetStream(
-      inputs as JetStreamInput[],
-      finalTick,
-      manifest.seed,
-      manifest.competition.target_score
-    );
-
-    return {
-      valid: replay.valid,
-      error: replay.error,
-      score: replay.score,
-      timeMs: replay.timeMs,
-      won: replay.state.status === "won",
-      failure: replay.failure,
-    };
-  },
-};
-
-const dinoDashAdapter: VerifiedGameAdapter = {
-  gameId: "dino-dash",
-  gameVersion: "1.0.0",
-  engineVersion: "skill-core-1",
-  simulation: {
-    tickRate: DINO_DASH_V1.tickRate,
-    coordinateWidth: DINO_DASH_V1.coordinateWidth,
-    coordinateHeight: DINO_DASH_V1.coordinateHeight,
-    endCondition: "FIRST_COLLISION_OR_TARGET",
-    maxFinalTick: DINO_DASH_V1.maxFinalTick,
-  },
-  inputProtocol: {
-    version: DINO_DASH_V1.inputProtocolVersion,
-    allowedActions: DINO_DASH_ACTIONS,
-    maxInputs: DINO_DASH_V1.maxInputs,
-  },
-  rulesDescriptor: {
-    endCondition: "FIRST_COLLISION_OR_TARGET",
-    scoringAuthority: "SERVER_REPLAY_ONLY",
-    inputClock: "SIMULATION_TICKS",
-  },
-  gameplayContentDescriptor: DINO_DASH_V1_CONTENT,
-  replay({ inputs, finalTick, manifest }) {
-    const replay = replayDinoDash(
-      inputs as DinoDashInput[],
-      finalTick,
-      manifest.seed,
-      manifest.competition.target_score
-    );
-
-    return {
-      valid: replay.valid,
-      error: replay.error,
-      score: replay.score,
-      timeMs: replay.timeMs,
-      won: replay.state.status === "won",
-      failure: replay.failure,
-    };
-  },
-};
-
 function adapterKey(gameId: string, gameVersion: string) {
   return `${gameId}@${gameVersion}`;
 }
@@ -416,14 +232,6 @@ function adapterKey(gameId: string, gameVersion: string) {
  * manifests after the current version advances.
  */
 const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
-  [adapterKey(BIRDS_CORE.gameId, BIRDS_CORE.gameVersion)]: coreAdapter(BIRDS_CORE),
-  [adapterKey(BIRDS_CORE_V2.gameId, BIRDS_CORE_V2.gameVersion)]: coreAdapter(BIRDS_CORE_V2),
-  [adapterKey(BIRDS_CORE_V6.gameId,BIRDS_CORE_V6.gameVersion)]: coreAdapter(BIRDS_CORE_V6),
-  [adapterKey(BIRDS_CORE_V7.gameId,BIRDS_CORE_V7.gameVersion)]: coreAdapter(BIRDS_CORE_V7),
-  [adapterKey(BIRDS_CORE_V8.gameId,BIRDS_CORE_V8.gameVersion)]: coreAdapter(BIRDS_CORE_V8),
-  [adapterKey(BIRDS_CORE_V5.gameId,BIRDS_CORE_V5.gameVersion)]: coreAdapter(BIRDS_CORE_V5),
-  [adapterKey(BIRDS_CORE_V4.gameId, BIRDS_CORE_V4.gameVersion)]: coreAdapter(BIRDS_CORE_V4),
-  [adapterKey(BIRDS_CORE_V3.gameId, BIRDS_CORE_V3.gameVersion)]: coreAdapter(BIRDS_CORE_V3),
   [adapterKey(ROULETTE_CORE.gameId, ROULETTE_CORE.gameVersion)]: coreAdapter(ROULETTE_CORE),
   [adapterKey(ROULETTE_CORE_V4.gameId,ROULETTE_CORE_V4.gameVersion)]: coreAdapter(ROULETTE_CORE_V4),
   [adapterKey(ROULETTE_CORE_V5.gameId,ROULETTE_CORE_V5.gameVersion)]: coreAdapter(ROULETTE_CORE_V5),
@@ -434,35 +242,13 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
   [adapterKey(SLOT_CORE_V3.gameId,SLOT_CORE_V3.gameVersion)]: coreAdapter(SLOT_CORE_V3),
   [adapterKey(SLOT_CORE.gameId, SLOT_CORE.gameVersion)]: coreAdapter(SLOT_CORE),
-  [adapterKey(ALIEN_DASH_CORE_V3.gameId, ALIEN_DASH_CORE_V3.gameVersion)]: coreAdapter(ALIEN_DASH_CORE_V3),
   [adapterKey(MEMORY_CORE.gameId, MEMORY_CORE.gameVersion)]: coreAdapter(MEMORY_CORE),
   [adapterKey(MEMORY_CORE_V2.gameId, MEMORY_CORE_V2.gameVersion)]: coreAdapter(MEMORY_CORE_V2),
-  [adapterKey(PIANO_V3_CORE.gameId, PIANO_V3_CORE.gameVersion)]: coreAdapter(PIANO_V3_CORE),
-  [adapterKey(PIANO_V2_CORE.gameId, PIANO_V2_CORE.gameVersion)]: coreAdapter(PIANO_V2_CORE),
-  [adapterKey(ORBIT_CORE.gameId, ORBIT_CORE.gameVersion)]: coreAdapter(ORBIT_CORE),
-  [adapterKey(MAZE_CORE.gameId, MAZE_CORE.gameVersion)]: coreAdapter(MAZE_CORE),
-  [adapterKey(MAZE_CORE_V3.gameId, MAZE_CORE_V3.gameVersion)]: coreAdapter(MAZE_CORE_V3),
-  [adapterKey(MAZE_CORE_V2.gameId, MAZE_CORE_V2.gameVersion)]: coreAdapter(MAZE_CORE_V2),
-  [adapterKey(BRICK_RELAY_CORE.gameId, BRICK_RELAY_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_CORE),
-  [adapterKey(BRICK_RELAY_V2_CORE.gameId, BRICK_RELAY_V2_CORE.gameVersion)]: coreAdapter(BRICK_RELAY_V2_CORE),
-  [adapterKey(METRO_CORE.gameId, METRO_CORE.gameVersion)]: coreAdapter(METRO_CORE),
-  [adapterKey(METRO_CORE_V2.gameId, METRO_CORE_V2.gameVersion)]: coreAdapter(METRO_CORE_V2),
-  [adapterKey(SKY_HOP_CORE.gameId, SKY_HOP_CORE.gameVersion)]: coreAdapter(SKY_HOP_CORE),
-  [adapterKey(SKY_HOP_CORE_V2.gameId, SKY_HOP_CORE_V2.gameVersion)]: coreAdapter(SKY_HOP_CORE_V2),
-  [adapterKey(SKY_HOP_CORE_V3.gameId, SKY_HOP_CORE_V3.gameVersion)]: coreAdapter(SKY_HOP_CORE_V3),
-  [adapterKey(SKY_HOP_CORE_V4.gameId, SKY_HOP_CORE_V4.gameVersion)]: coreAdapter(SKY_HOP_CORE_V4),
-  [adapterKey(PHALANX_CORE.gameId, PHALANX_CORE.gameVersion)]: coreAdapter(PHALANX_CORE),
-  [adapterKey(PHALANX_V2_CORE.gameId, PHALANX_V2_CORE.gameVersion)]: coreAdapter(PHALANX_V2_CORE),
-  [adapterKey(PHALANX_V3_CORE.gameId, PHALANX_V3_CORE.gameVersion)]: coreAdapter(PHALANX_V3_CORE),
   [adapterKey(STACK_SHIFT_CORE.gameId, STACK_SHIFT_CORE.gameVersion)]: coreAdapter(STACK_SHIFT_CORE),
   [adapterKey(STACK_SHIFT_CORE_V2.gameId, STACK_SHIFT_CORE_V2.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V2),
   [adapterKey(PINBALL_CORE_V1.gameId, PINBALL_CORE_V1.gameVersion)]: coreAdapter(PINBALL_CORE_V1),
   [adapterKey(PINBALL_CORE_V2.gameId, PINBALL_CORE_V2.gameVersion)]: coreAdapter(PINBALL_CORE_V2),
   [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
-  [adapterKey(JET_STREAM_CORE_V5.gameId,JET_STREAM_CORE_V5.gameVersion)]: coreAdapter(JET_STREAM_CORE_V5),
-  [adapterKey(JET_STREAM_CORE_V4.gameId, JET_STREAM_CORE_V4.gameVersion)]: coreAdapter(JET_STREAM_CORE_V4),
-  [adapterKey(JET_STREAM_CORE_V3.gameId, JET_STREAM_CORE_V3.gameVersion)]: coreAdapter(JET_STREAM_CORE_V3),
-  [adapterKey(ALIEN_DASH_CORE.gameId, ALIEN_DASH_CORE.gameVersion)]: coreAdapter(ALIEN_DASH_CORE),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
   [adapterKey(SHOT_GALLERY_CORE_V2.gameId,SHOT_GALLERY_CORE_V2.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V2),
   [adapterKey(SHOT_GALLERY_CORE_V3.gameId,SHOT_GALLERY_CORE_V3.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V3),
@@ -482,16 +268,8 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ORB_BURST_CORE_V3.gameId,ORB_BURST_CORE_V3.gameVersion)]: coreAdapter(ORB_BURST_CORE_V3),
   [adapterKey(ORB_BURST_CORE_V4.gameId,ORB_BURST_CORE_V4.gameVersion)]: coreAdapter(ORB_BURST_CORE_V4),
   [adapterKey(ORB_BURST_CORE_V5.gameId,ORB_BURST_CORE_V5.gameVersion)]: coreAdapter(ORB_BURST_CORE_V5),
-  [adapterKey(RIVER_DASH_CORE_V2.gameId,RIVER_DASH_CORE_V2.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V2),
-  [adapterKey(RIVER_DASH_CORE_V3.gameId,RIVER_DASH_CORE_V3.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V3),
-  [adapterKey(RIVER_DASH_CORE_V4.gameId,RIVER_DASH_CORE_V4.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V4),
-  [adapterKey(RIVER_DASH_CORE_V5.gameId,RIVER_DASH_CORE_V5.gameVersion)]: coreAdapter(RIVER_DASH_CORE_V5),
   [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
   [adapterKey(TOWER_DROP_CORE_V4.gameId,TOWER_DROP_CORE_V4.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V4),
-  [adapterKey(JET_STREAM_CORE_V2.gameId,JET_STREAM_CORE_V2.gameVersion)]: coreAdapter(JET_STREAM_CORE_V2),
-  [adapterKey(SERPENT_CORE.gameId,SERPENT_CORE.gameVersion)]: coreAdapter(SERPENT_CORE),
-  [adapterKey(SERPENT_CORE_V2.gameId, SERPENT_CORE_V2.gameVersion)]: coreAdapter(SERPENT_CORE_V2),
-  [adapterKey(RIVER_DASH_CORE.gameId,RIVER_DASH_CORE.gameVersion)]: coreAdapter(RIVER_DASH_CORE),
   [adapterKey(STACK_3D_CORE.gameId, STACK_3D_CORE.gameVersion)]: coreAdapter(STACK_3D_CORE),
   [adapterKey(STACK_3D_CORE_V3.gameId, STACK_3D_CORE_V3.gameVersion)]: coreAdapter(STACK_3D_CORE_V3),
   [adapterKey(towerDropAdapter.gameId, towerDropAdapter.gameVersion)]:
@@ -500,12 +278,6 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
     precisionStackV1Adapter,
   [adapterKey(precisionStackV2Adapter.gameId, precisionStackV2Adapter.gameVersion)]:
     precisionStackV2Adapter,
-  [adapterKey(pianoRushAdapter.gameId, pianoRushAdapter.gameVersion)]:
-    pianoRushAdapter,
-  [adapterKey(jetStreamAdapter.gameId, jetStreamAdapter.gameVersion)]:
-    jetStreamAdapter,
-  [adapterKey(dinoDashAdapter.gameId, dinoDashAdapter.gameVersion)]:
-    dinoDashAdapter,
 };
 
 function assertCurrentAdapterContract(

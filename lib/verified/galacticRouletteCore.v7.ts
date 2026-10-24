@@ -50,7 +50,8 @@ export const ROULETTE_RULES_V7 = {
   tossVerticalPerImpulse: 70,
   inputCooldown: 0,
   maxFinalTick: 72000,
-  chipExpiryTicks: 1200,
+  // Unthrown chips no longer expire; the cloth is cleared when the spin ends (presentation).
+  chipExpiryTicks: 1_000_000_000,
   maxStakePerBet: 50,
   historyLength: 12,
 } as const;

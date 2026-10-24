@@ -9,7 +9,7 @@ Base: v103-saturn (e9132ee).
 - Nuevo modo de lienzo `expand-vertical` (pantalla completa hacia abajo en pantallas altas).
 
 ## Juegos
-- **Galactic Roulette 7.0.0**: tapete más grande, fichas de 1/5/25, las fichas del tapete se vacían tras cada tirada, historial de las últimas 12 tiradas arriba, y las fichas colocadas caducan a los 10 s sin tirar (interpretación: no se cobran, simplemente desaparecen; 10 s = 1200 ticks a 120 Hz).
+- **Galactic Roulette 7.0.0**: tapete más grande, fichas de 1/5/25, las fichas del tapete se vacían tras cada tirada, historial de las últimas 12 tiradas arriba, las fichas permanecen en el tapete mientras la bola gira y desaparecen al acabar la tirada (sin caducidad).
 - **Galactic Slot**: sin números junto a las figuras de los rodillos (panel superior).
 - **Dardos**: gesto de lanzamiento más permisivo, pantalla completa, contador de dardos restantes (texto + fila de dardos) y asa de lanzamiento animada.
 - **Stack 4.0.0**: el último bloque cae visiblemente fuera; puntuación = altura × 100000 + superficie total apilada (la superficie solo desempata alturas iguales).
@@ -18,6 +18,9 @@ Base: v103-saturn (e9132ee).
 - **Solitaire**: palos clásicos rojo/negro; todas las manos son resolubles: nuevo solucionador exacto (`lib/solitaireSolver.ts`) que verifica las 65 manos (5 curadas + 60 generadas) y re-reproduce cada solución con la mecánica literal del cliente (`scripts/verify-solitaire-solvable.ts`).
 - **Pinball 2.0.0**: una bola, 60 s, carril de skill shot, rollovers A-B-C, bumpers, slingshots, spinner, bancada de dianas abatibles, rampa/órbita, saucer, combos, flick, multiplicador y bonus final.
 - **Stack Shift**: sin botón ↓.
+
+## Limpieza
+- Eliminados del código los 12 juegos archivados (Galactic Birds, Jet Stream, Piano Rush, Alien Dash, River Dash, Sky Hop, Metro Shift, Orbit Shift, Serpent, Brick Relay, Maze Rush, Star Phalanx) con sus núcleos, tests y portadas (~215 archivos). Historial completo en la rama `archive/pre-saturn`. Se conservan `memory-match` y varios componentes huérfanos antiguos sin registrar.
 
 ## Dudas abiertas
 - "Galactis shot": se interpretó como el panel de rodillos del Slot. Si era Shot Gallery, indicarlo.

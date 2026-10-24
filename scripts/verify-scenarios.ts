@@ -5,26 +5,22 @@ import {
   selectScenario,
   SCENARIO_CATALOG_V1,
 } from "../lib/server/scenarios";
-import {
-  createDinoDashState,
-  DINO_DASH_V1,
-  replayDinoDash,
-  stepDinoDash,
-} from "../lib/verified/dinoDashCore.v1";
+import { DARTS_CORE_V3 } from "../lib/verified/dartsCore.v3";
+import { replayCore } from "../lib/verified/coreRuntime.v1";
 
-const identity = { game_id: "dino-dash", game_version: "1.0.0" };
+const identity = { game_id: "darts", game_version: "3.0.0" };
 const golden = generateScenario(identity, 7);
 assert.deepEqual(golden, {
   ...identity,
   scenario: { scenario_id: "seed-catalog-v1:000007", generator_version: "1.0.0" },
-  seed: "cfbb1cb33e2390560a05558ba5335d3a895fe029e345a8b3d76811216bef90a1",
+  seed: "35c435b9e1277a943f2de2690388c416f3287a30a9346563b57067310da8d62f",
 });
 assert(Object.isFrozen(golden) && Object.isFrozen(golden.scenario));
 assert.deepEqual(resolveScenario(identity, golden.scenario), golden);
 assert.equal(generateScenario({ game_id: "precision-stack", game_version: "2.0.0" }, 0).seed, "b0df17a25cbca4118e6bb6b529d3ae98d2fef4cfafd5f1494a0ce1ca2c6037d7");
-assert.equal(generateScenario({ game_id: "jet-stream", game_version: "1.0.0" }, 65_535).seed, "3a42821d02b0a6394ed9c8b38ebc593cac0a8fafb0260c7f5f20123459385657");
+assert.equal(generateScenario({ game_id: "billiards", game_version: "1.0.0" }, 65_535).seed, "7ad32622fd131848c07a26ca1d7e7c271c1523b068447166cb4b68b8b9b67e5d");
 assert.notEqual(generateScenario({ ...identity, game_version: "2.0.0" }, 7).seed, golden.seed);
-assert.notEqual(generateScenario({ ...identity, game_id: "jet-stream" }, 7).seed, golden.seed);
+assert.notEqual(generateScenario({ ...identity, game_id: "billiards" }, 7).seed, golden.seed);
 assert.notEqual(generateScenario(identity, 8).seed, golden.seed);
 
 // Mapping cannot depend on a player's wall clock or an uncontrolled RNG.
@@ -52,9 +48,9 @@ for (const index of [-1, 65_536, Number.MAX_SAFE_INTEGER, 1.5, NaN, Infinity, "7
   assert.throws(() => generateScenario(identity, index as number), /INVALID_SCENARIO_INDEX/);
 }
 for (const bad of [
-  { ...identity, game_id: "../dino-dash" },
-  { ...identity, game_id: "Dino-Dash" },
-  { ...identity, game_id: "dino-dash\n" },
+  { ...identity, game_id: "../darts" },
+  { ...identity, game_id: "Darts" },
+  { ...identity, game_id: "darts\n" },
   { ...identity, game_version: "01.0.0" },
   { ...identity, game_version: "1.0.0\n" },
   { ...identity, game_version: "1.0" },
@@ -80,15 +76,10 @@ for (let attempt = 0; attempt < 32; attempt += 1) {
 }
 
 // A generated seed feeds the existing frozen core without changing its rules.
-const state = createDinoDashState(golden.seed);
-while (state.status === "running" && state.tick < DINO_DASH_V1.maxFinalTick) {
-  stepDinoDash(state);
-}
-assert.equal(state.status, "failed");
-const first = replayDinoDash([], state.tick, golden.seed);
-const second = replayDinoDash([], state.tick, resolveScenario(identity, golden.scenario).seed);
+const first = replayCore(DARTS_CORE_V3, [], 29760, golden.seed);
+const second = replayCore(DARTS_CORE_V3, [], 29760, resolveScenario(identity, golden.scenario).seed);
 assert.equal(first.valid, true);
+assert.equal(first.state.status, "failed");
 assert.deepEqual(first, second);
-assert.deepEqual(first.state, state);
 
 console.log(`Scenario catalogue OK · capacity=${SCENARIO_CATALOG_V1.count} · 4096 reproducible mappings · bounds/goldens/replay passed · issuance not enabled`);

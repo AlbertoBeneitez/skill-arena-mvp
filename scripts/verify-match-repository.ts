@@ -31,7 +31,7 @@ try {
   await pool.query(migration);
   const repository = new PostgresMatchRepository(pool);
   const participants = { A: "test-player-a", B: "test-player-b" };
-  const v2 = createMatchManifest({ gameId: "dino-dash", matchId: "test-v2", targetScore: 1000 });
+  const v2 = createMatchManifest({ gameId: "darts", matchId: "test-v2", targetScore: 1000 });
   assert.equal(validateManifest(v2).ok, true);
   const savedV2 = await repository.createMatch(v2, participants);
   assert.deepEqual(savedV2.manifest, v2);

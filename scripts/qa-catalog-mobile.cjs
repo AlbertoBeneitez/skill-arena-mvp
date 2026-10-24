@@ -167,7 +167,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
       r.url().includes("/verified-match/start"),
     );
     await page
-      .getByRole("button", { name: "Jugar a Sky Hop", exact: true })
+      .getByRole("button", { name: "Jugar a Dardos", exact: true })
       .tap();
     await page.locator(".verificationOverlay").waitFor({ state: "visible" });
     assert.equal(
@@ -177,7 +177,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     releaseStart();
     assert.equal(
       (await (await issued).json()).manifest.game_version,
-      GAMES.find((g) => g.id === "sky-hop").version,
+      GAMES.find((g) => g.id === "darts").version,
     );
     await page.locator(".countdownOverlay").waitFor({ state: "hidden" });
     await page.locator(".verificationOverlay").waitFor({ state: "hidden" });
@@ -260,7 +260,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         landscape: true,
         searchRemoved: true,
         navigation: true,
-        startVersion: GAMES.find((g) => g.id === "sky-hop").version,
+        startVersion: GAMES.find((g) => g.id === "darts").version,
         loading: true,
         startFailure: true,
         errors,

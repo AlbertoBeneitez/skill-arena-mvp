@@ -11,7 +11,7 @@ import type {
 const manifest: MatchManifestV2 = {
   manifest_version: 2,
   match_id: "v2-contract-fixture",
-  game_id: "dino-dash",
+  game_id: "dino-dash" as unknown as MatchManifestV2["game_id"], // historical fixture: the game was retired but the pinned hashes stay valid
   game_version: "1.0.0",
   engine_version: "skill-core-1",
   rules_hash: "sha256:cbe252464656632ab1367577800287cbe2fcb8925769f91690ea2f04661cf625",
@@ -78,7 +78,7 @@ const v3Signature = signAttemptTicket(v3Ticket, SECRET);
 assert.notEqual(v3Signature, V2_SIGNATURE, "V2 ticket must not authorize V3");
 
 for (const changed of [
-  { ...v3, game_id: "jet-stream" as const },
+  { ...v3, game_id: "billiards" as const },
   { ...v3, game_version: "2.0.0" },
   { ...v3, seed: "client-selected-seed" },
   { ...v3, scenario: { ...v3.scenario, scenario_id: "seed-catalog-v1:000008" } },

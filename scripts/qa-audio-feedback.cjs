@@ -117,7 +117,7 @@ const { stripTypeScriptTypes } = require("node:module");
         document.querySelector("#win").onclick = () => f.gameTone("win");
         document.querySelector("#stop").onclick = () => f.stopGameMusic();
       },
-      { code, gameId: process.env.QA_AUDIO_GAME || "river-dash" },
+      { code, gameId: process.env.QA_AUDIO_GAME || "darts" },
     );
     await page.locator("#on").tap();
     await page.waitForTimeout(180);

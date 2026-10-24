@@ -15,9 +15,7 @@ import {
 import { signAttemptTicket } from "../lib/server/matchIntegrity";
 import { getServerGameAdapter } from "../lib/server/gameVerifiers";
 import { createPrivateMatchManifest } from "../lib/server/privateMatchIssuer";
-import alienFixture from "./fixtures/alien-v3.json" with { type: "json" };
 import billiardsFixture from "./fixtures/billiards-v2.json" with { type: "json" };
-import skyFixture from "./fixtures/sky-hop-v3.json" with { type: "json" };
 import memoryFixture from "./fixtures/memory-v2.json" with { type: "json" };
 import orbFixture from "./fixtures/orb-v2.json" with { type: "json" };
 
@@ -72,35 +70,15 @@ function reject(raw: unknown, error: string, status = 400) {
 try {
   const historical: [GameId, string][] = [
     ["galactic-roulette", "1.0.0"],
-    ["galactic-birds", "1.0.0"],
-    ["galactic-birds", "2.0.0"],
-    ["star-phalanx", "1.0.0"],
-    ["brick-relay", "1.0.0"],
-    ["grid-serpent", "1.0.0"],
     ["tower-drop", "2.1.0"],
     ["precision-stack", "1.0.0"],
     ["precision-stack", "2.0.0"],
-    ["piano-rush", "1.0.0"],
-    ["piano-rush", "2.0.0"],
-    ["jet-stream", "1.0.0"],
-    ["dino-dash", "1.0.0"],
-    ["dino-dash", "2.0.0"],
     ["billiards", "1.0.0"],
-    ["jet-stream", "2.0.0"],
-    ["jet-stream", "3.0.0"],
     ["darts", "1.0.0"],
     ["reaction-test", "1.0.0"],
-    ["star-phalanx", "2.0.0"],
     ["darts", "2.0.0"],
-    ["river-dash", "1.0.0"],
-    ["river-dash", "2.0.0"],
-    ["river-dash", "3.0.0"],
-    ["sky-hop", "1.0.0"],
-    ["sky-hop", "2.0.0"],
     ["orb-burst", "1.0.0"],
     ["memory-match", "1.0.0"],
-    ["maze-rush", "1.0.0"],
-    ["maze-rush", "2.0.0"],
   ];
   const current: [GameId, string][] = GAMES
     .filter(game => game.competition.verification === "server-replay")
@@ -112,19 +90,12 @@ try {
     reject(zero, "CLIENT_ENDED_BEFORE_RESOLUTION");
   }
 
-  for (const version of ["1.0.0", "2.0.0", "3.0.0", "4.0.0"]) {
-    const jet = payload("jet-stream", version);
-    jet.inputs = [{ seq: 0, tick: 60, action: "FLAP" }];
-    jet.final_tick = 61;
-    receipt(jet);
-    reject(jet, "CLIENT_ENDED_BEFORE_RESOLUTION");
-  }
   const aimed = payload("darts", "2.0.0");
   aimed.inputs = [{ seq: 0, tick: 30, action: "AIM_Y_31" }];
   aimed.final_tick = 31;
   receipt(aimed);
 
-  const zero = payload("jet-stream", "3.0.0");
+  const zero = payload("darts", "3.0.0");
   receipt(zero);
   reject({ ...zero, record_kind: null }, "INVALID_PAYLOAD");
   reject({ ...zero, record_kind: "terminal" }, "INVALID_PAYLOAD");
@@ -135,18 +106,18 @@ try {
   }
   reject({ ...abandon(zero), final_tick: -1 }, "INVALID_FINAL_TICK");
   reject({ ...abandon(zero), inputs: [{ seq: 0, tick: 0, action: "FORBIDDEN" }] }, "INVALID_INPUT");
-  reject({ ...abandon(zero), inputs: [{ seq: 1, tick: 0, action: "FLAP" }] }, "INVALID_INPUT");
-  reject({ ...abandon(zero), inputs: [{ seq: 0, tick: 1, action: "FLAP" }] }, "INPUT_AFTER_FINAL");
+  reject({ ...abandon(zero), inputs: [{ seq: 1, tick: 0, action: "AIM_Y_31" }] }, "INVALID_INPUT");
+  reject({ ...abandon(zero), inputs: [{ seq: 0, tick: 1, action: "AIM_Y_31" }] }, "INPUT_AFTER_FINAL");
   reject({ ...abandon(zero), final_tick: 2, inputs: [
-    { seq: 0, tick: 1, action: "FLAP" }, { seq: 1, tick: 1, action: "FLAP" },
+    { seq: 0, tick: 1, action: "AIM_Y_31" }, { seq: 1, tick: 1, action: "AIM_Y_31" },
   ] }, "INVALID_INPUT_SEQUENCE");
   reject({ ...abandon(zero), final_tick: 2, inputs: [
-    { seq: 0, tick: 2, action: "FLAP" }, { seq: 1, tick: 1, action: "FLAP" },
+    { seq: 0, tick: 2, action: "AIM_Y_31" }, { seq: 1, tick: 1, action: "AIM_Y_31" },
   ] }, "INVALID_INPUT_SEQUENCE");
-  const adapter = getServerGameAdapter("jet-stream", "3.0.0")!;
+  const adapter = getServerGameAdapter("darts", "3.0.0")!;
   reject({ ...abandon(zero), final_tick: adapter.simulation.maxFinalTick + 1 }, "INVALID_FINAL_TICK");
   reject({ ...abandon(zero), inputs: Array.from({ length: adapter.inputProtocol.maxInputs + 1 },
-    (_, seq) => ({ seq, tick: seq, action: "FLAP" })) }, "PAYLOAD_TOO_LARGE");
+    (_, seq) => ({ seq, tick: seq, action: "AIM_Y_31" })) }, "PAYLOAD_TOO_LARGE");
 
   const billiards = payload("billiards", "1.0.0");
   reject({ ...abandon(billiards), final_tick: 1, inputs: [
@@ -173,7 +144,9 @@ try {
   now = START_TIME + 10_000;
   receipt(lead);
 
-  const terminal = { ...zero, final_tick: 790 };
+  const TERMINAL_TICK = 29760; // Darts V3 with no input: every throw times out -> NO_SCORE.
+  now += 250_000;
+  const terminal = { ...zero, final_tick: TERMINAL_TICK };
   const result = processAttemptRecord({ ...terminal, client_score: 1e9, won: true, height: 999999 });
   assert.equal(result.status, 200);
   assert.equal(result.body.verified, true);
@@ -184,35 +157,12 @@ try {
     ok: true, verified: true, verification_id: undefined,
     replay_hash: hashReplay({
       manifestHash: hashManifest(terminal.manifest), attemptId: terminal.ticket.attempt_id,
-      inputs: [], finalTick: 790,
-      result: { score: 0, timeMs: 6583, won: false, height: undefined, failure: "OUT_OF_BOUNDS" },
+      inputs: [], finalTick: TERMINAL_TICK,
+      result: { score: 0, timeMs: 248000, won: false, height: undefined, failure: "NO_SCORE" },
     }),
-    score: 0, time_ms: 6583, height: undefined, failure: "OUT_OF_BOUNDS", won: false,
+    score: 0, time_ms: 248000, height: undefined, failure: "NO_SCORE", won: false,
     authoritative_source: "SERVER_REPLAY", client_score_ignored: true,
   }, "Historical terminal result/hash envelope changed");
-  const reached = { ...payload("jet-stream", "4.0.0"), final_tick: 790 };
-  now += 10_000; // This newly-issued ticket must have real elapsed time too.
-  const reachedResult = processAttemptRecord({ ...reached, client_score: 1e9, won: true, height: 999999 });
-  assert.equal(reachedResult.status, 200);
-  assert.equal(reachedResult.body.verified, true);
-  if (!reachedResult.body.verified) throw new Error("Current terminal did not verify");
-  assert.equal(reachedResult.body.height, 0, "Jet V4 reach must come from replay, never client");
-  assert.equal(reachedResult.body.score, 0);
-  assert.equal(reachedResult.body.won, false);
-  const alien = {
-    ...payload("dino-dash", "3.0.0", alienFixture.seed),
-    inputs: alienFixture.inputs,
-    final_tick: alienFixture.finalTick,
-  };
-  now += 130_000;
-  const alienResult = processAttemptRecord({ ...alien, client_score: 1e9, won: false, height: 999999 });
-  assert.equal(alienResult.status, 200);
-  assert.equal(alienResult.body.verified, true);
-  if (!alienResult.body.verified) throw new Error("Alien V3 terminal did not verify");
-  assert.equal(alienResult.body.height, alienFixture.height, "Alien reach must be replayed, never supplied by the browser");
-  assert.equal(alienResult.body.score, alienFixture.score);
-  assert.equal(alienResult.body.time_ms, 120_000);
-  assert.equal(alienResult.body.won, true);
   const pool = {
     ...payload("billiards", "2.0.0", billiardsFixture.seed),
     inputs: billiardsFixture.inputs,
@@ -234,28 +184,6 @@ try {
   assert.equal(poolResult.body.score, billiardsFixture.score);
   assert.equal(poolResult.body.time_ms, Math.round(billiardsFixture.finalTick * 1000 / 120));
   assert.equal(poolResult.body.won, true);
-  const ascent = skyFixture.runs[0];
-  const sky = {
-    ...payload("sky-hop", "3.0.0", ascent.seed),
-    inputs: ascent.inputs,
-    final_tick: ascent.finalTick,
-  };
-  now += 60_000;
-  const skyPrefix = {
-    ...sky,
-    inputs: ascent.inputs.filter(input => input.tick <= 330),
-    final_tick: 330,
-  };
-  receipt(skyPrefix);
-  reject(skyPrefix, "CLIENT_ENDED_BEFORE_RESOLUTION");
-  const skyResult = processAttemptRecord({ ...sky, client_score: 1e9, won: false, height: 999999 });
-  assert.equal(skyResult.status, 200);
-  assert.equal(skyResult.body.verified, true);
-  if (!skyResult.body.verified) throw new Error("Sky V3 terminal did not verify");
-  assert.equal(skyResult.body.height, ascent.highest, "Sky height comes from replay including the real stomp, never the browser");
-  assert.equal(skyResult.body.score, ascent.score);
-  assert.equal(skyResult.body.time_ms, Math.round(ascent.finalTick * 1000 / 120));
-  assert.equal(skyResult.body.won, true);
   const memoryRun = memoryFixture.runs[0];
   const memory = { ...payload("memory-match", "2.0.0", memoryFixture.seed), inputs: memoryRun.inputs, final_tick: memoryRun.finalTick };
   now += Math.ceil(memoryRun.finalTick * 1000 / 120) + 1000;
@@ -297,8 +225,8 @@ try {
   assert.equal(orbResult.body.won, true);
   reject(abandon(orb), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
   reject(abandon(terminal), "TERMINAL_RECORD_REQUIRES_VERIFICATION");
-  reject({ ...abandon(terminal), final_tick: 791 }, "FINAL_TICK_AFTER_RESOLUTION");
-  reject({ ...abandon(terminal), inputs: [{ seq: 0, tick: 790, action: "FLAP" }] }, "UNCONSUMED_INPUTS");
+  reject({ ...abandon(terminal), final_tick: TERMINAL_TICK + 1 }, "FINAL_TICK_AFTER_RESOLUTION");
+  reject({ ...abandon(terminal), inputs: [{ seq: 0, tick: TERMINAL_TICK, action: "AIM_Y_31" }] }, "UNCONSUMED_INPUTS");
   receipt({ ...zero, final_tick: 1 });
   const clientFields = { ...abandon(zero), client_score: 1e9, won: true, height: 999999 };
   assert.deepEqual(processAttemptRecord(clientFields), processAttemptRecord(abandon(zero)),

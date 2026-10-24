@@ -23,13 +23,13 @@ poor.denomination = 25;
 assert.equal(core.canApply(poor, "BET_RED"), false);
 poor.denomination = 5;
 assert.equal(core.canApply(poor, "BET_RED"), true);
-// Unthrown chips vanish after 10 s (1200 ticks) and nothing is charged.
+// Unthrown chips stay on the cloth (no expiry); nothing is charged until the throw.
 const e = core.create("expiry");
 applyCoreInput(core, e, "BET_RED", 1e9);
 for (let i = 0; i < 1199; i++) stepCore(core, e, 1e9);
 assert.equal(e.chips.length, 1);
 stepCore(core, e, 1e9);
-assert.equal(e.chips.length, 0);
+assert.equal(e.chips.length, 1);
 assert.equal(e.balanceMinor, 10000);
 // The cloth is empty right after the throw and after the spin, and history records results.
 const t = core.create("spin");
@@ -49,4 +49,4 @@ assert.equal(c.status, "won");
 assert.equal(core.canApply(c, "BET_RED"), false);
 assert.equal(replayCore(core, [], 21600, "idle", 1e9).valid, false);
 assert.equal(core.maxFinalTick, 72000);
-console.log("Roulette V7 OK: denominations, cleared cloth, 10 s expiry, history, golden replay");
+console.log("Roulette V7 OK: denominations, cleared cloth, no expiry, history, golden replay");

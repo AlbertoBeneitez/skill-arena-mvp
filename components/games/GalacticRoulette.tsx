@@ -221,14 +221,13 @@ function render(
   ctx.font = "900 28px system-ui";
   ctx.textAlign = "center";
   ctx.fillText(s.lastNumber === null ? "" : String(s.lastNumber), cx, 270);
-  const stake = s.chipValues.reduce((a, b) => a + b, 0);
-  const expiresIn = s.chips.length
-    ? Math.max(0, Math.ceil((ROULETTE_RULES_V7.chipExpiryTicks - (s.tick - s.chipTicks[0])) / 120))
-    : 0;
-  ctx.fillStyle = expiresIn > 0 && expiresIn <= 3 ? "#ffb4a0" : "#a8c6d5";
+    const onCloth = s.landingTick !== -1 ? s.lockedChips : s.chips;
+  const onClothValues = s.landingTick !== -1 ? s.lockedValues : s.chipValues;
+  const stake = onClothValues.reduce((a, b) => a + b, 0);
+  ctx.fillStyle = "#a8c6d5";
   ctx.font = "bold 14px system-ui";
   ctx.fillText(
-    stake ? `${stake} ${stake === 1 ? "FICHA" : "FICHAS"} EN LA MESA · ${expiresIn}s` : "SIN FICHAS EN LA MESA",
+    onCloth.length ? `${stake} ${stake === 1 ? "FICHA" : "FICHAS"} EN LA MESA` : "SIN FICHAS EN LA MESA",
     cx,
     377,
   );
@@ -335,7 +334,9 @@ const choiceControl = {
   value: (s: RouletteStateV2) => (s.chips.length ? `BET_${s.chips[s.chips.length - 1]}` : ""),
   badges: (s: RouletteStateV2) => {
     const counts: Record<string, number> = {};
-    s.chips.forEach((bet, i) => { counts[`BET_${bet}`] = (counts[`BET_${bet}`] ?? 0) + s.chipValues[i]; });
+    // Chips stay visible while the ball is in play and leave the cloth when the spin ends.
+    const shown = s.landingTick !== -1 ? s.lockedChips : s.chips, values = s.landingTick !== -1 ? s.lockedValues : s.chipValues;
+    shown.forEach((bet, i) => { counts[`BET_${bet}`] = (counts[`BET_${bet}`] ?? 0) + values[i]; });
     counts[`CHIP_${s.denomination}`] = 1;
     return counts;
   },
