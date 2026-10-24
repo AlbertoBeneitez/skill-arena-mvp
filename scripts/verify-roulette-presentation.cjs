@@ -118,7 +118,9 @@ module.exports = (async () => {
     const angle = s.wheelPhase / 65536 * Math.PI * 2 - Math.PI / 2 + coreModule.ROULETTE_WHEEL.indexOf(32) * Math.PI * 2 / 37;
     assert.equal(balls.length,2); // pocketed ball stays + next ball waits on the launcher
     // The last moment is slow and soft (150 ticks of easing); afterwards the ball rests exactly in the pocket.
-    const miss = Math.hypot(balls[0][0] - (195 + Math.cos(angle) * 104), balls[0][1] - (195 + Math.sin(angle) * 104));
+    // v106: each number has its own square pocket inside the numbered band; its centre is at radius 93.5.
+    const POCKET_REST = 93.5;
+    const miss = Math.hypot(balls[0][0] - (195 + Math.cos(angle) * POCKET_REST), balls[0][1] - (195 + Math.sin(angle) * POCKET_REST));
     if (age >= 150) assert.ok(miss < 1e-8);
     else assert.ok(miss <= 200, "ball drifts toward the pocket");
     runtime.stepCore(coreModule.ROULETTE_CORE_V8,s,1e9);

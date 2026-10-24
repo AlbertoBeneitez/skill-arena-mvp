@@ -6,9 +6,7 @@ import {
   PINBALL_CORE_V3,
   PINBALL_DROPS_V3,
   PINBALL_LANES_V3,
-  PINBALL_ORBIT_ZONE_V3,
   PINBALL_POSTS_V3,
-  PINBALL_RAMP_ZONE_V3,
   PINBALL_RTARGETS_V3,
   PINBALL_RULES_V3,
   PINBALL_SAUCER_V3,
@@ -80,13 +78,6 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV3) {
     ctx.stroke();
   }
   ctx.restore();
-  // Outlane markers (the only place a ball can be lost).
-  ctx.fillStyle = "rgba(255,125,150,.5)";
-  for (const x of [32, 334]) {
-    ctx.beginPath();
-    ctx.moveTo(x - 7, 520); ctx.lineTo(x + 7, 520); ctx.lineTo(x, 538);
-    ctx.fill();
-  }
   // Stand-up targets.
   PINBALL_TARGETS_V3.forEach((t, i) => {
     ctx.strokeStyle = s.targets[i] ? "#ffe082" : "#c58a4e";
@@ -155,16 +146,6 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV3) {
     ctx.shadowColor = s.saucerLit ? "#ffcf6a" : "transparent"; ctx.shadowBlur = s.saucerLit ? 16 : 0;
     ctx.beginPath(); ctx.arc(k(c.x), k(c.y), 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.shadowBlur = 0;
-  }
-  // Ramp and orbit markers (lit for a moment after a shot).
-  for (const [z, last] of [[PINBALL_RAMP_ZONE_V3, s.lastRampTick], [PINBALL_ORBIT_ZONE_V3, s.lastOrbitTick]] as const) {
-    ctx.strokeStyle = s.tick - last < 40 ? "#ffe082" : "rgba(160,230,255,.28)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 5]);
-    ctx.strokeRect(k(z.x0), k(z.y0), k(z.x1 - z.x0), k(z.y1 - z.y0));
-    ctx.setLineDash([]);
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.beginPath(); ctx.moveTo(k(z.x0 + z.x1) / 2 - 7, k(z.y0) + 22); ctx.lineTo(k(z.x0 + z.x1) / 2 + 7, k(z.y0) + 22); ctx.lineTo(k(z.x0 + z.x1) / 2, k(z.y0) + 8); ctx.fill();
   }
   // Bumpers, slings and posts.
   pinballBumpersV3(s.layout).forEach((p, i) => {

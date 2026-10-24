@@ -83,7 +83,6 @@ export default function GroupHub({
   const [entryMode, setEntryMode] = useState<EntryMode>(
     initialJoinCode ? "join" : "create"
   );
-  const [draftName, setDraftName] = useState("Mi grupo");
   const [joinCode, setJoinCode] = useState(normalizeJoinCode(initialJoinCode));
   const mountedRef = useRef(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -409,7 +408,7 @@ export default function GroupHub({
           <h1>Compite con tu gente</h1>
           <p className="groupHeroLead">Crea un grupo en 3 pasos y juega contra tus amigos.</p>
           <ol className="groupHowTo">
-            <li><b>1</b><span>Ponle nombre</span></li>
+            <li><b>1</b><span>Crea el grupo</span></li>
             <li><b>2</b><span>Comparte el código</span></li>
             <li><b>3</b><span>Elige juego y a competir</span></li>
           </ol>
@@ -430,24 +429,6 @@ export default function GroupHub({
 
         {entryMode === "create" ? (
           <div className="groupSetupCard">
-            <p className="groupStepTitle"><b>Paso 1</b> Ponle nombre a tu grupo</p>
-            <div className="groupNameIdeas" aria-label="Ideas de nombre">
-              {["Los de siempre", "Familia", "Oficina", "Amigos"].map((idea) => (
-                <button key={idea} type="button" onClick={() => setDraftName(idea)}>{idea}</button>
-              ))}
-            </div>
-            <label>
-              <span>NOMBRE DEL GRUPO</span>
-              <input
-                value={draftName}
-                maxLength={24}
-                onChange={(event) =>
-                  setDraftName(event.target.value)
-                }
-                placeholder="Mi grupo"
-              />
-            </label>
-
             <div className="groupSetupPreview">
               <img src={avatarSrc} alt="" />
               <div>
@@ -461,7 +442,7 @@ export default function GroupHub({
               className="groupPrimaryAction"
               type="button"
               onClick={() =>
-                onCreateGroup(draftName, 0)
+                onCreateGroup(playerName ? `Grupo de ${playerName}` : "Mi grupo", 0)
               }
             >
               CREAR GRUPO

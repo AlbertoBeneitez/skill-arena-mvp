@@ -19,6 +19,12 @@ import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 const cx = 195,
   cy = 195;
+// Presentation radii (the authoritative ball physics live in the core).
+const NUMBER_OUTER = 121,
+  NUMBER_INNER = 104,
+  POCKET_OUTER = 103,
+  POCKET_INNER = 84,
+  POCKET_REST = 93.5;
 function render(
   ctx: CanvasRenderingContext2D,
   s: RouletteStateV2,
@@ -33,52 +39,77 @@ function render(
   ctx.arc(cx, cy, 155, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
+  // Each number has two parts, like a real wheel: an outer numbered band and,
+  // just inside it, its own square pocket where the ball comes to rest.
+  const pocketColor = (n: number) =>
+    n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
+  const pocketFloor = (n: number) =>
+    n === 0 ? "#b9c3bd" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#0d6a4f" : "#163f7c";
   for (let i = 0; i < 37; i++) {
     const a = rotation + ((i - 0.5) * Math.PI * 2) / 37,
       b = rotation + ((i + 0.5) * Math.PI * 2) / 37,
+      mid = (a + b) / 2,
       n = ROULETTE_WHEEL[i];
-    ctx.fillStyle =
-      n === 0
-        ? "#f1f5ee"
-        : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number])
-          ? "#17956f"
-          : "#2160b0";
+    // Numbered band.
+    ctx.fillStyle = pocketColor(n);
     ctx.beginPath();
-    ctx.arc(cx, cy, 119, a, b);
-    ctx.arc(cx, cy, 91, b, a, true);
+    ctx.arc(cx, cy, NUMBER_OUTER, a, b);
+    ctx.arc(cx, cy, NUMBER_INNER, b, a, true);
     ctx.closePath();
     ctx.fill();
-    // Equal, clearly bounded pockets: green and blue read as the same width.
-    ctx.strokeStyle = "rgba(245,232,200,.55)";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
     ctx.save();
-    ctx.translate(
-      cx + Math.cos((a + b) / 2) * 108,
-      cy + Math.sin((a + b) / 2) * 108,
-    );
-    ctx.rotate((a + b) / 2 + Math.PI / 2);
-    ctx.fillStyle = n === 0 ? "#102d50" : "#f9edda";
+    ctx.translate(cx + Math.cos(mid) * (NUMBER_OUTER + NUMBER_INNER) / 2, cy + Math.sin(mid) * (NUMBER_OUTER + NUMBER_INNER) / 2);
+    ctx.rotate(mid + Math.PI / 2);
+    ctx.fillStyle = n === 0 ? "#102d50" : "#fbf2e2";
     ctx.textAlign = "center";
-    ctx.font = "bold 11px system-ui";
-    ctx.fillText(String(n), 0, 4);
+    ctx.font = "800 10px system-ui";
+    ctx.fillText(String(n), 0, 3.6);
     ctx.restore();
-    ctx.strokeStyle = "rgba(232,195,135,.6)";
+    // Square pocket: a recessed floor (darker, shaded towards the rim) framed by frets.
+    const floor = ctx.createRadialGradient(cx, cy, POCKET_INNER, cx, cy, POCKET_OUTER);
+    floor.addColorStop(0, pocketFloor(n));
+    floor.addColorStop(0.55, pocketColor(n));
+    floor.addColorStop(1, pocketFloor(n));
+    ctx.fillStyle = floor;
+    ctx.beginPath();
+    ctx.arc(cx, cy, POCKET_OUTER, a + 0.012, b - 0.012);
+    ctx.arc(cx, cy, POCKET_INNER, b - 0.012, a + 0.012, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,.35)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Metal fret between pockets (and a finer divider across the numbered band).
+    ctx.strokeStyle = "#e8d3a2";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * POCKET_INNER, cy + Math.sin(a) * POCKET_INNER);
+    ctx.lineTo(cx + Math.cos(a) * POCKET_OUTER, cy + Math.sin(a) * POCKET_OUTER);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(245,232,200,.55)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(a) * 91, cy + Math.sin(a) * 91);
-    ctx.lineTo(cx + Math.cos(a) * 120, cy + Math.sin(a) * 120);
+    ctx.moveTo(cx + Math.cos(a) * NUMBER_INNER, cy + Math.sin(a) * NUMBER_INNER);
+    ctx.lineTo(cx + Math.cos(a) * NUMBER_OUTER, cy + Math.sin(a) * NUMBER_OUTER);
+    ctx.stroke();
+  }
+  // Gold rings separating ball track, numbers and pockets.
+  ctx.strokeStyle = "#dcc28a";
+  for (const [r, w] of [[NUMBER_OUTER, 2], [NUMBER_INNER, 1.6], [POCKET_INNER, 2]] as const) {
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.stroke();
   }
   // Top-down cone: a raised illuminated boss slopes down to the pockets.
-  const cone = ctx.createRadialGradient(cx - 20, cy - 26, 8, cx, cy, 90);
+  const cone = ctx.createRadialGradient(cx - 20, cy - 26, 8, cx, cy, POCKET_INNER);
   cone.addColorStop(0, "#c9bd91");
   cone.addColorStop(0.18, "#668281");
   cone.addColorStop(0.65, "#244c57");
   cone.addColorStop(1, "#0a202f");
   ctx.fillStyle = cone;
   ctx.beginPath();
-  ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+  ctx.arc(cx, cy, POCKET_INNER - 1, 0, Math.PI * 2);
   ctx.fill();
   for (let i = 0; i < 12; i++) {
     const a = rotation + i * Math.PI / 6;
@@ -86,7 +117,7 @@ function render(
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx + Math.cos(a) * 12, cy + Math.sin(a) * 12);
-    ctx.lineTo(cx + Math.cos(a) * 87, cy + Math.sin(a) * 87);
+    ctx.lineTo(cx + Math.cos(a) * (POCKET_INNER - 3), cy + Math.sin(a) * (POCKET_INNER - 3));
     ctx.stroke();
   }
   ctx.fillStyle = "rgba(0,5,14,.35)";
@@ -133,11 +164,25 @@ function render(
   const settleT = settled ? Math.min(1, Math.max(0, (s.tick - s.lastLandingTick) / 150)) : 1;
   const ease = 1 - (1 - settleT) ** 3;
   const wobble = settled ? Math.sin(settleT * Math.PI * 3) * (1 - settleT) * 3.5 : 0;
-  const pocketX = cx + Math.cos(pocketAngle) * (104 + wobble), pocketY = cy + Math.sin(pocketAngle) * (104 + wobble);
+  const pocketX = cx + Math.cos(pocketAngle) * (POCKET_REST + wobble), pocketY = cy + Math.sin(pocketAngle) * (POCKET_REST + wobble);
   const x = settled ? s.ballX / 1000 + (pocketX - s.ballX / 1000) * ease
     : idle ? ROULETTE_BALL_DOCK.x : s.ballX / 1000;
   const y = settled ? s.ballY / 1000 + (pocketY - s.ballY / 1000) * ease
     : idle ? ROULETTE_BALL_DOCK.y : s.ballY / 1000;
+  if (settled && settleT >= 1) {
+    const half = Math.PI / 37;
+    ctx.save();
+    ctx.strokeStyle = "#ffe9a4";
+    ctx.shadowColor = "#ffd36a";
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, NUMBER_OUTER, pocketAngle - half, pocketAngle + half);
+    ctx.arc(cx, cy, POCKET_INNER, pocketAngle + half, pocketAngle - half, true);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
   const radius = Math.hypot(x - cx, y - cy);
@@ -330,7 +375,6 @@ const choiceControl = {
     ...ROULETTE_DENOMINATIONS.map((d, i) => ({
       action: `CHIP_${d}`,
       label: `${d}`,
-      tone: d === 1 ? "#5b6b78" : d === 5 ? "#8a3a45" : "#3a3f8a",
       placement: { row: 6, column: 1 + i * 2, columnSpan: 2 },
     })),
     { action: "BETS_UNDO", label: "↶ QUITAR", tone: "#3b3f2f", placement: { row: 6, column: 7, columnSpan: 3 } },

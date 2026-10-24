@@ -6489,7 +6489,7 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
 .rouletteVerified .coreChoiceGrid button[data-chip-tone="5"]::after { --chip: #b23a48; }
 .rouletteVerified .coreChoiceGrid button[data-chip-tone="25"]::after { --chip: #2f4fb0; }
 
-/* ============ v105 · EXPERIENCIA DE JUGADOR: progreso, riesgo, cofre, gráficos ============ */
+/* ============ v105 · capa visual: fondo con paralaje y "+N" flotante (niveles y riesgo retirados en v106) ============ */
 :root { --ga-accent: #7fe3ee; --ga-frame: transparent; }
 .homePlayMerged { position: relative; }
 .homePlayMerged::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .55;
@@ -6499,77 +6499,11 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
   background-size: 160px 160px, 220px 220px, 300px 300px, 100% 100%; animation: gaStars 90s linear infinite; }
 @keyframes gaStars { to { background-position: 0 800px, 0 -600px, 0 400px, 0 0; } }
 
-.playerProgress { margin: 4px 0 12px; padding: 12px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--ga-accent) 45%, #2c4059);
-  background: linear-gradient(160deg, #14233a, #0d1828); box-shadow: 0 0 22px color-mix(in srgb, var(--ga-accent) 18%, transparent); }
-.ppTop { display: flex; align-items: center; gap: 12px; }
-.ppBadge { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; font: 900 22px system-ui; color: #0c2330;
-  background: conic-gradient(from 0deg, var(--ga-accent), #fff, var(--ga-accent)); box-shadow: 0 0 16px color-mix(in srgb, var(--ga-accent) 60%, transparent); animation: gaSpin 6s linear infinite; }
-.ppBadge span { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: #e9fbff; animation: gaSpin 6s linear infinite reverse; }
-@keyframes gaSpin { to { transform: rotate(360deg); } }
-.ppInfo { flex: 1; min-width: 0; }
-.ppInfo strong { display: block; font-size: 14px; color: #f0f6ff; }
-.ppInfo small { color: #9fb8c9; font-size: 11px; }
-.ppBar { height: 8px; margin: 5px 0 3px; border-radius: 99px; background: #0a1522; overflow: hidden; }
-.ppBar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--ga-accent), #fff); transition: width .8s cubic-bezier(.2,.9,.3,1); }
-.ppStats { display: grid; gap: 4px; font: 800 13px system-ui; color: #ffe9b0; text-align: right; }
-.ppMissions { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
-.ppMissions li { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 10px; background: #0f1d30; color: #c6dbe8; font-size: 12px; }
-.ppMissions li span { flex: 1; min-width: 0; }
-.ppMissions li em { font-style: normal; color: #8fb2c6; font-weight: 700; }
-.ppMissions li.done { background: #0f2e2c; }
-.ppMissions button { min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #3b5870; background: #172c42; color: #9fb8c9; font: 800 12px system-ui; }
-.ppMissions button.ready { background: linear-gradient(180deg, #ffe08a, #ffc233); color: #3b2a00; border-color: #ffd04a; animation: gaPulse 1.2s ease-in-out infinite; }
-.ppClaimed { color: #5cffb0; padding: 0 10px; }
-@keyframes gaPulse { 50% { box-shadow: 0 0 14px #ffd04a99; transform: scale(1.05); } }
-.ppCosmetics { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-.ppCosmetics button { min-height: 30px; padding: 0 10px; border-radius: 99px; border: 1px solid var(--c); background: transparent; color: var(--c); font: 700 11px system-ui; }
-.ppCosmetics button[aria-pressed="true"] { background: var(--c); color: #0b1620; }
-
-.riskPicker { margin: 0 0 14px; }
-.riskPicker h3 { margin: 0 0 6px; font: 800 11px system-ui; letter-spacing: .12em; color: #8fb2c6; }
-.riskPicker [role="radiogroup"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.riskPicker button { display: grid; gap: 2px; justify-items: center; padding: 9px 4px; min-height: 76px; border-radius: 12px; border: 1px solid #2c4059; background: #101d30; color: #c6dbe8; transition: transform .15s, box-shadow .2s, border-color .2s; }
-.riskPicker button b { font: 900 20px system-ui; }
-.riskPicker button span { font: 800 12px system-ui; }
-.riskPicker button small { font-size: 9.5px; color: #8fa8bd; text-align: center; line-height: 1.2; }
-.riskPicker button[data-risk="bold"] b { color: #ffb14a; }
-.riskPicker button[data-risk="legend"] b { color: #ff5fc4; }
-.riskPicker button.selected { transform: translateY(-2px); border-color: var(--ga-accent); box-shadow: 0 0 18px color-mix(in srgb, var(--ga-accent) 45%, transparent); background: #16304a; }
-.riskPicker button[data-risk="legend"].selected { border-color: #ff5fc4; box-shadow: 0 0 20px #ff5fc466; }
-
-.runRewards { width: 100%; margin: 8px 0 12px; display: grid; gap: 10px; justify-items: center; }
-.rrGain { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center; align-items: baseline; }
-.rrGain b { font: 900 30px system-ui; color: #9bf5dc; text-shadow: 0 0 14px #5cffb066; }
-.rrGain span { font: 800 16px system-ui; color: #ffe9b0; }
-.rrGain em { flex-basis: 100%; text-align: center; font-style: normal; font: 800 12px system-ui; }
-.rrGain em.hit { color: #5cffb0; } .rrGain em.miss { color: #ff9a8a; }
-.rrMission { margin: 0; color: #ffe9b0; font: 700 12px system-ui; }
-.levelUp { position: relative; padding: 10px 26px; border-radius: 14px; text-align: center; border: 1px solid #ffd04a; background: linear-gradient(160deg, #3a2b0a, #1d1605); animation: gaPopIn .6s cubic-bezier(.2,1.4,.3,1) both; }
-.levelUp strong { display: block; font: 900 22px system-ui; color: #ffd04a; letter-spacing: .08em; }
-.levelUp small { color: #ffe9b0; font-weight: 700; }
-@keyframes gaPopIn { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.lvParticles { position: absolute; left: 50%; top: 50%; pointer-events: none; }
-.lvParticles i { position: absolute; width: 7px; height: 7px; margin: -3px; border-radius: 50%; background: #ffd04a; animation: gaBurst 1.2s ease-out .15s both; }
-.lvParticles i:nth-child(3n) { background: #fff; } .lvParticles i:nth-child(3n+1) { background: #5fd6ff; }
-@keyframes gaBurst { 0% { transform: rotate(var(--a)) translateX(0); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--d)) scale(.3); opacity: 0; } }
-
-.rewardChest { width: 100%; text-align: center; }
-.rewardChest h3 { margin: 0 0 8px; font: 800 12px system-ui; letter-spacing: .12em; color: #c6dbe8; }
-.rewardChest > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.chestCard { position: relative; min-height: 96px; padding: 0; border: 0; background: none; perspective: 600px; animation: gaPopIn .45s cubic-bezier(.2,1.3,.3,1) both; }
-.chestCard .face { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 4px; border-radius: 14px; backface-visibility: hidden; transition: transform .6s cubic-bezier(.2,.9,.3,1), opacity .4s; }
-.chestCard .front { background: linear-gradient(160deg, #2a3f8a, #14214a); border: 1px solid #5f7cff; color: #cfe0ff; font: 900 30px system-ui; box-shadow: 0 0 14px #5f7cff55; animation: gaPulse 2s ease-in-out infinite; }
-.chestCard .back { transform: rotateY(180deg); background: #11273a; border: 1px solid #3b5870; color: #e6f2fb; padding: 6px; }
-.chestCard .back i { font-style: normal; font-size: 26px; } .chestCard .back b { font: 800 12px system-ui; line-height: 1.2; }
-.chestCard.open .front { transform: rotateY(180deg); animation: none; } .chestCard.open .back { transform: none; }
-.chestCard[data-kind="stars"] .back, .chestCard[data-kind="xp"] .back { border-color: #ffd04a; } .chestCard[data-kind="cosmetic"] .back { border-color: #ff5fc4; box-shadow: 0 0 16px #ff5fc466; }
-.chestCard[data-kind="dust"] .back { opacity: .65; } .chestCard.open:not(.chosen) { opacity: .6; filter: saturate(.6); }
-.chestCard.chosen .back { box-shadow: 0 0 22px #ffd04a88; transform: scale(1.06); }
-
 .scorePop { position: absolute; left: 50%; top: 22%; z-index: 6; pointer-events: none; transform: translateX(-50%); }
 .scorePop b { display: block; font: 900 26px system-ui; color: #fff2b0; text-shadow: 0 0 12px #ffd04a, 0 2px 0 #0008; animation: gaScoreRise .9s ease-out both; }
 .scorePop i { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: #ffd04a; animation: gaBurst .7s ease-out both; --d: 44px; }
 .scorePop i:nth-child(odd) { background: #7fe3ee; }
+@keyframes gaBurst { 0% { transform: rotate(var(--a)) translateX(0); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--d)) scale(.3); opacity: 0; } }
 @keyframes gaScoreRise { 0% { transform: translateY(8px) scale(.6); opacity: 0; } 25% { transform: translateY(-4px) scale(1.15); opacity: 1; } 100% { transform: translateY(-34px) scale(1); opacity: 0; } }
 
 /* Avatar frame cosmetic applies everywhere the avatar is shown. */
@@ -6577,8 +6511,450 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
 
 .gameResultSummary { border: 1px solid color-mix(in srgb, var(--ga-accent) 35%, #2c4059); border-radius: 16px; padding: 14px; background: linear-gradient(170deg, #12233a, #0b1627); }
 @media (prefers-reduced-motion: reduce) {
-  .homePlayMerged::before, .ppBadge, .ppBadge span, .ppMissions button.ready, .chestCard, .chestCard .front, .levelUp, .lvParticles i, .scorePop b, .scorePop i { animation: none !important; }
-  .chestCard .face, .ppBar i { transition: none; }
+  .homePlayMerged::before, .scorePop b, .scorePop i { animation: none !important; }
 }
-.ppMissions li { padding: 5px 8px; }
-.ppMissions { margin-top: 8px; gap: 4px; }
+
+/* =====================================================================
+   v106 · GALACTIC GAMES premium skin
+   Tokens: void #050b1a · glass rgba(14,28,52,.62) · edge rgba(150,210,255,.16)
+           aurora #7fe3ee · gold #f3c55a · ink #eaf4ff · mute #93a9c2
+   Display type: Unbounded (wordmark, headings, primary actions).
+   One orchestrated motion: the orbit ring around the avatar portrait.
+   ===================================================================== */
+@font-face {
+  font-family: "Unbounded";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url("/fonts/unbounded-latin-wght.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Unbounded";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url("/fonts/unbounded-latin-ext-wght.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+:root {
+  --gx-void: #050b1a;
+  --gx-glass: rgba(14, 28, 52, .62);
+  --gx-glass-strong: rgba(10, 22, 42, .86);
+  --gx-edge: rgba(150, 210, 255, .16);
+  --gx-edge-hi: rgba(170, 230, 255, .32);
+  --gx-aurora: #7fe3ee;
+  --gx-gold: #f3c55a;
+  --gx-ink: #eaf4ff;
+  --gx-mute: #93a9c2;
+  --gx-display: "Unbounded", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --gx-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 50px rgba(0,4,16,.45);
+}
+
+/* ---------- Welcome ---------- */
+.welcomeCardCompact {
+  background: linear-gradient(165deg, rgba(20,40,70,.72), rgba(6,14,30,.88)) !important;
+  border: 1px solid var(--gx-edge-hi) !important;
+  box-shadow: var(--gx-shadow), 0 0 0 1px rgba(127,227,238,.05) !important;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+.welcomeCardCompact .wordmark {
+  font-family: var(--gx-display);
+  font-weight: 800;
+  letter-spacing: .04em;
+  background: linear-gradient(180deg, #ffffff 30%, #a9dff0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  text-shadow: none;
+}
+.galacticEntryAction {
+  background: linear-gradient(180deg, #b6f4ec, #7fdcd2) !important;
+  border: 0 !important;
+  box-shadow: 0 1px 0 #ffffff80 inset, 0 10px 24px rgba(127,227,238,.28), 0 4px 0 #2a5862 !important;
+  font-family: var(--gx-display);
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+/* ---------- Identity (avatar setup): everything fits one phone screen, no vertical scroll ---------- */
+.arenaOnboarding:has(.galacticAvatarSetup) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
+}
+.galacticAvatarSetup.avatarSetupMinimal {
+  width: min(100%, 420px);
+  height: 100%;
+  max-height: 760px;
+  min-height: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(10px, 2.4dvh, 22px);
+  padding: clamp(16px, 3dvh, 30px) clamp(16px, 5vw, 26px);
+  border-radius: 28px;
+  border: 1px solid var(--gx-edge-hi);
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(127,227,238,.12), transparent 60%),
+    linear-gradient(165deg, rgba(20,40,70,.74), rgba(6,14,30,.9));
+  box-shadow: var(--gx-shadow);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+.galacticAvatarSetup .galacticSetupBrand {
+  font-family: var(--gx-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3em;
+  color: #b9e6f2;
+  margin: 0;
+}
+.galacticAvatarSetup.avatarSetupMinimal .avatarPortraitWrap { margin: 0; flex: none; }
+.galacticAvatarSetup.avatarSetupMinimal .avatarPortrait {
+  position: relative;
+  width: clamp(104px, 24dvh, 190px);
+  height: clamp(104px, 24dvh, 190px);
+  border: 0;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--gx-void);
+  box-shadow: 0 0 40px rgba(127,227,238,.22), 0 14px 30px rgba(0,0,0,.45);
+  isolation: isolate;
+}
+.galacticAvatarSetup.avatarSetupMinimal .avatarPortrait::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--gx-gold), #fff1c4, var(--gx-aurora), #2c5ea8, var(--gx-gold));
+  animation: gxOrbit 9s linear infinite;
+}
+@keyframes gxOrbit { to { transform: rotate(360deg); } }
+.galacticAvatarSetup .avatarChangeButton {
+  width: clamp(36px, 5.5dvh, 46px);
+  height: clamp(36px, 5.5dvh, 46px);
+  right: 2%;
+  bottom: 4%;
+  border: 2px solid #fff4d4;
+  background: linear-gradient(145deg, #3d6fd0, #23468f);
+  box-shadow: 0 6px 16px rgba(0,0,0,.45);
+}
+/* Avatars always visible: one horizontal strip (side swipe only). */
+.galacticAvatarSetup .galacticAvatarChoices {
+  display: flex !important;
+  gap: 10px;
+  margin: 0 calc(-1 * clamp(16px, 5vw, 26px));
+  padding: 6px clamp(16px, 5vw, 26px) 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  flex: none;
+}
+.galacticAvatarSetup .galacticAvatarChoices::-webkit-scrollbar { display: none; }
+.galacticAvatarSetup .galacticAvatarChoices button {
+  flex: none;
+  width: clamp(48px, 7.4dvh, 62px);
+  height: clamp(48px, 7.4dvh, 62px);
+  min-width: 0;
+  min-height: 0;
+  padding: 3px;
+  border-radius: 50%;
+  border: 1px solid var(--gx-edge-hi);
+  background: rgba(10,24,44,.8);
+  scroll-snap-align: center;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.galacticAvatarSetup .galacticAvatarChoices button img { border-radius: 50%; }
+.galacticAvatarSetup .galacticAvatarChoices button[aria-pressed="true"] {
+  border: 2px solid var(--gx-gold);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(243,197,90,.22), 0 0 18px rgba(243,197,90,.35);
+}
+.galacticAvatarSetup .nameInput {
+  flex: none;
+  height: clamp(46px, 6.6dvh, 56px) !important;
+  min-height: 0 !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--gx-edge-hi) !important;
+  background: rgba(4,12,26,.7) !important;
+  color: var(--gx-ink) !important;
+  text-align: center !important;
+  font-family: var(--gx-display);
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  letter-spacing: .02em;
+}
+.galacticAvatarSetup .nameInput::placeholder { color: #6f87a3; font-weight: 500; }
+.galacticAvatarSetup .nameInput:focus { outline: none; border-color: var(--gx-aurora) !important; box-shadow: 0 0 0 3px rgba(127,227,238,.2); }
+.galacticAvatarSetup .nameAvailability { min-height: 16px !important; margin: calc(-1 * clamp(4px, 1.2dvh, 12px)) 0 0; font-size: 11px; text-align: center; }
+.galacticAvatarSetup .mainAction {
+  flex: none;
+  min-height: clamp(48px, 7dvh, 56px) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, #b6f4ec, #7fdcd2) !important;
+  color: #082630 !important;
+  font-family: var(--gx-display);
+  font-weight: 700;
+  font-size: 14px !important;
+  letter-spacing: .08em;
+  box-shadow: 0 1px 0 #ffffff80 inset, 0 10px 24px rgba(127,227,238,.25), 0 4px 0 #2a5862;
+}
+.galacticAvatarSetup .mainAction:disabled { opacity: .4; box-shadow: none; }
+@media (max-height: 560px) {
+  .galacticAvatarSetup.avatarSetupMinimal { gap: 8px; }
+  .galacticAvatarSetup .galacticSetupBrand { display: none; }
+}
+
+/* ---------- App shell ---------- */
+.appHeader {
+  background: linear-gradient(180deg, rgba(5,11,26,.92), rgba(5,11,26,.72)) !important;
+  border-bottom: 1px solid var(--gx-edge) !important;
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+}
+.appHeader .logoButton {
+  font-family: var(--gx-display);
+  font-weight: 800;
+  letter-spacing: .06em;
+  background: linear-gradient(180deg, #fff 35%, #a9dff0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+.appHeader .balanceChip {
+  border: 1px solid rgba(243,197,90,.4) !important;
+  background: linear-gradient(180deg, rgba(243,197,90,.16), rgba(243,197,90,.06)) !important;
+  color: #ffe6a6 !important;
+  border-radius: 999px !important;
+  font-variant-numeric: tabular-nums;
+}
+.homePlayHeading h1 {
+  font-family: var(--gx-display);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.bottomNav.bottomNavThree {
+  left: 12px !important;
+  right: 12px !important;
+  bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  height: 64px !important;
+  padding: 6px !important;
+  border: 1px solid var(--gx-edge-hi) !important;
+  border-radius: 22px !important;
+  background: var(--gx-glass-strong) !important;
+  box-shadow: 0 16px 40px rgba(0,4,16,.55) !important;
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+}
+.bottomNav.bottomNavThree button { border-radius: 16px !important; color: var(--gx-mute) !important; transition: background .2s, color .2s; }
+.bottomNav.bottomNavThree button.active {
+  color: var(--gx-ink) !important;
+  background: linear-gradient(180deg, rgba(127,227,238,.2), rgba(127,227,238,.06)) !important;
+  box-shadow: inset 0 0 0 1px rgba(127,227,238,.35);
+}
+
+/* ---------- Catalogue cards: quiet glass, the cover art carries the colour ---------- */
+.homePlayMerged article[aria-label] {
+  background: linear-gradient(180deg, rgba(18,34,60,.78), rgba(8,18,36,.9));
+  border-color: color-mix(in srgb, var(--accent, #9ce6e8) 32%, rgba(150,210,255,.14));
+  border-radius: 20px;
+  box-shadow: var(--gx-shadow);
+}
+.homePlayMerged article[aria-label] > div:first-child::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(4,10,24,.55));
+}
+.homePlayMerged article[aria-label] > button:last-child {
+  border-radius: 14px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 6px 16px color-mix(in srgb, var(--accent, #9ce6e8) 28%, transparent);
+}
+
+/* ---------- Group ---------- */
+.groupScreen .groupHero h1 { font-family: var(--gx-display); font-weight: 700; letter-spacing: -.01em; }
+.groupScreen .groupSetupCard,
+.groupScreen .groupEntryCards button,
+.groupScreen .competitionConfigCard {
+  border: 1px solid var(--gx-edge-hi) !important;
+  background: linear-gradient(170deg, rgba(18,34,60,.8), rgba(8,18,36,.92)) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--gx-shadow);
+}
+.groupScreen .groupEntryCards button.active {
+  border-color: var(--gx-aurora) !important;
+  box-shadow: 0 0 0 1px var(--gx-aurora), 0 0 26px rgba(127,227,238,.22) !important;
+}
+.groupScreen .groupPrimaryAction {
+  font-family: var(--gx-display);
+  font-weight: 700;
+  letter-spacing: .06em;
+  border-radius: 16px !important;
+}
+.groupScreen .payoutOptionList { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
+.groupScreen .payoutOptionList button {
+  min-height: 56px;
+  border-radius: 14px !important;
+  font-family: var(--gx-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ---------- Result panel ---------- */
+.gameScreen > .premiumResult {
+  border: 1px solid var(--gx-edge-hi) !important;
+  background: linear-gradient(170deg, rgba(16,32,58,.94), rgba(6,14,30,.97)) !important;
+  box-shadow: 0 -10px 40px rgba(0,4,16,.5) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.premiumResult h2 { font-family: var(--gx-display); font-weight: 700; }
+
+/* ---------- Galactic Roulette · real casino chips (1 naranja · 5 rojo · 25 violeta) ---------- */
+.rouletteVerified { --chip-1: #f28a1c; --chip-5: #d42a35; --chip-25: #7b3fd0; }
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="CHIP_"] {
+  --chip: var(--chip-1);
+  justify-self: center;
+  align-self: center;
+  width: auto;
+  height: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-family: var(--gx-display);
+  font-weight: 800;
+  font-size: 12px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--chip) 88%, #fff) 0 38%, #fff 39% 42%, transparent 43%),
+    radial-gradient(circle, transparent 0 55%, rgba(255,255,255,.95) 56% 58%, transparent 59%),
+    repeating-conic-gradient(from -11.25deg, #fbf5e6 0 22.5deg, var(--chip) 22.5deg 45deg) !important;
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--chip) 70%, #000),
+    0 2px 0 color-mix(in srgb, var(--chip) 55%, #000),
+    0 5px 8px rgba(0,0,0,.55);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice="CHIP_1"] { --chip: var(--chip-1); }
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice="CHIP_5"] { --chip: var(--chip-5); }
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice="CHIP_25"] { --chip: var(--chip-25); }
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="CHIP_"][aria-pressed="true"] {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--chip) 70%, #000),
+    0 0 0 2px #ffebbd,
+    0 0 16px color-mix(in srgb, var(--chip) 70%, #ffe9a4),
+    0 7px 10px rgba(0,0,0,.55);
+}
+/* Chips sitting on the cloth: same denomination colour and edge stripes. */
+.rouletteVerified .coreChoiceGrid button[data-chips]::after {
+  --chip: var(--chip-1);
+  min-width: 22px;
+  height: 22px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 50%;
+  line-height: 22px;
+  font-size: 9.5px;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,.7);
+  background:
+    radial-gradient(circle, var(--chip) 0 52%, transparent 53%),
+    repeating-conic-gradient(from -15deg, #fbf5e6 0 30deg, var(--chip) 30deg 60deg);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--chip) 60%, #000), 0 2px 0 rgba(0,0,0,.45), 0 3px 5px rgba(0,0,0,.5);
+}
+.rouletteVerified .coreChoiceGrid button[data-chip-tone="1"]::after { --chip: var(--chip-1); }
+.rouletteVerified .coreChoiceGrid button[data-chip-tone="5"]::after { --chip: var(--chip-5); }
+.rouletteVerified .coreChoiceGrid button[data-chip-tone="25"]::after { --chip: var(--chip-25); }
+
+@media (prefers-reduced-motion: reduce) {
+  .galacticAvatarSetup.avatarSetupMinimal .avatarPortrait::before { animation: none; }
+}
+.galacticAvatarSetup .galacticAvatarChoices { padding-top: 10px; padding-bottom: 10px; }
+.galacticAvatarSetup .galacticAvatarChoices button img { width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; display: block; }
+.appHeader .logoButton { white-space: nowrap; font-size: clamp(14px, 4.3vw, 19px) !important; line-height: 1; }
+.appHeader .balanceChip { white-space: nowrap; font-size: 12px !important; padding: 9px 12px !important; }
+.groupScreen .groupSetupPreview {
+  border: 1px solid var(--gx-edge-hi) !important;
+  background: rgba(4,12,26,.6) !important;
+  border-radius: 16px !important;
+  color: var(--gx-ink) !important;
+}
+.groupScreen .groupSetupPreview small { color: var(--gx-gold) !important; letter-spacing: .12em; }
+.groupScreen .groupSetupPreview strong { color: var(--gx-ink) !important; }
+.groupScreen .groupSetupPreview b { color: var(--gx-aurora) !important; font-size: 11px; letter-spacing: .14em; }
+.appHeader { gap: 8px; min-width: 0; max-width: 100vw; overflow: hidden; }
+.appHeader .logoButton { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: clip; font-size: clamp(12px, 3.6vw, 19px) !important; letter-spacing: .04em; }
+.appHeader .appHeaderActions { flex: none; gap: 8px; }
+.appHeader .balanceChip { font-size: 11px !important; padding: 8px 11px !important; letter-spacing: .02em; }
+
+/* v106 · Group lobby on the dark premium surface (was cream). */
+.appHeader .logoButton { font-size: clamp(11px, 3.25vw, 19px) !important; letter-spacing: .02em; }
+.groupScreen :is(.groupHeaderCard, .groupMembersCard, .readyRoomCard, .competitionConfigCard, .groupMatchSummary > div, .competitionTypeGrid button) {
+  border: 1px solid var(--gx-edge-hi) !important;
+  background: linear-gradient(170deg, rgba(18,34,60,.84), rgba(8,18,36,.94)) !important;
+  color: var(--gx-ink) !important;
+  box-shadow: var(--gx-shadow) !important;
+}
+.groupScreen :is(.groupHeaderCard, .groupMembersCard, .readyRoomCard, .competitionConfigCard, .groupMatchSummary) :is(h1, h2, h3, strong) { color: var(--gx-ink) !important; }
+.groupScreen :is(.groupHeaderCard, .readyRoomCard, .competitionConfigCard, .groupMatchSummary) :is(small, span) { color: var(--gx-mute); }
+.groupScreen .groupHeaderCard h1, .groupScreen .groupHeaderCard h2, .groupScreen .groupHeaderCard strong { font-family: var(--gx-display); }
+.groupScreen :is(.groupCodeBadge, .groupDemoNotice) {
+  background: rgba(127,227,238,.08) !important;
+  border: 1px solid rgba(127,227,238,.3) !important;
+  color: #c9f4f8 !important;
+}
+.groupScreen .groupCodeBadge { font-family: var(--gx-display); letter-spacing: .12em; }
+.groupScreen .groupShareActions button {
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid var(--gx-edge-hi) !important;
+  color: var(--gx-ink) !important;
+}
+.groupScreen .groupMembers b, .groupScreen .groupMembers li, .groupScreen .groupMembers div { color: var(--gx-ink); }
+.groupScreen .groupMembers > *, .groupScreen .groupMembers button { background: rgba(255,255,255,.04) !important; border-color: var(--gx-edge) !important; }
+.groupScreen input {
+  background: rgba(4,12,26,.7) !important;
+  border: 1px solid var(--gx-edge-hi) !important;
+  color: var(--gx-ink) !important;
+}
+.groupScreen :is(.payoutOptionList, .leagueModeToggle, .competitionTypeGrid, .groupGameGrid) button:not(.selected):not(.active) {
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid var(--gx-edge-hi) !important;
+  color: var(--gx-ink) !important;
+}
+.groupScreen :is(.payoutOptionList, .leagueModeToggle, .competitionTypeGrid, .groupGameGrid) button:is(.selected, .active) {
+  background: linear-gradient(180deg, rgba(127,227,238,.28), rgba(127,227,238,.1)) !important;
+  border: 1px solid var(--gx-aurora) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(127,227,238,.2) !important;
+}
+.groupScreen :is(.groupGameGrid, .competitionTypeGrid) button :is(strong, small, span) { color: inherit !important; }
+.groupScreen .readyMemberList > *, .groupScreen .leagueScheduleList > * { background: rgba(255,255,255,.04) !important; border-color: var(--gx-edge) !important; color: var(--gx-ink); }
+.groupScreen .readyToggle {
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid var(--gx-edge-hi) !important;
+  color: var(--gx-ink) !important;
+}
+.groupScreen .numberInputWithUnit b, .groupScreen .numberInputWithUnit > span {
+  background: rgba(243,197,90,.14) !important;
+  color: #ffe6a6 !important;
+  border: 1px solid rgba(243,197,90,.35) !important;
+}
+.groupScreen .readyMemberList > *, .groupScreen .leagueScheduleList > * { opacity: 1 !important; }
+.groupScreen .readyMemberList span { color: var(--gx-mute) !important; }
+.groupScreen .readyMemberList span.ready { color: #7cf0c8 !important; }
+.groupScreen .readyMemberList span:not(.ready) { color: var(--gx-gold) !important; }

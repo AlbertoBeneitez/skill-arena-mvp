@@ -263,3 +263,10 @@ Original fixed-point sling/demolition core, Canvas falcon/drone/structures and
 SVG cover. Inspired by established projectile-and-demolition mechanics only;
 no Angry Birds characters, levels, assets, branding, sounds or code are reused.
 Uses the project's existing synthesized audio and shared orbital background.
+
+## Unbounded (tipografía de títulos, v106)
+
+- Archivos: `public/fonts/unbounded-latin-wght.woff2`, `public/fonts/unbounded-latin-ext-wght.woff2`
+- Origen: paquete npm `@fontsource-variable/unbounded` 5.3.0 (diseño de NaN; Google Fonts).
+- Licencia: SIL Open Font License 1.1 — texto en `docs/licenses/unbounded-OFL.txt`.
+- Se sirve desde el propio dominio (compatible con la CSP `font-src 'self'`).

@@ -165,27 +165,21 @@ export function payoutLabel(
 ) {
   switch (distribution) {
     case "top2-70-30":
-      return "1º 70% · 2º 30%";
+      return "70% · 30%";
     case "top3-60-30-10":
-      return "1º 60% · 2º 30% · 3º 10%";
+      // Historical option, no longer offered for new competitions.
+      return "60% · 30% · 10%";
     default:
-      return "Ganador 100%";
+      return "100% ganador";
   }
 }
 
+/** Only two pot splits are offered: 70% / 30% (1º and 2º) or 100% to the winner. */
 export function maxUsefulPayout(group: ClosedGroup) {
-  if (group.members.length >= 3) {
+  if (group.members.length >= 2) {
     return [
-      "winner-takes-all",
       "top2-70-30",
-      "top3-60-30-10",
-    ] as PotDistribution[];
-  }
-
-  if (group.members.length === 2) {
-    return [
       "winner-takes-all",
-      "top2-70-30",
     ] as PotDistribution[];
   }
 
