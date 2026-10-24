@@ -36,7 +36,7 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
     craneTop = pivotY - 24;
   // Constant zoom, like Stack: the camera follows the newest layer and the older
   // layers (full height, no squashing) slowly slide off the bottom of the screen.
-  const scale = 0.8,
+  const scale = 0.72,
     landingScreenY = Math.max(
       86 + (floor - craneTop) * scale,
       groundScreenY - state.blocks.length * blockH * scale,

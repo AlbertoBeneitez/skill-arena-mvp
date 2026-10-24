@@ -286,7 +286,7 @@ const GAME_DEFINITIONS = [
     tagline: "Una bola, un minuto: carga el muelle, encadena tiros y sube el multiplicador.",
     difficulty: "MEDIA",
     skillLabel: "REFLEJOS + TIMING",
-    rivalScore: 20000,
+    rivalScore: 60000,
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",

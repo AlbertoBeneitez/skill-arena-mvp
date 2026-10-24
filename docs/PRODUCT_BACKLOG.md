@@ -540,3 +540,7 @@ música de menú y animaciones; hoja de ruta de arquitectura. Detalle: [releases
 
 Sin Lanzadera/Saturno; login inicial en cada visita; Roulette 7, Stack 4, Orb Burst 5, Shot Gallery 5, Pinball 2; Solitaire con manos
 verificadas resolubles. Detalle: [releases/v104-saturn.md](releases/v104-saturn.md).
+
+## v105-saturn · ajustes y experiencia de jugador (24-oct-2026)
+
+Ruleta 8, Gallery 6, Pinball 3, Tower/Billar/Dardos/Slot y capa de progresión y recompensas. Detalle: [releases/v105-saturn.md](releases/v105-saturn.md).

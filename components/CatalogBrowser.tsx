@@ -1,6 +1,9 @@
 "use client";
 import { GAMES, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
+const ACCENTS: Record<string, string> = {
+  PRECISIÓN: "#5fd6ff", TIMING: "#ffd04a", REACCIÓN: "#ff7a6b", MEMORIA: "#b88cff", PUZZLE: "#6ff0b0", CARTAS: "#ff8fb8", LÓGICA: "#9bf05b", CONTROL: "#ffa85c",
+};
 type Props = {
   stake: Stake;
   serverOnly?: boolean;
@@ -18,7 +21,7 @@ export default function CatalogBrowser(props: Props) {
     <section className={styles.browser} aria-label="Catálogo de juegos">
       <div className={styles.grid}>
         {GAMES.map((game) => (
-          <article key={game.id} className={styles.card} aria-label={game.name}>
+          <article key={game.id} className={styles.card} aria-label={game.name} style={{ ["--accent" as string]: ACCENTS[game.category] ?? "#9ce6e8" }}>
             <div className={styles.cover}>
               <img
                 src={game.cover}

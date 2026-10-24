@@ -211,20 +211,15 @@ module.exports = (async () => {
     );
     const ground = ctx.rectangles.filter((r) => r.style === "#173949");
     assert.equal(ground.length, 1, `missing ground at ${count}`);
-    assert.ok(Math.abs(ground[0].y - 580) < 1e-6, `ground moves at ${count}`);
-    assert.ok(ground[0].bottom < 620);
+    // Constant zoom: the ground is on screen while the tower is short, then scrolls off the bottom.
+    if (count <= 8) assert.ok(Math.abs(ground[0].y - 580) < 1e-6, `ground moves at ${count}`);
     const crane = ctx.rectangles.find((r) => r.style === "#c4eff8");
-    assert.ok(
-      crane.y >= 80 - 1e-6 && crane.bottom < ground[0].y,
-      `crane clipping at ${count}`,
-    );
+    assert.ok(crane.y >= 80 - 1e-6 && crane.bottom < 620, `crane clipping at ${count}`);
     const blocks = ctx.rectangles.filter((r) => /^hsl\(/.test(r.style));
     assert.equal(blocks.length, count + 1, "settled layers culled");
-    for (const rectangle of blocks.slice(0, count))
-      assert.ok(
-        rectangle.y >= 80 && rectangle.bottom <= 580 + 1e-6,
-        `foundation layer clipped at ${count}`,
-      );
+    // Older layers keep full height and slide off the bottom; the newest layers stay in view.
+    for (const rectangle of blocks.slice(Math.max(0, count - 4), count))
+      assert.ok(rectangle.y >= 80 && rectangle.bottom <= 620, `recent layer clipped at ${count} ${rectangle.y} ${rectangle.bottom}`);
     const top = blocks[count - 1];
     assert.ok(top.bottom - top.y >= 15, "landing block loses readable height");
   }

@@ -74,6 +74,17 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const pointerRef = useRef<{ id: number; origin: CorePoint } | null>(null);
   const [presentingFinale, setPresentingFinale] = useState(false);
   const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined, label: undefined as string | undefined });
+  // Player-experience overlay: a floating "+N" and sparks whenever the score rises (presentation only).
+  const prevScoreRef = useRef(0);
+  const [pop, setPop] = useState<{ id: number; gain: number } | null>(null);
+  useEffect(() => {
+    const gain = hud.score - prevScoreRef.current;
+    prevScoreRef.current = hud.score;
+    if (props.hideHudScore || gain <= 0 || hud.tick === 0) return;
+    setPop({ id: hud.tick, gain });
+    const timer = window.setTimeout(() => setPop(null), 900);
+    return () => window.clearTimeout(timer);
+  }, [hud.score, hud.tick, props.hideHudScore]);
   const attemptMatchId = "manifest" in attempt.state ? attempt.state.manifest?.match_id : undefined;
   const attemptId = "ticket" in attempt.state ? attempt.state.ticket?.attempt_id : undefined;
 
@@ -368,6 +379,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         if (action) { event.preventDefault(); heldRef.current.delete(action); send(action); }
       }}
     />
+    {pop && <div className="scorePop" key={pop.id} aria-hidden="true"><b>+{pop.gain.toLocaleString("es-ES")}</b>{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} style={{ ["--a" as string]: `${i * 60 + 20}deg` }} />)}</div>}
     <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop">{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
     {props.choiceControl && (props.choiceControl.presentation === "table" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel coreChoiceTable">

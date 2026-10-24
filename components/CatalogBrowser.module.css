@@ -96,3 +96,11 @@
     transform: none;
   }
 }
+
+/* v105 · category accent, glow and animated gradient edge */
+.card { position: relative; border-color: color-mix(in srgb, var(--accent, #9ce6e8) 45%, #2c4059); box-shadow: 0 0 0 0 transparent; transition: transform .2s, box-shadow .25s; }
+.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; z-index: 2; background: linear-gradient(90deg, transparent, var(--accent, #9ce6e8), transparent); background-size: 200% 100%; animation: cardSweep 4s linear infinite; }
+.card:hover, .card:focus-within { transform: translateY(-2px); box-shadow: 0 8px 26px color-mix(in srgb, var(--accent, #9ce6e8) 30%, transparent); }
+.play { background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #9ce6e8) 70%, #fff), var(--accent, #9ce6e8)); border-color: var(--accent, #9ce6e8); }
+@keyframes cardSweep { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .card::before { animation: none; } .card:hover { transform: none; } }
