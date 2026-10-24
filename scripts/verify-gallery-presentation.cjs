@@ -1,4 +1,4 @@
-// Shot Gallery V4 renderer: pure, finite, and its tap mapping agrees with the core.
+// Shot Gallery V5 renderer: pure, finite, and its tap mapping agrees with the core.
 const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path");
@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const core = await load("lib/verified/shotGalleryCore.v4.js");
+  const core = await load("lib/verified/shotGalleryCore.v5.js");
   const file = path.join(root, "components/games/ShotGallery.tsx"),
     swc = req("next/dist/build/swc");
   await swc.loadBindings();
@@ -20,7 +20,7 @@ module.exports = (async () => {
   });
   const deps = {
       react: { ...req("react"), useCallback: (f) => f },
-      "@/lib/verified/shotGalleryCore.v4": core,
+      "@/lib/verified/shotGalleryCore.v5": core,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/gameFeedback": { gameTone() {} },
       "./CoreCanvasGame": () => null,
@@ -34,7 +34,7 @@ module.exports = (async () => {
   for (let seed = 0; seed < 12; seed++)
     for (let trial = 0; trial < 12; trial++)
       for (const phase of ["waiting", "ready", "feedback"]) {
-        const s = core.SHOT_GALLERY_CORE_V4.create(`gallery4-render-${seed}`);
+        const s = core.SHOT_GALLERY_CORE_V5.create(`gallery5-render-${seed}`);
         s.trial = trial;
         s.phase = phase;
         s.readyTick = 0;
@@ -73,7 +73,7 @@ module.exports = (async () => {
         frames++;
       }
   // Taps: before green any tap is a false start; afterwards the nearest unhit target wins.
-  const s = core.SHOT_GALLERY_CORE_V4.create("gallery4-pick");
+  const s = core.SHOT_GALLERY_CORE_V5.create("gallery5-pick");
   assert.equal(pick({ x: 5, y: 5 }, "down", s), "PICK_0");
   s.phase = "ready";
   const t = s.trials[0].targets[3];
@@ -82,7 +82,7 @@ module.exports = (async () => {
   assert.equal(pick({ x: t.x, y: t.y }, "move", s), null);
   s.hits = [3];
   assert.notEqual(pick({ x: t.x, y: t.y }, "down", s), "PICK_3");
-  console.log(JSON.stringify({ variant: "Shot Gallery V4", frames, rendererPure: true }));
+  console.log(JSON.stringify({ variant: "Shot Gallery V5", frames, rendererPure: true }));
 })().catch((e) => {
   console.error(e);
   throw e;

@@ -167,7 +167,7 @@ try {
   reject({ ...abandon(zero), manifest: { ...zero.manifest, manifest_version: 3,
     scenario: { scenario_id: "seed-catalog-v1:000000", generator_version: "1.0.0" } } }, "INVALID_MANIFEST");
 
-  const lead = payload("precision-stack", "3.0.0");
+  const lead = payload("precision-stack", "4.0.0");
   lead.final_tick = 600;
   reject(abandon(lead), "SIMULATION_FASTER_THAN_REAL_TIME", 409);
   now = START_TIME + 10_000;

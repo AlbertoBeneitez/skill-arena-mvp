@@ -6228,7 +6228,7 @@ html, body, .arenaOnboarding, .gameScreen {
 
 .gameBody:has(.rouletteVerified) {max-width:none;}
 .rouletteVerified {width:100%;height:100%;min-height:0;position:relative;}
-.rouletteMobile .coreGameSurface .deterministicCanvas {width:100% !important;height:calc(100% - 252px) !important;min-height:0;}
+.rouletteMobile .coreGameSurface .deterministicCanvas {width:100% !important;height:calc(100% - 318px) !important;min-height:0;}
 .rouletteMobile .coreHud {top:4px;left:8px;right:8px;max-width:none;font-size:11px;pointer-events:none;}
 .coreChoice {position:absolute;z-index:3;bottom:8px;left:12px;right:12px;display:grid;gap:4px;color:#d8eaf4;font-size:11px;font-weight:750;}
 .coreChoice select {width:100%;min-height:48px;border:1px solid #607e91;border-radius:12px;padding:0 12px;background:#153547;color:#edf5ec;font-size:14px;touch-action:manipulation;}
@@ -6267,7 +6267,7 @@ html, body, .arenaOnboarding, .gameScreen {
 
 /* Roulette V4: the cloth is always visible under the wheel; one tap places the chip. */
 .rouletteVerified .coreChoiceTable {display:block;left:6px;right:6px;bottom:6px;max-width:640px;margin:0 auto;border-radius:12px;}
-.rouletteVerified .coreChoiceTable .coreChoiceGrid {max-height:none;overflow:visible;padding:6px;grid-auto-rows:36px;}
+.rouletteVerified .coreChoiceTable .coreChoiceGrid {max-height:none;overflow:visible;padding:6px;grid-auto-rows:40px;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button {min-height:0;min-width:0;height:100%;padding:0;font-size:12px;line-height:1;touch-action:manipulation;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="BET_DOZEN_"] {writing-mode:horizontal-tb;}
 .rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice="BET_NUMBER_00"] {border-radius:12px 0 0 12px;}
@@ -6367,7 +6367,7 @@ h1.wordmark { margin-bottom:0; line-height:1.2; }
 .groupStepper li.done span { color:#bfe9d8; }
 .groupNextStep { margin:0 0 10px; padding:10px 12px; border-radius:12px; background:rgba(241,207,139,.1); border:1px solid rgba(241,207,139,.3); color:#ffe9b8; font-size:13px; }
 
-/* SATURN · Solitaire Sprint: four-colour suits, no green frames, flying cards on a solved board. */
+/* SATURN · Solitaire Sprint: classic red/black suits, no green frames, flying cards on a solved board. */
 .solitaireSprint .solitaireCard.faceUp,
 .solitaireSprint .solitairePile.waste,
 .solitaireSprint .solitairePile.foundation {
@@ -6375,10 +6375,10 @@ h1.wordmark { margin-bottom:0; line-height:1.2; }
   background: linear-gradient(180deg, color-mix(in srgb, var(--suit) 14%, #fffaf0) 0, #fffaf0 62%);
   border-top: 4px solid var(--suit);
 }
-.solitaireSprint .suitSpade { --suit: #1c2740; color: #1c2740; }
-.solitaireSprint .suitHeart { --suit: #d32f4a; color: #d32f4a; }
-.solitaireSprint .suitDiamond { --suit: #1a6fd6; color: #1a6fd6; }
-.solitaireSprint .suitClub { --suit: #17893f; color: #17893f; }
+.solitaireSprint .suitSpade, .solitaireSprint .suitClub { --suit: #151a22; color: #151a22; }
+.solitaireSprint .suitHeart, .solitaireSprint .suitDiamond { --suit: #d32f2f; color: #d32f2f; }
+
+
 .solitaireSprint .solitaireCard.faceUp {
   display: flex;
   flex-direction: row;
@@ -6416,10 +6416,10 @@ h1.wordmark { margin-bottom:0; line-height:1.2; }
   pointer-events: none;
   box-shadow: 0 12px 26px rgba(0,0,0,.55), 0 0 18px rgba(255,226,140,.55);
 }
-.solitaireFlight.suitSpade { --suit: #1c2740; color: #1c2740; }
-.solitaireFlight.suitHeart { --suit: #d32f4a; color: #d32f4a; }
-.solitaireFlight.suitDiamond { --suit: #1a6fd6; color: #1a6fd6; }
-.solitaireFlight.suitClub { --suit: #17893f; color: #17893f; }
+.solitaireFlight.suitSpade, .solitaireFlight.suitClub { --suit: #151a22; color: #151a22; }
+.solitaireFlight.suitHeart, .solitaireFlight.suitDiamond { --suit: #d32f2f; color: #d32f2f; }
+
+
 
 /* Orb Burst V3: the swap button sits at the right, under the next orb. */
 .orbVerified .coreControls { justify-content: flex-end; bottom: 10px; right: 18px; left: auto; }
@@ -6453,3 +6453,17 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
 @media (prefers-reduced-motion: reduce) {
   main article[aria-label], .countdownOverlay b, .resultPanel, .gameResultSummary, .modeCard { animation: none !important; }
 }
+
+/* Roulette V7: denominations row (1/5/25) and a taller cloth that grows upwards. */
+.rouletteVerified .coreChoiceGrid button[data-choice^="CHIP_"]::after {display:none;}
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="CHIP_"] {border-radius:999px;font-size:15px;font-weight:900;border:2px dashed #f3e4b8;}
+.rouletteVerified .coreChoiceTable .coreChoiceGrid button[data-choice^="CHIP_"][aria-pressed="true"] {box-shadow:0 0 0 3px #ffebbd,0 0 14px #ffe9a4aa;transform:translateY(-2px);}
+
+/* v104 · themed micro-animations: HUD numbers pop when they change, result card rises with a glow. */
+@keyframes gxHudPop { 0% { transform: scale(1.28); filter: brightness(1.6) drop-shadow(0 0 8px rgba(140,240,220,.8)); } 100% { transform: scale(1); filter: none; } }
+.coreHud .hudPop { display: inline-block; animation: gxHudPop .38s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes gxResultRise { 0% { opacity: 0; transform: translateY(18px) scale(.96); } 100% { opacity: 1; transform: none; } }
+.gameResultSummary { animation: gxResultRise .5s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes gxStarTwinkle { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+.gameResultSummary .resultSourceBadge { animation: gxStarTwinkle 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .coreHud .hudPop, .gameResultSummary, .gameResultSummary .resultSourceBadge { animation: none; } }

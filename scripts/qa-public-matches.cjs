@@ -191,7 +191,7 @@ assert.ok(
     const rb = await play(b, true);
     assert.equal(rb.body.match.winnerSlot, "A");
     await a.page
-      .getByRole("heading", { name: "Reto superado", exact: true })
+      .getByRole("heading", { name: "Partida completada", exact: true })
       .waitFor();
     const outsider = await request.newContext();
     await outsider.get(base + "/api/verified-match/session");

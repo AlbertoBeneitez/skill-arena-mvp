@@ -124,7 +124,6 @@ const controls = [
   { action: "LEFT", label: "Mover izquierda", symbol: "←" },
   { action: "ROTATE", label: "Girar pieza", symbol: "↻" },
   { action: "RIGHT", label: "Mover derecha", symbol: "→" },
-  { action: "SOFT_DROP", label: "Bajar una fila", symbol: "↓" },
   { action: "HARD_DROP", label: "Asentar pieza", symbol: "BAJAR" },
 ] as const;
 export default function StackShiftVerified(props: GameRuntimeProps) {

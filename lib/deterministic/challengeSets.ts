@@ -1,4 +1,5 @@
 import { hashSeed } from "./seeded";
+import { SOLVED_SOLITAIRE_DEALS } from "./solitairePool";
 
 /**
  * Curated competitive challenge sets.
@@ -26,7 +27,7 @@ export type SolitaireChallenge = {
   redeals: number;
 };
 
-export const SOLITAIRE_CHALLENGES: readonly SolitaireChallenge[] = [
+const CURATED_SOLITAIRE_CHALLENGES: readonly SolitaireChallenge[] = [
   {
     id: "S-02",
     deck: [15,29,9,21,4,6,51,26,22,24,8,34,36,18,40,30,45,7,20,31,49,44,46,12,41,14,11,0,39,1,33,17,35,28,48,32,25,27,47,37,2,43,13,38,16,19,42,10,23,50,5,3],
@@ -88,6 +89,12 @@ export const MINE_CHALLENGES: readonly MineChallenge[] = [
   { id:"M-53", cols:10, rows:14, startIndex:74, mineIndexes:[7,9,12,14,32,33,35,43,50,55,58,66,81,88,89,92,103,112,116,123,128,129,130,133], deductionRounds:10, maxFrontier:30 },
   { id:"M-57", cols:10, rows:14, startIndex:74, mineIndexes:[4,5,10,27,35,36,39,42,45,57,82,94,95,96,97,101,109,111,122,124,130,131,132,139], deductionRounds:8, maxFrontier:28 },
   { id:"M-62", cols:10, rows:14, startIndex:74, mineIndexes:[1,4,7,16,20,31,41,43,44,47,54,60,66,78,79,87,91,101,114,118,120,130,132,139], deductionRounds:13, maxFrontier:32 },
+];
+
+/** Curated deals plus the solver-generated pool: every entry is verified solvable (scripts/verify-solitaire-solvable.ts). */
+export const SOLITAIRE_CHALLENGES: readonly SolitaireChallenge[] = [
+  ...CURATED_SOLITAIRE_CHALLENGES,
+  ...SOLVED_SOLITAIRE_DEALS.map((d) => ({ ...d, tableauMoves: 0, redeals: 0 })),
 ];
 
 export function solitaireChallengeFor(seed: string) {

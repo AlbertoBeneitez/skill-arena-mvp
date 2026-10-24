@@ -129,7 +129,7 @@ module.exports = (async () => {
   );
   const stack = await import(
     pathToFileURL(
-      path.join(root, ".det-test/lib/verified/precisionStackCore.v3.js"),
+      path.join(root, ".det-test/lib/verified/precisionStackCore.v4.js"),
     )
   );
   const runtime = await import(

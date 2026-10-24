@@ -535,3 +535,8 @@ Orb Burst 3, Stack Shift 2, Solitaire y Billar. Pendiente: compra/cobro de ficha
 
 Pinball nuevo; Roulette 6 (terminar partida), Slot 3 (±4), Billar 4, Shot Gallery 4, Orb Burst 4, Stack Shift 3; avatar inicial,
 música de menú y animaciones; hoja de ruta de arquitectura. Detalle: [releases/v103-saturn.md](releases/v103-saturn.md).
+
+## v104-saturn · entorno único y mejoras por juego (24-oct-2026)
+
+Sin Lanzadera/Saturno; login inicial en cada visita; Roulette 7, Stack 4, Orb Burst 5, Shot Gallery 5, Pinball 2; Solitaire con manos
+verificadas resolubles. Detalle: [releases/v104-saturn.md](releases/v104-saturn.md).

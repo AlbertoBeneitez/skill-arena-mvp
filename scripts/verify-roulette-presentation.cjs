@@ -9,8 +9,9 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const coreModule = await load("lib/verified/galacticRouletteCore.v6.js"),
+  const coreModule = await load("lib/verified/galacticRouletteCore.v7.js"),
     protocol = await load("lib/verified/galacticRouletteProtocol.v3.js"),
+    protocol7 = await load("lib/verified/galacticRouletteProtocol.v7.js"),
     gesture = await load("lib/rouletteLaunchGesture.js"),
     runtime = await load("lib/verified/coreRuntime.v1.js");
   const file = path.join(root, "components/games/GalacticRoulette.tsx"),
@@ -30,8 +31,9 @@ module.exports = (async () => {
   );
   const exports = {},
     deps = {
-      "@/lib/verified/galacticRouletteCore.v6": coreModule,
+      "@/lib/verified/galacticRouletteCore.v7": coreModule,
       "@/lib/verified/galacticRouletteProtocol.v3": protocol,
+      "@/lib/verified/galacticRouletteProtocol.v7": protocol7,
       "@/lib/rouletteLaunchGesture": gesture,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "./CoreCanvasGame": () => null,
@@ -43,10 +45,10 @@ module.exports = (async () => {
   let frames = 0;
   for (let seed = 0; seed < 16; seed++)
     for (const impulse of [0, 7, 15]) {
-      const s = coreModule.ROULETTE_CORE_V6.create("roulette2-render-" + seed);
-      runtime.applyCoreInput(coreModule.ROULETTE_CORE_V6, s, "BET_RED", 1e9);
+      const s = coreModule.ROULETTE_CORE_V7.create("roulette2-render-" + seed);
+      runtime.applyCoreInput(coreModule.ROULETTE_CORE_V7, s, "BET_RED", 1e9);
       runtime.applyCoreInput(
-        coreModule.ROULETTE_CORE_V6,
+        coreModule.ROULETTE_CORE_V7,
         s,
         protocol.rouletteTossAction(20, impulse),
         1e9,
@@ -87,12 +89,14 @@ module.exports = (async () => {
           assert.equal(balls[0][2], 6 + Math.min(130,Math.max(0,s.ballZ/1000-surface-6))*.07);
           frames++;
         }
-        runtime.stepCore(coreModule.ROULETTE_CORE_V6, s, 1e9);
+        runtime.stepCore(coreModule.ROULETTE_CORE_V7, s, 1e9);
       }
     }
   // A landed ball remains in the awarded rotating pocket, never back at dock.
-  const s = coreModule.ROULETTE_CORE_V6.create("settled-zenithal");
+  const s = coreModule.ROULETTE_CORE_V7.create("settled-zenithal");
   s.lastNumber = 32;
+  s.ballX = 250000;
+  s.ballY = 195000;
   s.lastLandingTick = 240;
   s.tick = 240;
   for (let age = 0; age < 200; age++) {
@@ -117,7 +121,7 @@ module.exports = (async () => {
     const miss = Math.hypot(balls[0][0] - (195 + Math.cos(angle) * 104), balls[0][1] - (195 + Math.sin(angle) * 104));
     if (age >= 150) assert.ok(miss < 1e-8);
     else assert.ok(miss <= 200, "ball drifts toward the pocket");
-    runtime.stepCore(coreModule.ROULETTE_CORE_V6,s,1e9);
+    runtime.stepCore(coreModule.ROULETTE_CORE_V7,s,1e9);
   }
   console.log(
     JSON.stringify({

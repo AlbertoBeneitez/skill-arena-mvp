@@ -37,8 +37,9 @@ function ring(
 // Visual zoom only (outer ring 161 * 1.15 = 185 of 195 half-width); aim input
 // uses the inverse, so authoritative coordinates are unchanged.
 const BOARD_ZOOM = 1.15;
-function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
-  drawSpaceBackdrop(ctx, 390, 620, 0, s.tick);
+function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: number; height: number }) {
+  const viewH = Math.max(620, view?.height ?? 620);
+  drawSpaceBackdrop(ctx, 390, viewH, 0, s.tick);
   // Enlarged dartboard and embedded impacts; keep the V3 scoring geometry.
   ctx.save();
   ctx.translate(cx, cy);
@@ -132,7 +133,38 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3) {
   ctx.fillStyle = "#b4d3df";
   ctx.textAlign = "center";
   ctx.font = "bold 13px system-ui";
-  ctx.fillText(`${Math.min(20, s.throwIndex + 1)} / 20`, cx, 61);
+  const left = Math.max(0, 20 - s.impacts.length);
+  ctx.fillText(`DARDOS RESTANTES · ${left}`, cx, 61);
+  // Fila de dardos restantes (themed counter) at the bottom of the screen.
+  const rowY = viewH - 26;
+  for (let i = 0; i < 20; i++) {
+    const dx = 195 + (i - 9.5) * 16;
+    ctx.fillStyle = i < left ? "#8ee9d6" : "rgba(120,150,170,.25)";
+    ctx.beginPath();
+    ctx.moveTo(dx, rowY - 9);
+    ctx.lineTo(dx + 4, rowY + 7);
+    ctx.lineTo(dx - 4, rowY + 7);
+    ctx.closePath();
+    ctx.fill();
+  }
+  if (s.phase === "aim") {
+    // Handle for the throw swipe: pulsing ring + chevrons in the lower thumb zone.
+    const pulse = 0.5 + 0.5 * Math.sin(s.tick / 14);
+    const hy = viewH - 92;
+    ctx.strokeStyle = `rgba(142,233,214,${0.25 + pulse * 0.35})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(195, hy, 26 + pulse * 6, 0, Math.PI * 2);
+    ctx.stroke();
+    for (let k = 0; k < 3; k++) {
+      ctx.strokeStyle = `rgba(142,233,214,${0.2 + ((pulse + k / 3) % 1) * 0.6})`;
+      ctx.beginPath();
+      ctx.moveTo(183, hy - 4 - k * 9);
+      ctx.lineTo(195, hy - 12 - k * 9);
+      ctx.lineTo(207, hy - 4 - k * 9);
+      ctx.stroke();
+    }
+  }
   ctx.fillStyle = "#294257";
   ctx.beginPath();
   ctx.roundRect(105, 85, 180, 4, 2);
@@ -210,6 +242,7 @@ export default function Darts(props: GameRuntimeProps) {
         inputTones={tones}
         keys={keys}
         hideHudScore
+        expandVerticalViewport
         hudLabel={hudLabel}
         feedbackScore={feedbackScore}
         instruction=""

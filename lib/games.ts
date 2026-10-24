@@ -1,4 +1,4 @@
-import { ROULETTE_ACTIONS_V6 as ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v6";
+import { ROULETTE_ACTIONS_V7 as ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v7";
 import { BIRDS_ACTIONS_V2 } from "./verified/galacticBirdsProtocol.v2";
 import { ROULETTE_ACTIONS } from "./verified/galacticRouletteProtocol.v1";
 import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
@@ -15,8 +15,8 @@ import { ALIEN_ACTIONS } from "./verified/alienDashProtocol.v2";
 import { SHOT_GALLERY_ACTIONS_V3 as SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v3";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
-import { ORB_ACTIONS_V4 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v4";
-import { PINBALL_ACTIONS } from "./verified/pinballProtocol.v1";
+import { ORB_ACTIONS_V5 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v5";
+import { PINBALL_ACTIONS_V2 } from "./verified/pinballProtocol.v2";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -93,7 +93,7 @@ function adaptGameComponent<TProps extends object>(
 
 const GAME_DEFINITIONS = [
   {id:"galactic-birds",version:"8.0.0",status:"VERIFIED",loadComponent:adaptGameComponent(()=>import("@/components/games/GalacticBirds")),competition:{verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:2,allowedActions:BIRDS_ACTIONS_V2},name:"Galactic Birds",cover:"/covers/galactic-birds.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una catapulta orbital contra estructuras y drones.",difficulty:"MEDIA",skillLabel:"PUNTERÍA + FÍSICA",rivalScore:1000000000,rivalName:"ORION",rivalAvatar:"/avatars/avatar-5.svg",instruction:"",scoring:"Seis niveles fijos con 17 drones, estructuras sencillas de vidrio/cerámica/aleación y alguna caja de TNT que explota en cadena. Tienes 24 tiros: eliges el pájaro (10 exploradores, 9 rápidos, 5 pesados); lo que no se apoya cae; masa/radio/velocidad deterministas. Avance por objetivos únicos, replay autoritativo; máximo cuatro minutos."},
-  { id: "galactic-roulette", version: "6.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:3,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca las fichas que quieras en el tapete y lanza la bola desde el lanzador exterior. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
+  { id: "galactic-roulette", version: "7.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (caducan a los 10 s si no lanzas; el tapete se vacía tras cada tirada) y lanza la bola desde el lanzador exterior. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
     id: "galactic-slot", version: "3.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
@@ -381,10 +381,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orb-burst",
-    version: "4.0.0",
+    version: "5.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 4, allowedActions: ORB_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 5, allowedActions: ORB_ACTIONS },
     name: "Orb Burst",
     cover: "/covers/orb-burst.svg",
     enabled: true,
@@ -402,7 +402,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "precision-stack",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Stack3D")),
     competition: {
@@ -419,11 +419,11 @@ const GAME_DEFINITIONS = [
     tagline: "Acopla módulos. Eleva la estación.",
     difficulty: "MEDIA",
     skillLabel: "TIMING + PRECISIÓN",
-    rivalScore: 7600,
+    rivalScore: 1000000,
     rivalName: "EDGE",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "Toca al alinear las caras. La siguiente pieza cruza por el otro eje.",
-    scoring: "Se conserva la intersección real en X/Z; precisión de superficie y combos perfectos.",
+    scoring: "Se conserva la intersección real en X/Z. Gana la torre más alta; la superficie total apilada solo desempata a igual altura. Si fallas, ves caer el último bloque.",
     deterministicSeed: "precision-stack-arena-001",
   },
   {
@@ -478,7 +478,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "4.0.0",
+    version: "5.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
@@ -519,23 +519,23 @@ const GAME_DEFINITIONS = [
 
   {
     id: "pinball",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V2 },
     name: "Pinball",
     cover: "/covers/pinball.svg",
     enabled: true,
     waitingStakes: [5, 10],
     category: "CONTROL",
-    tagline: "Carga el muelle, domina las palas y encadena multiplicadores.",
+    tagline: "Una bola, un minuto: carga el muelle, encadena tiros y sube el multiplicador.",
     difficulty: "MEDIA",
     skillLabel: "REFLEJOS + TIMING",
     rivalScore: 20000,
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Tres bolas y 180 s. La potencia del muelle fija el lanzamiento; las palas cierran el centro, así que solo se pierde por los carriles laterales. Puntos por bumpers, dianas, carriles y rampa con multiplicador hasta x5. Replay de servidor.",
+    scoring: "Una sola bola y 60 s. La potencia del muelle fija el lanzamiento; las palas cierran el centro, así que solo se pierde por los carriles laterales. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];

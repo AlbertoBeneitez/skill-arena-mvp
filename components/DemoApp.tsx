@@ -12,7 +12,6 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GlobalRanking from "./GlobalRanking";
-import ModePicker from "./ModePicker";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
@@ -281,7 +280,16 @@ export default function DemoApp() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const resetMode = params.get("reset") === "1";
+    // Cada visita nueva (pestaña nueva al pulsar el enlace) empieza en el login inicial.
+    // Recargar la misma pestaña conserva la sesión; `?keep=1` desactiva el reinicio.
+    let sessionLive = false;
+    try {
+      sessionLive = window.sessionStorage.getItem("ga-session-live") === "1";
+      window.sessionStorage.setItem("ga-session-live", "1");
+    } catch {
+      sessionLive = false;
+    }
+    const resetMode = params.get("reset") === "1" || (params.get("keep") !== "1" && params.get("fresh") !== "1" && !sessionLive);
     const freshMode = !resetMode && params.get("fresh") === "1";
     const joinCode = (params.get("join") ?? "")
       .toUpperCase()
@@ -1249,8 +1257,6 @@ export default function DemoApp() {
               <button type="button" className="globalRankingShortcut" aria-label="Ranking global · Beneficio neto" onClick={()=>navigate("ranking")}>Ranking global →</button>
             </div>
 
-            <ModePicker selectedStake={selectedStake} balance={balance} onSelect={selectStake} />
-
             {matchStartError && <p role="status">{matchStartError}</p>}
             <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
           </section>
@@ -1285,10 +1291,10 @@ export default function DemoApp() {
                 <strong>{selectedGame.name}</strong>
                 <small>
                   {matchScope === "group" && groupCompetition && group
-                    ? `${selectedStake === 0 ? "LANZADERA" : `SATURNO · ${selectedStake} FICHAS`} · ${competitionProgressLabel(groupCompetition, groupStage, group.members.length)}`
+                    ? competitionProgressLabel(groupCompetition, groupStage, group.members.length)
                     : selectedStake === 0
-                      ? "LANZADERA"
-                      : `SATURNO · ${selectedStake} FICHAS · 1 VS 1`}
+                      ? "ENTRENAMIENTO"
+                      : `${selectedStake} FICHAS · 1 VS 1`}
                 </small>
               </div>
               <div className="gameHeaderActions">
@@ -1329,16 +1335,6 @@ export default function DemoApp() {
                 }
                 onFinish={finishMatch}
               />
-              {showWinAnimation && (
-                <div className="winCelebration" aria-live="assertive">
-                  <div className="winBurst" aria-hidden="true">
-                    <i /><i /><i /><i /><i /><i /><i /><i />
-                  </div>
-                  <span>🏆</span>
-                  <strong>RETO SUPERADO</strong>
-                  <small>BUEN TRABAJO</small>
-                </div>
-              )}
               {countdown !== null && (
                 <div className="countdownOverlay">
                   <small>PREPÁRATE</small>

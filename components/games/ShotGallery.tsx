@@ -4,11 +4,9 @@ import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  SHOT_GALLERY_CORE_V4 as core,
-  GALLERY_V4_COLORS,
-  GALLERY_V4_SHAPES,
-  type GalleryStateV4,
-} from "@/lib/verified/shotGalleryCore.v4";
+  SHOT_GALLERY_CORE_V5 as core,
+      type GalleryStateV5,
+} from "@/lib/verified/shotGalleryCore.v5";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 const PAINT = ["#4fa8ff", "#ff7a6b", "#a8e05f", "#a47bff", "#ffd23f", "#ff6fb5", "#2fd9c8", "#ff9a3c"];
@@ -36,42 +34,77 @@ function figure(ctx: CanvasRenderingContext2D, kind: number, x: number, y: numbe
   ctx.fill();
 }
 
-/** Paint splash: fixed irregular lobes plus droplets, so each colour reads as a blot of paint. */
+/** Paint splash: wet central blob, thrown streaks with teardrop tips, satellite droplets and a gloss.
+ * Deterministic (no Math.random): the same colour+seed always draws the same blot. */
 function splash(ctx: CanvasRenderingContext2D, color: string, x: number, y: number, size: number, seed: number) {
+  const h = (n: number) => {
+    const v = Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  ctx.save();
   ctx.fillStyle = color;
+  // Streaks flung outwards (tapered), drawn first so the blob swallows their roots.
+  const streaks = 7 + Math.floor(h(1) * 4);
+  for (let k = 0; k < streaks; k++) {
+    const a = (k / streaks) * Math.PI * 2 + h(k + 3) * 0.6;
+    const len = size * (1.25 + h(k + 9) * 0.9);
+    const w = size * (0.1 + h(k + 15) * 0.14);
+    const nx = -Math.sin(a), ny = Math.cos(a);
+    const bx = x + Math.cos(a) * size * 0.55, by = y + Math.sin(a) * size * 0.55;
+    const tx = x + Math.cos(a) * len, ty = y + Math.sin(a) * len;
+    ctx.beginPath();
+    ctx.moveTo(bx + nx * w * 2.2, by + ny * w * 2.2);
+    ctx.quadraticCurveTo(x + Math.cos(a) * len * 0.8 + nx * w, y + Math.sin(a) * len * 0.8 + ny * w, tx, ty);
+    ctx.quadraticCurveTo(x + Math.cos(a) * len * 0.8 - nx * w, y + Math.sin(a) * len * 0.8 - ny * w, bx - nx * w * 2.2, by - ny * w * 2.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(tx + Math.cos(a) * w * 1.2, ty + Math.sin(a) * w * 1.2, w * 1.35, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Blob.
   ctx.beginPath();
-  const lobes = 14;
+  const lobes = 28;
   for (let i = 0; i <= lobes; i++) {
-    const a = (i / lobes) * Math.PI * 2,
-      r = size * (0.78 + 0.32 * Math.abs(Math.sin(a * 3 + seed)) + 0.12 * Math.cos(a * 5 + seed * 2));
-    const px = x + Math.cos(a) * r,
-      py = y + Math.sin(a) * r;
+    const a = (i / lobes) * Math.PI * 2;
+    const r = size * (0.74 + 0.16 * Math.sin(a * 2 + h(2) * 6) + 0.11 * Math.sin(a * 3 + h(4) * 6) + 0.07 * Math.sin(a * 5 + h(5) * 6) + 0.04 * Math.sin(a * 9 + h(6) * 6));
+    const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
     i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
   }
   ctx.closePath();
   ctx.fill();
-  for (let k = 0; k < 5; k++) {
-    const a = seed * 1.7 + k * 1.26;
+  // Satellite droplets.
+  for (let k = 0; k < 9; k++) {
+    const a = h(k + 30) * Math.PI * 2, d = size * (1.35 + h(k + 40) * 0.75), r = size * (0.04 + h(k + 50) * 0.1);
     ctx.beginPath();
-    ctx.arc(x + Math.cos(a) * size * 1.35, y + Math.sin(a) * size * 1.3, size * (0.09 + 0.04 * (k % 3)), 0, Math.PI * 2);
+    ctx.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.fillStyle = "rgba(255,255,255,.28)";
+  // Darker wet rim + gloss.
+  ctx.strokeStyle = "rgba(0,0,0,.18)";
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,.35)";
   ctx.beginPath();
-  ctx.arc(x - size * 0.3, y - size * 0.32, size * 0.22, 0, Math.PI * 2);
+  ctx.ellipse(x - size * 0.28, y - size * 0.32, size * 0.24, size * 0.13, -0.6, 0, Math.PI * 2);
   ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,.2)";
+  ctx.beginPath();
+  ctx.arc(x + size * 0.22, y + size * 0.3, size * 0.08, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
-const hudLabel = (s: Readonly<GalleryStateV4>) => {
+const hudLabel = (s: Readonly<GalleryStateV5>) => {
   const taps = s.results.flatMap((r) => r.taps);
   const avg = taps.length ? ` · MEDIA ${msOf(taps.reduce((a, b) => a + b, 0) / taps.length)} ms` : "";
   return `${s.correct} ACIERTOS · ${Math.min(12, s.trial + 1)}/12${avg}`;
 };
-const feedbackScore = (s: Readonly<GalleryStateV4>) => s.total;
+const feedbackScore = (s: Readonly<GalleryStateV5>) => s.total;
 
 /** Reaction times are kept on this device (last 30 runs): presentation/storage only. */
 let savedSeed = "";
-function persistReactions(s: GalleryStateV4) {
+function persistReactions(s: GalleryStateV5) {
   if (s.status === "running" || savedSeed === s.seed) return;
   savedSeed = s.seed;
   try {
@@ -93,53 +126,47 @@ function persistReactions(s: GalleryStateV4) {
 }
 
 export default function ShotGallery(props: GameRuntimeProps) {
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV4) => {
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV5) => {
     persistReactions(s);
     const trial = s.trials[Math.min(s.trial, 11)],
       order = trial.order,
       colour = PAINT[order.color],
       ready = s.phase === "ready",
-      f = { x0: 14, y0: 196, w: 362, h: 360 };
+      f = { x0: 14, y0: 150, w: 362, h: 406 };
     drawSpaceBackdrop(ctx, 390, 620, 0, s.tick);
-    // Order panel.
+    // Order panel: colour splash and/or grey figure only (no text).
     ctx.fillStyle = "rgba(10,24,38,.9)";
     ctx.strokeStyle = "#496a7b";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(14, 76, 362, 100, 14);
+    ctx.roundRect(14, 70, 362, 66, 14);
     ctx.fill();
     ctx.stroke();
     ctx.textAlign = "center";
-    ctx.fillStyle = "#9fb8c9";
-    ctx.font = "bold 12px system-ui";
-    const need = trial.answers.length;
-    ctx.fillText(need > 1 ? `ORDEN · TOCA LOS ${need}` : "ORDEN · TOCA EL", 195, 98);
-    // The order shows exactly what to tap: a colour splash, a grey figure, or both (SUM).
     const GREY = "#aeb7c0";
     if (order.kind === "COLOR") {
-      splash(ctx, colour, 195, 133, 24, order.color + 1);
+      splash(ctx, colour, 195, 103, 17, order.color + 1);
     } else if (order.kind === "SHAPE") {
       ctx.fillStyle = GREY;
-      figure(ctx, order.shape, 195, 133, 24);
+      figure(ctx, order.shape, 195, 103, 20);
     } else {
-      splash(ctx, colour, 140, 133, 22, order.color + 1);
+      splash(ctx, colour, 140, 103, 16, order.color + 1);
       ctx.fillStyle = "#eaf2f8";
-      ctx.font = "bold 28px system-ui";
-      ctx.fillText("+", 195, 143);
+      ctx.beginPath();
+      ctx.roundRect(188, 101, 14, 4, 2);
+      ctx.roundRect(193, 96, 4, 14, 2);
+      ctx.fill();
       ctx.fillStyle = GREY;
-      figure(ctx, order.shape, 250, 133, 22);
+      figure(ctx, order.shape, 250, 103, 18);
     }
-    ctx.fillStyle = "#c6dbe8";
-    ctx.font = "bold 12px system-ui";
-    ctx.fillText(
-      order.kind === "COLOR"
-        ? GALLERY_V4_COLORS[order.color]
-        : order.kind === "SHAPE"
-          ? GALLERY_V4_SHAPES[order.shape]
-          : `${GALLERY_V4_COLORS[order.color]} + ${GALLERY_V4_SHAPES[order.shape]}`,
-      195,
-      170,
-    );
+    // One pip per target still to hit (symbols, not text).
+    const need = trial.answers.length;
+    for (let k = 0; k < need; k++) {
+      ctx.fillStyle = k < s.hits.length ? "#5cffb0" : "rgba(180,210,225,.55)";
+      ctx.beginPath();
+      ctx.arc(195 + (k - (need - 1) / 2) * 12, 127, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
     // Red → green go signal.
     const pulse = 0.6 + 0.4 * Math.sin(s.tick * 0.12);
     ctx.save();
@@ -147,7 +174,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
     ctx.shadowBlur = ready ? 18 : 10 * pulse;
     ctx.fillStyle = ready ? "#5cffb0" : "#ff4d4d";
     ctx.beginPath();
-    ctx.arc(352, 98, ready ? 9 : 7 + pulse, 0, Math.PI * 2);
+    ctx.arc(352, 103, ready ? 9 : 7 + pulse, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     // Shooting field.
@@ -201,6 +228,43 @@ export default function ShotGallery(props: GameRuntimeProps) {
       }
     });
     const since = s.tick - s.lastTapTick;
+    // Shooting effect: tracer from the muzzle, impact flash, shock ring and sparks.
+    const lastHit = s.hits.length ? trial.targets[s.hits[s.hits.length - 1]] : null;
+    if (lastHit && s.lastAward >= 0 && since >= 0 && since < 36) {
+      const k = since / 36;
+      if (since < 8) {
+        ctx.strokeStyle = `rgba(255,244,196,${1 - since / 8})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(195, f.y0 + f.h + 12);
+        ctx.lineTo(lastHit.x, lastHit.y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = `rgba(255,255,255,${Math.max(0, 0.9 - k * 2.2)})`;
+      ctx.beginPath();
+      ctx.arc(lastHit.x, lastHit.y, 6 + k * 26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255,220,140,${1 - k})`;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(lastHit.x, lastHit.y, 10 + k * 46, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let q = 0; q < 10; q++) {
+        const ang = (q / 10) * Math.PI * 2 + 0.3;
+        ctx.strokeStyle = `rgba(255,236,170,${1 - k})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(lastHit.x + Math.cos(ang) * (12 + k * 20), lastHit.y + Math.sin(ang) * (12 + k * 20));
+        ctx.lineTo(lastHit.x + Math.cos(ang) * (22 + k * 44), lastHit.y + Math.sin(ang) * (22 + k * 44));
+        ctx.stroke();
+      }
+      // Bullet-hole crosshair stays a little longer.
+      ctx.strokeStyle = `rgba(20,30,40,${0.6 * (1 - k)})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(lastHit.x, lastHit.y, 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     if (s.lastAward < 0 && since >= 0 && since < 60) {
       ctx.fillStyle = `rgba(255,120,120,${1 - since / 60})`;
       ctx.font = "bold 20px system-ui";
@@ -215,7 +279,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.fillText(last.type === "FALSE_START" ? "DEMASIADO PRONTO" : "TARDE", 195, f.y0 + f.h / 2);
     }
   }, []);
-  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV4) => {
+  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV5) => {
     if (phase !== "down" || s.phase === "feedback") return null;
     // Tapping before the green dot is a false start wherever the finger lands.
     if (s.phase === "waiting") return "PICK_0";
@@ -233,7 +297,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
   }, []);
   return (
     <div className="shotGalleryVerified">
-      <CoreCanvasGame {...props} core={core} name="Shot Gallery" instruction="" render={render} pointAction={pick} hideHudScore hudLabel={hudLabel} feedbackScore={feedbackScore} />
+      <CoreCanvasGame {...props} core={core} name="Shot Gallery" instruction="" render={render} pointAction={pick} expandVerticalViewport hideHudScore hudLabel={hudLabel} feedbackScore={feedbackScore} />
     </div>
   );
 }

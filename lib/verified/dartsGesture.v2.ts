@@ -5,5 +5,5 @@ export function isDartsThrowGesture(
   end: DartsGesturePoint,
 ) {
   const up = start.y - end.y;
-  return start.y >= 420 && up >= 48 && up > Math.abs(end.x - start.x) * 0.75;
+  return start.y >= 400 && up >= 34 && up > Math.abs(end.x - start.x) * 0.9;
 }

@@ -1,0 +1,150 @@
+{
+ "seed": "roulette7-golden",
+ "inputs": [
+  {
+   "seq": 0,
+   "tick": 0,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 1,
+   "tick": 1,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 2,
+   "tick": 2,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 3,
+   "tick": 3,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 4,
+   "tick": 4,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 5,
+   "tick": 5,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 6,
+   "tick": 6,
+   "action": "TOSS_D10_P06"
+  },
+  {
+   "seq": 7,
+   "tick": 972,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 8,
+   "tick": 973,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 9,
+   "tick": 974,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 10,
+   "tick": 975,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 11,
+   "tick": 976,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 12,
+   "tick": 977,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 13,
+   "tick": 978,
+   "action": "TOSS_D15_P07"
+  },
+  {
+   "seq": 14,
+   "tick": 1944,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 15,
+   "tick": 1945,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 16,
+   "tick": 1946,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 17,
+   "tick": 1947,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 18,
+   "tick": 1948,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 19,
+   "tick": 1949,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 20,
+   "tick": 1950,
+   "action": "TOSS_D20_P08"
+  },
+  {
+   "seq": 21,
+   "tick": 2401,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 22,
+   "tick": 2402,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 23,
+   "tick": 2403,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 24,
+   "tick": 2404,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 25,
+   "tick": 2405,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 26,
+   "tick": 2406,
+   "action": "TOSS_D25_P09"
+  },
+  {
+   "seq": 27,
+   "tick": 3372,
+   "action": "CASH_OUT"
+  }
+ ],
+ "score": 1100,
+ "finalTick": 3372,
+ "status": "won",
+ "failure": null,
+ "hash": "sha256:10c68b1c21a4dd310203cb38a764bc9575c1f36467f81e8cbd82eb13f1502845"
+}

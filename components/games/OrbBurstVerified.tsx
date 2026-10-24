@@ -5,12 +5,12 @@ import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { ORB_RULES, orbDirection } from "@/lib/verified/orbBurstCore.v1";
 import {
-  ORB_BURST_CORE_V4,
-  ORB_V4_RULES,
-  orbCenterV4,
-  orbMissLimitV4,
-  type OrbV4State,
-} from "@/lib/verified/orbBurstCore.v4";
+  ORB_BURST_CORE_V5,
+  ORB_V5_RULES,
+  orbCenterV5,
+  orbMissLimitV5,
+  type OrbV5State,
+} from "@/lib/verified/orbBurstCore.v5";
 import { orbAimAction } from "@/lib/verified/orbBurstProtocol.v1";
 import {
   applyOrbCamera,
@@ -201,7 +201,7 @@ function orb(
 }
 function drawAimGuide(
   ctx: CanvasRenderingContext2D,
-  state: Readonly<OrbV4State>,
+  state: Readonly<OrbV5State>,
 ) {
   const direction = orbDirection(state.aimIndex);
   ctx.save();
@@ -222,7 +222,7 @@ function drawAimGuide(
 }
 function renderField(
   ctx: CanvasRenderingContext2D,
-  state: OrbV4State,
+  state: OrbV5State,
   camera: OrbCamera,
 ) {
   ctx.save();
@@ -250,7 +250,7 @@ function renderField(
       ? (ORB_RULES.rowHeightMilli / 1000) * (1 - insertionAge / 12)
       : 0;
   for (const bubble of state.bubbles) {
-    const p = orbCenterV4(state, bubble.row, bubble.col),
+    const p = orbCenterV5(state, bubble.row, bubble.col),
       y = p.yMilli / 1000 - descent;
     if (y < 2 || y > 539) continue;
     orb(ctx, p.xMilli / 1000, y, bubble.color, 17, bubble.origin, bubble.ice ?? 0);
@@ -264,7 +264,7 @@ function renderField(
   ctx.lineTo(374, 502);
   ctx.stroke();
   ctx.restore();
-  if (!state.shot && state.status === "running" && !state.settleRemaining)
+  if (!state.shot && state.status === "running")
     drawAimGuide(ctx, state);
   if (state.shot)
     orb(
@@ -347,25 +347,26 @@ function renderField(
   ctx.arc(286, 574, 17, 0, Math.PI * 2);
   ctx.stroke();
   ctx.setLineDash([]);
+  // Swap recharge: a bright arc fills around the next orb (no counters).
+  const swapReady = Math.min(
+    1,
+    (state.tick - state.lastSwapTick) / ORB_V5_RULES.swapCooldownTicks,
+  );
+  if (swapReady > 0) {
+    ctx.strokeStyle = swapReady >= 1 ? "#ffe082" : "rgba(255,224,130,.7)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(286, 574, 17, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * swapReady);
+    ctx.stroke();
+  }
   orb(ctx, 286, 574, state.nextColor, 12);
   // Stored power: a gauge that fills one segment per charge.
-  for (let i = 0; i < ORB_V4_RULES.maxPower; i++) {
+  for (let i = 0; i < ORB_V5_RULES.maxPower; i++) {
     ctx.fillStyle = i < state.power ? "#ff9f43" : "rgba(139,199,220,.2)";
     ctx.fillRect(100 + i * 14, 560, 10, 6);
   }
-  // Remaining swaps as pips (no on-canvas text).
-  for (let i = 0; i < ORB_V4_RULES.maxSwaps; i++) {
-    ctx.fillStyle = i < state.swaps ? "#ffe082" : "rgba(139,199,220,.2)";
-    ctx.beginPath();
-    ctx.moveTo(130 + i * 13, 598);
-    ctx.lineTo(135 + i * 13, 603);
-    ctx.lineTo(130 + i * 13, 608);
-    ctx.lineTo(125 + i * 13, 603);
-    ctx.closePath();
-    ctx.fill();
-  }
   // Pressure is an actual state indicator, not an instruction or a forecast.
-  for (let i = 0; i < orbMissLimitV4(state); i++) {
+  for (let i = 0; i < orbMissLimitV5(state); i++) {
     ctx.fillStyle = i < state.misses ? "#ff9dad" : "rgba(139,199,220,.24)";
     ctx.beginPath();
     ctx.arc(49 + i * 14, 546, 4, 0, Math.PI * 2);
@@ -379,7 +380,7 @@ function createPresentation() {
   return {
     render(
       ctx: CanvasRenderingContext2D,
-      state: OrbV4State,
+      state: OrbV5State,
       viewport: LogicalCanvasViewport,
     ) {
       const dpr =
@@ -407,7 +408,7 @@ function createPresentation() {
     pointAction(
       point: CorePoint,
       phase: "down" | "move" | "up",
-      state: OrbV4State,
+      state: OrbV5State,
     ) {
       return pointAction(unprojectOrbPoint(camera, point), phase, state);
     },
@@ -415,7 +416,7 @@ function createPresentation() {
       durationMs: 300,
       render(
         ctx: CanvasRenderingContext2D,
-        state: OrbV4State,
+        state: OrbV5State,
         elapsedMs: number,
       ) {
         if (state.status !== "failed") return;
@@ -436,10 +437,9 @@ function createPresentation() {
 function pointAction(
   point: CorePoint,
   phase: "down" | "move" | "up",
-  state: OrbV4State,
+  state: OrbV5State,
 ) {
   if (phase === "up") return "SHOOT";
-  if (state.shot || state.settleRemaining) return null;
   const angle = Math.atan2(Math.min(-40, point.y - 574), point.x - 195);
   const positive = (angle + Math.PI * 2) % (Math.PI * 2),
     phaseIndex = (positive * 4096) / (Math.PI * 2);
@@ -456,9 +456,9 @@ const keys = {
   " ": "SHOOT",
   Enter: "SHOOT",
 };
-const hudLabel = (state: Readonly<OrbV4State>) =>
-  `AVANCE ${state.height}/${ORB_V4_RULES.sourceGoal} · ${state.points} PTS${state.combo > 1 ? ` · COMBO ×${state.combo}` : ""}`;
-const feedbackScore = (state: Readonly<OrbV4State>) =>
+const hudLabel = (state: Readonly<OrbV5State>) =>
+  `AVANCE ${state.height}/${ORB_V5_RULES.sourceGoal} · ${state.points} PTS${state.combo > 1 ? ` · COMBO ×${state.combo}` : ""}`;
+const feedbackScore = (state: Readonly<OrbV5State>) =>
   state.height * 1000 - state.pressureRows;
 export default function OrbBurstVerified(props: GameRuntimeProps) {
   const presentation = useMemo(createPresentation, []);
@@ -466,7 +466,7 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
     <div className="orbVerified">
       <CoreCanvasGame
         {...props}
-        core={ORB_BURST_CORE_V4}
+        core={ORB_BURST_CORE_V5}
         name="Orb Burst"
         render={presentation.render}
         pointAction={presentation.pointAction}

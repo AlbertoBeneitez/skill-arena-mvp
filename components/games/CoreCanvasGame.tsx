@@ -18,6 +18,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   render(ctx: CanvasRenderingContext2D, state: S, viewport: LogicalCanvasViewport): void;
   /** Visual space only; opt in when input coordinates are independent of width. */
   expandHorizontalViewport?: boolean;
+  expandVerticalViewport?: boolean;
   primaryAction?: string;
   /** Held canvas gestures release through the same blur/cancel lifecycle as keys/buttons. */
   pointerReleaseAction?: string;
@@ -45,7 +46,7 @@ type Props<S extends CoreState> = GameRuntimeProps & {
 /** Presentation/input adapter. The core and shared server replay own outcomes. */
 export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const { core, active, stake, targetScore, name, instruction, render } = props;
-  const viewportPolicy = props.expandHorizontalViewport ? "expand-horizontal" : "contain";
+  const viewportPolicy = props.expandVerticalViewport ? "expand-vertical" : props.expandHorizontalViewport ? "expand-horizontal" : "contain";
   const attempt = useVerifiedAttempt({ active, gameId: core.gameId, stakeMinor: Math.round(stake * 100), targetScore });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const choiceRef = useRef<HTMLSelectElement>(null);
@@ -363,7 +364,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         if (action) { event.preventDefault(); heldRef.current.delete(action); send(action); }
       }}
     />
-    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong>{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
+    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span key={hud.label ?? hud.height} className="hudPop">{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop">{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
     {props.choiceControl && (props.choiceControl.presentation === "table" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel coreChoiceTable">
       {/* Always visible: one tap places the chip, no panel to open or close. */}

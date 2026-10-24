@@ -13,7 +13,7 @@ register(
     pathToFileURL(
       require("node:path").join(
         __dirname,
-        "../.det-test/lib/verified/precisionStackCore.v3.js",
+        "../.det-test/lib/verified/precisionStackCore.v4.js",
       ),
     ).href
   );

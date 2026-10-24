@@ -3,7 +3,7 @@ import {
   type SpaceBackdropViewport,
 } from "./spaceBackdrop";
 
-export type CanvasViewportPolicy = "contain" | "expand-horizontal";
+export type CanvasViewportPolicy = "contain" | "expand-horizontal" | "expand-vertical";
 export type LogicalCanvasViewport = { width: number; height: number };
 
 export type CanvasViewportMetrics = {
@@ -55,17 +55,21 @@ export function configureLogicalCanvas(
     policy === "expand-horizontal"
       ? Math.max(logicalWidth, (cssWidth / cssHeight) * logicalHeight)
       : logicalWidth;
-  const scale = Math.min(cssWidth / renderWidth, cssHeight / logicalHeight);
+  // "expand-vertical": taller screens get extra logical rows at the bottom
+  // (content stays top-anchored) so the play surface reaches the screen edge.
+  const tall = policy === "expand-vertical" && cssHeight / cssWidth > logicalHeight / logicalWidth;
+  const renderHeight = tall ? (cssHeight / cssWidth) * logicalWidth : logicalHeight;
+  const scale = Math.min(cssWidth / renderWidth, cssHeight / renderHeight);
 
   return {
     dpr,
     scale,
     offsetX: (cssWidth - renderWidth * scale) / 2,
-    offsetY: (cssHeight - logicalHeight * scale) / 2,
+    offsetY: tall ? 0 : (cssHeight - logicalHeight * scale) / 2,
     cssWidth,
     cssHeight,
     logicalWidth: renderWidth,
-    logicalHeight,
+    logicalHeight: renderHeight,
     backdropViewport: {
       left: rect.left ?? 0,
       top: rect.top ?? 0,

@@ -94,11 +94,6 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
         ctx.fill();
       }
       symbol(ctx, s.strips[i][j], x, y, 15);
-      ctx.fillStyle = "#a5b9cd";
-      ctx.font = "10px system-ui";
-      ctx.textAlign = "left";
-      ctx.fillText(String(j + 1), x + 20, y + 3.5);
-      ctx.textAlign = "center";
     }
     ctx.fillStyle = "#8fa8bd";
     ctx.font = "bold 10px system-ui";

@@ -6,7 +6,7 @@ import { PublicMatchService } from "../lib/server/publicMatchService";
 import { PostgresPublicAttemptRepository } from "../lib/server/postgresPublicAttemptRepository";
 import { PublicAttemptError } from "../lib/server/publicAttemptRepository";
 import { getServerGameAdapter } from "../lib/server/gameVerifiers";
-import { STACK_3D_CORE as core } from "../lib/verified/precisionStackCore.v3";
+import { STACK_3D_CORE as core } from "../lib/verified/precisionStackCore.v4";
 import { canonicalJson } from "../lib/verified/canonical";
 import { sha256 } from "../lib/server/matchIntegrity";
 import {
@@ -182,7 +182,7 @@ try {
     if (state.status === "running") core.step(state);
   }
   const fixture = { inputs, finalTick: state.tick };
-  const adapter = getServerGameAdapter("precision-stack", "3.0.0")!;
+  const adapter = getServerGameAdapter("precision-stack", "4.0.0")!;
   const replay = adapter.replay({
     manifest: a.manifest,
     inputs: fixture.inputs,

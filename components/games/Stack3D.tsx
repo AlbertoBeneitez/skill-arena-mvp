@@ -1,14 +1,11 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
-import { STACK_3D_CORE, type Stack3DState, type StackSolid } from "@/lib/verified/precisionStackCore.v3";
+import { STACK_3D_CORE, type Stack3DState, type StackSolid } from "@/lib/verified/precisionStackCore.v4";
 import CoreCanvasGame from "./CoreCanvasGame";
 
-function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
-  const W = STACK_3D_CORE.width, H = STACK_3D_CORE.height;
-  drawSpaceBackdrop(ctx, W, H, 0, state.tick);
-  ctx.save();
-  ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+function rig(ctx: CanvasRenderingContext2D, state: Stack3DState) {
+  const W = STACK_3D_CORE.width;
   const placementAge = state.lastPlacement?.landed ? Math.min(1,(state.tick-state.lastPlacement.tick)/36) : 1;
   const follow = placementAge*placementAge*(3-2*placementAge);
   const cameraNow = Math.max(0,state.height-8)*23;
@@ -28,6 +25,15 @@ function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
     polygon(p,`hsl(${hue},72%,${level===state.blocks.length?70:61}%)`);
     ctx.restore();
   };
+  return { project, polygon, solid, baseY };
+}
+
+function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
+  const W = STACK_3D_CORE.width, H = STACK_3D_CORE.height;
+  drawSpaceBackdrop(ctx, W, H, 0, state.tick);
+  ctx.save();
+  ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+  const { project, polygon, solid, baseY } = rig(ctx, state);
   ctx.save();ctx.fillStyle="rgba(0,5,18,.5)";ctx.beginPath();ctx.ellipse(W/2,baseY+45,150,48,0,0,Math.PI*2);ctx.fill();ctx.restore();
   polygon([project(-165,-165,0),project(165,-165,0),project(165,165,0),project(-165,165,0)],"#142d43","#44798e");
   for(let n=-120;n<=120;n+=40){
@@ -38,8 +44,8 @@ function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
     const rise=index===state.blocks.length-1&&state.phase==="settling"?22*(state.settleRemaining/24)**2:0;
     solid(block,index,rise);
   });
-  if(state.phase==="moving"){
-    solid(state.moving,state.blocks.length,24,state.status==="failed"?.45:1);
+  if(state.phase==="moving"&&state.status!=="failed"){
+    solid(state.moving,state.blocks.length,24);
   }
   const last=state.lastPlacement;
   if(last?.landed&&state.tick-last.tick<75){
@@ -48,11 +54,43 @@ function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
     const cutX=src.wMilli-land.wMilli,cutZ=src.dMilli-land.dMilli;
     if(cutX>0){const piece={...src,wMilli:cutX,xMilli:src.xMilli<land.xMilli?src.xMilli:land.xMilli+land.wMilli};solid(piece,state.height, -age*age*.018,Math.max(0,1-age/75));}
     if(cutZ>0){const piece={...src,dMilli:cutZ,zMilli:src.zMilli<land.zMilli?src.zMilli:land.zMilli+land.dMilli};solid(piece,state.height,-age*age*.018,Math.max(0,1-age/75));}
-    ctx.fillStyle=last.perfect?"#baffdc":"#ddefff";ctx.font="bold 16px system-ui";ctx.textAlign="center";ctx.fillText(last.perfect?`PERFECTO ×${state.combo}`:`+${last.scoreDelta}`,W/2,108);ctx.textAlign="left";
+    ctx.fillStyle=last.perfect?"#baffdc":"#ddefff";ctx.font="bold 16px system-ui";ctx.textAlign="center";ctx.fillText(last.perfect?`PERFECTO ×${state.combo}`:`+${Math.floor((last.landed.wMilli*last.landed.dMilli)/1e8)} sup.`,W/2,108);ctx.textAlign="left";
   }
   ctx.restore();
 }
+/* Failed drop: the block lands where the player let go and the overhang drags it off the tower. */
+const FALL_MS = 1900;
+function fallFinale(ctx: CanvasRenderingContext2D, state: Stack3DState, elapsedMs: number) {
+  const src = state.lastPlacement?.source;
+  if (!src) return;
+  const top = state.blocks[state.blocks.length - 1];
+  const { solid } = rig(ctx, state);
+  const level = state.blocks.length;
+  const missed = state.failure === "NO_OVERLAP";
+  const dir = state.axis === "x" ? Math.sign(src.xMilli + src.wMilli / 2 - top.xMilli - top.wMilli / 2) || 1 : Math.sign(src.zMilli + src.dMilli / 2 - top.zMilli - top.dMilli / 2) || 1;
+  const t = elapsedMs / 1000;
+  const landT = Math.min(t / .22, 1);
+  const rise = 24 * (1 - landT * landT);
+  const slide = missed ? 0 : Math.max(0, t - .3);
+  const topple = missed ? 0 : Math.min(1, slide / .5);
+  const gravity = missed ? t * t * 120 : Math.max(0, t - .55) ** 2 * 260;
+  const shift = (missed ? Math.max(0, t - .22) * 0 : slide * slide * 90 + topple * 40) * dir * 1000;
+  const block = { ...src, xMilli: src.xMilli + (state.axis === "x" ? shift : 0), zMilli: src.zMilli + (state.axis === "z" ? shift : 0) };
+  const alpha = Math.max(0, 1 - Math.max(0, t - 1.2) / .7);
+  ctx.save();
+  if (t < .35) ctx.translate(Math.sin(t * 90) * (1 - t / .35) * 3, 0);
+  solid(block, level, rise - gravity - topple * 4, alpha);
+  ctx.restore();
+  if (t < 1.3) {
+    ctx.save(); ctx.globalAlpha = Math.min(1, t * 4) * Math.max(0, 1 - (t - .8) / .5);
+    ctx.fillStyle = "#ffd5d5"; ctx.font = "bold 17px system-ui"; ctx.textAlign = "center";
+    ctx.fillText(missed ? "FALLO · BLOQUE FUERA" : "SIN APOYO · SE CAE", STACK_3D_CORE.width / 2, 108);
+    ctx.restore();
+  }
+}
+const finale = { durationMs: FALL_MS, render: fallFinale };
+const hudLabel = (state: Stack3DState) => `ALTURA ${state.height} · SUPERFICIE ${Math.floor(state.surfaceMilli2 / 1e8)}`;
 const keys = { " ": "DROP", Enter: "DROP" } as const;
 export default function Stack3D(props: GameRuntimeProps) {
-  return <CoreCanvasGame {...props} core={STACK_3D_CORE} name="Stack" render={render} primaryAction="DROP" keys={keys} instruction="Toca al alinear las caras. La siguiente pieza cruza por el otro eje." />;
+  return <CoreCanvasGame {...props} core={STACK_3D_CORE} name="Stack" render={render} failureFinale={finale} hideHudScore hudLabel={hudLabel} primaryAction="DROP" keys={keys} instruction="Toca al alinear las caras. La siguiente pieza cruza por el otro eje." />;
 }

@@ -2,13 +2,14 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V6,
-  ROULETTE_RULES_V6,
+  ROULETTE_CORE_V7,
+  ROULETTE_RULES_V7,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV6 as RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v6";
+  type RouletteStateV7 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v7";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
+import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v7";
 import {
   ROULETTE_BALL_DOCK,
   rouletteLauncherCanGrab,
@@ -220,13 +221,45 @@ function render(
   ctx.font = "900 28px system-ui";
   ctx.textAlign = "center";
   ctx.fillText(s.lastNumber === null ? "" : String(s.lastNumber), cx, 270);
-  ctx.fillStyle = "#a8c6d5";
+  const stake = s.chipValues.reduce((a, b) => a + b, 0);
+  const expiresIn = s.chips.length
+    ? Math.max(0, Math.ceil((ROULETTE_RULES_V7.chipExpiryTicks - (s.tick - s.chipTicks[0])) / 120))
+    : 0;
+  ctx.fillStyle = expiresIn > 0 && expiresIn <= 3 ? "#ffb4a0" : "#a8c6d5";
   ctx.font = "bold 14px system-ui";
   ctx.fillText(
-    s.chips.length ? `${s.chips.length} ${s.chips.length === 1 ? "FICHA" : "FICHAS"} EN LA MESA` : "SIN FICHAS EN LA MESA",
+    stake ? `${stake} ${stake === 1 ? "FICHA" : "FICHAS"} EN LA MESA · ${expiresIn}s` : "SIN FICHAS EN LA MESA",
     cx,
     377,
   );
+  // History of the last results, newest on the right; each dot has the pocket colour.
+  const shown = s.history.slice(-ROULETTE_RULES_V7.historyLength);
+  const slot = 24, left = cx - (ROULETTE_RULES_V7.historyLength * slot) / 2;
+  for (let i = 0; i < ROULETTE_RULES_V7.historyLength; i++) {
+    const n = shown[i - (ROULETTE_RULES_V7.historyLength - shown.length)];
+    const hx = left + i * slot + slot / 2;
+    if (n === undefined) {
+      ctx.strokeStyle = "rgba(168,198,213,.28)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(hx, 31, 9, 0, Math.PI * 2);
+      ctx.stroke();
+      continue;
+    }
+    const latest = i === ROULETTE_RULES_V7.historyLength - 1;
+    ctx.fillStyle = n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
+    ctx.beginPath();
+    ctx.arc(hx, 31, latest ? 11 : 9, 0, Math.PI * 2);
+    ctx.fill();
+    if (latest) {
+      ctx.strokeStyle = "#ffe9a4";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.fillStyle = n === 0 ? "#102d50" : "#f9edda";
+    ctx.font = "bold 10px system-ui";
+    ctx.fillText(String(n), hx, 34.5);
+  }
   if (s.lastPayout > 0 && s.tick - s.lastLandingTick < 120) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 19px system-ui";
@@ -289,14 +322,21 @@ const choiceControl = {
         placement: { row: 5, column: 2 + i * 2, columnSpan: 2 },
       };
     }),
-    { action: "BETS_UNDO", label: "↶ QUITAR FICHA", tone: "#3b3f2f", placement: { row: 6, column: 1, columnSpan: 7 } },
-    { action: "BETS_CLEAR", label: "LIMPIAR MESA", tone: "#4a2f35", placement: { row: 6, column: 8, columnSpan: 6 } },
+    ...ROULETTE_DENOMINATIONS.map((d, i) => ({
+      action: `CHIP_${d}`,
+      label: `${d}`,
+      tone: d === 1 ? "#5b6b78" : d === 5 ? "#8a3a45" : "#3a3f8a",
+      placement: { row: 6, column: 1 + i * 2, columnSpan: 2 },
+    })),
+    { action: "BETS_UNDO", label: "↶ QUITAR", tone: "#3b3f2f", placement: { row: 6, column: 7, columnSpan: 3 } },
+    { action: "BETS_CLEAR", label: "LIMPIAR", tone: "#4a2f35", placement: { row: 6, column: 10, columnSpan: 4 } },
     { action: "CASH_OUT", label: "TERMINAR PARTIDA", tone: "#5a3a1e", placement: { row: 7, column: 1, columnSpan: 13 } },
   ],
   value: (s: RouletteStateV2) => (s.chips.length ? `BET_${s.chips[s.chips.length - 1]}` : ""),
   badges: (s: RouletteStateV2) => {
     const counts: Record<string, number> = {};
-    for (const bet of s.chips) counts[`BET_${bet}`] = (counts[`BET_${bet}`] ?? 0) + 1;
+    s.chips.forEach((bet, i) => { counts[`BET_${bet}`] = (counts[`BET_${bet}`] ?? 0) + s.chipValues[i]; });
+    counts[`CHIP_${s.denomination}`] = 1;
     return counts;
   },
   disabled: (s: RouletteStateV2) =>
@@ -343,7 +383,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V6}
+        core={ROULETTE_CORE_V7}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -354,7 +394,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V6.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V7.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

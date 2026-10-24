@@ -45,7 +45,7 @@ export default function GameResultSummary({
               ? "Sin fichas"
               : "Fichas registradas"
             : result.won
-              ? "Reto superado"
+              ? "Partida completada"
               : "Inténtalo de nuevo"}
       </h2>
       <dl className="resultFacts">
