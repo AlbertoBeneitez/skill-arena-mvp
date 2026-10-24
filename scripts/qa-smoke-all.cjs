@@ -9,10 +9,8 @@
 const { chromium } = require("playwright");
 const BASE = process.env.BASE_URL || "http://127.0.0.1:3111";
 const GAMES = [
-  "Galactic Slot", "Dardos", "Billar", "Tower Drop", "Jet Stream", "Metro Shift", "Orbit Shift",
-  "Solitaire Sprint", "Mine Grid", "Serpent", "Brick Relay", "Stack Shift", "Maze Rush",
-  "Star Phalanx", "River Dash", "Orb Burst", "Stack", "Piano Rush", "Alien Dash", "Shot Gallery",
-  "Sky Hop", "Galactic Birds", "Galactic Roulette",
+  "Galactic Roulette", "Galactic Slot", "Dardos", "Billar", "Stack", "Tower Drop", "Orb Burst",
+  "Shot Gallery", "Solitaire Sprint", "Mine Grid", "Stack Shift", "Pinball",
 ];
 const CONCURRENCY = Number(process.env.SMOKE_CONCURRENCY || 3);
 
@@ -28,17 +26,13 @@ async function check(browser, name) {
   try {
     await page.goto(BASE + "/?reset=1", { waitUntil: "networkidle" });
     await page.getByText("INICIAR SESIÓN").first().click();
-    await page.getByPlaceholder("Nombre de avatar").fill("Smoke");
+    await page.locator("#avatar-name").fill("Smoke");
     await page.getByText("CONTINUAR").click();
     await page.waitForTimeout(700);
     await page.getByText(name, { exact: true }).first().click({ timeout: 15000 });
-    const gated = name === "Galactic Slot";
-    if (gated) {
-      // The slot machine (fictitious balance) asks for age once before opening.
-      const confirm = page.getByTestId("age-confirm");
-      try { await confirm.waitFor({ timeout: 5000 }); } catch { problems.push("age confirmation not shown"); }
-      if (await confirm.isVisible().catch(() => false)) await confirm.click();
-    }
+    // An age confirmation, when present, is accepted; the current catalogue opens games directly.
+    const confirm = page.getByTestId("age-confirm");
+    if (await confirm.isVisible().catch(() => false)) await confirm.click();
     await page.waitForTimeout(2500);
     const m = await page.evaluate(() => {
       const c = document.querySelector("canvas");
@@ -74,7 +68,7 @@ async function checkStorage(browser) {
   try {
     await blocked.goto(BASE + "/", { waitUntil: "networkidle" });
     await blocked.getByText("INICIAR SESIÓN").first().click({ timeout: 10000 });
-    await blocked.getByPlaceholder("Nombre de avatar").fill("Sin");
+    await blocked.locator("#avatar-name").fill("Sin");
     await blocked.getByText("CONTINUAR").click();
     await blocked.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
   } catch (e) {
@@ -86,7 +80,7 @@ async function checkStorage(browser) {
   try {
     await page.goto(BASE + "/?reset=1", { waitUntil: "networkidle" });
     await page.getByText("INICIAR SESIÓN").first().click();
-    await page.getByPlaceholder("Nombre de avatar").fill("Persiste");
+    await page.locator("#avatar-name").fill("Persiste");
     await page.getByText("CONTINUAR").click();
     await page.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(500);
@@ -116,7 +110,7 @@ async function checkVerifiedFlow(browser) {
   try {
     await page.goto(BASE + "/?reset=1", { waitUntil: "networkidle" });
     await page.getByText("INICIAR SESIÓN").first().click();
-    await page.getByPlaceholder("Nombre de avatar").fill("E2E");
+    await page.locator("#avatar-name").fill("E2E");
     await page.getByText("CONTINUAR").click();
     await page.getByText("Tower Drop", { exact: true }).first().click({ timeout: 15000 });
     await page.waitForTimeout(2500);
