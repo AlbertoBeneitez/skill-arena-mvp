@@ -1,4 +1,5 @@
 import type { GameResult } from "@/lib/types";
+import { formatNumber, useI18n } from "@/lib/i18n";
 export default function GameResultSummary({
   result,
   gameName,
@@ -10,6 +11,7 @@ export default function GameResultSummary({
   waitingForRival?: boolean;
   resultMetric?: "fictitious-balance";
 }) {
+  const { t } = useI18n();
   const balance = resultMetric === "fictitious-balance";
   const reach =
     result.verified === true &&
@@ -18,61 +20,55 @@ export default function GameResultSummary({
     result.height >= 0
       ? result.height
       : undefined;
-  const duration = `${(Math.max(0, result.timeMs) / 1000).toLocaleString(
-    "es-ES",
-    {
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3,
-    },
-  )} s`;
+  const duration = t("common.seconds", { n: formatNumber(Math.max(0, result.timeMs) / 1000, { minimumFractionDigits: 3, maximumFractionDigits: 3 }) });
   return (
-    <section className="gameResultSummary" aria-label="Resumen del intento">
+    <section className="gameResultSummary" aria-label={t("result.aria")}>
       <span className="resultSourceBadge">
         {result.forfeited
-          ? "PARTIDA PERDIDA"
+          ? t("result.badgeLost")
           : result.verified === true
-          ? "ENTRENAMIENTO · REPLAY DE SERVIDOR"
-          : "ENTRENAMIENTO · RESULTADO LOCAL"}
+          ? t("result.badgeServer")
+          : t("result.badgeLocal")}
       </span>
       <p className="resultGameName">{gameName}</p>
       <h2>
         {result.forfeited
-          ? "Partida perdida"
+          ? t("result.lost")
           : waitingForRival
-          ? "Marca registrada"
+          ? t("result.registered")
           : balance
             ? reach === 0
-              ? "Sin fichas"
-              : "Fichas registradas"
+              ? t("result.noChips")
+              : t("result.chipsRegistered")
             : result.won
-              ? "Partida completada"
-              : "Inténtalo de nuevo"}
+              ? t("result.completed")
+              : t("result.tryAgain")}
       </h2>
       <dl className="resultFacts">
         <div>
           <dt>
             {balance
-              ? "Fichas finales"
+              ? t("result.finalChips")
               : reach !== undefined
-                ? "Avance alcanzado"
-                : "Puntos"}
+                ? t("result.reach")
+                : t("result.points")}
           </dt>
           <dd
             aria-label={
               balance
-                ? "Fichas del intento"
+                ? t("result.chipsAria")
                 : reach !== undefined
-                  ? "Avance del intento"
-                  : "Puntuación del intento"
+                  ? t("result.reachAria")
+                  : t("result.pointsAria")
             }
           >
             {balance
-              ? `${((reach ?? result.score) / 100).toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} fichas`
-              : (reach ?? result.score).toLocaleString("es-ES")}
+              ? t("common.chips", { n: formatNumber((reach ?? result.score) / 100, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) })
+              : formatNumber(reach ?? result.score)}
           </dd>
         </div>
         <div>
-          <dt>Tiempo de juego</dt>
+          <dt>{t("result.playTime")}</dt>
           <dd>{duration}</dd>
         </div>
       </dl>

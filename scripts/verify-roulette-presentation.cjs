@@ -36,6 +36,7 @@ module.exports = (async () => {
       "@/lib/verified/galacticRouletteProtocol.v8": protocol8,
       "@/lib/rouletteLaunchGesture": gesture,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
+      "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "./CoreCanvasGame": () => null,
     };
   new Function("require", "exports", compiled.code)(

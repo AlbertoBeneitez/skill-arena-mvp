@@ -1,4 +1,5 @@
 "use client";
+import { t } from "@/lib/i18n";
 
 /** Last-resort boundary: renders its own document, so it cannot rely on app CSS. */
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -18,14 +19,14 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
         }}
       >
         <main role="alert">
-          <h1 style={{ fontSize: 24 }}>Algo ha fallado</h1>
-          <p style={{ color: "#bfd5e5" }}>La aplicación no se ha podido cargar. Tu progreso local no se ha borrado.</p>
+          <h1 style={{ fontSize: 24 }}>{t("error.title")}</h1>
+          <p style={{ color: "#bfd5e5" }}>{t("error.body")}</p>
           <button
             type="button"
             onClick={reset}
             style={{ minHeight: 48, padding: "0 24px", borderRadius: 14, border: 0, background: "#a0ebe1", color: "#0d2933", fontWeight: 700, fontSize: 16 }}
           >
-            Reintentar
+            {t("error.retry")}
           </button>
         </main>
       </body>

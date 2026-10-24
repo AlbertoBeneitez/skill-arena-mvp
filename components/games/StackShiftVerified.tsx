@@ -9,6 +9,7 @@ import {
 } from "@/lib/verified/stackShiftCore.v3";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
+import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 const colors = [
   "#5fd4e8",
   "#f5ba5b",
@@ -97,7 +98,7 @@ function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
   ctx.textAlign = "left";
   ctx.fillStyle = "#9bc1d5";
   ctx.font = "9px system-ui";
-  ctx.fillText("SIGUIENTE", 334, 64);
+  ctx.fillText(tx("shift.next"), 334, 64);
   for (let n = 1; n <= 2; n++) {
     const next = stackPiece(s.seed, s.pieceIndex + n);
     ctx.globalAlpha = n === 1 ? 1 : 0.5;
@@ -112,7 +113,7 @@ function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
     ctx.fillRect(bx, by, width, height);
   }
 }
-const hudLabel = (s: Readonly<StackShiftState>) => `${s.lines}/18 FILAS`;
+const hudLabel = (s: Readonly<StackShiftState>) => tx("shift.hud", { n: s.lines });
 const keys = {
   ArrowLeft: "LEFT",
   ArrowRight: "RIGHT",
@@ -121,12 +122,13 @@ const keys = {
   " ": "HARD_DROP",
 } as const;
 const controls = [
-  { action: "LEFT", label: "Mover izquierda", symbol: "←" },
-  { action: "ROTATE", label: "Girar pieza", symbol: "↻" },
-  { action: "RIGHT", label: "Mover derecha", symbol: "→" },
-  { action: "HARD_DROP", label: "Asentar pieza", symbol: "BAJAR" },
+  { action: "LEFT", get label() { return tx("shift.left"); }, symbol: "←" },
+  { action: "ROTATE", get label() { return tx("shift.rotate"); }, symbol: "↻" },
+  { action: "RIGHT", get label() { return tx("shift.right"); }, symbol: "→" },
+  { action: "HARD_DROP", get label() { return tx("shift.drop"); }, get symbol() { return tx("shift.dropSymbol"); } },
 ] as const;
 export default function StackShiftVerified(props: GameRuntimeProps) {
+  useI18n();
   return (
     <div className="stackShiftVerified">
       <CoreCanvasGame
@@ -137,7 +139,7 @@ export default function StackShiftVerified(props: GameRuntimeProps) {
         render={render}
         keys={keys}
         controls={controls}
-        instruction="← → mueve · ↻ gira · ↓ baja una fila · BAJAR asienta sobre la silueta"
+        instruction={tx("shift.instruction")}
       />
     </div>
   );

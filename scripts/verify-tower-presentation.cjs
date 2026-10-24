@@ -115,6 +115,7 @@ async function loadRenderer(file, importedCore) {
   const exports = {};
   const dependency = (name) => {
     if (name === "@/lib/spaceBackdrop") return { drawSpaceBackdrop() {} };
+    if (name === "@/lib/i18n") return require("./i18n-test-stub.cjs");
     if (name.startsWith("@/lib/verified/")) return importedCore;
     if (name === "./CoreCanvasGame") return { default() {} };
     return projectRequire(name);

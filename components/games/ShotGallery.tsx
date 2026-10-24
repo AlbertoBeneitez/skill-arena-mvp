@@ -9,6 +9,7 @@ import {
 } from "@/lib/verified/shotGalleryCore.v6";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
+import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 const PAINT = ["#4fa8ff", "#ff7a6b", "#a8e05f", "#a47bff", "#ffd23f", "#ff6fb5", "#2fd9c8", "#ff9a3c"];
 const msOf = (ticks: number) => Math.round((ticks * 1000) / 120);
 
@@ -97,8 +98,8 @@ function splash(ctx: CanvasRenderingContext2D, color: string, x: number, y: numb
 
 const hudLabel = (s: Readonly<GalleryStateV6>) => {
   const taps = s.results.flatMap((r) => r.taps);
-  const avg = taps.length ? ` · MEDIA ${msOf(taps.reduce((a, b) => a + b, 0) / taps.length)} ms` : "";
-  return `${s.correct} ACIERTOS · ${Math.min(12, s.trial + 1)}/12${avg}`;
+  const avg = taps.length ? ` · ${tx("gallery.avg", { n: msOf(taps.reduce((a, b) => a + b, 0) / taps.length) })}` : "";
+  return `${tx("gallery.hud", { n: s.correct, trial: Math.min(12, s.trial + 1) })}${avg}`;
 };
 const feedbackScore = (s: Readonly<GalleryStateV6>) => s.total;
 
@@ -272,6 +273,7 @@ function drawBlaster(ctx: CanvasRenderingContext2D, aimX: number, aimY: number, 
 }
 
 export default function ShotGallery(props: GameRuntimeProps) {
+  useI18n();
   const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV6) => {
     persistReactions(s);
     const trial = s.trials[Math.min(s.trial, 11)],
@@ -306,7 +308,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.fillStyle = "#ffb03a";
       ctx.shadowColor = "#ff7a00"; ctx.shadowBlur = 10;
       ctx.font = "900 12px system-ui";
-      ctx.fillText(`RACHA ×${streak}`, 62, 105);
+      ctx.fillText(tx("gallery.streak", { n: streak }), 62, 105);
       ctx.shadowBlur = 0;
     }
 
@@ -362,7 +364,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.restore();
       if (hitAt >= 0) {
         const ms = msOf(s.tapTicks[hitAt] ?? s.results.at(-1)?.taps[hitAt] ?? 0);
-        const rating = ms <= 380 ? ["¡RAYO!", "#ffe14a"] : ms <= 560 ? ["¡RÁPIDO!", "#7cffb0"] : null;
+        const rating = ms <= 380 ? [tx("gallery.bolt"), "#ffe14a"] : ms <= 560 ? [tx("gallery.fast"), "#7cffb0"] : null;
         ctx.font = "900 13px system-ui";
         ctx.lineWidth = 3;
         ctx.strokeStyle = "rgba(0,0,0,.7)";
@@ -417,7 +419,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
     const last = s.results.at(-1);
     if (s.phase === "feedback" && last) {
       const age = s.tick - (s.lastTapTick >= s.readyTick ? s.lastTapTick : s.readyTick);
-      const text: Record<string, string> = { CORRECT: streak >= 3 ? `¡RACHA ×${streak}!` : "¡DIANA!", PARTIAL: "INCOMPLETO", WRONG: "FALLO", FALSE_START: "DEMASIADO PRONTO", TIMEOUT: "TARDE" };
+      const text: Record<string, string> = { CORRECT: streak >= 3 ? tx("gallery.streakBig", { n: streak }) : tx("gallery.hit"), PARTIAL: tx("gallery.partial"), WRONG: tx("gallery.wrong"), FALSE_START: tx("gallery.falseStart"), TIMEOUT: tx("gallery.timeout") };
       if (last.type === "FALSE_START" || last.type === "TIMEOUT") {
         ctx.fillStyle = "rgba(6,14,24,.7)";
         ctx.fillRect(f.x0, f.y0 - 8, f.w, f.h + 16);

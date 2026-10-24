@@ -17,6 +17,7 @@ import { isDartsThrowGesture } from "@/lib/verified/dartsGesture.v2";
 import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import { t, formatNumber, useI18n } from "@/lib/i18n";
 const cx = 195,
   cy = 285;
 function ring(
@@ -134,7 +135,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
   ctx.textAlign = "center";
   ctx.font = "bold 13px system-ui";
   const left = Math.max(0, 20 - s.impacts.length);
-  ctx.fillText(`DARDOS RESTANTES · ${left}`, cx, 61);
+  ctx.fillText(t("darts.left", { n: left }), cx, 61);
   // Fila de dardos restantes (themed counter) at the bottom of the screen.
   const rowY = viewH - 26;
   for (let i = 0; i < 20; i++) {
@@ -202,8 +203,9 @@ function aimActions(point: CorePoint) {
 const tones = { THROW: "tap" } as const,
   keys = { " ": "THROW", Enter: "THROW" };
 const feedbackScore = (s: Readonly<DartsStateV3>) => s.total;
-const hudLabel = (s: Readonly<DartsStateV3>) => `PUNTOS ${s.total}`;
+const hudLabel = (s: Readonly<DartsStateV3>) => t("play.points", { n: formatNumber(s.total) });
 export default function Darts(props: GameRuntimeProps) {
+  useI18n();
   const startRef = useRef<CorePoint | null>(null);
   useEffect(() => {
     startRef.current = null;

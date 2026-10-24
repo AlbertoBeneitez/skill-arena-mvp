@@ -19,8 +19,9 @@ import {
   type OrbCamera,
 } from "@/lib/orbPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 const colors = ["#66e9ff", "#ff8bbb", "#ffe082", "#a9f786", "#b9a0ff", "#7d8794", "#ff7a3d", "#ffffff", "#ffe44d"];
-const specialNames: Record<number, string> = { 6: "BOMBA", 7: "ARCOÍRIS", 8: "RAYO" };
+const specialNames: Record<number, string> = { get 6() { return tx("orb.bomb"); }, get 7() { return tx("orb.rainbow"); }, get 8() { return tx("orb.lightning"); } };
 function orb(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -457,10 +458,11 @@ const keys = {
   Enter: "SHOOT",
 };
 const hudLabel = (state: Readonly<OrbV5State>) =>
-  `AVANCE ${state.height}/${ORB_V5_RULES.sourceGoal} · ${state.points} PTS${state.combo > 1 ? ` · COMBO ×${state.combo}` : ""}`;
+  `${tx("orb.hud", { n: state.height, goal: ORB_V5_RULES.sourceGoal, pts: formatNumber(state.points) })}${state.combo > 1 ? ` · ${tx("play.combo", { n: state.combo })}` : ""}`;
 const feedbackScore = (state: Readonly<OrbV5State>) =>
   state.height * 1000 - state.pressureRows;
 export default function OrbBurstVerified(props: GameRuntimeProps) {
+  useI18n();
   const presentation = useMemo(createPresentation, []);
   return (
     <div className="orbVerified">
@@ -478,10 +480,10 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
         inputTones={inputTones}
         keys={keys}
         controls={[
-          { action: "SWAP", label: "Cambiar la bola cargada por la siguiente", symbol: "⇄" },
-          { action: "POWER_RAINBOW", label: "Poder arcoíris, cuesta 1", symbol: "🌈1" },
-          { action: "POWER_BOMB", label: "Poder bomba, cuesta 2", symbol: "💣2" },
-          { action: "POWER_LIGHTNING", label: "Poder rayo, cuesta 3", symbol: "⚡3" },
+          { action: "SWAP", label: tx("orb.swap"), symbol: "⇄" },
+          { action: "POWER_RAINBOW", label: tx("orb.powerRainbow"), symbol: "🌈1" },
+          { action: "POWER_BOMB", label: tx("orb.powerBomb"), symbol: "💣2" },
+          { action: "POWER_LIGHTNING", label: tx("orb.powerLightning"), symbol: "⚡3" },
         ]}
         instruction=""
       />

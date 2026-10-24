@@ -4,6 +4,7 @@ import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { STACK_3D_CORE, type Stack3DState, type StackSolid } from "@/lib/verified/precisionStackCore.v4";
 import CoreCanvasGame from "./CoreCanvasGame";
 
+import { t as tx, useI18n } from "@/lib/i18n";
 function rig(ctx: CanvasRenderingContext2D, state: Stack3DState) {
   const W = STACK_3D_CORE.width;
   const placementAge = state.lastPlacement?.landed ? Math.min(1,(state.tick-state.lastPlacement.tick)/36) : 1;
@@ -54,7 +55,7 @@ function render(ctx: CanvasRenderingContext2D, state: Stack3DState) {
     const cutX=src.wMilli-land.wMilli,cutZ=src.dMilli-land.dMilli;
     if(cutX>0){const piece={...src,wMilli:cutX,xMilli:src.xMilli<land.xMilli?src.xMilli:land.xMilli+land.wMilli};solid(piece,state.height, -age*age*.018,Math.max(0,1-age/75));}
     if(cutZ>0){const piece={...src,dMilli:cutZ,zMilli:src.zMilli<land.zMilli?src.zMilli:land.zMilli+land.dMilli};solid(piece,state.height,-age*age*.018,Math.max(0,1-age/75));}
-    ctx.fillStyle=last.perfect?"#baffdc":"#ddefff";ctx.font="bold 16px system-ui";ctx.textAlign="center";ctx.fillText(last.perfect?`PERFECTO ×${state.combo}`:`+${Math.floor((last.landed.wMilli*last.landed.dMilli)/1e8)} sup.`,W/2,108);ctx.textAlign="left";
+    ctx.fillStyle=last.perfect?"#baffdc":"#ddefff";ctx.font="bold 16px system-ui";ctx.textAlign="center";ctx.fillText(last.perfect?tx("play.perfect", { n: state.combo }):tx("stack.surface", { n: Math.floor((last.landed.wMilli*last.landed.dMilli)/1e8) }),W/2,108);ctx.textAlign="left";
   }
   ctx.restore();
 }
@@ -84,13 +85,14 @@ function fallFinale(ctx: CanvasRenderingContext2D, state: Stack3DState, elapsedM
   if (t < 1.3) {
     ctx.save(); ctx.globalAlpha = Math.min(1, t * 4) * Math.max(0, 1 - (t - .8) / .5);
     ctx.fillStyle = "#ffd5d5"; ctx.font = "bold 17px system-ui"; ctx.textAlign = "center";
-    ctx.fillText(missed ? "FALLO · BLOQUE FUERA" : "SIN APOYO · SE CAE", STACK_3D_CORE.width / 2, 108);
+    ctx.fillText(missed ? tx("stack.miss") : tx("stack.noSupport"), STACK_3D_CORE.width / 2, 108);
     ctx.restore();
   }
 }
 const finale = { durationMs: FALL_MS, render: fallFinale };
-const hudLabel = (state: Stack3DState) => `ALTURA ${state.height} · SUPERFICIE ${Math.floor(state.surfaceMilli2 / 1e8)}`;
+const hudLabel = (state: Stack3DState) => tx("stack.hud", { h: state.height, s: Math.floor(state.surfaceMilli2 / 1e8) });
 const keys = { " ": "DROP", Enter: "DROP" } as const;
 export default function Stack3D(props: GameRuntimeProps) {
-  return <CoreCanvasGame {...props} core={STACK_3D_CORE} name="Stack" render={render} failureFinale={finale} hideHudScore hudLabel={hudLabel} primaryAction="DROP" keys={keys} instruction="Toca al alinear las caras. La siguiente pieza cruza por el otro eje." />;
+  useI18n();
+  return <CoreCanvasGame {...props} core={STACK_3D_CORE} name="Stack" render={render} failureFinale={finale} hideHudScore hudLabel={hudLabel} primaryAction="DROP" keys={keys} instruction={tx("stack.instruction")} />;
 }

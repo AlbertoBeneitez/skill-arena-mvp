@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { getGameDefinition } from "@/lib/games";
 import type { PublicMatchView } from "@/lib/publicMatch";
 import styles from "./RecentAttempts.module.css";
+import { formatNumber, t, useI18n } from "@/lib/i18n";
+import { gameName } from "@/lib/i18n/games";
 type Attempt = {
   attemptId: string;
   gameId: string;
@@ -13,15 +15,16 @@ type Attempt = {
   match: PublicMatchView;
 };
 function label(row: Attempt) {
-  if (row.state === "forfeited" || row.state === "rejected") return "Perdida";
-  if (row.state === "playing") return "En juego";
-  if (row.state === "received") return "Verificando";
-  if (row.match.status === "waiting") return "Esperando rival";
-  if (row.match.winnerSlot === row.match.slot) return "Ganada";
-  return row.match.reason === "exact-tie" ? "Empate" : "Perdida";
+  if (row.state === "forfeited" || row.state === "rejected") return t("recent.lost");
+  if (row.state === "playing") return t("recent.playing");
+  if (row.state === "received") return t("recent.verifying");
+  if (row.match.status === "waiting") return t("recent.waiting");
+  if (row.match.winnerSlot === row.match.slot) return t("recent.won");
+  return row.match.reason === "exact-tie" ? t("recent.tie") : t("recent.lost");
 }
 /** Own stored results only. Never updates the wallet or manufactures opponents. */
 export default function RecentAttempts() {
+  useI18n();
   const [attempts, setAttempts] = useState<Attempt[] | null>(null),
     [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -63,32 +66,28 @@ export default function RecentAttempts() {
     };
   }, []);
   return (
-    <section className={styles.panel} aria-label="Intentos guardados">
-      <h2>Últimos intentos</h2>
-      <small>ENTRENAMIENTO DE ESTE NAVEGADOR</small>
+    <section className={styles.panel} aria-label={t("recent.aria")}>
+      <h2>{t("recent.title")}</h2>
+      <small>{t("recent.scope")}</small>
       {failed ? (
-        <p role="status">Partidas no disponibles</p>
+        <p role="status">{t("recent.unavailable")}</p>
       ) : attempts === null ? (
-        <p role="status">Cargando…</p>
+        <p role="status">{t("common.loading")}</p>
       ) : attempts.length === 0 ? (
-        <p>Sin partidas</p>
+        <p>{t("recent.empty")}</p>
       ) : (
         <ul>
           {attempts.map((a) => (
             <li key={a.attemptId}>
               <span>
-                <strong>{getGameDefinition(a.gameId)?.name}</strong>
+                <strong>{(() => { const g = getGameDefinition(a.gameId); return g ? gameName(g) : a.gameId; })()}</strong>
                 <small>{label(a)}</small>
               </span>
               <span>
                 {a.height ?? a.score ?? "—"}
                 {a.timeMs !== undefined && (
                   <small>
-                    {(a.timeMs / 1000).toLocaleString("es-ES", {
-                      minimumFractionDigits: 3,
-                      maximumFractionDigits: 3,
-                    })}{" "}
-                    s
+                    {t("common.seconds", { n: formatNumber(a.timeMs / 1000, { minimumFractionDigits: 3, maximumFractionDigits: 3 }) })}
                   </small>
                 )}
               </span>

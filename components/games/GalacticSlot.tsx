@@ -8,6 +8,7 @@ import { SLOT_CORE_V3 } from "@/lib/verified/galacticSlotCore.v3";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { slotVisibleSteps, slotReelPosition } from "@/lib/slotPresentation.v2";
 import CoreCanvasGame from "./CoreCanvasGame";
+import { t, formatNumber, useI18n } from "@/lib/i18n";
 const colors = [
   "#f7d75f",
   "#ff934d",
@@ -84,7 +85,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   ctx.textAlign = "center";
   for (let i = 0; i < 3; i++) {
     const x = 85 + i * 110;
-    ctx.fillText(`RODILLO ${i + 1}`, x, 52);
+    ctx.fillText(t("slot.reel", { n: i + 1 }), x, 52);
     for (let j = 0; j < 8; j++) {
       const y = 66 + j * 14.5;
       if (s.positions[i] === j) {
@@ -109,8 +110,8 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   }
   ctx.textAlign = "center";
   for (const [x, label, amount] of [
-    [107, "Pareja", "10"],
-    [280, "7 sin pareja", "5"],
+    [107, t("slot.pair"), "10"],
+    [280, t("slot.sevenNoPair"), "5"],
   ] as const) {
     ctx.fillStyle = "#a5b9cd";
     ctx.font = "400 10px system-ui";
@@ -155,13 +156,14 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
   if (lit) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 18px system-ui";
-    ctx.fillText(`+${s.lastPayout / 100} fichas`, 195, layout.top - 8);
+    ctx.fillText(t("slot.won", { n: formatNumber(s.lastPayout / 100) }), 195, layout.top - 8);
   }
 }
 const hudLabel = (s: Readonly<SlotState>) =>
-  `${(s.balanceMinor / 100).toFixed(2)} FICHAS · ${(Math.max(0, 21600 - s.tick) / 120).toFixed(1)}s${s.steps.every(step => step === 0) ? " · 000 NO PERMITIDO" : ""}`;
+  `${t("slot.hud", { chips: formatNumber(s.balanceMinor / 100, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), secs: formatNumber(Math.max(0, 21600 - s.tick) / 120, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}${s.steps.every(step => step === 0) ? ` · ${t("slot.hudNoZero")}` : ""}`;
 const feedbackScore = (s: Readonly<SlotState>) => s.balanceMinor;
 export default function GalacticSlot(props: GameRuntimeProps) {
+  useI18n();
   return (
     <div className="slotVerified">
       <CoreCanvasGame
@@ -177,38 +179,38 @@ export default function GalacticSlot(props: GameRuntimeProps) {
         controls={[
           {
             action: "REEL_0_LESS",
-            label: "Reducir avance de ruleta 1",
+            label: t("slot.less", { n: 1 }),
             symbol: "−",
           },
           {
             action: "REEL_0_MORE",
-            label: "Aumentar avance de ruleta 1",
+            label: t("slot.more", { n: 1 }),
             symbol: "+",
           },
           {
             action: "REEL_1_LESS",
-            label: "Reducir avance de ruleta 2",
+            label: t("slot.less", { n: 2 }),
             symbol: "−",
           },
           {
             action: "REEL_1_MORE",
-            label: "Aumentar avance de ruleta 2",
+            label: t("slot.more", { n: 2 }),
             symbol: "+",
           },
           {
             action: "REEL_2_LESS",
-            label: "Reducir avance de ruleta 3",
+            label: t("slot.less", { n: 3 }),
             symbol: "−",
           },
           {
             action: "REEL_2_MORE",
-            label: "Aumentar avance de ruleta 3",
+            label: t("slot.more", { n: 3 }),
             symbol: "+",
           },
           {
             action: "SPIN",
-            label: "Girar ruletas por 5 euros ficticios",
-            symbol: "⟳ 5 fichas",
+            label: t("slot.spinAria"),
+            symbol: t("slot.spin"),
           },
         ]}
       />

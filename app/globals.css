@@ -7219,3 +7219,158 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
   transform: translateY(4px);
   box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 2px 0 #5a0616, 0 4px 8px rgba(0,0,0,.45) !important;
 }
+
+/* =====================================================================
+   v108 · Languages, Settings, legal/help pages, dialogs, RTL
+   ===================================================================== */
+.visuallyHidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.dirArrow { display: inline-block; }
+[dir="rtl"] .dirArrow, [dir="rtl"] .docSheetBack span, [dir="rtl"] .settingsLink b { transform: scaleX(-1); }
+
+/* Header gear */
+.appHeader .settingsGear {
+  flex: none; width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: 12px; border: 1px solid var(--gx-edge-hi); background: rgba(255,255,255,.05); color: var(--gx-ink);
+}
+.appHeader .settingsGear:active { transform: scale(.95); }
+
+/* Welcome: language select + legal line */
+.welcomeTopBar { position: absolute; inset-block-start: 14px; inset-inline-end: 14px; z-index: 2; }
+.languageSelect {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px;
+  border-radius: 999px; border: 1px solid var(--gx-edge-hi); background: rgba(4,12,26,.6); color: var(--gx-ink); font-size: 13px;
+}
+.languageSelect select { appearance: none; border: 0; background: transparent; color: inherit; font: inherit; padding-inline-end: 4px; cursor: pointer; }
+.languageSelect select option { color: #0b1626; }
+.welcomeLegal { margin: 6px 0 0; text-align: center; font-size: 11.5px; line-height: 1.5; color: var(--gx-mute); }
+.inlineLink { padding: 0; border: 0; background: none; color: var(--gx-aurora); font: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+/* Profile stats */
+.profileStats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.profileStats > div {
+  display: grid; gap: 2px; justify-items: center; padding: 10px 4px; border-radius: 14px;
+  border: 1px solid var(--gx-edge); background: linear-gradient(170deg, rgba(18,34,60,.8), rgba(8,18,36,.92));
+}
+.profileStats b { font-family: var(--gx-display); font-size: 18px; color: var(--gx-ink); }
+.profileStats span { font-size: 10.5px; color: var(--gx-mute); text-align: center; }
+
+/* Settings screen */
+.settingsScreen { display: grid; gap: 16px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+.settingsHead, .docSheetHead { display: flex; align-items: center; gap: 12px; }
+.settingsHead h1, .docSheetHead h1 { margin: 0; font-family: var(--gx-display); font-size: 22px; font-weight: 700; color: var(--gx-ink); }
+.docSheetBack {
+  flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px;
+  border: 1px solid var(--gx-edge-hi); background: rgba(255,255,255,.05); color: var(--gx-ink); font-size: 20px; cursor: pointer;
+}
+.settingsGroup {
+  display: grid; gap: 2px; padding: 14px; border-radius: 20px;
+  border: 1px solid var(--gx-edge-hi); background: linear-gradient(170deg, rgba(18,34,60,.84), rgba(8,18,36,.94)); box-shadow: var(--gx-shadow);
+}
+.settingsGroup h2 { margin: 0 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: var(--gx-gold); }
+.settingsHint { margin: 0 0 8px; font-size: 12px; color: var(--gx-mute); }
+.settingsRow {
+  width: 100%; min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 4px; border: 0; border-bottom: 1px solid rgba(150,210,255,.08); background: none; color: var(--gx-ink); text-align: start; cursor: pointer;
+}
+.settingsGroup > .settingsRow:last-child { border-bottom: 0; }
+.settingsRow > span { display: grid; gap: 2px; min-width: 0; }
+.settingsRow strong { font-size: 15px; font-weight: 600; }
+.settingsRow small { font-size: 12px; color: var(--gx-mute); }
+.settingsLink b { color: var(--gx-mute); font-size: 18px; }
+.settingsLink.danger strong, .settingsLink.danger b { color: #ff8a9a; }
+.settingsToggle i {
+  flex: none; position: relative; width: 50px; height: 30px; border-radius: 999px; background: rgba(255,255,255,.14);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); transition: background .2s;
+}
+.settingsToggle i::after {
+  content: ""; position: absolute; top: 3px; inset-inline-start: 3px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.4); transition: transform .2s;
+}
+.settingsToggle[aria-checked="true"] i { background: linear-gradient(180deg, #8ff0e5, #4fc9bd); }
+.settingsToggle[aria-checked="true"] i::after { transform: translateX(20px); }
+[dir="rtl"] .settingsToggle[aria-checked="true"] i::after { transform: translateX(-20px); }
+.settingsChoice { flex-wrap: wrap; cursor: default; }
+.settingsChoice [role="radiogroup"] { display: flex; flex-wrap: wrap; gap: 6px; }
+.settingsChoice [role="radiogroup"] button {
+  min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--gx-edge-hi);
+  background: rgba(255,255,255,.04); color: var(--gx-ink); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.settingsChoice [role="radiogroup"] button[aria-checked="true"] { background: linear-gradient(180deg, rgba(127,227,238,.3), rgba(127,227,238,.12)); border-color: var(--gx-aurora); }
+.settingsVersion { margin: 0; text-align: center; font-size: 12px; color: var(--gx-mute); }
+
+/* Language list */
+.languageList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.languageList button {
+  position: relative; display: grid; gap: 1px; justify-items: start; min-height: 54px; padding: 8px 32px 8px 12px; border-radius: 14px;
+  border: 1px solid var(--gx-edge-hi); background: rgba(255,255,255,.04); color: var(--gx-ink); text-align: start; cursor: pointer;
+}
+.languageList button[dir="rtl"] { padding: 8px 12px 8px 32px; justify-items: end; }
+.languageList button span { font-size: 15px; font-weight: 700; }
+.languageList button small { font-size: 11px; color: var(--gx-mute); }
+.languageList button b { position: absolute; top: 50%; inset-inline-end: 10px; transform: translateY(-50%); color: var(--gx-aurora); }
+.languageList button[dir="rtl"] b { inset-inline-end: auto; inset-inline-start: 10px; }
+.languageList button[aria-checked="true"] { border-color: var(--gx-aurora); background: linear-gradient(180deg, rgba(127,227,238,.22), rgba(127,227,238,.06)); box-shadow: 0 0 18px rgba(127,227,238,.18); }
+
+/* Document sheet (legal, help, contact, licences, about) */
+.docSheet {
+  position: fixed; inset: 0; z-index: 80; overflow-y: auto; overscroll-behavior: contain; outline: none;
+  padding: max(14px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(5,11,26,.97), rgba(5,11,26,.99)), var(--galactic-space-art) center / cover;
+  animation: gxFade .2s ease both;
+}
+.docSheetHead { position: sticky; top: 0; z-index: 1; padding: 6px 0 12px; background: linear-gradient(180deg, rgba(5,11,26,1) 70%, rgba(5,11,26,0)); }
+.docSheetBody { max-width: 640px; margin: 0 auto; color: #d7e6f3; font-size: 15px; line-height: 1.6; }
+.docSheetBody h2 { margin: 22px 0 6px; font-size: 16px; color: var(--gx-ink); }
+.docSheetBody p { margin: 0 0 12px; }
+.docNote { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(243,197,90,.35); background: rgba(243,197,90,.08); color: #ffe6a6; font-size: 13px; }
+.docUpdated { margin-top: 18px !important; font-size: 12px; color: var(--gx-mute); }
+.docFaq { margin: 0 0 8px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--gx-edge-hi); background: rgba(255,255,255,.04); }
+.docFaq summary { cursor: pointer; font-weight: 700; color: var(--gx-ink); list-style: none; }
+.docFaq summary::-webkit-details-marker { display: none; }
+.docFaq summary::after { content: "+"; float: inline-end; color: var(--gx-aurora); }
+.docFaq[open] summary::after { content: "−"; }
+.docFaq p { margin: 8px 0 0; }
+.docLicenses { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.docLicenses li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.04); }
+.docLicenses span { color: var(--gx-mute); font-size: 13px; text-align: end; }
+.docAction { display: inline-flex; min-height: 44px; align-items: center; padding: 0 16px; border-radius: 14px; background: linear-gradient(180deg, #b6f4ec, #7fdcd2); color: #082630; font-weight: 800; text-decoration: none; }
+.docAbout { font-size: 14px; color: var(--gx-mute); }
+
+/* Confirm dialog + toast */
+.confirmScrim { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(3,8,20,.7); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: gxFade .18s ease both; }
+.confirmCard { width: min(100%, 380px); padding: 20px; border-radius: 22px; border: 1px solid var(--gx-edge-hi); background: linear-gradient(170deg, rgba(22,42,72,.98), rgba(8,18,36,.99)); box-shadow: 0 24px 60px rgba(0,4,16,.65); animation: gxRise .3s cubic-bezier(.2,.8,.2,1) both; }
+.confirmCard h2 { margin: 0 0 8px; font-family: var(--gx-display); font-size: 18px; color: var(--gx-ink); }
+.confirmCard p { margin: 0 0 18px; color: #c7d8e8; font-size: 14px; line-height: 1.5; }
+.confirmActions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.confirmActions button { min-height: 48px; border-radius: 14px; border: 1px solid var(--gx-edge-hi); background: rgba(255,255,255,.05); color: var(--gx-ink); font-weight: 800; cursor: pointer; }
+.confirmActions button.primary { border: 0; background: linear-gradient(180deg, #b6f4ec, #7fdcd2); color: #082630; }
+.confirmActions button.danger { border: 0; background: linear-gradient(180deg, #ff7a8e, #d81f43); color: #fff; }
+.appToast {
+  position: fixed; inset-inline: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 95; margin: 0 auto; max-width: 420px;
+  padding: 12px 16px; border-radius: 14px; background: rgba(10,22,42,.96); border: 1px solid var(--gx-edge-hi); color: var(--gx-ink); text-align: center; font-weight: 700;
+  animation: gxRise .3s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* Reduce motion (Settings): interface only, never the game simulation. */
+html[data-reduce-motion="1"] *, html[data-reduce-motion="1"] *::before, html[data-reduce-motion="1"] *::after {
+  animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important;
+}
+
+/* RTL: mirror layout, keep games, numbers and the bottom nav order natural. */
+[dir="rtl"] .appHeader, [dir="rtl"] .homePlayHeading { direction: rtl; }
+[dir="rtl"] .gameScreen, [dir="rtl"] .gameArenaWrap { direction: ltr; }
+[dir="rtl"] .gameScreen .gxIntroTagline, [dir="rtl"] .gameScreen .resultPanel { direction: rtl; }
+[dir="rtl"] body { font-family: "Noto Sans Arabic", "Noto Nastaliq Urdu", Tahoma, system-ui, sans-serif; }
+:lang(hi) body, :lang(bn) body { font-family: "Noto Sans Devanagari", "Noto Sans Bengali", system-ui, sans-serif; }
+:lang(zh) body { font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
+
+/* v108: brand wordmark is Latin text; keep it LTR so RTL locales don't clip its start. */
+.appHeader .logoButton { direction: ltr; unicode-bidi: isolate; text-align: start; }
+html[dir="rtl"] .appHeader .logoButton { letter-spacing: 0; }
+/* Header fit: the wordmark scales to the space left by the actions; the balance chip stacks label over amount. */
+.appHeader .logoButton { flex: 1 1 0; min-width: 0; container-type: inline-size; overflow: hidden; font-size: 19px !important; letter-spacing: .02em; }
+.appHeader .logoButton > span { display: block; white-space: nowrap; font-size: min(19px, 7.5cqi); line-height: 1.1; }
+html[dir="rtl"] .appHeader .logoButton { text-align: right; }
+.appHeader .balanceChip { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1; white-space: nowrap; }
+.appHeader .balanceChip small { font-size: 8px; font-weight: 800; letter-spacing: .08em; opacity: .72; }
+.appHeader .balanceChip b { font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; }

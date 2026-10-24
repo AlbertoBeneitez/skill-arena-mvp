@@ -6,6 +6,8 @@ import DirectionalJoystick from "./DirectionalJoystick";
 import type { GameRuntimeProps } from "@/lib/games";
 import { configureLogicalCanvas, beginLogicalCanvasFrame, type CanvasViewportMetrics, type LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { gameTone, haptic } from "@/lib/gameFeedback";
+import { formatNumber, t, useI18n } from "@/lib/i18n";
+import { gameName } from "@/lib/i18n/games";
 import { useVerifiedAttempt } from "@/lib/verified/useVerifiedAttempt";
 import { advanceCoreToTick, applyCoreInput, type CoreState, type GameCore } from "@/lib/verified/coreRuntime.v1";
 
@@ -45,7 +47,9 @@ type Props<S extends CoreState> = GameRuntimeProps & {
 
 /** Presentation/input adapter. The core and shared server replay own outcomes. */
 export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
-  const { core, active, stake, targetScore, name, instruction, render } = props;
+  useI18n();
+  const { core, active, stake, targetScore, instruction, render } = props;
+  const name = gameName({ id: core.gameId, name: props.name });
   const viewportPolicy = props.expandVerticalViewport ? "expand-vertical" : props.expandHorizontalViewport ? "expand-horizontal" : "contain";
   const attempt = useVerifiedAttempt({ active, gameId: core.gameId, stakeMinor: Math.round(stake * 100), targetScore });
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -379,8 +383,8 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         if (action) { event.preventDefault(); heldRef.current.delete(action); send(action); }
       }}
     />
-    {pop && <div className="scorePop" key={pop.id} aria-hidden="true"><b>+{pop.gain.toLocaleString("es-ES")}</b>{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} style={{ ["--a" as string]: `${i * 60 + 20}deg` }} />)}</div>}
-    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop">{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
+    {pop && <div className="scorePop" key={pop.id} aria-hidden="true"><b>+{formatNumber(pop.gain)}</b>{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} style={{ ["--a" as string]: `${i * 60 + 20}deg` }} />)}</div>}
+    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? t("game.height", { n: hud.height ?? 0 })}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop">{formatNumber(hud.score)}</strong>}{hud.lives !== undefined && <span>{t("game.lives", { n: hud.lives })}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
     {props.choiceControl && (props.choiceControl.presentation === "table" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel coreChoiceTable">
       {/* Always visible: one tap places the chip, no panel to open or close. */}
@@ -407,6 +411,6 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       onKeyUp={event => { if ((event.key === " " || event.key === "Enter") && control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } }}
       onBlur={releaseHeld}
     >{control.symbol}</button>)}</div>}
-    {(attempt.state.status === "starting" || (attempt.state.status === "verifying" && !presentingFinale)) && <div className="verificationOverlay"><span>{attempt.state.status === "starting" ? "PREPARANDO PARTIDA" : "COMPROBANDO RESULTADO"}</span></div>}
+    {(attempt.state.status === "starting" || (attempt.state.status === "verifying" && !presentingFinale)) && <div className="verificationOverlay"><span>{attempt.state.status === "starting" ? t("game.preparing") : t("game.verifying")}</span></div>}
   </div>;
 }

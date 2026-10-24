@@ -22,6 +22,7 @@ import { BILLIARDS_CORE_V4 } from "@/lib/verified/billiardsCore.v4";
 import { grabBilliardsCue, pullBilliardsCue, type CueDrag } from "@/lib/billiardsPullback";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
+import { t, formatNumber, useI18n } from "@/lib/i18n";
 const ballColors = [
   "#eaf8ff",
   "#72e4d1",
@@ -366,8 +367,9 @@ const keys = {
   "3": "POWER_12",
 };
 const hudLabel = (s: Readonly<BilliardsV2State>) =>
-  `AVANCE ${s.height} / ${BILLIARDS_V2_RULES.targets} · ${s.shotsLeft} TIROS${s.scratch ? " · BLANCA EMBOCADA" : ""}`;
+  `${t("billiards.hud", { n: s.height, total: BILLIARDS_V2_RULES.targets, shots: s.shotsLeft })}${s.scratch ? ` · ${t("billiards.scratch")}` : ""}`;
 export default function Billiards(props: GameRuntimeProps) {
+  useI18n();
   const presentation = useMemo(createPresentation, []);
   useEffect(() => {
     const clear = presentation.clear;

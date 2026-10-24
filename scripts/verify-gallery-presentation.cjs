@@ -22,6 +22,7 @@ module.exports = (async () => {
       react: { ...req("react"), useCallback: (f) => f },
       "@/lib/verified/shotGalleryCore.v6": core,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
+      "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/gameFeedback": { gameTone() {} },
       "./CoreCanvasGame": () => null,
     },

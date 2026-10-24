@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { t } from "@/lib/i18n";
 import { stickDirection, type StickDirection } from "@/lib/directionalJoystick";
 const keys: Readonly<Record<string, StickDirection>> = {
   ArrowUp: "UP",
@@ -68,7 +69,7 @@ export default function DirectionalJoystick({
         ref={surface}
         className="directionalStick"
         role="group"
-        aria-label="Joystick de dirección"
+        aria-label={t("joystick.aria")}
         tabIndex={enabled ? 0 : -1}
         aria-disabled={!enabled}
         onPointerDown={(event) => {
@@ -134,7 +135,7 @@ export default function DirectionalJoystick({
       <button
         type="button"
         className="stickStop"
-        aria-label="Detener movimiento"
+        aria-label={t("joystick.stop")}
         disabled={!enabled}
         onClick={() => latestSend.current("STOP")}
       >

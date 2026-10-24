@@ -39,6 +39,7 @@ module.exports = (async () => {
       "@/lib/verified/dartsProtocol.v1": protocol,
       "@/lib/verified/dartsGesture.v2": gesture,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
+      "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "./CoreCanvasGame": () => null,
     },
     exports = {};

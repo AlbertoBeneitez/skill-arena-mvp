@@ -17,6 +17,7 @@ import {
 } from "@/lib/rouletteLaunchGesture";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import { t, formatNumber, useI18n } from "@/lib/i18n";
 const cx = 195,
   cy = 195;
 // Presentation radii (the authoritative ball physics live in the core).
@@ -278,7 +279,7 @@ function render(
   ctx.fillStyle = "#a8c6d5";
   ctx.font = "bold 14px system-ui";
   ctx.fillText(
-    onCloth.length ? `${stake} ${stake === 1 ? "FICHA" : "FICHAS"} EN LA MESA` : "SIN FICHAS EN LA MESA",
+    onCloth.length ? (stake === 1 ? t("roulette.onTableOne") : t("roulette.onTable", { n: stake })) : t("roulette.noChips"),
     cx,
     377,
   );
@@ -313,17 +314,17 @@ function render(
   if (s.lastPayout > 0 && s.tick - s.lastLandingTick < 120) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 19px system-ui";
-    ctx.fillText(`+${s.lastPayout / 100} fichas`, cx, 103);
+    ctx.fillText(t("roulette.won", { n: formatNumber(s.lastPayout / 100) }), cx, 103);
   }
 }
 const hudLabel = (s: Readonly<RouletteStateV2>) =>
-  `${s.balanceMinor / 100} FICHAS · ${s.spins} TIRADAS`;
+  t("roulette.hud", { chips: formatNumber(s.balanceMinor / 100), spins: s.spins });
 const feedbackScore = (s: Readonly<RouletteStateV2>) => s.balanceMinor;
 const betLabels: Record<string, string> = {
-  RED: "VERDE",
-  BLACK: "AZUL",
-  EVEN: "PAR",
-  ODD: "IMPAR",
+  get RED() { return t("roulette.green"); },
+  get BLACK() { return t("roulette.blue"); },
+  get EVEN() { return t("roulette.even"); },
+  get ODD() { return t("roulette.odd"); },
   LOW: "1–18",
   HIGH: "19–36",
   DOZEN_1: "1–12",
@@ -333,7 +334,7 @@ const betLabels: Record<string, string> = {
 // Casino cloth shown permanently under the wheel: zero spans the three number
 // rows, then dozens and outside bets. Every tap stacks one chip on that cell.
 const choiceControl = {
-  label: "Tapete de apuestas",
+  get label() { return t("roulette.cloth"); },
   presentation: "table" as const,
   columns: 13,
   options: [
@@ -359,7 +360,7 @@ const choiceControl = {
         const n = Number(bet.slice(6));
         return {
           action: `BET_${bet}`,
-          label: betLabels[bet],
+          get label() { return betLabels[bet]; },
           tone: "#173e42",
           placement: { row: 4, column: 2 + (n - 1) * 4, columnSpan: 4 },
         };
@@ -367,7 +368,7 @@ const choiceControl = {
       const i = ["LOW", "EVEN", "RED", "BLACK", "ODD", "HIGH"].indexOf(bet);
       return {
         action: `BET_${bet}`,
-        label: betLabels[bet],
+        get label() { return betLabels[bet]; },
         tone: bet === "RED" ? "#1f8a6b" : bet === "BLACK" ? "#1f4f8f" : "#173e42",
         placement: { row: 5, column: 2 + i * 2, columnSpan: 2 },
       };
@@ -377,9 +378,9 @@ const choiceControl = {
       label: `${d}`,
       placement: { row: 6, column: 1 + i * 2, columnSpan: 2 },
     })),
-    { action: "BETS_UNDO", label: "↶ QUITAR", tone: "#3b3f2f", placement: { row: 6, column: 7, columnSpan: 3 } },
-    { action: "BETS_CLEAR", label: "LIMPIAR", tone: "#4a2f35", placement: { row: 6, column: 10, columnSpan: 4 } },
-    { action: "CASH_OUT", label: "TERMINAR PARTIDA", tone: "#5a3a1e", placement: { row: 7, column: 1, columnSpan: 13 } },
+    { action: "BETS_UNDO", get label() { return t("roulette.undo"); }, tone: "#3b3f2f", placement: { row: 6, column: 7, columnSpan: 3 } },
+    { action: "BETS_CLEAR", get label() { return t("roulette.clear"); }, tone: "#4a2f35", placement: { row: 6, column: 10, columnSpan: 4 } },
+    { action: "CASH_OUT", get label() { return t("roulette.cashOut"); }, tone: "#5a3a1e", placement: { row: 7, column: 1, columnSpan: 13 } },
   ],
   value: (s: RouletteStateV2) => (s.chips.length ? `BET_${s.chips[s.chips.length - 1]}` : ""),
   badges: (s: RouletteStateV2) => {
@@ -398,6 +399,7 @@ const choiceControl = {
     false,
 };
 export default function GalacticRoulette(props: GameRuntimeProps) {
+  useI18n();
   const origin = useRef<CorePoint | null>(null),
     drag = useRef<CorePoint | null>(null);
   const canvasRender = useCallback(

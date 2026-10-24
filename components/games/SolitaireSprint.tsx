@@ -7,6 +7,7 @@ import type { GameResult } from "@/lib/types";
 import { solitaireChallengeFor } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
+import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 type Props = {
   active: boolean;
   targetScore: number;
@@ -93,6 +94,7 @@ export default function SolitaireSprint({
   onFinish,
 }: Props) {
   const initial = useMemo(() => dealVerifiedChallenge(seed), [seed]);
+  useI18n();
   const [tableau, setTableau] = useState<Card[][]>(initial.tableau);
   const [stock, setStock] = useState<Card[]>(initial.stock);
   const [waste, setWaste] = useState<Card[]>([]);
@@ -491,7 +493,7 @@ export default function SolitaireSprint({
   const suggested = (type: SolitaireDestination["type"], index: number) => destinations.some(d => d.type === type && d.index === index);
   return (
     <div ref={surfaceRef} className="detGameSurface solitaireSprint" onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag}>
-      <div className="solitaireTimer" aria-label="Tiempo">
+      <div className="solitaireTimer" aria-label={tx("solitaire.time")}>
         {formatTimer(elapsedMs)}
       </div>
 
@@ -500,7 +502,7 @@ export default function SolitaireSprint({
           type="button"
           className="solitairePile stock"
           onClick={drawStock}
-          aria-label="Mazo"
+          aria-label={tx("solitaire.stock")}
         >
           {stock.length ? "▰" : waste.length ? "↻" : ""}
         </button>
@@ -514,7 +516,7 @@ export default function SolitaireSprint({
           onPointerMove={continueDrag}
           onPointerUp={endDrag}
           style={selected?.type === "waste" && dragOffset ? {transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`, zIndex: 30} : undefined}
-          aria-label="Descarte"
+          aria-label={tx("solitaire.waste")}
         >
           {waste.length ? (
             <>
@@ -539,7 +541,7 @@ export default function SolitaireSprint({
                 className={`solitairePile foundation ${suggested("foundation", index) ? "validDestination" : ""}`}
                 data-solitaire-destination={`foundation-${index}`}
                 onClick={() => moveSelectedToFoundation(index)}
-                aria-label={`Base de ${suit}`}
+                aria-label={tx("solitaire.foundation", { suit })}
               >
                 {top ? (
                   <>
@@ -588,7 +590,7 @@ export default function SolitaireSprint({
                 aria-label={
                   item.faceUp
                     ? `${rankLabel(item.rank)} ${item.suit}`
-                    : "Carta boca abajo"
+                    : tx("solitaire.faceDown")
                 }
               >
                 {item.faceUp ? (

@@ -1,4 +1,6 @@
 "use client";
+import { useEffect } from "react";
+import { initLocale, useI18n } from "@/lib/i18n";
 
 export default function ErrorPage({
   error,
@@ -7,17 +9,19 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useI18n();
+  useEffect(() => initLocale(), []);
   return (
     <main className="sitePage" role="alert" aria-labelledby="err-title">
       <p className="sitePageKicker">GALACTIC GAMES</p>
-      <h1 id="err-title">Algo ha fallado</h1>
-      <p>No se ha podido mostrar esta pantalla. Tu progreso local no se ha borrado.</p>
-      {error.digest ? <p className="sitePageCode">Código: {error.digest}</p> : null}
+      <h1 id="err-title">{t("error.title")}</h1>
+      <p>{t("error.body")}</p>
+      {error.digest ? <p className="sitePageCode">{t("error.code", { code: error.digest })}</p> : null}
       <button type="button" className="sitePageAction" onClick={reset}>
-        Reintentar
+        {t("error.retry")}
       </button>
       <a className="sitePageLink" href="/">
-        Ir al inicio
+        {t("error.home")}
       </a>
     </main>
   );

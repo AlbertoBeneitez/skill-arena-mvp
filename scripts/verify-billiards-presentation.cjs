@@ -169,6 +169,7 @@ module.exports = (async () => {
     {
       react: { useMemo: (factory) => factory(), useEffect() {} },
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
+      "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/billiardsPresentation": camera,
       "@/lib/verified/billiardsCore.v1": v1,
       "@/lib/verified/billiardsCore.v2": v2,

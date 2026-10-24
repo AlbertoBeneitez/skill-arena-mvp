@@ -9,6 +9,7 @@ import {
 } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
+import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 type Props = {
   active: boolean;
   targetScore: number;
@@ -100,6 +101,7 @@ export default function MineGrid({
   seed,
   onFinish,
 }: Props) {
+  useI18n();
   // Training only (client-result): every attempt draws one of the validated,
   // guess-free boards. Competition will use a server-held board instead.
   const [challenge, setChallenge] = useState<MineChallenge>(() =>
@@ -342,10 +344,10 @@ export default function MineGrid({
       <div className="gameTimerChip mineTimerChip" style={{ left: 12, right: "auto", transform: "none" }}>
         {challenge.id} ·{" "}
         {challenge.deductionRounds <= 9
-          ? "FÁCIL"
+          ? tx("mine.easy")
           : challenge.deductionRounds <= 12
-            ? "MEDIO"
-            : "DIFÍCIL"}
+            ? tx("mine.medium")
+            : tx("mine.hard")}
       </div>
       <div
         className="mineGridBoard"
@@ -374,14 +376,14 @@ export default function MineGrid({
               onContextMenu={(event) => event.preventDefault()}
               aria-label={
                 isStart
-                  ? "Casilla inicial obligatoria"
+                  ? tx("mine.start")
                   : open
                     ? value === -1
-                      ? "Mina"
-                      : `Casilla ${value}`
+                      ? tx("mine.mine")
+                      : tx("mine.cell", { v: value })
                     : isFlagged
-                      ? "Marcada"
-                      : "Casilla oculta"
+                      ? tx("mine.flagged")
+                      : tx("mine.hidden")
               }
             >
               {isFlagged
@@ -402,30 +404,30 @@ export default function MineGrid({
         {ended && !ended.solved ? (
           <>
             <span className="mineStartHint">
-              MINA · {ended.score} {ended.score === 1 ? "CASILLA BIEN ASIGNADA" : "CASILLAS BIEN ASIGNADAS"}
+              {ended.score === 1 ? tx("mine.endOne", { n: ended.score }) : tx("mine.endMany", { n: ended.score })}
             </span>
             <button type="button" className="active" onClick={() => onFinish({ won: false, score: ended.score, timeMs: ended.timeMs })}>
-              VER RESULTADO
+              {tx("mine.seeResult")}
             </button>
           </>
         ) : !started ? (
-          <span className="mineStartHint">Toca la casilla dorada para empezar</span>
+          <span className="mineStartHint">{tx("mine.startHint")}</span>
         ) : (
           <>
-            <span className="mineStartHint">{hudCorrect} OK</span>
+            <span className="mineStartHint">{tx("mine.ok", { n: hudCorrect })}</span>
             <button
               type="button"
               className={!flagMode ? "active" : ""}
               onClick={() => setFlagMode(false)}
             >
-              ABRIR
+              {tx("mine.open")}
             </button>
             <button
               type="button"
               className={flagMode ? "active" : ""}
               onClick={() => setFlagMode(true)}
             >
-              MARCAR
+              {tx("mine.flag")}
             </button>
           </>
         )}

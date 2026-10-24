@@ -5,7 +5,9 @@ import { useHiddenAttempt } from "@/lib/verified/useHiddenAttempt";
 import { mineAction } from "@/lib/verified/mineGridProtocol.v1";
 import type { MinePublicViewV2 } from "@/lib/verified/mineGridProtocol.v2";
 import { gameTone, haptic } from "@/lib/gameFeedback";
+import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 export default function MineGridAuthority(props: GameRuntimeProps) {
+  useI18n();
   const { session, phase, send } = useHiddenAttempt<MinePublicViewV2>({
       active: props.active,
       gameId: "mine-grid",
@@ -73,20 +75,20 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
   if (phase === "unavailable")
     return (
       <div className="hiddenMineEmpty">
-        <h2>Mine Grid no disponible</h2>
+        <h2>{tx("mine.unavailable")}</h2>
       </div>
     );
   if (phase === "error")
     return (
       <div className="hiddenMineEmpty" role="alert">
-        <h2>No se puede recuperar el campo</h2>
+        <h2>{tx("mine.recoverError")}</h2>
 
       </div>
     );
   if (!session)
     return (
       <div className="hiddenMineEmpty" role="status">
-        Preparando el campo orbital…
+        {tx("mine.preparing")}
       </div>
     );
   const view = session.view,
@@ -104,7 +106,7 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
             minWidth: view.cols * 44 + (view.cols - 1) * 4,
             gridTemplateColumns: `repeat(${view.cols},1fr)`,
           }}
-          aria-label="Campo orbital"
+          aria-label={tx("mine.field")}
           aria-busy={busy}
         >
           {view.cells.map((value, index) => (
@@ -121,7 +123,7 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
                 (!view.started && index !== view.startIndex) ||
                 (!flagMode && view.flagged[index])
               }
-              aria-label={`Casilla ${index + 1}${value === null ? " oculta" : value === -1 ? " mina" : `, ${value} minas cercanas`}`}
+              aria-label={value === null ? tx("mine.cellHidden", { n: index + 1 }) : value === -1 ? tx("mine.cellMine", { n: index + 1 }) : tx("mine.cellValue", { n: index + 1, v: value })}
               onPointerDown={() => {
                 if (!view.started || busy || session.status !== "running" || value !== null) return;
                 if (hold.current) window.clearTimeout(hold.current.timer);
@@ -165,7 +167,7 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
           aria-pressed={!flagMode}
           onClick={() => setFlagMode(false)}
         >
-          ABRIR
+          {tx("mine.open")}
         </button>
         <button
           type="button"
@@ -173,17 +175,17 @@ export default function MineGridAuthority(props: GameRuntimeProps) {
           disabled={!view.started}
           onClick={() => setFlagMode(true)}
         >
-          MARCAR
+          {tx("mine.flag")}
         </button>
       </div>
       {session.status === "failed" && !dismissed ? (
         <div className="mineAuthorityModes">
           <button type="button" aria-pressed="true" onClick={finishNow}>
-            VER RESULTADO
+            {tx("mine.seeResult")}
           </button>
         </div>
       ) : null}
-      <p className="mineAuthorityDemo">ENTRENAMIENTO · RESULTADO DE SERVIDOR</p>
+      <p className="mineAuthorityDemo">{tx("mine.serverResult")}</p>
     </div>
   );
 }

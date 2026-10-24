@@ -9,7 +9,8 @@
     "lint": "tsc --noEmit",
     "check": "pnpm lint && pnpm test:determinism",
     "test:determinism": "node -e \"require('fs').rmSync('.det-test',{recursive:true,force:true})\" && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs",
-    "test:repository": "tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs repository"
+    "test:repository": "node scripts/verify-i18n.cjs && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs repository",
+    "test:i18n": "node scripts/verify-i18n.cjs"
   },
   "dependencies": {
     "next": "16.4.2",

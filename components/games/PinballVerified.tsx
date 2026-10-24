@@ -21,6 +21,7 @@ import {
 } from "@/lib/verified/pinballCore.v3";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
+import { t as tx, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
 /*
  * Presentation only. Everything here reads the authoritative state and never
  * changes it: a classic space-themed table (chrome rails, printed playfield,
@@ -293,12 +294,20 @@ function drawBall(ctx: CanvasRenderingContext2D, s: PinballStateV3) {
   ctx.beginPath(); ctx.ellipse(x + 3, y + 4, 3.5, 1.6, -0.6, 0, Math.PI * 2); ctx.fill();
 }
 
-const CALLOUTS: Record<string, [string, string]> = {
-  SKILL: ["SKILL SHOT", "#ffe082"], JACKPOT: ["JACKPOT", "#ffd27a"], DROPS: ["BLOQUE ABATIDO", "#ff9d5c"],
-  LANES: ["A-B-C", "#9fffb8"], TARGETS: ["DIANAS", "#9fffb8"], RAMP: ["RAMPA", "#8fe3ff"], ORBIT: ["ÓRBITA", "#8fe3ff"],
-  SAUCERLIT: ["PLATO ENCENDIDO", "#ffe082"], COMBO: ["COMBO", "#ff9d5c"], DRAIN: ["BOLA PERDIDA", "#ff8a8a"], BONUS: ["BONUS FINAL", "#ffe082"],
-  FLICK: ["PUNTA", "#d5f3ff"],
-};
+const CALLOUT_KEYS = {
+  SKILL: ["pinball.skill", "#ffe082"], JACKPOT: ["pinball.jackpot", "#ffd27a"], DROPS: ["pinball.drops", "#ff9d5c"],
+  LANES: ["", "#9fffb8"], TARGETS: ["pinball.targets", "#9fffb8"], RAMP: ["pinball.ramp", "#8fe3ff"], ORBIT: ["pinball.orbit", "#8fe3ff"],
+  SAUCERLIT: ["pinball.saucer", "#ffe082"], COMBO: ["pinball.combo", "#ff9d5c"], DRAIN: ["pinball.drain", "#ff8a8a"], BONUS: ["pinball.bonus", "#ffe082"],
+  FLICK: ["pinball.flick", "#d5f3ff"],
+} as const;
+/** Call-out text in the active language (A-B-C is the same everywhere). */
+const CALLOUTS = new Proxy({} as Record<string, [string, string] | undefined>, {
+  get(_, kind: string) {
+    const entry = (CALLOUT_KEYS as Record<string, readonly [string, string]>)[kind];
+    if (!entry) return undefined;
+    return [entry[0] ? tx(entry[0] as MessageKey) : "A-B-C", entry[1]];
+  },
+});
 const BIG = new Set(["SKILL", "JACKPOT", "DROPS", "BONUS", "DRAIN"]);
 
 function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV3) {
@@ -311,7 +320,7 @@ function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV3) {
   for (const ev of s.feed) {
     const age = s.tick - ev.tick, c = CALLOUTS[ev.kind];
     if (c && age >= 0 && age < 110 && (!call || age < call.age)) {
-      call = { text: ev.kind === "BONUS" ? `BONUS +${ev.points.toLocaleString("es-ES")}` : ev.kind === "COMBO" ? `COMBO ×${s.combo + 1}` : c[0], age };
+      call = { text: ev.kind === "BONUS" ? tx("pinball.bonusPts", { n: formatNumber(ev.points) }) : ev.kind === "COMBO" ? tx("play.combo", { n: s.combo + 1 }) : c[0], age };
     }
   }
   ctx.fillStyle = "#ffb03a";
@@ -325,7 +334,7 @@ function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV3) {
   } else if (!call) {
     ctx.font = "900 20px ui-monospace, Menlo, monospace";
     ctx.textAlign = "left";
-    ctx.fillText(s.score.toLocaleString("es-ES"), 28, 22);
+    ctx.fillText(formatNumber(s.score), 28, 22);
     const secs = Math.max(0, Math.ceil((R.maxFinalTick - s.tick) / R.tickRate));
     ctx.font = "800 12px ui-monospace, Menlo, monospace";
     ctx.textAlign = "right";
@@ -569,7 +578,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV3) {
       ctx.shadowColor = c[1]; ctx.shadowBlur = 18;
       ctx.font = `900 ${18 + Math.round(10 * grow)}px system-ui`;
       ctx.textAlign = "center";
-      ctx.fillText(ev.kind === "BONUS" ? `BONUS +${ev.points}` : c[0], 195, 340 - age * 0.25);
+      ctx.fillText(ev.kind === "BONUS" ? tx("pinball.bonusPts", { n: formatNumber(ev.points) }) : c[0], 195, 340 - age * 0.25);
       ctx.shadowBlur = 0;
       ctx.globalAlpha = 1;
     }
@@ -603,14 +612,15 @@ const keyReleases = {
   " ": "PLUNGER_RELEASE", ArrowDown: "PLUNGER_RELEASE",
 } as const;
 const controls = [
-  { action: "FLIP_LEFT_PRESS", releaseAction: "FLIP_LEFT_RELEASE", label: "Pala izquierda", symbol: "◀", style: { width: 104 } },
-  { action: "PLUNGER_HOLD", releaseAction: "PLUNGER_RELEASE", label: "Muelle: mantén y suelta", symbol: "MUELLE", style: { width: 120, fontSize: 15 } },
-  { action: "FLIP_RIGHT_PRESS", releaseAction: "FLIP_RIGHT_RELEASE", label: "Pala derecha", symbol: "▶", style: { width: 104 } },
+  { action: "FLIP_LEFT_PRESS", releaseAction: "FLIP_LEFT_RELEASE", get label() { return tx("pinball.leftFlipper"); }, symbol: "◀", style: { width: 104 } },
+  { action: "PLUNGER_HOLD", releaseAction: "PLUNGER_RELEASE", get label() { return tx("pinball.plungerAria"); }, get symbol() { return tx("pinball.plunger"); }, style: { width: 120, fontSize: 15 } },
+  { action: "FLIP_RIGHT_PRESS", releaseAction: "FLIP_RIGHT_RELEASE", get label() { return tx("pinball.rightFlipper"); }, symbol: "▶", style: { width: 104 } },
 ] as const;
 const inputTones = { PLUNGER_RELEASE: "tap", FLIP_LEFT_PRESS: "tap", FLIP_RIGHT_PRESS: "tap" } as const;
-const hudLabel = (s: Readonly<PinballStateV3>) => `${Math.max(0, Math.ceil((PINBALL_RULES_V3.maxFinalTick - s.tick) / PINBALL_RULES_V3.tickRate))} s · ×${s.multiplier}`;
+const hudLabel = (s: Readonly<PinballStateV3>) => tx("pinball.hud", { secs: Math.max(0, Math.ceil((PINBALL_RULES_V3.maxFinalTick - s.tick) / PINBALL_RULES_V3.tickRate)), mult: s.multiplier });
 
 export default function PinballVerified(props: GameRuntimeProps) {
+  useI18n();
   return (
     <div className="pinballVerified">
       <CoreCanvasGame

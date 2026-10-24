@@ -17,14 +17,24 @@ import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMo
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
+import { formatMoney, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
+import { matchLocale } from "@/lib/i18n/locales";
+import { gameCategory, gameName, gameSkill, gameTagline } from "@/lib/i18n/games";
+import type { DocId } from "@/lib/i18n/docs";
+import { initSettings, resetSettings, useSettings, SETTINGS_STORAGE_KEY } from "@/lib/settings";
+import DocSheet from "./DocSheet";
+import SettingsScreen from "./SettingsScreen";
+import ConfirmDialog from "./ConfirmDialog";
+import LanguagePicker from "./LanguagePicker";
 
-type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking";
+type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking" | "settings";
 type Provider = "google" | "apple" | null;
 type Turn = "create" | "existing";
 type MatchScope = "duel" | "group";
 
 type EarningsPoint = { label: string; value: number };
-type Movement = { label: string; amount: number };
+/** `label` is the stored fallback; new entries also carry a message key so they follow the language. */
+type Movement = { label: string; amount: number; key?: MessageKey; vars?: Vars; gameId?: string };
 
 type PersistedState = {
   onboarded: boolean;
@@ -45,7 +55,7 @@ type PersistedState = {
   group: ClosedGroup | null;
 };
 
-const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "group", "game", "profile", "legal", "ranking"];
+const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "group", "game", "profile", "legal", "ranking", "settings"];
 
 function isScreen(value: unknown): value is Screen {
   return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
@@ -60,7 +70,13 @@ const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
 const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
 
 function euro(value: number) {
-  return `${value.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+  return formatMoney(value);
+}
+
+function movementLabel(movement: Movement) {
+  if (!movement.key) return movement.label.replace(/\bdemo\b/gi, "ficticio");
+  const game = movement.gameId ? GAMES.find((item) => item.id === movement.gameId) : undefined;
+  return t(movement.key, { ...movement.vars, ...(game ? { game: gameName(game) } : {}) });
 }
 
 function totalCompetitionStages(
@@ -97,7 +113,8 @@ const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "sopor
 
 function isDemoNameAvailable(value: string) {
   const clean = value.trim();
-  if (!/^[A-Za-z0-9_ ]{3,18}$/.test(clean) || /\s{2,}/.test(clean)) return false;
+  // Any script (Latin, Cyrillic, Arabic, Devanagari, Han…): names stay local to this browser.
+  if (!/^[\p{L}\p{M}\p{N}_ ]{2,18}$/u.test(clean) || /\s{2,}/.test(clean)) return false;
   return !BLOCKED_DEMO_NAMES.has(clean.toLowerCase());
 }
 
@@ -296,7 +313,36 @@ export default function DemoApp() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [pendingJoinCode, setPendingJoinCode] = useState("");
   const freshOnboardingRef = useRef(false);
-  const [legalTab, setLegalTab] = useState<"terms" | "privacy" | "cookies" | "rules">("terms");
+  useI18n();
+  const settings = useSettings();
+  const [doc, setDoc] = useState<DocId | null>(null);
+  const [confirmAction, setConfirmAction] = useState<null | "reset" | "delete">(null);
+  const [notice, setNotice] = useState("");
+  // Responsible play: optional reminder after N minutes in the app (Settings).
+  const [reminderDue, setReminderDue] = useState(false);
+  const reminderAnchorRef = useRef(0);
+  useEffect(() => {
+    initLocale();
+    initSettings();
+    reminderAnchorRef.current = Date.now();
+  }, []);
+  useEffect(() => {
+    if (!settings.reminderMinutes) {
+      setReminderDue(false);
+      return undefined;
+    }
+    const check = () => {
+      if (Date.now() - reminderAnchorRef.current >= settings.reminderMinutes * 60_000) setReminderDue(true);
+    };
+    check();
+    const timer = window.setInterval(check, 15_000);
+    return () => window.clearInterval(timer);
+  }, [settings.reminderMinutes]);
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timer = window.setTimeout(() => setNotice(""), 2600);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -646,6 +692,8 @@ export default function DemoApp() {
         {
           label: `${selectedGame.name} · cancelación local`,
           amount: selectedStake,
+          key: "move.refund" as const,
+          gameId: selectedGame.id,
         },
         ...items,
       ].slice(0, 20));
@@ -718,7 +766,7 @@ export default function DemoApp() {
     if (!file || !file.type.startsWith("image/")) return;
 
     if (file.size > 8 * 1024 * 1024) {
-      setAvatarError("La imagen es demasiado grande. Máximo 8 MB.");
+      setAvatarError(t("identity.imageTooBig"));
       return;
     }
 
@@ -786,7 +834,7 @@ export default function DemoApp() {
 
     if (matchStartLockRef.current || stake > balance) return;
     if(persistentTraining && stake>0 && game.competition.verification!=="server-replay"){
-      setMatchStartError("Este juego solo admite entrenamiento local");return;
+      setMatchStartError(t("home.localOnly"));return;
     }
     setMatchStartError("");
 
@@ -805,7 +853,7 @@ export default function DemoApp() {
     setBalance((b) => Number((b - stake).toFixed(2)));
     if (stake > 0) {
       setMovements((items) => [
-        { label: `${game.name} · entrada`, amount: -stake },
+        { label: `${game.name} · entrada`, amount: -stake, key: "move.entry" as const, gameId: game.id },
         ...items,
       ].slice(0, 20));
     }
@@ -943,6 +991,8 @@ export default function DemoApp() {
           {
             label: `${group.name} · premio ${payoutLabel(groupCompetition.distribution)}`,
             amount: prize,
+            key: "move.groupPrize" as const,
+            vars: { group: group.name, split: payoutLabel(groupCompetition.distribution) },
           },
           ...items,
         ].slice(0, 20));
@@ -963,7 +1013,7 @@ export default function DemoApp() {
     if (didWin && prize > 0) {
       setBalance((value) => Number((value + prize).toFixed(2)));
       setMovements((items) => [
-        { label: `${selectedGame.name} · premio`, amount: prize },
+        { label: `${selectedGame.name} · premio`, amount: prize, key: "move.prize" as const, gameId: selectedGame.id },
         ...items,
       ].slice(0, 20));
     }
@@ -983,7 +1033,7 @@ export default function DemoApp() {
     const next = createDemoClosedGroup({
       name,
       stake,
-      playerName: playerName || "TÚ",
+      playerName: playerName || t("common.you"),
       avatar: avatarSrc,
     });
     setGroup(next);
@@ -994,7 +1044,7 @@ export default function DemoApp() {
   function joinClosedGroup(code: string) {
     const next = joinDemoClosedGroup({
       code,
-      playerName: playerName || "TÚ",
+      playerName: playerName || t("common.you"),
       avatar: avatarSrc,
     });
 
@@ -1022,7 +1072,7 @@ export default function DemoApp() {
     ) {
       return;
     }
-    if(persistentTraining!==false){setMatchStartError("Grupos no disponibles en esta sesión");return;}
+    if(persistentTraining!==false){setMatchStartError(t("home.groupsUnavailable"));return;}
     setMatchStartError("");
     const nextStage = options?.nextStage ?? 1;
 
@@ -1051,6 +1101,8 @@ export default function DemoApp() {
                 ? `${group.name} · entrada liga`
                 : `${group.name} · entrada torneo`,
           amount: -config.stake,
+          key: (config.type === "quick" ? "move.groupQuick" : config.type === "league" ? "move.groupLeague" : "move.groupTournament") as MessageKey,
+          vars: { group: group.name },
         },
         ...items,
       ].slice(0, 20));
@@ -1091,18 +1143,34 @@ export default function DemoApp() {
     });
   }
 
-  function resetAvatar() {
-    const nextAvatarId = (avatarId + 1) % AVATARS.length;
-    setAvatarId(nextAvatarId);
-    setAvatarSrc(AVATARS[nextAvatarId]);
-    setPlayerName("PLAYER_NEW");
+  function editProfile() {
+    setAvatarEditorOpen(true);
+    setAvatarError("");
+    navigate("avatar-setup");
+  }
+
+  /** Settings › Reset statistics: keeps name, avatar and balance. */
+  function resetStats() {
     setNetEarnings(0);
     setNextTurn("create");
     setEarnings([{ label: "Inicio", value: 0 }]);
     setWins(0);
     setLosses(0);
     setStreak(0);
-    navigate("profile");
+    setConfirmAction(null);
+    setNotice(t("settings.resetStatsDone"));
+  }
+
+  /** Settings › Delete all my local data: profile, wallet, history, group, settings and language. */
+  function deleteAllLocalData() {
+    safeStorage
+      .keys()
+      .filter((key) => key.startsWith("skill-arena-") || key.startsWith("galactic-") || key === SETTINGS_STORAGE_KEY || key === LOCALE_STORAGE_KEY || key.startsWith("ga-"))
+      .forEach((key) => safeStorage.removeItem(key));
+    resetSettings();
+    void setLocale(matchLocale(typeof navigator === "undefined" ? [] : navigator.languages ?? [navigator.language]), false);
+    setConfirmAction(null);
+    logoutDemo();
   }
 
   function logoutDemo() {
@@ -1133,17 +1201,25 @@ export default function DemoApp() {
     return (
       <main className="onboarding arenaOnboarding">
         <section className="welcomeCard welcomeCardCompact">
+          <div className="welcomeTopBar"><LanguagePicker compact /></div>
           <GalacticMark className="galacticWelcomeMark" />
           <h1 className="wordmark">{PRODUCT_NAME}</h1>
           <div className="authStack">
 
             <div className="galacticProviderRow">
-              <button className="authButton google" disabled aria-label="Google, próximamente"><span aria-hidden="true">G</span>Google</button>
-              <button className="authButton apple" disabled aria-label="Apple, próximamente"><span aria-hidden="true">●</span>Apple</button>
+              <button className="authButton google" disabled aria-label={t("welcome.soon", { provider: "Google" })}><span aria-hidden="true">G</span>Google</button>
+              <button className="authButton apple" disabled aria-label={t("welcome.soon", { provider: "Apple" })}><span aria-hidden="true">●</span>Apple</button>
             </div>
-            <button className="authButton guest galacticEntryAction" aria-label="Iniciar sesión local" onClick={continueWithoutProvider}><span>INICIAR SESIÓN</span><small>SESIÓN LOCAL</small></button>
+            <button className="authButton guest galacticEntryAction" aria-label={t("welcome.loginAria")} onClick={continueWithoutProvider}><span>{t("welcome.login")}</span><small>{t("welcome.loginLocal")}</small></button>
           </div>
+          <p className="welcomeLegal">
+            {t("identity.terms", { terms: "\u0001", privacy: "\u0002" }).split(/(\u0001|\u0002)/).map((part, index) =>
+              part === "\u0001" ? <button key={index} type="button" className="inlineLink" onClick={() => setDoc("terms")}>{t("identity.termsLink")}</button>
+              : part === "\u0002" ? <button key={index} type="button" className="inlineLink" onClick={() => setDoc("privacy")}>{t("identity.privacyLink")}</button>
+              : <span key={index}>{part}</span>)}
+          </p>
         </section>
+        {doc && <DocSheet doc={doc} onClose={() => setDoc(null)} />}
       </main>
     );
   }
@@ -1161,7 +1237,7 @@ export default function DemoApp() {
                 aria-haspopup="dialog"
                 aria-expanded={avatarMenuOpen}
                 aria-controls="avatar-menu"
-                aria-label="Elegir avatar"
+                aria-label={t("identity.chooseAvatar")}
                 onClick={() => setAvatarMenuOpen((open) => !open)}
               >
                 <img src={avatarSrc} alt="" />
@@ -1173,7 +1249,7 @@ export default function DemoApp() {
                 className={`avatarChangeButton ${avatarEditorOpen ? "open" : ""}`}
                 type="button"
                 onClick={() => { setAvatarError(""); fileInputRef.current?.click(); }}
-                aria-label="Subir foto de avatar"
+                aria-label={t("identity.uploadPhoto")}
               >
                 ↻
               </button>
@@ -1189,24 +1265,24 @@ export default function DemoApp() {
 
           {avatarMenuOpen && (
             <>
-              <button type="button" className="avatarMenuScrim" aria-label="Cerrar avatares" tabIndex={-1} onClick={() => setAvatarMenuOpen(false)} />
+              <button type="button" className="avatarMenuScrim" aria-label={t("identity.closeAvatars")} tabIndex={-1} onClick={() => setAvatarMenuOpen(false)} />
               <div
                 id="avatar-menu"
                 ref={avatarMenuRef}
                 className="avatarMenu"
                 role="dialog"
-                aria-label="Elige avatar"
+                aria-label={t("identity.avatarMenu")}
                 style={{ top: avatarMenuTop }}
                 onKeyDown={(event) => { if (event.key === "Escape") setAvatarMenuOpen(false); }}
               >
-                <div className="avatarMenuGrid" role="group" aria-label="Avatares disponibles">
+                <div className="avatarMenuGrid" role="group" aria-label={t("identity.availableAvatars")}>
                   {AVATARS.filter((src) => src !== avatarSrc).map((src) => {
                     const index = AVATARS.indexOf(src);
                     return (
                       <button
                         key={src}
                         type="button"
-                        aria-label={`Avatar ${index + 1}`}
+                        aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
                         <img src={avatarThumb(src)} alt="" width={96} height={96} decoding="async" />
@@ -1224,22 +1300,22 @@ export default function DemoApp() {
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             maxLength={18}
-            placeholder="Tu nombre"
-            aria-label="Nombre de jugador"
+            placeholder={t("identity.namePlaceholder")}
+            aria-label={t("identity.nameAria")}
           />
           <div className={`nameAvailability ${nameAvailable ? "available" : "unavailable"}`}>
-            {playerName.trim().length === 0 ? "" : nameAvailable ? "Nombre disponible en este navegador" : "Elige otro nombre"}
+            {playerName.trim().length === 0 ? "" : nameAvailable ? t("identity.nameAvailable") : t("identity.nameUnavailable")}
           </div>
 
           {avatarError && <div className="avatarError" role="alert">{avatarError}</div>}
 
-          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>CONTINUAR</button>
+          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>{t("common.continue")}</button>
 
           {cropSource && (
-            <div className="avatarCropOverlay" role="dialog" aria-modal="true" aria-label="Ajustar foto de avatar">
+            <div className="avatarCropOverlay" role="dialog" aria-modal="true" aria-label={t("identity.cropAria")}>
               <div className="avatarCropCard">
                 <div className="cropTitle">
-                  <strong>AJUSTA TU FOTO</strong>
+                  <strong>{t("identity.cropTitle")}</strong>
                 </div>
                 <div
                   className="avatarCropViewport"
@@ -1267,7 +1343,7 @@ export default function DemoApp() {
                   <div className="cropCircleGuide" />
                 </div>
                 <label className="cropZoom">
-                  <span>ZOOM</span>
+                  <span>{t("identity.zoom")}</span>
                   <input
                     type="range"
                     min="1"
@@ -1278,8 +1354,8 @@ export default function DemoApp() {
                   />
                 </label>
                 <div className="cropActions">
-                  <button type="button" onClick={() => setCropSource(null)}>CANCELAR</button>
-                  <button type="button" className="primary" onClick={() => void applyAvatarCrop()}>USAR FOTO</button>
+                  <button type="button" onClick={() => setCropSource(null)}>{t("common.cancel").toUpperCase()}</button>
+                  <button type="button" className="primary" onClick={() => void applyAvatarCrop()}>{t("identity.usePhoto")}</button>
                 </div>
               </div>
             </div>
@@ -1293,18 +1369,21 @@ export default function DemoApp() {
     <main className={`appShell ${shellStyles.shell}`}>
       {screen !== "game" && (
         <header className="appHeader">
-          <button className="logoButton" onClick={() => navigate("home")}>{PRODUCT_NAME}</button>
+          <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <button
               className={`soundToggle ${musicOn ? "on" : "off"}`}
               type="button"
-              aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
+              aria-label={musicOn ? t("common.soundOff") : t("common.soundOn")}
               aria-pressed={musicOn}
               onClick={toggleSound}
             >
               {musicOn ? "🔊" : "🔇"}
             </button>
-            <button className="balanceChip" aria-label={`Saldo ficticio ${euro(balance)}`} onClick={() => navigate("profile")}>FICTICIO · {euro(balance)}</button>
+            <button className="balanceChip" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><small>{t("shell.balanceLabel")}</small><b>{euro(balance)}</b></button>
+            <button className="settingsGear" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
+            </button>
           </div>
         </header>
       )}
@@ -1313,8 +1392,8 @@ export default function DemoApp() {
         {screen === "home" && (
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <div className="homePlayHeading">
-              <h1>Elige tu reto</h1>
-              <button type="button" className="globalRankingShortcut" aria-label="Ranking global · Beneficio neto" onClick={()=>navigate("ranking")}>Ranking global →</button>
+              <h1>{t("home.title")}</h1>
+              <button type="button" className="globalRankingShortcut" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}>{t("home.ranking")} <span aria-hidden="true" className="dirArrow">→</span></button>
             </div>
 
 
@@ -1339,30 +1418,30 @@ export default function DemoApp() {
         )}
 
         {screen === "game" && (
-          <section className="gameScreen">
+          <section className="gameScreen" dir="ltr">
             <div className="mobileGameHeader">
               <GameActionButton
                 className="mobileGameBack"
                 onActivate={requestExitGame}
-                aria-label="Volver"
+                aria-label={t("common.back")}
               >
                 ←
               </GameActionButton>
               <div>
-                <strong>{selectedGame.name}</strong>
+                <strong>{gameName(selectedGame)}</strong>
                 <small>
                   {matchScope === "group" && groupCompetition && group
                     ? competitionProgressLabel(groupCompetition, groupStage, group.members.length)
                     : selectedStake === 0
-                      ? "ENTRENAMIENTO"
-                      : `${selectedStake} FICHAS · 1 VS 1`}
+                      ? t("game.training")
+                      : t("game.duel", { n: selectedStake })}
                 </small>
               </div>
               <div className="gameHeaderActions">
                 <GameActionButton
                   className={`gameSoundToggle ${musicOn ? "on" : "off"}`}
                   type="button"
-                  aria-label={musicOn ? "Desactivar sonido" : "Activar sonido"}
+                  aria-label={musicOn ? t("common.soundOff") : t("common.soundOn")}
                   aria-pressed={musicOn}
                   onActivate={toggleSound}
                 >
@@ -1373,7 +1452,7 @@ export default function DemoApp() {
                     className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
                     onClick={() => setGhostEnabled((value) => !value)}
                     aria-pressed={ghostEnabled}
-                    aria-label="Mostrar u ocultar fantasma"
+                    aria-label={t("catalog.ghost")}
                   >
                     👻
                   </button>
@@ -1406,34 +1485,34 @@ export default function DemoApp() {
                   <div className="gxIntroStage" aria-hidden="true">
                     <div className="gxIntroArt"><img src={selectedGame.cover} alt="" /></div>
                   </div>
-                  <p className="gxIntroTagline">{selectedGame.tagline}</p>
+                  <p className="gxIntroTagline" dir="auto">{gameTagline(selectedGame)}</p>
                   <div className="gxIntroChips" aria-hidden="true">
-                    {!selectedGame.skillLabel.includes(selectedGame.category) && <span>{selectedGame.category}</span>}
-                    <span>{selectedGame.skillLabel}</span>
+                    {!gameSkill(selectedGame).includes(gameCategory(selectedGame)) && <span>{gameCategory(selectedGame)}</span>}
+                    <span>{gameSkill(selectedGame)}</span>
                   </div>
                   <div className="gxIntroCount" key={countdown}>
                     <svg viewBox="0 0 120 120" aria-hidden="true">
                       <circle className="track" cx="60" cy="60" r="52" />
                       <circle className="arc" cx="60" cy="60" r="52" pathLength={100} />
                     </svg>
-                    <b aria-label={countdown > 0 ? `Empieza en ${countdown}` : "¡Ya!"}>{countdown > 0 ? countdown : "¡YA!"}</b>
+                    <b aria-label={countdown > 0 ? t("game.startsIn", { n: countdown }) : t("game.goAria")}>{countdown > 0 ? countdown : t("game.go")}</b>
                   </div>
                 </div>
               )}
             </div>
 
             {exitConfirmOpen && (
-              <div className="gameExitOverlay" role="dialog" aria-modal="true" aria-label="Salir de la partida">
+              <div className="gameExitOverlay" role="dialog" aria-modal="true" aria-label={t("game.exitTitle")} dir="auto">
                 <div className="gameExitCard">
-                  <strong>SALIR DE LA PARTIDA</strong>
+                  <strong>{t("game.exitTitle")}</strong>
                   <p>
                     {activeGame
-                      ? "La partida contará como perdida."
-                      : "Se cancelará el inicio."}
+                      ? t("game.exitLost")
+                      : t("game.exitCancel")}
                   </p>
                   <div>
-                    <button type="button" onClick={() => setExitConfirmOpen(false)}>SEGUIR JUGANDO</button>
-                    <button type="button" className="danger" onClick={leaveGameNow}>SALIR</button>
+                    <button type="button" onClick={() => setExitConfirmOpen(false)}>{t("game.keepPlaying")}</button>
+                    <button type="button" className="danger" onClick={leaveGameNow}>{t("game.exit")}</button>
                   </div>
                 </div>
               </div>
@@ -1453,18 +1532,18 @@ export default function DemoApp() {
                   resultPointerReadyRef.current = false;
                 }}
               >
-                {result.forfeited ? <GameResultSummary result={result} gameName={selectedGame.name} resultMetric={selectedGame.resultMetric} /> : result.verified === false ? (
+                {result.forfeited ? <GameResultSummary result={result} gameName={gameName(selectedGame)} resultMetric={selectedGame.resultMetric} /> : result.verified === false ? (
                   <>
                     <div className="resultIcon">⚠</div>
-                    <b>RESULTADO NO VERIFICADO</b>
-                    <p className="resultNote">El servicio de partidas no ha podido confirmar esta partida. Inténtalo de nuevo en unos minutos.</p>
+                    <b>{t("game.unverifiedTitle")}</b>
+                    <p className="resultNote">{t("game.unverifiedBody")}</p>
                   </>
                 ) : (
                   <>
-                    <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} resultMetric={selectedGame.resultMetric} waitingForRival={result.serverMatch ? result.serverMatch.status === "waiting" : selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
+                    <GameResultSummary result={attemptSummary ?? result} gameName={gameName(selectedGame)} resultMetric={selectedGame.resultMetric} waitingForRival={result.serverMatch ? result.serverMatch.status === "waiting" : selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
                   </>
                 )}
-                <fieldset className="resultActions" disabled={!resultActionsReady} aria-label="Acciones del resultado">
+                <fieldset className="resultActions" disabled={!resultActionsReady} aria-label={t("game.resultActions")}>
                   {matchScope === "group" && groupCompetition ? (
                     <>
                       {groupCompetition.type === "quick" ? (
@@ -1473,7 +1552,7 @@ export default function DemoApp() {
                           disabled={groupCompetition.stake > balance}
                           onClick={repeatOrContinueGroupCompetition}
                         >
-                          REPETIR
+                          {t("game.repeat")}
                         </button>
                       ) : groupCanAdvance ? (
                         <button
@@ -1481,15 +1560,15 @@ export default function DemoApp() {
                           onClick={repeatOrContinueGroupCompetition}
                         >
                           {groupCompetition.type === "league"
-                            ? "SIGUIENTE JORNADA"
-                            : "SIGUIENTE RONDA"}
+                            ? t("game.nextMatchday")
+                            : t("game.nextRound")}
                         </button>
                       ) : (
                         <button
                           className="rematchAction"
                           onClick={() => navigate("group")}
                         >
-                          VOLVER AL GRUPO
+                          {t("game.backToGroup")}
                         </button>
                       )}
                       <button
@@ -1497,10 +1576,10 @@ export default function DemoApp() {
                         onClick={() => navigate("group")}
                       >
                         {groupCompetition.type === "quick"
-                          ? "VOLVER AL GRUPO"
+                          ? t("game.backToGroup")
                           : groupCanAdvance
-                            ? "SALIR A GRUPO"
-                            : "NUEVA COMPETICIÓN"}
+                            ? t("game.leaveToGroup")
+                            : t("game.newCompetition")}
                       </button>
                     </>
                   ) : (
@@ -1508,12 +1587,12 @@ export default function DemoApp() {
                       <GameActionButton className="rematchAction" onActivate={source => {
                         if (resultActionsReady && (source === "click" || resultPointerReadyRef.current)) startMatch();
                       }}>
-                        OTRA VEZ
+                        {t("game.again")}
                       </GameActionButton>
                       <GameActionButton className="mainAction" onActivate={source => {
                         if (resultActionsReady && (source === "click" || resultPointerReadyRef.current)) navigate("home");
                       }}>
-                        CAMBIAR
+                        {t("game.change")}
                       </GameActionButton>
                     </>
                   )}
@@ -1524,40 +1603,47 @@ export default function DemoApp() {
         )}
 
         {screen === "profile" && (
-          <section className={`simpleScreen ${shellStyles.accountView}`} aria-label="Perfil local">
-            <h1>Tu avatar</h1>
-            <nav className="avatarSections" aria-label="Secciones de avatar">
-              <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>Perfil</button>
-              <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>Ranking</button>
+          <section className={`simpleScreen ${shellStyles.accountView}`} aria-label={t("profile.aria")}>
+            <h1>{t("profile.title")}</h1>
+            <nav className="avatarSections" aria-label={t("profile.sections")}>
+              <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>{t("profile.tabProfile")}</button>
+              <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>{t("profile.tabRanking")}</button>
             </nav>
             {avatarSection === "ranking" ? <GlobalRanking embedded /> : <>
-            <p className={shellStyles.demoNote}>Identidad local · saldo y premios ficticios</p>
-            <div className="profileStrip"><img src={avatarSrc} alt="Avatar" /><div><strong>{playerName}</strong><span>Cuenta local · sin posición real</span></div><b className={netEarnings < 0 ? "negative" : ""}>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <p className={shellStyles.demoNote}>{t("profile.note")}</p>
+            <div className="profileStrip"><img src={avatarSrc} alt="" /><div><strong>{playerName}</strong><span>{t("profile.localAccount")}</span></div><b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+
+            <div className="profileStats" aria-label={t("profile.stats")}>
+              <div><b>{matchesPlayed}</b><span>{t("profile.played")}</span></div>
+              <div><b>{wins}</b><span>{t("profile.wins")}</span></div>
+              <div><b>{winRate}%</b><span>{t("profile.winRate")}</span></div>
+              <div><b>{streak}</b><span>{t("profile.streak")}</span></div>
+            </div>
 
             <section className="accountWalletCard">
               <div>
-                <small>SALDO FICTICIO</small>
-                <strong>{euro(balance)}</strong>
+                <small>{t("profile.balance")}</small>
+                <strong dir="ltr">{euro(balance)}</strong>
               </div>
               <div className="walletActions">
                 <button onClick={() => {
                   setBalance((b) => b + 10);
-                  setMovements((m) => [{ label: "Ingreso ficticio", amount: 10 }, ...m]);
-                }}>Añadir 10 € ficticios</button>
+                  setMovements((m) => [{ label: "Ingreso ficticio", amount: 10, key: "move.deposit" as const }, ...m]);
+                }}>{t("profile.add")}</button>
                 <button
                   disabled={balance < 10}
                   onClick={() => {
                     setBalance((b) => Number((b - 10).toFixed(2)));
-                    setMovements((m) => [{ label: "Retirada ficticia", amount: -10 }, ...m]);
+                    setMovements((m) => [{ label: "Retirada ficticia", amount: -10, key: "move.withdraw" as const }, ...m]);
                   }}
-                >Retirar 10 € ficticios</button>
+                >{t("profile.withdraw")}</button>
               </div>
               <div className="miniMovementList" aria-live="polite">
-                {movements.length === 0 && <p className={shellStyles.emptyNote}>Sin movimientos</p>}
+                {movements.length === 0 && <p className={shellStyles.emptyNote}>{t("profile.noMovements")}</p>}
                 {movements.slice(0, 3).map((movement, index) => (
                   <div key={`${movement.label}-${index}`}>
-                    <span>{movement.label.replace(/\bdemo\b/gi, "ficticio")}</span>
-                    <b className={movement.amount < 0 ? "negative" : ""}>
+                    <span>{movementLabel(movement)}</span>
+                    <b className={movement.amount < 0 ? "negative" : ""} dir="ltr">
                       {movement.amount > 0 ? "+" : ""}{euro(movement.amount)}
                     </b>
                   </div>
@@ -1567,75 +1653,66 @@ export default function DemoApp() {
 
             {persistentTraining && <RecentAttempts />}
             <div className="chartPanel">
-              <div className="chartHead"><span>BENEFICIO NETO FICTICIO</span><strong>{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
-              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Beneficio neto ficticio de partidas a lo largo del tiempo">
+              <div className="chartHead"><span>{t("profile.netProfit")}</span><strong dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
+              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={t("profile.chartAria")}>
                 <line x1="0" y1="50" x2="100" y2="50" className="zeroLine" />
                 <polyline points={chartPoints} className="profitLine" />
               </svg>
-              <div className="chartAxis"><span>INICIO</span><span>AHORA</span></div>
+              <div className="chartAxis" dir="ltr"><span>{t("profile.chartStart")}</span><span>{t("profile.chartNow")}</span></div>
             </div>
             <div className="settingsList">
-              <button aria-pressed={musicOn} onClick={toggleSound}><span>Sonido</span><b>{musicOn ? "ON" : "OFF"}</b></button>
-              <button onClick={() => { setAvatarEditorOpen(true); setAvatarError(""); navigate("avatar-setup"); }}><span>Nombre y avatar</span><b>→</b></button>
-              <button onClick={resetAvatar}><span>Reiniciar perfil local</span><b aria-hidden="true">↺</b></button>
-              <button onClick={() => navigate("legal")}><span>Información de la aplicación</span><b aria-hidden="true">→</b></button>
-              <button onClick={logoutDemo}><span>Cerrar sesión local</span><b>×</b></button>
+              <button onClick={() => navigate("settings")}><span>{t("profile.settings")}</span><b aria-hidden="true" className="dirArrow">→</b></button>
+              <button onClick={editProfile}><span>{t("profile.editProfile")}</span><b aria-hidden="true" className="dirArrow">→</b></button>
+              <button onClick={logoutDemo}><span>{t("profile.logout")}</span><b aria-hidden="true">×</b></button>
             </div>
             </>}
           </section>
         )}
 
-        {screen === "legal" && (
-          <section className={`simpleScreen ${shellStyles.legalView}`}>
-            <button className="textBack" aria-label="Volver al perfil" onClick={() => navigate("profile")}>← Tu perfil</button>
-            <h1>Información de la aplicación</h1>
-            <p className={shellStyles.demoNote}>GALACTIC GAMES · sin dinero real</p>
-            <div className="legalTabs">
-              <button aria-pressed={legalTab === "terms"} className={legalTab === "terms" ? "active" : ""} onClick={() => setLegalTab("terms")}>Términos</button>
-              <button aria-pressed={legalTab === "privacy"} className={legalTab === "privacy" ? "active" : ""} onClick={() => setLegalTab("privacy")}>Privacidad</button>
-              <button aria-pressed={legalTab === "cookies"} className={legalTab === "cookies" ? "active" : ""} onClick={() => setLegalTab("cookies")}>Cookies</button>
-              <button aria-pressed={legalTab === "rules"} className={legalTab === "rules" ? "active" : ""} onClick={() => setLegalTab("rules")}>Reglas</button>
-            </div>
-            <article className="legalCopy">
-              <h2>{legalTab === "terms" ? "Términos y condiciones" : legalTab === "privacy" ? "Privacidad" : legalTab === "cookies" ? "Cookies" : "Reglas de competición"}</h2>
-              {legalTab === "terms" && <>
-                <p>Esta versión permite entrenar y probar partidas con saldo ficticio. Añadir o retirar saldo ficticio no mueve dinero real ni genera pagos.</p>
-                <p>La competición con dinero real no está disponible. Esta información describe la versión actual; no sustituye los términos jurídicos revisados que necesitará el servicio definitivo.</p>
-              </>}
-              {legalTab === "privacy" && <>
-                <p>Tu nombre, avatar, preferencias y estadísticas locales se guardan en este navegador. Las partidas verificadas envían sus inputs al servidor para reconstruir el resultado, asociados a un identificador anónimo de sesión; el nombre y el avatar no se envían.</p>
-                <p>El proveedor de alojamiento puede tratar datos técnicos de conexión (como la dirección IP) en sus registros para operar y proteger el servicio.</p>
-                <p>La aplicación no solicita documentos de identidad ni datos de pago. Cerrar sesión elimina el perfil local de este navegador; no equivale a una solicitud de borrado de registros del servidor.</p>
-                <p>Antes de crear cuentas reales, se publicarán la política de privacidad, los plazos de conservación y los medios para ejercer tus derechos.</p>
-              </>}
-              {legalTab === "cookies" && <>
-                <p>La aplicación utiliza almacenamiento local del navegador para recordar el perfil local y las preferencias. Si lo borras, tendrás que configurar la entrada de nuevo.</p>
-                <p>Además usa cookies técnicas estrictamente necesarias, propias y no publicitarias: <code>arena_match_training</code> (identifica de forma anónima tu sesión de partidas; caduca a las 24 horas) y, solo en Mine Grid, una cookie de sesión de 30 minutos. No se usan cookies de analítica ni de publicidad.</p>
-                <p>La información definitiva sobre cookies y servicios de alojamiento estará disponible antes de activar cuentas reales. Esta versión no presenta un consentimiento de producción.</p>
-              </>}
-              {legalTab === "rules" && <>
-                <p>Entrenamiento gratis te permite aprender cada juego sin usar saldo ficticio. Las otras modalidades utilizan saldo ficticio y rivales simulados.</p>
-                <p>En juegos con verificación, el servidor reconstruye la partida a partir del escenario y los inputs y calcula el resultado. Si la verificación falla, no se confirma una victoria.</p>
-                <p>El ranking de ejemplo es una muestra independiente: sus jugadores y beneficios son ficticios. El ranking real solo mostrará datos de servidor cuando el servicio esté configurado.</p>
-              </>}
-            </article>
-          </section>
+        {(screen === "settings" || screen === "legal") && (
+          <SettingsScreen
+            soundOn={musicOn}
+            onToggleSound={toggleSound}
+            onEditProfile={editProfile}
+            onResetStats={() => setConfirmAction("reset")}
+            onDeleteData={() => setConfirmAction("delete")}
+            onLogout={logoutDemo}
+            onOpenDoc={setDoc}
+            onBack={() => navigate("profile")}
+          />
         )}
       </div>
 
-      {screen !== "game" && screen !== "legal" && (
-        <nav className="bottomNav bottomNavThree" aria-label="Navegación principal">
+      {screen !== "game" && screen !== "legal" && screen !== "settings" && (
+        <nav className="bottomNav bottomNavThree" aria-label={t("nav.main")}>
           <button className={screen === "home" ? "active" : ""} aria-current={screen === "home" ? "page" : undefined} onClick={() => navigate("home")}>
-            <span>▶</span>JUEGOS
+            <span>▶</span>{t("nav.games")}
           </button>
           <button className={screen === "group" ? "active" : ""} aria-current={screen === "group" ? "page" : undefined} onClick={() => navigate("group")}>
-            <span>◉</span>GRUPO
+            <span>◉</span>{t("nav.group")}
           </button>
           <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
-            <img src={avatarSrc} alt="" /><em className="navName">{playerName || "AVATAR"}</em>
+            <img src={avatarSrc} alt="" /><em className="navName">{playerName || t("nav.avatar")}</em>
           </button>
         </nav>
       )}
+      {doc && <DocSheet doc={doc} onClose={() => setDoc(null)} />}
+      {confirmAction === "reset" && (
+        <ConfirmDialog title={t("settings.resetStatsTitle")} body={t("settings.resetStatsBody")} onConfirm={resetStats} onCancel={() => setConfirmAction(null)} />
+      )}
+      {confirmAction === "delete" && (
+        <ConfirmDialog danger title={t("settings.deleteDataTitle")} body={t("settings.deleteDataBody")} confirmLabel={t("settings.deleteDataConfirm")} onConfirm={deleteAllLocalData} onCancel={() => setConfirmAction(null)} />
+      )}
+      {reminderDue && !activeGame && countdown === null && (
+        <ConfirmDialog
+          title={t("game.reminderTitle", { n: settings.reminderMinutes })}
+          body={t("game.reminderBody")}
+          confirmLabel={t("game.reminderContinue")}
+          onConfirm={() => { reminderAnchorRef.current = Date.now(); setReminderDue(false); }}
+          onCancel={() => { reminderAnchorRef.current = Date.now(); setReminderDue(false); if (screen === "game") leaveGameNow(); }}
+        />
+      )}
+      {notice && <div className="appToast" role="status">{notice}</div>}
     </main>
   );
 }

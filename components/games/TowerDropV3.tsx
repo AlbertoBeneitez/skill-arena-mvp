@@ -7,6 +7,7 @@ import {
   type TowerDropV4State as TowerDropV3State,
 } from "@/lib/verified/towerDropCore.v4";
 import CoreCanvasGame from "./CoreCanvasGame";
+import { t, formatNumber, useI18n } from "@/lib/i18n";
 // Presentation-only smoothing. Never read by the core; a new run (tick going
 // backwards) resets it, so replays and previews stay deterministic.
 const motion = { tick: -1, offsetY: Number.NaN, jaw: 1 };
@@ -166,7 +167,7 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
   ctx.font = "bold 13px system-ui";
   ctx.textAlign = "center";
   ctx.fillStyle = "#c4f1fa";
-  if (state.combo > 1) ctx.fillText(`PERFECTO ×${state.combo}`, 195, 112);
+  if (state.combo > 1) ctx.fillText(t("play.perfect", { n: state.combo }), 195, 112);
   ctx.textAlign = "left";
   ctx.restore();
   // Lives: three hearts, the lost ones dim; a red pulse right after a loss.
@@ -189,6 +190,7 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
 }
 const keys = { " ": "DROP", Enter: "DROP" } as const;
 export default function TowerDropV3(props: GameRuntimeProps) {
+  useI18n();
   return (
     <CoreCanvasGame
       {...props}
@@ -198,7 +200,7 @@ export default function TowerDropV3(props: GameRuntimeProps) {
       render={render}
       primaryAction="DROP"
       keys={keys}
-      instruction="Toca para soltar. Alinea el apoyo sobre la torre."
+      instruction={t("tower.instruction")}
     />
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 import { GAMES, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
+import { t, useI18n } from "@/lib/i18n";
+import { gameName } from "@/lib/i18n/games";
 export const CATEGORY_ACCENTS: Record<string, string> = {
   PRECISIÓN: "#5fd6ff", TIMING: "#ffd04a", REACCIÓN: "#ff7a6b", MEMORIA: "#b88cff", PUZZLE: "#6ff0b0", CARTAS: "#ff8fb8", LÓGICA: "#9bf05b", CONTROL: "#ffa85c",
 };
@@ -17,11 +19,12 @@ type Props = {
 };
 /** Presentation and discovery only. The common registry remains the sole catalogue. */
 export default function CatalogBrowser(props: Props) {
+  useI18n();
   return (
-    <section className={styles.browser} aria-label="Catálogo de juegos">
+    <section className={styles.browser} aria-label={t("catalog.aria")}>
       <div className={styles.grid}>
         {GAMES.map((game) => (
-          <article key={game.id} className={styles.card} aria-label={game.name} style={{ ["--accent" as string]: CATEGORY_ACCENTS[game.category] ?? "#9ce6e8" }}>
+          <article key={game.id} className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: CATEGORY_ACCENTS[game.category] ?? "#9ce6e8" }}>
             <div className={styles.cover}>
               <img
                 src={game.cover}
@@ -38,7 +41,7 @@ export default function CatalogBrowser(props: Props) {
                   className={styles.ghost}
                   onClick={props.onToggleGhost}
                   aria-pressed={props.ghostEnabled}
-                  aria-label="Mostrar u ocultar fantasma"
+                  aria-label={t("catalog.ghost")}
                 >
                   👻
                 </button>
@@ -50,15 +53,15 @@ export default function CatalogBrowser(props: Props) {
               disabled={
                 props.stake > props.balance || props.startingGameId !== null || (props.serverOnly === true && props.stake > 0 && game.competition.verification !== "server-replay")
               }
-              aria-label={`Jugar a ${game.name}`}
+              aria-label={t("catalog.play", { game: gameName(game) })}
               aria-busy={props.startingGameId === game.id}
               onClick={() => props.onPlay(game)}
             >
               {props.startingGameId === game.id
-                ? "ENTRANDO…"
+                ? t("catalog.entering")
                 : props.stake === 0
-                  ? game.name
-                  : `${game.name} · ${props.stake} ${props.stake === 1 ? "FICHA" : "FICHAS"}`}
+                  ? gameName(game)
+                  : t("catalog.playStake", { game: gameName(game), n: props.stake })}
             </button>
           </article>
         ))}

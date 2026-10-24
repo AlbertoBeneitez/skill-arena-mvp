@@ -233,6 +233,7 @@ module.exports = (async () => {
     {
       react: { useMemo: (factory) => factory() },
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
+      "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/verified/orbBurstCore.v1": v1,
       "@/lib/verified/orbBurstCore.v5": v2,
       "@/lib/verified/orbBurstProtocol.v1": protocol,

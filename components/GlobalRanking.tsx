@@ -2,6 +2,7 @@
 import RankingAvatar from "./RankingAvatar";
 import ProfitChart, { profitSeries } from "./ProfitChart";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
+import { localeInfo, useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import {
   formatNetProfit,
@@ -16,6 +17,7 @@ type LoadState = {
   page?: RankingPage;
 };
 export default function GlobalRanking({ embedded = false }: { embedded?: boolean }) {
+  const { t, locale } = useI18n();
   const [source, setSource] = useState<"server" | "demo">("server");
   const [cursor, setCursor] = useState<string | null>(null);
   const [history, setHistory] = useState<(string | null)[]>([]);
@@ -83,49 +85,49 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
   }
   const page = visible.page;
   return (
-    <section className={`globalRankingScreen${embedded ? " embeddedRanking" : ""}`} aria-label="Ranking global">
+    <section className={`globalRankingScreen${embedded ? " embeddedRanking" : ""}`} aria-label={t("ranking.title")}>
       <header className="rankingHeading">
         {!embedded && <small>{PRODUCT_NAME}</small>}
-        {embedded ? <h2>Ranking global</h2> : <h1>Ranking global</h1>}
+        {embedded ? <h2>{t("ranking.title")}</h2> : <h1>{t("ranking.title")}</h1>}
       </header>
-      <div className="rankingSourceControls" aria-label="Origen del ranking">
+      <div className="rankingSourceControls" aria-label={t("ranking.source")}>
         <button
           type="button"
           aria-pressed={source === "server"}
           onClick={() => switchSource("server")}
         >
-          Ranking real
+          {t("ranking.real")}
         </button>
         <button
           type="button"
           aria-pressed={source === "demo"}
           onClick={() => switchSource("demo")}
         >
-          Ver ejemplo
+          {t("ranking.example")}
         </button>
       </div>
       {source === "demo" && (
         <div className="rankingDemoNotice" role="note">
-          <strong>DATOS DE EJEMPLO · IMPORTES FICTICIOS</strong>
+          <strong>{t("ranking.exampleNotice")}</strong>
         </div>
       )}
-      {visible.status === "loading" && <p role="status">Cargando ranking…</p>}
+      {visible.status === "loading" && <p role="status">{t("ranking.loading")}</p>}
       {visible.status === "not-configured" && (
         <div className="rankingEmpty" role="status">
-          <h2>El ranking real aún no está disponible</h2>
+          <h2>{t("ranking.notConfigured")}</h2>
         </div>
       )}
       {visible.status === "unavailable" && (
         <div className="rankingEmpty" role="status">
-          <h2>No se puede cargar el ranking ahora</h2>
+          <h2>{t("ranking.unavailable")}</h2>
           <button type="button" onClick={() => setRetry((n) => n + 1)}>
-            Reintentar
+            {t("common.retry")}
           </button>
         </div>
       )}
       {visible.status === "error" && (
         <div className="rankingEmpty" role="alert">
-          <p>No se pudo cargar esta página.</p>
+          <p>{t("ranking.pageError")}</p>
           <button
             type="button"
             onClick={() => {
@@ -134,7 +136,7 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
               setRetry((n) => n + 1);
             }}
           >
-            Volver a cargar
+            {t("common.reload")}
           </button>
         </div>
       )}
@@ -142,7 +144,7 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
         <>
           {!cursor && page.entries.length > 0 && (
             <section className="rankingLeaders" aria-label="Top jugadores">
-              <h2>Top jugadores{source === "demo" ? " · ejemplo" : ""}</h2>
+              <h2>{source === "demo" ? t("ranking.topExample") : t("ranking.top")}</h2>
               <div>
                 {page.entries.slice(0, 3).map((row) => (
                   <article key={row.playerId}>
@@ -157,7 +159,7 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
                     <span>{formatNetProfit(row.netProfitMinor)}</span>
                     <ProfitChart
                       values={profitSeries(row.playerId, row.netProfitMinor)}
-                      label={`Evolución de ${row.playerName}`}
+                      label={t("ranking.evolutionOf", { name: row.playerName })}
                     />
                   </article>
                 ))}
@@ -165,21 +167,21 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
             </section>
           )}
           {page.entries.length === 0 ? (
-            <p role="status">Aún no hay jugadores en este ranking.</p>
+            <p role="status">{t("ranking.empty")}</p>
           ) : (
             <div className="rankingTableWrap">
               <table className="rankingTable">
                 <caption>
                   {source === "demo"
-                    ? "Ranking de ejemplo · beneficio neto ficticio"
-                    : "Ranking global · beneficio neto histórico"}
+                    ? t("ranking.captionExample")
+                    : t("ranking.captionReal")}
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Posición</th>
-                    <th scope="col">Jugador</th>
-                    <th scope="col">Beneficio neto</th>
-                    <th scope="col">Evolución</th>
+                    <th scope="col">{t("ranking.position")}</th>
+                    <th scope="col">{t("ranking.player")}</th>
+                    <th scope="col">{t("ranking.netProfit")}</th>
+                    <th scope="col">{t("ranking.evolution")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -211,14 +213,14 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
                           {formatNetProfit(row.netProfitMinor)}
                         </td>
                         <td className="rankingSpark">
-                          <ProfitChart values={values} width={96} height={30} label={`Evolución de ${row.playerName}`} />
+                          <ProfitChart values={values} width={96} height={30} label={t("ranking.evolutionOf", { name: row.playerName })} />
                         </td>
                       </tr>,
                       open ? (
                         <tr key={`${row.playerId}-chart`} className="rankingChartRow">
                           <td colSpan={4}>
                             <strong>Cómo ha ido ganando · {row.playerName}</strong>
-                            <ProfitChart values={values} width={320} height={130} detailed label={`Gráfica detallada de ${row.playerName}`} />
+                            <ProfitChart values={values} width={320} height={130} detailed label={t("ranking.detailOf", { name: row.playerName })} />
                             <small>Importes ficticios · de 0 a {formatNetProfit(row.netProfitMinor)}</small>
                           </td>
                         </tr>
@@ -229,7 +231,7 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
               </table>
             </div>
           )}
-          <nav className="rankingPagination" aria-label="Páginas del ranking">
+          <nav className="rankingPagination" aria-label={t("ranking.pages")}>
             <button
               type="button"
               disabled={!history.length}
@@ -238,9 +240,9 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
                 setHistory((items) => items.slice(0, -1));
               }}
             >
-              Anterior
+              {t("common.previous")}
             </button>
-            <span>Página {history.length + 1}</span>
+            <span>{t("common.page", { n: history.length + 1 })}</span>
             <button
               type="button"
               disabled={!page.nextCursor}
@@ -251,22 +253,19 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
                 }
               }}
             >
-              Siguiente
+              {t("common.next")}
             </button>
           </nav>
           {source === "server" && page.asOf && (
             <p className="rankingTimestamp">
-              Actualizado:{" "}
-              {new Date(page.asOf).toLocaleString("es-ES", {
-                timeZone: "Europe/Madrid",
-              })}
+              {t("ranking.updated", { date: new Date(page.asOf).toLocaleString(localeInfo(locale).intl, { timeZone: "Europe/Madrid" }) })}
             </p>
           )}
         </>
       )}
-      <section className="rankingOwnPosition" aria-label="Tu posición">
-        <h2>Tu posición</h2>
-        <p>Sesión local · sin posición real</p>
+      <section className="rankingOwnPosition" aria-label={t("ranking.yourPosition")}>
+        <h2>{t("ranking.yourPosition")}</h2>
+        <p>{t("ranking.yourPositionNote")}</p>
       </section>
     </section>
   );

@@ -14,6 +14,8 @@ import {
 } from "@/lib/groupPlay";
 import { createRng } from "@/lib/deterministic/seeded";
 import { GAMES, type GameMeta } from "@/lib/games";
+import { formatMoney, t, useI18n } from "@/lib/i18n";
+import { gameName } from "@/lib/i18n/games";
 
 type Props = {
   group: ClosedGroup | null;
@@ -80,6 +82,7 @@ export default function GroupHub({
   onSetStake,
   onStartCompetition,
 }: Props) {
+  useI18n();
   const [entryMode, setEntryMode] = useState<EntryMode>(
     initialJoinCode ? "join" : "create"
   );
@@ -188,16 +191,16 @@ export default function GroupHub({
     rawPrice >= 0 &&
     rawPrice <= balance;
   const configurationHint = !priceValid
-    ? `Introduce una entrada con saldo ficticio entre 0 y ${balance.toFixed(2)} €.`
+    ? t("group.hintPrice", { max: formatMoney(balance) })
     : !leagueRulesValid
-      ? "Elige entre 1 y 50 jornadas."
+      ? t("group.hintRounds")
       : !leagueScheduleComplete
-        ? `Faltan ${Math.max(0, leagueRounds - leagueGameIds.length)} juegos para completar la liga.`
+        ? t("group.hintLeagueMissing", { n: Math.max(0, leagueRounds - leagueGameIds.length) })
         : !tournamentRulesValid
-          ? `Elige entre 1 y ${maxEliminated} eliminados por ronda.`
+          ? t("group.hintEliminated", { max: maxEliminated })
           : !tournamentScheduleComplete
-            ? `Faltan ${Math.max(0, tournamentRounds - tournamentGameIds.length)} juegos para completar el torneo.`
-            : "Configuración completa. Marca que estás listo para empezar.";
+            ? t("group.hintTournamentMissing", { n: Math.max(0, tournamentRounds - tournamentGameIds.length) })
+            : t("group.hintComplete");
 
   const allMembersReady = Boolean(
     group &&
@@ -270,9 +273,7 @@ export default function GroupHub({
       }, 2000);
     } catch {
       if (!mountedRef.current) return;
-      setShareError(
-        "No se pudo copiar. Selecciona el texto y cópialo manualmente.",
-      );
+      setShareError(t("group.copyFailed"));
       setShareFallback(value);
     }
   }
@@ -404,26 +405,26 @@ export default function GroupHub({
     return (
       <section className="groupScreen">
         <div className="groupHero">
-          <span>GRUPOS · RIVALES SIMULADOS</span>
-          <h1>Compite con tu gente</h1>
-          <p className="groupHeroLead">Crea un grupo en 3 pasos y juega contra tus amigos.</p>
+          <span>{t("group.heroTag")}</span>
+          <h1>{t("group.heroTitle")}</h1>
+          <p className="groupHeroLead">{t("group.heroLead")}</p>
           <ol className="groupHowTo">
-            <li><b>1</b><span>Crea el grupo</span></li>
-            <li><b>2</b><span>Comparte el código</span></li>
-            <li><b>3</b><span>Elige juego y a competir</span></li>
+            <li><b>1</b><span>{t("group.step1")}</span></li>
+            <li><b>2</b><span>{t("group.step2")}</span></li>
+            <li><b>3</b><span>{t("group.step3")}</span></li>
           </ol>
         </div>
 
-        <div className="groupEntryCards" role="tablist" aria-label="Crear o unirse a un grupo">
+        <div className="groupEntryCards" role="tablist" aria-label={t("group.entryTabs")}>
           <button type="button" role="tab" aria-selected={entryMode === "create"} className={entryMode === "create" ? "active" : ""} onClick={() => setEntryMode("create")}>
             <span aria-hidden="true">＋</span>
-            <strong>Crear un grupo</strong>
-            <small>Eres quien organiza</small>
+            <strong>{t("group.create")}</strong>
+            <small>{t("group.createSub")}</small>
           </button>
           <button type="button" role="tab" aria-selected={entryMode === "join"} className={entryMode === "join" ? "active" : ""} onClick={() => setEntryMode("join")}>
             <span aria-hidden="true">⇢</span>
-            <strong>Tengo un código</strong>
-            <small>Me invitaron a uno</small>
+            <strong>{t("group.join")}</strong>
+            <small>{t("group.joinSub")}</small>
           </button>
         </div>
 
@@ -432,28 +433,28 @@ export default function GroupHub({
             <div className="groupSetupPreview">
               <img src={avatarSrc} alt="" />
               <div>
-                <small>CREADOR</small>
-                <strong>{playerName || "TÚ"}</strong>
+                <small>{t("group.creator")}</small>
+                <strong>{playerName || t("common.you")}</strong>
               </div>
-              <b>LOCAL</b>
+              <b>{t("common.local")}</b>
             </div>
 
             <button
               className="groupPrimaryAction"
               type="button"
               onClick={() =>
-                onCreateGroup(playerName ? `Grupo de ${playerName}` : "Mi grupo", 0)
+                onCreateGroup(playerName ? t("group.defaultName", { name: playerName }) : t("group.myGroup"), 0)
               }
             >
-              CREAR GRUPO
+              {t("group.createButton")}
             </button>
-            <p className="groupNextHint">Después te daremos un código para invitar a quien quieras.</p>
+            <p className="groupNextHint">{t("group.createHint")}</p>
           </div>
         ) : (
           <div className="groupSetupCard groupJoinCard">
-            <p className="groupStepTitle"><b>Paso 1</b> Pega el código que te han enviado</p>
+            <p className="groupStepTitle"><b>{t("group.joinStep")}</b> {t("group.joinStepText")}</p>
             <label>
-              <span>CÓDIGO DEL GRUPO</span>
+              <span>{t("group.codeLabel")}</span>
               <input
                 value={joinCode}
                 maxLength={12}
@@ -476,12 +477,13 @@ export default function GroupHub({
                     setJoinCode(normalized);
                   }
                 }}
-                placeholder="PEGA EL CÓDIGO"
+                placeholder={t("group.codePlaceholder")}
+                dir="ltr"
               />
             </label>
 
             <p className="groupJoinHint">
-              Grupo local · sin conexión a salas reales
+              {t("group.joinHint")}
             </p>
 
             <button
@@ -490,7 +492,7 @@ export default function GroupHub({
               disabled={joinCode.length < 4}
               onClick={submitJoin}
             >
-              ABRIR GRUPO
+              {t("group.open")}
             </button>
           </div>
         )}
@@ -502,18 +504,18 @@ export default function GroupHub({
     <section className="groupScreen">
       <div className="groupHeaderCard groupHeaderSinglePage">
         <div>
-          <small>GRUPO LOCAL</small>
+          <small>{t("group.local")}</small>
           <h1>{group.name}</h1>
         </div>
         <span className="groupCodeBadge">{group.code}</span>
       </div>
 
-      <ol className="groupStepper" aria-label="Pasos del grupo">
+      <ol className="groupStepper" aria-label={t("group.steps")}>
         {[
-          { label: "Crear", done: true },
-          { label: "Invitar", done: group.members.length > 1 || copiedCode || copiedLink },
-          { label: "Reglas", done: priceValid && leagueRulesValid && leagueScheduleComplete && tournamentRulesValid && tournamentScheduleComplete },
-          { label: "Jugar", done: allMembersReady },
+          { label: t("group.stepCreate"), done: true },
+          { label: t("group.stepInvite"), done: group.members.length > 1 || copiedCode || copiedLink },
+          { label: t("group.stepRules"), done: priceValid && leagueRulesValid && leagueScheduleComplete && tournamentRulesValid && tournamentScheduleComplete },
+          { label: t("group.stepPlay"), done: allMembersReady },
         ].map((step, index, all) => {
           const current = !step.done && all.slice(0, index).every((x) => x.done);
           return (
@@ -526,39 +528,39 @@ export default function GroupHub({
       </ol>
       <p className="groupNextStep" role="status">
         {group.members.length < 2 && !copiedCode && !copiedLink
-          ? "Siguiente: copia el código o el enlace y envíalo a tus amigos."
+          ? t("group.nextInvite")
           : !allMembersReady
             ? configurationHint
-            : "¡Todo listo! Pulsa empezar al final de la pantalla."}
+            : t("group.allReady")}
       </p>
       <p className="groupDemoNotice">
-        Grupo local · rivales simulados · saldo ficticio
+        {t("group.notice")}
       </p>
       <div className="groupShareActions">
         <button
           type="button"
           onClick={() => void copyCode()}
         >
-          {copiedCode ? "✓ CÓDIGO COPIADO" : "COPIAR CÓDIGO"}
+          {copiedCode ? t("group.codeCopied") : t("group.copyCode")}
         </button>
         <button
           type="button"
           onClick={() => void copyInviteLink()}
         >
-          {copiedLink ? "✓ ENLACE COPIADO" : "COPIAR ENLACE"}
+          {copiedLink ? t("group.linkCopied") : t("group.copyLink")}
         </button>
       </div>
 
       <div className="groupShareFeedback" role="status" aria-live="polite">
         {shareError ||
           (copiedCode
-            ? "Código copiado."
+            ? t("group.codeCopiedMsg")
             : copiedLink
-              ? "Enlace del grupo local copiado."
+              ? t("group.linkCopiedMsg")
               : "")}
         {shareFallback && (
           <input
-            aria-label="Texto para copiar manualmente"
+            aria-label={t("group.copyManual")}
             value={shareFallback}
             readOnly
             onFocus={(event) => event.target.select()}
@@ -567,8 +569,8 @@ export default function GroupHub({
       </div>
       <div className="groupMembersCard">
         <div className="groupSectionTitle">
-          <span>INTEGRANTES</span>
-          <small>{group.members.length} JUGADORES</small>
+          <span>{t("group.members")}</span>
+          <small>{t("group.playersCount", { n: group.members.length })}</small>
         </div>
 
         <div className="groupMembers">
@@ -579,15 +581,15 @@ export default function GroupHub({
             >
               <img src={member.avatar} alt="" />
               <span>{member.name}</span>
-              <b>{member.isYou ? "TÚ" : "SIMULADO"}</b>
+              <b>{member.isYou ? t("common.you") : t("common.simulated")}</b>
             </div>
           ))}
         </div>
       </div>
 
       <div className="groupMatchSetupHead">
-        <small>NUEVA COMPETICIÓN</small>
-        <h1>Define las reglas</h1>
+        <small>{t("group.newCompetition")}</small>
+        <h1>{t("group.defineRules")}</h1>
       </div>
 
       <div className="competitionTypeGrid">
@@ -598,8 +600,8 @@ export default function GroupHub({
           }
           onClick={() => chooseCompetition("quick")}
         >
-          <strong>PARTIDA RÁPIDA</strong>
-          <span>Una partida</span>
+          <strong>{t("group.quick")}</strong>
+          <span>{t("group.quickSub")}</span>
         </button>
 
         <button
@@ -609,8 +611,8 @@ export default function GroupHub({
           }
           onClick={() => chooseCompetition("league")}
         >
-          <strong>LIGA</strong>
-          <span>Varias jornadas</span>
+          <strong>{t("group.league")}</strong>
+          <span>{t("group.leagueSub")}</span>
         </button>
 
         <button
@@ -622,14 +624,14 @@ export default function GroupHub({
           }
           onClick={() => chooseCompetition("tournament")}
         >
-          <strong>TORNEO</strong>
-          <span>Eliminatorias</span>
+          <strong>{t("group.tournament")}</strong>
+          <span>{t("group.tournamentSub")}</span>
         </button>
       </div>
 
       <div className="competitionConfigCard numericConfigCard">
         <label>
-          <span>ENTRADA FICTICIA POR JUGADOR</span>
+          <span>{t("group.entryPrice")}</span>
           <div className="numberInputWithUnit">
             <input
               type="number"
@@ -645,14 +647,14 @@ export default function GroupHub({
             <b>€</b>
           </div>
         </label>
-        <small>Saldo ficticio disponible: {balance.toFixed(2)}€</small>
+        <small>{t("group.available", { amount: formatMoney(balance) })}</small>
       </div>
 
       {competitionType === "league" && (
         <>
           <div className="competitionConfigCard numericConfigCard">
             <label>
-              <span>NÚMERO DE JORNADAS</span>
+              <span>{t("group.rounds")}</span>
               <input
                 type="number"
                 min="1"
@@ -666,11 +668,11 @@ export default function GroupHub({
                 }}
               />
             </label>
-            <small>Entre 1 y 50 jornadas.</small>
+            <small>{t("group.roundsHint")}</small>
           </div>
 
           <div className="competitionConfigCard">
-            <span>JUEGOS DE LA LIGA</span>
+            <span>{t("group.leagueGames")}</span>
 
             <div className="leagueModeToggle">
               <button
@@ -686,7 +688,7 @@ export default function GroupHub({
                   setReady(false);
                 }}
               >
-                ELEGIR JUEGOS
+                {t("group.pickGames")}
               </button>
 
               <button
@@ -701,7 +703,7 @@ export default function GroupHub({
                   setReady(false);
                 }}
               >
-                ALEATORIO
+                {t("group.random")}
               </button>
             </div>
 
@@ -711,10 +713,7 @@ export default function GroupHub({
                   <strong>
                     {leagueGameIds.length}/{leagueRounds || 0}
                   </strong>
-                  <span>
-                    Pulsa juegos hasta completar todas
-                    las jornadas.
-                  </span>
+                  <span>{t("group.leaguePickHint")}</span>
                 </div>
 
                 <div className="groupGameGrid selectionMode leaguePickGrid">
@@ -730,8 +729,8 @@ export default function GroupHub({
                         appendLeagueGame(game.id)
                       }
                     >
-                      <img src={game.cover} alt={game.name} />
-                      <strong>{game.name}</strong>
+                      <img src={game.cover} alt="" />
+                      <strong>{gameName(game)}</strong>
                     </button>
                   ))}
                 </div>
@@ -747,7 +746,7 @@ export default function GroupHub({
                       setReady(false);
                     }}
                   >
-                    BORRAR ÚLTIMO
+                    {t("group.deleteLast")}
                   </button>
                 )}
 
@@ -765,9 +764,9 @@ export default function GroupHub({
                         key={index}
                         className={game ? "filled" : ""}
                       >
-                        <span>J{index + 1}</span>
+                        <span>{t("group.matchdayShort", { n: index + 1 })}</span>
                         <strong>
-                          {game?.name ?? "PENDIENTE"}
+                          {game ? gameName(game) : t("common.pending")}
                         </strong>
                       </div>
                     );
@@ -777,7 +776,7 @@ export default function GroupHub({
             ) : (
               <div className="hiddenGameSchedule">
                 <span>🎲</span>
-                <strong>JUEGOS OCULTOS</strong>
+                <strong>{t("group.hiddenGames")}</strong>
               </div>
             )}
           </div>
@@ -788,7 +787,7 @@ export default function GroupHub({
         <>
           <div className="competitionConfigCard numericConfigCard">
             <label>
-              <span>ELIMINADOS POR RONDA</span>
+              <span>{t("group.eliminated")}</span>
               <input
                 type="number"
                 min="1"
@@ -803,15 +802,11 @@ export default function GroupHub({
               />
             </label>
 
-            <small>
-              Debe ser menor que jugadores − 1.
-              Con {group.members.length} jugadores:
-              máximo {maxEliminated}.
-            </small>
+            <small>{t("group.eliminatedHint", { players: group.members.length, max: maxEliminated })}</small>
           </div>
 
           <div className="competitionConfigCard">
-            <span>JUEGOS DEL TORNEO</span>
+            <span>{t("group.tournamentGames")}</span>
 
             <div className="leagueModeToggle">
               <button
@@ -827,7 +822,7 @@ export default function GroupHub({
                   setReady(false);
                 }}
               >
-                ELEGIR JUEGOS
+                {t("group.pickGames")}
               </button>
 
               <button
@@ -842,7 +837,7 @@ export default function GroupHub({
                   setReady(false);
                 }}
               >
-                ALEATORIO
+                {t("group.random")}
               </button>
             </div>
 
@@ -852,9 +847,7 @@ export default function GroupHub({
                   <strong>
                     {tournamentGameIds.length}/{tournamentRounds || 0}
                   </strong>
-                  <span>
-                    Elige un juego para cada ronda prevista.
-                  </span>
+                  <span>{t("group.tournamentPickHint")}</span>
                 </div>
 
                 <div className="groupGameGrid selectionMode leaguePickGrid">
@@ -871,8 +864,8 @@ export default function GroupHub({
                         appendTournamentGame(game.id)
                       }
                     >
-                      <img src={game.cover} alt={game.name} />
-                      <strong>{game.name}</strong>
+                      <img src={game.cover} alt="" />
+                      <strong>{gameName(game)}</strong>
                     </button>
                   ))}
                 </div>
@@ -888,7 +881,7 @@ export default function GroupHub({
                       setReady(false);
                     }}
                   >
-                    BORRAR ÚLTIMO
+                    {t("group.deleteLast")}
                   </button>
                 )}
 
@@ -906,9 +899,9 @@ export default function GroupHub({
                         key={index}
                         className={game ? "filled" : ""}
                       >
-                        <span>R{index + 1}</span>
+                        <span>{t("group.roundShort", { n: index + 1 })}</span>
                         <strong>
-                          {game?.name ?? "PENDIENTE"}
+                          {game ? gameName(game) : t("common.pending")}
                         </strong>
                       </div>
                     );
@@ -918,7 +911,7 @@ export default function GroupHub({
             ) : (
               <div className="hiddenGameSchedule">
                 <span>🎲</span>
-                <strong>JUEGOS OCULTOS</strong>
+                <strong>{t("group.hiddenGames")}</strong>
               </div>
             )}
           </div>
@@ -928,8 +921,8 @@ export default function GroupHub({
       {competitionType === "quick" && (
         <>
           <div className="groupSectionTitle groupGameTitle">
-            <span>ELIGE JUEGO</span>
-            <small>PARTIDA ÚNICA</small>
+            <span>{t("group.chooseGame")}</span>
+            <small>{t("group.singleMatch")}</small>
           </div>
 
           <div className="groupGameGrid selectionMode">
@@ -946,8 +939,8 @@ export default function GroupHub({
                   chooseSingleGame(game.id)
                 }
               >
-                <img src={game.cover} alt={game.name} />
-                <strong>{game.name}</strong>
+                <img src={game.cover} alt="" />
+                <strong>{gameName(game)}</strong>
               </button>
             ))}
           </div>
@@ -956,7 +949,7 @@ export default function GroupHub({
 
       {competitionType !== "quick" && (
         <div className="competitionConfigCard">
-          <span>REPARTO DEL BOTE FICTICIO</span>
+          <span>{t("group.split")}</span>
 
           <div className="payoutOptionList">
             {payoutOptions.map((option) => (
@@ -982,22 +975,20 @@ export default function GroupHub({
 
       <div className="groupMatchSummary">
         <div>
-          <span>JUGADORES</span>
+          <span>{t("group.players")}</span>
           <strong>{group.members.length}</strong>
         </div>
         <div>
-          <span>BOTE FICTICIO</span>
-          <strong>{pot === 0 ? "—" : `${pot.toFixed(2)}€`}</strong>
+          <span>{t("group.pot")}</span>
+          <strong dir="ltr">{pot === 0 ? "—" : formatMoney(pot)}</strong>
         </div>
       </div>
 
       <div className="readyRoomCard">
         <div className="groupSectionTitle">
-          <span>PREPARACIÓN</span>
+          <span>{t("group.prep")}</span>
           <small>
-            {ready
-              ? `${group.members.length}/${group.members.length} LISTOS`
-              : `${group.members.length - 1}/${group.members.length} LISTOS`}
+            {t("group.readyCount", { n: ready ? group.members.length : group.members.length - 1, total: group.members.length })}
           </small>
         </div>
 
@@ -1012,9 +1003,9 @@ export default function GroupHub({
                 <span className={memberReady ? "ready" : ""}>
                   {memberReady
                     ? member.isYou
-                      ? "LISTO"
-                      : "SIMULADO"
-                    : "PENDIENTE"}
+                      ? t("common.ready")
+                      : t("common.simulated")
+                    : t("common.pending")}
                 </span>
               </div>
             );
@@ -1038,7 +1029,7 @@ export default function GroupHub({
             setReady((value) => !value)
           }
         >
-          {ready ? "✓ ESTÁS LISTO" : "ESTOY LISTO"}
+          {ready ? t("group.youReady") : t("group.imReady")}
         </button>
 
         <button
@@ -1048,10 +1039,10 @@ export default function GroupHub({
           onClick={startCompetition}
         >
           {competitionType === "quick"
-            ? "EMPEZAR PARTIDA"
+            ? t("group.startQuick")
             : competitionType === "league"
-              ? "EMPEZAR LIGA"
-              : "EMPEZAR TORNEO"}
+              ? t("group.startLeague")
+              : t("group.startTournament")}
         </button>
       </div>
     </section>

@@ -1,5 +1,7 @@
 let audioContext: AudioContext | null = null;
 let soundEnabled = true;
+let musicEnabled = true;
+let hapticsEnabled = true;
 let masterGain: GainNode | null = null;
 type VoiceKind = "music" | "effect";
 const voices = new Map<
@@ -71,7 +73,19 @@ function cancelVoices(kind?: VoiceKind) {
   }
 }
 
+/** Music has its own switch (Settings › Música); sound effects keep playing. */
+export function setGameMusicEnabled(enabled: boolean) {
+  musicEnabled = enabled;
+  if (!enabled) stopGameMusic();
+}
+
+/** Settings › Vibración. */
+export function setHapticsEnabled(enabled: boolean) {
+  hapticsEnabled = enabled;
+}
+
 export function haptic(pattern: number | number[] = 12) {
+  if (!hapticsEnabled) return;
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
     navigator.vibrate(pattern);
   }
@@ -234,7 +248,7 @@ function scheduleMusicStep(gameId: string) {
  * uses only Web Audio primitives, and needs no licensed audio assets.
  */
 export function startGameMusic(gameId: string) {
-  if (!soundEnabled || typeof window === "undefined") return;
+  if (!soundEnabled || !musicEnabled || typeof window === "undefined") return;
 
   if (musicGameId === gameId && musicTimer !== null) return;
 

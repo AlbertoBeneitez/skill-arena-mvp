@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import type { GameMeta } from "./games";
 
 export type GroupMember = {
@@ -165,12 +166,12 @@ export function payoutLabel(
 ) {
   switch (distribution) {
     case "top2-70-30":
-      return "70% · 30%";
+      return t("group.split7030");
     case "top3-60-30-10":
       // Historical option, no longer offered for new competitions.
-      return "60% · 30% · 10%";
+      return t("group.split603010");
     default:
-      return "100% ganador";
+      return t("group.splitWinner");
   }
 }
 
@@ -192,7 +193,7 @@ export function competitionProgressLabel(
   memberCount: number
 ) {
   if (config.type === "league") {
-    return `Jornada ${Math.min(current, config.rounds)} de ${config.rounds}`;
+    return t("group.progressMatchday", { n: Math.min(current, config.rounds), total: config.rounds });
   }
 
   if (config.type === "tournament") {
@@ -204,8 +205,8 @@ export function competitionProgressLabel(
       )
     );
 
-    return `Ronda ${Math.min(current, totalRounds)} de ${totalRounds}`;
+    return t("group.progressRound", { n: Math.min(current, totalRounds), total: totalRounds });
   }
 
-  return "Partida rápida";
+  return t("group.progressQuick");
 }
