@@ -11,7 +11,12 @@ import {
 } from "@/lib/games";
 
 function GameLoading() {
-  return <div className="gameLoading">PREPARANDO JUEGO…</div>;
+  return (
+    <div className="gameLoading" role="status">
+      <span className="gxLoadingOrbit" aria-hidden="true"><i /><i /></span>
+      <span>Preparando juego</span>
+    </div>
+  );
 }
 
 type Props = {

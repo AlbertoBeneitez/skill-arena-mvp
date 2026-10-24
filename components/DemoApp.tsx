@@ -2,10 +2,10 @@
 import GameResultSummary from "./GameResultSummary";
 import { safeStorage } from "@/lib/safeStorage";
 import GameActionButton from "./GameActionButton";
-import CatalogBrowser from "./CatalogBrowser";
+import CatalogBrowser, { CATEGORY_ACCENTS } from "./CatalogBrowser";
 import shellStyles from "./ProductShell.module.css";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePublicMatchAvailability, usePendingMatchResolution } from "@/lib/usePublicMatchState";
 import GalacticMark from "./GalacticMark";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
@@ -228,6 +228,27 @@ export default function DemoApp() {
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Avatar dropdown: the 15 alternatives open as a grid under the portrait (no vertical scroll).
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [avatarMenuTop, setAvatarMenuTop] = useState<number | undefined>(undefined);
+  const avatarCardRef = useRef<HTMLElement>(null);
+  const avatarPortraitRef = useRef<HTMLDivElement>(null);
+  const avatarMenuRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!avatarMenuOpen) return;
+    const place = () => {
+      const card = avatarCardRef.current, portrait = avatarPortraitRef.current, menu = avatarMenuRef.current;
+      if (!card || !portrait || !menu) return;
+      const c = card.getBoundingClientRect(), p = portrait.getBoundingClientRect();
+      const wanted = p.bottom - c.top + 10;
+      const max = c.height - menu.offsetHeight - 12;
+      setAvatarMenuTop(Math.max(12, Math.min(wanted, max)));
+    };
+    place();
+    avatarMenuRef.current?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [avatarMenuOpen]);
   const cropCanvasRef = useRef<HTMLCanvasElement>(null);
   const cropDragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const [cropSource, setCropSource] = useState<string | null>(null);
@@ -1130,11 +1151,24 @@ export default function DemoApp() {
   if (screen === "avatar-setup") {
     return (
       <main className="onboarding arenaOnboarding">
-        <section className="setupCard avatarSetupCard avatarSetupMinimal galacticAvatarSetup">
+        <section ref={avatarCardRef} className={`setupCard avatarSetupCard avatarSetupMinimal galacticAvatarSetup ${avatarMenuOpen ? "avatarMenuIsOpen" : ""}`}>
           <small className="galacticSetupBrand">{PRODUCT_NAME}</small>
           <div className="avatarPortraitWrap">
-            <div className="avatarPortrait">
-              <img src={avatarSrc} alt="Propuesta de avatar" />
+            <div className="avatarPortrait" ref={avatarPortraitRef}>
+              <button
+                type="button"
+                className="avatarPortraitTrigger"
+                aria-haspopup="dialog"
+                aria-expanded={avatarMenuOpen}
+                aria-controls="avatar-menu"
+                aria-label="Elegir avatar"
+                onClick={() => setAvatarMenuOpen((open) => !open)}
+              >
+                <img src={avatarSrc} alt="" />
+                <span className="avatarMenuChevron" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </span>
+              </button>
               <button
                 className={`avatarChangeButton ${avatarEditorOpen ? "open" : ""}`}
                 type="button"
@@ -1153,7 +1187,36 @@ export default function DemoApp() {
             />
           </div>
 
-          <div className="galacticAvatarChoices" role="group" aria-label="Avatares disponibles">{AVATARS.map((src,index)=><button key={src} type="button" aria-label={`Avatar ${index+1}`} aria-pressed={avatarSrc===src} onClick={()=>{setAvatarId(index);setAvatarSrc(src);}}><img src={avatarThumb(src)} alt="" width={96} height={96} loading="lazy" decoding="async"/></button>)}</div>
+          {avatarMenuOpen && (
+            <>
+              <button type="button" className="avatarMenuScrim" aria-label="Cerrar avatares" tabIndex={-1} onClick={() => setAvatarMenuOpen(false)} />
+              <div
+                id="avatar-menu"
+                ref={avatarMenuRef}
+                className="avatarMenu"
+                role="dialog"
+                aria-label="Elige avatar"
+                style={{ top: avatarMenuTop }}
+                onKeyDown={(event) => { if (event.key === "Escape") setAvatarMenuOpen(false); }}
+              >
+                <div className="avatarMenuGrid" role="group" aria-label="Avatares disponibles">
+                  {AVATARS.filter((src) => src !== avatarSrc).map((src) => {
+                    const index = AVATARS.indexOf(src);
+                    return (
+                      <button
+                        key={src}
+                        type="button"
+                        aria-label={`Avatar ${index + 1}`}
+                        onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
+                      >
+                        <img src={avatarThumb(src)} alt="" width={96} height={96} decoding="async" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
           <input
             autoComplete="nickname"
             id="avatar-name"
@@ -1334,9 +1397,27 @@ export default function DemoApp() {
                 onFinish={finishMatch}
               />
               {countdown !== null && (
-                <div className="countdownOverlay">
-                  <small>PREPÁRATE</small>
-                  <b>{countdown > 0 ? countdown : "GO"}</b>
+                <div
+                  className={`countdownOverlay gxIntro ${countdown === 0 ? "go" : ""}`}
+                  role="status"
+                  aria-live="polite"
+                  style={{ ["--accent" as string]: CATEGORY_ACCENTS[selectedGame.category] ?? "#7fe3ee" }}
+                >
+                  <div className="gxIntroStage" aria-hidden="true">
+                    <div className="gxIntroArt"><img src={selectedGame.cover} alt="" /></div>
+                  </div>
+                  <p className="gxIntroTagline">{selectedGame.tagline}</p>
+                  <div className="gxIntroChips" aria-hidden="true">
+                    {!selectedGame.skillLabel.includes(selectedGame.category) && <span>{selectedGame.category}</span>}
+                    <span>{selectedGame.skillLabel}</span>
+                  </div>
+                  <div className="gxIntroCount" key={countdown}>
+                    <svg viewBox="0 0 120 120" aria-hidden="true">
+                      <circle className="track" cx="60" cy="60" r="52" />
+                      <circle className="arc" cx="60" cy="60" r="52" pathLength={100} />
+                    </svg>
+                    <b aria-label={countdown > 0 ? `Empieza en ${countdown}` : "¡Ya!"}>{countdown > 0 ? countdown : "¡YA!"}</b>
+                  </div>
                 </div>
               )}
             </div>
