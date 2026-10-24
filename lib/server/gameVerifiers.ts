@@ -1,6 +1,7 @@
 import { ROULETTE_CORE_V5 } from "../verified/galacticRouletteCore.v5";
 import { ROULETTE_CORE_V6 } from "../verified/galacticRouletteCore.v6";
 import { ROULETTE_CORE_V7 } from "../verified/galacticRouletteCore.v7";
+import { ROULETTE_CORE_V8 } from "../verified/galacticRouletteCore.v8";
 import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
@@ -16,12 +17,14 @@ import { STACK_SHIFT_CORE } from "../verified/stackShiftCore.v1";
 import { STACK_SHIFT_CORE_V2 } from "../verified/stackShiftCore.v2";
 import { PINBALL_CORE_V1 } from "../verified/pinballCore.v1";
 import { PINBALL_CORE_V2 } from "../verified/pinballCore.v2";
+import { PINBALL_CORE_V3 } from "../verified/pinballCore.v3";
 import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
 import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
 import { SHOT_GALLERY_CORE_V3 } from "../verified/shotGalleryCore.v3";
 import { SHOT_GALLERY_CORE_V4 } from "../verified/shotGalleryCore.v4";
 import { SHOT_GALLERY_CORE_V5 } from "../verified/shotGalleryCore.v5";
+import { SHOT_GALLERY_CORE_V6 } from "../verified/shotGalleryCore.v6";
 import { DARTS_CORE_V3 } from "../verified/dartsCore.v3";
 import { DARTS_CORE_V2 } from "../verified/dartsCore.v2";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
@@ -237,6 +240,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ROULETTE_CORE_V5.gameId,ROULETTE_CORE_V5.gameVersion)]: coreAdapter(ROULETTE_CORE_V5),
   [adapterKey(ROULETTE_CORE_V6.gameId,ROULETTE_CORE_V6.gameVersion)]: coreAdapter(ROULETTE_CORE_V6),
   [adapterKey(ROULETTE_CORE_V7.gameId,ROULETTE_CORE_V7.gameVersion)]: coreAdapter(ROULETTE_CORE_V7),
+  [adapterKey(ROULETTE_CORE_V8.gameId,ROULETTE_CORE_V8.gameVersion)]: coreAdapter(ROULETTE_CORE_V8),
   [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
@@ -248,12 +252,14 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(STACK_SHIFT_CORE_V2.gameId, STACK_SHIFT_CORE_V2.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V2),
   [adapterKey(PINBALL_CORE_V1.gameId, PINBALL_CORE_V1.gameVersion)]: coreAdapter(PINBALL_CORE_V1),
   [adapterKey(PINBALL_CORE_V2.gameId, PINBALL_CORE_V2.gameVersion)]: coreAdapter(PINBALL_CORE_V2),
+  [adapterKey(PINBALL_CORE_V3.gameId, PINBALL_CORE_V3.gameVersion)]: coreAdapter(PINBALL_CORE_V3),
   [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
   [adapterKey(SHOT_GALLERY_CORE_V2.gameId,SHOT_GALLERY_CORE_V2.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V2),
   [adapterKey(SHOT_GALLERY_CORE_V3.gameId,SHOT_GALLERY_CORE_V3.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V3),
   [adapterKey(SHOT_GALLERY_CORE_V4.gameId,SHOT_GALLERY_CORE_V4.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V4),
   [adapterKey(SHOT_GALLERY_CORE_V5.gameId,SHOT_GALLERY_CORE_V5.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V5),
+  [adapterKey(SHOT_GALLERY_CORE_V6.gameId,SHOT_GALLERY_CORE_V6.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V6),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(DARTS_CORE_V3.gameId,DARTS_CORE_V3.gameVersion)]: coreAdapter(DARTS_CORE_V3),

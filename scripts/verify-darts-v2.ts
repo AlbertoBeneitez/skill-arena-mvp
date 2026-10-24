@@ -17,7 +17,7 @@ assert.equal(core.gameVersion, "2.0.0");
 assert.equal(gesture({ x: 195, y: 560 }, { x: 210, y: 290 }), true);
 assert.equal(gesture({ x: 195, y: 560 }, { x: 195, y: 531 }), false);
 assert.equal(gesture({ x: 195, y: 420 }, { x: 195, y: 372 }), true);
-assert.equal(gesture({ x: 195, y: 399 }, { x: 195, y: 300 }), false);
+assert.equal(gesture({ x: 195, y: 319 }, { x: 195, y: 300 }), false);
 assert.equal(gesture({ x: 100, y: 560 }, { x: 350, y: 500 }), false);
 assert.equal(gesture({ x: 195, y: 450 }, { x: 195, y: 560 }), false);
 assert.equal(gesture({ x: 195, y: 560 }, { x: 195, y: 560 }), false);

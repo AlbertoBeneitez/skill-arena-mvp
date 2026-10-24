@@ -109,6 +109,10 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
           const count = badges ? (badges[button.dataset.choice ?? ""] ?? 0) : 0;
           if (count > 0) button.dataset.chips = String(count);
           else delete button.dataset.chips;
+          // Optional chip denomination (badge key "~<choice>") so the badge keeps the chip colour.
+          const tone = badges ? badges[`~${button.dataset.choice ?? ""}`] : undefined;
+          if (count > 0 && tone) button.dataset.chipTone = String(tone);
+          else delete button.dataset.chipTone;
           button.setAttribute("aria-pressed", String(badges ? count > 0 : button.dataset.choice === value));
         }
         if (choiceSummaryRef.current) choiceSummaryRef.current.textContent = props.choiceControl.options.find(option => option.action === value)?.label ?? "";
@@ -364,7 +368,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
         if (action) { event.preventDefault(); heldRef.current.delete(action); send(action); }
       }}
     />
-    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span key={hud.label ?? hud.height} className="hudPop">{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop">{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
+    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? `ALTURA ${hud.height}`}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop">{hud.score.toLocaleString("es-ES")}</strong>}{hud.lives !== undefined && <span>VIDAS {hud.lives}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
     {props.choiceControl && (props.choiceControl.presentation === "table" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel coreChoiceTable">
       {/* Always visible: one tap places the chip, no panel to open or close. */}

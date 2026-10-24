@@ -1,4 +1,4 @@
-import { ROULETTE_ACTIONS_V7 as ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v7";
+import { ROULETTE_ACTIONS_V8 as ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v8";
 import { ROULETTE_ACTIONS } from "./verified/galacticRouletteProtocol.v1";
 import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
 import { MEMORY_ACTIONS } from "./verified/memoryMatchProtocol.v1";
@@ -7,7 +7,7 @@ import { SHOT_GALLERY_ACTIONS_V3 as SHOT_GALLERY_ACTIONS } from "./verified/shot
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
 import { ORB_ACTIONS_V5 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v5";
-import { PINBALL_ACTIONS_V2 } from "./verified/pinballProtocol.v2";
+import { PINBALL_ACTIONS_V3 } from "./verified/pinballProtocol.v3";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -83,7 +83,7 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  { id: "galactic-roulette", version: "7.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (caducan a los 10 s si no lanzas; el tapete se vacía tras cada tirada) y lanza la bola desde el lanzador exterior. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
+  { id: "galactic-roulette", version: "8.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
     id: "galactic-slot", version: "3.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
@@ -253,7 +253,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "5.0.0",
+    version: "6.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
@@ -268,16 +268,16 @@ const GAME_DEFINITIONS = [
     rivalScore: 6000,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Espera al punto verde y toca lo que pide la orden: manchas de color, figuras grises o la suma de ambas.",
-    scoring: "Doce órdenes (color, figura gris o suma de color y figura por separado) sobre objetivos repartidos al azar; algunas piden tocar varios. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
+    instruction: "Espera al punto verde y toca lo que pide la orden: manchas de color, figuras grises o la figura de color que cumple ambas características.",
+    scoring: "Doce órdenes (color, figura gris, o la figura de color que cumple ambas características) sobre objetivos repartidos al azar; algunas piden tocar varios. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
   },
 
   {
     id: "pinball",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V2 },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },
     name: "Pinball",
     cover: "/covers/pinball.svg",
     enabled: true,
@@ -290,7 +290,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Una sola bola y 60 s. La potencia del muelle fija el lanzamiento; las palas cierran el centro, así que solo se pierde por los carriles laterales. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
+    scoring: "Una sola bola y 60 s. La potencia del muelle fija el lanzamiento; los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];

@@ -1,0 +1,150 @@
+{
+ "seed": "roulette7-golden",
+ "inputs": [
+  {
+   "seq": 0,
+   "tick": 0,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 1,
+   "tick": 1,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 2,
+   "tick": 2,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 3,
+   "tick": 3,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 4,
+   "tick": 4,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 5,
+   "tick": 5,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 6,
+   "tick": 6,
+   "action": "TOSS_D10_P06"
+  },
+  {
+   "seq": 7,
+   "tick": 366,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 8,
+   "tick": 367,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 9,
+   "tick": 368,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 10,
+   "tick": 369,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 11,
+   "tick": 370,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 12,
+   "tick": 371,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 13,
+   "tick": 372,
+   "action": "TOSS_D15_P07"
+  },
+  {
+   "seq": 14,
+   "tick": 746,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 15,
+   "tick": 747,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 16,
+   "tick": 748,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 17,
+   "tick": 749,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 18,
+   "tick": 750,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 19,
+   "tick": 751,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 20,
+   "tick": 752,
+   "action": "TOSS_D20_P08"
+  },
+  {
+   "seq": 21,
+   "tick": 1203,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 22,
+   "tick": 1204,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 23,
+   "tick": 1205,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 24,
+   "tick": 1206,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 25,
+   "tick": 1207,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 26,
+   "tick": 1208,
+   "action": "TOSS_D25_P09"
+  },
+  {
+   "seq": 27,
+   "tick": 1771,
+   "action": "CASH_OUT"
+  }
+ ],
+ "score": 2100,
+ "finalTick": 1771,
+ "status": "won",
+ "failure": null,
+ "hash": "sha256:0b48e42efd67373e732adaea3b4559da92c4df5d2ea3bf5e74c12287d1ccd6f8"
+}

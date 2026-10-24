@@ -1,0 +1,88 @@
+{
+ "seed": "gallery6-golden",
+ "inputs": [
+  {
+   "seq": 0,
+   "tick": 156,
+   "action": "PICK_7"
+  },
+  {
+   "seq": 1,
+   "tick": 414,
+   "action": "PICK_4"
+  },
+  {
+   "seq": 2,
+   "tick": 713,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 3,
+   "tick": 979,
+   "action": "PICK_8"
+  },
+  {
+   "seq": 4,
+   "tick": 1187,
+   "action": "PICK_8"
+  },
+  {
+   "seq": 5,
+   "tick": 1404,
+   "action": "PICK_2"
+  },
+  {
+   "seq": 6,
+   "tick": 1444,
+   "action": "PICK_9"
+  },
+  {
+   "seq": 7,
+   "tick": 1695,
+   "action": "PICK_1"
+  },
+  {
+   "seq": 8,
+   "tick": 1739,
+   "action": "PICK_8"
+  },
+  {
+   "seq": 9,
+   "tick": 2034,
+   "action": "PICK_1"
+  },
+  {
+   "seq": 10,
+   "tick": 2082,
+   "action": "PICK_7"
+  },
+  {
+   "seq": 11,
+   "tick": 2313,
+   "action": "PICK_10"
+  },
+  {
+   "seq": 12,
+   "tick": 2542,
+   "action": "PICK_6"
+  },
+  {
+   "seq": 13,
+   "tick": 2582,
+   "action": "PICK_7"
+  },
+  {
+   "seq": 14,
+   "tick": 2815,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 15,
+   "tick": 3050,
+   "action": "PICK_2"
+  }
+ ],
+ "finalTick": 3134,
+ "score": 5663,
+ "hash": "sha256:23a2b6ae84c359aa84328dd3c05d55d1fec173c618d86323ceeec068940a93d7"
+}

@@ -2,14 +2,14 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V7,
-  ROULETTE_RULES_V7,
+  ROULETTE_CORE_V8,
+  ROULETTE_RULES_V8,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV7 as RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v7";
+  type RouletteStateV8 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v8";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
-import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v7";
+import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
   ROULETTE_BALL_DOCK,
   rouletteLauncherCanGrab,
@@ -126,7 +126,7 @@ function render(
     ctx.restore();
   }
   const idle = s.landingTick === -1;
-  const settled = idle && !drag && s.lastNumber !== null && !s.lastMiss;
+  const settled = idle && s.lastNumber !== null && !s.lastMiss;
   const pocketAngle = rotation + ROULETTE_WHEEL.findIndex(n => n === s.lastNumber) * Math.PI * 2 / 37;
   // The ball waits on the launcher outside the wheel; a swipe only aims it.
   // The last moment is slow and soft: the ball drifts into its pocket with a damped wobble.
@@ -188,19 +188,25 @@ function render(
       ctx.restore();
     }
   }
-  ctx.fillStyle = "rgba(0,4,14,.45)";
-  ctx.beginPath();
-  ctx.ellipse(x + 2 + height * 0.20, y + 3 + height * 0.26,
-    6 + height * 0.07, 4 + height * 0.04, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#f0f7ff";
-  ctx.beginPath();
-  ctx.arc(x, y, 6 + Math.min(height, 130) * 0.07, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(x - 2, y - 2, 2, 0, Math.PI * 2);
-  ctx.fill();
+  const drawBall = (bx: number, by: number, bh: number) => {
+    ctx.fillStyle = "rgba(0,4,14,.45)";
+    ctx.beginPath();
+    ctx.ellipse(bx + 2 + bh * 0.20, by + 3 + bh * 0.26, 6 + bh * 0.07, 4 + bh * 0.04, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#f0f7ff";
+    ctx.beginPath();
+    ctx.arc(bx, by, 6 + Math.min(bh, 130) * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(bx - 2, by - 2, 2, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  // The previous ball never vanishes: it stays in its pocket while the next one waits on the launcher.
+  if (idle && settled) {
+    drawBall(x, y, 0);
+    drawBall(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 0);
+  } else drawBall(x, y, height);
   ctx.strokeStyle = "#c7ac7a";
   ctx.lineWidth = 5;
   ctx.beginPath();
@@ -232,10 +238,10 @@ function render(
     377,
   );
   // History of the last results, newest on the right; each dot has the pocket colour.
-  const shown = s.history.slice(-ROULETTE_RULES_V7.historyLength);
-  const slot = 24, left = cx - (ROULETTE_RULES_V7.historyLength * slot) / 2;
-  for (let i = 0; i < ROULETTE_RULES_V7.historyLength; i++) {
-    const n = shown[i - (ROULETTE_RULES_V7.historyLength - shown.length)];
+  const shown = s.history.slice(-ROULETTE_RULES_V8.historyLength);
+  const slot = 24, left = cx - (ROULETTE_RULES_V8.historyLength * slot) / 2;
+  for (let i = 0; i < ROULETTE_RULES_V8.historyLength; i++) {
+    const n = shown[i - (ROULETTE_RULES_V8.historyLength - shown.length)];
     const hx = left + i * slot + slot / 2;
     if (n === undefined) {
       ctx.strokeStyle = "rgba(168,198,213,.28)";
@@ -245,7 +251,7 @@ function render(
       ctx.stroke();
       continue;
     }
-    const latest = i === ROULETTE_RULES_V7.historyLength - 1;
+    const latest = i === ROULETTE_RULES_V8.historyLength - 1;
     ctx.fillStyle = n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
     ctx.beginPath();
     ctx.arc(hx, 31, latest ? 11 : 9, 0, Math.PI * 2);
@@ -337,6 +343,8 @@ const choiceControl = {
     // Chips stay visible while the ball is in play and leave the cloth when the spin ends.
     const shown = s.landingTick !== -1 ? s.lockedChips : s.chips, values = s.landingTick !== -1 ? s.lockedValues : s.chipValues;
     shown.forEach((bet, i) => { counts[`BET_${bet}`] = (counts[`BET_${bet}`] ?? 0) + values[i]; });
+    // Dominant denomination per cell drives the badge colour (highest value placed there).
+    shown.forEach((bet, i) => { counts[`~BET_${bet}`] = Math.max(counts[`~BET_${bet}`] ?? 0, values[i]); });
     counts[`CHIP_${s.denomination}`] = 1;
     return counts;
   },
@@ -384,7 +392,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V7}
+        core={ROULETTE_CORE_V8}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -395,7 +403,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V7.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V8.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

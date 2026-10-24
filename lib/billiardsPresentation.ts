@@ -37,9 +37,10 @@ export function getBilliardsCamera(
 ): BilliardsCamera {
   if (viewport.width <= viewport.height) {
     return {
+      // Smaller table, anchored high, so the thumb has room below to pull the cue back.
       centerX: viewport.width / 2,
-      centerY: worldCenterY,
-      scale: 1,
+      centerY: 270,
+      scale: 0.84,
       rotated: false,
     };
   }

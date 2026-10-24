@@ -34,27 +34,16 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
     groundScreenY = 580,
     pivotY = floor - blockH - 320 - TOWER_DROP_V3.ropeLengthMilli / 1000,
     craneTop = pivotY - 24;
-  // Fit the complete tower first. Once zoom would make the landing area too
-  // small, compress only the older settled layers; crane, rope and active
-  // block still share one uniform scale and the foundation remains visible.
-  const scale = Math.max(
-      0.55,
-      Math.min(
-        0.83,
-        (groundScreenY - 80) /
-          (floor - craneTop + state.blocks.length * blockH),
-      ),
-    ),
+  // Constant zoom, like Stack: the camera follows the newest layer and the older
+  // layers (full height, no squashing) slowly slide off the bottom of the screen.
+  const scale = 0.8,
     landingScreenY = Math.max(
-      80 + (floor - craneTop) * scale,
+      86 + (floor - craneTop) * scale,
       groundScreenY - state.blocks.length * blockH * scale,
     ),
     offsetY = landingScreenY - floor * scale,
     groundY = (groundScreenY - offsetY) / scale,
-    olderBlockH =
-      state.blocks.length > 1
-        ? (groundY - floor - blockH) / (state.blocks.length - 1)
-        : blockH;
+    olderBlockH = blockH;
   const easedOffsetY = ease(state, offsetY, state.phase === "swing");
   ctx.save();
   ctx.translate(195 * (1 - scale), easedOffsetY);

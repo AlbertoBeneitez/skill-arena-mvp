@@ -4,9 +4,9 @@ import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  SHOT_GALLERY_CORE_V5 as core,
-      type GalleryStateV5,
-} from "@/lib/verified/shotGalleryCore.v5";
+  SHOT_GALLERY_CORE_V6 as core,
+      type GalleryStateV6,
+} from "@/lib/verified/shotGalleryCore.v6";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 const PAINT = ["#4fa8ff", "#ff7a6b", "#a8e05f", "#a47bff", "#ffd23f", "#ff6fb5", "#2fd9c8", "#ff9a3c"];
@@ -95,16 +95,16 @@ function splash(ctx: CanvasRenderingContext2D, color: string, x: number, y: numb
   ctx.restore();
 }
 
-const hudLabel = (s: Readonly<GalleryStateV5>) => {
+const hudLabel = (s: Readonly<GalleryStateV6>) => {
   const taps = s.results.flatMap((r) => r.taps);
   const avg = taps.length ? ` · MEDIA ${msOf(taps.reduce((a, b) => a + b, 0) / taps.length)} ms` : "";
   return `${s.correct} ACIERTOS · ${Math.min(12, s.trial + 1)}/12${avg}`;
 };
-const feedbackScore = (s: Readonly<GalleryStateV5>) => s.total;
+const feedbackScore = (s: Readonly<GalleryStateV6>) => s.total;
 
 /** Reaction times are kept on this device (last 30 runs): presentation/storage only. */
 let savedSeed = "";
-function persistReactions(s: GalleryStateV5) {
+function persistReactions(s: GalleryStateV6) {
   if (s.status === "running" || savedSeed === s.seed) return;
   savedSeed = s.seed;
   try {
@@ -126,7 +126,7 @@ function persistReactions(s: GalleryStateV5) {
 }
 
 export default function ShotGallery(props: GameRuntimeProps) {
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV5) => {
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV6) => {
     persistReactions(s);
     const trial = s.trials[Math.min(s.trial, 11)],
       order = trial.order,
@@ -150,14 +150,12 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.fillStyle = GREY;
       figure(ctx, order.shape, 195, 103, 20);
     } else {
-      splash(ctx, colour, 140, 103, 16, order.color + 1);
-      ctx.fillStyle = "#eaf2f8";
-      ctx.beginPath();
-      ctx.roundRect(188, 101, 14, 4, 2);
-      ctx.roundRect(193, 96, 4, 14, 2);
-      ctx.fill();
-      ctx.fillStyle = GREY;
-      figure(ctx, order.shape, 250, 103, 18);
+      // SUM: the coloured figure that has both traits.
+      ctx.fillStyle = colour;
+      figure(ctx, order.shape, 195, 103, 20);
+      ctx.strokeStyle = "rgba(255,255,255,.55)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
     // One pip per target still to hit (symbols, not text).
     const need = trial.answers.length;
@@ -212,7 +210,13 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.beginPath();
       ctx.arc(t.x, t.y, 31, 0, Math.PI * 2);
       ctx.fill();
-      if (t.type === "SPLASH") splash(ctx, PAINT[t.color], t.x, t.y, 20, t.color + (i % 5));
+      if (t.type === "COMBO") {
+        ctx.fillStyle = PAINT[t.color];
+        figure(ctx, t.shape, t.x, t.y, 22);
+        ctx.strokeStyle = "rgba(255,255,255,.55)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      } else if (t.type === "SPLASH") splash(ctx, PAINT[t.color], t.x, t.y, 20, t.color + (i % 5));
       else {
         ctx.fillStyle = "#aeb7c0";
         figure(ctx, t.shape, t.x, t.y, 22);
@@ -279,7 +283,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.fillText(last.type === "FALSE_START" ? "DEMASIADO PRONTO" : "TARDE", 195, f.y0 + f.h / 2);
     }
   }, []);
-  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV5) => {
+  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV6) => {
     if (phase !== "down" || s.phase === "feedback") return null;
     // Tapping before the green dot is a false start wherever the finger lands.
     if (s.phase === "waiting") return "PICK_0";
