@@ -16,6 +16,11 @@ import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
+import { useProgression } from "./useProgression";
+import PlayerProgress from "./PlayerProgress";
+import RiskPicker from "./RiskPicker";
+import RunRewards from "./RunRewards";
+import type { RiskId, RunApplied } from "@/lib/progression";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 
 type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking";
@@ -248,6 +253,12 @@ export default function DemoApp() {
   const [selectedGame, setSelectedGame] = useState<GameMeta>(GAMES[0]);
   const resultPointerReadyRef = useRef(false);
   const [selectedStake, setSelectedStake] = useState<number>(0);
+  // Player-experience layer (local only): progress, risk decision before each game, rewards after it.
+  const { progress, recordRun, claim, takeChest, equipItem } = useProgression();
+  const [risk, setRisk] = useState<RiskId>("calm");
+  const runRiskRef = useRef<RiskId>("calm");
+  const recordedKeyRef = useRef(-1);
+  const [runApplied, setRunApplied] = useState<RunApplied | null>(null);
   const [selectedMode, setSelectedMode] = useState<MatchMode>("create");
   const [ghostEnabled, setGhostEnabled] = useState(true);
   const [activeGame, setActiveGame] = useState(false);
@@ -758,6 +769,14 @@ export default function DemoApp() {
   const {persistentTraining,liveModes}=usePublicMatchAvailability(isLoaded&&onboarded,screen==="home",selectedStake);
   usePendingMatchResolution(screen==="game"&&result!==null,attemptSummary,finishMatch);
 
+  useEffect(() => {
+    if (!result || result.forfeited || result.verified === false || recordedKeyRef.current === gameKey) return;
+    recordedKeyRef.current = gameKey;
+    const final = attemptSummary ?? result;
+    const reach = final.verified === true && final.height !== undefined && Number.isSafeInteger(final.height) && final.height >= 0 ? final.height : final.score;
+    setRunApplied(recordRun({ gameId: selectedGame.id, score: reach, won: final.won, risk: runRiskRef.current }));
+  }, [result, attemptSummary, gameKey, selectedGame.id, recordRun]);
+
   function startMatch(gameOverride?: GameMeta) {
     const game = gameOverride ?? selectedGame;
     const stake = selectedStake;
@@ -791,6 +810,8 @@ export default function DemoApp() {
 
     setResult(null);
     setAttemptSummary(null);
+    setRunApplied(null);
+    runRiskRef.current = risk;
     setActiveGame(false);
     setGameKey((k) => k + 1);
     setCountdown(3);
@@ -1257,6 +1278,9 @@ export default function DemoApp() {
               <button type="button" className="globalRankingShortcut" aria-label="Ranking global · Beneficio neto" onClick={()=>navigate("ranking")}>Ranking global →</button>
             </div>
 
+            <PlayerProgress progress={progress} onClaim={claim} onEquip={equipItem} />
+            <RiskPicker value={risk} onChange={setRisk} />
+
             {matchStartError && <p role="status">{matchStartError}</p>}
             <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
           </section>
@@ -1383,6 +1407,7 @@ export default function DemoApp() {
                 ) : (
                   <>
                     <GameResultSummary result={attemptSummary ?? result} gameName={selectedGame.name} resultMetric={selectedGame.resultMetric} waitingForRival={result.serverMatch ? result.serverMatch.status === "waiting" : selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
+                    {runApplied && <RunRewards applied={runApplied} seed={`${selectedGame.id}-${gameKey}-${runApplied.state.runs}`} unlocked={runApplied.state.unlocked} onPick={takeChest} />}
                   </>
                 )}
                 <fieldset className="resultActions" disabled={!resultActionsReady} aria-label="Acciones del resultado">
