@@ -104,3 +104,64 @@
 .play { background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #9ce6e8) 70%, #fff), var(--accent, #9ce6e8)); border-color: var(--accent, #9ce6e8); }
 @keyframes cardSweep { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .card::before { animation: none; } .card:hover { transform: none; } }
+
+/* v109 · Arcade launch button: hot gold→orange→magenta, 3D bevel, play glyph and a periodic shine. */
+.play {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffe066 0%, #ff9a1f 42%, #ff2e7e 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .03em;
+  text-shadow: 0 1px 0 rgba(120, 20, 40, .55), 0 0 10px rgba(255, 80, 60, .35);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .7) inset,
+    0 -3px 0 rgba(120, 10, 60, .35) inset,
+    0 4px 0 #a3134f,
+    0 8px 22px rgba(255, 70, 120, .45);
+  animation: playGlow 2.4s ease-in-out infinite;
+}
+.play::before {
+  content: "";
+  flex: none;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 0 6px 10px;
+  border-color: transparent transparent transparent #fff;
+  filter: drop-shadow(0 1px 0 rgba(120, 20, 40, .55));
+}
+.play::after {
+  content: "";
+  position: absolute;
+  inset: -20% auto -20% -40%;
+  width: 34%;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
+  transform: skewX(-18deg);
+  animation: playShine 3.2s ease-in-out infinite;
+}
+.play:active:not(:disabled) {
+  transform: translateY(3px);
+  background: linear-gradient(135deg, #ffd23f 0%, #ff8a00 42%, #f0186c 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 1px 0 #a3134f, 0 3px 10px rgba(255, 70, 120, .4);
+}
+.play:disabled { opacity: .5; animation: none; filter: saturate(.5); }
+.play:disabled::after { display: none; }
+.play[aria-busy="true"]::before { display: none; }
+@keyframes playGlow {
+  0%, 100% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 22px rgba(255,70,120,.4); }
+  50% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 30px rgba(255,140,40,.7); }
+}
+@keyframes playShine { 0%, 55% { left: -40%; } 85%, 100% { left: 120%; } }
+@media (prefers-reduced-motion: reduce) { .play, .play::after { animation: none; } }
+:global(html[data-reduce-motion="1"]) .play, :global(html[data-reduce-motion="1"]) .play::after { animation: none; }

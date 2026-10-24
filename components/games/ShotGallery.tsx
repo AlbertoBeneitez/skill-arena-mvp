@@ -4,9 +4,9 @@ import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  SHOT_GALLERY_CORE_V6 as core,
-      type GalleryStateV6,
-} from "@/lib/verified/shotGalleryCore.v6";
+  SHOT_GALLERY_CORE_V7 as core,
+  type GalleryStateV7,
+} from "@/lib/verified/shotGalleryCore.v7";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
@@ -96,16 +96,16 @@ function splash(ctx: CanvasRenderingContext2D, color: string, x: number, y: numb
   ctx.restore();
 }
 
-const hudLabel = (s: Readonly<GalleryStateV6>) => {
+const hudLabel = (s: Readonly<GalleryStateV7>) => {
   const taps = s.results.flatMap((r) => r.taps);
   const avg = taps.length ? ` · ${tx("gallery.avg", { n: msOf(taps.reduce((a, b) => a + b, 0) / taps.length) })}` : "";
   return `${tx("gallery.hud", { n: s.correct, trial: Math.min(12, s.trial + 1) })}${avg}`;
 };
-const feedbackScore = (s: Readonly<GalleryStateV6>) => s.total;
+const feedbackScore = (s: Readonly<GalleryStateV7>) => s.total;
 
 /** Reaction times are kept on this device (last 30 runs): presentation/storage only. */
 let savedSeed = "";
-function persistReactions(s: GalleryStateV6) {
+function persistReactions(s: GalleryStateV7) {
   if (s.status === "running" || savedSeed === s.seed) return;
   savedSeed = s.seed;
   try {
@@ -137,7 +137,7 @@ function bulb(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, co
   ctx.shadowBlur = 0;
 }
 
-function streakOf(s: GalleryStateV6) {
+function streakOf(s: GalleryStateV7) {
   let n = 0;
   for (let i = s.results.length - 1; i >= 0 && s.results[i].type === "CORRECT"; i--) n++;
   return n;
@@ -157,7 +157,7 @@ function drawAwning(ctx: CanvasRenderingContext2D, tick: number) {
   ctx.fillRect(14, top, 362, 3);
 }
 
-function drawMarquee(ctx: CanvasRenderingContext2D, s: GalleryStateV6) {
+function drawMarquee(ctx: CanvasRenderingContext2D, s: GalleryStateV7) {
   const x = 14, y = 64, w = 362, h = 74, chase = Math.floor(s.tick / 7);
   const frame = ctx.createLinearGradient(0, y, 0, y + h);
   frame.addColorStop(0, "#3a2a10"); frame.addColorStop(1, "#1c1406");
@@ -244,37 +244,9 @@ function drawPlate(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.beginPath(); ctx.arc(x, y, 25, 0, Math.PI * 2); ctx.fill();
 }
 
-function drawBlaster(ctx: CanvasRenderingContext2D, aimX: number, aimY: number, flash: number) {
-  const bx = 195, by = 600;
-  ctx.fillStyle = "#121a28";
-  ctx.beginPath(); ctx.roundRect(120, 586, 150, 34, 12); ctx.fill();
-  ctx.strokeStyle = "#e7b54a"; ctx.lineWidth = 1.5; ctx.stroke();
-  const a = Math.atan2(aimY - by, aimX - bx);
-  ctx.save();
-  ctx.translate(bx, by);
-  ctx.rotate(a + Math.PI / 2);
-  const body = ctx.createLinearGradient(-10, 0, 10, 0);
-  body.addColorStop(0, "#5b6b80"); body.addColorStop(0.5, "#e9f1f8"); body.addColorStop(1, "#5b6b80");
-  ctx.fillStyle = body;
-  ctx.beginPath(); ctx.roundRect(-7, -34, 14, 34, 4); ctx.fill();
-  ctx.fillStyle = "#c2185b";
-  ctx.fillRect(-7, -22, 14, 4);
-  if (flash > 0) {
-    ctx.fillStyle = `rgba(255,240,170,${flash})`;
-    ctx.shadowColor = "#ffd36a"; ctx.shadowBlur = 18;
-    ctx.beginPath(); ctx.moveTo(0, -52); ctx.lineTo(9, -36); ctx.lineTo(-9, -36); ctx.closePath(); ctx.fill();
-    ctx.shadowBlur = 0;
-  }
-  ctx.restore();
-  const dome = ctx.createRadialGradient(bx - 5, by - 6, 2, bx, by, 18);
-  dome.addColorStop(0, "#ffffff"); dome.addColorStop(1, "#4a5a70");
-  ctx.fillStyle = dome;
-  ctx.beginPath(); ctx.arc(bx, by, 15, 0, Math.PI * 2); ctx.fill();
-}
-
 export default function ShotGallery(props: GameRuntimeProps) {
   useI18n();
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV6) => {
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV7) => {
     persistReactions(s);
     const trial = s.trials[Math.min(s.trial, 11)],
       order = trial.order,
@@ -318,11 +290,9 @@ export default function ShotGallery(props: GameRuntimeProps) {
     ctx.translate(shake, 0);
     drawBoothWall(ctx, ready, s.tick);
 
-    let aimX = 195, aimY = f.y0 + f.h / 2;
     if (s.phase === "waiting") {
       drawSignal(ctx, 195, f.y0 + f.h / 2, false, s.tick, 2.2);
       ctx.restore();
-      drawBlaster(ctx, aimX, aimY, 0);
       return;
     }
     // Paint splats left on the back wall by this round's hits.
@@ -379,16 +349,20 @@ export default function ShotGallery(props: GameRuntimeProps) {
         }
       }
     });
-    // Shot: tracer from the blaster, impact flash, shock ring and sparks.
+    // Shot: impact flash, shock ring and sparks on the plate that was hit.
     const lastHit = s.hits.length ? trial.targets[s.hits[s.hits.length - 1]] : null;
-    if (lastHit) { aimX = lastHit.x; aimY = lastHit.y; }
     if (lastHit && s.lastAward >= 0 && since >= 0 && since < 36) {
       const k = since / 36;
-      if (since < 8) {
-        ctx.strokeStyle = `rgba(255,244,196,${1 - since / 8})`;
-        ctx.lineWidth = 3;
-        ctx.shadowColor = "#ffd36a"; ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.moveTo(195, 586); ctx.lineTo(lastHit.x, lastHit.y); ctx.stroke();
+      if (since < 6) {
+        // Bullet hole flash: a bright star burst at the point of impact.
+        ctx.fillStyle = `rgba(255,248,210,${1 - since / 6})`;
+        ctx.shadowColor = "#ffd36a"; ctx.shadowBlur = 16;
+        ctx.beginPath();
+        for (let q = 0; q < 16; q++) {
+          const a = (q / 16) * Math.PI * 2, r = q % 2 ? 6 : 16 - since;
+          q ? ctx.lineTo(lastHit.x + Math.cos(a) * r, lastHit.y + Math.sin(a) * r) : ctx.moveTo(lastHit.x + Math.cos(a) * r, lastHit.y + Math.sin(a) * r);
+        }
+        ctx.closePath(); ctx.fill();
         ctx.shadowBlur = 0;
       }
       ctx.fillStyle = `rgba(255,255,255,${Math.max(0, 0.9 - k * 2.2)})`;
@@ -432,9 +406,8 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.shadowBlur = 0;
     }
     ctx.restore();
-    drawBlaster(ctx, aimX, aimY, s.lastAward >= 0 && since >= 0 && since < 6 ? 1 - since / 6 : 0);
   }, []);
-  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV6) => {
+  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV7) => {
     if (phase !== "down" || s.phase === "feedback") return null;
     // Tapping before the green dot is a false start wherever the finger lands.
     if (s.phase === "waiting") return "PICK_0";

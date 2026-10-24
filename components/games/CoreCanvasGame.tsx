@@ -108,6 +108,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     render(ctx, stateRef.current, {
       width: metricsRef.current.logicalWidth,
       height: metricsRef.current.logicalHeight,
+      top: -metricsRef.current.offsetY / metricsRef.current.scale,
     });
     if (choiceRef.current && props.choiceControl) {
       choiceRef.current.value = props.choiceControl.value(stateRef.current);

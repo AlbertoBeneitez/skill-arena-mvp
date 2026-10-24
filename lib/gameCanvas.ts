@@ -4,7 +4,8 @@ import {
 } from "./spaceBackdrop";
 
 export type CanvasViewportPolicy = "contain" | "expand-horizontal" | "expand-vertical";
-export type LogicalCanvasViewport = { width: number; height: number };
+/** `top` is the logical y of the canvas top edge (≤ 0 when a letterboxed canvas has free rows above the play area). */
+export type LogicalCanvasViewport = { width: number; height: number; top?: number };
 
 export type CanvasViewportMetrics = {
   dpr: number;

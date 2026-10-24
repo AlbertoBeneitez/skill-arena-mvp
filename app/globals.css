@@ -7374,3 +7374,24 @@ html[dir="rtl"] .appHeader .logoButton { text-align: right; }
 .appHeader .balanceChip { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1; white-space: nowrap; }
 .appHeader .balanceChip small { font-size: 8px; font-weight: 800; letter-spacing: .08em; opacity: .72; }
 .appHeader .balanceChip b { font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+/* =====================================================================
+   v109 · Avatar grid 4×4, louder play buttons, no tap boxes in games
+   ===================================================================== */
+.galacticAvatarSetup .avatarMenu { padding: 14px; }
+.galacticAvatarSetup .avatarMenuGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(8px, 2.6vw, 14px); }
+.galacticAvatarSetup .avatarMenuGrid button { padding: 3px; border-width: 2px; }
+.galacticAvatarSetup .avatarMenuGrid button:nth-child(n) { animation-delay: 0ms; }
+.galacticAvatarSetup .avatarMenuGrid button:nth-child(4n+2) { animation-delay: 25ms; }
+.galacticAvatarSetup .avatarMenuGrid button:nth-child(4n+3) { animation-delay: 50ms; }
+.galacticAvatarSetup .avatarMenuGrid button:nth-child(4n) { animation-delay: 75ms; }
+.galacticAvatarSetup .avatarMenuGrid button.current {
+  border-color: var(--gx-gold);
+  box-shadow: 0 0 0 3px rgba(243,197,90,.3), 0 0 18px rgba(243,197,90,.4);
+}
+
+/* Games: no browser tap highlight or focus box on the play surface or its buttons (keyboard focus stays visible). */
+.coreGameSurface, .coreGameSurface :is(canvas, button) { -webkit-tap-highlight-color: transparent; }
+.coreGameSurface canvas:focus, .coreGameSurface canvas:focus-visible { outline: none; }
+.coreGameSurface button:focus:not(:focus-visible) { outline: none; }
+.coreControls button { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }

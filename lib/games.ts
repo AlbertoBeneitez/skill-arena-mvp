@@ -253,7 +253,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "6.0.0",
+    version: "7.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
@@ -269,12 +269,12 @@ const GAME_DEFINITIONS = [
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Espera al punto verde y toca lo que pide la orden: manchas de color, figuras grises o la figura de color que cumple ambas características.",
-    scoring: "Doce órdenes (color, figura gris, o la figura de color que cumple ambas características) sobre objetivos repartidos al azar; algunas piden tocar varios. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
+    scoring: "Doce órdenes (color, figura gris, o la figura de color que cumple ambas características) sobre objetivos repartidos al azar; cada una pide varios disparos (de 2 a 4). Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
   },
 
   {
     id: "pinball",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },

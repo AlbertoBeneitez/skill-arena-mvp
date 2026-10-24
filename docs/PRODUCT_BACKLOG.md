@@ -544,3 +544,12 @@ verificadas resolubles. Detalle: [releases/v104-saturn.md](releases/v104-saturn.
 ## v105-saturn · ajustes y experiencia de jugador (24-oct-2026)
 
 Ruleta 8, Gallery 6, Pinball 3, Tower/Billar/Dardos/Slot y capa de progresión y recompensas. Detalle: [releases/v105-saturn.md](releases/v105-saturn.md).
+
+## v106–v108-saturn · interfaz, avatares, Pinball/Shot Gallery visual, 10 idiomas y ajustes (24-oct-2026)
+
+Detalle: [v106](releases/v106-saturn.md), [v107](releases/v107-saturn.md), [v108](releases/v108-saturn.md).
+
+## v109-saturn · Pinball 4, Shot Gallery 7, avatares 4×4 y botón de jugar (25-oct-2026)
+
+Pinball 4.0.0 (hueco central más estrecho), Shot Gallery 7.0.0 (2–4 disparos por pantalla, sin cañón), rejilla de 16 avatares,
+botón de jugar más llamativo, marcador del Pinball más alto y sin recuadro de toque en los juegos. Detalle: [releases/v109-saturn.md](releases/v109-saturn.md).

@@ -1276,12 +1276,14 @@ export default function DemoApp() {
                 onKeyDown={(event) => { if (event.key === "Escape") setAvatarMenuOpen(false); }}
               >
                 <div className="avatarMenuGrid" role="group" aria-label={t("identity.availableAvatars")}>
-                  {AVATARS.filter((src) => src !== avatarSrc).map((src) => {
-                    const index = AVATARS.indexOf(src);
+                  {AVATARS.map((src, index) => {
+                    const current = src === avatarSrc;
                     return (
                       <button
                         key={src}
                         type="button"
+                        className={current ? "current" : undefined}
+                        aria-pressed={current}
                         aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
