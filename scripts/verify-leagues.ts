@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { GAMES } from "../lib/games";
+import { GAMES, lowerScoreWins } from "../lib/games";
 import { emptyLeague, leagueRival, recordLeagueResult, type LeagueRecord } from "../lib/leagues";
 
 const play = (start: LeagueRecord, results: boolean[]) => results.reduce(recordLeagueResult, start);
@@ -25,8 +25,11 @@ const play = (start: LeagueRecord, results: boolean[]) => results.reduce(recordL
 for (const game of GAMES) {
   const targets = [0, 1, 2, 3, 4].map((tier) => leagueRival(game, { ...emptyLeague(), tier: tier as LeagueRecord["tier"] }).target);
   assert.deepEqual(leagueRival(game, emptyLeague()), leagueRival(game, emptyLeague()));
-  for (let i = 1; i < 5; i++) assert.ok(targets[i] >= targets[i - 1], `${game.id} tiers ascend (${targets.join(",")})`);
-  assert.ok(targets[4] > targets[0], game.id);
+  // Harder tiers: higher targets, or SMALLER target times for time-scored games.
+  const harder = (hi: number, lo: number) => (lowerScoreWins(game) ? hi <= lo : hi >= lo);
+  for (let i = 1; i < 5; i++) assert.ok(harder(targets[i], targets[i - 1]), `${game.id} tiers get harder (${targets.join(",")})`);
+  assert.ok(targets[4] !== targets[0] && harder(targets[4], targets[0]), game.id);
+  if (lowerScoreWins(game)) assert.equal(leagueRival(game, emptyLeague()).timeGoal, true);
   if (game.resultMetric === "fictitious-balance") assert.equal(targets[0], 10000);
 }
 const a = leagueRival(GAMES[3], { ...emptyLeague(), tier: 2, results: [true] }), b = leagueRival(GAMES[3], { ...emptyLeague(), tier: 2, results: [true, false] });

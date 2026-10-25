@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "Joystick de direction",
   "joystick.stop": "Arrêter le mouvement",
-  "gameMeta.corner-sudoku.name": "Sudoku Coin",
-  "gameMeta.corner-sudoku.tagline": "Deux côtés d'un sudoku : cinq carrés, cinq défis.",
+  "gameMeta.corner-sudoku.name": "Galakdoku",
+  "gameMeta.corner-sudoku.tagline": "Le coin d'un sudoku : trois carrés, cinq défis.",
   "gameMeta.corner-sudoku.skill": "LOGIQUE + RAPIDITÉ",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Erreurs {n}/{max}",
@@ -607,6 +607,16 @@ const messages: Messages = {
   "bowling.gutter": "Gouttière",
   "bowling.skip": "Passer ⏭",
   "bowling.hud": "Frame {frame}/10 · Lancer {roll}",
+  "common.ms": "{n} ms",
+  "result.reactionTotal": "Temps de réaction cumulé",
+  "gallery.timeHud": "TEMPS {n} ms · {trial}/12",
+  "pinball.mission": "MISSION !",
+  "pinball.extraTime": "+10 s DE TEMPS",
+  "pinball.hurry": "HURRY-UP !",
+  "pinball.hurryGo": "HURRY-UP EMPOCHÉ !",
+  "pinball.saved": "BALLE SAUVÉE !",
+  "pinball.frenzy": "FRÉNÉSIE ×2 !",
+  "pinball.hurryValue": "HURRY {n}",
 };
 
 export default messages;

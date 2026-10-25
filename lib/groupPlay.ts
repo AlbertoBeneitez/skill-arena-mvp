@@ -144,13 +144,11 @@ export function groupTargetScore(
   group: ClosedGroup,
   game: GameMeta
 ) {
-  return Math.max(
-    ...group.members
-      .filter((member) => !member.isYou)
-      .map((member) =>
-        Math.round(game.rivalScore * member.scoreFactor)
-      )
-  );
+  const rivals = group.members.filter((member) => !member.isYou);
+  // Time-scored games: the strongest rival has the smallest time.
+  if (game.resultMetric === "reaction-time-ms")
+    return Math.min(...rivals.map((member) => Math.round(game.rivalScore / member.scoreFactor)));
+  return Math.max(...rivals.map((member) => Math.round(game.rivalScore * member.scoreFactor)));
 }
 
 export function groupPot(

@@ -38,7 +38,7 @@ const REFERENCE: Record<string, number> = {
   "stack-shift": 16000,
   "orb-burst": 10000,
   "precision-stack": 600000,
-  "reaction-test": 8000,
+  "reaction-test": 15000, // accumulated ms (lower is better)
   pinball: 40000,
   "corner-sudoku": 4500,
   bowling: 180,
@@ -57,7 +57,7 @@ const RIVALS = [
   ["PULSAR", "AURORA", "SIRIUS", "NEBULA", "MAGNA", "ASTRA"],
 ] as const;
 
-export type LeagueRival = { name: string; avatar: string; target: number; balanceGoal: boolean };
+export type LeagueRival = { name: string; avatar: string; target: number; balanceGoal: boolean; timeGoal?: boolean };
 
 /** Matchmaking by league tier: the rival and its score depend only on game, tier and series position. */
 export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
@@ -71,9 +71,11 @@ export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
   }
   const reference = REFERENCE[game.id] ?? game.rivalScore;
   const jitter = 0.92 + rng.nextInt(17) / 100; // 0.92–1.08
-  let target = Math.max(1, Math.round(reference * FACTORS[record.tier] * jitter));
+  // Time-scored games: higher tiers must be FASTER, so the target time shrinks with the tier factor.
+  const lower = game.resultMetric === "reaction-time-ms";
+  let target = Math.max(1, Math.round(lower ? reference / (FACTORS[record.tier] * jitter) : reference * FACTORS[record.tier] * jitter));
   if (CAP[game.id]) target = Math.min(CAP[game.id], target);
-  return { name, avatar, target, balanceGoal: false };
+  return { name, avatar, target, balanceGoal: false, timeGoal: lower };
 }
 
 /** Records one match; closes the series after five and applies promotion/relegation. */

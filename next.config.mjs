@@ -39,7 +39,13 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Static art (covers, avatars) is cached for a day and revalidated in the background.
+    const artCache = [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/covers/:file*", headers: artCache },
+      { source: "/avatars/:file*", headers: artCache },
+    ];
   },
 };
 

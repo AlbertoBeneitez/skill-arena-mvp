@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "سمت کا جوائے اسٹک",
   "joystick.stop": "حرکت روکیں",
-  "gameMeta.corner-sudoku.name": "کارنر سوڈوکو",
-  "gameMeta.corner-sudoku.tagline": "سوڈوکو کے دو کنارے: پانچ خانے، پانچ پہیلیاں۔",
+  "gameMeta.corner-sudoku.name": "Galakdoku",
+  "gameMeta.corner-sudoku.tagline": "سوڈوکو کا ایک کونا: تین خانے، پانچ پہیلیاں۔",
   "gameMeta.corner-sudoku.skill": "منطق + رفتار",
   "sudoku.progress": "سوڈوکو {n}/{total}",
   "sudoku.mistakes": "غلطیاں {n}/{max}",
@@ -607,6 +607,16 @@ const messages: Messages = {
   "bowling.gutter": "گٹر",
   "bowling.skip": "چھوڑیں ⏭",
   "bowling.hud": "فریم {frame}/10 · گیند {roll}",
+  "common.ms": "{n} ms",
+  "result.reactionTotal": "کل ردِعمل کا وقت",
+  "gallery.timeHud": "وقت {n} ms · {trial}/12",
+  "pinball.mission": "!مشن",
+  "pinball.extraTime": "+10 سیکنڈ اضافی وقت",
+  "pinball.hurry": "!جلدی",
+  "pinball.hurryGo": "!جیک پاٹ مل گیا",
+  "pinball.saved": "!گیند بچ گئی",
+  "pinball.frenzy": "!جنون ×2",
+  "pinball.hurryValue": "جیک پاٹ {n}",
 };
 
 export default messages;

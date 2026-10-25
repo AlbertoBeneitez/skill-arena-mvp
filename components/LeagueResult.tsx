@@ -34,7 +34,7 @@ export default function LeagueResult({ outcome }: { outcome: { won: boolean; rec
   const { won, record, rival } = outcome, last = record.last;
   const shownTier = last ? last.from : record.tier;
   const results = last ? Array.from({ length: LEAGUE_SERIES }, (_, i) => i < last.wins) : record.results;
-  const target = rival.balanceGoal ? t("league.goalChips", { n: formatNumber(rival.target / 100) }) : formatNumber(rival.target);
+  const target = rival.balanceGoal ? t("league.goalChips", { n: formatNumber(rival.target / 100) }) : rival.timeGoal ? t("common.ms", { n: formatNumber(rival.target) }) : formatNumber(rival.target);
   return (
     <section className={`leagueResult ${won ? "won" : "lost"} ${last ? `change-${last.change}` : ""}`} style={{ ["--tier" as string]: LEAGUE_COLORS[shownTier] }} aria-label={t("league.title")}>
       <header>

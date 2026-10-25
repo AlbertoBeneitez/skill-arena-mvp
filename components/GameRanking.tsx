@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { GAMES, type GameMeta } from "@/lib/games";
+import { GAMES, compareScores, type GameMeta } from "@/lib/games";
 import { formatNumber, t, useI18n, type MessageKey } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { createRng } from "@/lib/deterministic/seeded";
@@ -21,13 +21,17 @@ function sampleRows(game: GameMeta): Row[] {
     const tier = (4 - Math.min(4, Math.floor(i / 6))) as LeagueTier;
     const record: LeagueRecord = { ...emptyLeague(), tier, series: i, results: [] };
     const base = leagueRival(game, record).target;
-    const score = Math.round(base * (1.12 - (i % 6) * 0.035) * (0.97 + rng.nextInt(7) / 100));
+    const spread = (1.12 - (i % 6) * 0.035) * (0.97 + rng.nextInt(7) / 100);
+    // Time-scored games: a stronger player has a SMALLER time.
+    const score = Math.round(game.resultMetric === "reaction-time-ms" ? base / spread : base * spread);
     return { id: `sample-${i}`, name, avatar: `/avatars/portrait-${String(1 + ((i * 7) % 16)).padStart(2, "0")}-s.webp`, score, tier };
-  }).sort((a, b) => b.score - a.score);
+  }).sort((a, b) => compareScores(game)(a.score, b.score));
 }
 
 function scoreText(game: GameMeta, score: number) {
-  return game.resultMetric === "fictitious-balance" ? t("common.chips", { n: formatNumber(score / 100) }) : formatNumber(score);
+  if (game.resultMetric === "fictitious-balance") return t("common.chips", { n: formatNumber(score / 100) });
+  if (game.resultMetric === "reaction-time-ms") return t("common.ms", { n: formatNumber(score) });
+  return formatNumber(score);
 }
 
 export function GameRanking({ game, best, league, playerName, avatarSrc }: { game: GameMeta; best?: number; league: LeagueRecord; playerName: string; avatarSrc: string }) {
@@ -35,7 +39,7 @@ export function GameRanking({ game, best, league, playerName, avatarSrc }: { gam
   const rows = useMemo(() => {
     const list = sampleRows(game);
     if (best !== undefined) list.push({ id: "you", name: playerName || t("common.you"), avatar: avatarSrc, score: best, tier: league.tier, you: true });
-    return list.sort((a, b) => b.score - a.score || (a.you ? -1 : 1));
+    return list.sort((a, b) => compareScores(game)(a.score, b.score) || (a.you ? -1 : 1));
   }, [game, best, league.tier, playerName, avatarSrc]);
   const yourPosition = rows.findIndex((r) => r.you) + 1;
   return (

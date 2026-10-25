@@ -1,4 +1,5 @@
 import type { GameResult } from "@/lib/types";
+import type { ResultMetric } from "@/lib/games";
 import { formatNumber, useI18n } from "@/lib/i18n";
 export default function GameResultSummary({
   result,
@@ -9,11 +10,14 @@ export default function GameResultSummary({
   result: GameResult;
   gameName: string;
   waitingForRival?: boolean;
-  resultMetric?: "fictitious-balance";
+  resultMetric?: ResultMetric;
 }) {
   const { t } = useI18n();
   const balance = resultMetric === "fictitious-balance";
+  // Time-scored games show the accumulated milliseconds (their "reach" is only the duel mirror).
+  const timed = resultMetric === "reaction-time-ms";
   const reach =
+    !timed &&
     result.verified === true &&
     result.height !== undefined &&
     Number.isSafeInteger(result.height) &&
@@ -49,7 +53,9 @@ export default function GameResultSummary({
           <dt>
             {balance
               ? t("result.finalChips")
-              : reach !== undefined
+              : timed
+                ? t("result.reactionTotal")
+                : reach !== undefined
                 ? t("result.reach")
                 : t("result.points")}
           </dt>
@@ -57,14 +63,18 @@ export default function GameResultSummary({
             aria-label={
               balance
                 ? t("result.chipsAria")
-                : reach !== undefined
+                : timed
+                  ? t("result.reactionTotal")
+                  : reach !== undefined
                   ? t("result.reachAria")
                   : t("result.pointsAria")
             }
           >
             {balance
               ? t("common.chips", { n: formatNumber((reach ?? result.score) / 100, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) })
-              : formatNumber(reach ?? result.score)}
+              : timed
+                ? t("common.ms", { n: formatNumber(result.score) })
+                : formatNumber(reach ?? result.score)}
           </dd>
         </div>
         <div>

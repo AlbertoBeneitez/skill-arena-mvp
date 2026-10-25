@@ -569,3 +569,7 @@ Ruleta 9 (más rebotes, giros más largos y saltos entre separadores), Orb Burst
 ## v113-saturn · Ruleta 10, dardos lanzados con el dedo y portadas nuevas (25-oct-2026)
 
 Ruleta 10 con rotor escalonado, huecos hundidos y trastes sólidos que giran con la rueda (la bola siempre acaba en un hueco, nunca sobre el número). En Dardos se mantiene el agarre fácil y el lanzamiento depende de la dirección y la velocidad del movimiento del dedo. Las 14 portadas del catálogo están redibujadas con escenas más elaboradas. Detalle: [releases/v113-saturn.md](releases/v113-saturn.md).
+
+## v114-saturn · Catálogo rápido, Galakdoku, Pinball 5 y Shot Gallery por tiempo (25-oct-2026)
+
+Las portadas pasan a WebP y el código de los juegos se descarga en segundo plano (el bloqueo del catálogo baja de 5,7 s a 1,2 s con la CPU ralentizada ×4). Galakdoku (`corner-sudoku@2.0.0`, tres cuadrados y teclado 3×3), Pinball 5 (mesa fija y determinista, misiones con tiempo extra, hurry-up, bola salvada y frenesí) y Shot Gallery 10 (puntuación = tiempo de reacción acumulado, menos es mejor; nueva métrica `reaction-time-ms`). Detalle: [releases/v114-saturn.md](releases/v114-saturn.md).

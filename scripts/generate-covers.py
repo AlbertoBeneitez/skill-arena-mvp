@@ -723,9 +723,9 @@ covers["pinball"] = pinball()
 
 # ---------- Corner Sudoku ----------
 def sudoku():
-    U = 34; K = U / math.sqrt(2); OX = 320; OY = 40
-    boxes = [(0, 0), (0, 3), (0, 6), (3, 0), (6, 0)]
-    tones = ["#f3c55a", "#7fe3ee", "#5fb8ff", "#ff7ab8", "#c58cff"]
+    U = 44; K = U / math.sqrt(2); OX = 320; OY = 34
+    boxes = [(0, 0), (0, 3), (3, 0)]
+    tones = ["#f3c55a", "#7fe3ee", "#ff7ab8"]
     P = lambda c, r: (OX + (c - r) * K, OY + (c + r) * K)
     poly = lambda c, r, w, h: " ".join(f"{f2(x)},{f2(y)}" for x, y in [P(c, r), P(c + w, r), P(c + w, r + h), P(c, r + h)])
     rr = random.Random(6)
@@ -735,8 +735,8 @@ def sudoku():
         p.append(f'<text x="{f2(rr.uniform(0, 640))}" y="{f2(rr.uniform(30, 390))}" font-family="system-ui" font-size="{rr.randint(18, 46)}" font-weight="800" fill="{rr.choice(tones)}" opacity=".16" filter="url(#blur2)">{rr.randint(1, 9)}</text>')
     p.append('<g filter="url(#shadow)">' + "".join(f'<polygon points="{poly(c0, r0, 3, 3)}" fill="#13264a"/>' for (r0, c0) in boxes) + '</g>')
     # highlighted row/column and the selected cell
-    p.append(f'<polygon points="{poly(0, 1, 9, 1)}" fill="#7fe3ee" fill-opacity=".09"/>')
-    p.append(f'<polygon points="{poly(1, 0, 1, 9)}" fill="#7fe3ee" fill-opacity=".09"/>')
+    p.append(f'<polygon points="{poly(0, 1, 6, 1)}" fill="#7fe3ee" fill-opacity=".09"/>')
+    p.append(f'<polygon points="{poly(1, 0, 1, 6)}" fill="#7fe3ee" fill-opacity=".09"/>')
     p.append(f'<polygon points="{poly(1, 1, 1, 1)}" fill="#f3c55a" fill-opacity=".45" filter="url(#glow)"/>')
     for (r0, c0) in boxes:
         for r in range(3):
@@ -744,7 +744,7 @@ def sudoku():
                 p.append(f'<polygon points="{poly(c0 + c, r0 + r, 1, 1)}" fill="none" stroke="#9fb7d8" stroke-opacity=".3"/>')
     for i, (r0, c0) in enumerate(boxes):
         p.append(f'<polygon points="{poly(c0, r0, 3, 3)}" fill="none" stroke="{tones[i]}" stroke-width="4" stroke-linejoin="round" filter="url(#glow)"/>')
-    digits = {(0, 0): 5, (2, 2): 8, (0, 4): 7, (1, 7): 2, (4, 1): 9, (7, 2): 4, (2, 5): 6, (5, 0): 1, (8, 1): 6, (1, 3): 1, (0, 8): 9, (6, 2): 3, (2, 0): 4, (3, 1): 2, (1, 5): 4}
+    digits = {(0, 0): 5, (2, 2): 8, (0, 4): 7, (4, 1): 9, (2, 5): 6, (5, 0): 1, (1, 3): 2, (2, 0): 4, (3, 1): 2, (1, 5): 4, (5, 2): 7, (0, 3): 9}
     for (r, c), d in digits.items():
         x, y = P(c + .5, r + .5)
         p.append(f'<text x="{f2(x)}" y="{f2(y + 7)}" font-family="system-ui" font-size="20" font-weight="800" text-anchor="middle" fill="{"#7fe3ee" if (r * 3 + c) % 4 == 0 else "#eef4ff"}">{d}</text>')
@@ -752,13 +752,10 @@ def sudoku():
     x, y = P(1.5, 1.5)
     p.append(f'<circle cx="{f2(x)}" cy="{f2(y)}" r="22" fill="none" stroke="#fff3b0" stroke-width="2.5" filter="url(#glow)"/>')
     p.append(f'<text x="{f2(x)}" y="{f2(y + 9)}" font-family="system-ui" font-size="28" font-weight="900" text-anchor="middle" fill="#fff3b0" filter="url(#glow)">3</text>')
-    # pencil-marks in an empty cell
-    x2, y2 = P(4.5, 1.5)
-    p.append(f'<text x="{f2(x2)}" y="{f2(y2 + 4)}" font-family="system-ui" font-size="9" font-weight="700" text-anchor="middle" fill="#9fb7d8">3 · 7</text>')
-    # number pad chips along the bottom
+    # 3×3 number pad on the right
     for i in range(9):
-        cx = 150 + i * 42
-        p.append(f'<rect x="{cx - 16}" y="352" width="32" height="32" rx="9" fill="#0f1d3a" stroke="{tones[i % 5]}" stroke-opacity=".7"/><text x="{cx}" y="374" font-family="system-ui" font-size="16" font-weight="800" text-anchor="middle" fill="#eef4ff">{i + 1}</text>')
+        cx = 520 + (i % 3) * 36; cy = 236 + (i // 3) * 36
+        p.append(f'<rect x="{cx - 15}" y="{cy - 15}" width="30" height="30" rx="8" fill="#0f1d3a" stroke="{tones[i % 3]}" stroke-opacity=".75"/><text x="{cx}" y="{cy + 6}" font-family="system-ui" font-size="15" font-weight="800" text-anchor="middle" fill="#eef4ff">{i + 1}</text>')
     front = sparkle(x + 24, y - 24, 9, "#fff3b0") + sparkle(120, 90, 6) + sparkle(540, 80, 6, "#e0d0ff")
     return frame("#f3c55a", "#c58cff", "".join(p), seed=23, floor=False, front=front)
 covers["corner-sudoku"] = sudoku()

@@ -9,6 +9,7 @@ import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
 import { ORB_ACTIONS_V6 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v6";
 import { PINBALL_ACTIONS_V3 } from "./verified/pinballProtocol.v3";
 import { CORNER_SUDOKU_ACTIONS_V1 } from "./verified/cornerSudokuProtocol.v1";
+import { CORNER_SUDOKU_ACTIONS_V2 } from "./verified/cornerSudokuProtocol.v2";
 import { BOWLING_ACTIONS_V1 } from "./verified/bowlingProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
@@ -70,8 +71,25 @@ export type GameDefinition<TId extends string = string> = {
   instruction: string;
   scoring: string;
   deterministicSeed?: string;
-  resultMetric?: "fictitious-balance";
+  /**
+   * How the score reads. Default: points (higher wins). "fictitious-balance": closing chips.
+   * "reaction-time-ms": accumulated milliseconds, LOWER wins (the core also publishes reach = base − ms).
+   */
+  resultMetric?: ResultMetric;
 };
+export type ResultMetric = "fictitious-balance" | "reaction-time-ms";
+
+/** True when a smaller score is the better one. */
+export const lowerScoreWins = (game: Pick<GameMeta, "resultMetric">) => game.resultMetric === "reaction-time-ms";
+/** Does `score` beat (or tie) the `target`? */
+export const scoreBeats = (game: Pick<GameMeta, "resultMetric">, score: number, target: number) =>
+  lowerScoreWins(game) ? score <= target : score >= target;
+/** Is `score` better than `previous` (an absent previous is always beaten)? */
+export const isBetterScore = (game: Pick<GameMeta, "resultMetric">, score: number, previous: number | undefined) =>
+  previous === undefined || (lowerScoreWins(game) ? score < previous : score > previous);
+/** Sort comparator that puts the best score first. */
+export const compareScores = (game: Pick<GameMeta, "resultMetric">) => (a: number, b: number) =>
+  lowerScoreWins(game) ? a - b : b - a;
 
 /**
  * Legacy components intentionally keep their narrow prop types while the
@@ -85,12 +103,12 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  { id: "galactic-roulette", version: "10.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.svg",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
+  { id: "galactic-roulette", version: "10.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Galactic Roulette",cover:"/covers/galactic-roulette.webp",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay." },
   {
     id: "galactic-slot", version: "3.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SLOT_ACTIONS },
-    resultMetric: "fictitious-balance", name: "Galactic Slot", cover: "/covers/galactic-slot.svg", enabled: true,
+    resultMetric: "fictitious-balance", name: "Galactic Slot", cover: "/covers/galactic-slot.webp", enabled: true,
     waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
     rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances de −4 a +4 posiciones, sin jugada 000. Servidor reproduce inputs y saldo; sin dinero real.",
   },
@@ -108,13 +126,13 @@ const GAME_DEFINITIONS = [
   {
     id: "darts", version: "3.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/Darts")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: DARTS_ACTIONS },
-    name: "Dardos", cover: "/covers/darts.svg", enabled: true, waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Veinte lanzamientos, una diana orbital.", difficulty: "MEDIA", skillLabel: "PUNTERÍA + TIMING", rivalScore: 800, rivalName: "NOVA", rivalAvatar: "/avatars/avatar-3.svg", instruction: "Desliza desde abajo hacia la diana y suelta para lanzar.", scoring: "Suma cruda de20tiradas en una diana continua. Sin bonus por objetivos/combo. Swipe ascendente, vuelo1s y progresión suave de estabilidad/presión. Replay autoritativo.",
+    name: "Dardos", cover: "/covers/darts.webp", enabled: true, waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Veinte lanzamientos, una diana orbital.", difficulty: "MEDIA", skillLabel: "PUNTERÍA + TIMING", rivalScore: 800, rivalName: "NOVA", rivalAvatar: "/avatars/avatar-3.svg", instruction: "Desliza desde abajo hacia la diana y suelta para lanzar.", scoring: "Suma cruda de20tiradas en una diana continua. Sin bonus por objetivos/combo. Swipe ascendente, vuelo1s y progresión suave de estabilidad/presión. Replay autoritativo.",
   },
   {
     id: "billiards", version: "4.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Billiards")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: BILLIARDS_ACTIONS_V3 },
-    name: "Billar", cover: "/covers/billiards.svg", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 8000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Tira del taco hacia atrás para ajustar dirección y potencia; suelta para golpear.", scoring: "Diez objetivos, dieciocho tiros y una mesa continua sin obstáculos; la disposición inicial cambia en cada partida. Avance por embocadas únicas, posiciones conservadas entre tiros.",
+    name: "Billar", cover: "/covers/billiards.webp", enabled: true, waitingStakes: [1, 5], category: "PRECISIÓN", tagline: "Apunta, elige potencia y despeja la mesa orbital.", difficulty: "MEDIA", skillLabel: "ÁNGULO + POTENCIA", rivalScore: 8000, rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "Tira del taco hacia atrás para ajustar dirección y potencia; suelta para golpear.", scoring: "Diez objetivos, dieciocho tiros y una mesa continua sin obstáculos; la disposición inicial cambia en cada partida. Avance por embocadas únicas, posiciones conservadas entre tiros.",
   },
   {
     id: "tower-drop",
@@ -128,7 +146,7 @@ const GAME_DEFINITIONS = [
       allowedActions: ["DROP"],
     },
     name: "Tower Drop",
-    cover: "/covers/tower-drop.svg",
+    cover: "/covers/tower-drop.webp",
     enabled: true,
     waitingStakes: [1, 5],
     category: "TIMING",
@@ -148,7 +166,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/SolitaireSprint")),
     competition: { verification: "client-result" },
     name: "Solitaire Sprint",
-    cover: "/covers/solitaire-sprint.svg",
+    cover: "/covers/solitaire-sprint.webp",
     enabled: true,
     waitingStakes: [1, 5],
     category: "CARTAS",
@@ -169,7 +187,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/MineGridEntry")),
     competition: { verification: "client-result" },
     name: "Mine Grid",
-    cover: "/covers/mine-grid.svg",
+    cover: "/covers/mine-grid.webp",
     enabled: true,
     waitingStakes: [1, 10],
     category: "LÓGICA",
@@ -192,7 +210,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/StackShiftVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: STACK_SHIFT_ACTIONS },
     name: "Stack Shift",
-    cover: "/covers/stack-shift.svg",
+    cover: "/covers/stack-shift.webp",
     enabled: true,
     waitingStakes: [10, 50],
     category: "PUZZLE",
@@ -213,7 +231,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 6, allowedActions: ORB_ACTIONS },
     name: "Orb Burst",
-    cover: "/covers/orb-burst.svg",
+    cover: "/covers/orb-burst.webp",
     enabled: true,
     waitingStakes: [5, 50],
     category: "PUZZLE",
@@ -239,7 +257,7 @@ const GAME_DEFINITIONS = [
       allowedActions: ["DROP"],
     },
     name: "Stack",
-    cover: "/covers/stack-3d.svg",
+    cover: "/covers/stack-3d.webp",
     enabled: true,
     waitingStakes: [1, 10],
     category: "PRECISIÓN",
@@ -255,33 +273,34 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "9.0.0",
+    version: "10.0.0",
+    resultMetric: "reaction-time-ms",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
     name: "Shot Gallery",
-    cover: "/covers/shot-gallery.svg",
+    cover: "/covers/shot-gallery.webp",
     enabled: true,
     waitingStakes: [1, 50],
     category: "REACCIÓN",
     tagline: "Reconoce el objetivo. Reacciona con precisión.",
     difficulty: "ALTA",
     skillLabel: "REACCIÓN + RECONOCIMIENTO",
-    rivalScore: 6000,
+    rivalScore: 15000,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Espera al punto verde y toca lo que pide la orden: manchas de color, figuras grises o la figura de color que cumple ambas características.",
-    scoring: "Galería de tiro alienígena: doce órdenes que combinan un color y una figura; las dianas (figuras de color sobre soportes) se deslizan por tres raíles y cada orden pide de 2 a 4 disparos. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
+    instruction: "Espera a la luz verde y dispara a las placas que tienen el color y la figura de la orden.",
+    scoring: "Doce órdenes que combinan un color y una figura, con 2 a 4 placas fijas por orden. La puntuación es tu tiempo de reacción acumulado (menos es mejor): cada acierto suma el tiempo desde la luz verde o desde el acierto anterior; una placa equivocada suma 400 ms, anticiparse 600 ms y cada placa que quede en pie 1500 ms.",
   },
 
   {
     id: "pinball",
-    version: "4.0.0",
+    version: "5.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },
     name: "Pinball",
-    cover: "/covers/pinball.svg",
+    cover: "/covers/pinball.webp",
     enabled: true,
     waitingStakes: [5, 10],
     category: "CONTROL",
@@ -292,7 +311,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Una sola bola y 60 s. La potencia del muelle fija el lanzamiento; los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
+    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Una bola y 60 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 90 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
   },
   {
     id: "bowling",
@@ -301,7 +320,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/Bowling")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BOWLING_ACTIONS_V1 },
     name: "Galactic Bowling",
-    cover: "/covers/bowling.svg",
+    cover: "/covers/bowling.webp",
     enabled: true,
     waitingStakes: [1, 5],
     category: "PRECISIÓN",
@@ -316,23 +335,23 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "corner-sudoku",
-    version: "1.0.0",
+    version: "2.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/CornerSudoku")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: CORNER_SUDOKU_ACTIONS_V1 },
-    name: "Corner Sudoku",
-    cover: "/covers/corner-sudoku.svg",
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: CORNER_SUDOKU_ACTIONS_V2 },
+    name: "Galakdoku",
+    cover: "/covers/corner-sudoku.webp",
     enabled: true,
     waitingStakes: [1, 5],
     category: "LÓGICA",
-    tagline: "Dos lados de un sudoku: cinco cuadrados, cinco retos.",
+    tagline: "La esquina de un sudoku: tres cuadrados, cinco retos.",
     difficulty: "MEDIA",
     skillLabel: "LÓGICA + RAPIDEZ",
     rivalScore: 4500,
     rivalName: "SAGE",
     rivalAvatar: "/avatars/avatar-5.svg",
     instruction: "",
-    scoring: "Cinco sudokus por partida con dos lados de un sudoku (la fila de cuadrados de arriba y la columna de la izquierda, que comparten la esquina). Cada cuadrado, cada una de las tres filas de arriba y cada una de las tres columnas de la izquierda llevan del 1 al 9. Cada número correcto suma 20; uno erróneo se rechaza y resta 50; cinco errores terminan la partida. Al resolver un sudoku: 400 más bonus por rapidez. Ocho minutos. Replay de servidor.",
+    scoring: "Cinco retos por partida con la esquina de un sudoku: el cuadrado de la esquina, el de su derecha y el de debajo. Cada cuadrado lleva del 1 al 9 y ningún número se repite en las tres filas de arriba ni en las tres columnas de la izquierda. Cada número correcto suma 20; uno erróneo se rechaza y resta 50; cinco errores terminan la partida. Al resolver un sudoku: 400 más bonus por rapidez. Ocho minutos. Replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];

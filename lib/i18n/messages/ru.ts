@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "Джойстик направления",
   "joystick.stop": "Остановить движение",
-  "gameMeta.corner-sudoku.name": "Угловое судоку",
-  "gameMeta.corner-sudoku.tagline": "Две стороны судоку: пять квадратов, пять задач.",
+  "gameMeta.corner-sudoku.name": "Galakdoku",
+  "gameMeta.corner-sudoku.tagline": "Угол судоку: три квадрата, пять задач.",
   "gameMeta.corner-sudoku.skill": "ЛОГИКА + СКОРОСТЬ",
   "sudoku.progress": "Судоку {n}/{total}",
   "sudoku.mistakes": "Ошибки {n}/{max}",
@@ -607,6 +607,16 @@ const messages: Messages = {
   "bowling.gutter": "Желоб",
   "bowling.skip": "Пропустить ⏭",
   "bowling.hud": "Фрейм {frame}/10 · Бросок {roll}",
+  "common.ms": "{n} ms",
+  "result.reactionTotal": "Суммарное время реакции",
+  "gallery.timeHud": "ВРЕМЯ {n} мс · {trial}/12",
+  "pinball.mission": "МИССИЯ!",
+  "pinball.extraTime": "+10 с ВРЕМЕНИ",
+  "pinball.hurry": "СКОРЕЕ!",
+  "pinball.hurryGo": "ДЖЕКПОТ ВЗЯТ!",
+  "pinball.saved": "ШАР СПАСЁН!",
+  "pinball.frenzy": "БЕЗУМИЕ ×2!",
+  "pinball.hurryValue": "ДЖЕКПОТ {n}",
 };
 
 export default messages;

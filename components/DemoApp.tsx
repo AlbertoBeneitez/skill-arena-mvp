@@ -12,7 +12,7 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
-import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
+import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
@@ -66,6 +66,8 @@ function isScreen(value: unknown): value is Screen {
 }
 
 const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
+/** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
+const smallAvatar = (src: string) => (/^\/avatars\/portrait-\d\d\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 /** Small variant for grids/lists; the full 512 px image is only used for the large preview. */
 const avatarThumb = (src: string) => (/\/portrait-\d{2}\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 const START_BALANCE = 25;
@@ -939,19 +941,21 @@ export default function DemoApp() {
 
     // Demo league duel: training matches are decided against the simulated rival of the player's tier.
     const leagueDuel = !gameResult.serverMatch && matchScope === "duel" && leagueMatch !== null && leagueMatch.gameId === selectedGame.id;
-    const beatLeagueRival = leagueDuel && gameResult.score >= leagueMatch!.rival.target;
+    const beatLeagueRival = leagueDuel && scoreBeats(selectedGame, gameResult.score, leagueMatch!.rival.target);
+    // Time-scored games are decided by the score alone (their run always completes).
+    const beatTarget = lowerScoreWins(selectedGame) ? scoreBeats(selectedGame, gameResult.score, matchTargetScore) : gameResult.won || gameResult.score >= matchTargetScore;
     const didWin = gameResult.serverMatch
       ? gameResult.serverMatch.winnerSlot === gameResult.serverMatch.slot
       : selectedStake === 0
         ? leagueDuel ? beatLeagueRival : gameResult.won
         : matchScope === "group"
-          ? gameResult.won || gameResult.score >= matchTargetScore
+          ? beatTarget
           : replyAttempt
-            ? gameResult.won || gameResult.score >= matchTargetScore
+            ? beatTarget
             : false;
     const resolvedResult = { ...gameResult, won: didWin };
     if (gameResult.verified !== false && !gameResult.forfeited && Number.isFinite(gameResult.score)) {
-      setBestScores((best) => (gameResult.score > (best[selectedGame.id] ?? -1) ? { ...best, [selectedGame.id]: gameResult.score } : best));
+      setBestScores((best) => (isBetterScore(selectedGame, gameResult.score, best[selectedGame.id]) ? { ...best, [selectedGame.id]: gameResult.score } : best));
     }
     const leagueResolved = leagueDuel && (selectedStake === 0 || replyAttempt);
     if (leagueResolved && gameResult.serverMatch?.reason !== "exact-tie") settleLeague(didWin, gameResult.score);
@@ -1546,7 +1550,7 @@ export default function DemoApp() {
                         <small>{LEAGUE_ICONS[leagueMatch.tier]} {t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) })}</small>
                         <b>{leagueMatch.rival.name}</b>
                       </span>
-                      <strong>{leagueMatch.rival.balanceGoal ? t("league.goalChips", { n: formatNumber(leagueMatch.rival.target / 100) }) : formatNumber(leagueMatch.rival.target)}</strong>
+                      <strong>{leagueMatch.rival.balanceGoal ? t("league.goalChips", { n: formatNumber(leagueMatch.rival.target / 100) }) : lowerScoreWins(selectedGame) ? t("common.ms", { n: formatNumber(leagueMatch.rival.target) }) : formatNumber(leagueMatch.rival.target)}</strong>
                     </div>
                   )}
                   <div className="gxIntroCount" key={countdown}>
@@ -1671,7 +1675,7 @@ export default function DemoApp() {
             </nav>
             {avatarSection === "ranking" ? <RankingHub bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
             <p className={shellStyles.demoNote}>{t("profile.note")}</p>
-            <div className="profileStrip"><img src={avatarSrc} alt="" /><div><strong>{playerName}</strong><span>{t("profile.localAccount")}</span></div><b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <div className="profileStrip"><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span>{t("profile.localAccount")}</span></div><b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 
             <div className="profileStats" aria-label={t("profile.stats")}>
               <div><b>{matchesPlayed}</b><span>{t("profile.played")}</span></div>
@@ -1752,7 +1756,7 @@ export default function DemoApp() {
             <span>◉</span>{t("nav.group")}
           </button>
           <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
-            <img src={avatarSrc} alt="" /><em className="navName">{playerName || t("nav.avatar")}</em>
+            <img src={smallAvatar(avatarSrc)} alt="" /><em className="navName">{playerName || t("nav.avatar")}</em>
           </button>
         </nav>
       )}

@@ -598,8 +598,8 @@ const es = {
   // ---------- joystick ----------
   "joystick.aria": "Joystick de dirección",
   "joystick.stop": "Detener movimiento",
-  "gameMeta.corner-sudoku.name": "Sudoku Esquina",
-  "gameMeta.corner-sudoku.tagline": "Dos lados de un sudoku: cinco cuadrados, cinco retos.",
+  "gameMeta.corner-sudoku.name": "Galakdoku",
+  "gameMeta.corner-sudoku.tagline": "La esquina de un sudoku: tres cuadrados, cinco retos.",
   "gameMeta.corner-sudoku.skill": "LÓGICA + RAPIDEZ",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Errores {n}/{max}",
@@ -645,6 +645,16 @@ const es = {
   "bowling.gutter": "Canal",
   "bowling.skip": "Saltar ⏭",
   "bowling.hud": "Marco {frame}/10 · Tiro {roll}",
+  "common.ms": "{n} ms",
+  "result.reactionTotal": "Tiempo de reacción acumulado",
+  "gallery.timeHud": "TIEMPO {n} ms · {trial}/12",
+  "pinball.mission": "¡MISIÓN!",
+  "pinball.extraTime": "+10 s DE TIEMPO",
+  "pinball.hurry": "¡HURRY-UP!",
+  "pinball.hurryGo": "¡HURRY-UP COBRADO!",
+  "pinball.saved": "¡BOLA SALVADA!",
+  "pinball.frenzy": "¡FRENESÍ ×2!",
+  "pinball.hurryValue": "HURRY {n}",
 } as const;
 
 export type MessageKey = keyof typeof es;

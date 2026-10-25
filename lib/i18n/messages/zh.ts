@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "方向摇杆",
   "joystick.stop": "停止移动",
-  "gameMeta.corner-sudoku.name": "角落数独",
-  "gameMeta.corner-sudoku.tagline": "数独的两条边：五个宫，五道题。",
+  "gameMeta.corner-sudoku.name": "Galakdoku",
+  "gameMeta.corner-sudoku.tagline": "数独的一角：三个宫，五道题。",
   "gameMeta.corner-sudoku.skill": "逻辑 + 速度",
   "sudoku.progress": "数独 {n}/{total}",
   "sudoku.mistakes": "错误 {n}/{max}",
@@ -607,6 +607,16 @@ const messages: Messages = {
   "bowling.gutter": "洗沟",
   "bowling.skip": "跳过 ⏭",
   "bowling.hud": "第 {frame}/10 轮 · 第 {roll} 球",
+  "common.ms": "{n} ms",
+  "result.reactionTotal": "累计反应时间",
+  "gallery.timeHud": "用时 {n} ms · {trial}/12",
+  "pinball.mission": "任务完成！",
+  "pinball.extraTime": "加时 +10 秒",
+  "pinball.hurry": "限时大奖！",
+  "pinball.hurryGo": "限时大奖到手！",
+  "pinball.saved": "球已保住！",
+  "pinball.frenzy": "狂热 ×2！",
+  "pinball.hurryValue": "大奖 {n}",
 };
 
 export default messages;

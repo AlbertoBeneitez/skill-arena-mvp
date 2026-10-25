@@ -3,16 +3,16 @@ import { useCallback } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  SHOT_GALLERY_CORE_V9 as core,
-  galleryTargetPosV9,
-  type GalleryStateV9,
-} from "@/lib/verified/shotGalleryCore.v9";
+  SHOT_GALLERY_CORE_V10 as core,
+  galleryTargetPosV10,
+  type GalleryStateV10,
+} from "@/lib/verified/shotGalleryCore.v10";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import { t as tx, useI18n } from "@/lib/i18n";
 
 /*
- * Presentation only (V9 killer range). Reads the authoritative state and never writes it. Plates are static;
- * positions come from galleryTargetPosV9, the same pure function the tests use.
+ * Presentation only (V10: score = accumulated reaction time). Reads the authoritative state and never writes it. Plates are static;
+ * positions come from galleryTargetPosV10, the same pure function the tests use.
  */
 const PAINT = ["#3d8bff", "#ff5a4a", "#8fd43a", "#9a63ff", "#ffcc1f", "#ff4fa0", "#1fd1bd", "#ff8a1f"];
 const GREY = "#9aa3ab";
@@ -71,7 +71,24 @@ function drawSignal(ctx: CanvasRenderingContext2D, x: number, y: number, ready: 
   ctx.shadowBlur = 0;
 }
 
-const streakOf = (s: GalleryStateV9) => { let n = 0; for (let i = s.results.length - 1; i >= 0 && s.results[i].type === "CORRECT"; i--) n++; return n; };
+/** Was the last tap a hit (otherwise it was a penalty: wrong plate or false start)? */
+const lastWasHit = (s: GalleryStateV10) => s.hits.length > 0 && s.tapTickAbs === s.lastTapTick;
+
+/** A paint splash in ONE flat colour: an irregular round blob, no droplets, no shading. Shape is fixed per colour. */
+function paintSplash(ctx: CanvasRenderingContext2D, color: string, x: number, y: number, size: number, seed: number) {
+  const h = (n: number) => { const v = Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  const lobes = 48;
+  for (let i = 0; i <= lobes; i++) {
+    const a = (i / lobes) * Math.PI * 2;
+    const r = size * (0.84 + 0.1 * Math.sin(a * 3 + h(1) * 6) + 0.08 * Math.sin(a * 5 + h(2) * 6) + 0.05 * Math.sin(a * 9 + h(3) * 6));
+    const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+    i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
 
 /** Indoor range: dark concrete back wall, rubber berm at the foot, one row of overhead strip lights. */
 function drawRange(ctx: CanvasRenderingContext2D, ready: boolean, b: typeof BOOTH) {
@@ -107,7 +124,7 @@ function drawRange(ctx: CanvasRenderingContext2D, ready: boolean, b: typeof BOOT
 }
 
 /** Order slab: the colour as a flat swatch, the figure in grey, one cartridge per hit needed. */
-function drawOrder(ctx: CanvasRenderingContext2D, s: GalleryStateV9, ready: boolean) {
+function drawOrder(ctx: CanvasRenderingContext2D, s: GalleryStateV10, ready: boolean) {
   const x = 8, y = 40, w = 374, h = 96;
   ctx.fillStyle = "#0b0d0f"; ctx.fillRect(x, y, w, h);
   ctx.strokeStyle = "#2b3038"; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
@@ -124,8 +141,7 @@ function drawOrder(ctx: CanvasRenderingContext2D, s: GalleryStateV9, ready: bool
     ctx.fillRect(x + 28 + i * 22, y + 8, 14, 4);
   }
   const trial = s.trials[Math.min(s.trial, 11)], order = trial.order;
-  ctx.fillStyle = PAINT[order.color]; ctx.fillRect(118, y + 30, 40, 40);
-  ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = 1; ctx.strokeRect(118, y + 30, 40, 40);
+  paintSplash(ctx, PAINT[order.color], 138, y + 50, 23, order.color + 1);
   ctx.fillStyle = "#5a636c"; ctx.font = "900 20px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillText("+", 182, y + 50);
   ctx.fillStyle = GREY; figure(ctx, order.shape, 220, y + 50, 19);
@@ -137,11 +153,6 @@ function drawOrder(ctx: CanvasRenderingContext2D, s: GalleryStateV9, ready: bool
     ctx.fillStyle = spent ? "#2b3038" : "#b87333"; ctx.beginPath(); ctx.moveTo(cx, y + 36); ctx.lineTo(cx + 3.5, y + 29); ctx.lineTo(cx + 7, y + 36); ctx.closePath(); ctx.fill();
   }
   drawSignal(ctx, x + w - 30, y + 50, ready, s.tick, 1);
-  const streak = streakOf(s);
-  if (streak >= 2) {
-    ctx.fillStyle = "#ffcc1f"; ctx.font = "900 12px system-ui"; ctx.textAlign = "center";
-    ctx.fillText(tx("gallery.streak", { n: streak }), 64, y + 52);
-  }
 }
 
 /** Steel plate on a post: alien-head silhouette with the coloured figure painted on. `lift` 0..1 flips it up. */
@@ -184,16 +195,12 @@ function drawReticle(ctx: CanvasRenderingContext2D, x: number, y: number, r: num
   ctx.restore();
 }
 
-const hudLabel = (s: Readonly<GalleryStateV9>) => {
-  const taps = s.results.flatMap((r) => r.taps);
-  const avg = taps.length ? ` · ${tx("gallery.avg", { n: msOf(taps.reduce((a, b) => a + b, 0) / taps.length) })}` : "";
-  return `${tx("gallery.hud", { n: s.correct, trial: Math.min(12, s.trial + 1) })}${avg}`;
-};
-const feedbackScore = (s: Readonly<GalleryStateV9>) => s.total;
+const hudLabel = (s: Readonly<GalleryStateV10>) => `${tx("gallery.timeHud", { n: s.totalMs.toLocaleString(), trial: Math.min(12, s.trial + 1) })}`;
+const feedbackScore = (s: Readonly<GalleryStateV10>) => s.totalMs;
 
 /** Reaction times are kept on this device (last 30 runs): presentation/storage only. */
 let savedSeed = "";
-function persistReactions(s: GalleryStateV9) {
+function persistReactions(s: GalleryStateV10) {
   if (s.status === "running" || savedSeed === s.seed) return;
   savedSeed = s.seed;
   try {
@@ -207,7 +214,7 @@ function persistReactions(s: GalleryStateV9) {
 
 export default function ShotGallery(props: GameRuntimeProps) {
   useI18n();
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV9, view?: { width: number; height: number }) => {
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV10, view?: { width: number; height: number }) => {
     persistReactions(s);
     // The range runs to the bottom of the screen on tall phones (plates stay where the core puts them).
     const H = Math.max(620, view?.height ?? 620), b = { ...BOOTH, y1: Math.max(BOOTH.y1, H - 14) };
@@ -223,7 +230,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
     ctx.save();
     ctx.beginPath(); ctx.rect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0); ctx.clip();
     trial.targets.forEach((t, i) => {
-      const p = galleryTargetPosV9(t), hitAt = s.hits.indexOf(i);
+      const p = galleryTargetPosV10(t), hitAt = s.hits.indexOf(i);
       // Plates are down on red and snap up on green; a hit plate is knocked flat.
       const appear = s.phase === "waiting" ? 0 : Math.min(1, Math.max(0, (elapsed + 1 - (i % 4)) / 5));
       const knock = hitAt < 0 ? 0 : hitAt === s.hits.length - 1 ? Math.min(1, Math.max(0, (since - 4) / 8)) : 1;
@@ -243,8 +250,8 @@ export default function ShotGallery(props: GameRuntimeProps) {
     if (s.phase === "waiting") drawSignal(ctx, 195, (b.y0 + b.y1) / 2, false, s.tick, 2.2);
     // Impact: muzzle-white flash, a few hot sparks and the reticle locked on the plate.
     const lastIdx = s.hits.length ? s.hits[s.hits.length - 1] : -1;
-    if (lastIdx >= 0 && s.lastAward >= 0 && since >= 0 && since < 30) {
-      const p = galleryTargetPosV9(trial.targets[lastIdx]), k = since / 30;
+    if (lastIdx >= 0 && lastWasHit(s) && since >= 0 && since < 30) {
+      const p = galleryTargetPosV10(trial.targets[lastIdx]), k = since / 30;
       if (since < 4) { ctx.fillStyle = `rgba(255,250,235,${1 - since / 4})`; ctx.beginPath(); ctx.arc(p.x + 4, p.y - 6, 12 - since * 2, 0, Math.PI * 2); ctx.fill(); }
       for (let q = 0; q < 8; q++) {
         const ang = -Math.PI * 0.9 + (q / 7) * Math.PI * 0.8 + noise(q + lastIdx) * 0.3, d = 6 + k * 34;
@@ -254,18 +261,18 @@ export default function ShotGallery(props: GameRuntimeProps) {
       }
       drawReticle(ctx, p.x, p.y - 2, 22 + 10 * (1 - Math.min(1, since / 6)), 1 - k);
       ctx.fillStyle = "#ffcc1f"; ctx.font = "900 15px system-ui"; ctx.textAlign = "center";
-      ctx.fillText(`+${s.lastAward}`, p.x + 34, p.y - 12 - since * 0.5);
+      ctx.fillText(`+${s.lastAddedMs} ms`, p.x + 40, p.y - 12 - since * 0.5);
     }
-    if (s.lastAward < 0 && since >= 0 && since < 50) {
+    if (!lastWasHit(s) && s.lastTapTick >= 0 && s.lastAddedMs > 0 && since >= 0 && since < 50) {
       ctx.strokeStyle = `rgba(255,45,60,${0.9 * (1 - since / 50)})`; ctx.lineWidth = 6;
       ctx.strokeRect(b.x0 + 3, b.y0 + 3, b.x1 - b.x0 - 6, b.y1 - b.y0 - 6);
       ctx.fillStyle = `rgba(255,80,90,${1 - since / 50})`; ctx.font = "900 22px system-ui"; ctx.textAlign = "center";
-      ctx.fillText(`${s.lastAward}`, 195, b.y0 + 30 - since * 0.3);
+      ctx.fillText(`+${s.lastAddedMs} ms`, 195, b.y0 + 30 - since * 0.3);
     }
     const last = s.results.at(-1);
     if (s.phase === "feedback" && last) {
-      const age = s.tick - (s.lastTapTick >= s.readyTick ? s.lastTapTick : s.readyTick), streak = streakOf(s);
-      const text: Record<string, string> = { CORRECT: streak >= 3 ? tx("gallery.streakBig", { n: streak }) : tx("gallery.hit"), PARTIAL: tx("gallery.partial"), WRONG: tx("gallery.wrong"), FALSE_START: tx("gallery.falseStart"), TIMEOUT: tx("gallery.timeout") };
+      const age = s.tick - (s.lastTapTick >= s.readyTick ? s.lastTapTick : s.readyTick);
+      const text: Record<string, string> = { CORRECT: tx("gallery.hit"), PARTIAL: tx("gallery.partial"), WRONG: tx("gallery.wrong"), FALSE_START: tx("gallery.falseStart"), TIMEOUT: tx("gallery.timeout") };
       if (last.type === "FALSE_START" || last.type === "TIMEOUT") { ctx.fillStyle = "rgba(0,0,0,.65)"; ctx.fillRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0); }
       const grow = Math.min(1, Math.max(0, age) / 6), label = text[last.type] ?? "";
       ctx.font = `900 ${20 + Math.round(10 * grow)}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -273,16 +280,19 @@ export default function ShotGallery(props: GameRuntimeProps) {
       ctx.fillStyle = "rgba(0,0,0,.8)"; ctx.fillRect(195 - wText / 2, (b.y0 + b.y1) / 2 - 24, wText, 48);
       ctx.fillStyle = RESULT_LAMP[last.type] ?? "#ffffff";
       ctx.fillText(label, 195, (b.y0 + b.y1) / 2);
+      // What this round added to the accumulated time.
+      ctx.font = "800 14px system-ui"; ctx.fillStyle = "#e8edf2";
+      ctx.fillText(`+${last.addedMs.toLocaleString()} ms`, 195, (b.y0 + b.y1) / 2 + 40);
     }
     ctx.restore();
   }, []);
-  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV9) => {
+  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV10) => {
     if (phase !== "down" || s.phase === "feedback") return null;
     // Tapping before the green light is a false start wherever the finger lands.
     if (s.phase === "waiting") return "PICK_0";
     let best = -1, bestDistance = 38;
     s.trials[s.trial].targets.forEach((t, i) => {
-      const p = galleryTargetPosV9(t), d = Math.hypot(point.x - p.x, point.y - p.y);
+      const p = galleryTargetPosV10(t), d = Math.hypot(point.x - p.x, point.y - p.y);
       if (!s.hits.includes(i) && d < bestDistance) { best = i; bestDistance = d; }
     });
     if (best >= 0) gameTone("tap");

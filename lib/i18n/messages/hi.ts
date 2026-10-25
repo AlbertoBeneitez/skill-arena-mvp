@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "दिशा जॉयस्टिक",
   "joystick.stop": "हिलना रोकें",
-  "gameMeta.corner-sudoku.name": "कॉर्नर सुडोकू",
-  "gameMeta.corner-sudoku.tagline": "सुडोकू की दो भुजाएँ: पाँच वर्ग, पाँच पहेलियाँ।",
+  "gameMeta.corner-sudoku.name": "Galakdoku",
+  "gameMeta.corner-sudoku.tagline": "सुडोकू का एक कोना: तीन वर्ग, पाँच पहेलियाँ।",
   "gameMeta.corner-sudoku.skill": "तर्क + गति",
   "sudoku.progress": "सुडोकू {n}/{total}",
   "sudoku.mistakes": "गलतियाँ {n}/{max}",
@@ -607,6 +607,16 @@ const messages: Messages = {
   "bowling.gutter": "गटर",
   "bowling.skip": "छोड़ें ⏭",
   "bowling.hud": "फ़्रेम {frame}/10 · गेंद {roll}",
+  "common.ms": "{n} ms",
+  "result.reactionTotal": "कुल प्रतिक्रिया समय",
+  "gallery.timeHud": "समय {n} ms · {trial}/12",
+  "pinball.mission": "मिशन!",
+  "pinball.extraTime": "+10 से. अतिरिक्त समय",
+  "pinball.hurry": "हरी-अप!",
+  "pinball.hurryGo": "हरी-अप जीता!",
+  "pinball.saved": "गेंद बची!",
+  "pinball.frenzy": "फ्रेंज़ी ×2!",
+  "pinball.hurryValue": "हरी {n}",
 };
 
 export default messages;

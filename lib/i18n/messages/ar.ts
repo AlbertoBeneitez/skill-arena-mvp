@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "عصا التوجيه",
   "joystick.stop": "إيقاف الحركة",
-  "gameMeta.corner-sudoku.name": "سودوكو الزاوية",
-  "gameMeta.corner-sudoku.tagline": "ضلعان من السودوكو: خمسة مربعات وخمسة ألغاز.",
+  "gameMeta.corner-sudoku.name": "Galakdoku",
+  "gameMeta.corner-sudoku.tagline": "زاوية من السودوكو: ثلاثة مربعات وخمسة ألغاز.",
   "gameMeta.corner-sudoku.skill": "منطق + سرعة",
   "sudoku.progress": "سودوكو {n}/{total}",
   "sudoku.mistakes": "الأخطاء {n}/{max}",
@@ -607,6 +607,16 @@ const messages: Messages = {
   "bowling.gutter": "القناة",
   "bowling.skip": "تخطٍّ ⏭",
   "bowling.hud": "الشوط {frame}/10 · الرمية {roll}",
+  "common.ms": "{n} ms",
+  "result.reactionTotal": "إجمالي زمن الاستجابة",
+  "gallery.timeHud": "الوقت {n} ms · {trial}/12",
+  "pinball.mission": "!المهمة",
+  "pinball.extraTime": "+10 ث وقت إضافي",
+  "pinball.hurry": "!أسرع",
+  "pinball.hurryGo": "!تم جمع الجائزة",
+  "pinball.saved": "!تم إنقاذ الكرة",
+  "pinball.frenzy": "!جنون ×2",
+  "pinball.hurryValue": "جائزة {n}",
 };
 
 export default messages;
