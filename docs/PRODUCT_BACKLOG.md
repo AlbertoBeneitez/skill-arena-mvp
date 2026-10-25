@@ -565,3 +565,7 @@ Nuevo `bowling@1.0.0` con animación de pleno saltable; Orb Burst 6 (bubble shoo
 ## v112-saturn · Ruleta 9, Orb Burst 7, Shot Gallery 9, Tower Drop 5 y pulido visual (25-oct-2026)
 
 Ruleta 9 (más rebotes, giros más largos y saltos entre separadores), Orb Burst 7 (más difícil: 8 filas, 4→1 fallos y techo por tiempo), Shot Gallery 9 (placas fijas, estética sobria tipo galería de tiro), Tower Drop 5 (sin rebote lateral, módulo elevador planetario); Slot de recreativa, Dardos de coger y lanzar, taco de billar más cerca, y Bolos con cámara de persecución y bolos-personaje. Detalle: [releases/v112-saturn.md](releases/v112-saturn.md).
+
+## v113-saturn · Ruleta 10, dardos lanzados con el dedo y portadas nuevas (25-oct-2026)
+
+Ruleta 10 con rotor escalonado, huecos hundidos y trastes sólidos que giran con la rueda (la bola siempre acaba en un hueco, nunca sobre el número). En Dardos se mantiene el agarre fácil y el lanzamiento depende de la dirección y la velocidad del movimiento del dedo. Las 14 portadas del catálogo están redibujadas con escenas más elaboradas. Detalle: [releases/v113-saturn.md](releases/v113-saturn.md).

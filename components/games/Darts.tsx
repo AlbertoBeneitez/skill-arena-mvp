@@ -14,6 +14,7 @@ import {
 } from "@/lib/dartsFlightPerspective";
 import { drawDart } from "@/lib/dartsPresentation";
 import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
+import { dartsFlickAimV3, type DartsGestureSample } from "@/lib/verified/dartsGesture.v3";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import { t, formatNumber, useI18n } from "@/lib/i18n";
@@ -37,6 +38,8 @@ function ring(
 // Visual zoom only (outer ring 161 * 1.15 = 185 of 195 half-width); aim input
 // uses the inverse, so authoritative coordinates are unchanged.
 const BOARD_ZOOM = 1.15;
+/** Dart held under the finger while aiming (presentation only). */
+const held = { active: false, x: 0, y: 0, trail: [] as { x: number; y: number }[] };
 function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: number; height: number }) {
   const viewH = Math.max(620, view?.height ?? 620);
   drawSpaceBackdrop(ctx, 390, viewH, 0, s.tick);
@@ -97,7 +100,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
     const pose = dartPerspectiveFlight(cx + hit.x / 1000, cy + hit.y / 1000, DARTS_RULES_V3.impactTicks);
     drawDart(ctx, { ...pose, scale: 0.52 }, i % 2 ? "#dfb885" : "#6bdde2");
   }
-  const pose = s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks
+  const pose = (s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks) || (s.phase === "aim" && held.active)
     ? null : dartPerspectivePose(s);
   if (pose) {
     const impact = s.impacts.at(-1);
@@ -123,6 +126,16 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
     drawDart(ctx, pose);
   }
   ctx.restore();
+  if (s.phase === "aim" && held.active) {
+    // The dart sits in the fingers: a short motion trail and the dart tilted along the movement.
+    const tr = held.trail, a = tr.length > 2 ? tr[tr.length - 3] : tr[0];
+    for (let i = 1; i < tr.length; i++) {
+      ctx.strokeStyle = `rgba(142,233,214,${(i / tr.length) * 0.5})`; ctx.lineWidth = 2 + 6 * (i / tr.length);
+      ctx.beginPath(); ctx.moveTo(tr[i - 1].x, tr[i - 1].y - 30); ctx.lineTo(tr[i].x, tr[i].y - 30); ctx.stroke();
+    }
+    const tilt = a ? Math.max(-0.6, Math.min(0.6, (held.x - a.x) / 40)) : 0;
+    drawDart(ctx, { x: held.x, y: held.y - 30, angle: tilt, scale: 1.35 });
+  }
   const hit = s.impacts.at(-1);
   if (hit && s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks) {
     ctx.fillStyle = hit.points ? "#a1eed3" : "#e6b597";
@@ -190,46 +203,44 @@ const feedbackScore = (s: Readonly<DartsStateV3>) => s.total;
 const hudLabel = (s: Readonly<DartsStateV3>) => t("play.points", { n: formatNumber(s.total) });
 export default function Darts(props: GameRuntimeProps) {
   useI18n();
-  // Grab-and-flick: touching anywhere grabs the dart without moving the aim; dragging nudges the aim
-  // relative to where it was (no jump under the finger); only a quick upward flick releases the throw.
-  const grabRef = useRef<{ start: CorePoint; t: number; aimX: number; aimY: number; last: CorePoint; lastT: number; prev: CorePoint; prevT: number } | null>(null);
+  // Grab-and-throw: touching anywhere picks the dart up (it follows the finger); the flick itself — direction and
+  // speed at release — decides where it lands (dartsFlickAimV3). A slow or downward release puts it back.
+  const pathRef = useRef<DartsGestureSample[] | null>(null);
   useEffect(() => {
-    grabRef.current = null;
+    pathRef.current = null;
+    held.active = false;
     return () => {
-      grabRef.current = null;
+      pathRef.current = null;
+      held.active = false;
     };
   }, [props.active, props.seed]);
   const aim = useCallback(
     (point: CorePoint, phase: "down" | "move" | "up", state: DartsStateV3) => {
       if (state.phase !== "aim") {
-        grabRef.current = null;
+        pathRef.current = null;
+        held.active = false;
         return null;
       }
       const now = typeof performance === "undefined" ? 0 : performance.now();
       if (phase === "down") {
-        grabRef.current = { start: point, t: now, aimX: state.aimX, aimY: state.aimY, last: point, lastT: now, prev: point, prevT: now };
+        pathRef.current = [{ x: point.x, y: point.y, t: now }];
+        held.active = true; held.x = point.x; held.y = point.y; held.trail = [{ x: point.x, y: point.y }];
         return null;
       }
-      const g = grabRef.current;
-      if (!g) return null;
-      g.prev = g.last; g.prevT = g.lastT; g.last = point; g.lastT = now;
-      const dx = point.x - g.start.x, dy = point.y - g.start.y;
-      if (phase === "move") {
-        // A slow drag steers the aim (relative, a fifth of the finger travel); a fast upward motion is the flick.
-        const upSpeed = (g.prev.y - point.y) / Math.max(1, now - g.prevT);
-        if (upSpeed > 0.5) return null;
-        const x = Math.max(0, Math.min(60, Math.round(g.aimX + dx / 5)));
-        const y = Math.max(0, Math.min(60, Math.round(g.aimY + dy / 5)));
-        const out: string[] = [];
-        if (x !== state.aimX) out.push(dartsAimAction("X", x));
-        if (y !== state.aimY) out.push(dartsAimAction("Y", y));
-        return out.length ? out : null;
-      }
-      grabRef.current = null;
-      const up = g.start.y - point.y, ms = Math.max(1, now - g.t);
-      const flickSpeed = (g.prev.y - point.y) / Math.max(1, now - g.prevT);
-      const isFlick = up >= 70 && up > Math.abs(dx) * 1.2 && (up / ms > 0.45 || flickSpeed > 0.6);
-      return isFlick ? "THROW" : null;
+      const path = pathRef.current;
+      if (!path) return null;
+      path.push({ x: point.x, y: point.y, t: now });
+      held.x = point.x; held.y = point.y; held.trail.push({ x: point.x, y: point.y }); if (held.trail.length > 12) held.trail.shift();
+      if (phase === "move") return null;
+      pathRef.current = null;
+      held.active = false;
+      const flick = dartsFlickAimV3(path);
+      if (!flick) return null;
+      const out: string[] = [];
+      if (flick.x !== state.aimX) out.push(dartsAimAction("X", flick.x));
+      if (flick.y !== state.aimY) out.push(dartsAimAction("Y", flick.y));
+      out.push("THROW");
+      return out;
     },
     [],
   );

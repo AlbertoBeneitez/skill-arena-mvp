@@ -2,12 +2,13 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V9,
-  ROULETTE_RULES_V9,
+  ROULETTE_CORE_V10,
+  ROULETTE_RULES_V10,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV9 as RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v9";
+  type RouletteStateV10 as RouletteStateV2,
+  rouletteSurfaceV10,
+} from "@/lib/verified/galacticRouletteCore.v10";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -80,9 +81,22 @@ function render(
     ctx.strokeStyle = "rgba(0,0,0,.35)";
     ctx.lineWidth = 1;
     ctx.stroke();
-    // Metal fret between pockets (and a finer divider across the numbered band).
-    ctx.strokeStyle = "#e8d3a2";
-    ctx.lineWidth = 2;
+    // Raised metal fret between pockets (a solid wall in the core): cast shadow, body and a bright top edge.
+    const sh = 0.018;
+    ctx.strokeStyle = "rgba(0,0,0,.45)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a + sh) * POCKET_INNER, cy + Math.sin(a + sh) * POCKET_INNER);
+    ctx.lineTo(cx + Math.cos(a + sh) * POCKET_OUTER, cy + Math.sin(a + sh) * POCKET_OUTER);
+    ctx.stroke();
+    ctx.strokeStyle = "#b8975a";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * (POCKET_INNER - 1), cy + Math.sin(a) * (POCKET_INNER - 1));
+    ctx.lineTo(cx + Math.cos(a) * (POCKET_OUTER + 1), cy + Math.sin(a) * (POCKET_OUTER + 1));
+    ctx.stroke();
+    ctx.strokeStyle = "#fff1c8";
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(cx + Math.cos(a) * POCKET_INNER, cy + Math.sin(a) * POCKET_INNER);
     ctx.lineTo(cx + Math.cos(a) * POCKET_OUTER, cy + Math.sin(a) * POCKET_OUTER);
@@ -187,7 +201,7 @@ function render(
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
   const radius = Math.hypot(x - cx, y - cy);
-  const surface = s.inBowl && radius <= 151 ? radius < 90 ? (90 - radius) * 0.35 : Math.max(0, (radius - 115) * 0.35) : 0;
+  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV10(radius * 1000).z / 1000 : 0;
   const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - 6);
   // Launcher plate outside the wheel (the ball can only be thrown from here).
   if (idle || s.tick - s.flightStart < 40) {
@@ -284,10 +298,10 @@ function render(
     377,
   );
   // History of the last results, newest on the right; each dot has the pocket colour.
-  const shown = s.history.slice(-ROULETTE_RULES_V9.historyLength);
-  const slot = 24, left = cx - (ROULETTE_RULES_V9.historyLength * slot) / 2;
-  for (let i = 0; i < ROULETTE_RULES_V9.historyLength; i++) {
-    const n = shown[i - (ROULETTE_RULES_V9.historyLength - shown.length)];
+  const shown = s.history.slice(-ROULETTE_RULES_V10.historyLength);
+  const slot = 24, left = cx - (ROULETTE_RULES_V10.historyLength * slot) / 2;
+  for (let i = 0; i < ROULETTE_RULES_V10.historyLength; i++) {
+    const n = shown[i - (ROULETTE_RULES_V10.historyLength - shown.length)];
     const hx = left + i * slot + slot / 2;
     if (n === undefined) {
       ctx.strokeStyle = "rgba(168,198,213,.28)";
@@ -297,7 +311,7 @@ function render(
       ctx.stroke();
       continue;
     }
-    const latest = i === ROULETTE_RULES_V9.historyLength - 1;
+    const latest = i === ROULETTE_RULES_V10.historyLength - 1;
     ctx.fillStyle = n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
     ctx.beginPath();
     ctx.arc(hx, 31, latest ? 11 : 9, 0, Math.PI * 2);
@@ -438,7 +452,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V9}
+        core={ROULETTE_CORE_V10}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -449,7 +463,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         pointAction={(p, phase, s) => {
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V9.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V10.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;
