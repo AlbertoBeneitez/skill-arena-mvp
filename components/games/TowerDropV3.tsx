@@ -2,10 +2,10 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  TOWER_DROP_CORE_V4,
+  TOWER_DROP_CORE_V5,
   TOWER_DROP_V3,
-  type TowerDropV4State as TowerDropV3State,
-} from "@/lib/verified/towerDropCore.v4";
+  type TowerDropV5State as TowerDropV3State,
+} from "@/lib/verified/towerDropCore.v5";
 import CoreCanvasGame from "./CoreCanvasGame";
 import { t, formatNumber, useI18n } from "@/lib/i18n";
 // Presentation-only smoothing. Never read by the core; a new run (tick going
@@ -88,7 +88,7 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State, view?: {
     // The base starts at the bottom edge of the screen, whatever its height.
     groundScreenY = viewH - 34,
     pivotY = floor - blockH - 320 - TOWER_DROP_V3.ropeLengthMilli / 1000,
-    craneTop = pivotY - 24;
+    craneTop = pivotY - 52;
   // Constant zoom, like Stack: the camera follows the newest layer; once the tower reaches the working height
   // the whole tower — base included — slides down and off the bottom of the screen.
   const scale = 0.72,
@@ -134,14 +134,40 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State, view?: {
       y = fromTop === 0 ? floor : floor + blockH + (fromTop - 1) * olderBlockH;
     block(b.xMilli / 1000, y, b.wMilli / 1000, index, h);
   });
-  ctx.strokeStyle = "#63869a";
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(25, pivotY - 18);
-  ctx.lineTo(365, pivotY - 18);
-  ctx.stroke();
-  ctx.fillStyle = "#c4eff8";
-  ctx.fillRect(183, pivotY - 24, 24, 24);
+  // Planetary elevator: a tether ribbon running up out of the sky, with a lift module the hook hangs from.
+  {
+    const mx = 195, my = pivotY - 12, glow = 0.5 + 0.5 * Math.sin(state.tick * 0.08);
+    const tether = ctx.createLinearGradient(mx - 6, 0, mx + 6, 0);
+    tether.addColorStop(0, "#2b3d55"); tether.addColorStop(0.5, "#9fd6ee"); tether.addColorStop(1, "#2b3d55");
+    ctx.fillStyle = tether;
+    ctx.fillRect(mx - 5, my - 1600, 10, 1600);
+    // Climber lights running up the ribbon.
+    for (let k = 0; k < 14; k++) {
+      const yy = my - 40 - ((k * 120 + state.tick * 2.2) % 1600);
+      ctx.fillStyle = k % 3 === 0 ? "rgba(255,210,63,.9)" : "rgba(127,227,238,.55)";
+      ctx.fillRect(mx - 2, yy, 4, 10);
+    }
+    // Solar wings.
+    for (const side of [-1, 1]) {
+      ctx.fillStyle = "#1c3354";
+      ctx.fillRect(mx + side * 34 - (side < 0 ? 52 : 0), my - 20, 52, 18);
+      ctx.strokeStyle = "rgba(127,227,238,.6)"; ctx.lineWidth = 1.5;
+      ctx.strokeRect(mx + side * 34 - (side < 0 ? 52 : 0), my - 20, 52, 18);
+      for (let c = 1; c < 4; c++) { const gx = mx + side * 34 - (side < 0 ? 52 : 0) + c * 13; ctx.beginPath(); ctx.moveTo(gx, my - 20); ctx.lineTo(gx, my - 2); ctx.stroke(); }
+      ctx.fillStyle = "#7d8aa0"; ctx.fillRect(mx + side * 22 - (side < 0 ? 12 : 0), my - 13, 12, 4);
+    }
+    // Module body (capsule) with a window band and status lamps.
+    const body = ctx.createLinearGradient(0, my - 34, 0, my + 12);
+    body.addColorStop(0, "#e9f4ff"); body.addColorStop(0.5, "#9fb4c8"); body.addColorStop(1, "#5d6f84");
+    ctx.fillStyle = body;
+    ctx.beginPath(); ctx.roundRect(mx - 24, my - 34, 48, 46, 14); ctx.fill();
+    ctx.fillStyle = "#c4eff8";
+    ctx.fillRect(mx - 14, my - 22, 28, 9);
+    ctx.fillStyle = "#0b1a2e"; ctx.fillRect(mx - 12, my - 20, 24, 5);
+    ctx.fillStyle = `rgba(92,255,176,${0.4 + 0.6 * glow})`;
+    ctx.beginPath(); ctx.arc(mx - 15, my + 2, 3, 0, Math.PI * 2); ctx.arc(mx + 15, my + 2, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#2a2f3a"; ctx.fillRect(mx - 6, my + 8, 12, 6);
+  }
   const hookX = (state.movingXMilli + state.movingWMilli / 2) / 1000,
     hookY = floor - blockH - 320 - state.hookRiseMilli / 1000;
   ctx.strokeStyle = "#d2effb";
@@ -241,7 +267,7 @@ export default function TowerDropV3(props: GameRuntimeProps) {
   return (
     <CoreCanvasGame
       {...props}
-      core={TOWER_DROP_CORE_V4}
+      core={TOWER_DROP_CORE_V5}
       name="Tower Drop"
       hideHudScore
       render={render}

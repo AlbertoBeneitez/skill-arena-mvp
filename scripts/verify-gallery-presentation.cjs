@@ -1,4 +1,4 @@
-// Shot Gallery V8 renderer: pure, finite, and its tap mapping agrees with the core.
+// Shot Gallery V9 renderer: pure, finite, and its tap mapping agrees with the core.
 const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path");
@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const core = await load("lib/verified/shotGalleryCore.v8.js");
+  const core = await load("lib/verified/shotGalleryCore.v9.js");
   const file = path.join(root, "components/games/ShotGallery.tsx"),
     swc = req("next/dist/build/swc");
   await swc.loadBindings();
@@ -20,7 +20,7 @@ module.exports = (async () => {
   });
   const deps = {
       react: { ...req("react"), useCallback: (f) => f },
-      "@/lib/verified/shotGalleryCore.v8": core,
+      "@/lib/verified/shotGalleryCore.v9": core,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/gameFeedback": { gameTone() {} },
@@ -35,7 +35,7 @@ module.exports = (async () => {
   for (let seed = 0; seed < 12; seed++)
     for (let trial = 0; trial < 12; trial++)
       for (const phase of ["waiting", "ready", "feedback"]) {
-        const s = core.SHOT_GALLERY_CORE_V8.create(`gallery8-render-${seed}`);
+        const s = core.SHOT_GALLERY_CORE_V9.create(`gallery9-render-${seed}`);
         s.trial = trial;
         s.phase = phase;
         s.readyTick = 0;
@@ -55,6 +55,7 @@ module.exports = (async () => {
             get(o, k) {
               if (k in o) return o[k];
               if (k === "createRadialGradient" || k === "createLinearGradient") return () => ({ addColorStop() {} });
+              if (k === "measureText") return () => ({ width: 80 });
               return (...a) => {
                 if (k === "save") stack.push(1);
                 if (k === "restore") stack.pop();
@@ -74,17 +75,17 @@ module.exports = (async () => {
         frames++;
       }
   // Taps: before green any tap is a false start; afterwards the nearest unhit target wins.
-  const s = core.SHOT_GALLERY_CORE_V8.create("gallery8-pick");
+  const s = core.SHOT_GALLERY_CORE_V9.create("gallery9-pick");
   assert.equal(pick({ x: 5, y: 5 }, "down", s), "PICK_0");
   s.phase = "ready";
   s.readyTick = s.tick;
-  const t = core.galleryTargetPosV8(s.trials[0].targets[3], 0);
+  const t = core.galleryTargetPosV9(s.trials[0].targets[3]);
   assert.equal(pick({ x: t.x + 4, y: t.y - 3 }, "down", s), "PICK_3");
   assert.equal(pick({ x: 2, y: 2 }, "down", s), null);
   assert.equal(pick({ x: t.x, y: t.y }, "move", s), null);
   s.hits = [3];
   assert.notEqual(pick({ x: t.x, y: t.y }, "down", s), "PICK_3");
-  console.log(JSON.stringify({ variant: "Shot Gallery V8", frames, rendererPure: true }));
+  console.log(JSON.stringify({ variant: "Shot Gallery V9", frames, rendererPure: true }));
 })().catch((e) => {
   console.error(e);
   throw e;

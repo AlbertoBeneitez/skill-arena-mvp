@@ -5,11 +5,12 @@ import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { ORB_RULES, orbDirection } from "@/lib/verified/orbBurstCore.v1";
 import {
-  ORB_BURST_CORE_V6,
-  orbCenterV6,
-  orbMissLimitV6,
-  type OrbV6State,
-} from "@/lib/verified/orbBurstCore.v6";
+  ORB_BURST_CORE_V7,
+  orbCenterV7,
+  orbMissLimitV7,
+  orbRowTimerV7,
+  type OrbV7State,
+} from "@/lib/verified/orbBurstCore.v7";
 import { orbAimAction } from "@/lib/verified/orbBurstProtocol.v1";
 import {
   applyOrbCamera,
@@ -87,7 +88,7 @@ function orb(
 }
 function drawAimGuide(
   ctx: CanvasRenderingContext2D,
-  state: Readonly<OrbV6State>,
+  state: Readonly<OrbV7State>,
 ) {
   const direction = orbDirection(state.aimIndex);
   ctx.save();
@@ -108,7 +109,7 @@ function drawAimGuide(
 }
 function renderField(
   ctx: CanvasRenderingContext2D,
-  state: OrbV6State,
+  state: OrbV7State,
   camera: OrbCamera,
 ) {
   ctx.save();
@@ -136,7 +137,7 @@ function renderField(
       ? (ORB_RULES.rowHeightMilli / 1000) * (1 - insertionAge / 12)
       : 0;
   for (const bubble of state.bubbles) {
-    const p = orbCenterV6(state, bubble.row, bubble.col),
+    const p = orbCenterV7(state, bubble.row, bubble.col),
       y = p.yMilli / 1000 - descent;
     if (y < 2 || y > 539) continue;
     orb(ctx, p.xMilli / 1000, y, bubble.color, 17);
@@ -228,12 +229,23 @@ function renderField(
   ctx.setLineDash([]);
   orb(ctx, 286, 574, state.nextColor, 12);
   // Pressure is an actual state indicator, not an instruction or a forecast.
-  for (let i = 0; i < orbMissLimitV6(state); i++) {
+  for (let i = 0; i < orbMissLimitV7(state); i++) {
     ctx.fillStyle = i < state.misses ? "#ff9dad" : "rgba(139,199,220,.24)";
     ctx.beginPath();
     ctx.arc(49 + i * 14, 546, 4, 0, Math.PI * 2);
     ctx.fill();
   }
+  // Ceiling clock: the ring empties as the next timed row approaches.
+  const left = 1 - Math.min(1, (state.tick - state.lastRowTick) / orbRowTimerV7(state));
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(139,199,220,.2)";
+  ctx.beginPath();
+  ctx.arc(104, 574, 9, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = left < 0.25 ? "#ff9dad" : "#8bc7dc";
+  ctx.beginPath();
+  ctx.arc(104, 574, 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left);
+  ctx.stroke();
   ctx.restore();
 }
 function createPresentation() {
@@ -242,7 +254,7 @@ function createPresentation() {
   return {
     render(
       ctx: CanvasRenderingContext2D,
-      state: OrbV6State,
+      state: OrbV7State,
       viewport: LogicalCanvasViewport,
     ) {
       const dpr =
@@ -270,7 +282,7 @@ function createPresentation() {
     pointAction(
       point: CorePoint,
       phase: "down" | "move" | "up",
-      state: OrbV6State,
+      state: OrbV7State,
     ) {
       return pointAction(unprojectOrbPoint(camera, point), phase, state);
     },
@@ -278,7 +290,7 @@ function createPresentation() {
       durationMs: 300,
       render(
         ctx: CanvasRenderingContext2D,
-        state: OrbV6State,
+        state: OrbV7State,
         elapsedMs: number,
       ) {
         if (state.status !== "failed") return;
@@ -299,7 +311,7 @@ function createPresentation() {
 function pointAction(
   point: CorePoint,
   phase: "down" | "move" | "up",
-  state: OrbV6State,
+  state: OrbV7State,
 ) {
   if (phase === "up") return "SHOOT";
   const angle = Math.atan2(Math.min(-40, point.y - 574), point.x - 195);
@@ -318,9 +330,9 @@ const keys = {
   " ": "SHOOT",
   Enter: "SHOOT",
 };
-const hudLabel = (state: Readonly<OrbV6State>) =>
+const hudLabel = (state: Readonly<OrbV7State>) =>
   `${tx("play.pts", { n: formatNumber(state.points) })}${state.combo > 1 ? ` · ${tx("play.combo", { n: state.combo })}` : ""}`;
-const feedbackScore = (state: Readonly<OrbV6State>) => state.points;
+const feedbackScore = (state: Readonly<OrbV7State>) => state.points;
 export default function OrbBurstVerified(props: GameRuntimeProps) {
   useI18n();
   const presentation = useMemo(createPresentation, []);
@@ -328,7 +340,7 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
     <div className="orbVerified">
       <CoreCanvasGame
         {...props}
-        core={ORB_BURST_CORE_V6}
+        core={ORB_BURST_CORE_V7}
         name="Orb Burst"
         render={presentation.render}
         pointAction={presentation.pointAction}

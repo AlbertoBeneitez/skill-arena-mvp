@@ -23,13 +23,15 @@ const F = 14000; // perspective focal distance (mm)
 const KX = 0.3; // px per mm at the foul line
 const LANE_MM = R.laneWidth / MMU;
 
-type View = { H: number; nearY: number; horizonY: number; camZ: number };
-const motion = { tick: -1, camZ: 0, seed: "" };
+type View = { H: number; nearY: number; horizonY: number; camZ: number; camX: number };
+const motion = { tick: -1, camZ: 0, camX: 0, seed: "" };
+type Gesture = { x: number; y: number; t: number; path: { x: number; y: number; t: number }[]; aimDrag: boolean };
 
 function project(v: View, xmm: number, ymm: number) {
   const z = ymm - v.camZ;
   const s = F / (F + Math.max(-F * 0.6, z));
-  return { x: 195 + (xmm - LANE_MM / 2) * KX * s, y: v.horizonY + (v.nearY - v.horizonY) * s, s };
+  // camX pans the lane so the rolling ball stays near the centre of the screen.
+  return { x: 195 + (xmm - LANE_MM / 2 - v.camX * s) * KX * s, y: v.horizonY + (v.nearY - v.horizonY) * s, s };
 }
 
 function sheetMarks(frames: number[][]) {
@@ -131,13 +133,22 @@ function drawLane(ctx: CanvasRenderingContext2D, v: View, tick: number) {
   if (near < 50) { const a = project(v, 0, 0), b = project(v, LANE_MM, 0); ctx.fillStyle = "#ff3b5c"; ctx.fillRect(a.x, a.y - 2, b.x - a.x, 3); }
 }
 
-function drawPin(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, tilt: number, lift: number) {
-  const h = 380 * KX * s, w = 121 * KX * s;
+type PinMood = { mood: "idle" | "scared" | "hit"; t: number; id: number };
+const hash01 = (n: number) => { const q = Math.sin(n * 12.9898) * 43758.5453; return q - Math.floor(q); };
+
+/** Pin as a little character: eyes that blink and look at the ball, a mouth, scared shivers, dizzy when hit. */
+function drawPin(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, tilt: number, lift: number, face: PinMood = { mood: "idle", t: 0, id: 0 }) {
+  const h = 380 * KX * s, w = 121 * KX * s, { mood, t, id } = face;
+  // Idle: a soft bob and sway. Scared: a fast shiver.
+  const bob = mood === "idle" ? Math.max(0, Math.sin(t * 0.09 + id * 1.3)) * h * 0.035 : 0;
+  const sway = mood === "idle" ? Math.sin(t * 0.045 + id) * 0.05 : mood === "scared" ? Math.sin(t * 1.9 + id) * 0.07 : 0;
+  const squash = mood === "idle" ? 1 - Math.max(0, Math.sin(t * 0.09 + id * 1.3)) * 0.04 : 1;
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,.35)";
   ctx.beginPath(); ctx.ellipse(x, y, w * 0.7, w * 0.25, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.translate(x, y - lift);
-  ctx.rotate(tilt);
+  ctx.translate(x, y - lift - bob);
+  ctx.rotate(tilt + sway);
+  ctx.scale(1 / squash, squash);
   const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
   g.addColorStop(0, "#aeb8c6"); g.addColorStop(0.42, "#ffffff"); g.addColorStop(1, "#8f9aab");
   ctx.fillStyle = g;
@@ -152,7 +163,47 @@ function drawPin(ctx: CanvasRenderingContext2D, x: number, y: number, s: number,
   ctx.fillStyle = "#e12d3f";
   ctx.fillRect(-w * 0.25, -h * 0.72, w * 0.5, Math.max(1, h * 0.035));
   ctx.fillRect(-w * 0.23, -h * 0.665, w * 0.46, Math.max(1, h * 0.035));
+  // Face.
+  const ey = -h * 0.875, ex = w * 0.11, er = Math.max(1.1, w * (mood === "scared" ? 0.1 : 0.085));
+  const blink = mood === "idle" && (t + Math.floor(hash01(id + 1) * 200)) % 220 < 7;
+  if (mood === "hit") {
+    ctx.strokeStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.8, w * 0.04);
+    for (const side of [-1, 1]) {
+      const cx = side * ex;
+      ctx.beginPath(); ctx.moveTo(cx - er, ey - er); ctx.lineTo(cx + er, ey + er); ctx.moveTo(cx + er, ey - er); ctx.lineTo(cx - er, ey + er); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.ellipse(0, ey + h * 0.07, w * 0.08, h * 0.022, 0, 0, Math.PI * 2); ctx.stroke();
+  } else {
+    for (const side of [-1, 1]) {
+      const cx = side * ex;
+      if (blink) { ctx.strokeStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.8, w * 0.035); ctx.beginPath(); ctx.moveTo(cx - er, ey); ctx.lineTo(cx + er, ey); ctx.stroke(); continue; }
+      ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.ellipse(cx, ey, er, er * 1.2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(27,31,46,.6)"; ctx.lineWidth = Math.max(0.5, w * 0.015); ctx.stroke();
+      // Pupils look down the lane toward the bowler; scared pupils shrink.
+      ctx.fillStyle = "#1b1f2e";
+      ctx.beginPath(); ctx.arc(cx, ey + er * 0.35, er * (mood === "scared" ? 0.35 : 0.55), 0, Math.PI * 2); ctx.fill();
+    }
+    if (mood === "scared") {
+      ctx.fillStyle = "#1b1f2e"; ctx.beginPath(); ctx.ellipse(0, ey + h * 0.075, w * 0.07, h * 0.03, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(127,227,238,.9)"; ctx.beginPath(); ctx.ellipse(w * 0.27, ey - h * 0.02, w * 0.04, w * 0.07, 0, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.strokeStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.7, w * 0.03);
+      ctx.beginPath(); ctx.arc(0, ey + h * 0.04, w * 0.09, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+      ctx.fillStyle = "rgba(255,120,150,.45)";
+      for (const side of [-1, 1]) { ctx.beginPath(); ctx.arc(side * w * 0.21, ey + h * 0.045, w * 0.05, 0, Math.PI * 2); ctx.fill(); }
+    }
+  }
   ctx.restore();
+  // Dizzy stars circling a knocked pin.
+  if (mood === "hit" && t < 160) {
+    for (let k = 0; k < 3; k++) {
+      const a = t * 0.15 + (k * Math.PI * 2) / 3, sx = x + Math.cos(a) * w * 0.55, sy = y - lift - h * 0.5 + Math.sin(a) * w * 0.18 - h * 0.2;
+      ctx.fillStyle = k % 2 ? "#ffd23f" : "#7fe3ee"; ctx.globalAlpha = Math.max(0, 1 - t / 160);
+      ctx.beginPath();
+      for (let q = 0; q < 10; q++) { const b = (q * Math.PI) / 5, r = (q % 2 ? 0.45 : 1) * Math.max(1.5, w * 0.12); q ? ctx.lineTo(sx + Math.cos(b) * r, sy + Math.sin(b) * r) : ctx.moveTo(sx + Math.cos(b) * r, sy + Math.sin(b) * r); }
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+    }
+  }
 }
 
 function drawBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1) {
@@ -180,17 +231,21 @@ function drawBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1) {
 function drawPinsAndBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1) {
   type Item = { y: number; draw: () => void };
   const items: Item[] = [];
-  for (const pin of s.pins) {
-    if (!pin.present) continue;
+  // The ball is "coming" once it is rolling and within ~6 m of the head pin.
+  const coming = s.phase === "rolling" && s.ball.active && R.headPinY - s.ball.y < 6000 * MMU;
+  s.pins.forEach((pin, id) => {
+    if (!pin.present) return;
     const p = project(v, pin.x / MMU, pin.y / MMU);
     let tilt = 0, lift = 0;
+    let face: PinMood = { mood: coming && pin.standing ? "scared" : "idle", t: s.tick, id };
     if (!pin.standing) {
       const age = Math.max(0, s.tick - pin.hitTick), dir = pin.vx === 0 ? (pin.x > R.laneWidth / 2 ? 1 : -1) : Math.sign(pin.vx);
       tilt = dir * Math.min(Math.PI / 2, age * 0.09);
       lift = Math.max(0, Math.sin(Math.min(Math.PI, age * 0.08)) * 26 * p.s);
+      face = { mood: "hit", t: age, id };
     }
-    items.push({ y: pin.y, draw: () => drawPin(ctx, p.x, p.y, p.s, tilt, lift) });
-  }
+    items.push({ y: pin.y, draw: () => drawPin(ctx, p.x, p.y, p.s, tilt, lift, face) });
+  });
   items.push({ y: s.ball.y, draw: () => drawBall(ctx, v, s) });
   items.sort((a, b) => b.y - a.y).forEach((it) => it.draw());
 }
@@ -247,7 +302,7 @@ function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV1, H: nu
       const k = Math.min(1, t / 70), dir = i - 4.5;
       const x = deck.x + dir * 22 * k + Math.sin(i * 1.7) * 30 * k, y = deck.y - 120 * Math.sin(k * Math.PI * 0.9) + k * k * 120;
       ctx.save(); ctx.globalAlpha = (1 - end) * (1 - k * 0.6);
-      drawPin(ctx, x, y + 40, 0.45 + k * 0.75, t * 0.15 * (i % 2 ? 1 : -1) + i, 0);
+      drawPin(ctx, x, y + 40, 0.45 + k * 0.75, t * 0.15 * (i % 2 ? 1 : -1) + i, 0, { mood: "hit", t: 200, id: i });
       ctx.restore();
     }
   }
@@ -288,25 +343,78 @@ function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV1, H: nu
   ctx.restore();
 }
 
+/** Chase-cam speed streaks around the ball (presentation). */
+function drawSpeedLines(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1, H: number) {
+  const p = project(v, s.ball.x / MMU, s.ball.y / MMU), speed = Math.min(1, s.ball.vy / (R.powerMin + 8 * R.powerStep));
+  if (p.y > H) return;
+  ctx.save();
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2 + 0.2, d0 = 60 + ((s.tick * 9 + i * 37) % 120), d1 = d0 + 30 + 40 * speed;
+    ctx.strokeStyle = `rgba(200,225,255,${0.08 + 0.18 * speed})`; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(p.x + Math.cos(a) * d0, p.y - 20 + Math.sin(a) * d0 * 0.6); ctx.lineTo(p.x + Math.cos(a) * d1, p.y - 20 + Math.sin(a) * d1 * 0.6); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** Live swipe trail with a power bar so the throw reads before release (presentation). */
+function drawSwipe(ctx: CanvasRenderingContext2D, g: Gesture | null) {
+  if (!g || g.aimDrag || g.path.length < 2) return;
+  const last = g.path[g.path.length - 1], up = g.y - last.y;
+  if (up < 12) return;
+  ctx.save();
+  ctx.lineCap = "round";
+  for (let i = 1; i < g.path.length; i++) {
+    const a = g.path[i - 1], b = g.path[i];
+    ctx.strokeStyle = `rgba(127,227,238,${0.15 + 0.7 * (i / g.path.length)})`; ctx.lineWidth = 2 + 8 * (i / g.path.length);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  const power = swipePower(g);
+  ctx.fillStyle = "rgba(6,12,28,.8)"; ctx.beginPath(); ctx.roundRect(362, 250, 14, 200, 7); ctx.fill();
+  const fill = ctx.createLinearGradient(0, 450, 0, 250);
+  fill.addColorStop(0, "#5cffb0"); fill.addColorStop(0.6, "#ffd23f"); fill.addColorStop(1, "#ff3d9a");
+  ctx.fillStyle = fill; ctx.beginPath(); ctx.roundRect(364, 448 - (196 * (power + 1)) / 9, 10, (196 * (power + 1)) / 9, 5); ctx.fill();
+  ctx.restore();
+}
+
+/** Throw speed measured over the last ~110 ms of the swipe (the flick), mapped onto POWER 0–8 on a gentler curve. */
+function swipePower(g: Gesture) {
+  const end = g.path[g.path.length - 1];
+  let k = g.path.length - 1;
+  while (k > 0 && end.t - g.path[k].t < 110) k--;
+  const from = g.path[k], ms = Math.max(30, end.t - from.t), recent = (from.y - end.y) / ms;
+  const overall = (g.y - end.y) / Math.max(60, end.t - g.t);
+  const speed = Math.max(recent, overall);
+  return Math.max(0, Math.min(8, Math.round((speed - 0.3) / 0.26)));
+}
+
 const hudLabel = (s: Readonly<BowlingStateV1>) => tx("bowling.hud", { frame: Math.min(10, s.frame + 1), roll: s.rollInFrame + 1 });
 
 export default function Bowling(props: GameRuntimeProps) {
   useI18n();
-  const gesture = useRef<{ x: number; y: number; t: number; path: { x: number; y: number }[]; aimDrag: boolean } | null>(null);
+  const gesture = useRef<Gesture | null>(null);
   const render = useCallback((ctx: CanvasRenderingContext2D, s: BowlingStateV1, view: { width: number; height: number }) => {
     const H = Math.max(620, view.height);
-    if (s.seed !== motion.seed || s.tick < motion.tick) { motion.seed = s.seed; motion.camZ = 0; }
-    // Camera dolly: follow the ball down the lane while it rolls; glide back for the next throw.
-    const want = s.phase === "rolling" ? Math.max(0, Math.min(10500, s.ball.y / MMU - 3500)) : 0;
+    if (s.seed !== motion.seed || s.tick < motion.tick) { motion.seed = s.seed; motion.camZ = 0; motion.camX = 0; }
+    // Chase camera: tight behind the ball while it rolls (and panned onto its line), easing off near the pins so
+    // the whole deck is in frame; glides back for the next throw.
+    const rolling = s.phase === "rolling" && s.ball.active;
+    const want = rolling ? Math.max(0, Math.min(R.headPinY / MMU - 4200, s.ball.y / MMU - 1500)) : s.phase === "rolling" ? motion.camZ : 0;
+    const near = rolling ? Math.max(0, Math.min(1, (R.headPinY / MMU - 4200 - s.ball.y / MMU + 1500) / 3000)) : 0;
+    const wantX = rolling ? (s.ball.x / MMU - LANE_MM / 2) * 0.7 * near : 0;
     const steps = Math.min(10, Math.max(0, s.tick - motion.tick));
-    for (let i = 0; i < steps; i++) motion.camZ += (want - motion.camZ) * (want > motion.camZ ? 0.2 : 0.06);
+    for (let i = 0; i < steps; i++) {
+      motion.camZ += (want - motion.camZ) * (want > motion.camZ ? 0.32 : 0.06);
+      motion.camX += (wantX - motion.camX) * 0.15;
+    }
     motion.tick = s.tick;
     const nearY = H - 70, sPins = F / (F + R.headPinY / MMU), horizonY = (150 - sPins * nearY) / (1 - sPins);
-    const v: View = { H, nearY, horizonY, camZ: motion.camZ };
+    const v: View = { H, nearY, horizonY, camZ: motion.camZ, camX: motion.camX };
     drawSpaceBackdrop(ctx, 390, H, 0, s.tick);
     drawLane(ctx, v, s.tick);
     if (s.phase === "aim") drawAimGuide(ctx, v, s);
     drawPinsAndBall(ctx, v, s);
+    if (rolling) drawSpeedLines(ctx, v, s, H);
+    if (s.phase === "aim") drawSwipe(ctx, gesture.current);
     drawSheet(ctx, s);
     const last = s.lastResult, since = last ? s.tick - last.tick : 999;
     if (s.phase === "celebrate") drawCelebration(ctx, s, H, project(v, LANE_MM / 2, R.headPinY / MMU + 400));
@@ -322,10 +430,10 @@ export default function Bowling(props: GameRuntimeProps) {
     if (s.phase === "celebrate") return phase === "down" ? "SKIP" : null;
     if (s.phase !== "aim") return null;
     const now = typeof performance === "undefined" ? 0 : performance.now();
-    if (phase === "down") { gesture.current = { x: point.x, y: point.y, t: now, path: [point], aimDrag: false }; return null; }
+    if (phase === "down") { gesture.current = { x: point.x, y: point.y, t: now, path: [{ x: point.x, y: point.y, t: now }], aimDrag: false }; return null; }
     const g = gesture.current;
     if (!g) return null;
-    g.path.push(point);
+    g.path.push({ x: point.x, y: point.y, t: now });
     const dx = point.x - g.x, dy = point.y - g.y;
     if (phase === "move") {
       // A sideways drag before any upward swipe moves the ball across the approach.
@@ -338,13 +446,13 @@ export default function Bowling(props: GameRuntimeProps) {
       return null;
     }
     gesture.current = null;
-    if (dy > -40) return null;
-    // Release: direction → angle, speed → power, bend of the path → spin.
-    const ms = Math.max(60, now - g.t), speed = -dy / ms;
-    const angle = Math.max(0, Math.min(24, Math.round(12 + (dx / -dy) * 40)));
-    const power = Math.max(0, Math.min(8, Math.round((speed - 0.35) / 0.18)));
+    if (dy > -30) return null;
+    // Release: direction of the swipe → angle (gentler gain, small wobble ignored), flick speed → power,
+    // bend of the path → spin.
+    const tilt = dx / -dy, angle = Math.max(0, Math.min(24, Math.round(12 + (Math.abs(tilt) < 0.04 ? 0 : tilt) * 26)));
+    const power = swipePower(g);
     const mid = g.path[Math.floor(g.path.length / 2)], chord = g.x + dx * ((mid.y - g.y) / (dy || -1));
-    const spin = Math.max(0, Math.min(8, Math.round(4 + ((chord - mid.x) / -dy) * 30)));
+    const bend = (chord - mid.x) / -dy, spin = Math.max(0, Math.min(8, Math.round(4 + (Math.abs(bend) < 0.03 ? 0 : bend) * 24)));
     gameTone("tap");
     return [bowlingAction("ANGLE", angle), bowlingAction("SPIN", spin), bowlingAction("POWER", power), "ROLL"];
   }, []);

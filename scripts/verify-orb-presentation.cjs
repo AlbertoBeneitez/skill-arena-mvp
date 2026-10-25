@@ -11,7 +11,7 @@ const root = process.env.ORB_UI_REPO || path.resolve(__dirname, ".."),
   cameraDir = process.env.ORB_CAMERA_DIR || path.join(root, "lib"),
   coreSource =
     process.env.ORB_V5_SOURCE ||
-    path.join(root, "lib/verified/orbBurstCore.v6.ts");
+    path.join(root, "lib/verified/orbBurstCore.v7.ts");
 const req = createRequire(path.join(root, "package.json")),
   swc = req("next/dist/build/swc");
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
@@ -235,16 +235,16 @@ module.exports = (async () => {
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/verified/orbBurstCore.v1": v1,
-      "@/lib/verified/orbBurstCore.v6": v2,
+      "@/lib/verified/orbBurstCore.v7": v2,
       "@/lib/verified/orbBurstProtocol.v1": protocol,
       "@/lib/orbPresentation": camera,
       "./CoreCanvasGame": { default() {} },
     },
     "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.pointAction=pointAction;exports.hudLabel=hudLabel;exports.feedbackScore=feedbackScore;",
   );
-  const state = v2.ORB_BURST_CORE_V6.create("public-presentation-regression");
+  const state = v2.ORB_BURST_CORE_V7.create("public-presentation-regression");
   assert.equal(state.points, 0);
-  assert.equal(state.bubbles.length, 63);
+  assert.equal(state.bubbles.length, 72);
   for (const rotated of [false, true])
     for (const scale of [0.1, 1, 1.235])
       for (const point of [
@@ -464,8 +464,8 @@ module.exports = (async () => {
       lastInsertionTick: 100,
       settleRemaining: 18,
     },
-    oldPoint = v2.orbCenterV6(state, single.row, single.col),
-    actualPoint = v2.orbCenterV6(inserted, single.row + 1, single.col);
+    oldPoint = v2.orbCenterV7(state, single.row, single.col),
+    actualPoint = v2.orbCenterV7(inserted, single.row + 1, single.col);
   assert.equal(oldPoint.xMilli, actualPoint.xMilli);
   for (const age of [0, 6, 12, 18]) {
     const s = {
@@ -555,7 +555,7 @@ module.exports = (async () => {
     targetScore: 108,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core, v2.ORB_BURST_CORE_V6);
+  assert.equal(surface.core, v2.ORB_BURST_CORE_V7);
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.instruction, "");
   assert.equal(surface.expandHorizontalViewport, true);
@@ -571,7 +571,7 @@ module.exports = (async () => {
   );
   console.log(
     JSON.stringify({
-      variant: "Orb V6 classic bubble shooter presentation",
+      variant: "Orb V7 classic bubble shooter presentation",
       inputCases,
       viewports: dimensions.length,
       dprCases: 3,

@@ -98,6 +98,7 @@ function recorder() {
     "rect",
     "clip",
     "strokeText",
+    "roundRect",
   ])
     ctx[method] = () => {};
   return ctx;
@@ -130,7 +131,7 @@ async function loadRenderer(file, importedCore) {
 module.exports = (async () => {
   await swc.loadBindings();
   const tower = await import(
-    pathToFileURL(path.join(root, ".det-test/lib/verified/towerDropCore.v4.js"))
+    pathToFileURL(path.join(root, ".det-test/lib/verified/towerDropCore.v5.js"))
   );
   const stack = await import(
     pathToFileURL(
@@ -149,7 +150,7 @@ module.exports = (async () => {
     path.join(sourceDir, "components/games/Stack3D.tsx"),
     stack,
   );
-  const state = tower.createTowerDropV4(
+  const state = tower.createTowerDropV5(
     "9cfe3ebfbb7a58e46db026a8cf3840d88b06df9f171ec6f025b124b29f0046bf",
   );
   const inputs = [],
@@ -161,7 +162,7 @@ module.exports = (async () => {
   ) {
     if (state.phase === "swing") {
       const top = state.blocks.at(-1),
-        forecast = tower.forecastTowerLanding(state);
+        forecast = tower.forecastTowerLandingV5(state);
       if (
         forecast.stable &&
         Math.abs(
@@ -172,11 +173,11 @@ module.exports = (async () => {
         ) < 2000
       ) {
         inputs.push({ seq: inputs.length, tick: state.tick, action: "DROP" });
-        runtime.applyCoreInput(tower.TOWER_DROP_CORE_V4, state, "DROP", 1e9);
+        runtime.applyCoreInput(tower.TOWER_DROP_CORE_V5, state, "DROP", 1e9);
       }
     }
     if (state.status === "running")
-      runtime.stepCore(tower.TOWER_DROP_CORE_V4, state, 1e9);
+      runtime.stepCore(tower.TOWER_DROP_CORE_V5, state, 1e9);
     realHeights.add(state.blocks.length);
   }
   assert.ok(
@@ -220,9 +221,9 @@ module.exports = (async () => {
     if (count <= 2) assert.ok(Math.abs(ground[0].y - (586 + 16 * 0.72)) < 1e-6, `ground starts at the bottom (${count}: ${ground[0].y})`);
     if (count >= 32) assert.ok(ground[0].y > 620, `ground goes down with the tower at ${count}`);
     const crane = ctx.rectangles.find((r) => r.style === "#c4eff8");
-    assert.ok(crane.y >= 80 - 1e-6 && crane.bottom < 620, `crane clipping at ${count}`);
+    assert.ok(crane.y >= 80 - 1e-6 && crane.bottom < 620, `crane clipping at ${count}: ${crane.y} ${crane.bottom}`);
     // Container bodies: gradient-filled rectangles one full block tall (the deck is thinner).
-    const blocks = ctx.rectangles.filter((r) => r.style && r.style.gradient && r.bottom - r.y > 15);
+    const blocks = ctx.rectangles.filter((r) => r.style && r.style.gradient && r.bottom - r.y > 15 && r.bottom - r.y < 40);
     assert.equal(blocks.length, count + 1, "settled layers culled");
     // Older layers keep full height and slide off the bottom; the newest layers stay in view.
     for (const rectangle of blocks.slice(Math.max(0, count - 4), count))
@@ -233,7 +234,7 @@ module.exports = (async () => {
   assert.equal(JSON.stringify(state), before);
   assert.deepEqual(
     runtime.replayCore(
-      tower.TOWER_DROP_CORE_V4,
+      tower.TOWER_DROP_CORE_V5,
       inputs,
       state.tick,
       state.seed,

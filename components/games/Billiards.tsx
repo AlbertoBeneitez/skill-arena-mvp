@@ -79,7 +79,7 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV2State) {
   // The cue stick is drawn over the rail and outside the cloth, so it stays
   // visible when the ball is far from the middle (it used to be clipped).
   // Its pullback shows the selected power, without predicting an outcome.
-  const pullback = 16 + s.power * 6,
+  const pullback = 9 + s.power * 3.2,
     cueLength = 150,
     tipX = x - dx * pullback,
     tipY = y - dy * pullback,

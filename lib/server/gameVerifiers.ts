@@ -2,6 +2,7 @@ import { ROULETTE_CORE_V5 } from "../verified/galacticRouletteCore.v5";
 import { ROULETTE_CORE_V6 } from "../verified/galacticRouletteCore.v6";
 import { ROULETTE_CORE_V7 } from "../verified/galacticRouletteCore.v7";
 import { ROULETTE_CORE_V8 } from "../verified/galacticRouletteCore.v8";
+import { ROULETTE_CORE_V9 } from "../verified/galacticRouletteCore.v9";
 import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
@@ -30,6 +31,7 @@ import { SHOT_GALLERY_CORE_V5 } from "../verified/shotGalleryCore.v5";
 import { SHOT_GALLERY_CORE_V6 } from "../verified/shotGalleryCore.v6";
 import { SHOT_GALLERY_CORE_V7 } from "../verified/shotGalleryCore.v7";
 import { SHOT_GALLERY_CORE_V8 } from "../verified/shotGalleryCore.v8";
+import { SHOT_GALLERY_CORE_V9 } from "../verified/shotGalleryCore.v9";
 import { DARTS_CORE_V3 } from "../verified/dartsCore.v3";
 import { DARTS_CORE_V2 } from "../verified/dartsCore.v2";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
@@ -43,10 +45,12 @@ import { ORB_BURST_CORE_V3 } from "../verified/orbBurstCore.v3";
 import { ORB_BURST_CORE_V4 } from "../verified/orbBurstCore.v4";
 import { ORB_BURST_CORE_V5 } from "../verified/orbBurstCore.v5";
 import { ORB_BURST_CORE_V6 } from "../verified/orbBurstCore.v6";
+import { ORB_BURST_CORE_V7 } from "../verified/orbBurstCore.v7";
 import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
 import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
 import { TOWER_DROP_CORE_V4 } from "../verified/towerDropCore.v4";
+import { TOWER_DROP_CORE_V5 } from "../verified/towerDropCore.v5";
 import { STACK_3D_CORE } from "../verified/precisionStackCore.v4";
 import { STACK_3D_CORE as STACK_3D_CORE_V3 } from "../verified/precisionStackCore.v3";
 import type { MatchManifest } from "@/lib/verified/contracts";
@@ -247,6 +251,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ROULETTE_CORE_V6.gameId,ROULETTE_CORE_V6.gameVersion)]: coreAdapter(ROULETTE_CORE_V6),
   [adapterKey(ROULETTE_CORE_V7.gameId,ROULETTE_CORE_V7.gameVersion)]: coreAdapter(ROULETTE_CORE_V7),
   [adapterKey(ROULETTE_CORE_V8.gameId,ROULETTE_CORE_V8.gameVersion)]: coreAdapter(ROULETTE_CORE_V8),
+  [adapterKey(ROULETTE_CORE_V9.gameId,ROULETTE_CORE_V9.gameVersion)]: coreAdapter(ROULETTE_CORE_V9),
   [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
@@ -271,6 +276,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(SHOT_GALLERY_CORE_V6.gameId,SHOT_GALLERY_CORE_V6.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V6),
   [adapterKey(SHOT_GALLERY_CORE_V7.gameId,SHOT_GALLERY_CORE_V7.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V7),
   [adapterKey(SHOT_GALLERY_CORE_V8.gameId,SHOT_GALLERY_CORE_V8.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V8),
+  [adapterKey(SHOT_GALLERY_CORE_V9.gameId,SHOT_GALLERY_CORE_V9.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V9),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(DARTS_CORE_V3.gameId,DARTS_CORE_V3.gameVersion)]: coreAdapter(DARTS_CORE_V3),
@@ -286,8 +292,10 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ORB_BURST_CORE_V4.gameId,ORB_BURST_CORE_V4.gameVersion)]: coreAdapter(ORB_BURST_CORE_V4),
   [adapterKey(ORB_BURST_CORE_V5.gameId,ORB_BURST_CORE_V5.gameVersion)]: coreAdapter(ORB_BURST_CORE_V5),
   [adapterKey(ORB_BURST_CORE_V6.gameId,ORB_BURST_CORE_V6.gameVersion)]: coreAdapter(ORB_BURST_CORE_V6),
+  [adapterKey(ORB_BURST_CORE_V7.gameId,ORB_BURST_CORE_V7.gameVersion)]: coreAdapter(ORB_BURST_CORE_V7),
   [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
   [adapterKey(TOWER_DROP_CORE_V4.gameId,TOWER_DROP_CORE_V4.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V4),
+  [adapterKey(TOWER_DROP_CORE_V5.gameId,TOWER_DROP_CORE_V5.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V5),
   [adapterKey(STACK_3D_CORE.gameId, STACK_3D_CORE.gameVersion)]: coreAdapter(STACK_3D_CORE),
   [adapterKey(STACK_3D_CORE_V3.gameId, STACK_3D_CORE_V3.gameVersion)]: coreAdapter(STACK_3D_CORE_V3),
   [adapterKey(towerDropAdapter.gameId, towerDropAdapter.gameVersion)]:
