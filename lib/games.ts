@@ -204,7 +204,7 @@ const GAME_DEFINITIONS = [
 
   {
     id: "stack-shift",
-    version: "3.0.0",
+    version: "4.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/StackShiftVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: STACK_SHIFT_ACTIONS },
@@ -294,7 +294,7 @@ const GAME_DEFINITIONS = [
 
   {
     id: "pinball",
-    version: "6.0.0",
+    version: "7.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },

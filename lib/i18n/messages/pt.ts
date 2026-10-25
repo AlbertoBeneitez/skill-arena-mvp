@@ -619,6 +619,19 @@ const messages: Messages = {
   "pinball.hurryValue": "HURRY {n}",
   "pinball.rail": "TRILHO!",
   "pinball.wormhole": "BURACO DE MINHOCA!",
+  "mobileOnly.title": "Só para celular",
+  "mobileOnly.body": "GALACTIC GAMES é jogado no celular. Escaneie o código ou abra este endereço no seu telefone.",
+  "mobileOnly.qrAria": "Código QR com o endereço do jogo",
+  "settings.musicTrack": "Tipo de música",
+  "settings.musicTrackHint": "Seis faixas de concentração, a música de cada jogo ou uma mistura.",
+  "settings.track.mix": "Mistura",
+  "settings.track.game": "Do jogo",
+  "settings.track.lofi": "Lo-fi",
+  "settings.track.ambient": "Ambiente",
+  "settings.track.piano": "Piano",
+  "settings.track.deep": "Foco profundo",
+  "settings.track.synth": "Synth suave",
+  "settings.track.rain": "Chuva e teclas",
 };
 
 export default messages;

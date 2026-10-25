@@ -619,6 +619,19 @@ const messages: Messages = {
   "pinball.hurryValue": "ДЖЕКПОТ {n}",
   "pinball.rail": "РЕЛЬС!",
   "pinball.wormhole": "ЧЕРВОТОЧИНА!",
+  "mobileOnly.title": "Только для телефона",
+  "mobileOnly.body": "В GALACTIC GAMES играют на телефоне. Отсканируйте код или откройте этот адрес на телефоне.",
+  "mobileOnly.qrAria": "QR-код с адресом игры",
+  "settings.musicTrack": "Стиль музыки",
+  "settings.musicTrackHint": "Шесть треков для концентрации, музыка каждой игры или микс.",
+  "settings.track.mix": "Микс",
+  "settings.track.game": "Тема игры",
+  "settings.track.lofi": "Лоу-фай",
+  "settings.track.ambient": "Эмбиент",
+  "settings.track.piano": "Фортепиано",
+  "settings.track.deep": "Глубокий фокус",
+  "settings.track.synth": "Мягкий синт",
+  "settings.track.rain": "Дождь и клавиши",
 };
 
 export default messages;

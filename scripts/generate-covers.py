@@ -375,50 +375,50 @@ covers["orb-burst"] = orb()
 
 # ---------- Shot Gallery: the tarp with open windows, targets revealed ----------
 def gallery():
-    d = ('<linearGradient id="tarp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c7b386"/><stop offset=".6" stop-color="#a8915f"/><stop offset="1" stop-color="#7a6644"/></linearGradient>'
-         '<radialGradient id="wood" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff6df"/><stop offset="1" stop-color="#d4c29a"/></radialGradient>'
-         '<radialGradient id="lampg" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#fff2c8" stop-opacity=".45"/><stop offset="1" stop-color="#fff2c8" stop-opacity="0"/></radialGradient>')
-    p = ['<rect width="640" height="440" fill="url(#tarp)"/>']
-    for x in range(0, 640, 30):
-        k = math.sin(x * .09) * .5 + .5
-        p.append(f'<rect x="{x}" y="0" width="30" height="440" fill="{"#fff6dc" if k > .5 else "#2a1c08"}" opacity="{.04 + abs(k - .5) * .12:.3f}"/>')
+    """White tarp: the front sheet is lifting (hem rod mid-air) and uncovers big flat coloured figures on the full tarp."""
+    d = ('<linearGradient id="wtarp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f5f0"/><stop offset=".7" stop-color="#e9e8e2"/><stop offset="1" stop-color="#cfcec6"/></linearGradient>'
+         '<linearGradient id="wfront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ecebe5"/></linearGradient>'
+         '<linearGradient id="rod" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#a9a8a1"/></linearGradient>'
+         '<linearGradient id="castsh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#28281f" stop-opacity=".32"/><stop offset="1" stop-color="#28281f" stop-opacity="0"/></linearGradient>'
+         '<radialGradient id="lampg" cx="50%" cy="0%" r="95%"><stop offset="0" stop-color="#fffaf0" stop-opacity=".35"/><stop offset="1" stop-color="#fffaf0" stop-opacity="0"/></radialGradient>')
+    p = ['<rect width="640" height="440" fill="url(#wtarp)"/>']
+    for x in range(0, 640, 46):
+        k = math.sin(x * .05) * .5 + .5
+        p.append(f'<rect x="{x}" y="0" width="23" height="440" fill="#77766c" opacity="{.03 + .05 * k:.3f}"/>')
     for y in range(0, 440, 4):
-        p.append(f'<line x1="0" y1="{y}" x2="640" y2="{y}" stroke="#3a2a10" stroke-opacity=".06"/>')
-    # grommets + rope at the top
-    p.append('<rect x="0" y="0" width="640" height="22" fill="#3a2f22"/>')
-    for x in range(20, 640, 50):
-        p.append(f'<circle cx="{x}" cy="30" r="7" fill="#c9ced3"/><circle cx="{x}" cy="30" r="3.5" fill="#2a2118"/><line x1="{x}" y1="0" x2="{x}" y2="26" stroke="#e0cf9e" stroke-width="3"/>')
-    targets = [("#ff4fa0", "tri", True), ("#3d8bff", "circle", False), ("#ff4fa0", "square", False), ("#8fd43a", "tri", False), ("#ffcc1f", "hex", True), ("#ff4fa0", "tri", False)]
-    xs, ys = [110, 320, 530], [140, 320]
+        p.append(f'<line x1="0" y1="{y}" x2="640" y2="{y}" stroke="#5a5850" stroke-opacity=".05"/>')
+    # Big coloured figures straight on the tarp (no boards, no discs).
+    figs = [("#ff4fa0", "tri"), ("#3d8bff", "circle"), ("#ffcc1f", "star"), ("#8fd43a", "square"), ("#ff8a1f", "hex"), ("#9a63ff", "tri")]
+    xs, ys = [118, 320, 522], [188, 340]
     i = 0
-    for row, y in enumerate(ys):
-        for col, x in enumerate(xs):
-            c, kind, closed = targets[i]; i += 1
-            w, h = 190, 150
-            l, t = x - w / 2, y - h / 2
-            p.append(f'<rect x="{l - 8}" y="{t - 8}" width="{w + 16}" height="{h + 16}" fill="#3a2a10" opacity=".35"/>')
-            p.append(f'<rect x="{l}" y="{t}" width="{w}" height="{h}" fill="#0d0a07"/>')
-            p.append(f'<rect x="{l - 5}" y="{t - 5}" width="{w + 10}" height="{h + 10}" fill="none" stroke="#f0e2be" stroke-opacity=".6" stroke-width="2" stroke-dasharray="7 5"/>')
-            if closed:
-                p.append(f'<rect x="{l - 3}" y="{t - 3}" width="{w + 6}" height="{h * .55}" fill="#b29c70"/><rect x="{l - 6}" y="{t + h * .55 - 6}" width="{w + 12}" height="14" rx="7" fill="#d6c393"/>')
-                ty = t + h * .55 + (h * .45) / 2 + 30
-            else:
-                p.append(f'<rect x="{l - 8}" y="{t - 14}" width="{w + 16}" height="22" rx="11" fill="#d6c393"/><rect x="{l - 8}" y="{t - 2}" width="{w + 16}" height="6" fill="#7b6844" opacity=".6"/>')
-                ty = y + 8
-            r = 62
-            p.append(f'<circle cx="{x + 5}" cy="{ty + 6}" r="{r}" fill="#000" opacity=".5"/><circle cx="{x}" cy="{ty}" r="{r}" fill="url(#wood)" stroke="#5b4630" stroke-width="5"/>')
-            p.append(f'<circle cx="{x}" cy="{ty}" r="{r - 11}" fill="none" stroke="#5b4630" stroke-opacity=".35" stroke-width="2"/>')
-            p.append(f'<g fill="{c}">{shape(kind, x, ty, 36)}</g>')
-            if row == 1 and col == 0:
-                for q in range(7):
-                    a = q * .9
-                    p.append(f'<line x1="{x + 10}" y1="{ty - 10}" x2="{f(x + 10 + math.cos(a) * 22)}" y2="{f(ty - 10 + math.sin(a) * 22)}" stroke="#0a0a0a" stroke-width="1.5"/>')
-                p.append(f'<circle cx="{x + 10}" cy="{ty - 10}" r="8" fill="#c9ced3"/><circle cx="{x + 10}" cy="{ty - 10}" r="5" fill="#050505"/>')
-                for q in range(10):
-                    a = -math.pi + q * .32
-                    p.append(f'<line x1="{f(x + 10 + math.cos(a) * 30)}" y1="{f(ty - 10 + math.sin(a) * 30)}" x2="{f(x + 10 + math.cos(a) * 46)}" y2="{f(ty - 10 + math.sin(a) * 46)}" stroke="#ffc35a" stroke-width="3" filter="url(#glow)"/>')
-    tx, ty = 530, 328
-    p.append(f'<g stroke="#ff2d3c" stroke-width="5" fill="none" filter="url(#glow)"><circle cx="{tx}" cy="{ty}" r="58"/><line x1="{tx}" y1="{ty - 84}" x2="{tx}" y2="{ty - 40}"/><line x1="{tx}" y1="{ty + 40}" x2="{tx}" y2="{ty + 84}"/><line x1="{tx - 84}" y1="{ty}" x2="{tx - 40}" y2="{ty}"/><line x1="{tx + 40}" y1="{ty}" x2="{tx + 84}" y2="{ty}"/></g><circle cx="{tx}" cy="{ty}" r="4" fill="#ff2d3c"/>')
+    for y in ys:
+        for x in xs:
+            c, kind = figs[i]; i += 1
+            p.append(f'<g fill="#28281f" opacity=".18">{shape(kind, x + 6, y + 8, 62)}</g>')
+            p.append(f'<g fill="{c}" stroke="#141414" stroke-opacity=".25" stroke-width="3">{shape(kind, x, y, 62)}</g>')
+            p.append(f'<g fill="#ffffff" opacity=".18">{shape(kind, x - 12, y - 13, 22)}</g>')
+    # Hit on the green square: bullet hole, cracks and sparks.
+    hx, hy = 330, 330
+    for q in range(7):
+        a = q * .9
+        p.append(f'<line x1="{hx}" y1="{hy}" x2="{f(hx + math.cos(a) * 24)}" y2="{f(hy + math.sin(a) * 24)}" stroke="#0a0a0a" stroke-width="1.6"/>')
+    p.append(f'<circle cx="{hx}" cy="{hy}" r="8" fill="#c9ced3"/><circle cx="{hx}" cy="{hy}" r="5" fill="#050505"/>')
+    for q in range(10):
+        a = -math.pi + q * .32
+        p.append(f'<line x1="{f(hx + math.cos(a) * 32)}" y1="{f(hy + math.sin(a) * 32)}" x2="{f(hx + math.cos(a) * 50)}" y2="{f(hy + math.sin(a) * 50)}" stroke="#ffb13a" stroke-width="3" filter="url(#glow)"/>')
+    # The front sheet lifting: cast shadow, folded white sheet down to the hem rod, rolled under the top bar.
+    hem = 96
+    p.append(f'<rect x="0" y="{hem}" width="640" height="34" fill="url(#castsh)"/>')
+    p.append(f'<rect x="0" y="0" width="640" height="{hem}" fill="url(#wfront)"/>')
+    for x in range(0, 640, 32):
+        k = math.sin(x * .09) * .5 + .5
+        p.append(f'<rect x="{x}" y="0" width="16" height="{hem}" fill="#6f6d64" opacity="{.04 + .08 * k:.3f}"/>')
+    p.append(f'<rect x="-4" y="{hem - 9}" width="648" height="16" rx="8" fill="url(#rod)"/>')
+    p.append('<rect x="0" y="0" width="640" height="20" fill="#2b2f36"/>')
+    for x in range(24, 640, 52):
+        p.append(f'<circle cx="{x}" cy="28" r="6" fill="#c9ced3"/><circle cx="{x}" cy="28" r="3" fill="#3a3e45"/>')
+    tx, ty = 522, 188
+    p.append(f'<g stroke="#ff2d3c" stroke-width="5" fill="none" filter="url(#glow)"><circle cx="{tx}" cy="{ty}" r="64"/><line x1="{tx}" y1="{ty - 90}" x2="{tx}" y2="{ty - 44}"/><line x1="{tx}" y1="{ty + 44}" x2="{tx}" y2="{ty + 90}"/><line x1="{tx - 90}" y1="{ty}" x2="{tx - 44}" y2="{ty}"/><line x1="{tx + 44}" y1="{ty}" x2="{tx + 90}" y2="{ty}"/></g><circle cx="{tx}" cy="{ty}" r="4" fill="#ff2d3c"/>')
     p.append('<rect width="640" height="440" fill="url(#lampg)"/>')
     return svg("".join(p), extra_defs=d)
 covers["shot-gallery"] = gallery()

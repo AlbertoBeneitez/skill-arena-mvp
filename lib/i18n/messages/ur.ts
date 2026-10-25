@@ -619,6 +619,19 @@ const messages: Messages = {
   "pinball.hurryValue": "جیک پاٹ {n}",
   "pinball.rail": "!ریل",
   "pinball.wormhole": "!ورم ہول",
+  "mobileOnly.title": "صرف موبائل کے لیے",
+  "mobileOnly.body": "GALACTIC GAMES فون پر کھیلی جاتی ہے۔ کوڈ اسکین کریں یا یہ پتہ اپنے فون پر کھولیں۔",
+  "mobileOnly.qrAria": "گیم کے پتے والا QR کوڈ",
+  "settings.musicTrack": "موسیقی کی قسم",
+  "settings.musicTrackHint": "توجہ کے چھ ٹریک، ہر گیم کی اپنی موسیقی یا مکس۔",
+  "settings.track.mix": "مکس",
+  "settings.track.game": "گیم کی موسیقی",
+  "settings.track.lofi": "لو-فائی",
+  "settings.track.ambient": "ایمبیئنٹ",
+  "settings.track.piano": "پیانو",
+  "settings.track.deep": "گہری توجہ",
+  "settings.track.synth": "نرم سنتھ",
+  "settings.track.rain": "بارش اور کیز",
 };
 
 export default messages;

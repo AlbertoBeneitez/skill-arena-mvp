@@ -86,7 +86,7 @@
   outline: 3px solid #e5b5ff;
   outline-offset: 3px;
 }
-@media (min-width: 680px) {
+@media (min-width: 500px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -130,16 +130,7 @@
     0 8px 22px rgba(255, 70, 120, .45);
   animation: playGlow 2.4s ease-in-out infinite;
 }
-.play::before {
-  content: "";
-  flex: none;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 6px 0 6px 10px;
-  border-color: transparent transparent transparent #fff;
-  filter: drop-shadow(0 1px 0 rgba(120, 20, 40, .55));
-}
+/* v116: no play glyph before the game name. */
 .play::after {
   content: "";
   position: absolute;
@@ -157,7 +148,6 @@
 }
 .play:disabled { opacity: .5; animation: none; filter: saturate(.5); }
 .play:disabled::after { display: none; }
-.play[aria-busy="true"]::before { display: none; }
 @keyframes playGlow {
   0%, 100% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 22px rgba(255,70,120,.4); }
   50% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 30px rgba(255,140,40,.7); }

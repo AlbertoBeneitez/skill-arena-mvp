@@ -12,8 +12,10 @@ import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 
 /*
- * Presentation only (V11: carnival tarp with 12 windows; score = accumulated reaction time). Reads the authoritative state and never writes it. Plates are static;
- * positions come from galleryTargetPosV11, the same pure function the tests use.
+ * Presentation only (V11 core: 3 × 4 target grid; score = accumulated reaction time). Reads the authoritative state and
+ * never writes it. The stage is one white tarp; a white front sheet covers it, lifts on the start to uncover the big
+ * coloured figures painted on the full tarp, and drops again between rounds. Figures are static; positions come from
+ * galleryTargetPosV11, the same pure function the tests use.
  */
 const PAINT = ["#3d8bff", "#ff5a4a", "#8fd43a", "#9a63ff", "#ffcc1f", "#ff4fa0", "#1fd1bd", "#ff8a1f"];
 const GREY = "#9aa3ab";
@@ -62,17 +64,19 @@ function paintSplash(ctx: CanvasRenderingContext2D, color: string, x: number, y:
   ctx.fill();
 }
 
-/** Window geometry (logical px): every target owns one window of the 3 × 4 tarp grid. */
-const WIN = { w: 104, h: 82 };
-const TARGET_R = 33;
-/** Tall phones: the window grid is centred in the taller tarp (presentation only; taps use the same offset). */
+/** Figure size (logical px): big coloured figures straight on the tarp, no boards or discs. */
+const FIG = 36;
+/** Vertical extent of a figure cell, used to place the reaction label above a hit figure. */
+const CELL_H = 84;
+/** Tall phones: the grid is centred in the taller tarp (presentation only; taps use the same offset). */
 let gridDy = 0;
 const offsetFor = (H: number) => Math.round(Math.min(130, Math.max(0, (H - 620) / 2)));
-let tarpCache: { h: number; canvas: HTMLCanvasElement } | null = null;
+let tarpCache: { h: number; key: string; canvas: HTMLCanvasElement } | null = null;
 
-/** Canvas tarp: weathered khaki canvas, vertical folds, stitched seams, grommets and ropes, 12 hemmed windows. */
-function tarpArt(H: number) {
-  if (tarpCache && tarpCache.h === H) return tarpCache.canvas;
+/** White canvas sheet: soft vertical folds, fine weave, a stitched hem and grommets on the top bar. Cached per size. */
+function whiteSheet(H: number, front: boolean) {
+  const key = front ? "front" : "back";
+  if (tarpCache && tarpCache.h === H && tarpCache.key === key) return tarpCache.canvas;
   if (typeof document === "undefined") return null;
   const c = document.createElement("canvas");
   c.width = 390 * 2; c.height = H * 2;
@@ -81,72 +85,67 @@ function tarpArt(H: number) {
   ctx.scale(2, 2);
   const x0 = 8, y0 = 150, x1 = 382, y1 = H - 10;
   const base = ctx.createLinearGradient(0, y0, 0, y1);
-  base.addColorStop(0, "#b9a47a"); base.addColorStop(0.5, "#a48e64"); base.addColorStop(1, "#7f6c4a");
+  if (front) { base.addColorStop(0, "#fbfbf8"); base.addColorStop(1, "#e9e8e2"); }
+  else { base.addColorStop(0, "#f4f3ee"); base.addColorStop(0.6, "#ecebe5"); base.addColorStop(1, "#d9d8d1"); }
   ctx.fillStyle = base; ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
-  // Folds: soft vertical light/dark bands.
-  for (let x = x0; x < x1; x += 22) {
-    const k = Math.sin(x * 0.11) * 0.5 + 0.5;
-    ctx.fillStyle = `rgba(${k > 0.5 ? "255,240,210" : "40,28,10"},${0.05 + Math.abs(k - 0.5) * 0.1})`;
-    ctx.fillRect(x, y0, 22, y1 - y0);
+  // Folds: soft vertical light/dark bands (deeper on the hanging front sheet).
+  const step = front ? 30 : 46;
+  for (let x = x0; x < x1; x += step) {
+    const k = Math.sin(x * (front ? 0.09 : 0.05)) * 0.5 + 0.5;
+    const g = ctx.createLinearGradient(x, 0, x + step, 0);
+    g.addColorStop(0, `rgba(120,118,108,${(front ? 0.1 : 0.05) * k})`);
+    g.addColorStop(0.5, "rgba(255,255,255,0)");
+    g.addColorStop(1, `rgba(120,118,108,${(front ? 0.1 : 0.05) * (1 - k)})`);
+    ctx.fillStyle = g; ctx.fillRect(x, y0, step, y1 - y0);
   }
-  // Weave: fine cross-hatch.
-  ctx.strokeStyle = "rgba(60,44,20,.08)"; ctx.lineWidth = 0.6;
+  // Weave.
+  ctx.strokeStyle = "rgba(90,88,80,.05)"; ctx.lineWidth = 0.6;
   for (let y = y0; y < y1; y += 3) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); }
   for (let x = x0; x < x1; x += 3) { ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y1); ctx.stroke(); }
-  // Stains.
-  for (let i = 0; i < 14; i++) {
-    const sx = x0 + noise(i + 3) * (x1 - x0), sy = y0 + noise(i + 30) * (y1 - y0), r = 10 + noise(i + 60) * 30;
-    const g = ctx.createRadialGradient(sx, sy, 1, sx, sy, r);
-    g.addColorStop(0, "rgba(70,50,20,.16)"); g.addColorStop(1, "rgba(70,50,20,0)");
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill();
+  // Stitched seam around the edge.
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = "rgba(110,106,96,.35)"; ctx.lineWidth = 1;
+  ctx.strokeRect(x0 + 6, y0 + 6, x1 - x0 - 12, y1 - y0 - 12); ctx.setLineDash([]);
+  if (!front) {
+    // Top bar with grommets the sheet hangs from; a soft shadow at the foot.
+    ctx.fillStyle = "#2b2f36"; ctx.fillRect(x0 - 4, y0 - 14, x1 - x0 + 8, 8);
+    for (let x = x0 + 16; x < x1; x += 34) {
+      ctx.strokeStyle = "#cfd3d8"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x, y0 - 8); ctx.lineTo(x, y0 + 6); ctx.stroke();
+      ctx.fillStyle = "#c9ced3"; ctx.beginPath(); ctx.arc(x, y0 + 6, 3.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#3a3e45"; ctx.beginPath(); ctx.arc(x, y0 + 6, 1.8, 0, Math.PI * 2); ctx.fill();
+    }
+    const foot = ctx.createLinearGradient(0, y1 - 50, 0, y1);
+    foot.addColorStop(0, "rgba(0,0,0,0)"); foot.addColorStop(1, "rgba(60,58,50,.18)");
+    ctx.fillStyle = foot; ctx.fillRect(x0, y1 - 50, x1 - x0, 50);
   }
-  // Top hem with grommets and ropes to the frame bar.
-  ctx.fillStyle = "#3a2f22"; ctx.fillRect(x0 - 4, y0 - 14, x1 - x0 + 8, 8);
-  ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(x0, y0, x1 - x0, 10);
-  for (let x = x0 + 16; x < x1; x += 34) {
-    ctx.strokeStyle = "#d8c79a"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x, y0 - 8); ctx.lineTo(x, y0 + 6); ctx.stroke();
-    ctx.fillStyle = "#c9ced3"; ctx.beginPath(); ctx.arc(x, y0 + 6, 3.4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#2a2118"; ctx.beginPath(); ctx.arc(x, y0 + 6, 1.8, 0, Math.PI * 2); ctx.fill();
-  }
-  // Windows: dark openings with a stitched hem.
-  const dy = offsetFor(H);
-  for (const wy0 of GALLERY_V11.windows.ys) for (const wx of GALLERY_V11.windows.xs) {
-    const wy = wy0 + dy;
-    const l = wx - WIN.w / 2, t = wy - WIN.h / 2;
-    ctx.fillStyle = "rgba(40,28,12,.45)"; ctx.fillRect(l - 5, t - 5, WIN.w + 10, WIN.h + 10);
-    const inside = ctx.createLinearGradient(0, t, 0, t + WIN.h);
-    inside.addColorStop(0, "#0b0907"); inside.addColorStop(1, "#1b150e");
-    ctx.fillStyle = inside; ctx.fillRect(l, t, WIN.w, WIN.h);
-    ctx.setLineDash([4, 3]); ctx.strokeStyle = "rgba(240,226,190,.55)"; ctx.lineWidth = 1;
-    ctx.strokeRect(l - 3, t - 3, WIN.w + 6, WIN.h + 6);
-    ctx.setLineDash([]);
-  }
-  // Border seam and shadow at the foot.
-  ctx.strokeStyle = "#4a3b28"; ctx.lineWidth = 3; ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-  const foot = ctx.createLinearGradient(0, y1 - 40, 0, y1);
-  foot.addColorStop(0, "rgba(0,0,0,0)"); foot.addColorStop(1, "rgba(0,0,0,.45)");
-  ctx.fillStyle = foot; ctx.fillRect(x0, y1 - 40, x1 - x0, 40);
-  tarpCache = { h: H, canvas: c };
+  if (!front) tarpCache = { h: H, key, canvas: c };
+  else frontCache = { h: H, canvas: c };
   return c;
 }
+let frontCache: { h: number; canvas: HTMLCanvasElement } | null = null;
+const backSheet = (H: number) => whiteSheet(H, false);
+const frontSheet = (H: number) => (frontCache && frontCache.h === H ? frontCache.canvas : whiteSheet(H, true));
 
-/** The roll-up flap of a window: `open` 0 = closed (covers the window), 1 = rolled up at the top. */
-function drawFlap(ctx: CanvasRenderingContext2D, wx: number, wy: number, open: number) {
-  const l = wx - WIN.w / 2, t = wy - WIN.h / 2, h = WIN.h * (1 - open);
-  if (h > 0.5) {
-    const g = ctx.createLinearGradient(0, t, 0, t + h);
-    g.addColorStop(0, "#b29c70"); g.addColorStop(1, "#97825a");
-    ctx.fillStyle = g; ctx.fillRect(l - 2, t - 2, WIN.w + 4, h + 2);
-    ctx.fillStyle = "rgba(60,40,16,.25)";
-    for (let x = l + 6; x < l + WIN.w; x += 14) ctx.fillRect(x, t, 2, h);
-    ctx.fillStyle = "rgba(0,0,0,.3)"; ctx.fillRect(l - 2, t + h - 3, WIN.w + 4, 3);
+/** The front sheet: `open` 0 = down (covers the whole tarp), 1 = rolled up under the top bar. */
+function drawCover(ctx: CanvasRenderingContext2D, H: number, open: number) {
+  const x0 = 8, y0 = 150, x1 = 382, y1 = H - 10, h = (y1 - y0) * (1 - open);
+  if (h > 1) {
+    // Shadow the lifting sheet casts on the tarp behind it.
+    const sh = ctx.createLinearGradient(0, y0 + h, 0, y0 + h + 26);
+    sh.addColorStop(0, "rgba(40,40,36,.28)"); sh.addColorStop(1, "rgba(40,40,36,0)");
+    ctx.fillStyle = sh; ctx.fillRect(x0, y0 + h, x1 - x0, 26);
+    const art = frontSheet(H);
+    if (art) ctx.drawImage(art, 16, 300, 748, Math.max(1, h * 2), x0, y0, x1 - x0, h);
+    else { ctx.fillStyle = "#f6f6f2"; ctx.fillRect(x0, y0, x1 - x0, h); }
+    // Weighted hem rod along the bottom edge.
+    const rod = ctx.createLinearGradient(0, y0 + h - 7, 0, y0 + h + 3);
+    rod.addColorStop(0, "#ffffff"); rod.addColorStop(1, "#b9b8b1");
+    ctx.fillStyle = rod; ctx.beginPath(); ctx.roundRect(x0 - 2, y0 + h - 7, x1 - x0 + 4, 10, 5); ctx.fill();
   }
-  // Rolled canvas at the top.
-  const rr = 5 + 4 * open;
-  const g2 = ctx.createLinearGradient(0, t - rr, 0, t + rr);
-  g2.addColorStop(0, "#d6c393"); g2.addColorStop(1, "#7b6844");
-  ctx.fillStyle = g2;
-  ctx.beginPath(); ctx.roundRect(l - 4, t - rr - 2, WIN.w + 8, rr * 2, rr); ctx.fill();
+  // Rolled sheet under the top bar (thicker as it rolls up).
+  const rr = 5 + 5 * open;
+  const g = ctx.createLinearGradient(0, y0 - rr, 0, y0 + rr);
+  g.addColorStop(0, "#ffffff"); g.addColorStop(1, "#c3c2bb");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x0 - 3, y0 - rr + 2, x1 - x0 + 6, rr * 2, rr); ctx.fill();
 }
 
 /** Order card pinned to the top: the colour as a flat paint splash, the figure in grey. No lights, no ammo. */
@@ -169,22 +168,17 @@ function drawOrder(ctx: CanvasRenderingContext2D, s: GalleryStateV11) {
   ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 1.5; ctx.stroke();
 }
 
-/** A target board inside its window: round painted wood with the coloured figure; `up` 0..1 pops it up. */
-function drawTarget(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, shape: number, up: number, alpha = 1) {
-  if (up <= 0.02) return;
+/** A big coloured figure painted on the tarp. `knock` 0..1 folds it down flat when hit. */
+function drawTarget(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, shape: number, knock: number, alpha = 1) {
+  if (knock >= 0.98) return;
   ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.beginPath(); ctx.rect(x - WIN.w / 2, y - WIN.h / 2, WIN.w, WIN.h); ctx.clip();
-  const dy = (1 - up) * (TARGET_R * 2 + 10);
-  ctx.translate(0, dy);
-  ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.beginPath(); ctx.arc(x + 3, y + 4, TARGET_R, 0, Math.PI * 2); ctx.fill();
-  const wood = ctx.createRadialGradient(x - 10, y - 12, 4, x, y, TARGET_R);
-  wood.addColorStop(0, "#fbf3df"); wood.addColorStop(1, "#d9c9a3");
-  ctx.fillStyle = wood; ctx.beginPath(); ctx.arc(x, y, TARGET_R, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = "#5b4630"; ctx.lineWidth = 3; ctx.stroke();
-  ctx.strokeStyle = "rgba(91,70,48,.35)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, TARGET_R - 6, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = color; figure(ctx, shape, x, y, 19);
-  ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.globalAlpha = alpha * (1 - knock * 0.6);
+  const base = y + FIG;
+  ctx.translate(x, base); ctx.scale(1, 1 - knock); ctx.translate(-x, -base);
+  ctx.fillStyle = "rgba(40,40,36,.18)"; figure(ctx, shape, x + 3, y + 4, FIG);
+  ctx.fillStyle = color; figure(ctx, shape, x, y, FIG);
+  ctx.strokeStyle = "rgba(20,20,20,.28)"; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,.18)"; figure(ctx, shape, x - FIG * 0.18, y - FIG * 0.2, FIG * 0.38);
   ctx.restore();
 }
 
@@ -236,37 +230,32 @@ export default function ShotGallery(props: GameRuntimeProps) {
     const H = Math.max(620, view?.height ?? 620), b = { x0: 8, y0: 150, x1: 382, y1: H - 10 };
     gridDy = offsetFor(H);
     const trial = s.trials[Math.min(s.trial, 11)], since = s.tick - s.lastTapTick;
-    ctx.fillStyle = "#15110c"; ctx.fillRect(0, 0, 390, H);
+    ctx.fillStyle = "#16181c"; ctx.fillRect(0, 0, 390, H);
     drawOrder(ctx, s);
     const kick = s.phase !== "waiting" && since >= 0 && since < 8 ? (8 - since) * 0.5 : 0;
     ctx.save();
     ctx.translate(0, -kick);
-    const art = tarpArt(H);
+    const art = backSheet(H);
     if (art) ctx.drawImage(art, 0, 0, 390, H);
+    else { ctx.fillStyle = "#f1f0eb"; ctx.fillRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0); }
     const elapsed = s.readyTick >= 0 ? s.tick - s.readyTick : 0;
-    // Windows: the flaps roll up on the start (staggered), revealing the targets; they drop again between rounds.
-    const byWindow = new Map(trial.targets.map((t, i) => [`${t.x},${t.y}`, i] as const));
     const fb = s.phase === "feedback" ? s.phaseTicks : 0;
-    GALLERY_V11.windows.ys.forEach((wy0, row) => GALLERY_V11.windows.xs.forEach((wx, col) => {
-      const wy = wy0 + gridDy;
-      const stagger = (row * 3 + col) % 4;
-      const open = s.phase === "waiting" ? 0 : s.phase === "ready" ? Math.min(1, Math.max(0, (elapsed - stagger) / 6)) : Math.max(0, 1 - Math.max(0, fb - 54) / 20);
-      const i = byWindow.get(`${wx},${wy0}`);
-      if (i !== undefined) {
-        const t = trial.targets[i], hitAt = s.hits.indexOf(i);
-        const knock = hitAt < 0 ? 0 : hitAt === s.hits.length - 1 ? Math.min(1, Math.max(0, (since - 4) / 8)) : 1;
-        const dim = s.phase === "feedback" && !trial.answers.includes(i);
-        drawTarget(ctx, wx, wy, PAINT[t.color], t.shape, open * (1 - knock), dim ? 0.35 : 1);
-        if (hitAt >= 0 && knock < 1) drawHole(ctx, wx + 6, wy - 6, i + s.trial * 17);
-        if (hitAt >= 0) {
-          ctx.font = "900 13px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-          ctx.lineWidth = 3; ctx.strokeStyle = "rgba(30,20,10,.85)"; ctx.fillStyle = "#fff3d6";
-          const label = `${msOf(s.tapTicks[hitAt] ?? 0)} ms`;
-          ctx.strokeText(label, wx, wy - WIN.h / 2 + 12); ctx.fillText(label, wx, wy - WIN.h / 2 + 12);
-        }
+    // Front sheet: down while waiting, lifts on the start (fast), drops again at the end of each round.
+    const open = s.phase === "waiting" ? 0 : s.phase === "ready" ? Math.min(1, Math.max(0, elapsed / 9)) : Math.max(0, 1 - Math.max(0, fb - 54) / 20);
+    if (open > 0) trial.targets.forEach((t, i) => {
+      const p0 = galleryTargetPosV11(t), wx = p0.x, wy = p0.y + gridDy, hitAt = s.hits.indexOf(i);
+      const knock = hitAt < 0 ? 0 : hitAt === s.hits.length - 1 ? Math.min(1, Math.max(0, (since - 4) / 8)) : 1;
+      const dim = s.phase === "feedback" && !trial.answers.includes(i);
+      drawTarget(ctx, wx, wy, PAINT[t.color], t.shape, knock, dim ? 0.3 : 1);
+      if (hitAt >= 0 && knock < 1) drawHole(ctx, wx + 6, wy - 6, i + s.trial * 17);
+      if (hitAt >= 0) {
+        ctx.font = "900 13px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.lineWidth = 3; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.fillStyle = "#1d1f24";
+        const label = `${msOf(s.tapTicks[hitAt] ?? 0)} ms`;
+        ctx.strokeText(label, wx, wy - CELL_H / 2 + 8); ctx.fillText(label, wx, wy - CELL_H / 2 + 8);
       }
-      drawFlap(ctx, wx, wy, open);
-    }));
+    });
+    drawCover(ctx, H, open);
     // Impact: flash, sparks and the reticle locked on the target.
     const lastIdx = s.hits.length ? s.hits[s.hits.length - 1] : -1;
     if (lastIdx >= 0 && lastWasHit(s) && since >= 0 && since < 30) {
@@ -281,7 +270,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
       drawReticle(ctx, p.x, p.y, 30 + 12 * (1 - Math.min(1, since / 6)), 1 - k);
       ctx.fillStyle = "#ffcc1f"; ctx.font = "900 16px system-ui"; ctx.textAlign = "center";
       ctx.lineWidth = 3; ctx.strokeStyle = "rgba(30,20,10,.85)";
-      ctx.strokeText(`+${s.lastAddedMs} ms`, p.x, p.y + WIN.h / 2 + 12 - since * 0.4); ctx.fillText(`+${s.lastAddedMs} ms`, p.x, p.y + WIN.h / 2 + 12 - since * 0.4);
+      ctx.strokeText(`+${s.lastAddedMs} ms`, p.x, p.y + CELL_H / 2 + 8 - since * 0.4); ctx.fillText(`+${s.lastAddedMs} ms`, p.x, p.y + CELL_H / 2 + 8 - since * 0.4);
     }
     if (!lastWasHit(s) && s.lastTapTick >= 0 && s.lastAddedMs > 0 && since >= 0 && since < 50) {
       ctx.strokeStyle = `rgba(255,45,60,${0.9 * (1 - since / 50)})`; ctx.lineWidth = 6;

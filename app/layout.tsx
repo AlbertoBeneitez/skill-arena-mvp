@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { PRODUCT_NAME, PRODUCT_DESCRIPTION } from "@/lib/productIdentity";
+import MobileOnlyGate from "@/components/MobileOnlyGate";
 
 /** Public origin for absolute social-preview URLs; set NEXT_PUBLIC_SITE_URL once a custom domain exists. */
 const siteUrl =
@@ -39,9 +40,15 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Phone-only product with ONE layout: every phone renders the app at a fixed 540 px layout width (the same
+ * composition as the computer preview) and the browser scales it to the screen. No phone-specific reflow.
+ */
 export const viewport = {
-  width: "device-width",
-  initialScale: 1,
+  width: 540,
+  // Explicitly unset: Next's default initial-scale=1 would show the 540 px layout cropped on a narrower phone.
+  // With only width=540 the browser scales the layout to fit the screen width.
+  initialScale: undefined,
   themeColor: "#081522",
   viewportFit: "cover",
 };
@@ -49,7 +56,7 @@ export const viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body><MobileOnlyGate>{children}</MobileOnlyGate></body>
     </html>
   );
 }

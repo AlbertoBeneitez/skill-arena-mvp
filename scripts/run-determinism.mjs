@@ -37,6 +37,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-pinball-v4.js");
   await import("../.det-test/scripts/verify-pinball-v5.js");
   await import("../.det-test/scripts/verify-pinball-v6.js");
+  await import("../.det-test/scripts/verify-pinball-v7.js");
   await import("../.det-test/scripts/verify-corner-sudoku-v1.js");
   await import("../.det-test/scripts/verify-corner-sudoku-v2.js");
   await import("../.det-test/scripts/verify-corner-sudoku-v3.js");
@@ -46,6 +47,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-darts-gesture-v3.js");
   await import("../.det-test/scripts/verify-bowling-v1.js");
   await import("../.det-test/scripts/verify-stack-shift-v3.js");
+  await import("../.det-test/scripts/verify-stack-shift-v4.js");
   await import("../.det-test/scripts/verify-directional-joystick.js");
   await import("../.det-test/scripts/verify-memory-v1.js");
   await import("../.det-test/scripts/verify-memory-v2.js");

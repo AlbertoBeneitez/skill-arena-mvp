@@ -1,9 +1,11 @@
 import { useSyncExternalStore } from "react";
-import { setGameMusicEnabled, setHapticsEnabled } from "./gameFeedback";
+import { MUSIC_CHOICES, setGameMusicEnabled, setGameMusicTrack, setHapticsEnabled, type MusicChoice } from "./gameFeedback";
 
 /** Device preferences. Stored outside the "skill-arena-" prefix so the per-visit reset keeps them. */
 export type AppSettings = {
   music: boolean;
+  /** Which music plays: mix (default), the game's own theme, or one of the six focus tracks. */
+  musicTrack: MusicChoice;
   vibration: boolean;
   reduceMotion: boolean;
   /** 0 = off. */
@@ -11,13 +13,14 @@ export type AppSettings = {
 };
 export const SETTINGS_STORAGE_KEY = "ga-settings";
 export const REMINDER_OPTIONS = [0, 15, 30, 60] as const;
-const DEFAULTS: AppSettings = { music: true, vibration: true, reduceMotion: false, reminderMinutes: 0 };
+const DEFAULTS: AppSettings = { music: true, musicTrack: "mix", vibration: true, reduceMotion: false, reminderMinutes: 0 };
 
 let current: AppSettings = DEFAULTS;
 const listeners = new Set<() => void>();
 
 function apply(settings: AppSettings) {
   setGameMusicEnabled(settings.music);
+  setGameMusicTrack(settings.musicTrack);
   setHapticsEnabled(settings.vibration);
   if (typeof document !== "undefined") {
     if (settings.reduceMotion) document.documentElement.dataset.reduceMotion = "1";
@@ -30,6 +33,7 @@ function parse(raw: string | null): AppSettings {
     const data = raw ? (JSON.parse(raw) as Partial<AppSettings>) : {};
     return {
       music: typeof data.music === "boolean" ? data.music : DEFAULTS.music,
+      musicTrack: MUSIC_CHOICES.includes(data.musicTrack as MusicChoice) ? (data.musicTrack as MusicChoice) : DEFAULTS.musicTrack,
       vibration: typeof data.vibration === "boolean" ? data.vibration : DEFAULTS.vibration,
       reduceMotion: typeof data.reduceMotion === "boolean" ? data.reduceMotion : DEFAULTS.reduceMotion,
       reminderMinutes: (REMINDER_OPTIONS as readonly number[]).includes(data.reminderMinutes as number)

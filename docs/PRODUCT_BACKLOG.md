@@ -577,3 +577,18 @@ Las portadas pasan a WebP y el código de los juegos se descarga en segundo plan
 ## v115-saturn · Galoku, Bowling, Pinball 6, Shot Gallery 11 y portadas a sangre (25-oct-2026)
 
 Galoku (`corner-sudoku@3.0.0`: cinco cuadrados y tres retos), Bowling con bolos quietos y varias celebraciones aleatorias para plenos y semiplenos, Pinball 6 (raíles, agujero de gusano y desatasco determinista), Shot Gallery 11 (lona con 12 ventanas que se abren al empezar, dianas grandes, sin semáforo ni balas) y portadas 16:11 a sangre. Detalle: [releases/v115-saturn.md](releases/v115-saturn.md).
+
+## v116-saturn · Solo móvil, música de concentración, Pinball 7, Stack Shift 4 y lona blanca (25-oct-2026)
+
+La app es solo para móvil:
+- Todos los móviles ven la composición del ordenador (540 px escalados, catálogo en tres columnas).
+- Los ordenadores ven un aviso con un QR. Es detección en el navegador, así que se puede saltar simulando un móvil.
+
+Otros cambios:
+- Seis pistas de música de concentración, con selector en Ajustes.
+- Sin el triángulo junto al nombre de los juegos.
+- Pinball 7: pasadizos sin parada ni salto.
+- Stack Shift 4: empieza con el tablero limpio.
+- Shot Gallery: lona blanca que se levanta y figuras grandes sin discos.
+
+Detalle: [releases/v116-saturn.md](releases/v116-saturn.md).

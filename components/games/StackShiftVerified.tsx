@@ -1,12 +1,12 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  STACK_SHIFT_CORE_V3,
+  STACK_SHIFT_CORE_V4,
   stackCells,
   stackLandingY,
   stackPiece,
   type StackShiftState,
-} from "@/lib/verified/stackShiftCore.v3";
+} from "@/lib/verified/stackShiftCore.v4";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
@@ -133,7 +133,7 @@ export default function StackShiftVerified(props: GameRuntimeProps) {
     <div className="stackShiftVerified">
       <CoreCanvasGame
         {...props}
-        core={STACK_SHIFT_CORE_V3}
+        core={STACK_SHIFT_CORE_V4}
         name="Stack Shift"
         hudLabel={hudLabel}
         render={render}

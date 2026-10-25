@@ -619,6 +619,19 @@ const messages: Messages = {
   "pinball.hurryValue": "جائزة {n}",
   "pinball.rail": "!المسار",
   "pinball.wormhole": "!ثقب دودي",
+  "mobileOnly.title": "للهاتف فقط",
+  "mobileOnly.body": "تُلعب GALACTIC GAMES على الهاتف. امسح الرمز أو افتح هذا العنوان على هاتفك.",
+  "mobileOnly.qrAria": "رمز QR بعنوان اللعبة",
+  "settings.musicTrack": "نوع الموسيقى",
+  "settings.musicTrackHint": "ست مقطوعات للتركيز، أو موسيقى كل لعبة، أو مزيج.",
+  "settings.track.mix": "مزيج",
+  "settings.track.game": "موسيقى اللعبة",
+  "settings.track.lofi": "لو-فاي",
+  "settings.track.ambient": "أجواء",
+  "settings.track.piano": "بيانو",
+  "settings.track.deep": "تركيز عميق",
+  "settings.track.synth": "سينث هادئ",
+  "settings.track.rain": "مطر ومفاتيح",
 };
 
 export default messages;

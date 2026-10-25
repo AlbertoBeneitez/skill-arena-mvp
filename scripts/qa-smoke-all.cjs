@@ -41,11 +41,15 @@ async function check(browser, name) {
         overflow: document.documentElement.scrollWidth - innerWidth,
         surface: !!c || !!document.querySelector(".mineGridGame, .solitaireGame, [class*='Game']"),
         canvasW: r ? Math.round(r.width) : 0,
+        // Layout width: 540 CSS px since v116 (fixed phone layout scaled to the screen).
+        layoutW: document.documentElement.clientWidth,
+        scaled: !visualViewport || Math.abs(visualViewport.width - document.documentElement.clientWidth) < 2,
       };
     });
     if (m.overflow > 0) problems.push(`horizontal overflow ${m.overflow}px`);
     if (!m.surface) problems.push("no game surface rendered");
-    if (m.canvasW && m.canvasW > 391) problems.push(`canvas wider than viewport (${m.canvasW})`);
+    if (m.canvasW && m.canvasW > m.layoutW + 1) problems.push(`canvas wider than viewport (${m.canvasW} > ${m.layoutW})`);
+    if (!m.scaled) problems.push("layout not scaled to fit the screen");
   } catch (e) {
     problems.push("exception: " + String(e.message).split("\n")[0].slice(0, 160));
   }

@@ -1,5 +1,6 @@
 "use client";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type MessageKey } from "@/lib/i18n";
+import { MUSIC_CHOICES } from "@/lib/gameFeedback";
 import { DOC_ORDER, DOC_TITLES, type DocId } from "@/lib/i18n/docs";
 import { REMINDER_OPTIONS, updateSettings, useSettings } from "@/lib/settings";
 import { APP_VERSION } from "@/lib/productIdentity";
@@ -57,6 +58,19 @@ export default function SettingsScreen({
         <h2 id="set-sound">{t("settings.sectionSound")}</h2>
         <Toggle label={t("settings.sound")} checked={soundOn} onChange={() => onToggleSound()} />
         <Toggle label={t("settings.music")} checked={settings.music} onChange={(music) => updateSettings({ music })} />
+        <div className="settingsRow settingsChoice settingsMusicChoice">
+          <span>
+            <strong>{t("settings.musicTrack")}</strong>
+            <small>{t("settings.musicTrackHint")}</small>
+          </span>
+          <div role="radiogroup" aria-label={t("settings.musicTrack")}>
+            {MUSIC_CHOICES.map((choice) => (
+              <button key={choice} type="button" role="radio" aria-checked={settings.musicTrack === choice} disabled={!settings.music} onClick={() => updateSettings({ musicTrack: choice })}>
+                {t(`settings.track.${choice}` as MessageKey)}
+              </button>
+            ))}
+          </div>
+        </div>
         <Toggle label={t("settings.vibration")} hint={t("settings.vibrationHint")} checked={settings.vibration} onChange={(vibration) => updateSettings({ vibration })} />
       </section>
 

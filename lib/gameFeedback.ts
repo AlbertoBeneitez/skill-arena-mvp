@@ -11,6 +11,14 @@ const voices = new Map<
 let musicTimer: ReturnType<typeof setInterval> | null = null;
 let musicGameId: string | null = null;
 let musicStep = 0;
+/** Settings › Música: which music plays. "mix" picks, each time music starts, the game's own theme or a focus track. */
+export const FOCUS_TRACKS = ["lofi", "ambient", "piano", "deep", "synth", "rain"] as const;
+export type FocusTrack = (typeof FOCUS_TRACKS)[number];
+export type MusicChoice = "mix" | "game" | FocusTrack;
+export const MUSIC_CHOICES: readonly MusicChoice[] = ["mix", "game", ...FOCUS_TRACKS];
+let musicChoice: MusicChoice = "mix";
+/** The track actually playing ("game" = the per-game synth theme). */
+let activeTrack: "game" | FocusTrack = "game";
 
 /** Apply the preference immediately; only a trusted gesture unlocks audio here. */
 export function setGameSoundEnabled(enabled: boolean, fromGesture = false) {
@@ -247,14 +255,32 @@ function scheduleMusicStep(gameId: string) {
  * Soft synthesized background loop. It deliberately stays quiet under SFX,
  * uses only Web Audio primitives, and needs no licensed audio assets.
  */
-export function startGameMusic(gameId: string) {
+export function startGameMusic(gameId: string, force = false) {
   if (!soundEnabled || !musicEnabled || typeof window === "undefined") return;
 
-  if (musicGameId === gameId && musicTimer !== null) return;
+  if (!force && musicGameId === gameId && musicTimer !== null) return;
 
   stopGameMusic();
   musicGameId = gameId;
   musicStep = 0;
+  // Presentation only (Math.random is fine here): pick the track for this session of music.
+  const pool: ("game" | FocusTrack)[] = ["game", ...FOCUS_TRACKS];
+  activeTrack = musicChoice === "mix" ? pool[Math.floor(Math.random() * pool.length)] : musicChoice;
+
+  if (activeTrack !== "game") {
+    const track = FOCUS[activeTrack];
+    const stepMs = Math.round(60_000 / track.bpm / track.stepsPerBeat);
+    const run = () => {
+      if (!soundEnabled || musicGameId !== gameId) return;
+      const ctx = context();
+      if (!ctx) return;
+      track.step(ctx, musicStep, 60 / track.bpm / track.stepsPerBeat);
+      musicStep += 1;
+    };
+    run();
+    musicTimer = setInterval(run, stepMs);
+    return;
+  }
 
   const profile = profileFor(gameId);
   const beatMs = Math.round(60_000 / profile.bpm / 2);
@@ -264,6 +290,158 @@ export function startGameMusic(gameId: string) {
     scheduleMusicStep(gameId);
   }, beatMs);
 }
+
+/** Settings › Música › track. Restarts the current music with the new choice. */
+export function setGameMusicTrack(choice: MusicChoice) {
+  if (!MUSIC_CHOICES.includes(choice)) return;
+  const changed = choice !== musicChoice;
+  musicChoice = choice;
+  if (changed && musicGameId !== null) startGameMusic(musicGameId, true);
+}
+export const currentMusicTrack = () => activeTrack;
+
+// ---------- Focus tracks: original, synthesized live with Web Audio (no audio files, no licences) ----------
+type VoiceArgs = {
+  frequency: number;
+  start?: number;
+  duration: number;
+  volume: number;
+  type?: OscillatorType;
+  attack?: number;
+  release?: number;
+  cutoff?: number;
+  detune?: number;
+  pan?: number;
+};
+/** One soft music voice: oscillator → low-pass → (pan) → gain envelope. */
+function musicVoice(ctx: AudioContext, a: VoiceArgs) {
+  if (!masterGain) return;
+  const start = ctx.currentTime + (a.start ?? 0), attack = a.attack ?? 0.02, release = a.release ?? a.duration * 0.6;
+  const osc = ctx.createOscillator(), filter = ctx.createBiquadFilter(), gain = ctx.createGain();
+  osc.type = a.type ?? "sine";
+  osc.frequency.setValueAtTime(a.frequency, start);
+  if (a.detune) osc.detune.setValueAtTime(a.detune, start);
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(a.cutoff ?? 2400, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(a.volume, start + attack);
+  gain.gain.setValueAtTime(a.volume, start + Math.max(attack, a.duration - release));
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + a.duration);
+  osc.connect(filter);
+  let tail: AudioNode = filter;
+  if (a.pan && typeof ctx.createStereoPanner === "function") {
+    const panner = ctx.createStereoPanner();
+    panner.pan.setValueAtTime(a.pan, start);
+    filter.connect(panner);
+    tail = panner;
+  }
+  tail.connect(gain);
+  gain.connect(masterGain);
+  voices.set(osc, { gain, kind: "music" });
+  osc.onended = () => { osc.disconnect(); filter.disconnect(); if (tail !== filter) tail.disconnect(); gain.disconnect(); voices.delete(osc); };
+  osc.start(start);
+  osc.stop(start + a.duration + 0.02);
+}
+let noiseBuffer: AudioBuffer | null = null;
+/** Filtered noise (brushed hats, rain). */
+function musicNoise(ctx: AudioContext, a: { start?: number; duration: number; volume: number; cutoff: number; type?: BiquadFilterType }) {
+  if (!masterGain) return;
+  if (!noiseBuffer || noiseBuffer.sampleRate !== ctx.sampleRate) {
+    noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const ch = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+  }
+  const start = ctx.currentTime + (a.start ?? 0);
+  const src = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), gain = ctx.createGain();
+  src.buffer = noiseBuffer;
+  src.loop = true;
+  filter.type = a.type ?? "lowpass";
+  filter.frequency.setValueAtTime(a.cutoff, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(a.volume, start + Math.min(0.4, a.duration * 0.3));
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + a.duration);
+  src.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  voices.set(src, { gain, kind: "music" });
+  src.onended = () => { src.disconnect(); filter.disconnect(); gain.disconnect(); voices.delete(src); };
+  src.start(start);
+  src.stop(start + a.duration + 0.02);
+}
+const hz = (midi: number) => 440 * Math.pow(2, (midi - 69) / 12);
+type FocusDef = { bpm: number; stepsPerBeat: number; step(ctx: AudioContext, i: number, stepSeconds: number): void };
+const FOCUS: Record<FocusTrack, FocusDef> = {
+  // Lo-fi study: warm 9th chords, round bass, brushed hats and a lazy pentatonic melody.
+  lofi: {
+    bpm: 74, stepsPerBeat: 2,
+    step(ctx, i, st) {
+      const chords = [[50, 53, 57, 60, 64], [55, 59, 62, 65, 69], [48, 52, 55, 59, 62], [45, 48, 52, 55, 59]];
+      const bar = Math.floor(i / 8) % 4, chord = chords[bar], inBar = i % 8;
+      if (inBar === 0) for (const n of chord) musicVoice(ctx, { frequency: hz(n), duration: st * 7.6, volume: 0.0032, type: "triangle", attack: 0.08, cutoff: 1300 });
+      if (inBar === 0 || inBar === 5) musicVoice(ctx, { frequency: hz(chord[0] - 12), duration: st * 2.4, volume: 0.009, type: "sine", attack: 0.01 });
+      if (inBar % 2 === 1) musicNoise(ctx, { duration: 0.06, volume: 0.0025, cutoff: 7000, type: "highpass" });
+      const mel = [0, -1, 7, -1, 4, 2, -1, -1, 9, -1, 7, 4, -1, 2, -1, -1];
+      const m = mel[i % 16];
+      if (m >= 0 && i % 32 >= 16) musicVoice(ctx, { frequency: hz(chord[0] + 12 + m), duration: st * 1.8, volume: 0.0045, type: "sine", attack: 0.02, cutoff: 3000 });
+    },
+  },
+  // Ambient: slow detuned pads that swell and fade, with a distant bell now and then.
+  ambient: {
+    bpm: 48, stepsPerBeat: 1,
+    step(ctx, i, st) {
+      const chords = [[45, 52, 57, 64], [41, 48, 53, 60], [43, 50, 55, 62], [40, 47, 52, 59]];
+      if (i % 8 === 0) {
+        const chord = chords[Math.floor(i / 8) % 4];
+        for (const n of chord) for (const det of [-7, 7]) musicVoice(ctx, { frequency: hz(n), duration: st * 9.5, volume: 0.0018, type: "sawtooth", detune: det, attack: st * 2.5, release: st * 4, cutoff: 650 });
+      }
+      if (i % 6 === 3) musicVoice(ctx, { frequency: hz([76, 79, 81, 84, 88][Math.floor(i / 6) % 5]), duration: st * 4, volume: 0.0035, type: "sine", attack: 0.01, release: st * 3.6, pan: (i % 12) < 6 ? -0.4 : 0.4 });
+    },
+  },
+  // Minimal piano: a gentle arpeggio over C – Am – F – G, soft hammer attack and long decay.
+  piano: {
+    bpm: 66, stepsPerBeat: 2,
+    step(ctx, i, st) {
+      const chords = [[48, 55, 60, 64, 67], [45, 52, 57, 60, 64], [41, 48, 53, 57, 60], [43, 50, 55, 59, 62]];
+      const chord = chords[Math.floor(i / 8) % 4], pattern = [0, 2, 3, 4, 3, 2, 1, 2], n = chord[pattern[i % 8]] + 12;
+      musicVoice(ctx, { frequency: hz(n), duration: st * 3.5, volume: 0.006, type: "sine", attack: 0.005, release: st * 3.2, cutoff: 2600 });
+      musicVoice(ctx, { frequency: hz(n + 12), duration: st * 1.6, volume: 0.0016, type: "triangle", attack: 0.005, release: st * 1.4, cutoff: 3200 });
+      if (i % 8 === 0) musicVoice(ctx, { frequency: hz(chord[0] - 12), duration: st * 7.5, volume: 0.006, type: "sine", attack: 0.01, release: st * 6 });
+    },
+  },
+  // Deep focus: a low drone with a slow 4 Hz binaural beat (left/right) and a heartbeat-slow pulse.
+  deep: {
+    bpm: 60, stepsPerBeat: 1,
+    step(ctx, i, st) {
+      if (i % 8 === 0) {
+        musicVoice(ctx, { frequency: 110, duration: st * 9, volume: 0.006, type: "sine", attack: st * 2, release: st * 3, pan: -0.9 });
+        musicVoice(ctx, { frequency: 114, duration: st * 9, volume: 0.006, type: "sine", attack: st * 2, release: st * 3, pan: 0.9 });
+        musicVoice(ctx, { frequency: 165, duration: st * 9, volume: 0.0025, type: "triangle", attack: st * 3, release: st * 3, cutoff: 500 });
+      }
+      musicVoice(ctx, { frequency: 55, duration: st * 0.6, volume: 0.006, type: "sine", attack: 0.01, release: st * 0.5 });
+      if (i % 16 === 12) musicVoice(ctx, { frequency: hz(81), duration: st * 5, volume: 0.002, type: "sine", attack: 0.6, release: st * 4 });
+    },
+  },
+  // Calm synthwave: soft 16th-note arpeggio over a warm pad.
+  synth: {
+    bpm: 92, stepsPerBeat: 4,
+    step(ctx, i, st) {
+      const chords = [[57, 60, 64, 69], [53, 57, 60, 65], [48, 52, 55, 60], [55, 59, 62, 67]];
+      const chord = chords[Math.floor(i / 16) % 4], arp = [0, 1, 2, 3, 2, 1, 2, 3];
+      musicVoice(ctx, { frequency: hz(chord[arp[i % 8]]), duration: st * 0.9, volume: 0.0022, type: "square", attack: 0.004, release: st * 0.7, cutoff: 1100 });
+      if (i % 16 === 0) for (const n of chord) musicVoice(ctx, { frequency: hz(n - 12), duration: st * 15.5, volume: 0.0016, type: "sawtooth", attack: 0.4, release: st * 6, cutoff: 700, detune: 5 });
+      if (i % 8 === 0) musicVoice(ctx, { frequency: hz(chord[0] - 24), duration: st * 3, volume: 0.007, type: "sine", attack: 0.01 });
+    },
+  },
+  // Rain and keys: soft rainfall with glassy pentatonic chimes.
+  rain: {
+    bpm: 60, stepsPerBeat: 2,
+    step(ctx, i, st) {
+      if (i % 8 === 0) musicNoise(ctx, { duration: st * 8.6, volume: 0.0055, cutoff: 1400 });
+      const pent = [72, 74, 76, 79, 81, 84, 86, 88], pattern = [0, -1, 3, -1, 5, 2, -1, -1, 4, -1, 1, 6, -1, -1, 3, -1];
+      const k = pattern[i % 16];
+      if (k >= 0) musicVoice(ctx, { frequency: hz(pent[k]), duration: st * 5, volume: 0.0032, type: "sine", attack: 0.005, release: st * 4.6, pan: k % 2 ? 0.5 : -0.5 });
+      if (i % 16 === 0) musicVoice(ctx, { frequency: hz(48), duration: st * 15, volume: 0.004, type: "sine", attack: 1.5, release: st * 8 });
+    },
+  },
+};
 
 export function stopGameMusic() {
   if (musicTimer !== null) {

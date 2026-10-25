@@ -619,6 +619,19 @@ const messages: Messages = {
   "pinball.hurryValue": "HURRY {n}",
   "pinball.rail": "RAIL !",
   "pinball.wormhole": "TROU DE VER !",
+  "mobileOnly.title": "Uniquement sur mobile",
+  "mobileOnly.body": "GALACTIC GAMES se joue sur téléphone. Scannez le code ou ouvrez cette adresse sur votre mobile.",
+  "mobileOnly.qrAria": "QR code avec l'adresse du jeu",
+  "settings.musicTrack": "Style de musique",
+  "settings.musicTrackHint": "Six pistes de concentration, la musique de chaque jeu ou un mélange.",
+  "settings.track.mix": "Mélange",
+  "settings.track.game": "Thème du jeu",
+  "settings.track.lofi": "Lo-fi",
+  "settings.track.ambient": "Ambiant",
+  "settings.track.piano": "Piano",
+  "settings.track.deep": "Concentration profonde",
+  "settings.track.synth": "Synthé doux",
+  "settings.track.rain": "Pluie et touches",
 };
 
 export default messages;

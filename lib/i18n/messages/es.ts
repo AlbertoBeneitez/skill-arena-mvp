@@ -657,6 +657,19 @@ const es = {
   "pinball.hurryValue": "HURRY {n}",
   "pinball.rail": "¡RAÍL!",
   "pinball.wormhole": "¡AGUJERO DE GUSANO!",
+  "mobileOnly.title": "Solo para móvil",
+  "mobileOnly.body": "GALACTIC GAMES se juega desde el teléfono. Escanea el código o abre esta dirección en tu móvil.",
+  "mobileOnly.qrAria": "Código QR con la dirección del juego",
+  "settings.musicTrack": "Tipo de música",
+  "settings.musicTrackHint": "Seis pistas de concentración, la música de cada juego o una mezcla.",
+  "settings.track.mix": "Mezcla",
+  "settings.track.game": "Del juego",
+  "settings.track.lofi": "Lo-fi",
+  "settings.track.ambient": "Ambiente",
+  "settings.track.piano": "Piano",
+  "settings.track.deep": "Concentración profunda",
+  "settings.track.synth": "Synth suave",
+  "settings.track.rain": "Lluvia y teclas",
 } as const;
 
 export type MessageKey = keyof typeof es;

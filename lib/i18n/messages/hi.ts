@@ -619,6 +619,19 @@ const messages: Messages = {
   "pinball.hurryValue": "हरी {n}",
   "pinball.rail": "रेल!",
   "pinball.wormhole": "वर्महोल!",
+  "mobileOnly.title": "केवल मोबाइल के लिए",
+  "mobileOnly.body": "GALACTIC GAMES फ़ोन पर खेला जाता है। कोड स्कैन करें या यह पता अपने फ़ोन पर खोलें।",
+  "mobileOnly.qrAria": "गेम के पते वाला QR कोड",
+  "settings.musicTrack": "संगीत का प्रकार",
+  "settings.musicTrackHint": "छह फ़ोकस ट्रैक, हर गेम का अपना संगीत या मिश्रण।",
+  "settings.track.mix": "मिश्रण",
+  "settings.track.game": "गेम संगीत",
+  "settings.track.lofi": "लो-फ़ाई",
+  "settings.track.ambient": "एम्बिएंट",
+  "settings.track.piano": "पियानो",
+  "settings.track.deep": "गहन फ़ोकस",
+  "settings.track.synth": "सॉफ़्ट सिंथ",
+  "settings.track.rain": "बारिश और की",
 };
 
 export default messages;

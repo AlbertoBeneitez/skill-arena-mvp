@@ -619,6 +619,19 @@ const messages: Messages = {
   "pinball.hurryValue": "大奖 {n}",
   "pinball.rail": "轨道！",
   "pinball.wormhole": "虫洞！",
+  "mobileOnly.title": "仅限手机",
+  "mobileOnly.body": "GALACTIC GAMES 需在手机上游玩。扫描二维码或在手机上打开此地址。",
+  "mobileOnly.qrAria": "包含游戏地址的二维码",
+  "settings.musicTrack": "音乐类型",
+  "settings.musicTrackHint": "六首专注音乐、各游戏的音乐或混合。",
+  "settings.track.mix": "混合",
+  "settings.track.game": "游戏音乐",
+  "settings.track.lofi": "Lo-fi",
+  "settings.track.ambient": "氛围",
+  "settings.track.piano": "钢琴",
+  "settings.track.deep": "深度专注",
+  "settings.track.synth": "柔和合成器",
+  "settings.track.rain": "雨声与琴键",
 };
 
 export default messages;
