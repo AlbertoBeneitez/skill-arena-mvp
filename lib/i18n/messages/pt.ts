@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "Como vem ganhando · {name}",
   "ranking.fictitiousRange": "Valores fictícios · de 0 a {amount}",
   "rules.p5": "Ligas (rivais simulados): cada jogo tem sua liga, do Bronze ao Diamante. Uma série são 5 partidas contra rivais do seu nível: com 3 ou mais vitórias você sobe; com 1 ou menos você cai.",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "Dez frames numa pista orbital. Busque o strike.",
+  "gameMeta.bowling.skill": "MIRA + EFEITO",
+  "bowling.strike": "STRIKE!",
+  "bowling.spare": "SPARE!",
+  "bowling.double": "DUPLO!",
+  "bowling.turkey": "{n} STRIKES SEGUIDOS!",
+  "bowling.gutter": "Canaleta",
+  "bowling.skip": "Pular ⏭",
+  "bowling.hud": "Frame {frame}/10 · Bola {roll}",
 };
 
 export default messages;

@@ -557,3 +557,7 @@ botón de jugar más llamativo, marcador del Pinball más alto y sin recuadro de
 ## v110-saturn · Sudoku Esquina, ligas por niveles y ranking por juego (25-oct-2026)
 
 Nuevo juego verificado `corner-sudoku@1.0.0`, ligas demo por juego (Bronce→Diamante, series de 5) y ranking por juego. Detalle: [releases/v110-saturn.md](releases/v110-saturn.md).
+
+## v111-saturn · Bolos, Orb Burst 6, Shot Gallery 8, Tower Drop y portadas (25-oct-2026)
+
+Nuevo `bowling@1.0.0` con animación de pleno saltable; Orb Burst 6 (bubble shooter clásico), Shot Gallery 8 (galería alienígena con raíles), Tower Drop a pantalla completa con contenedores, marcador de Pinball fuera de la mesa y portadas nuevas. Detalle: [releases/v111-saturn.md](releases/v111-saturn.md).

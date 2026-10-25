@@ -11,7 +11,7 @@ const root = process.env.ORB_UI_REPO || path.resolve(__dirname, ".."),
   cameraDir = process.env.ORB_CAMERA_DIR || path.join(root, "lib"),
   coreSource =
     process.env.ORB_V5_SOURCE ||
-    path.join(root, "lib/verified/orbBurstCore.v5.ts");
+    path.join(root, "lib/verified/orbBurstCore.v6.ts");
 const req = createRequire(path.join(root, "package.json")),
   swc = req("next/dist/build/swc");
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
@@ -201,9 +201,9 @@ module.exports = (async () => {
         path.join(root, ".det-test/lib/verified/orbBurstProtocol.v1.js"),
       )
     ),
-    protocol5 = await import(
+    protocol6 = await import(
       pathToFileURL(
-        path.join(root, ".det-test/lib/verified/orbBurstProtocol.v5.js"),
+        path.join(root, ".det-test/lib/verified/orbBurstProtocol.v6.js"),
       )
     ),
     rng = await import(
@@ -226,7 +226,7 @@ module.exports = (async () => {
     "../deterministic/integerMath": integer,
     "./orbBurstCore.v1": v1,
     "./orbBurstProtocol.v1": protocol,
-    "./orbBurstProtocol.v5": protocol5,
+    "./orbBurstProtocol.v6": protocol6,
   });
   const ui = await load(
     uiSource,
@@ -235,17 +235,16 @@ module.exports = (async () => {
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/verified/orbBurstCore.v1": v1,
-      "@/lib/verified/orbBurstCore.v5": v2,
+      "@/lib/verified/orbBurstCore.v6": v2,
       "@/lib/verified/orbBurstProtocol.v1": protocol,
       "@/lib/orbPresentation": camera,
       "./CoreCanvasGame": { default() {} },
     },
     "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.pointAction=pointAction;exports.hudLabel=hudLabel;exports.feedbackScore=feedbackScore;",
   );
-  const state = v2.ORB_BURST_CORE_V5.create("public-presentation-regression");
-  assert.equal(state.height, 0);
-  assert.equal(state.bubbles.length, 36);
-  assert.equal(v2.ORB_V5_RULES.sourceGoal, 108);
+  const state = v2.ORB_BURST_CORE_V6.create("public-presentation-regression");
+  assert.equal(state.points, 0);
+  assert.equal(state.bubbles.length, 63);
   for (const rotated of [false, true])
     for (const scale of [0.1, 1, 1.235])
       for (const point of [
@@ -337,7 +336,7 @@ module.exports = (async () => {
         presentation.render(ctx, state, viewport);
         assert.equal(JSON.stringify(state), before);
         assert.equal(ctx.stack.length, 0);
-        assert.equal(mainOrbs(ctx).length, 37);
+        assert.equal(mainOrbs(ctx).length, state.bubbles.length + 1);
         assert.equal(
           ctx.calls.filter((c) => c.op === "fillText").length,
           0,
@@ -460,13 +459,13 @@ module.exports = (async () => {
     inserted = {
       ...state,
       bubbles: [{ ...single, row: single.row + 1 }],
-      gridParity: 1,
+      gridParity: state.gridParity ? 0 : 1,
       tick: 100,
       lastInsertionTick: 100,
       settleRemaining: 18,
     },
-    oldPoint = v2.orbCenterV5(state, single.row, single.col),
-    actualPoint = v2.orbCenterV5(inserted, single.row + 1, single.col);
+    oldPoint = v2.orbCenterV6(state, single.row, single.col),
+    actualPoint = v2.orbCenterV6(inserted, single.row + 1, single.col);
   assert.equal(oldPoint.xMilli, actualPoint.xMilli);
   for (const age of [0, 6, 12, 18]) {
     const s = {
@@ -493,8 +492,8 @@ module.exports = (async () => {
       ...state,
       bubbles: [],
       gridParity: 1,
-      tick: 10,
-      burst: { tick: 0, bubbles: [captured] },
+      tick: 20,
+      burst: { tick: 0, popped: 1, dropped: 0, points: 0, bubbles: [captured] },
     };
   const burstCtx = recorder();
   adapter.render(burstCtx, burstState, { width: 390, height: 620 });
@@ -547,23 +546,22 @@ module.exports = (async () => {
     assert.equal(ctx.stack.length, 0);
   }
   assert.equal(adapter.failureFinale.durationMs, 300);
-  assert.equal(ui.hudLabel({ ...state, height: 27 }), "AVANCE 27/108 · 0 PTS");
+  assert.ok(ui.hudLabel({ ...state, points: 1270 }).includes("1270") || ui.hudLabel({ ...state, points: 1270 }).includes("1.270"));
   assert.equal(ui.feedbackScore(state), 0);
-  assert.ok(ui.feedbackScore({ ...state, height: 3 }) > 0);
-  assert.ok(ui.feedbackScore({ ...state, pressureRows: 1 }) < 0);
+  assert.equal(ui.feedbackScore({ ...state, points: 340 }), 340);
   const surface = ui.default({
     active: true,
     stake: 0,
     targetScore: 108,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core, v2.ORB_BURST_CORE_V5);
+  assert.equal(surface.core, v2.ORB_BURST_CORE_V6);
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.instruction, "");
   assert.equal(surface.expandHorizontalViewport, true);
   assert.deepEqual(
     surface.controls.map((c) => c.action),
-    ["SWAP", "POWER_RAINBOW", "POWER_BOMB", "POWER_LIGHTNING"],
+    ["SWAP"],
     "release launches without a separate button; only the swap choice has one",
   );
   assert.equal(surface.inputTones.SHOOT, "tap");
@@ -573,7 +571,7 @@ module.exports = (async () => {
   );
   console.log(
     JSON.stringify({
-      variant: "Orb V5 continuous presentation",
+      variant: "Orb V6 classic bubble shooter presentation",
       inputCases,
       viewports: dimensions.length,
       dprCases: 3,

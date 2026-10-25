@@ -20,6 +20,7 @@ import { PINBALL_CORE_V2 } from "../verified/pinballCore.v2";
 import { PINBALL_CORE_V3 } from "../verified/pinballCore.v3";
 import { PINBALL_CORE_V4 } from "../verified/pinballCore.v4";
 import { CORNER_SUDOKU_CORE_V1 } from "../verified/cornerSudokuCore.v1";
+import { BOWLING_CORE_V1 } from "../verified/bowlingCore.v1";
 import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
 import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
@@ -28,6 +29,7 @@ import { SHOT_GALLERY_CORE_V4 } from "../verified/shotGalleryCore.v4";
 import { SHOT_GALLERY_CORE_V5 } from "../verified/shotGalleryCore.v5";
 import { SHOT_GALLERY_CORE_V6 } from "../verified/shotGalleryCore.v6";
 import { SHOT_GALLERY_CORE_V7 } from "../verified/shotGalleryCore.v7";
+import { SHOT_GALLERY_CORE_V8 } from "../verified/shotGalleryCore.v8";
 import { DARTS_CORE_V3 } from "../verified/dartsCore.v3";
 import { DARTS_CORE_V2 } from "../verified/dartsCore.v2";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
@@ -40,6 +42,7 @@ import { ORB_BURST_CORE_V2 } from "../verified/orbBurstCore.v2";
 import { ORB_BURST_CORE_V3 } from "../verified/orbBurstCore.v3";
 import { ORB_BURST_CORE_V4 } from "../verified/orbBurstCore.v4";
 import { ORB_BURST_CORE_V5 } from "../verified/orbBurstCore.v5";
+import { ORB_BURST_CORE_V6 } from "../verified/orbBurstCore.v6";
 import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
 import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
@@ -258,6 +261,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PINBALL_CORE_V3.gameId, PINBALL_CORE_V3.gameVersion)]: coreAdapter(PINBALL_CORE_V3),
   [adapterKey(PINBALL_CORE_V4.gameId, PINBALL_CORE_V4.gameVersion)]: coreAdapter(PINBALL_CORE_V4),
   [adapterKey(CORNER_SUDOKU_CORE_V1.gameId, CORNER_SUDOKU_CORE_V1.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V1),
+  [adapterKey(BOWLING_CORE_V1.gameId, BOWLING_CORE_V1.gameVersion)]: coreAdapter(BOWLING_CORE_V1),
   [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
   [adapterKey(SHOT_GALLERY_CORE_V2.gameId,SHOT_GALLERY_CORE_V2.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V2),
@@ -266,6 +270,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(SHOT_GALLERY_CORE_V5.gameId,SHOT_GALLERY_CORE_V5.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V5),
   [adapterKey(SHOT_GALLERY_CORE_V6.gameId,SHOT_GALLERY_CORE_V6.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V6),
   [adapterKey(SHOT_GALLERY_CORE_V7.gameId,SHOT_GALLERY_CORE_V7.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V7),
+  [adapterKey(SHOT_GALLERY_CORE_V8.gameId,SHOT_GALLERY_CORE_V8.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V8),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(DARTS_CORE_V3.gameId,DARTS_CORE_V3.gameVersion)]: coreAdapter(DARTS_CORE_V3),
@@ -280,6 +285,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ORB_BURST_CORE_V3.gameId,ORB_BURST_CORE_V3.gameVersion)]: coreAdapter(ORB_BURST_CORE_V3),
   [adapterKey(ORB_BURST_CORE_V4.gameId,ORB_BURST_CORE_V4.gameVersion)]: coreAdapter(ORB_BURST_CORE_V4),
   [adapterKey(ORB_BURST_CORE_V5.gameId,ORB_BURST_CORE_V5.gameVersion)]: coreAdapter(ORB_BURST_CORE_V5),
+  [adapterKey(ORB_BURST_CORE_V6.gameId,ORB_BURST_CORE_V6.gameVersion)]: coreAdapter(ORB_BURST_CORE_V6),
   [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
   [adapterKey(TOWER_DROP_CORE_V4.gameId,TOWER_DROP_CORE_V4.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V4),
   [adapterKey(STACK_3D_CORE.gameId, STACK_3D_CORE.gameVersion)]: coreAdapter(STACK_3D_CORE),

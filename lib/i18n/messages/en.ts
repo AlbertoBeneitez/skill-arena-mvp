@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "How they have been earning · {name}",
   "ranking.fictitiousRange": "Fictitious amounts · from 0 to {amount}",
   "rules.p5": "Leagues (simulated rivals): each game has its own league, from Bronze to Diamond. A series is 5 matches against rivals of your tier: 3 or more wins promote you; 1 or fewer relegate you.",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "Ten frames on an orbital lane. Go for the strike.",
+  "gameMeta.bowling.skill": "AIM + SPIN",
+  "bowling.strike": "STRIKE!",
+  "bowling.spare": "SPARE!",
+  "bowling.double": "DOUBLE!",
+  "bowling.turkey": "{n} STRIKES IN A ROW!",
+  "bowling.gutter": "Gutter",
+  "bowling.skip": "Skip ⏭",
+  "bowling.hud": "Frame {frame}/10 · Ball {roll}",
 };
 
 export default messages;

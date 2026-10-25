@@ -42,6 +42,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   /** Presentation text refreshed with the common HUD cadence, never authoritative state. */
   hudLabel?(state: Readonly<S>): string;
   hideHudScore?: boolean;
+  /** Presentation only: logical rows reserved above the play area (y < 0), e.g. for a score display. */
+  topInset?: number;
   failureFinale?: { durationMs: number; render(ctx: CanvasRenderingContext2D, state: S, elapsedMs: number): void };
 };
 
@@ -50,6 +52,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   useI18n();
   const { core, active, stake, targetScore, instruction, render } = props;
   const name = gameName({ id: core.gameId, name: props.name });
+  const inset = props.topInset ?? 0;
   const viewportPolicy = props.expandVerticalViewport ? "expand-vertical" : props.expandHorizontalViewport ? "expand-horizontal" : "contain";
   const attempt = useVerifiedAttempt({ active, gameId: core.gameId, stakeMinor: Math.round(stake * 100), targetScore });
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -103,12 +106,13 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
-    metricsRef.current ??= configureLogicalCanvas(canvas, core.width, core.height, 2, viewportPolicy);
+    metricsRef.current ??= configureLogicalCanvas(canvas, core.width, core.height + inset, 2, viewportPolicy);
     beginLogicalCanvasFrame(ctx, canvas, metricsRef.current);
+    if (inset) ctx.translate(0, inset);
     render(ctx, stateRef.current, {
       width: metricsRef.current.logicalWidth,
-      height: metricsRef.current.logicalHeight,
-      top: -metricsRef.current.offsetY / metricsRef.current.scale,
+      height: metricsRef.current.logicalHeight - inset,
+      top: -metricsRef.current.offsetY / metricsRef.current.scale - inset,
     });
     if (choiceRef.current && props.choiceControl) {
       choiceRef.current.value = props.choiceControl.value(stateRef.current);
@@ -138,7 +142,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       }
     }
     if (stateRef.current.status === "failed") props.failureFinale?.render(ctx, stateRef.current, terminalElapsedRef.current);
-  }, [core, render, props.failureFinale, props.choiceControl, viewportPolicy]);
+  }, [core, render, props.failureFinale, props.choiceControl, viewportPolicy, inset]);
 
   const flush = useCallback(() => {
     const state = stateRef.current;
@@ -216,7 +220,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const resize = () => {
-      metricsRef.current = configureLogicalCanvas(canvas, core.width, core.height, 2, viewportPolicy);
+      metricsRef.current = configureLogicalCanvas(canvas, core.width, core.height + inset, 2, viewportPolicy);
       const panel=choicePanelRef.current, grid=panel?.querySelector<HTMLElement>(".coreChoiceGrid");
       if(grid&&props.choiceControl?.presentation!=="table")grid.style.maxHeight=`${Math.max(88,(panel?.parentElement?.clientHeight ?? 300)-64)}px`;
       draw();
@@ -226,7 +230,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     observer.observe(canvas);
     window.addEventListener("orientationchange", resize);
     return () => { observer.disconnect(); window.removeEventListener("orientationchange", resize); };
-  }, [core, draw, viewportPolicy]);
+  }, [core, draw, viewportPolicy, inset]);
 
   useEffect(() => {
     const release = releaseHeld;
@@ -338,7 +342,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     const rect = canvasRef.current?.getBoundingClientRect();
     const metrics = metricsRef.current;
     if (!rect || !metrics) return { x: 0, y: 0 };
-    return { x: (clientX - rect.left - metrics.offsetX) / metrics.scale, y: (clientY - rect.top - metrics.offsetY) / metrics.scale };
+    return { x: (clientX - rect.left - metrics.offsetX) / metrics.scale, y: (clientY - rect.top - metrics.offsetY) / metrics.scale - inset };
   }
 
   return <div className="detGameSurface verifiedArena coreGameSurface">

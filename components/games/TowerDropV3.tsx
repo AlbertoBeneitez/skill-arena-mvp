@@ -28,22 +28,76 @@ function ease(state: TowerDropV3State, offsetY: number, gripping: boolean) {
   motion.tick = state.tick;
   return motion.offsetY;
 }
-function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
-  drawSpaceBackdrop(ctx, 390, 620, 1, state.tick);
+const CONTAINER = [
+  ["#e8742c", "#b9551b"], ["#1f8fa6", "#156a7c"], ["#d2343f", "#9c222b"], ["#e9b730", "#b58a1c"],
+  ["#3e5fbf", "#2c4590"], ["#d9dee6", "#a9b1bd"], ["#4caf6e", "#357d4e"], ["#8a55d6", "#6439a6"],
+] as const;
+/** A space cargo container: corrugated walls, corner castings, a hazard band, ID plate and status lights. */
+function container(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, level: number, h: number, tick: number) {
+  const [face, shade] = CONTAINER[level % CONTAINER.length];
+  if (w <= 0.5) return;
+  const top = Math.min(5, h / 5);
+  // Body with vertical shading.
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, face); g.addColorStop(0.55, face); g.addColorStop(1, shade);
+  ctx.fillStyle = g;
+  ctx.fillRect(x, y, w, h);
+  if (h >= 10 && w >= 14) {
+    // Corrugation ribs.
+    for (let n = x + 7; n < x + w - 5; n += 7) {
+      ctx.fillStyle = "rgba(0,0,0,.16)"; ctx.fillRect(n, y + top + 2, 2, h - top - 6);
+      ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(n + 2, y + top + 2, 1, h - top - 6);
+    }
+    // Hazard band.
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x, y + h - 7, w, 4); ctx.clip();
+    ctx.fillStyle = "#1a1d24"; ctx.fillRect(x, y + h - 7, w, 4);
+    ctx.fillStyle = "#ffd23f";
+    for (let n = x - 8; n < x + w + 8; n += 8) { ctx.beginPath(); ctx.moveTo(n, y + h - 3); ctx.lineTo(n + 4, y + h - 7); ctx.lineTo(n + 8, y + h - 7); ctx.lineTo(n + 4, y + h - 3); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    // ID plate and status light.
+    if (w >= 46) {
+      ctx.fillStyle = "rgba(8,14,26,.78)";
+      ctx.fillRect(x + w / 2 - 15, y + top + 3, 30, 10);
+      ctx.fillStyle = "#e9f4ff";
+      ctx.font = "bold 7px ui-monospace, Menlo, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`GX-${String(level + 1).padStart(2, "0")}`, x + w / 2, y + top + 10.5);
+      ctx.textAlign = "left";
+    }
+    const blink = Math.floor((tick + level * 17) / 40) % 2 === 0;
+    ctx.fillStyle = blink ? "#5cffb0" : "rgba(92,255,176,.25)";
+    ctx.beginPath(); ctx.arc(x + w - 6, y + top + 6, 2, 0, Math.PI * 2); ctx.fill();
+  }
+  // Roof edge and corner castings.
+  ctx.fillStyle = "rgba(255,255,255,.32)"; ctx.fillRect(x, y, w, top);
+  ctx.fillStyle = "rgba(0,0,0,.22)"; ctx.fillRect(x, y + top, w, 1);
+  if (h >= 10) {
+    ctx.fillStyle = "#2a2f3a";
+    for (const cx of [x, x + w - 5]) { ctx.fillRect(cx, y, 5, 5); ctx.fillRect(cx, y + h - 5, 5, 5); }
+  }
+  ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+}
+
+function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State, view?: { width: number; height: number }) {
+  const viewH = Math.max(620, view?.height ?? 620);
+  drawSpaceBackdrop(ctx, 390, viewH, 1, state.tick);
   const floor = 540,
     blockH = 30,
-    groundScreenY = 580,
+    // The base starts at the bottom edge of the screen, whatever its height.
+    groundScreenY = viewH - 34,
     pivotY = floor - blockH - 320 - TOWER_DROP_V3.ropeLengthMilli / 1000,
     craneTop = pivotY - 24;
-  // Constant zoom, like Stack: the camera follows the newest layer and the older
-  // layers (full height, no squashing) slowly slide off the bottom of the screen.
+  // Constant zoom, like Stack: the camera follows the newest layer; once the tower reaches the working height
+  // the whole tower — base included — slides down and off the bottom of the screen.
   const scale = 0.72,
     landingScreenY = Math.max(
       86 + (floor - craneTop) * scale,
       groundScreenY - state.blocks.length * blockH * scale,
     ),
     offsetY = landingScreenY - floor * scale,
-    groundY = (groundScreenY - offsetY) / scale,
+    groundY = floor + state.blocks.length * blockH,
     olderBlockH = blockH;
   const easedOffsetY = ease(state, offsetY, state.phase === "swing");
   ctx.save();
@@ -55,30 +109,23 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State) {
     w: number,
     level: number,
     h = blockH,
-  ) => {
-    const hue = 180 + ((level * 13) % 105);
-    ctx.fillStyle = `hsl(${hue},60%,48%)`;
-    ctx.fillRect(x, y, w, Math.max(0.5, h - Math.min(2, h / 8)));
-    ctx.fillStyle = "rgba(210,255,255,.35)";
-    ctx.fillRect(x, y, w, Math.min(4, h / 5));
-    if (h >= 5) {
-      ctx.strokeStyle = "rgba(205,255,255,.4)";
-      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-    }
-    if (h >= 18) {
-      ctx.fillStyle = "rgba(0,15,50,.2)";
-      for (let n = x + 12; n < x + w - 8; n += 24)
-        ctx.fillRect(n, y + h / 3, 10, h / 4);
-    }
-  };
+  ) => container(ctx, x, y, w, level, h, state.tick);
   {
-    ctx.fillStyle = "#173949";
-    ctx.fillRect(45, groundY, 300, 14);
-    ctx.fillStyle = "#65b5bb";
-    ctx.fillRect(45, groundY, 300, 3);
-    for (let x = 55; x < 335; x += 40) {
-      ctx.fillStyle = "#8fffe1";
-      ctx.fillRect(x, groundY + 7, 12, 3);
+    // Launch pad: a deck with landing lights, standing on a pylon that runs off the bottom of the screen.
+    const deck = ctx.createLinearGradient(0, groundY, 0, groundY + 18);
+    deck.addColorStop(0, "#5f7d93"); deck.addColorStop(1, "#22384a");
+    ctx.fillStyle = "#101c2a";
+    ctx.fillRect(120, groundY + 16, 150, 900);
+    ctx.fillStyle = "rgba(127,227,238,.12)";
+    for (let yy = groundY + 30; yy < groundY + 900; yy += 26) ctx.fillRect(126, yy, 138, 3);
+    ctx.fillStyle = deck;
+    ctx.fillRect(35, groundY, 320, 18);
+    ctx.fillStyle = "#9fe7ee";
+    ctx.fillRect(35, groundY, 320, 2);
+    for (let x = 48; x < 345; x += 30) {
+      const on = Math.floor(state.tick / 18 + x / 30) % 4 === 0;
+      ctx.fillStyle = on ? "#ffd23f" : "rgba(255,210,63,.3)";
+      ctx.fillRect(x, groundY + 8, 10, 3);
     }
   }
   state.blocks.forEach((b, index) => {
@@ -198,6 +245,7 @@ export default function TowerDropV3(props: GameRuntimeProps) {
       name="Tower Drop"
       hideHudScore
       render={render}
+      expandVerticalViewport
       primaryAction="DROP"
       keys={keys}
       instruction={t("tower.instruction")}

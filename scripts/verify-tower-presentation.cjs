@@ -81,6 +81,9 @@ function recorder() {
     fillText(text) {
       texts.push(text);
     },
+    createLinearGradient() {
+      return { gradient: true, addColorStop() {} };
+    },
   };
   for (const method of [
     "strokeRect",
@@ -94,6 +97,7 @@ function recorder() {
     "closePath",
     "rect",
     "clip",
+    "strokeText",
   ])
     ctx[method] = () => {};
   return ctx;
@@ -210,13 +214,15 @@ module.exports = (async () => {
       unchanged,
       "renderer mutated deterministic state",
     );
-    const ground = ctx.rectangles.filter((r) => r.style === "#173949");
+    const ground = ctx.rectangles.filter((r) => r.style === "#101c2a");
     assert.equal(ground.length, 1, `missing ground at ${count}`);
-    // Constant zoom: the ground is on screen while the tower is short, then scrolls off the bottom.
-    if (count <= 8) assert.ok(Math.abs(ground[0].y - 580) < 1e-6, `ground moves at ${count}`);
+    // The base starts at the bottom edge; once the tower reaches working height the base goes down with it.
+    if (count <= 2) assert.ok(Math.abs(ground[0].y - (586 + 16 * 0.72)) < 1e-6, `ground starts at the bottom (${count}: ${ground[0].y})`);
+    if (count >= 32) assert.ok(ground[0].y > 620, `ground goes down with the tower at ${count}`);
     const crane = ctx.rectangles.find((r) => r.style === "#c4eff8");
     assert.ok(crane.y >= 80 - 1e-6 && crane.bottom < 620, `crane clipping at ${count}`);
-    const blocks = ctx.rectangles.filter((r) => /^hsl\(/.test(r.style));
+    // Container bodies: gradient-filled rectangles one full block tall (the deck is thinner).
+    const blocks = ctx.rectangles.filter((r) => r.style && r.style.gradient && r.bottom - r.y > 15);
     assert.equal(blocks.length, count + 1, "settled layers culled");
     // Older layers keep full height and slide off the bottom; the newest layers stay in view.
     for (const rectangle of blocks.slice(Math.max(0, count - 4), count))

@@ -6,9 +6,10 @@ import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";
 import { SHOT_GALLERY_ACTIONS_V3 as SHOT_GALLERY_ACTIONS } from "./verified/shotGalleryProtocol.v3";
 import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
-import { ORB_ACTIONS_V5 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v5";
+import { ORB_ACTIONS_V6 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v6";
 import { PINBALL_ACTIONS_V3 } from "./verified/pinballProtocol.v3";
 import { CORNER_SUDOKU_ACTIONS_V1 } from "./verified/cornerSudokuProtocol.v1";
+import { BOWLING_ACTIONS_V1 } from "./verified/bowlingProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -207,10 +208,10 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orb-burst",
-    version: "5.0.0",
+    version: "6.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 5, allowedActions: ORB_ACTIONS },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 6, allowedActions: ORB_ACTIONS },
     name: "Orb Burst",
     cover: "/covers/orb-burst.svg",
     enabled: true,
@@ -219,11 +220,11 @@ const GAME_DEFINITIONS = [
     tagline: "Un campo continuo, decisiones encadenadas.",
     difficulty: "MEDIA",
     skillLabel: "ÁNGULO + PLANIFICACIÓN",
-    rivalScore: 108,
+    rivalScore: 10000,
     rivalName: "ORB",
     rivalAvatar: "/avatars/avatar-5.svg",
-    instruction: "Apunta, suelta y junta tres o más. Gana poderes con los combos y elige cuándo usarlos.",
-    scoring: "Avance por los 108 orbes originales retirados. Fases que aprietan, hielo de dos golpes, asteroides, y poderes (bomba, rayo, arcoíris) que ganas con combos y eliges tú. Replay de servidor.",
+    instruction: "",
+    scoring: "Bubble shooter clásico: seis colores y siete filas. Grupos de 3 o más del mismo color explotan (10 por orbe) y los que quedan colgando caen con bonus que se duplica por cada orbe. Cada fallo cuenta: tras 5 fallos (luego 4, 3 y 2) baja una fila nueva. Si un orbe cruza la línea, fin. Limpiar el tablero da 2000 y lo rellena. Replay de servidor.",
 
   },
   {
@@ -254,7 +255,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "7.0.0",
+    version: "8.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
@@ -270,7 +271,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Espera al punto verde y toca lo que pide la orden: manchas de color, figuras grises o la figura de color que cumple ambas características.",
-    scoring: "Doce órdenes (color, figura gris, o la figura de color que cumple ambas características) sobre objetivos repartidos al azar; cada una pide varios disparos (de 2 a 4). Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
+    scoring: "Galería de tiro alienígena: doce órdenes que combinan un color y una figura; las dianas (figuras de color sobre soportes) se deslizan por tres raíles y cada orden pide de 2 a 4 disparos. Cada acierto puntúa más cuanto más rápido; anticiparse (punto rojo) o fallar penaliza. Se guardan tus tiempos de reacción.",
   },
 
   {
@@ -292,6 +293,26 @@ const GAME_DEFINITIONS = [
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
     scoring: "Una sola bola y 60 s. La potencia del muelle fija el lanzamiento; los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
+  },
+  {
+    id: "bowling",
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/Bowling")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BOWLING_ACTIONS_V1 },
+    name: "Galactic Bowling",
+    cover: "/covers/bowling.svg",
+    enabled: true,
+    waitingStakes: [1, 5],
+    category: "PRECISIÓN",
+    tagline: "Diez marcos en una pista orbital. Busca el pleno.",
+    difficulty: "MEDIA",
+    skillLabel: "PUNTERÍA + EFECTO",
+    rivalScore: 180,
+    rivalName: "PINS",
+    rivalAvatar: "/avatars/avatar-4.svg",
+    instruction: "",
+    scoring: "Bolos de diez: diez marcos con plenos y semiplenos según el reglamento (bolas extra en el décimo). Arrastra la bola para colocarla y desliza hacia arriba: la dirección marca el ángulo, la velocidad la potencia y la curva del gesto el efecto. Física determinista de bola y bolos. Replay de servidor.",
   },
   {
     id: "corner-sudoku",
@@ -338,6 +359,7 @@ const CATALOG_ORDER: GameId[] = [
   "stack-shift",
   "pinball",
   "corner-sudoku",
+  "bowling",
 ];
 
 export const GAMES: GameMeta[] = CATALOG_ORDER.map(

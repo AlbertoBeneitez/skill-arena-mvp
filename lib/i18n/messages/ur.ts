@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "کمائی کیسے بڑھی · {name}",
   "ranking.fictitiousRange": "فرضی رقوم · 0 سے {amount} تک",
   "rules.p5": "لیگیں (فرضی حریف): ہر گیم کی اپنی لیگ ہے، کانسی سے ہیرا تک۔ ایک سیریز آپ کے درجے کے حریفوں کے خلاف 5 میچوں کی ہوتی ہے: 3 یا زیادہ جیت پر ترقی؛ 1 یا کم پر تنزلی۔",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "مداری لین پر دس فریم۔ اسٹرائیک کا ہدف رکھیں۔",
+  "gameMeta.bowling.skill": "نشانہ + اسپن",
+  "bowling.strike": "اسٹرائیک!",
+  "bowling.spare": "اسپیئر!",
+  "bowling.double": "ڈبل!",
+  "bowling.turkey": "لگاتار {n} اسٹرائیک!",
+  "bowling.gutter": "گٹر",
+  "bowling.skip": "چھوڑیں ⏭",
+  "bowling.hud": "فریم {frame}/10 · گیند {roll}",
 };
 
 export default messages;

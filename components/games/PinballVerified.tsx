@@ -306,11 +306,12 @@ const CALLOUTS = new Proxy({} as Record<string, [string, string] | undefined>, {
 });
 const BIG = new Set(["SKILL", "JACKPOT", "DROPS", "BONUS", "DRAIN"]);
 
-/** Score display. On tall screens it rises into the free space above the table (and grows); otherwise it sits on the table top. */
+/** Score display: always above the table, in the strip reserved by topInset (it grows when there is more room). */
+const DMD_INSET = 54;
 function dmdBox(top: number) {
-  const headroom = Math.max(0, -top);
-  if (headroom >= 56) return { y: Math.max(top + 8, 6 - 50), h: 46, big: true };
-  return { y: 6, h: 30, big: false };
+  const headroom = Math.max(DMD_INSET, -top);
+  const h = headroom >= 64 ? 48 : 42;
+  return { y: -h - 6, h, big: true };
 }
 function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV4, top = 0) {
   const { y: y0, h, big } = dmdBox(top), cy = y0 + h / 2;
@@ -644,6 +645,7 @@ export default function PinballVerified(props: GameRuntimeProps) {
         hudLabel={hudLabel}
         hideHudLabel
         hideHudScore
+        topInset={DMD_INSET}
         instruction=""
       />
     </div>

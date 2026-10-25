@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "আয় কীভাবে বেড়েছে · {name}",
   "ranking.fictitiousRange": "কাল্পনিক অঙ্ক · 0 থেকে {amount}",
   "rules.p5": "লিগ (সিমুলেটেড প্রতিদ্বন্দ্বী): প্রতিটি গেমের নিজস্ব লিগ আছে, ব্রোঞ্জ থেকে হীরা পর্যন্ত। একটি সিরিজে আপনার স্তরের প্রতিদ্বন্দ্বীদের সঙ্গে 5টি ম্যাচ: 3 বা তার বেশি জয়ে উন্নীত; 1 বা কম জয়ে অবনমন।",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "অরবিটাল লেনে দশটি ফ্রেম। স্ট্রাইকের লক্ষ্য নিন।",
+  "gameMeta.bowling.skill": "নিশানা + স্পিন",
+  "bowling.strike": "স্ট্রাইক!",
+  "bowling.spare": "স্পেয়ার!",
+  "bowling.double": "ডাবল!",
+  "bowling.turkey": "টানা {n}টি স্ট্রাইক!",
+  "bowling.gutter": "গাটার",
+  "bowling.skip": "এড়িয়ে যান ⏭",
+  "bowling.hud": "ফ্রেম {frame}/10 · বল {roll}",
 };
 
 export default messages;

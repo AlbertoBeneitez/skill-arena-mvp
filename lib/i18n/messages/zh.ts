@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "收益走势 · {name}",
   "ranking.fictitiousRange": "虚拟金额 · 从 0 到 {amount}",
   "rules.p5": "联赛（模拟对手）：每个游戏都有自己的联赛，从青铜到钻石。一个系列赛为 5 场，对手与你同级：赢 3 场或以上晋级；赢 1 场或以下降级。",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "轨道球道上的十轮比赛，冲击全中！",
+  "gameMeta.bowling.skill": "瞄准 + 旋转",
+  "bowling.strike": "全中！",
+  "bowling.spare": "补中！",
+  "bowling.double": "双全中！",
+  "bowling.turkey": "连续 {n} 次全中！",
+  "bowling.gutter": "洗沟",
+  "bowling.skip": "跳过 ⏭",
+  "bowling.hud": "第 {frame}/10 轮 · 第 {roll} 球",
 };
 
 export default messages;

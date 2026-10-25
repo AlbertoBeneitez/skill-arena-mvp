@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "कमाई कैसे बढ़ी · {name}",
   "ranking.fictitiousRange": "काल्पनिक राशि · 0 से {amount} तक",
   "rules.p5": "लीग (सिम्युलेटेड प्रतिद्वंद्वी): हर गेम की अपनी लीग है, कांस्य से हीरा तक। एक सीरीज़ में आपके स्तर के प्रतिद्वंद्वियों के खिलाफ़ 5 मैच होते हैं: 3 या अधिक जीत पर आप ऊपर जाते हैं; 1 या कम पर नीचे।",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "ऑर्बिटल लेन पर दस फ़्रेम। स्ट्राइक का लक्ष्य रखें।",
+  "gameMeta.bowling.skill": "निशाना + स्पिन",
+  "bowling.strike": "स्ट्राइक!",
+  "bowling.spare": "स्पेयर!",
+  "bowling.double": "डबल!",
+  "bowling.turkey": "लगातार {n} स्ट्राइक!",
+  "bowling.gutter": "गटर",
+  "bowling.skip": "छोड़ें ⏭",
+  "bowling.hud": "फ़्रेम {frame}/10 · गेंद {roll}",
 };
 
 export default messages;

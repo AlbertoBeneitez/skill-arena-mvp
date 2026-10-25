@@ -36,14 +36,15 @@ const REFERENCE: Record<string, number> = {
   "solitaire-sprint": 22500,
   "mine-grid": 6000,
   "stack-shift": 16000,
-  "orb-burst": 108,
+  "orb-burst": 10000,
   "precision-stack": 600000,
   "reaction-test": 8000,
   pinball: 40000,
   "corner-sudoku": 4500,
+  bowling: 180,
 };
 /** Score caps: the target never exceeds what a perfect run can reach. */
-const CAP: Record<string, number> = { "orb-burst": 108 };
+const CAP: Record<string, number> = {};
 const FACTORS = [0.45, 0.65, 0.85, 1, 1.2] as const;
 /** Balance games start with 100 chips (10 000 minor units): the goal is the closing balance. */
 const BALANCE_GOALS = [10000, 11000, 12500, 15000, 20000] as const;

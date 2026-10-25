@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "Как рос выигрыш · {name}",
   "ranking.fictitiousRange": "Условные суммы · от 0 до {amount}",
   "rules.p5": "Лиги (имитация соперников): у каждой игры своя лига — от бронзы до бриллианта. Серия — 5 матчей против соперников вашего уровня: 3 победы и больше — повышение; 1 и меньше — понижение.",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "Десять фреймов на орбитальной дорожке. Цель — страйк.",
+  "gameMeta.bowling.skill": "ТОЧНОСТЬ + ВРАЩЕНИЕ",
+  "bowling.strike": "СТРАЙК!",
+  "bowling.spare": "СПЭР!",
+  "bowling.double": "ДУБЛЬ!",
+  "bowling.turkey": "{n} СТРАЙКОВ ПОДРЯД!",
+  "bowling.gutter": "Желоб",
+  "bowling.skip": "Пропустить ⏭",
+  "bowling.hud": "Фрейм {frame}/10 · Бросок {roll}",
 };
 
 export default messages;

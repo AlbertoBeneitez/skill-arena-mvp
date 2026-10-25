@@ -635,6 +635,16 @@ const es = {
   "ranking.howEarned": "Cómo ha ido ganando · {name}",
   "ranking.fictitiousRange": "Importes ficticios · de 0 a {amount}",
   "rules.p5": "Ligas (rivales simulados): cada juego tiene su liga, de Bronce a Diamante. Una serie son 5 partidas contra rivales de tu nivel: con 3 o más victorias subes; con 1 o menos bajas.",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "Diez marcos en una pista orbital. Busca el pleno.",
+  "gameMeta.bowling.skill": "PUNTERÍA + EFECTO",
+  "bowling.strike": "¡PLENO!",
+  "bowling.spare": "¡SEMIPLENO!",
+  "bowling.double": "¡DOBLE!",
+  "bowling.turkey": "¡{n} PLENOS SEGUIDOS!",
+  "bowling.gutter": "Canal",
+  "bowling.skip": "Saltar ⏭",
+  "bowling.hud": "Marco {frame}/10 · Tiro {roll}",
 } as const;
 
 export type MessageKey = keyof typeof es;

@@ -597,6 +597,16 @@ const messages: Messages = {
   "ranking.howEarned": "كيف تطورت أرباحه · {name}",
   "ranking.fictitiousRange": "مبالغ وهمية · من 0 إلى {amount}",
   "rules.p5": "الدوريات (منافسون محاكَون): لكل لعبة دوريها من البرونزي إلى الماسي. السلسلة 5 مباريات ضد منافسين من مستواك: بثلاثة انتصارات أو أكثر تصعد، وبانتصار واحد أو أقل تهبط.",
+  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.tagline": "عشرة أشواط على مسار مداري. اسعَ إلى الضربة الكاملة.",
+  "gameMeta.bowling.skill": "تصويب + دوران",
+  "bowling.strike": "ضربة كاملة!",
+  "bowling.spare": "سبير!",
+  "bowling.double": "مزدوجة!",
+  "bowling.turkey": "{n} ضربات كاملة متتالية!",
+  "bowling.gutter": "القناة",
+  "bowling.skip": "تخطٍّ ⏭",
+  "bowling.hud": "الشوط {frame}/10 · الرمية {roll}",
 };
 
 export default messages;
