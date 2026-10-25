@@ -8,6 +8,7 @@ import { DARTS_ACTIONS } from "./verified/dartsProtocol.v1";
 import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
 import { ORB_ACTIONS_V5 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v5";
 import { PINBALL_ACTIONS_V3 } from "./verified/pinballProtocol.v3";
+import { CORNER_SUDOKU_ACTIONS_V1 } from "./verified/cornerSudokuProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -292,6 +293,26 @@ const GAME_DEFINITIONS = [
     instruction: "",
     scoring: "Una sola bola y 60 s. La potencia del muelle fija el lanzamiento; los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
   },
+  {
+    id: "corner-sudoku",
+    version: "1.0.0",
+    status: "VERIFIED",
+    loadComponent: adaptGameComponent(() => import("@/components/games/CornerSudoku")),
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: CORNER_SUDOKU_ACTIONS_V1 },
+    name: "Corner Sudoku",
+    cover: "/covers/corner-sudoku.svg",
+    enabled: true,
+    waitingStakes: [1, 5],
+    category: "LÓGICA",
+    tagline: "Dos lados de un sudoku: cinco cuadrados, cinco retos.",
+    difficulty: "MEDIA",
+    skillLabel: "LÓGICA + RAPIDEZ",
+    rivalScore: 4500,
+    rivalName: "SAGE",
+    rivalAvatar: "/avatars/avatar-5.svg",
+    instruction: "",
+    scoring: "Cinco sudokus por partida con dos lados de un sudoku (la fila de cuadrados de arriba y la columna de la izquierda, que comparten la esquina). Cada cuadrado, cada una de las tres filas de arriba y cada una de las tres columnas de la izquierda llevan del 1 al 9. Cada número correcto suma 20; uno erróneo se rechaza y resta 50; cinco errores terminan la partida. Al resolver un sudoku: 400 más bonus por rapidez. Ocho minutos. Replay de servidor.",
+  },
 
 ] as const satisfies readonly GameDefinition[];
 
@@ -316,6 +337,7 @@ const CATALOG_ORDER: GameId[] = [
   "mine-grid",
   "stack-shift",
   "pinball",
+  "corner-sudoku",
 ];
 
 export const GAMES: GameMeta[] = CATALOG_ORDER.map(

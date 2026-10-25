@@ -553,3 +553,7 @@ Detalle: [v106](releases/v106-saturn.md), [v107](releases/v107-saturn.md), [v108
 
 Pinball 4.0.0 (hueco central más estrecho), Shot Gallery 7.0.0 (2–4 disparos por pantalla, sin cañón), rejilla de 16 avatares,
 botón de jugar más llamativo, marcador del Pinball más alto y sin recuadro de toque en los juegos. Detalle: [releases/v109-saturn.md](releases/v109-saturn.md).
+
+## v110-saturn · Sudoku Esquina, ligas por niveles y ranking por juego (25-oct-2026)
+
+Nuevo juego verificado `corner-sudoku@1.0.0`, ligas demo por juego (Bronce→Diamante, series de 5) y ranking por juego. Detalle: [releases/v110-saturn.md](releases/v110-saturn.md).

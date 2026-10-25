@@ -7395,3 +7395,98 @@ html[dir="rtl"] .appHeader .logoButton { text-align: right; }
 .coreGameSurface canvas:focus, .coreGameSurface canvas:focus-visible { outline: none; }
 .coreGameSurface button:focus:not(:focus-visible) { outline: none; }
 .coreControls button { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* =====================================================================
+   v110 · Demo leagues, rival card, per-game ranking, Corner Sudoku
+   ===================================================================== */
+.leagueBadge {
+  position: absolute;
+  top: 8px;
+  inset-inline-start: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 6px;
+  border-radius: 999px;
+  background: rgba(4, 10, 24, .78);
+  border: 1px solid color-mix(in srgb, var(--tier) 70%, transparent);
+  color: var(--tier);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+.leagueBadge b { font-size: 12px; line-height: 1; }
+.leagueDots { display: inline-flex; gap: 3px; align-items: center; }
+.leagueDots i { display: block; border-radius: 50%; background: rgba(255,255,255,.18); }
+.leagueDots i.w { background: #5cffb0; box-shadow: 0 0 6px rgba(92,255,176,.6); }
+.leagueDots i.l { background: #ff5a6a; }
+
+.gxIntroRival {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px auto 10px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 16px;
+  max-width: 300px;
+  background: linear-gradient(135deg, rgba(10,20,40,.9), rgba(20,30,58,.9));
+  border: 1px solid color-mix(in srgb, var(--tier) 65%, transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--tier) 30%, transparent);
+  animation: gxFade .3s ease both;
+}
+.gxIntroRival img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--tier); }
+.gxIntroRival span { display: grid; flex: 1; min-width: 0; text-align: start; }
+.gxIntroRival small { color: var(--tier); font-size: 11px; font-weight: 800; }
+.gxIntroRival b { color: #fff; font-size: 16px; font-weight: 900; letter-spacing: .04em; }
+.gxIntroRival strong { color: #f9ecd2; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.leagueResult {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(14,26,50,.95), rgba(8,16,34,.95));
+  border: 1px solid color-mix(in srgb, var(--tier) 55%, transparent);
+  text-align: start;
+}
+.leagueResult header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.leagueTier { display: inline-flex; align-items: center; gap: 6px; color: var(--tier); font-weight: 900; font-size: 13px; }
+.leagueTier b { font-size: 16px; }
+.leagueVs { display: flex; align-items: center; gap: 10px; }
+.leagueVs img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--tier); }
+.leagueVs span { display: grid; flex: 1; min-width: 0; }
+.leagueVs span b { color: #fff; font-size: 14px; }
+.leagueVs span small { color: #a9b9d6; font-size: 12px; font-variant-numeric: tabular-nums; }
+.leagueVs strong { font-size: 13px; font-weight: 900; }
+.leagueResult.won .leagueVs strong { color: #5cffb0; }
+.leagueResult.lost .leagueVs strong { color: #ff8a96; }
+.leagueProgress, .leagueChange { margin: 10px 0 0; color: #c9d6ee; font-size: 12px; }
+.leagueChange { display: grid; gap: 2px; font-size: 16px; font-weight: 900; color: #fff; text-align: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
+.leagueChange small { font-size: 12px; font-weight: 600; color: #a9b9d6; }
+.leagueResult.change-up .leagueChange { color: #5cffb0; text-shadow: 0 0 14px rgba(92,255,176,.45); animation: leagueUp .6s cubic-bezier(.2,1.4,.3,1) both; }
+.leagueResult.change-down .leagueChange { color: #ff8a96; }
+@keyframes leagueUp { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: none; }
+
+.rankingHub { display: grid; gap: 12px; }
+.rankingViewTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: 14px; background: rgba(4,10,24,.6); border: 1px solid rgba(127,227,238,.18); }
+.rankingViewTabs button { min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #a9b9d6; font-weight: 800; font-size: 13px; }
+.rankingViewTabs button[aria-selected="true"] { background: linear-gradient(135deg, #2a4f86, #183461); color: #fff; box-shadow: 0 0 0 1px rgba(127,227,238,.35) inset; }
+.gameRankingPick { display: flex; align-items: center; gap: 10px; color: #a9b9d6; font-size: 13px; font-weight: 700; }
+.gameRankingPick select { flex: 1; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(127,227,238,.35); background: #0d1a33; color: #fff; font-size: 15px; font-weight: 800; }
+.gameRanking { display: grid; gap: 12px; }
+.gameRankingYou { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: linear-gradient(135deg, rgba(20,36,68,.95), rgba(10,20,40,.95)); border: 1px solid color-mix(in srgb, var(--tier) 60%, transparent); }
+.gameRankingYou img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--tier); }
+.gameRankingYou > span { display: grid; flex: 1; min-width: 0; }
+.gameRankingYou > span b { color: #fff; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gameRankingYou > span small { color: var(--tier); font-size: 12px; font-weight: 800; }
+.gameRankingYou strong { display: grid; justify-items: end; color: #f9ecd2; font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; text-align: end; }
+.gameRankingYou strong small { color: #a9b9d6; font-size: 11px; font-weight: 700; }
+.gameRankingTable tr.you td { background: rgba(243,197,90,.14); color: #fff; font-weight: 800; }
+.gameRankingAvatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex: none; }
+.gameRankingTier { font-size: 15px; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tier) 60%, transparent)); }
+.gameRankingScore { font-variant-numeric: tabular-nums; font-weight: 800; text-align: end; }
+.rankingNote { margin: 0; color: #8fa2c2; font-size: 12px; }

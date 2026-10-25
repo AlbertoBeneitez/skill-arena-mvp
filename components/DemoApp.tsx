@@ -11,13 +11,12 @@ import GalacticMark from "./GalacticMark";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
-import GlobalRanking from "./GlobalRanking";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
-import { formatMoney, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
+import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
 import { matchLocale } from "@/lib/i18n/locales";
 import { gameCategory, gameName, gameSkill, gameTagline } from "@/lib/i18n/games";
 import type { DocId } from "@/lib/i18n/docs";
@@ -26,6 +25,9 @@ import DocSheet from "./DocSheet";
 import SettingsScreen from "./SettingsScreen";
 import ConfirmDialog from "./ConfirmDialog";
 import LanguagePicker from "./LanguagePicker";
+import LeagueResult from "./LeagueResult";
+import RankingHub from "./GameRanking";
+import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
 
 type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking" | "settings";
 type Provider = "google" | "apple" | null;
@@ -53,6 +55,8 @@ type PersistedState = {
   losses: number;
   streak: number;
   group: ClosedGroup | null;
+  leagues?: LeagueState;
+  bestScores?: Record<string, number>;
 };
 
 const VALID_SCREENS: Screen[] = ["welcome", "avatar-setup", "home", "group", "game", "profile", "legal", "ranking", "settings"];
@@ -300,6 +304,11 @@ export default function DemoApp() {
   const [attemptSummary, setAttemptSummary] = useState<GameResult | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [wins, setWins] = useState(0);
+  const [leagues, setLeagues] = useState<LeagueState>({});
+  const [bestScores, setBestScores] = useState<Record<string, number>>({});
+  /** Simulated rival for the match in progress (demo leagues); null outside league duels. */
+  const [leagueMatch, setLeagueMatch] = useState<{ gameId: string; rival: LeagueRival; tier: LeagueTier } | null>(null);
+  const [leagueOutcome, setLeagueOutcome] = useState<{ won: boolean; record: LeagueRecord; rival: LeagueRival; score: number } | null>(null);
   const [losses, setLosses] = useState(0);
   const [streak, setStreak] = useState(0);
   const [group, setGroup] = useState<ClosedGroup | null>(null);
@@ -469,6 +478,10 @@ export default function DemoApp() {
         if (data.group && typeof data.group === "object") {
           setGroup(data.group as ClosedGroup);
         }
+        if (isLeagueState(data.leagues)) setLeagues(data.leagues);
+        if (data.bestScores && typeof data.bestScores === "object") {
+          setBestScores(Object.fromEntries(Object.entries(data.bestScores).filter(([, v]) => typeof v === "number" && Number.isFinite(v))));
+        }
       } catch {}
     }
 
@@ -519,13 +532,15 @@ export default function DemoApp() {
       losses,
       streak,
       group,
+      leagues,
+      bestScores,
     };
     try {
       safeStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group, leagues, bestScores]);
 
   function toggleSound() {
     const enabled = !musicOn;
@@ -846,7 +861,17 @@ export default function DemoApp() {
     setSelectedMode(mode);
     setGhostEnabled(mode === "existing");
     setMatchScope("duel");
-    setMatchTargetScore(persistentTraining ? 1_000_000_000 : game.rivalScore);
+    setLeagueOutcome(null);
+    if (!persistentTraining) {
+      // Demo league matchmaking: a simulated rival of the player's tier in this game.
+      const record = leagues[game.id] ?? emptyLeague();
+      const rival = leagueRival(game, record);
+      setLeagueMatch({ gameId: game.id, rival, tier: record.tier });
+      setMatchTargetScore(rival.balanceGoal ? game.rivalScore : rival.target);
+    } else {
+      setLeagueMatch(null);
+      setMatchTargetScore(1_000_000_000);
+    }
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
 
@@ -868,6 +893,15 @@ export default function DemoApp() {
     navigate("game");
   }
 
+  function settleLeague(won: boolean, score: number) {
+    if (!leagueMatch) return;
+    const { gameId, rival } = leagueMatch;
+    const record = recordLeagueResult(leagues[gameId] ?? emptyLeague(), won);
+    setLeagues((all) => ({ ...all, [gameId]: record }));
+    setLeagueOutcome({ won, record, rival, score });
+    setLeagueMatch(null);
+  }
+
   function finishMatch(gameResult: GameResult) {
     resultPointerReadyRef.current = false;
     matchStartLockRef.current = false;
@@ -877,6 +911,7 @@ export default function DemoApp() {
     if (selectedGame.competition.verification === "server-replay" && gameResult.verified !== true) {
       // A started attempt is lost on disconnect/failed verification, never refunded by UI.
       setLosses(value=>value+1);setStreak(0);
+      if (leagueMatch && matchScope === "duel") settleLeague(false, 0);
       setResult({
         ...gameResult,
         won: false,
@@ -902,16 +937,24 @@ export default function DemoApp() {
       matchScope === "duel" &&
       (selectedMode === "existing" || selectedMode === "waiting");
 
+    // Demo league duel: training matches are decided against the simulated rival of the player's tier.
+    const leagueDuel = !gameResult.serverMatch && matchScope === "duel" && leagueMatch !== null && leagueMatch.gameId === selectedGame.id;
+    const beatLeagueRival = leagueDuel && gameResult.score >= leagueMatch!.rival.target;
     const didWin = gameResult.serverMatch
       ? gameResult.serverMatch.winnerSlot === gameResult.serverMatch.slot
       : selectedStake === 0
-        ? gameResult.won
+        ? leagueDuel ? beatLeagueRival : gameResult.won
         : matchScope === "group"
           ? gameResult.won || gameResult.score >= matchTargetScore
           : replyAttempt
             ? gameResult.won || gameResult.score >= matchTargetScore
             : false;
     const resolvedResult = { ...gameResult, won: didWin };
+    if (gameResult.verified !== false && !gameResult.forfeited && Number.isFinite(gameResult.score)) {
+      setBestScores((best) => (gameResult.score > (best[selectedGame.id] ?? -1) ? { ...best, [selectedGame.id]: gameResult.score } : best));
+    }
+    const leagueResolved = leagueDuel && (selectedStake === 0 || replyAttempt);
+    if (leagueResolved && gameResult.serverMatch?.reason !== "exact-tie") settleLeague(didWin, gameResult.score);
     setAttemptSummary(resolvedResult);
     if(gameResult.serverMatch?.reason==="exact-tie"){
       setResult(resolvedResult);
@@ -1083,6 +1126,8 @@ export default function DemoApp() {
     setSelectedMode("create");
     setGhostEnabled(false);
     setMatchScope("group");
+    setLeagueMatch(null);
+    setLeagueOutcome(null);
     setMatchTargetScore(groupTargetScore(group, game));
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
@@ -1157,6 +1202,8 @@ export default function DemoApp() {
     setWins(0);
     setLosses(0);
     setStreak(0);
+    setLeagues({});
+    setBestScores({});
     setConfirmAction(null);
     setNotice(t("settings.resetStatsDone"));
   }
@@ -1400,7 +1447,7 @@ export default function DemoApp() {
 
 
             {matchStartError && <p role="status">{matchStartError}</p>}
-            <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} />
+            <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} leagues={persistentTraining ? undefined : leagues} />
           </section>
         )}
 
@@ -1492,6 +1539,16 @@ export default function DemoApp() {
                     {!gameSkill(selectedGame).includes(gameCategory(selectedGame)) && <span>{gameCategory(selectedGame)}</span>}
                     <span>{gameSkill(selectedGame)}</span>
                   </div>
+                  {leagueMatch && leagueMatch.gameId === selectedGame.id && (
+                    <div className="gxIntroRival" style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
+                      <img src={leagueMatch.rival.avatar} alt="" width={40} height={40} />
+                      <span>
+                        <small>{LEAGUE_ICONS[leagueMatch.tier]} {t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) })}</small>
+                        <b>{leagueMatch.rival.name}</b>
+                      </span>
+                      <strong>{leagueMatch.rival.balanceGoal ? t("league.goalChips", { n: formatNumber(leagueMatch.rival.target / 100) }) : formatNumber(leagueMatch.rival.target)}</strong>
+                    </div>
+                  )}
                   <div className="gxIntroCount" key={countdown}>
                     <svg viewBox="0 0 120 120" aria-hidden="true">
                       <circle className="track" cx="60" cy="60" r="52" />
@@ -1543,6 +1600,7 @@ export default function DemoApp() {
                 ) : (
                   <>
                     <GameResultSummary result={attemptSummary ?? result} gameName={gameName(selectedGame)} resultMetric={selectedGame.resultMetric} waitingForRival={result.serverMatch ? result.serverMatch.status === "waiting" : selectedStake > 0 && matchScope === "duel" && selectedMode === "create"} />
+                    {leagueOutcome && <LeagueResult outcome={leagueOutcome} />}
                   </>
                 )}
                 <fieldset className="resultActions" disabled={!resultActionsReady} aria-label={t("game.resultActions")}>
@@ -1611,7 +1669,7 @@ export default function DemoApp() {
               <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>{t("profile.tabProfile")}</button>
               <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>{t("profile.tabRanking")}</button>
             </nav>
-            {avatarSection === "ranking" ? <GlobalRanking embedded /> : <>
+            {avatarSection === "ranking" ? <RankingHub bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
             <p className={shellStyles.demoNote}>{t("profile.note")}</p>
             <div className="profileStrip"><img src={avatarSrc} alt="" /><div><strong>{playerName}</strong><span>{t("profile.localAccount")}</span></div><b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 

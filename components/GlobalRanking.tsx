@@ -143,7 +143,7 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
       {visible.status === "ready" && page && (
         <>
           {!cursor && page.entries.length > 0 && (
-            <section className="rankingLeaders" aria-label="Top jugadores">
+            <section className="rankingLeaders" aria-label={t("ranking.topPlayersAria")}>
               <h2>{source === "demo" ? t("ranking.topExample") : t("ranking.top")}</h2>
               <div>
                 {page.entries.slice(0, 3).map((row) => (
@@ -219,9 +219,9 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
                       open ? (
                         <tr key={`${row.playerId}-chart`} className="rankingChartRow">
                           <td colSpan={4}>
-                            <strong>Cómo ha ido ganando · {row.playerName}</strong>
+                            <strong>{t("ranking.howEarned", { name: row.playerName })}</strong>
                             <ProfitChart values={values} width={320} height={130} detailed label={t("ranking.detailOf", { name: row.playerName })} />
-                            <small>Importes ficticios · de 0 a {formatNetProfit(row.netProfitMinor)}</small>
+                            <small>{t("ranking.fictitiousRange", { amount: formatNetProfit(row.netProfitMinor) })}</small>
                           </td>
                         </tr>
                       ) : null,

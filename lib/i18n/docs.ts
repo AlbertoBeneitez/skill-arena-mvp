@@ -29,7 +29,7 @@ export const DOC_BLOCKS: Record<DocId, readonly Block[]> = {
     ["h", "privacy.h2"], ["p", "privacy.p4"], ["h", "privacy.h3"], ["p", "privacy.p5"],
   ],
   cookies: [["p", "cookies.p1"], ["p", "cookies.p2"], ["p", "cookies.p3"]],
-  rules: [["p", "rules.p1"], ["p", "rules.p2"], ["p", "rules.p3"], ["p", "rules.p4"]],
+  rules: [["p", "rules.p1"], ["p", "rules.p2"], ["p", "rules.p3"], ["p", "rules.p4"], ["p", "rules.p5"]],
   responsible: [["p", "responsible.p1"], ["p", "responsible.p2"], ["p", "responsible.p3"], ["p", "responsible.p4"]],
   help: [
     ["qa", "help.q1", "help.a1"], ["qa", "help.q2", "help.a2"], ["qa", "help.q3", "help.a3"],

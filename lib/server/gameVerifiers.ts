@@ -19,6 +19,7 @@ import { PINBALL_CORE_V1 } from "../verified/pinballCore.v1";
 import { PINBALL_CORE_V2 } from "../verified/pinballCore.v2";
 import { PINBALL_CORE_V3 } from "../verified/pinballCore.v3";
 import { PINBALL_CORE_V4 } from "../verified/pinballCore.v4";
+import { CORNER_SUDOKU_CORE_V1 } from "../verified/cornerSudokuCore.v1";
 import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
 import { SHOT_GALLERY_CORE } from "../verified/shotGalleryCore.v1";
@@ -256,6 +257,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PINBALL_CORE_V2.gameId, PINBALL_CORE_V2.gameVersion)]: coreAdapter(PINBALL_CORE_V2),
   [adapterKey(PINBALL_CORE_V3.gameId, PINBALL_CORE_V3.gameVersion)]: coreAdapter(PINBALL_CORE_V3),
   [adapterKey(PINBALL_CORE_V4.gameId, PINBALL_CORE_V4.gameVersion)]: coreAdapter(PINBALL_CORE_V4),
+  [adapterKey(CORNER_SUDOKU_CORE_V1.gameId, CORNER_SUDOKU_CORE_V1.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V1),
   [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
   [adapterKey(SHOT_GALLERY_CORE_V2.gameId,SHOT_GALLERY_CORE_V2.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V2),

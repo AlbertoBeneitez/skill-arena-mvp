@@ -1,4 +1,6 @@
 "use client";
+import { LeagueBadge } from "./LeagueResult";
+import { emptyLeague, type LeagueState } from "@/lib/leagues";
 import { GAMES, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
 import { t, useI18n } from "@/lib/i18n";
@@ -16,6 +18,8 @@ type Props = {
   ghostEnabled: boolean;
   onToggleGhost(): void;
   onPlay(game: GameMeta): void;
+  /** Demo league per game (absent in server-backed mode). */
+  leagues?: LeagueState;
 };
 /** Presentation and discovery only. The common registry remains the sole catalogue. */
 export default function CatalogBrowser(props: Props) {
@@ -34,6 +38,7 @@ export default function CatalogBrowser(props: Props) {
                 loading="lazy"
                 decoding="async"
               />
+              {props.leagues && <LeagueBadge record={props.leagues[game.id] ?? emptyLeague()} />}
               {!props.serverOnly && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) ===
                 "existing" && (
                 <button
