@@ -558,10 +558,10 @@ botón de jugar más llamativo, marcador del Pinball más alto y sin recuadro de
 
 Nuevo juego verificado `corner-sudoku@1.0.0`, ligas demo por juego (Bronce→Diamante, series de 5) y ranking por juego. Detalle: [releases/v110-saturn.md](releases/v110-saturn.md).
 
-## v112-saturn · Ruleta 9, Orb Burst 7, Shot Gallery 9, Tower Drop 5 y pulido visual (25-oct-2026)
-
-Ruleta 9 (más rebotes, giros más largos y saltos entre separadores), Orb Burst 7 (más difícil: 8 filas, 4→1 fallos y techo por tiempo), Shot Gallery 9 (placas fijas, estética sobria tipo galería de tiro), Tower Drop 5 (sin rebote lateral, módulo elevador planetario); Slot de recreativa, Dardos de coger y lanzar, taco de billar más cerca, y Bolos con cámara de persecución y bolos-personaje. Detalle: [releases/v112-saturn.md](releases/v112-saturn.md).
-
 ## v111-saturn · Bolos, Orb Burst 6, Shot Gallery 8, Tower Drop y portadas (25-oct-2026)
 
 Nuevo `bowling@1.0.0` con animación de pleno saltable; Orb Burst 6 (bubble shooter clásico), Shot Gallery 8 (galería alienígena con raíles), Tower Drop a pantalla completa con contenedores, marcador de Pinball fuera de la mesa y portadas nuevas. Detalle: [releases/v111-saturn.md](releases/v111-saturn.md).
+
+## v112-saturn · Ruleta 9, Orb Burst 7, Shot Gallery 9, Tower Drop 5 y pulido visual (25-oct-2026)
+
+Ruleta 9 (más rebotes, giros más largos y saltos entre separadores), Orb Burst 7 (más difícil: 8 filas, 4→1 fallos y techo por tiempo), Shot Gallery 9 (placas fijas, estética sobria tipo galería de tiro), Tower Drop 5 (sin rebote lateral, módulo elevador planetario); Slot de recreativa, Dardos de coger y lanzar, taco de billar más cerca, y Bolos con cámara de persecución y bolos-personaje. Detalle: [releases/v112-saturn.md](releases/v112-saturn.md).
