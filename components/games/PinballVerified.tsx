@@ -2,24 +2,28 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  PINBALL_BUMPER_RADIUS_V5,
-  PINBALL_CORE_V5,
-  PINBALL_DROPS_V5,
-  PINBALL_LANES_V5,
-  PINBALL_POSTS_V5,
-  PINBALL_RTARGETS_V5,
-  PINBALL_RULES_V5,
-  PINBALL_SAUCER_V5,
-  PINBALL_SLINGS_V5,
-  PINBALL_SPINNER_V5,
-  PINBALL_TARGETS_V5,
-  PINBALL_WALLS_V5,
-  pinballBumpersV5,
-  pinballChargeLevelV5,
-  pinballFlipperTipV5,
-  pinballFrenzyV5,
-  type PinballStateV5,
-} from "@/lib/verified/pinballCore.v5";
+  PINBALL_BUMPER_RADIUS_V6,
+  PINBALL_CORE_V6,
+  PINBALL_DROPS_V6,
+  PINBALL_LANES_V6,
+  PINBALL_POSTS_V6,
+  PINBALL_RTARGETS_V6,
+  PINBALL_RULES_V6,
+  PINBALL_SAUCER_V6,
+  PINBALL_SLINGS_V6,
+  PINBALL_SPINNER_V6,
+  PINBALL_TARGETS_V6,
+  PINBALL_WALLS_V6,
+  pinballBumpersV6,
+  pinballChargeLevelV6,
+  pinballFlipperTipV6,
+  pinballFrenzyV6,
+  pinballTubePointV6,
+  pinballTubeLengthV6,
+  PINBALL_TUBES_V6,
+  PINBALL_WORMHOLE_V6,
+  type PinballStateV6,
+} from "@/lib/verified/pinballCore.v6";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 import { t as tx, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
@@ -32,7 +36,7 @@ import { t as tx, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
 
 const W = 390, H = 620;
 const k = (v: number) => v / 1000;
-const R = PINBALL_RULES_V5;
+const R = PINBALL_RULES_V6;
 const BUMPER_COLORS = [
   ["#ff5a7a", "#a3173a"],
   ["#ffc94a", "#a86a00"],
@@ -146,7 +150,7 @@ function drawStaticArt(ctx: CanvasRenderingContext2D, layout: number) {
   ctx.restore();
 
   // Chrome rails along every wall.
-  for (const w of PINBALL_WALLS_V5) chromeLine(ctx, k(w.ax), k(w.ay), k(w.bx), k(w.by), 7);
+  for (const w of PINBALL_WALLS_V6) chromeLine(ctx, k(w.ax), k(w.ay), k(w.bx), k(w.by), 7);
   // Cabinet side rails (outside the playfield).
   for (const x of [8, 382]) {
     const rail = ctx.createLinearGradient(x - 8, 0, x + 8, 0);
@@ -160,16 +164,16 @@ function drawStaticArt(ctx: CanvasRenderingContext2D, layout: number) {
   ctx.font = "900 10px system-ui";
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,255,255,.55)";
-  PINBALL_LANES_V5.forEach((l, i) => ctx.fillText(LANE_LETTERS[i], k(l.x), k(l.y) + 24));
+  PINBALL_LANES_V6.forEach((l, i) => ctx.fillText(LANE_LETTERS[i], k(l.x), k(l.y) + 24));
   // Kickers (slings) and posts get a rubber ring.
-  for (const p of [...PINBALL_SLINGS_V5, ...PINBALL_POSTS_V5]) {
+  for (const p of [...PINBALL_SLINGS_V6, ...PINBALL_POSTS_V6]) {
     ctx.fillStyle = "rgba(0,0,0,.45)";
     ctx.beginPath(); ctx.arc(k(p.x) + 1.5, k(p.y) + 2.5, k(p.r) + 3, 0, Math.PI * 2); ctx.fill();
   }
   // Bumper skirts (the coloured bodies are dynamic).
-  for (const p of pinballBumpersV5(layout)) {
+  for (const p of pinballBumpersV6(layout)) {
     ctx.fillStyle = "rgba(0,0,0,.5)";
-    ctx.beginPath(); ctx.arc(k(p.x) + 3, k(p.y) + 5, k(PINBALL_BUMPER_RADIUS_V5) + 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(k(p.x) + 3, k(p.y) + 5, k(PINBALL_BUMPER_RADIUS_V6) + 5, 0, Math.PI * 2); ctx.fill();
   }
   // The dot-matrix display (with its housing) is drawn per frame by drawDmd, wherever there is room.
 }
@@ -234,10 +238,10 @@ function arrowLamp(ctx: CanvasRenderingContext2D, x: number, y: number, angle: n
   ctx.restore();
 }
 
-function flipper(ctx: CanvasRenderingContext2D, s: PinballStateV5, side: "left" | "right") {
+function flipper(ctx: CanvasRenderingContext2D, s: PinballStateV6, side: "left" | "right") {
   const angle = side === "left" ? s.left : s.right,
     held = side === "left" ? s.leftHeld : s.rightHeld,
-    tip = pinballFlipperTipV5(side, angle);
+    tip = pinballFlipperTipV6(side, angle);
   const px = k(tip.pivot.x), py = k(tip.pivot.y), tx = k(tip.x), ty = k(tip.y);
   const len = Math.hypot(tx - px, ty - py) || 1, nx = -(ty - py) / len, ny = (tx - px) / len;
   const bat = (ox: number, oy: number) => {
@@ -267,7 +271,7 @@ function flipper(ctx: CanvasRenderingContext2D, s: PinballStateV5, side: "left" 
   ctx.restore();
 }
 
-function drawBall(ctx: CanvasRenderingContext2D, s: PinballStateV5) {
+function drawBall(ctx: CanvasRenderingContext2D, s: PinballStateV6) {
   const b = s.ball, x = k(b.x), y = k(b.y);
   const sp = Math.hypot(b.vx, b.vy);
   if (sp > 220000) {
@@ -298,6 +302,7 @@ const CALLOUT_KEYS = {
   FLICK: ["pinball.flick", "#d5f3ff"],
   MISSION: ["pinball.mission", "#9fffb8"], EXTRATIME: ["pinball.extraTime", "#7cffd8"], HURRY: ["pinball.hurry", "#ffd36a"],
   HURRYGO: ["pinball.hurryGo", "#ffe082"], SAVED: ["pinball.saved", "#8fe3ff"], FRENZY: ["pinball.frenzy", "#ff6fd8"],
+  RAIL: ["pinball.rail", "#9fe8ff"], WORMHOLE: ["pinball.wormhole", "#c79bff"],
 } as const;
 /** Call-out text in the active language (A-B-C is the same everywhere). */
 const CALLOUTS = new Proxy({} as Record<string, [string, string] | undefined>, {
@@ -307,7 +312,7 @@ const CALLOUTS = new Proxy({} as Record<string, [string, string] | undefined>, {
     return [entry[0] ? tx(entry[0] as MessageKey) : "A-B-C", entry[1]];
   },
 });
-const BIG = new Set(["SKILL", "JACKPOT", "DROPS", "BONUS", "DRAIN", "MISSION", "EXTRATIME", "HURRYGO", "SAVED", "FRENZY"]);
+const BIG = new Set(["SKILL", "JACKPOT", "DROPS", "BONUS", "DRAIN", "MISSION", "EXTRATIME", "HURRYGO", "SAVED", "FRENZY", "WORMHOLE"]);
 
 /** Score display: always above the table, in the strip reserved by topInset (it grows when there is more room). */
 const DMD_INSET = 54;
@@ -316,7 +321,7 @@ function dmdBox(top: number) {
   const h = headroom >= 64 ? 48 : 42;
   return { y: -h - 6, h, big: true };
 }
-function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV5, top = 0) {
+function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV6, top = 0) {
   const { y: y0, h, big } = dmdBox(top), cy = y0 + h / 2;
   ctx.save();
   // Bezel.
@@ -353,7 +358,7 @@ function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV5, top = 0) {
     ctx.fillStyle = secs <= 10 && Math.floor(s.tick / 30) % 2 === 0 ? "#ff4a2a" : "#ff9a1f";
     ctx.fillText(`${secs}s`, 362, cy - h * 0.23);
     ctx.fillStyle = "#ff9a1f";
-    const frenzy = pinballFrenzyV5(s);
+    const frenzy = pinballFrenzyV6(s);
     ctx.fillText(frenzy ? `×${s.multiplier}×2` : `×${s.multiplier}`, 362, cy + h * 0.24);
     // Extra-time tokens earned (missions), centre of the display.
     for (let i = 0; i < R.maxExtraTimes; i++) {
@@ -373,7 +378,65 @@ function drawDmd(ctx: CanvasRenderingContext2D, s: PinballStateV5, top = 0) {
   ctx.restore();
 }
 
-function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?: number }) {
+/** Habitrail: shadow, translucent acrylic tube and two chrome rails following the passage path. */
+function habitrail(ctx: CanvasRenderingContext2D, tube: number, t: number, lit: boolean, ridingD: number) {
+  const path = PINBALL_TUBES_V6[tube].path.map((p) => ({ x: k(p.x), y: k(p.y) }));
+  const trace = (dx: number, dy: number) => { ctx.beginPath(); path.forEach((p, i) => (i ? ctx.lineTo(p.x + dx, p.y + dy) : ctx.moveTo(p.x + dx, p.y + dy))); };
+  ctx.save();
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  trace(5, 8); ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 16; ctx.stroke();
+  trace(0, 0); ctx.strokeStyle = lit ? "rgba(140,230,255,.32)" : "rgba(160,200,255,.14)"; ctx.lineWidth = 16; ctx.stroke();
+  for (const off of [-6.5, 6.5]) {
+    ctx.beginPath();
+    path.forEach((p, i) => {
+      const q = path[Math.min(path.length - 1, i + 1)], o = path[Math.max(0, i - 1)];
+      const dx = q.x - o.x, dy = q.y - o.y, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+      i ? ctx.lineTo(p.x + nx * off, p.y + ny * off) : ctx.moveTo(p.x + nx * off, p.y + ny * off);
+    });
+    ctx.strokeStyle = "#5f7387"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.strokeStyle = "#e9f2fb"; ctx.lineWidth = 1.2; ctx.stroke();
+  }
+  // Chase lights along the rail when it was just used (or while riding).
+  if (lit) {
+    for (let i = 0; i < 24; i++) {
+      const d = ((i / 24) * 1 + t * 0.01) % 1;
+      const p = pinballTubePointV6(tube, Math.round(d * pinballTubeLengthV6(tube)));
+      ctx.fillStyle = i % 2 ? "#9fe8ff" : "#ffffff";
+      ctx.globalAlpha = 0.5 + 0.5 * Math.sin(t * 0.3 + i);
+      ctx.beginPath(); ctx.arc(k(p.x), k(p.y), 1.6, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  if (ridingD >= 0) {
+    const p = pinballTubePointV6(tube, ridingD);
+    ctx.fillStyle = "rgba(160,235,255,.5)"; ctx.shadowColor = "#9fe8ff"; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.arc(k(p.x), k(p.y), 11, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+/** Wormhole scoop: rotating spiral vortex with a lamp ring. */
+function wormhole(ctx: CanvasRenderingContext2D, t: number, active: boolean) {
+  const x = k(PINBALL_WORMHOLE_V6.x), y = k(PINBALL_WORMHOLE_V6.y), r = k(PINBALL_WORMHOLE_V6.r) + 6;
+  ctx.save();
+  const g = ctx.createRadialGradient(x, y, 1, x, y, r + 6);
+  g.addColorStop(0, "#000"); g.addColorStop(0.55, "#2a0f5a"); g.addColorStop(1, "rgba(120,80,255,0)");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r + 6, 0, Math.PI * 2); ctx.fill();
+  ctx.translate(x, y); ctx.rotate(t * (active ? 0.25 : 0.06));
+  for (let arm = 0; arm < 4; arm++) {
+    ctx.rotate(Math.PI / 2);
+    ctx.strokeStyle = arm % 2 ? "rgba(199,155,255,.8)" : "rgba(127,227,238,.8)"; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let q = 0; q <= 20; q++) { const a = q * 0.18, rr = 2 + q * (r / 20); q ? ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : ctx.moveTo(0, 0); }
+    ctx.stroke();
+  }
+  ctx.restore();
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    lamp(ctx, x + Math.cos(a) * (r + 7), y + Math.sin(a) * (r + 7), 2, "#c79bff", active || (Math.floor(t / 6) + i) % 5 === 0, 8);
+  }
+}
+
+function render(ctx: CanvasRenderingContext2D, s: PinballStateV6, view?: { top?: number }) {
   drawSpaceBackdrop(ctx, W, H, s.tick * 0.02, s.tick);
   ctx.drawImage(staticArt(ctx, s.layout), 0, 0, W, H);
   const t = s.tick, idle = s.phase !== "play";
@@ -393,14 +456,14 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
 
   // Rollover lanes A-B-C with skill-shot flashing.
   const skillOpen = s.launchTick >= 0 && !s.skillDone && t - s.launchTick <= R.skillWindowTicks;
-  PINBALL_LANES_V5.forEach((l, i) => {
+  PINBALL_LANES_V6.forEach((l, i) => {
     const nextSkill = s.phase === "lane" && !s.skillDone && s.launches % 3 === i;
     const skill = (skillOpen && s.skillLane === i) || nextSkill;
     lamp(ctx, k(l.x), k(l.y), 8, skill ? "#ffe082" : "#7cffb0", s.lanes[i] > 0 || (skill && chase % 2 === 0) || (idle && (chase + i) % 3 === 0 && s.launchTick < 0));
   });
   // Spinner: striped plate whose visible width follows the spin counter.
   {
-    const sp = PINBALL_SPINNER_V5, cx = k(sp.x0 + sp.x1) / 2, cy = k(sp.y0 + sp.y1) / 2, a = s.spins * 1.1;
+    const sp = PINBALL_SPINNER_V6, cx = k(sp.x0 + sp.x1) / 2, cy = k(sp.y0 + sp.y1) / 2, a = s.spins * 1.1;
     ctx.strokeStyle = "rgba(200,220,255,.35)"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(cx - 26, cy - 10); ctx.lineTo(cx + 26, cy - 10); ctx.stroke();
     const w = 24 * Math.abs(Math.cos(a)), hgt = 5 + 5 * Math.abs(Math.sin(a));
@@ -413,7 +476,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
   }
   // Saucer with chasing ring lamps when lit.
   {
-    const c = PINBALL_SAUCER_V5, cx = k(c.x), cy = k(c.y);
+    const c = PINBALL_SAUCER_V6, cx = k(c.x), cy = k(c.y);
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
       lamp(ctx, cx + Math.cos(a) * 22, cy + Math.sin(a) * 22, 2.6, "#ffd36a", s.saucerLit > 0 && (chase + i) % 4 < 2, 8);
@@ -431,14 +494,14 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
   arrowLamp(ctx, 296, 168, -0.6, "#ffd36a", s.saucerLit > 0 && chase % 2 === 0);
 
   // Stand-up targets: coloured faces with an insert lamp beside each.
-  PINBALL_TARGETS_V5.forEach((tg, i) => {
+  PINBALL_TARGETS_V6.forEach((tg, i) => {
     const hit = s.targets[i] > 0, ax = k(tg.ax), ay = k(tg.ay), by = k(tg.by);
     ctx.fillStyle = hit ? "#ffd36a" : "#e2374f";
     ctx.fillRect(ax - 1, ay, 7, by - ay);
     ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.fillRect(ax + 4, ay + 2, 1.5, by - ay - 4);
     lamp(ctx, ax + 20, (ay + by) / 2, 4, "#ffd36a", hit);
   });
-  PINBALL_RTARGETS_V5.forEach((tg, i) => {
+  PINBALL_RTARGETS_V6.forEach((tg, i) => {
     const hit = s.rTargets[i] > 0, ax = k(tg.ax), ay = k(tg.ay), by = k(tg.by);
     ctx.fillStyle = hit ? "#ffd36a" : "#3a8dff";
     ctx.fillRect(ax - 6, ay, 7, by - ay);
@@ -446,7 +509,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
     lamp(ctx, ax - 20, (ay + by) / 2, 4, "#5ad1ff", hit);
   });
   // Drop-target bank: raised blocks; a dropped one leaves a slot and lights its lamp.
-  PINBALL_DROPS_V5.forEach((w, i) => {
+  PINBALL_DROPS_V6.forEach((w, i) => {
     const ax = k(w.ax), ay = k(w.ay), bx = k(w.bx), by = k(w.by), age = t - s.dropFlash[i];
     const down = s.drops[i] > 0;
     if (down) {
@@ -477,8 +540,8 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
   }
 
   // Pop bumpers: skirt ring, coloured body, white star cap; flash + shock ring when hit.
-  pinballBumpersV5(s.layout).forEach((p, i) => {
-    const x = k(p.x), y = k(p.y), r = k(PINBALL_BUMPER_RADIUS_V5);
+  pinballBumpersV6(s.layout).forEach((p, i) => {
+    const x = k(p.x), y = k(p.y), r = k(PINBALL_BUMPER_RADIUS_V6);
     const age = t - s.bumperFlash[i], lit = age >= 0 && age < 14;
     const [hi, lo] = BUMPER_COLORS[i % BUMPER_COLORS.length];
     ctx.fillStyle = "#11182a";
@@ -513,7 +576,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
     }
   });
   // Kickers (slings): black rubber ring, chrome post, lamp that flashes on a kick.
-  PINBALL_SLINGS_V5.forEach((p, i) => {
+  PINBALL_SLINGS_V6.forEach((p, i) => {
     const x = k(p.x), y = k(p.y), age = t - s.slingFlash[i], lit = age >= 0 && age < 10;
     ctx.fillStyle = "#0b0b0f";
     ctx.beginPath(); ctx.arc(x, y, k(p.r) + 2, 0, Math.PI * 2); ctx.fill();
@@ -521,7 +584,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
     ctx.fillStyle = "#dfe9f3";
     ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
   });
-  for (const p of PINBALL_POSTS_V5) {
+  for (const p of PINBALL_POSTS_V6) {
     const x = k(p.x), y = k(p.y);
     ctx.fillStyle = "#0b0b0f"; ctx.beginPath(); ctx.arc(x, y, k(p.r) + 2, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#dfe9f3"; ctx.beginPath(); ctx.arc(x, y, k(p.r) - 1.5, 0, Math.PI * 2); ctx.fill();
@@ -575,7 +638,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
     ctx.textBaseline = "alphabetic";
   }
   // Frenzy: the whole table pulses and every point counts double.
-  if (pinballFrenzyV5(s) && s.status === "running") {
+  if (pinballFrenzyV6(s) && s.status === "running") {
     const pulse = 0.5 + 0.5 * Math.sin(t * 0.25);
     ctx.save();
     tableOutline(ctx);
@@ -586,12 +649,27 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
     ctx.restore();
   }
 
+  // Passages: the wormhole scoop and the two habitrails over the table.
+  wormhole(ctx, t, s.tube === 2);
+  if (s.tube === 2) {
+    // Underground: a glowing pulse travels the tunnel instead of the ball.
+    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(199,155,255,.55)"; ctx.lineWidth = 3;
+    ctx.beginPath(); PINBALL_TUBES_V6[2].path.forEach((p, i) => (i ? ctx.lineTo(k(p.x), k(p.y)) : ctx.moveTo(k(p.x), k(p.y)))); ctx.stroke();
+    ctx.restore();
+    const p = pinballTubePointV6(2, s.tubeD);
+    ctx.fillStyle = "rgba(199,155,255,.85)"; ctx.shadowColor = "#c79bff"; ctx.shadowBlur = 18;
+    ctx.beginPath(); ctx.arc(k(p.x), k(p.y), 7, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+  }
+  const lastRail = (tube: number) => s.feed.some((e) => (e.kind === "RAIL" || e.kind === (tube ? "ORBIT" : "RAMP")) && t - e.tick < 90);
+  habitrail(ctx, 0, t, s.tube === 0 || lastRail(0), s.tube === 0 ? s.tubeD : -1);
+  habitrail(ctx, 1, t, s.tube === 1 || lastRail(1), s.tube === 1 ? s.tubeD : -1);
+
   flipper(ctx, s, "left");
   flipper(ctx, s, "right");
 
   // Shooter lane: power lamps and a spring plunger that compresses with the charge.
   {
-    const level = pinballChargeLevelV5(s.charge), charging = s.phase === "lane" && s.chargeHeld;
+    const level = pinballChargeLevelV6(s.charge), charging = s.phase === "lane" && s.chargeHeld;
     for (let i = 0; i < R.maxChargeLevel; i++) {
       const on = charging ? i < level : s.phase === "lane" && (chase + i) % R.maxChargeLevel === 0;
       lamp(ctx, 359, 556 - i * 18, 3.2, i >= R.maxChargeLevel - 2 ? "#7cffb0" : "#ffcf4a", on, 8);
@@ -610,7 +688,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
     ctx.beginPath(); ctx.roundRect(354, 612 + pull * 0.4, 10, 8, 2); ctx.fill();
   }
 
-  if (s.phase !== "waiting") drawBall(ctx, s);
+  if (s.phase !== "waiting" && s.tube !== 2) drawBall(ctx, s);
 
   // Event bursts, floating points and big call-outs from the deterministic feed.
   for (const ev of s.feed) {
@@ -665,7 +743,7 @@ function render(ctx: CanvasRenderingContext2D, s: PinballStateV5, view?: { top?:
   }
 }
 
-function pointAction(point: CorePoint, phase: "down" | "move" | "up", s: PinballStateV5) {
+function pointAction(point: CorePoint, phase: "down" | "move" | "up", s: PinballStateV6) {
   if (phase === "move" || point.y > 540) return null;
   const left = point.x < 195;
   if (phase === "down") return left ? "FLIP_LEFT_PRESS" : "FLIP_RIGHT_PRESS";
@@ -690,7 +768,7 @@ const controls = [
   { action: "FLIP_RIGHT_PRESS", releaseAction: "FLIP_RIGHT_RELEASE", get label() { return tx("pinball.rightFlipper"); }, symbol: "▶", style: { width: 104 } },
 ] as const;
 const inputTones = { PLUNGER_RELEASE: "tap", FLIP_LEFT_PRESS: "tap", FLIP_RIGHT_PRESS: "tap" } as const;
-const hudLabel = (s: Readonly<PinballStateV5>) => tx("pinball.hud", { secs: Math.max(0, Math.ceil((s.endTick - s.tick) / PINBALL_RULES_V5.tickRate)), mult: s.multiplier });
+const hudLabel = (s: Readonly<PinballStateV6>) => tx("pinball.hud", { secs: Math.max(0, Math.ceil((s.endTick - s.tick) / PINBALL_RULES_V6.tickRate)), mult: s.multiplier });
 
 export default function PinballVerified(props: GameRuntimeProps) {
   useI18n();
@@ -698,7 +776,7 @@ export default function PinballVerified(props: GameRuntimeProps) {
     <div className="pinballVerified">
       <CoreCanvasGame
         {...props}
-        core={PINBALL_CORE_V5}
+        core={PINBALL_CORE_V6}
         name="Pinball"
         render={render}
         pointAction={pointAction}

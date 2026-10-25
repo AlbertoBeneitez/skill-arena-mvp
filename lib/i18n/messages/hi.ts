@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "दिशा जॉयस्टिक",
   "joystick.stop": "हिलना रोकें",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "सुडोकू का एक कोना: तीन वर्ग, पाँच पहेलियाँ।",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "सुडोकू की दो भुजाएँ: पाँच वर्ग, तीन पहेलियाँ।",
   "gameMeta.corner-sudoku.skill": "तर्क + गति",
   "sudoku.progress": "सुडोकू {n}/{total}",
   "sudoku.mistakes": "गलतियाँ {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "कमाई कैसे बढ़ी · {name}",
   "ranking.fictitiousRange": "काल्पनिक राशि · 0 से {amount} तक",
   "rules.p5": "लीग (सिम्युलेटेड प्रतिद्वंद्वी): हर गेम की अपनी लीग है, कांस्य से हीरा तक। एक सीरीज़ में आपके स्तर के प्रतिद्वंद्वियों के खिलाफ़ 5 मैच होते हैं: 3 या अधिक जीत पर आप ऊपर जाते हैं; 1 या कम पर नीचे।",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "ऑर्बिटल लेन पर दस फ़्रेम। स्ट्राइक का लक्ष्य रखें।",
   "gameMeta.bowling.skill": "निशाना + स्पिन",
   "bowling.strike": "स्ट्राइक!",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "गेंद बची!",
   "pinball.frenzy": "फ्रेंज़ी ×2!",
   "pinball.hurryValue": "हरी {n}",
+  "pinball.rail": "रेल!",
+  "pinball.wormhole": "वर्महोल!",
 };
 
 export default messages;

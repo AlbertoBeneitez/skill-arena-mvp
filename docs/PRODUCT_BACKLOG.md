@@ -573,3 +573,7 @@ Ruleta 10 con rotor escalonado, huecos hundidos y trastes sólidos que giran con
 ## v114-saturn · Catálogo rápido, Galakdoku, Pinball 5 y Shot Gallery por tiempo (25-oct-2026)
 
 Las portadas pasan a WebP y el código de los juegos se descarga en segundo plano (el bloqueo del catálogo baja de 5,7 s a 1,2 s con la CPU ralentizada ×4). Galakdoku (`corner-sudoku@2.0.0`, tres cuadrados y teclado 3×3), Pinball 5 (mesa fija y determinista, misiones con tiempo extra, hurry-up, bola salvada y frenesí) y Shot Gallery 10 (puntuación = tiempo de reacción acumulado, menos es mejor; nueva métrica `reaction-time-ms`). Detalle: [releases/v114-saturn.md](releases/v114-saturn.md).
+
+## v115-saturn · Galoku, Bowling, Pinball 6, Shot Gallery 11 y portadas a sangre (25-oct-2026)
+
+Galoku (`corner-sudoku@3.0.0`: cinco cuadrados y tres retos), Bowling con bolos quietos y varias celebraciones aleatorias para plenos y semiplenos, Pinball 6 (raíles, agujero de gusano y desatasco determinista), Shot Gallery 11 (lona con 12 ventanas que se abren al empezar, dianas grandes, sin semáforo ni balas) y portadas 16:11 a sangre. Detalle: [releases/v115-saturn.md](releases/v115-saturn.md).

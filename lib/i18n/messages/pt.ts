@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "Joystick de direção",
   "joystick.stop": "Parar movimento",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "O canto de um sudoku: três quadrados, cinco desafios.",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "Dois lados de um sudoku: cinco quadrados, três desafios.",
   "gameMeta.corner-sudoku.skill": "LÓGICA + RAPIDEZ",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Erros {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "Como vem ganhando · {name}",
   "ranking.fictitiousRange": "Valores fictícios · de 0 a {amount}",
   "rules.p5": "Ligas (rivais simulados): cada jogo tem sua liga, do Bronze ao Diamante. Uma série são 5 partidas contra rivais do seu nível: com 3 ou mais vitórias você sobe; com 1 ou menos você cai.",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "Dez frames numa pista orbital. Busque o strike.",
   "gameMeta.bowling.skill": "MIRA + EFEITO",
   "bowling.strike": "STRIKE!",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "BOLA SALVA!",
   "pinball.frenzy": "FRENESI ×2!",
   "pinball.hurryValue": "HURRY {n}",
+  "pinball.rail": "TRILHO!",
+  "pinball.wormhole": "BURACO DE MINHOCA!",
 };
 
 export default messages;

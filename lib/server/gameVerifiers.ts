@@ -22,8 +22,10 @@ import { PINBALL_CORE_V2 } from "../verified/pinballCore.v2";
 import { PINBALL_CORE_V3 } from "../verified/pinballCore.v3";
 import { PINBALL_CORE_V4 } from "../verified/pinballCore.v4";
 import { PINBALL_CORE_V5 } from "../verified/pinballCore.v5";
+import { PINBALL_CORE_V6 } from "../verified/pinballCore.v6";
 import { CORNER_SUDOKU_CORE_V1 } from "../verified/cornerSudokuCore.v1";
 import { CORNER_SUDOKU_CORE_V2 } from "../verified/cornerSudokuCore.v2";
+import { CORNER_SUDOKU_CORE_V3 } from "../verified/cornerSudokuCore.v3";
 import { BOWLING_CORE_V1 } from "../verified/bowlingCore.v1";
 import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
@@ -36,6 +38,7 @@ import { SHOT_GALLERY_CORE_V7 } from "../verified/shotGalleryCore.v7";
 import { SHOT_GALLERY_CORE_V8 } from "../verified/shotGalleryCore.v8";
 import { SHOT_GALLERY_CORE_V9 } from "../verified/shotGalleryCore.v9";
 import { SHOT_GALLERY_CORE_V10 } from "../verified/shotGalleryCore.v10";
+import { SHOT_GALLERY_CORE_V11 } from "../verified/shotGalleryCore.v11";
 import { DARTS_CORE_V3 } from "../verified/dartsCore.v3";
 import { DARTS_CORE_V2 } from "../verified/dartsCore.v2";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
@@ -271,8 +274,10 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PINBALL_CORE_V3.gameId, PINBALL_CORE_V3.gameVersion)]: coreAdapter(PINBALL_CORE_V3),
   [adapterKey(PINBALL_CORE_V4.gameId, PINBALL_CORE_V4.gameVersion)]: coreAdapter(PINBALL_CORE_V4),
   [adapterKey(PINBALL_CORE_V5.gameId,PINBALL_CORE_V5.gameVersion)]: coreAdapter(PINBALL_CORE_V5),
+  [adapterKey(PINBALL_CORE_V6.gameId,PINBALL_CORE_V6.gameVersion)]: coreAdapter(PINBALL_CORE_V6),
   [adapterKey(CORNER_SUDOKU_CORE_V1.gameId, CORNER_SUDOKU_CORE_V1.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V1),
   [adapterKey(CORNER_SUDOKU_CORE_V2.gameId, CORNER_SUDOKU_CORE_V2.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V2),
+  [adapterKey(CORNER_SUDOKU_CORE_V3.gameId, CORNER_SUDOKU_CORE_V3.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V3),
   [adapterKey(BOWLING_CORE_V1.gameId, BOWLING_CORE_V1.gameVersion)]: coreAdapter(BOWLING_CORE_V1),
   [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),
@@ -285,6 +290,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(SHOT_GALLERY_CORE_V8.gameId,SHOT_GALLERY_CORE_V8.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V8),
   [adapterKey(SHOT_GALLERY_CORE_V9.gameId,SHOT_GALLERY_CORE_V9.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V9),
   [adapterKey(SHOT_GALLERY_CORE_V10.gameId,SHOT_GALLERY_CORE_V10.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V10),
+  [adapterKey(SHOT_GALLERY_CORE_V11.gameId,SHOT_GALLERY_CORE_V11.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V11),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(DARTS_CORE_V3.gameId,DARTS_CORE_V3.gameVersion)]: coreAdapter(DARTS_CORE_V3),

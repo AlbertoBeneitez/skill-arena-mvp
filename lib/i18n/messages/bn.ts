@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "দিক নির্দেশক জয়স্টিক",
   "joystick.stop": "চলা থামান",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "সুডোকুর এক কোণ: তিনটি বর্গ, পাঁচটি ধাঁধা।",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "সুডোকুর দুটি বাহু: পাঁচটি বর্গ, তিনটি ধাঁধা।",
   "gameMeta.corner-sudoku.skill": "যুক্তি + গতি",
   "sudoku.progress": "সুডোকু {n}/{total}",
   "sudoku.mistakes": "ভুল {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "আয় কীভাবে বেড়েছে · {name}",
   "ranking.fictitiousRange": "কাল্পনিক অঙ্ক · 0 থেকে {amount}",
   "rules.p5": "লিগ (সিমুলেটেড প্রতিদ্বন্দ্বী): প্রতিটি গেমের নিজস্ব লিগ আছে, ব্রোঞ্জ থেকে হীরা পর্যন্ত। একটি সিরিজে আপনার স্তরের প্রতিদ্বন্দ্বীদের সঙ্গে 5টি ম্যাচ: 3 বা তার বেশি জয়ে উন্নীত; 1 বা কম জয়ে অবনমন।",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "অরবিটাল লেনে দশটি ফ্রেম। স্ট্রাইকের লক্ষ্য নিন।",
   "gameMeta.bowling.skill": "নিশানা + স্পিন",
   "bowling.strike": "স্ট্রাইক!",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "বল বাঁচল!",
   "pinball.frenzy": "উন্মাদনা ×2!",
   "pinball.hurryValue": "হারি {n}",
+  "pinball.rail": "রেল!",
+  "pinball.wormhole": "ওয়ার্মহোল!",
 };
 
 export default messages;

@@ -9,7 +9,6 @@ import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
 import { ORB_ACTIONS_V6 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v6";
 import { PINBALL_ACTIONS_V3 } from "./verified/pinballProtocol.v3";
 import { CORNER_SUDOKU_ACTIONS_V1 } from "./verified/cornerSudokuProtocol.v1";
-import { CORNER_SUDOKU_ACTIONS_V2 } from "./verified/cornerSudokuProtocol.v2";
 import { BOWLING_ACTIONS_V1 } from "./verified/bowlingProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
@@ -273,7 +272,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "10.0.0",
+    version: "11.0.0",
     resultMetric: "reaction-time-ms",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
@@ -289,13 +288,13 @@ const GAME_DEFINITIONS = [
     rivalScore: 15000,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Espera a la luz verde y dispara a las placas que tienen el color y la figura de la orden.",
-    scoring: "Doce órdenes que combinan un color y una figura, con 2 a 4 placas fijas por orden. La puntuación es tu tiempo de reacción acumulado (menos es mejor): cada acierto suma el tiempo desde la luz verde o desde el acierto anterior; una placa equivocada suma 400 ms, anticiparse 600 ms y cada placa que quede en pie 1500 ms.",
+    instruction: "Cuando se abre la lona, dispara a las dianas que tienen el color y la figura de la orden.",
+    scoring: "Doce órdenes que combinan un color y una figura. Una lona con doce ventanas se abre al empezar cada orden y descubre de 8 a 12 dianas, 2 a 4 de ellas buenas. La puntuación es tu tiempo de reacción acumulado (menos es mejor): cada acierto suma el tiempo desde que se abre la lona o desde el acierto anterior; una diana equivocada suma 400 ms, disparar antes de que se abra 600 ms y cada diana buena que quede en pie 1500 ms.",
   },
 
   {
     id: "pinball",
-    version: "5.0.0",
+    version: "6.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },
@@ -311,7 +310,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Una bola y 60 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 90 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
+    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Pasadizos: la rampa y la órbita suben a raíles que cruzan la mesa por arriba y dejan la bola en el carril contrario; el agujero de gusano la lleva por un túnel hasta arriba a la izquierda; cada pasadizo hace siempre el mismo recorrido. Si la bola se queda parada recibe siempre el mismo empujón hacia el centro. Una bola y 60 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 90 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor.",
   },
   {
     id: "bowling",
@@ -319,7 +318,7 @@ const GAME_DEFINITIONS = [
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Bowling")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BOWLING_ACTIONS_V1 },
-    name: "Galactic Bowling",
+    name: "Bowling",
     cover: "/covers/bowling.webp",
     enabled: true,
     waitingStakes: [1, 5],
@@ -335,23 +334,23 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "corner-sudoku",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/CornerSudoku")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: CORNER_SUDOKU_ACTIONS_V2 },
-    name: "Galakdoku",
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: CORNER_SUDOKU_ACTIONS_V1 },
+    name: "Galoku",
     cover: "/covers/corner-sudoku.webp",
     enabled: true,
     waitingStakes: [1, 5],
     category: "LÓGICA",
-    tagline: "La esquina de un sudoku: tres cuadrados, cinco retos.",
+    tagline: "Dos lados de un sudoku: cinco cuadrados, tres retos.",
     difficulty: "MEDIA",
     skillLabel: "LÓGICA + RAPIDEZ",
     rivalScore: 4500,
     rivalName: "SAGE",
     rivalAvatar: "/avatars/avatar-5.svg",
     instruction: "",
-    scoring: "Cinco retos por partida con la esquina de un sudoku: el cuadrado de la esquina, el de su derecha y el de debajo. Cada cuadrado lleva del 1 al 9 y ningún número se repite en las tres filas de arriba ni en las tres columnas de la izquierda. Cada número correcto suma 20; uno erróneo se rechaza y resta 50; cinco errores terminan la partida. Al resolver un sudoku: 400 más bonus por rapidez. Ocho minutos. Replay de servidor.",
+    scoring: "Tres retos por partida con dos lados de un sudoku: la fila de cuadrados de arriba y la columna de la izquierda, que comparten la esquina (cinco cuadrados). Cada cuadrado, cada una de las tres filas de arriba y cada una de las tres columnas de la izquierda llevan del 1 al 9. Cada número correcto suma 20; uno erróneo se rechaza y resta 50; cinco errores terminan la partida. Al resolver un reto: 400 más bonus por rapidez. Seis minutos. Replay de servidor.",
   },
 
 ] as const satisfies readonly GameDefinition[];

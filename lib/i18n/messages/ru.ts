@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "Джойстик направления",
   "joystick.stop": "Остановить движение",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "Угол судоку: три квадрата, пять задач.",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "Две стороны судоку: пять квадратов, три задачи.",
   "gameMeta.corner-sudoku.skill": "ЛОГИКА + СКОРОСТЬ",
   "sudoku.progress": "Судоку {n}/{total}",
   "sudoku.mistakes": "Ошибки {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "Как рос выигрыш · {name}",
   "ranking.fictitiousRange": "Условные суммы · от 0 до {amount}",
   "rules.p5": "Лиги (имитация соперников): у каждой игры своя лига — от бронзы до бриллианта. Серия — 5 матчей против соперников вашего уровня: 3 победы и больше — повышение; 1 и меньше — понижение.",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "Десять фреймов на орбитальной дорожке. Цель — страйк.",
   "gameMeta.bowling.skill": "ТОЧНОСТЬ + ВРАЩЕНИЕ",
   "bowling.strike": "СТРАЙК!",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "ШАР СПАСЁН!",
   "pinball.frenzy": "БЕЗУМИЕ ×2!",
   "pinball.hurryValue": "ДЖЕКПОТ {n}",
+  "pinball.rail": "РЕЛЬС!",
+  "pinball.wormhole": "ЧЕРВОТОЧИНА!",
 };
 
 export default messages;

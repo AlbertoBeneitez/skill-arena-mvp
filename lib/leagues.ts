@@ -40,7 +40,7 @@ const REFERENCE: Record<string, number> = {
   "precision-stack": 600000,
   "reaction-test": 15000, // accumulated ms (lower is better)
   pinball: 40000,
-  "corner-sudoku": 4500,
+  "corner-sudoku": 3200,
   bowling: 180,
 };
 /** Score caps: the target never exceeds what a perfect run can reach. */

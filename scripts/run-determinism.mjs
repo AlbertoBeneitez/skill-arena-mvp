@@ -36,8 +36,10 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-pinball-v3.js");
   await import("../.det-test/scripts/verify-pinball-v4.js");
   await import("../.det-test/scripts/verify-pinball-v5.js");
+  await import("../.det-test/scripts/verify-pinball-v6.js");
   await import("../.det-test/scripts/verify-corner-sudoku-v1.js");
   await import("../.det-test/scripts/verify-corner-sudoku-v2.js");
+  await import("../.det-test/scripts/verify-corner-sudoku-v3.js");
   await import("../.det-test/scripts/verify-leagues.js");
   await import("../.det-test/scripts/verify-orb-v6.js");
   await import("../.det-test/scripts/verify-orb-v7.js");
@@ -74,6 +76,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-gallery-v8.js");
   await import("../.det-test/scripts/verify-gallery-v9.js");
   await import("../.det-test/scripts/verify-gallery-v10.js");
+  await import("../.det-test/scripts/verify-gallery-v11.js");
   await import("../.det-test/scripts/verify-solitaire-solvable.js");
   await import("../.det-test/scripts/verify-progression.js");
   await (await import("./verify-gallery-presentation.cjs")).default;

@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "Direction joystick",
   "joystick.stop": "Stop moving",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "The corner of a sudoku: three boxes, five puzzles.",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "Two sides of a sudoku: five boxes, three puzzles.",
   "gameMeta.corner-sudoku.skill": "LOGIC + SPEED",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Mistakes {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "How they have been earning · {name}",
   "ranking.fictitiousRange": "Fictitious amounts · from 0 to {amount}",
   "rules.p5": "Leagues (simulated rivals): each game has its own league, from Bronze to Diamond. A series is 5 matches against rivals of your tier: 3 or more wins promote you; 1 or fewer relegate you.",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "Ten frames on an orbital lane. Go for the strike.",
   "gameMeta.bowling.skill": "AIM + SPIN",
   "bowling.strike": "STRIKE!",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "BALL SAVED!",
   "pinball.frenzy": "FRENZY ×2!",
   "pinball.hurryValue": "HURRY {n}",
+  "pinball.rail": "RAIL!",
+  "pinball.wormhole": "WORMHOLE!",
 };
 
 export default messages;

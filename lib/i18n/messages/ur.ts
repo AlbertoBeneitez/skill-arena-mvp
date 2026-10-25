@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "سمت کا جوائے اسٹک",
   "joystick.stop": "حرکت روکیں",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "سوڈوکو کا ایک کونا: تین خانے، پانچ پہیلیاں۔",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "سوڈوکو کے دو کنارے: پانچ خانے، تین پہیلیاں۔",
   "gameMeta.corner-sudoku.skill": "منطق + رفتار",
   "sudoku.progress": "سوڈوکو {n}/{total}",
   "sudoku.mistakes": "غلطیاں {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "کمائی کیسے بڑھی · {name}",
   "ranking.fictitiousRange": "فرضی رقوم · 0 سے {amount} تک",
   "rules.p5": "لیگیں (فرضی حریف): ہر گیم کی اپنی لیگ ہے، کانسی سے ہیرا تک۔ ایک سیریز آپ کے درجے کے حریفوں کے خلاف 5 میچوں کی ہوتی ہے: 3 یا زیادہ جیت پر ترقی؛ 1 یا کم پر تنزلی۔",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "مداری لین پر دس فریم۔ اسٹرائیک کا ہدف رکھیں۔",
   "gameMeta.bowling.skill": "نشانہ + اسپن",
   "bowling.strike": "اسٹرائیک!",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "!گیند بچ گئی",
   "pinball.frenzy": "!جنون ×2",
   "pinball.hurryValue": "جیک پاٹ {n}",
+  "pinball.rail": "!ریل",
+  "pinball.wormhole": "!ورم ہول",
 };
 
 export default messages;

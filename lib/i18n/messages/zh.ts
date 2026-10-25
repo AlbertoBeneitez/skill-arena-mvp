@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "方向摇杆",
   "joystick.stop": "停止移动",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "数独的一角：三个宫，五道题。",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "数独的两条边：五个宫，三道题。",
   "gameMeta.corner-sudoku.skill": "逻辑 + 速度",
   "sudoku.progress": "数独 {n}/{total}",
   "sudoku.mistakes": "错误 {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "收益走势 · {name}",
   "ranking.fictitiousRange": "虚拟金额 · 从 0 到 {amount}",
   "rules.p5": "联赛（模拟对手）：每个游戏都有自己的联赛，从青铜到钻石。一个系列赛为 5 场，对手与你同级：赢 3 场或以上晋级；赢 1 场或以下降级。",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "轨道球道上的十轮比赛，冲击全中！",
   "gameMeta.bowling.skill": "瞄准 + 旋转",
   "bowling.strike": "全中！",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "球已保住！",
   "pinball.frenzy": "狂热 ×2！",
   "pinball.hurryValue": "大奖 {n}",
+  "pinball.rail": "轨道！",
+  "pinball.wormhole": "虫洞！",
 };
 
 export default messages;

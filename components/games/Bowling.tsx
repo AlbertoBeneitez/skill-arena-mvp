@@ -133,22 +133,19 @@ function drawLane(ctx: CanvasRenderingContext2D, v: View, tick: number) {
   if (near < 50) { const a = project(v, 0, 0), b = project(v, LANE_MM, 0); ctx.fillStyle = "#ff3b5c"; ctx.fillRect(a.x, a.y - 2, b.x - a.x, 3); }
 }
 
-type PinMood = { mood: "idle" | "scared" | "hit"; t: number; id: number };
+type PinFace = "plain" | "happy" | "dizzy" | "wow";
 const hash01 = (n: number) => { const q = Math.sin(n * 12.9898) * 43758.5453; return q - Math.floor(q); };
 
-/** Pin as a little character: eyes that blink and look at the ball, a mouth, scared shivers, dizzy when hit. */
-function drawPin(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, tilt: number, lift: number, face: PinMood = { mood: "idle", t: 0, id: 0 }) {
-  const h = 380 * KX * s, w = 121 * KX * s, { mood, t, id } = face;
-  // Idle: a soft bob and sway. Scared: a fast shiver.
-  const bob = mood === "idle" ? Math.max(0, Math.sin(t * 0.09 + id * 1.3)) * h * 0.035 : 0;
-  const sway = mood === "idle" ? Math.sin(t * 0.045 + id) * 0.05 : mood === "scared" ? Math.sin(t * 1.9 + id) * 0.07 : 0;
-  const squash = mood === "idle" ? 1 - Math.max(0, Math.sin(t * 0.09 + id * 1.3)) * 0.04 : 1;
+/**
+ * A pin. On the lane it is a plain, still pin (it only moves when the physics knocks it). Faces are used only in
+ * the strike / spare celebrations: happy (^ ^ and a smile), dizzy (× ×) or wow (round eyes, open mouth).
+ */
+function drawPin(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, tilt: number, lift: number, face: PinFace = "plain", shadow = true) {
+  const h = 380 * KX * s, w = 121 * KX * s;
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,.35)";
-  ctx.beginPath(); ctx.ellipse(x, y, w * 0.7, w * 0.25, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.translate(x, y - lift - bob);
-  ctx.rotate(tilt + sway);
-  ctx.scale(1 / squash, squash);
+  if (shadow) { ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.ellipse(x, y, w * 0.7, w * 0.25, 0, 0, Math.PI * 2); ctx.fill(); }
+  ctx.translate(x, y - lift);
+  ctx.rotate(tilt);
   const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
   g.addColorStop(0, "#aeb8c6"); g.addColorStop(0.42, "#ffffff"); g.addColorStop(1, "#8f9aab");
   ctx.fillStyle = g;
@@ -163,47 +160,20 @@ function drawPin(ctx: CanvasRenderingContext2D, x: number, y: number, s: number,
   ctx.fillStyle = "#e12d3f";
   ctx.fillRect(-w * 0.25, -h * 0.72, w * 0.5, Math.max(1, h * 0.035));
   ctx.fillRect(-w * 0.23, -h * 0.665, w * 0.46, Math.max(1, h * 0.035));
-  // Face.
-  const ey = -h * 0.875, ex = w * 0.11, er = Math.max(1.1, w * (mood === "scared" ? 0.1 : 0.085));
-  const blink = mood === "idle" && (t + Math.floor(hash01(id + 1) * 200)) % 220 < 7;
-  if (mood === "hit") {
-    ctx.strokeStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.8, w * 0.04);
+  if (face !== "plain") {
+    const ey = -h * 0.875, ex = w * 0.11, er = Math.max(1.1, w * 0.09);
+    ctx.strokeStyle = "#1b1f2e"; ctx.fillStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.8, w * 0.04); ctx.lineCap = "round";
     for (const side of [-1, 1]) {
       const cx = side * ex;
-      ctx.beginPath(); ctx.moveTo(cx - er, ey - er); ctx.lineTo(cx + er, ey + er); ctx.moveTo(cx + er, ey - er); ctx.lineTo(cx - er, ey + er); ctx.stroke();
+      if (face === "happy") { ctx.beginPath(); ctx.arc(cx, ey + er * 0.4, er, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
+      else if (face === "dizzy") { ctx.beginPath(); ctx.moveTo(cx - er, ey - er); ctx.lineTo(cx + er, ey + er); ctx.moveTo(cx + er, ey - er); ctx.lineTo(cx - er, ey + er); ctx.stroke(); }
+      else { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, ey, er * 1.15, er * 1.35, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "#1b1f2e"; ctx.beginPath(); ctx.arc(cx, ey + er * 0.2, er * 0.45, 0, Math.PI * 2); ctx.fill(); }
     }
-    ctx.beginPath(); ctx.ellipse(0, ey + h * 0.07, w * 0.08, h * 0.022, 0, 0, Math.PI * 2); ctx.stroke();
-  } else {
-    for (const side of [-1, 1]) {
-      const cx = side * ex;
-      if (blink) { ctx.strokeStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.8, w * 0.035); ctx.beginPath(); ctx.moveTo(cx - er, ey); ctx.lineTo(cx + er, ey); ctx.stroke(); continue; }
-      ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.ellipse(cx, ey, er, er * 1.2, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "rgba(27,31,46,.6)"; ctx.lineWidth = Math.max(0.5, w * 0.015); ctx.stroke();
-      // Pupils look down the lane toward the bowler; scared pupils shrink.
-      ctx.fillStyle = "#1b1f2e";
-      ctx.beginPath(); ctx.arc(cx, ey + er * 0.35, er * (mood === "scared" ? 0.35 : 0.55), 0, Math.PI * 2); ctx.fill();
-    }
-    if (mood === "scared") {
-      ctx.fillStyle = "#1b1f2e"; ctx.beginPath(); ctx.ellipse(0, ey + h * 0.075, w * 0.07, h * 0.03, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "rgba(127,227,238,.9)"; ctx.beginPath(); ctx.ellipse(w * 0.27, ey - h * 0.02, w * 0.04, w * 0.07, 0, 0, Math.PI * 2); ctx.fill();
-    } else {
-      ctx.strokeStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.7, w * 0.03);
-      ctx.beginPath(); ctx.arc(0, ey + h * 0.04, w * 0.09, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
-      ctx.fillStyle = "rgba(255,120,150,.45)";
-      for (const side of [-1, 1]) { ctx.beginPath(); ctx.arc(side * w * 0.21, ey + h * 0.045, w * 0.05, 0, Math.PI * 2); ctx.fill(); }
-    }
+    if (face === "happy") { ctx.beginPath(); ctx.arc(0, ey + h * 0.035, w * 0.11, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke(); ctx.fillStyle = "rgba(255,110,150,.5)"; for (const side of [-1, 1]) { ctx.beginPath(); ctx.arc(side * w * 0.22, ey + h * 0.045, w * 0.055, 0, Math.PI * 2); ctx.fill(); } }
+    else if (face === "dizzy") { ctx.beginPath(); ctx.moveTo(-w * 0.08, ey + h * 0.07); ctx.quadraticCurveTo(0, ey + h * 0.05, w * 0.08, ey + h * 0.075); ctx.stroke(); }
+    else { ctx.fillStyle = "#1b1f2e"; ctx.beginPath(); ctx.ellipse(0, ey + h * 0.075, w * 0.07, h * 0.032, 0, 0, Math.PI * 2); ctx.fill(); }
   }
   ctx.restore();
-  // Dizzy stars circling a knocked pin.
-  if (mood === "hit" && t < 160) {
-    for (let k = 0; k < 3; k++) {
-      const a = t * 0.15 + (k * Math.PI * 2) / 3, sx = x + Math.cos(a) * w * 0.55, sy = y - lift - h * 0.5 + Math.sin(a) * w * 0.18 - h * 0.2;
-      ctx.fillStyle = k % 2 ? "#ffd23f" : "#7fe3ee"; ctx.globalAlpha = Math.max(0, 1 - t / 160);
-      ctx.beginPath();
-      for (let q = 0; q < 10; q++) { const b = (q * Math.PI) / 5, r = (q % 2 ? 0.45 : 1) * Math.max(1.5, w * 0.12); q ? ctx.lineTo(sx + Math.cos(b) * r, sy + Math.sin(b) * r) : ctx.moveTo(sx + Math.cos(b) * r, sy + Math.sin(b) * r); }
-      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
-    }
-  }
 }
 
 function drawBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1) {
@@ -231,20 +201,17 @@ function drawBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1) {
 function drawPinsAndBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1) {
   type Item = { y: number; draw: () => void };
   const items: Item[] = [];
-  // The ball is "coming" once it is rolling and within ~6 m of the head pin.
-  const coming = s.phase === "rolling" && s.ball.active && R.headPinY - s.ball.y < 6000 * MMU;
-  s.pins.forEach((pin, id) => {
+  s.pins.forEach((pin) => {
     if (!pin.present) return;
     const p = project(v, pin.x / MMU, pin.y / MMU);
     let tilt = 0, lift = 0;
-    let face: PinMood = { mood: coming && pin.standing ? "scared" : "idle", t: s.tick, id };
+    // Standing pins stay perfectly still; a knocked pin tips over (presentation of the physics only).
     if (!pin.standing) {
       const age = Math.max(0, s.tick - pin.hitTick), dir = pin.vx === 0 ? (pin.x > R.laneWidth / 2 ? 1 : -1) : Math.sign(pin.vx);
       tilt = dir * Math.min(Math.PI / 2, age * 0.09);
       lift = Math.max(0, Math.sin(Math.min(Math.PI, age * 0.08)) * 26 * p.s);
-      face = { mood: "hit", t: age, id };
     }
-    items.push({ y: pin.y, draw: () => drawPin(ctx, p.x, p.y, p.s, tilt, lift, face) });
+    items.push({ y: pin.y, draw: () => drawPin(ctx, p.x, p.y, p.s, tilt, lift) });
   });
   items.push({ y: s.ball.y, draw: () => drawBall(ctx, v, s) });
   items.sort((a, b) => b.y - a.y).forEach((it) => it.draw());
@@ -261,73 +228,211 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV1)
   ctx.restore();
 }
 
-/** Strike / spare celebration. Pure function of the state and the time since it started. */
-function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV1, H: number, deck: { x: number; y: number }) {
-  const kind = s.lastResult?.kind, t = s.tick - s.phaseTick;
-  if (kind !== "strike" && kind !== "spare") return;
-  const strike = kind === "strike", dur = strike ? R.strikeTicks : R.spareTicks, end = Math.max(0, (t - (dur - 30)) / 30);
-  const cy = H * 0.42;
+/*
+ * Strike / spare celebrations: several "broadcasts", one picked per strike/spare from a hash of the seed, the frame
+ * and the roll count (looks random to the player, identical on replay). Pure functions of the state and the time
+ * since the celebration started; the core decides how long it lasts and records the SKIP.
+ */
+const STRIKE_SHOWS = ["supernova", "disco", "fireworks", "comet"] as const;
+const SPARE_SHOWS = ["burst", "highfive", "neon"] as const;
+function seedHash(seed: string) {
+  let h = 7;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 1000003;
+  return h;
+}
+function bowlingShow(s: Pick<BowlingStateV1, "seed" | "rolls" | "lastResult">) {
+  const strike = s.lastResult?.kind === "strike";
+  const list = strike ? STRIKE_SHOWS : SPARE_SHOWS;
+  const pick = Math.floor(hash01(seedHash(s.seed) * 0.001 + (s.lastResult?.frame ?? 0) * 7.13 + s.rolls.length * 3.7) * list.length);
+  return list[Math.min(list.length - 1, pick)];
+}
+const CONFETTI = ["#ff3d9a", "#7fe3ee", "#ffd23f", "#b98cff", "#5cffb0", "#ffffff"];
+
+function title(ctx: CanvasRenderingContext2D, label: string, t: number, cy: number, size: number, shake = 0) {
+  const pop = t < 26 ? 1 + 0.45 * Math.sin((t / 26) * Math.PI) * (1 - t / 26) * 2 - (1 - Math.min(1, t / 10)) * 0.8 : 1 + 0.03 * Math.sin(t * 0.12);
   ctx.save();
-  ctx.globalAlpha = 1 - end;
-  if (t < 14) { ctx.fillStyle = `rgba(255,255,255,${0.7 * (1 - t / 14)})`; ctx.fillRect(0, 0, 390, H); }
-  ctx.fillStyle = "rgba(10,4,30,.42)"; ctx.fillRect(0, 0, 390, H);
-  // Rotating light rays.
-  const rays = strike ? 18 : 10;
+  ctx.translate(195 + (shake && t < 24 ? Math.sin(t * 2.1) * (24 - t) * shake : 0), cy);
+  ctx.scale(Math.max(0.01, pop), Math.max(0.01, pop));
+  ctx.font = `900 ${size}px system-ui, sans-serif`;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (let k = 8; k > 0; k--) { ctx.fillStyle = `rgba(${40 + k * 8},10,${70 + k * 10},1)`; ctx.fillText(label, k * 0.6, k * 1.1); }
+  const g = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
+  g.addColorStop(0, "#fff6c2"); g.addColorStop(0.35, "#ffd23f"); g.addColorStop(0.7, "#ff7a3d"); g.addColorStop(1, "#ff3d9a");
+  ctx.fillStyle = g; ctx.fillText(label, 0, 0);
+  ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.strokeText(label, 0, 0);
+  // Shine sweeping through the letters only (a moving white band in the text fill, never over the scene).
+  const band = ((t * 6) % 600) - 300, wHalf = Math.max(1, ctx.measureText(label).width / 2 + 40);
+  const pos = (x: number) => Math.max(0, Math.min(1, (x + wHalf) / (2 * wHalf)));
+  const sh = ctx.createLinearGradient(-wHalf, 0, wHalf, 0);
+  sh.addColorStop(0, "rgba(255,255,255,0)");
+  sh.addColorStop(pos(band - 40), "rgba(255,255,255,0)");
+  sh.addColorStop(pos(band), "rgba(255,255,255,.8)");
+  sh.addColorStop(pos(band + 40), "rgba(255,255,255,0)");
+  sh.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = sh; ctx.fillText(label, 0, 0);
+  ctx.restore();
+}
+function rays(ctx: CanvasRenderingContext2D, t: number, cy: number, n: number) {
   ctx.save(); ctx.translate(195, cy); ctx.rotate(t * 0.012);
-  for (let i = 0; i < rays; i++) {
-    const a = (i / rays) * Math.PI * 2, w = Math.PI / rays * 0.55;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2, w = (Math.PI / n) * 0.55;
     const g = ctx.createRadialGradient(0, 0, 10, 0, 0, 420);
     g.addColorStop(0, i % 2 ? "rgba(255,61,154,.55)" : "rgba(122,92,255,.55)"); g.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 420, a - w, a + w); ctx.closePath(); ctx.fill();
   }
   ctx.restore();
-  // Particle burst from the pin deck (sparks, stars, confetti), seeded by the frame number.
-  const n = strike ? 150 : 60;
+}
+function burst(ctx: CanvasRenderingContext2D, x0: number, y0: number, t: number, n: number, speed: number, seed: number, H: number, fade: number) {
   for (let i = 0; i < n; i++) {
-    const h = (k: number) => { const q = Math.sin((i + 1) * 12.9898 + (s.lastResult!.frame + 1) * 78.233 + k * 37.719) * 43758.5453; return q - Math.floor(q); };
-    const a = -Math.PI / 2 + (h(1) - 0.5) * Math.PI * 1.6, sp = (strike ? 5 : 3.5) * (0.4 + h(2)), life = Math.min(1, t / 120);
-    const x = deck.x + Math.cos(a) * sp * t, y = deck.y + Math.sin(a) * sp * t + 0.045 * t * t;
+    const h = (k: number) => hash01((i + 1) * 12.9898 + seed * 78.233 + k * 37.719);
+    const a = -Math.PI / 2 + (h(1) - 0.5) * Math.PI * 1.6, sp = speed * (0.4 + h(2)), life = Math.min(1, t / 120);
+    const x = x0 + Math.cos(a) * sp * t, y = y0 + Math.sin(a) * sp * t + 0.045 * t * t;
     if (y > H + 20) continue;
-    const col = ["#ff3d9a", "#7fe3ee", "#ffd23f", "#b98cff", "#5cffb0", "#ffffff"][i % 6];
-    ctx.globalAlpha = (1 - end) * Math.max(0, 1 - life * 0.85);
+    const col = CONFETTI[i % 6];
+    ctx.globalAlpha = fade * Math.max(0, 1 - life * 0.85);
     ctx.fillStyle = col;
     if (i % 3 === 0) { ctx.save(); ctx.translate(x, y); ctx.rotate(t * 0.2 + i); ctx.fillRect(-4, -2, 8, 4); ctx.restore(); }
     else if (i % 3 === 1) { ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI * 2); ctx.fill(); }
     else { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - Math.cos(a) * 9, y - Math.sin(a) * 9); ctx.stroke(); }
   }
-  ctx.globalAlpha = 1 - end;
-  // Pins flying at the camera (strike only).
-  if (strike) {
+  ctx.globalAlpha = fade;
+}
+/** One firework: a rising spark, then a ring of falling sparks. */
+function firework(ctx: CanvasRenderingContext2D, x: number, y: number, t: number, color: string, fade: number) {
+  if (t < 0) return;
+  if (t < 22) {
+    const k = t / 22, yy = y + (1 - k) * 260;
+    ctx.fillStyle = "#fff3c4"; ctx.globalAlpha = fade;
+    ctx.beginPath(); ctx.arc(x, yy, 2.5, 0, Math.PI * 2); ctx.fill();
+    return;
+  }
+  const u = t - 22;
+  for (let i = 0; i < 28; i++) {
+    const a = (i / 28) * Math.PI * 2, d = Math.min(70, u * 3.2) * (0.85 + 0.15 * Math.sin(i * 3));
+    const px = x + Math.cos(a) * d, py = y + Math.sin(a) * d + u * u * 0.012;
+    ctx.globalAlpha = fade * Math.max(0, 1 - u / 70);
+    ctx.strokeStyle = color; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - Math.cos(a) * 7, py - Math.sin(a) * 7); ctx.stroke();
+  }
+  ctx.globalAlpha = fade;
+}
+
+function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV1, H: number, deck: { x: number; y: number }) {
+  const kind = s.lastResult?.kind, t = s.tick - s.phaseTick;
+  if (kind !== "strike" && kind !== "spare") return;
+  const strike = kind === "strike", dur = strike ? R.strikeTicks : R.spareTicks, end = Math.max(0, (t - (dur - 30)) / 30);
+  const fade = 1 - end, cy = H * 0.42, show = bowlingShow(s), frame = s.lastResult!.frame + 1;
+  const label = strike ? tx("bowling.strike") : tx("bowling.spare");
+  ctx.save();
+  ctx.globalAlpha = fade;
+  if (t < 14) { ctx.fillStyle = `rgba(255,255,255,${0.7 * (1 - t / 14)})`; ctx.fillRect(0, 0, 390, H); }
+  ctx.fillStyle = show === "disco" || show === "fireworks" ? "rgba(4,2,18,.72)" : "rgba(10,4,30,.42)";
+  ctx.fillRect(0, 0, 390, H);
+
+  if (show === "supernova" || show === "burst") {
+    rays(ctx, t, cy, strike ? 18 : 10);
+    burst(ctx, deck.x, deck.y, t, strike ? 150 : 60, strike ? 5 : 3.5, frame, H, fade);
+    if (strike) {
+      for (let i = 0; i < 10; i++) {
+        const k = Math.min(1, t / 70), dir = i - 4.5;
+        const x = deck.x + dir * 22 * k + Math.sin(i * 1.7) * 30 * k, y = deck.y - 120 * Math.sin(k * Math.PI * 0.9) + k * k * 120;
+        ctx.save(); ctx.globalAlpha = fade * (1 - k * 0.6);
+        drawPin(ctx, x, y + 40, 0.45 + k * 0.75, t * 0.15 * (i % 2 ? 1 : -1) + i, 0, "dizzy", false);
+        ctx.restore();
+      }
+    }
+    title(ctx, label, t, cy, strike ? 64 : 48, strike ? 0.4 : 0);
+  } else if (show === "disco") {
+    // Mirror ball, sweeping spotlights and a kick-line of ten happy pins.
+    for (const side of [-1, 1]) {
+      const a = Math.PI / 2 + side * (0.35 + 0.3 * Math.sin(t * 0.05 + side));
+      const g = ctx.createLinearGradient(195, 40, 195 + Math.cos(a) * 600, 40 + Math.sin(a) * 600);
+      g.addColorStop(0, side < 0 ? "rgba(255,61,154,.45)" : "rgba(127,227,238,.45)"); g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(195, 40);
+      ctx.lineTo(195 + Math.cos(a - 0.16) * 700, 40 + Math.sin(a - 0.16) * 700); ctx.lineTo(195 + Math.cos(a + 0.16) * 700, 40 + Math.sin(a + 0.16) * 700);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(195, 0); ctx.lineTo(195, 22); ctx.stroke();
+    const mg = ctx.createRadialGradient(188, 34, 2, 195, 42, 20);
+    mg.addColorStop(0, "#ffffff"); mg.addColorStop(1, "#6b7a90");
+    ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(195, 42, 20, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 14; i++) {
+      const a = i * 0.9 + t * 0.06, r = 60 + (i % 5) * 50;
+      ctx.fillStyle = CONFETTI[i % 6]; ctx.globalAlpha = fade * (0.4 + 0.4 * Math.sin(t * 0.3 + i));
+      ctx.beginPath(); ctx.arc(195 + Math.cos(a) * r, 42 + Math.abs(Math.sin(a)) * r * 1.6, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = fade;
+    const base = H * 0.72, enter = Math.min(1, t / 40);
     for (let i = 0; i < 10; i++) {
-      const k = Math.min(1, t / 70), dir = i - 4.5;
-      const x = deck.x + dir * 22 * k + Math.sin(i * 1.7) * 30 * k, y = deck.y - 120 * Math.sin(k * Math.PI * 0.9) + k * k * 120;
-      ctx.save(); ctx.globalAlpha = (1 - end) * (1 - k * 0.6);
-      drawPin(ctx, x, y + 40, 0.45 + k * 0.75, t * 0.15 * (i % 2 ? 1 : -1) + i, 0, { mood: "hit", t: 200, id: i });
-      ctx.restore();
+      const x = 32 + i * 36, hop = Math.max(0, Math.sin(t * 0.22 + i * 0.6)) * 22 * enter;
+      const y = base + (1 - enter) * 260 - hop, tilt = Math.sin(t * 0.22 + i * 0.6) * 0.22;
+      drawPin(ctx, x, y, 0.62, tilt, 0, i % 3 === 0 ? "wow" : "happy");
+    }
+    title(ctx, label, t, cy - 30, 60, 0.3);
+  } else if (show === "fireworks") {
+    const plan: [number, number, number, string][] = [[0, 90, 130, "#ff3d9a"], [24, 300, 110, "#7fe3ee"], [50, 195, 80, "#ffd23f"], [80, 120, 170, "#5cffb0"], [110, 270, 160, "#b98cff"], [150, 195, 120, "#ff7a3d"]];
+    for (const [start, x, y, c] of plan) firework(ctx, x, y, t - start, c, fade);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = "rgba(127,227,238,.25)"; ctx.fillRect(0, H * 0.8, 390, 2);
+    for (let i = 0; i < 10; i++) {
+      const x = 32 + i * 36, wave = Math.sin(t * 0.16 + i) * 0.18;
+      drawPin(ctx, x, H * 0.8, 0.6, wave, 0, t < 40 ? "wow" : "happy");
+    }
+    title(ctx, label, t, cy, 62, 0.2);
+  } else if (show === "comet") {
+    // The ball crosses as a comet; the knocked pins orbit the title.
+    const k = Math.min(1, t / 46), bx = -40 + 470 * k, by = H * 0.75 - 420 * k * (1 - 0.35 * k);
+    for (let i = 1; i <= 18; i++) {
+      const q = Math.max(0, k - i * 0.025), tx2 = -40 + 470 * q, ty2 = H * 0.75 - 420 * q * (1 - 0.35 * q);
+      ctx.globalAlpha = fade * (1 - i / 18) * 0.6;
+      ctx.fillStyle = i % 2 ? "#b98cff" : "#7fe3ee";
+      ctx.beginPath(); ctx.arc(tx2, ty2, 16 - i * 0.7, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = fade;
+    if (k < 1) {
+      const g = ctx.createRadialGradient(bx - 5, by - 6, 2, bx, by, 18);
+      g.addColorStop(0, "#e4d8ff"); g.addColorStop(0.4, "#7a4dff"); g.addColorStop(1, "#1a0d55");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bx, by, 18, 0, Math.PI * 2); ctx.fill();
+    }
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2 + t * 0.03, depth = Math.sin(a);
+      const x = 195 + Math.cos(a) * 150, y = cy + depth * 70 + 30;
+      ctx.globalAlpha = fade * Math.min(1, Math.max(0, (t - 20) / 20));
+      drawPin(ctx, x, y, 0.45 + 0.2 * (depth + 1), a * 2 + t * 0.08, 0, "dizzy", false);
+    }
+    ctx.globalAlpha = fade;
+    for (let i = 0; i < 30; i++) {
+      const sx = (i * 97 + t * 3) % 390, sy = (i * 53) % H;
+      ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.fillRect(sx, sy, 2, 2);
+    }
+    title(ctx, label, t, cy, 62, 0.5);
+  } else if (show === "highfive") {
+    const k = Math.min(1, t / 30), lean = k >= 1 ? 0.35 : 0.1;
+    drawPin(ctx, 195 - 160 + 130 * k, H * 0.62, 1.1, lean, 0, "happy");
+    drawPin(ctx, 195 + 160 - 130 * k, H * 0.62, 1.1, -lean, 0, "happy");
+    if (t >= 30) {
+      const u = t - 30;
+      ctx.strokeStyle = `rgba(255,233,164,${Math.max(0, 1 - u / 30)})`; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(195, H * 0.62 - 120, 10 + u * 3, 0, Math.PI * 2); ctx.stroke();
+      burst(ctx, 195, H * 0.62 - 120, u, 40, 3, frame, H, fade);
+    }
+    title(ctx, label, t, cy - 40, 48);
+  } else {
+    // Neon wipe: a diagonal band sweeps across and leaves the title; three pins bow in turn.
+    const k = Math.min(1, t / 36), x = -120 + 640 * k;
+    ctx.save();
+    ctx.translate(x, cy); ctx.rotate(-0.35);
+    const g = ctx.createLinearGradient(-60, 0, 60, 0);
+    g.addColorStop(0, "rgba(255,61,154,0)"); g.addColorStop(0.5, "rgba(255,61,154,.9)"); g.addColorStop(1, "rgba(127,227,238,0)");
+    ctx.fillStyle = g; ctx.fillRect(-60, -300, 120, 600);
+    ctx.restore();
+    if (k > 0.4) title(ctx, label, t - 14, cy, 50);
+    for (let i = 0; i < 3; i++) {
+      const bow = Math.max(0, Math.sin(Math.min(Math.PI, Math.max(0, (t - 40 - i * 12) / 18))));
+      drawPin(ctx, 135 + i * 60, H * 0.7, 0.9, bow * 0.6, 0, "happy");
     }
   }
-  // Title: bounce-in, extruded, gradient, shimmer.
-  const label = strike ? tx("bowling.strike") : tx("bowling.spare");
-  const pop = t < 26 ? 1 + 0.45 * Math.sin((t / 26) * Math.PI) * (1 - t / 26) * 2 - (1 - Math.min(1, t / 10)) * 0.8 : 1 + 0.03 * Math.sin(t * 0.12);
-  const shakeX = strike && t < 24 ? Math.sin(t * 2.1) * (24 - t) * 0.4 : 0;
-  ctx.save();
-  ctx.translate(195 + shakeX, cy);
-  ctx.scale(pop, pop);
-  ctx.font = `900 ${strike ? 64 : 48}px system-ui, sans-serif`;
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  for (let k = 8; k > 0; k--) { ctx.fillStyle = `rgba(${40 + k * 8},10,${70 + k * 10},1)`; ctx.fillText(label, k * 0.6, k * 1.1); }
-  const g = ctx.createLinearGradient(0, -34, 0, 34);
-  g.addColorStop(0, "#fff6c2"); g.addColorStop(0.35, "#ffd23f"); g.addColorStop(0.7, "#ff7a3d"); g.addColorStop(1, "#ff3d9a");
-  ctx.fillStyle = g; ctx.fillText(label, 0, 0);
-  ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.strokeText(label, 0, 0);
-  // Shimmer band clipped to the letters.
-  ctx.globalCompositeOperation = "source-atop";
-  const band = ((t * 6) % 600) - 300;
-  const sh = ctx.createLinearGradient(band - 40, 0, band + 40, 0);
-  sh.addColorStop(0, "rgba(255,255,255,0)"); sh.addColorStop(0.5, "rgba(255,255,255,.85)"); sh.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = sh; ctx.fillRect(-200, -50, 400, 100);
-  ctx.globalCompositeOperation = "source-over";
-  ctx.restore();
   if (strike && s.streak >= 2) {
     ctx.fillStyle = "#7fe3ee"; ctx.shadowColor = "#7fe3ee"; ctx.shadowBlur = 14;
     ctx.font = "900 22px system-ui"; ctx.textAlign = "center";
@@ -335,7 +440,7 @@ function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV1, H: nu
     ctx.shadowBlur = 0;
   }
   // Skip pill.
-  ctx.globalAlpha = Math.min(1, t / 20) * (1 - end);
+  ctx.globalAlpha = Math.min(1, t / 20) * fade;
   ctx.fillStyle = "rgba(6,12,28,.85)"; ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.roundRect(275, H - 64, 100, 38, 19); ctx.fill(); ctx.stroke();
   ctx.fillStyle = "#fff"; ctx.font = "800 14px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -458,7 +563,7 @@ export default function Bowling(props: GameRuntimeProps) {
   }, []);
   return (
     <div className="bowlingVerified">
-      <CoreCanvasGame {...props} core={core} name="Galactic Bowling" instruction="" render={render} pointAction={pick}
+      <CoreCanvasGame {...props} core={core} name="Bowling" instruction="" render={render} pointAction={pick}
         expandVerticalViewport hideHudScore hideHudLabel hudLabel={hudLabel} keys={{ Enter: "ROLL", " ": "SKIP" }} />
     </div>
   );

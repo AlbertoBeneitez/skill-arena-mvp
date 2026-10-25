@@ -4,30 +4,30 @@ import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  CORNER_SUDOKU_BOXES_V2 as BOXES,
-  CORNER_SUDOKU_CELL_POS_V2 as POS,
-  CORNER_SUDOKU_CORE_V2 as core,
-  CORNER_SUDOKU_PEERS_V2 as PEERS,
-  CORNER_SUDOKU_RULES_V2 as R,
-  type CornerSudokuStateV2,
-} from "@/lib/verified/cornerSudokuCore.v2";
+  CORNER_SUDOKU_BOXES_V3 as BOXES,
+  CORNER_SUDOKU_CELL_POS_V3 as POS,
+  CORNER_SUDOKU_CORE_V3 as core,
+  CORNER_SUDOKU_PEERS_V3 as PEERS,
+  CORNER_SUDOKU_RULES_V3 as R,
+  type CornerSudokuStateV3,
+} from "@/lib/verified/cornerSudokuCore.v3";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 
 /*
- * Presentation only (Galakdoku). The corner of a sudoku rotated 45°: the corner box on top in the middle, box B
- * down to the right and box C down to the left. Digits stay upright. The number pad is a 3×3 grid with all nine
- * digits always available.
+ * Presentation only (Galoku). Two sides of a sudoku meeting at the corner, rotated 45°: the corner box on top in the
+ * middle, the top band running down to the right and the left stack down to the left (five boxes). Digits stay
+ * upright. The number pad is a 3×3 grid with all nine digits always available.
  * Selection lives here (never in the core); only PUT_<cell>_<digit> reaches the recorder and the server replay.
  */
-const U = 40; // grid unit (cell side) in logical px
+const U = 27; // grid unit (cell side) in logical px
 const K = U / Math.SQRT2;
-const OX = 195, OY = 96; // top vertex of the corner box
-const BOX_TONE = ["#f3c55a", "#7fe3ee", "#ff7ab8"] as const;
+const OX = 195, OY = 98; // top vertex of the corner box
+const BOX_TONE = ["#f3c55a", "#7fe3ee", "#5fb8ff", "#ff7ab8", "#c58cff"] as const;
 /** 3×3 number pad (1 2 3 / 4 5 6 / 7 8 9), every digit always enabled. */
 const PAD = Array.from({ length: 9 }, (_, i) => {
   const w = 74, h = 50, gap = 9, x0 = 195 - (3 * w + 2 * gap) / 2;
-  return { d: i + 1, x: x0 + (i % 3) * (w + gap), y: 392 + Math.floor(i / 3) * (h + gap), w, h };
+  return { d: i + 1, x: x0 + (i % 3) * (w + gap), y: 376 + Math.floor(i / 3) * (h + gap), w, h };
 });
 
 const toScreen = (col: number, row: number) => ({ x: OX + (col - row) * K, y: OY + (col + row) * K });
@@ -45,7 +45,7 @@ const BOX_ORIGIN = BOXES.map(([r0, c0]) => [c0, r0] as const);
 
 type Ui = { selected: number; armed: number };
 
-function hudLabel(s: Readonly<CornerSudokuStateV2>) {
+function hudLabel(s: Readonly<CornerSudokuStateV3>) {
   return `${tx("sudoku.progress", { n: Math.min(R.puzzles, s.solved + (s.status === "running" ? 1 : 0)), total: R.puzzles })} · ${tx("sudoku.mistakes", { n: s.mistakes, max: R.maxMistakes })}`;
 }
 
@@ -54,7 +54,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
   const ui = useRef<Ui>({ selected: -1, armed: 0 });
   const seen = useRef({ seed: "", puzzle: -1 });
 
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: CornerSudokuStateV2) => {
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: CornerSudokuStateV3) => {
     if (seen.current.seed !== s.seed || seen.current.puzzle !== s.current) {
       seen.current = { seed: s.seed, puzzle: s.current };
       ui.current = { selected: -1, armed: 0 };
@@ -65,7 +65,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
 
     // HUD: one lamp per puzzle, mistakes, clock.
     for (let i = 0; i < R.puzzles; i++) {
-      const x = 195 + (i - 2) * 30, done = i < s.solved, now = i === s.current && s.status === "running";
+      const x = 195 + (i - (R.puzzles - 1) / 2) * 30, done = i < s.solved, now = i === s.current && s.status === "running";
       ctx.fillStyle = done ? "#5cffb0" : now ? "#f3c55a" : "rgba(255,255,255,.14)";
       if (done || now) { ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 12; }
       ctx.beginPath(); ctx.roundRect(x - 11, 22, 22, 22, 5); ctx.fill();
@@ -116,7 +116,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
       ctx.strokeStyle = "rgba(170,200,235,.22)"; ctx.lineWidth = 1; ctx.stroke();
       if (d) {
         const c = centre(i);
-        ctx.font = `${given ? 800 : 900} 21px system-ui`;
+        ctx.font = `${given ? 800 : 900} 15px system-ui`;
         ctx.fillStyle = given ? "#eef4ff" : "#7fe3ee";
         ctx.fillText(String(d), c.x, c.y + 1);
       }
@@ -148,7 +148,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
       } else {
         const shake = Math.sin(since * 1.6) * Math.max(0, 8 - since * 0.3);
         ctx.globalAlpha = Math.max(0, 1 - since / 50);
-        ctx.fillStyle = "#ff5a6a"; ctx.font = "900 21px system-ui";
+        ctx.fillStyle = "#ff5a6a"; ctx.font = "900 15px system-ui";
         ctx.fillText(String(ev!.digit), c.x + shake, c.y + 1);
         ctx.strokeStyle = "#ff5a6a"; ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.moveTo(c.x - 7, c.y - 7); ctx.lineTo(c.x + 7, c.y + 7); ctx.moveTo(c.x + 7, c.y - 7); ctx.lineTo(c.x - 7, c.y + 7); ctx.stroke();
@@ -161,12 +161,12 @@ export default function CornerSudoku(props: GameRuntimeProps) {
       const grow = Math.min(1, age / 10);
       ctx.fillStyle = "rgba(6,14,30,.82)";
       ctx.strokeStyle = "rgba(92,255,176,.6)"; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(95, OY + 5 * K - 30, 200, 76, 18); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(95, OY + 7 * K - 30, 200, 76, 18); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#5cffb0"; ctx.shadowColor = "#5cffb0"; ctx.shadowBlur = 18;
       ctx.font = `900 ${20 + Math.round(10 * grow)}px system-ui`;
-      ctx.fillText(tx("sudoku.solved"), 195, OY + 5 * K);
+      ctx.fillText(tx("sudoku.solved"), 195, OY + 7 * K);
       ctx.shadowBlur = 0;
-      if (ev) { ctx.font = "800 15px system-ui"; ctx.fillStyle = "#f9ecd2"; ctx.fillText(`+${formatNumber(ev.points)}`, 195, OY + 5 * K + 30); }
+      if (ev) { ctx.font = "800 15px system-ui"; ctx.fillStyle = "#f9ecd2"; ctx.fillText(`+${formatNumber(ev.points)}`, 195, OY + 7 * K + 30); }
     }
 
     // Number pad: a 3×3 grid; no digit is ever greyed out or removed.
@@ -187,7 +187,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
     }
   }, []);
 
-  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: CornerSudokuStateV2) => {
+  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: CornerSudokuStateV3) => {
     if (phase !== "down" || s.status !== "running" || s.phase !== "play") return null;
     const key = PAD.find((k) => point.x >= k.x - 4 && point.x <= k.x + k.w + 4 && point.y >= k.y - 4 && point.y <= k.y + k.h + 4);
     if (key) {

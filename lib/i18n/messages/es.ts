@@ -598,8 +598,8 @@ const es = {
   // ---------- joystick ----------
   "joystick.aria": "Joystick de dirección",
   "joystick.stop": "Detener movimiento",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "La esquina de un sudoku: tres cuadrados, cinco retos.",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "Dos lados de un sudoku: cinco cuadrados, tres retos.",
   "gameMeta.corner-sudoku.skill": "LÓGICA + RAPIDEZ",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Errores {n}/{max}",
@@ -635,7 +635,7 @@ const es = {
   "ranking.howEarned": "Cómo ha ido ganando · {name}",
   "ranking.fictitiousRange": "Importes ficticios · de 0 a {amount}",
   "rules.p5": "Ligas (rivales simulados): cada juego tiene su liga, de Bronce a Diamante. Una serie son 5 partidas contra rivales de tu nivel: con 3 o más victorias subes; con 1 o menos bajas.",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "Diez marcos en una pista orbital. Busca el pleno.",
   "gameMeta.bowling.skill": "PUNTERÍA + EFECTO",
   "bowling.strike": "¡PLENO!",
@@ -655,6 +655,8 @@ const es = {
   "pinball.saved": "¡BOLA SALVADA!",
   "pinball.frenzy": "¡FRENESÍ ×2!",
   "pinball.hurryValue": "HURRY {n}",
+  "pinball.rail": "¡RAÍL!",
+  "pinball.wormhole": "¡AGUJERO DE GUSANO!",
 } as const;
 
 export type MessageKey = keyof typeof es;

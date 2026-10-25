@@ -560,8 +560,8 @@ const messages: Messages = {
 
   "joystick.aria": "عصا التوجيه",
   "joystick.stop": "إيقاف الحركة",
-  "gameMeta.corner-sudoku.name": "Galakdoku",
-  "gameMeta.corner-sudoku.tagline": "زاوية من السودوكو: ثلاثة مربعات وخمسة ألغاز.",
+  "gameMeta.corner-sudoku.name": "Galoku",
+  "gameMeta.corner-sudoku.tagline": "ضلعان من السودوكو: خمسة مربعات وثلاثة ألغاز.",
   "gameMeta.corner-sudoku.skill": "منطق + سرعة",
   "sudoku.progress": "سودوكو {n}/{total}",
   "sudoku.mistakes": "الأخطاء {n}/{max}",
@@ -597,7 +597,7 @@ const messages: Messages = {
   "ranking.howEarned": "كيف تطورت أرباحه · {name}",
   "ranking.fictitiousRange": "مبالغ وهمية · من 0 إلى {amount}",
   "rules.p5": "الدوريات (منافسون محاكَون): لكل لعبة دوريها من البرونزي إلى الماسي. السلسلة 5 مباريات ضد منافسين من مستواك: بثلاثة انتصارات أو أكثر تصعد، وبانتصار واحد أو أقل تهبط.",
-  "gameMeta.bowling.name": "Galactic Bowling",
+  "gameMeta.bowling.name": "Bowling",
   "gameMeta.bowling.tagline": "عشرة أشواط على مسار مداري. اسعَ إلى الضربة الكاملة.",
   "gameMeta.bowling.skill": "تصويب + دوران",
   "bowling.strike": "ضربة كاملة!",
@@ -617,6 +617,8 @@ const messages: Messages = {
   "pinball.saved": "!تم إنقاذ الكرة",
   "pinball.frenzy": "!جنون ×2",
   "pinball.hurryValue": "جائزة {n}",
+  "pinball.rail": "!المسار",
+  "pinball.wormhole": "!ثقب دودي",
 };
 
 export default messages;
