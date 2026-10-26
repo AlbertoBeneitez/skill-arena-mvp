@@ -161,7 +161,7 @@ img { max-width: 100%; }
 .bottomNav button { border: 0; background: transparent; color: #667068; font-size: 8px; font-weight: 900; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .bottomNav button > span { font-size: 18px; line-height: 1; }.bottomNav button.active { color: var(--green); }.bottomNav img { width: 21px; height: 21px; object-fit: cover; border: 1px solid currentColor; }
 
-@media (min-width: 500px) {
+@media (min-width: 680px) {
   .appBody { padding: 20px; }
   .gameGrid { grid-template-columns: repeat(4, 1fr); }
   .welcomeCard, .setupCard { min-height: 760px; }
@@ -6134,7 +6134,7 @@ html, body {
 .groupScreen .groupGameGrid.selectionMode > button { grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 72px; padding: 6px; }
 .groupScreen .groupGameGrid.selectionMode img { width: 48px; height: 56px; aspect-ratio: auto; object-fit: contain; background: #0c172a; border-radius: 8px; }
 .groupScreen .groupGameGrid.selectionMode strong { padding: 0; line-height: 1.35; overflow-wrap: anywhere; }
-@media (min-width: 500px) { .groupScreen .groupGameGrid.selectionMode { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 680px) { .groupScreen .groupGameGrid.selectionMode { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
 /* Minimal entry: identity and three access choices, no promotional copy. */
 .welcomeCardCompact .galacticWelcomeMark { width: 144px; height: 144px; }

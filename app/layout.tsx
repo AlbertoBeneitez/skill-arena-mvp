@@ -40,15 +40,10 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * Phone-only product with ONE layout: every phone renders the app at a fixed 540 px layout width (the same
- * composition as the computer preview) and the browser scales it to the screen. No phone-specific reflow.
- */
+/** Phone layout: device width, native scale (two game cards per row on a phone). */
 export const viewport = {
-  width: 540,
-  // Explicitly unset: Next's default initial-scale=1 would show the 540 px layout cropped on a narrower phone.
-  // With only width=540 the browser scales the layout to fit the screen width.
-  initialScale: undefined,
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#081522",
   viewportFit: "cover",
 };

@@ -41,7 +41,7 @@ async function check(browser, name) {
         overflow: document.documentElement.scrollWidth - innerWidth,
         surface: !!c || !!document.querySelector(".mineGridGame, .solitaireGame, [class*='Game']"),
         canvasW: r ? Math.round(r.width) : 0,
-        // Layout width: 540 CSS px since v116 (fixed phone layout scaled to the screen).
+        // Layout width of the page (device width on phones).
         layoutW: document.documentElement.clientWidth,
         scaled: !visualViewport || Math.abs(visualViewport.width - document.documentElement.clientWidth) < 2,
       };

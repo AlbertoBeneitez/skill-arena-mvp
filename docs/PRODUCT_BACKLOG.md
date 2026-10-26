@@ -592,3 +592,7 @@ Otros cambios:
 - Shot Gallery: lona blanca que se levanta y figuras grandes sin discos.
 
 Detalle: [releases/v116-saturn.md](releases/v116-saturn.md).
+
+## v117-saturn · Vuelve la vista de móvil con dos juegos por fila (26-oct-2026)
+
+Se deshace la composición escalada de v116 y vuelven las tarjetas a tamaño completo, dos por fila. El resto de v116 se mantiene. Detalle: [releases/v117-saturn.md](releases/v117-saturn.md).

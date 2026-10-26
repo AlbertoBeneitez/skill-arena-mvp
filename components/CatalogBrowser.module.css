@@ -86,7 +86,7 @@
   outline: 3px solid #e5b5ff;
   outline-offset: 3px;
 }
-@media (min-width: 500px) {
+@media (min-width: 680px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
