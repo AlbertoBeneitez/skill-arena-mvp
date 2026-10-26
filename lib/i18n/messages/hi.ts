@@ -632,6 +632,10 @@ const messages: Messages = {
   "settings.track.deep": "गहन फ़ोकस",
   "settings.track.synth": "सॉफ़्ट सिंथ",
   "settings.track.rain": "बारिश और की",
+  "sound.menuAria": "ध्वनि और संगीत",
+  "sound.toggle": "ध्वनि",
+  "sound.menuTitle": "संगीत चुनें",
+  "sound.nowPlaying": "चल रहा है",
 };
 
 export default messages;

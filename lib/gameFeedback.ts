@@ -10,6 +10,8 @@ const voices = new Map<
 >();
 let musicTimer: ReturnType<typeof setInterval> | null = null;
 let musicGameId: string | null = null;
+/** Music the current screen asked for, kept while sound or music is switched off so it can resume. */
+let requestedMusicId: string | null = null;
 let musicStep = 0;
 /** Settings › Música: which music plays. "mix" picks, each time music starts, the game's own theme or a focus track. */
 export const FOCUS_TRACKS = ["lofi", "ambient", "piano", "deep", "synth", "rain"] as const;
@@ -28,7 +30,7 @@ export function setGameSoundEnabled(enabled: boolean, fromGesture = false) {
     masterGain.gain.setValueAtTime(enabled ? 1 : 0, audioContext.currentTime);
   }
   if (!enabled) {
-    stopGameMusic();
+    haltMusic();
     cancelVoices();
     // The gain gate already makes mute synchronous. A pending resume cannot
     // bypass it, and stopped voices cannot return on the next activation.
@@ -84,7 +86,9 @@ function cancelVoices(kind?: VoiceKind) {
 /** Music has its own switch (Settings › Música); sound effects keep playing. */
 export function setGameMusicEnabled(enabled: boolean) {
   musicEnabled = enabled;
-  if (!enabled) stopGameMusic();
+  if (!enabled) haltMusic();
+  // Turning music back on (e.g. picking a song from the megaphone) resumes the screen's music right away.
+  else if (requestedMusicId !== null && musicTimer === null) startGameMusic(requestedMusicId);
 }
 
 /** Settings › Vibración. */
@@ -256,11 +260,12 @@ function scheduleMusicStep(gameId: string) {
  * uses only Web Audio primitives, and needs no licensed audio assets.
  */
 export function startGameMusic(gameId: string, force = false) {
+  requestedMusicId = gameId;
   if (!soundEnabled || !musicEnabled || typeof window === "undefined") return;
 
   if (!force && musicGameId === gameId && musicTimer !== null) return;
 
-  stopGameMusic();
+  haltMusic();
   musicGameId = gameId;
   musicStep = 0;
   // Presentation only (Math.random is fine here): pick the track for this session of music.
@@ -296,7 +301,7 @@ export function setGameMusicTrack(choice: MusicChoice) {
   if (!MUSIC_CHOICES.includes(choice)) return;
   const changed = choice !== musicChoice;
   musicChoice = choice;
-  if (changed && musicGameId !== null) startGameMusic(musicGameId, true);
+  if (changed && requestedMusicId !== null) startGameMusic(requestedMusicId, true);
 }
 export const currentMusicTrack = () => activeTrack;
 
@@ -443,7 +448,12 @@ const FOCUS: Record<FocusTrack, FocusDef> = {
   },
 };
 
+/** The screen leaves (lobby/game unmount): forget which music it wanted. */
 export function stopGameMusic() {
+  requestedMusicId = null;
+  haltMusic();
+}
+function haltMusic() {
   if (musicTimer !== null) {
     clearInterval(musicTimer);
     musicTimer = null;

@@ -632,6 +632,10 @@ const messages: Messages = {
   "settings.track.deep": "গভীর মনোযোগ",
   "settings.track.synth": "নরম সিন্থ",
   "settings.track.rain": "বৃষ্টি ও কি",
+  "sound.menuAria": "শব্দ ও সংগীত",
+  "sound.toggle": "শব্দ",
+  "sound.menuTitle": "সংগীত বেছে নাও",
+  "sound.nowPlaying": "বাজছে",
 };
 
 export default messages;

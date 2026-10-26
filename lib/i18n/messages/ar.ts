@@ -632,6 +632,10 @@ const messages: Messages = {
   "settings.track.deep": "تركيز عميق",
   "settings.track.synth": "سينث هادئ",
   "settings.track.rain": "مطر ومفاتيح",
+  "sound.menuAria": "الصوت والموسيقى",
+  "sound.toggle": "الصوت",
+  "sound.menuTitle": "اختر الموسيقى",
+  "sound.nowPlaying": "قيد التشغيل",
 };
 
 export default messages;

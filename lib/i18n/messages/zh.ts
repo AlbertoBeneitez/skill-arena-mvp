@@ -632,6 +632,10 @@ const messages: Messages = {
   "settings.track.deep": "深度专注",
   "settings.track.synth": "柔和合成器",
   "settings.track.rain": "雨声与琴键",
+  "sound.menuAria": "声音和音乐",
+  "sound.toggle": "声音",
+  "sound.menuTitle": "选择音乐",
+  "sound.nowPlaying": "播放中",
 };
 
 export default messages;

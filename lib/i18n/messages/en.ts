@@ -632,6 +632,10 @@ const messages: Messages = {
   "settings.track.deep": "Deep focus",
   "settings.track.synth": "Soft synth",
   "settings.track.rain": "Rain & keys",
+  "sound.menuAria": "Sound and music",
+  "sound.toggle": "Sound",
+  "sound.menuTitle": "Choose the music",
+  "sound.nowPlaying": "Playing",
 };
 
 export default messages;

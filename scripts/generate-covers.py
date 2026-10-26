@@ -251,37 +251,81 @@ covers["darts"] = darts()
 
 # ---------- Billiards: low angle on the felt, cue ball huge in the foreground ----------
 def billiards():
-    d = ('<linearGradient id="felt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a4d3c"/><stop offset=".5" stop-color="#0f7a5c"/><stop offset="1" stop-color="#063a2c"/></linearGradient>'
-         '<radialGradient id="pool" cx="55%" cy="35%" r="60%"><stop offset="0" stop-color="#fff6d0" stop-opacity=".35"/><stop offset="1" stop-color="#fff6d0" stop-opacity="0"/></radialGradient>'
-         '<linearGradient id="rail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5b2c"/><stop offset="1" stop-color="#3a1d0a"/></linearGradient>'
-         '<linearGradient id="cue" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a1608"/><stop offset=".6" stop-color="#e8c48a"/><stop offset="1" stop-color="#f6e2b8"/></linearGradient>')
-    p = ['<rect width="640" height="440" fill="url(#felt)"/>']
-    # back cushion and rail with diamonds
-    p.append('<rect x="-10" y="0" width="660" height="70" fill="url(#rail)"/><rect x="-10" y="66" width="660" height="18" fill="#0b5e47"/>')
-    for x in range(40, 640, 80):
-        p.append(f'<polygon points="{x},30 {x + 7},36 {x},42 {x - 7},36" fill="#f4e3b8"/>')
-    p.append('<ellipse cx="320" cy="82" rx="26" ry="10" fill="#020403"/>')
-    p.append('<rect width="640" height="440" fill="url(#pool)"/>')
-    # felt nap streaks
-    for i in range(40):
-        y = 90 + i * 9
-        p.append(f'<line x1="0" y1="{y}" x2="640" y2="{y + 2}" stroke="#fff" stroke-opacity=".015"/>')
-    cols = ["#ffd23f", "#2f6bff", "#e12d3f", "#7b3cff", "#ff7a1f", "#159a52", "#8a1c2a", "#111111", "#ffd23f", "#2f6bff"]
-    rack = [(330 + (i - row / 2) * 58, 150 + row * 40) for row in range(4) for i in range(row + 1)]
-    for q, (x, y) in enumerate(reversed(rack)):
-        idx = len(rack) - 1 - q
-        rr = 24 + (y - 150) / 12
-        p.append(sphere(x, y, rr, cols[idx], f"rk{idx}", shade="#050505"))
-        if idx in (1, 4, 8):
-            p.append(f'<ellipse cx="{f(x)}" cy="{f(y)}" rx="{f(rr * .96)}" ry="{f(rr * .42)}" fill="#f6f2e6" opacity=".85"/>')
-        p.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(rr * .4)}" fill="#fbf8ef"/><text x="{f(x)}" y="{f(y + rr * .17)}" font-family="Arial Black, sans-serif" font-size="{f(rr * .5)}" text-anchor="middle" fill="#111">{idx + 1}</text>')
-    # aim line
-    p.append('<line x1="250" y1="370" x2="318" y2="282" stroke="#e9fbff" stroke-width="2.5" stroke-dasharray="8 8" opacity=".6"/>')
-    # cue ball huge, front-left, and the cue tip about to strike
-    p.append(sphere(220, 384, 76, "#f6f3ea", "cueb", shade="#8a867c", gloss=.75))
-    p.append('<g filter="url(#dof)"><line x1="-40" y1="610" x2="168" y2="440" stroke="url(#cue)" stroke-width="30" stroke-linecap="round"/><line x1="150" y1="455" x2="170" y2="438" stroke="#2a8fff" stroke-width="30" stroke-linecap="round"/></g>')
-    p.append(sparkle(196, 344, 12, "#ffffff"))
-    p.append('<g transform="rotate(-14 560 380)" filter="url(#dof)"><rect x="536" y="356" width="52" height="44" rx="4" fill="#2a8fff"/><rect x="536" y="356" width="52" height="12" fill="#9ccbff"/></g>')
+    """Low, cinematic angle across the felt at the moment of the break: the rack explodes under a pendant lamp,
+    smoke in the light cone, warm bokeh in the dark room, the cue out of focus in the foreground."""
+    d = ('<radialGradient id="broom" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#1c3a3a"/><stop offset=".55" stop-color="#0a1418"/><stop offset="1" stop-color="#030607"/></radialGradient>'
+         '<linearGradient id="bfelt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b5a44"/><stop offset=".55" stop-color="#11865f"/><stop offset="1" stop-color="#064a35"/></linearGradient>'
+         '<radialGradient id="bpool" cx="50%" cy="48%" r="55%"><stop offset="0" stop-color="#fff4c8" stop-opacity=".42"/><stop offset=".6" stop-color="#fff4c8" stop-opacity=".08"/><stop offset="1" stop-color="#fff4c8" stop-opacity="0"/></radialGradient>'
+         '<linearGradient id="bcone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2c4" stop-opacity=".30"/><stop offset="1" stop-color="#fff2c4" stop-opacity="0"/></linearGradient>'
+         '<linearGradient id="brail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c07a3c"/><stop offset=".5" stop-color="#6b3612"/><stop offset="1" stop-color="#2a1205"/></linearGradient>'
+         '<linearGradient id="bshade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b6b52"/><stop offset="1" stop-color="#0c3d2e"/></linearGradient>'
+         '<linearGradient id="bcue" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1a0c04"/><stop offset=".5" stop-color="#d9ae6a"/><stop offset=".93" stop-color="#f6e4bd"/><stop offset="1" stop-color="#2a8fff"/></linearGradient>')
+    p = ['<rect width="640" height="440" fill="url(#broom)"/>', bokeh(41, ["#ffcf7a", "#ffa040", "#ffffff", "#7fe3ee"], 16, 150, 8, 30, (.10, .35))]
+    # Perspective table: far rail at y=150, near edge below the frame.
+    FY, NY, FW, NW = 156, 520, 250, 560
+    def P(u, v):  # u -1..1 across, v 0 (far) .. 1 (near)
+        y = FY + (NY - FY) * v
+        w = FW + (NW - FW) * v
+        return 320 + u * w, y, w / NW
+    # Rail and felt.
+    p.append(f'<polygon points="{320 - FW - 26},{FY - 24} {320 + FW + 26},{FY - 24} {320 + NW + 60},{NY} {320 - NW - 60},{NY}" fill="url(#brail)"/>')
+    p.append(f'<polygon points="{320 - FW},{FY} {320 + FW},{FY} {320 + NW},{NY} {320 - NW},{NY}" fill="url(#bfelt)"/>')
+    p.append(f'<polygon points="{320 - FW},{FY} {320 + FW},{FY} {320 + FW + 6},{FY + 12} {320 - FW - 6},{FY + 12}" fill="url(#bshade)"/>')
+    for i in range(7):
+        x = 320 - FW + 40 + i * (2 * FW - 80) / 6
+        p.append(f'<polygon points="{f(x)},{FY - 15} {f(x + 6)},{FY - 11} {f(x)},{FY - 7} {f(x - 6)},{FY - 11}" fill="#f4e3b8"/>')
+    for x in (320 - FW + 4, 320, 320 + FW - 4):
+        p.append(f'<ellipse cx="{f(x)}" cy="{FY + 1}" rx="17" ry="7" fill="#020403"/>')
+    for i in range(36):
+        y = FY + 16 + i * 8
+        p.append(f'<line x1="0" y1="{y}" x2="640" y2="{y + 1}" stroke="#fff" stroke-opacity=".018"/>')
+    p.append('<rect width="640" height="440" fill="url(#bpool)"/>')
+    # Lamp and its smoky light cone.
+    p.append('<polygon points="250,40 390,40 600,440 40,440" fill="url(#bcone)"/>')
+    for q in range(6):
+        rr = random.Random(90 + q)
+        p.append(f'<ellipse cx="{f(rr.uniform(170, 470))}" cy="{f(rr.uniform(70, 230))}" rx="{f(rr.uniform(60, 130))}" ry="{f(rr.uniform(14, 30))}" fill="#e8f2f0" opacity=".06" filter="url(#soft)"/>')
+    p.append('<rect x="316" y="0" width="8" height="22" fill="#1a1a1a"/><path d="M250,48 Q320,4 390,48 Z" fill="#0f3d2f"/><path d="M250,48 Q320,4 390,48" fill="none" stroke="#e3b660" stroke-width="3"/>')
+    p.append('<ellipse cx="320" cy="48" rx="70" ry="9" fill="#fff6d6"/><ellipse cx="320" cy="50" rx="110" ry="22" fill="#fff6d6" opacity=".25" filter="url(#soft)"/>')
+    # The break: the cue ball has just hit the apex; the rack bursts open.
+    cols = ["#ffd23f", "#2f6bff", "#e12d3f", "#7b3cff", "#ff7a1f", "#159a52", "#8a1c2a", "#111111", "#ffd23f", "#2f6bff", "#e12d3f", "#7b3cff", "#ff7a1f", "#159a52", "#8a1c2a"]
+    ax, av = 0.0, .42
+    rr = random.Random(7)
+    balls = []
+    k = 0
+    for row in range(5):
+        for i in range(row + 1):
+            u0, v0 = ax + (i - row / 2) * .075, av - .03 - row * .052
+            du, dv = u0 - ax, v0 - av
+            spread = .35 + rr.uniform(0, .45)
+            balls.append((v0 + dv * spread * .5, u0, v0, u0 + du * spread * 1.6, k)); k += 1
+    for v1, u0, v0, u1, idx in sorted(balls):
+        x0, y0, s0 = P(u0, v0); x1, y1, s1 = P(u1, max(.02, v1))
+        r = 36 * s1
+        if abs(u1 - u0) + abs(v1 - v0) > .04:
+            p.append(trail([(x0 + (x1 - x0) * t / 5, y0 + (y1 - y0) * t / 5) for t in range(6)], "#ffffff", max(3, r * .6), .14))
+        p.append(f'<ellipse cx="{f(x1 + r * .2)}" cy="{f(y1 + r * .85)}" rx="{f(r * .9)}" ry="{f(r * .28)}" fill="#000" opacity=".45"/>')
+        p.append(sphere(x1, y1, r, cols[idx % 15], f"bb{idx}", shade="#050505", shadow=False))
+        if idx >= 8:
+            p.append(f'<ellipse cx="{f(x1)}" cy="{f(y1)}" rx="{f(r * .97)}" ry="{f(r * .45)}" fill="#f6f2e6" opacity=".85"/>')
+        p.append(f'<circle cx="{f(x1 - r * .1)}" cy="{f(y1 - r * .05)}" r="{f(r * .38)}" fill="#fbf8ef"/><text x="{f(x1 - r * .1)}" y="{f(y1 + r * .12)}" font-family="Arial Black, sans-serif" font-size="{f(r * .46)}" text-anchor="middle" fill="#111">{idx + 1}</text>')
+    # Cue ball at the impact point with its trail from the camera, flash and chalk dust.
+    ix, iy, isc = P(ax, av + .06)
+    cr = 36 * isc
+    p.append(trail([(ix + (300 - ix) * t / 8 * 0, iy + (470 - iy) * (8 - t) / 8) for t in range(9)], "#ffffff", cr * 1.4, .22))
+    p.append(f'<circle cx="{f(ix)}" cy="{f(iy - 6)}" r="54" fill="#ffffff" opacity=".35" filter="url(#bigglow)"/>')
+    for q in range(16):
+        a = q * 2 * math.pi / 16 + .2
+        p.append(f'<line x1="{f(ix + math.cos(a) * 30)}" y1="{f(iy - 6 + math.sin(a) * 14)}" x2="{f(ix + math.cos(a) * 66)}" y2="{f(iy - 6 + math.sin(a) * 30)}" stroke="#fff6d6" stroke-width="2.2" opacity=".75" filter="url(#glow)"/>')
+    p.append(f'<ellipse cx="{f(ix + cr * .2)}" cy="{f(iy + cr * .85)}" rx="{f(cr * .9)}" ry="{f(cr * .28)}" fill="#000" opacity=".45"/>')
+    p.append(sphere(ix, iy, cr, "#f6f3ea", "bcb", shade="#7f7b70", shadow=False, gloss=.8))
+    for q in range(30):
+        g = random.Random(300 + q)
+        p.append(f'<circle cx="{f(ix + g.gauss(0, 30))}" cy="{f(iy - 10 + g.gauss(0, 12))}" r="{f(g.uniform(1, 3))}" fill="#9fd0ff" opacity="{g.uniform(.3, .8):.2f}"/>')
+    # Foreground: two balls very close to the camera, out of focus, and the cue following through.
+    p.append(f'<g filter="url(#dof2)">{sphere(70, 430, 92, "#e12d3f", "bf1", shade="#2a0508", shadow=False)}{sphere(590, 452, 80, "#ffd23f", "bf2", shade="#3a2a00", shadow=False)}</g>')
+    p.append(f'<g filter="url(#dof)"><line x1="330" y1="620" x2="{f(ix)}" y2="{f(iy + 70)}" stroke="url(#bcue)" stroke-width="30" stroke-linecap="round"/></g>')
+    p.append(sparkle(ix + 34, iy - 30, 13, "#fff6d6") + sparkle(ix - cr * .4, iy - cr * .5, 9, "#ffffff"))
     return svg("".join(p), extra_defs=d)
 covers["billiards"] = billiards()
 
@@ -375,51 +419,78 @@ covers["orb-burst"] = orb()
 
 # ---------- Shot Gallery: the tarp with open windows, targets revealed ----------
 def gallery():
-    """White tarp: the front sheet is lifting (hem rod mid-air) and uncovers big flat coloured figures on the full tarp."""
-    d = ('<linearGradient id="wtarp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f5f0"/><stop offset=".7" stop-color="#e9e8e2"/><stop offset="1" stop-color="#cfcec6"/></linearGradient>'
-         '<linearGradient id="wfront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ecebe5"/></linearGradient>'
-         '<linearGradient id="rod" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#a9a8a1"/></linearGradient>'
-         '<linearGradient id="castsh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#28281f" stop-opacity=".32"/><stop offset="1" stop-color="#28281f" stop-opacity="0"/></linearGradient>'
-         '<radialGradient id="lampg" cx="50%" cy="0%" r="95%"><stop offset="0" stop-color="#fffaf0" stop-opacity=".35"/><stop offset="1" stop-color="#fffaf0" stop-opacity="0"/></radialGradient>')
-    p = ['<rect width="640" height="440" fill="url(#wtarp)"/>']
-    for x in range(0, 640, 46):
-        k = math.sin(x * .05) * .5 + .5
-        p.append(f'<rect x="{x}" y="0" width="23" height="440" fill="#77766c" opacity="{.03 + .05 * k:.3f}"/>')
-    for y in range(0, 440, 4):
-        p.append(f'<line x1="0" y1="{y}" x2="640" y2="{y}" stroke="#5a5850" stroke-opacity=".05"/>')
-    # Big coloured figures straight on the tarp (no boards, no discs).
-    figs = [("#ff4fa0", "tri"), ("#3d8bff", "circle"), ("#ffcc1f", "star"), ("#8fd43a", "square"), ("#ff8a1f", "hex"), ("#9a63ff", "tri")]
-    xs, ys = [118, 320, 522], [188, 340]
-    i = 0
-    for y in ys:
-        for x in xs:
-            c, kind = figs[i]; i += 1
-            p.append(f'<g fill="#28281f" opacity=".18">{shape(kind, x + 6, y + 8, 62)}</g>')
-            p.append(f'<g fill="{c}" stroke="#141414" stroke-opacity=".25" stroke-width="3">{shape(kind, x, y, 62)}</g>')
-            p.append(f'<g fill="#ffffff" opacity=".18">{shape(kind, x - 12, y - 13, 22)}</g>')
-    # Hit on the green square: bullet hole, cracks and sparks.
-    hx, hy = 330, 330
-    for q in range(7):
-        a = q * .9
-        p.append(f'<line x1="{hx}" y1="{hy}" x2="{f(hx + math.cos(a) * 24)}" y2="{f(hy + math.sin(a) * 24)}" stroke="#0a0a0a" stroke-width="1.6"/>')
-    p.append(f'<circle cx="{hx}" cy="{hy}" r="8" fill="#c9ced3"/><circle cx="{hx}" cy="{hy}" r="5" fill="#050505"/>')
-    for q in range(10):
-        a = -math.pi + q * .32
-        p.append(f'<line x1="{f(hx + math.cos(a) * 32)}" y1="{f(hy + math.sin(a) * 32)}" x2="{f(hx + math.cos(a) * 50)}" y2="{f(hy + math.sin(a) * 50)}" stroke="#ffb13a" stroke-width="3" filter="url(#glow)"/>')
-    # The front sheet lifting: cast shadow, folded white sheet down to the hem rod, rolled under the top bar.
-    hem = 96
-    p.append(f'<rect x="0" y="{hem}" width="640" height="34" fill="url(#castsh)"/>')
-    p.append(f'<rect x="0" y="0" width="640" height="{hem}" fill="url(#wfront)"/>')
-    for x in range(0, 640, 32):
-        k = math.sin(x * .09) * .5 + .5
-        p.append(f'<rect x="{x}" y="0" width="16" height="{hem}" fill="#6f6d64" opacity="{.04 + .08 * k:.3f}"/>')
-    p.append(f'<rect x="-4" y="{hem - 9}" width="648" height="16" rx="8" fill="url(#rod)"/>')
-    p.append('<rect x="0" y="0" width="640" height="20" fill="#2b2f36"/>')
-    for x in range(24, 640, 52):
-        p.append(f'<circle cx="{x}" cy="28" r="6" fill="#c9ced3"/><circle cx="{x}" cy="28" r="3" fill="#3a3e45"/>')
-    tx, ty = 522, 188
-    p.append(f'<g stroke="#ff2d3c" stroke-width="5" fill="none" filter="url(#glow)"><circle cx="{tx}" cy="{ty}" r="64"/><line x1="{tx}" y1="{ty - 90}" x2="{tx}" y2="{ty - 44}"/><line x1="{tx}" y1="{ty + 44}" x2="{tx}" y2="{ty + 90}"/><line x1="{tx - 90}" y1="{ty}" x2="{tx - 44}" y2="{ty}"/><line x1="{tx + 44}" y1="{ty}" x2="{tx + 90}" y2="{ty}"/></g><circle cx="{tx}" cy="{ty}" r="4" fill="#ff2d3c"/>')
-    p.append('<rect width="640" height="440" fill="url(#lampg)"/>')
+    """Night fairground booth: marquee bulbs, striped awning, a spotlit white tarp whose front sheet is lifting over the big
+    coloured figures, a hit with sparks, the red reticle and a toy rifle with muzzle flash out of focus in the foreground."""
+    d = ('<radialGradient id="gnight" cx="50%" cy="30%" r="90%"><stop offset="0" stop-color="#2a1640"/><stop offset=".6" stop-color="#0d0a1c"/><stop offset="1" stop-color="#040309"/></radialGradient>'
+         '<linearGradient id="gtarp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f6f1"/><stop offset=".75" stop-color="#e6e5de"/><stop offset="1" stop-color="#c8c7bf"/></linearGradient>'
+         '<radialGradient id="gspot" cx="50%" cy="30%" r="60%"><stop offset="0" stop-color="#fffbe8" stop-opacity=".55"/><stop offset="1" stop-color="#fffbe8" stop-opacity="0"/></radialGradient>'
+         '<linearGradient id="gfront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9e8e1"/></linearGradient>'
+         '<linearGradient id="grod" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#a9a8a1"/></linearGradient>'
+         '<linearGradient id="gcast" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#28281f" stop-opacity=".35"/><stop offset="1" stop-color="#28281f" stop-opacity="0"/></linearGradient>'
+         '<linearGradient id="gwood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8462e"/><stop offset=".35" stop-color="#7c2416"/><stop offset="1" stop-color="#2a0a05"/></linearGradient>'
+         '<linearGradient id="gpost" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a1410"/><stop offset=".5" stop-color="#c2382a"/><stop offset="1" stop-color="#5a1410"/></linearGradient>'
+         '<linearGradient id="gbarrel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9aa6b2"/><stop offset=".5" stop-color="#2b3138"/><stop offset="1" stop-color="#0d1014"/></linearGradient>'
+         '<linearGradient id="gstock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c98a4a"/><stop offset="1" stop-color="#5a3010"/></linearGradient>')
+    p = ['<rect width="640" height="440" fill="url(#gnight)"/>', bokeh(52, ["#ffcf7a", "#ff6a8a", "#7fe3ee", "#ffffff"], 18, 440, 10, 36, (.12, .32))]
+    # Booth: back tarp framed by two red posts.
+    L, R, T, B = 74, 566, 96, 372
+    p.append(f'<rect x="{L}" y="{T}" width="{R - L}" height="{B - T}" fill="url(#gtarp)"/>')
+    for x in range(L, R, 40):
+        p.append(f'<rect x="{x}" y="{T}" width="20" height="{B - T}" fill="#77766c" opacity=".05"/>')
+    p.append(f'<rect x="{L}" y="{T}" width="{R - L}" height="{B - T}" fill="url(#gspot)"/>')
+    figs = [("#ff4fa0", "tri", 170, 222), ("#3d8bff", "circle", 320, 214), ("#ffcc1f", "star", 470, 222), ("#8fd43a", "square", 196, 318), ("#ff8a1f", "hex", 444, 318)]
+    for c, kind, x, y in figs:
+        p.append(f'<g fill="#28281f" opacity=".2">{shape(kind, x + 7, y + 9, 46)}</g>')
+        p.append(f'<g fill="{c}" stroke="#141414" stroke-opacity=".25" stroke-width="3">{shape(kind, x, y, 46)}</g>')
+        p.append(f'<g fill="#ffffff" opacity=".2">{shape(kind, x - 9, y - 10, 16)}</g>')
+    # Hit on the orange hexagon: hole, cracks, sparks.
+    hx, hy = 452, 310
+    for q in range(8):
+        a = q * .8
+        p.append(f'<line x1="{hx}" y1="{hy}" x2="{f(hx + math.cos(a) * 20)}" y2="{f(hy + math.sin(a) * 20)}" stroke="#0a0a0a" stroke-width="1.6"/>')
+    p.append(f'<circle cx="{hx}" cy="{hy}" r="7" fill="#c9ced3"/><circle cx="{hx}" cy="{hy}" r="4.5" fill="#050505"/>')
+    for q in range(12):
+        a = -math.pi * .95 + q * .2
+        p.append(f'<line x1="{f(hx + math.cos(a) * 26)}" y1="{f(hy + math.sin(a) * 26)}" x2="{f(hx + math.cos(a) * 46)}" y2="{f(hy + math.sin(a) * 46)}" stroke="#ffb13a" stroke-width="3" filter="url(#glow)"/>')
+    # Front sheet lifting: cast shadow, folds, weighted hem rod.
+    hem = 150
+    p.append(f'<rect x="{L}" y="{hem}" width="{R - L}" height="30" fill="url(#gcast)"/>')
+    p.append(f'<rect x="{L}" y="{T}" width="{R - L}" height="{hem - T}" fill="url(#gfront)"/>')
+    for x in range(L, R, 28):
+        k = math.sin(x * .1) * .5 + .5
+        p.append(f'<rect x="{x}" y="{T}" width="14" height="{hem - T}" fill="#6f6d64" opacity="{.05 + .08 * k:.3f}"/>')
+    p.append(f'<rect x="{L - 6}" y="{hem - 8}" width="{R - L + 12}" height="15" rx="7" fill="url(#grod)"/>')
+    # Reticle on the blue circle.
+    tx, ty = 320, 214
+    p.append(f'<g stroke="#ff2d3c" stroke-width="5" fill="none" filter="url(#glow)"><circle cx="{tx}" cy="{ty}" r="58"/><line x1="{tx}" y1="{ty - 84}" x2="{tx}" y2="{ty - 40}"/><line x1="{tx}" y1="{ty + 40}" x2="{tx}" y2="{ty + 84}"/><line x1="{tx - 84}" y1="{ty}" x2="{tx - 40}" y2="{ty}"/><line x1="{tx + 40}" y1="{ty}" x2="{tx + 84}" y2="{ty}"/></g><circle cx="{tx}" cy="{ty}" r="4" fill="#ff2d3c"/>')
+    # Posts with marquee bulbs and the striped awning.
+    for x0 in (L - 40, R):
+        p.append(f'<rect x="{x0}" y="{T - 30}" width="40" height="{440 - T + 30}" fill="url(#gpost)"/>')
+        for q in range(9):
+            y = T - 6 + q * 38
+            p.append(f'<circle cx="{x0 + 20}" cy="{y}" r="11" fill="#ffd27a" opacity=".35" filter="url(#glow)"/><circle cx="{x0 + 20}" cy="{y}" r="6" fill="#fff4cc"/>')
+    for i in range(9):
+        x = L - 40 + i * (R - L + 80) / 9
+        w = (R - L + 80) / 9
+        p.append(f'<path d="M{f(x)},40 L{f(x + w)},40 L{f(x + w)},70 Q{f(x + w / 2)},92 {f(x)},70 Z" fill="{"#e8362b" if i % 2 == 0 else "#fbf3e4"}"/>')
+    p.append(f'<rect x="{L - 44}" y="30" width="{R - L + 88}" height="12" rx="4" fill="#7a1c14"/>')
+    for q in range(16):
+        x = L - 30 + q * (R - L + 60) / 15
+        p.append(f'<circle cx="{f(x)}" cy="36" r="8" fill="#ffd27a" opacity=".4" filter="url(#glow)"/><circle cx="{f(x)}" cy="36" r="3.6" fill="#fff4cc"/>')
+    # Counter in front.
+    p.append(f'<rect x="-10" y="{B}" width="660" height="{440 - B}" fill="url(#gwood)"/><rect x="-10" y="{B}" width="660" height="6" fill="#e8a36a" opacity=".6"/>')
+    # Fairground rifle from the bottom right (a little out of focus), with muzzle flash.
+    p.append('<g filter="url(#dof)" transform="translate(540 412) rotate(30) scale(1.35)">'
+             '<rect x="-236" y="-8" width="200" height="16" rx="6" fill="url(#gbarrel)"/>'
+             '<rect x="-232" y="-17" width="10" height="10" rx="2" fill="#2b3138"/>'
+             '<rect x="-120" y="5" width="96" height="14" rx="6" fill="url(#gstock)"/>'
+             '<rect x="-48" y="-16" width="90" height="34" rx="8" fill="#22282f"/><rect x="-40" y="-22" width="26" height="8" rx="3" fill="#3a434d"/>'
+             '<path d="M30,-14 L190,-30 L200,40 L30,22 Z" fill="url(#gstock)"/>'
+             '<path d="M-6,18 Q8,44 26,20" fill="none" stroke="#2b3138" stroke-width="6"/></g>')
+    mx, my = 540 - 236 * 1.35 * math.cos(math.radians(30)), 412 - 236 * 1.35 * math.sin(math.radians(30))
+    p.append(f'<circle cx="{f(mx)}" cy="{f(my)}" r="34" fill="#ffe7a0" opacity=".55" filter="url(#bigglow)"/>')
+    p.append(f'<polygon points="{f(mx)},{f(my)} {f(mx - 40)},{f(my - 30)} {f(mx - 16)},{f(my - 8)} {f(mx - 46)},{f(my - 2)} {f(mx - 14)},{f(my + 6)} {f(mx - 28)},{f(my + 30)}" fill="#fff6d6" filter="url(#glow)"/>')
+    p.append(sparkle(150, 160, 12, "#fff4cc") + sparkle(500, 180, 10, "#ffffff"))
     return svg("".join(p), extra_defs=d)
 covers["shot-gallery"] = gallery()
 covers["reaction-test"] = covers["shot-gallery"]
@@ -543,18 +614,22 @@ def iso(cx, cy, w, dd, h, top, left, right):
 
 
 def stack():
-    d = '<radialGradient id="sbg" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="#23306a"/><stop offset="1" stop-color="#060a1e"/></radialGradient>'
-    p = ['<rect width="640" height="440" fill="url(#sbg)"/>', bokeh(15, ["#7fe3ee", "#b996ff", "#ff9ad8"], 12, 440, 20, 55)]
+    """The full tower sits lower in the frame (v118): the falling gold block and the landing ring clear the card's badge."""
+    d = '<radialGradient id="sbg" cx="50%" cy="40%" r="80%"><stop offset="0" stop-color="#2a3a7a"/><stop offset="1" stop-color="#060a1e"/></radialGradient>'
+    p = ['<rect width="640" height="440" fill="url(#sbg)"/>', stars(31, 70, 260), bokeh(15, ["#7fe3ee", "#b996ff", "#ff9ad8"], 12, 440, 20, 55)]
     cols = [("#7fe3ee", "#2d8ea0", "#1d6475"), ("#8fb4ff", "#3c5fbf", "#2a428a"), ("#b996ff", "#6b46c6", "#4b2f92"), ("#ff9ad8", "#c2468f", "#8a2c63"), ("#7fffc4", "#2aa877", "#1c7a55")]
+    g = ['<g transform="translate(0 128)">']
     for i in range(9):
         c = cols[i % len(cols)]
-        p.append(iso(320 + (i % 2) * 6 - 3, 470 - i * 46, 230 - i * 6, 116 - i * 3, 38, *c))
-    p.append('<ellipse cx="320" cy="84" rx="200" ry="98" fill="none" stroke="#fff3b0" stroke-width="5" opacity=".7" filter="url(#glow)"/>')
-    p.append(iso(420, 40, 170, 86, 38, "#ffe066", "#c99a1c", "#8f6b10"))
+        g.append(iso(320 + (i % 2) * 6 - 3, 470 - i * 46, 230 - i * 6, 116 - i * 3, 38, *c))
+    g.append('<ellipse cx="320" cy="84" rx="200" ry="98" fill="none" stroke="#fff3b0" stroke-width="5" opacity=".75" filter="url(#glow)"/>')
+    g.append(iso(420, 30, 150, 76, 34, "#ffe066", "#c99a1c", "#8f6b10"))
     for q in range(1, 5):
-        p.append(f'<rect x="{600 + q * 10}" y="{30 + q * 4}" width="{60 - q * 12}" height="5" rx="2" fill="#ffe066" opacity="{.7 - q * .14:.2f}"/>')
-    p.append(f'<g transform="rotate(26 560 250)">{iso(560, 250, 50, 26, 32, "#ffe066", "#c99a1c", "#8f6b10")}</g>')
-    p.append(sparkle(140, 90, 14, "#fff3b0") + sparkle(520, 150, 10))
+        g.append(f'<rect x="{410 + q * 3}" y="{-60 - q * 14}" width="{4 + q}" height="{28 - q * 3}" rx="2" fill="#ffe066" opacity="{.6 - q * .12:.2f}"/>')
+    g.append('</g>')
+    p += g
+    p.append(f'<g transform="rotate(26 570 250)">{iso(570, 250, 46, 24, 30, "#ffe066", "#c99a1c", "#8f6b10")}</g>')
+    p.append(sparkle(150, 200, 14, "#fff3b0") + sparkle(540, 140, 10))
     return svg("".join(p), extra_defs=d)
 covers["precision-stack"] = stack()
 covers["stack-3d"] = covers["precision-stack"]

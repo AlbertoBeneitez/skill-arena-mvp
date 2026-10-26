@@ -670,6 +670,10 @@ const es = {
   "settings.track.deep": "Concentración profunda",
   "settings.track.synth": "Synth suave",
   "settings.track.rain": "Lluvia y teclas",
+  "sound.menuAria": "Sonido y música",
+  "sound.toggle": "Sonido",
+  "sound.menuTitle": "Elige la música",
+  "sound.nowPlaying": "Suena",
 } as const;
 
 export type MessageKey = keyof typeof es;

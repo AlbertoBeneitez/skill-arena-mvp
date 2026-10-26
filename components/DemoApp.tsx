@@ -15,6 +15,7 @@ import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore } from "@/lib/games";
 import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
 import type { GameResult } from "@/lib/types";
+import SoundMenu from "./SoundMenu";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
 import { matchLocale } from "@/lib/i18n/locales";
@@ -1424,15 +1425,7 @@ export default function DemoApp() {
         <header className="appHeader">
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
-            <button
-              className={`soundToggle ${musicOn ? "on" : "off"}`}
-              type="button"
-              aria-label={musicOn ? t("common.soundOff") : t("common.soundOn")}
-              aria-pressed={musicOn}
-              onClick={toggleSound}
-            >
-              {musicOn ? "🔊" : "🔇"}
-            </button>
+            <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
             <button className="balanceChip" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><small>{t("shell.balanceLabel")}</small><b>{euro(balance)}</b></button>
             <button className="settingsGear" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
@@ -1491,15 +1484,7 @@ export default function DemoApp() {
                 </small>
               </div>
               <div className="gameHeaderActions">
-                <GameActionButton
-                  className={`gameSoundToggle ${musicOn ? "on" : "off"}`}
-                  type="button"
-                  aria-label={musicOn ? t("common.soundOff") : t("common.soundOn")}
-                  aria-pressed={musicOn}
-                  onActivate={toggleSound}
-                >
-                  {musicOn ? "🔊" : "🔇"}
-                </GameActionButton>
+                <SoundMenu variant="game" musicOn={musicOn} onToggleSound={toggleSound} />
                 {!persistentTraining && selectedMode === "existing" && matchScope === "duel" && (
                   <button
                     className={`ghostToggle ${ghostEnabled ? "active" : ""}`}

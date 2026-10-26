@@ -632,6 +632,10 @@ const messages: Messages = {
   "settings.track.deep": "Глубокий фокус",
   "settings.track.synth": "Мягкий синт",
   "settings.track.rain": "Дождь и клавиши",
+  "sound.menuAria": "Звук и музыка",
+  "sound.toggle": "Звук",
+  "sound.menuTitle": "Выберите музыку",
+  "sound.nowPlaying": "Играет",
 };
 
 export default messages;

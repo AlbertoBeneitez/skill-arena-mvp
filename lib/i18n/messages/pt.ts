@@ -632,6 +632,10 @@ const messages: Messages = {
   "settings.track.deep": "Foco profundo",
   "settings.track.synth": "Synth suave",
   "settings.track.rain": "Chuva e teclas",
+  "sound.menuAria": "Som e música",
+  "sound.toggle": "Som",
+  "sound.menuTitle": "Escolha a música",
+  "sound.nowPlaying": "Tocando",
 };
 
 export default messages;

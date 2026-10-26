@@ -596,3 +596,12 @@ Detalle: [releases/v116-saturn.md](releases/v116-saturn.md).
 ## v117-saturn · Vuelve la vista de móvil con dos juegos por fila (26-oct-2026)
 
 Se deshace la composición escalada de v116 y vuelven las tarjetas a tamaño completo, dos por fila. El resto de v116 se mantiene. Detalle: [releases/v117-saturn.md](releases/v117-saturn.md).
+
+## v118-saturn · Megáfono con las seis canciones y portadas nuevas (26-oct-2026)
+
+Al tocar el megáfono, en el catálogo o en una partida, se abre un panel con el interruptor de sonido y las seis canciones de concentración, además de Mezcla y Del juego. Portadas nuevas:
+- **Stack:** torre más abajo.
+- **Billar:** rotura cinematográfica bajo la lámpara.
+- **Shot Gallery:** caseta de feria de noche.
+
+Detalle: [releases/v118-saturn.md](releases/v118-saturn.md).
