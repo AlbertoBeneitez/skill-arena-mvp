@@ -1,5 +1,6 @@
 "use client";
 import GameResultSummary from "./GameResultSummary";
+import RivalScoreboard, { type RivalResult } from "./RivalScoreboard";
 import { safeStorage } from "@/lib/safeStorage";
 import GameActionButton from "./GameActionButton";
 import CatalogBrowser, { CATEGORY_ACCENTS } from "./CatalogBrowser";
@@ -1419,6 +1420,22 @@ export default function DemoApp() {
     );
   }
 
+  // Rival line for the result screen: league rival, online opponent, group target or the result to beat.
+  const rivalResult: RivalResult | null = (() => {
+    if (!result) return null;
+    const sm = result.serverMatch;
+    if (sm) {
+      if (sm.status === "waiting") return { name: t("result.rivalOnline"), score: null, status: "pending" };
+      return { name: t("result.rivalOnline"), score: sm.opponentScore ?? null, status: sm.opponentScore === undefined ? "none" : "final" };
+    }
+    if (leagueOutcome) return { name: leagueOutcome.rival.name, avatar: leagueOutcome.rival.avatar, score: leagueOutcome.rival.target, status: "final" };
+    if (selectedStake > 0 && matchScope === "duel" && selectedMode === "create") return { name: selectedGame.rivalName, avatar: selectedGame.rivalAvatar, score: null, status: "pending" };
+    if (matchTargetScore < 1_000_000_000 && (matchScope === "group" || selectedMode === "existing" || selectedMode === "waiting")) {
+      return { name: matchScope === "group" ? t("result.groupTarget") : selectedGame.rivalName, avatar: matchScope === "group" ? undefined : selectedGame.rivalAvatar, score: matchTargetScore, status: "final" };
+    }
+    return null;
+  })();
+
   return (
     <main className={`appShell ${shellStyles.shell}`}>
       {screen !== "game" && (
@@ -1580,6 +1597,10 @@ export default function DemoApp() {
                   resultPointerReadyRef.current = false;
                 }}
               >
+                {rivalResult && (
+                  <RivalScoreboard you={result.forfeited || result.verified === false ? 0 : (attemptSummary ?? result).score} youAvatar={avatarSrc} youName={playerName || t("result.you")}
+                    rival={rivalResult} won={result.won} tie={result.serverMatch?.reason === "exact-tie"} metric={selectedGame.resultMetric} />
+                )}
                 {result.forfeited ? <GameResultSummary result={result} gameName={gameName(selectedGame)} resultMetric={selectedGame.resultMetric} /> : result.verified === false ? (
                   <>
                     <div className="resultIcon">⚠</div>

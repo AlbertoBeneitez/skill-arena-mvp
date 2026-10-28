@@ -15,30 +15,50 @@ import {
   billiardsDirection,
 } from "@/lib/verified/billiardsCore.v1";
 import {
-  BILLIARDS_V2_RULES,
-  type BilliardsV2State,
-} from "@/lib/verified/billiardsCore.v2";
-import { BILLIARDS_CORE_V4 } from "@/lib/verified/billiardsCore.v4";
-import { grabBilliardsCue, pullBilliardsCue, type CueDrag } from "@/lib/billiardsPullback";
+  BILLIARDS_CORE_V5,
+  isSolid,
+  isStripe,
+  type BilliardsV5State,
+} from "@/lib/verified/billiardsCore.v5";
+import { pullBilliardsSling } from "@/lib/billiardsSling";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
 import { t, formatNumber, useI18n } from "@/lib/i18n";
-const ballColors = [
-  "#eaf8ff",
-  "#72e4d1",
-  "#ffc777",
-  "#bda4f7",
-  "#8fc9ff",
-  "#f2a8be",
-  "#b8e28a",
-  "#78cedb",
-  "#edb889",
-  "#a3a9f0",
-  "#e7df94",
-];
+/** Pool colours: 1/9 yellow, 2/10 blue, 3/11 red, 4/12 purple, 5/13 orange, 6/14 green, 7/15 maroon, 8 black. */
+const POOL_COLORS = ["#f6f3ea", "#f5c22f", "#2558c9", "#d8322a", "#6a3aa8", "#f07a1f", "#1d8a4a", "#8a2432", "#141414"];
+const colorOf = (id: number) => POOL_COLORS[id === 0 ? 0 : id === 8 ? 8 : ((id - 1) % 8) + 1];
+
+/** A pool ball: solid (full colour), stripe (white with a colour band), the black 8, the white cue ball. */
+function drawPoolBall(ctx: CanvasRenderingContext2D, x: number, y: number, id: number, upright: boolean) {
+  const r = 10, color = colorOf(id);
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.clip();
+  if (isStripe(id)) {
+    ctx.fillStyle = "#f4f1e8"; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    ctx.fillStyle = color; ctx.fillRect(x - r, y - r * 0.55, r * 2, r * 1.1);
+  } else { ctx.fillStyle = color; ctx.fillRect(x - r, y - r, r * 2, r * 2); }
+  // Shading: soft highlight top-left, darker rim.
+  const shade = ctx.createRadialGradient(x - 4, y - 4, 1, x, y, r);
+  shade.addColorStop(0, "rgba(255,255,255,.75)"); shade.addColorStop(0.3, "rgba(255,255,255,.08)");
+  shade.addColorStop(0.8, "rgba(0,0,0,.12)"); shade.addColorStop(1, "rgba(0,0,0,.45)");
+  ctx.fillStyle = shade; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  ctx.restore();
+  if (id) {
+    ctx.fillStyle = "#fbfaf4";
+    ctx.beginPath(); ctx.arc(x, y, 4.8, 0, Math.PI * 2); ctx.fill();
+    ctx.save();
+    ctx.translate(x, y);
+    if (!upright) ctx.rotate(Math.PI / 2);
+    ctx.fillStyle = "#111822";
+    ctx.textAlign = "center";
+    ctx.font = id < 10 ? "bold 7px system-ui" : "bold 6px system-ui";
+    ctx.fillText(String(id), 0, 2.4);
+    ctx.restore();
+  }
+}
 
 /** A short aim ray, stopped by the first visible contact; no flight simulation. */
-function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV2State) {
+function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV5State) {
   const cue = s.balls[0];
   if (!cue || cue.potted) return;
   const direction = billiardsDirection(s.aim),
@@ -143,7 +163,7 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV2State) {
 
 function renderTable(
   ctx: CanvasRenderingContext2D,
-  s: BilliardsV2State,
+  s: BilliardsV5State,
   camera: BilliardsCamera,
 ) {
   ctx.save();
@@ -209,8 +229,21 @@ function renderTable(
     ctx.arc(x, y, 15, 0, Math.PI * 2);
     ctx.stroke();
   }
+  // Target pocket for the 8 (opposite the one the seventh ball dropped into).
+  if (s.eightPocket >= 0) {
+    const p = BILLIARDS_POCKETS[s.eightPocket], px = p.x / 1000, py = p.y / 1000, pulse = 0.5 + 0.5 * Math.sin(s.tick * 0.12);
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,214,110,${0.55 + 0.45 * pulse})`; ctx.lineWidth = 3;
+    ctx.shadowColor = "#ffd36a"; ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(px, py, 24 + pulse * 3, 0, Math.PI * 2); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#141414"; ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fbfaf4"; ctx.beginPath(); ctx.arc(px, py, 3.6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
   if (s.phase === "aim") drawAimGuide(ctx, s);
-  const recommended = s.balls.find((ball) => ball.id > 0 && !ball.potted);
+  const own = s.group === "solids" ? isSolid : s.group === "stripes" ? isStripe : () => false;
+  const recommended = s.balls.find((ball) => !ball.potted && (s.ownDown === 7 ? ball.id === 8 : own(ball.id)));
   const contactAge = s.tick - s.lastContactTick;
   for (const ball of s.balls) {
     if (ball.potted) continue;
@@ -241,28 +274,7 @@ function renderTable(
     ctx.beginPath();
     ctx.ellipse(x + 3, y + 5, 10, 8, 0, 0, Math.PI * 2);
     ctx.fill();
-    const sphere = ctx.createRadialGradient(x - 4, y - 4, 1, x, y, 10);
-    sphere.addColorStop(0, "#fff");
-    sphere.addColorStop(0.25, ballColors[ball.id % ballColors.length]);
-    sphere.addColorStop(1, ball.id ? "#294553" : "#8da7b7");
-    ctx.fillStyle = sphere;
-    ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
-    ctx.fill();
-    if (ball.id) {
-      ctx.fillStyle = "rgba(236,251,251,.78)";
-      ctx.beginPath();
-      ctx.arc(x, y, 5.6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.save();
-      ctx.translate(x, y);
-      if (camera.rotated) ctx.rotate(Math.PI / 2);
-      ctx.fillStyle = "#112535";
-      ctx.textAlign = "center";
-      ctx.font = ball.id < 10 ? "bold 9px system-ui" : "bold 8px system-ui";
-      ctx.fillText(String(ball.id), 0, 2.8);
-      ctx.restore();
-    }
+    drawPoolBall(ctx, x, y, ball.id, !camera.rotated);
     if (
       s.phase === "moving" &&
       contactAge >= 0 &&
@@ -300,22 +312,68 @@ function renderTable(
   ctx.restore();
   // Power stays upright, separate from the rotated physical table.
   ctx.save();
+  const barY = camera.rotated ? 592 : 452;
   for (let i = 0; i < 13; i++) {
     ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
-    ctx.fillRect(camera.centerX - 64 + i * 10, camera.rotated ? 592 : 535, 7, 8);
+    ctx.fillRect(camera.centerX - 64 + i * 10, barY, 7, 8);
   }
+  // Your group: its seven balls (potted ones dimmed), then the 8.
+  if (!camera.rotated) {
+    const ids = s.group === "solids" ? [1, 2, 3, 4, 5, 6, 7, 8] : s.group === "stripes" ? [9, 10, 11, 12, 13, 14, 15, 8] : [];
+    ids.forEach((id, i) => {
+      const b = s.balls.find((q) => q.id === id)!, x = camera.centerX - 87 + i * 25, y = 482;
+      ctx.globalAlpha = b.potted ? 0.25 : id === 8 && s.ownDown < 7 ? 0.45 : 1;
+      drawPoolBall(ctx, x, y, id, true);
+      ctx.globalAlpha = 1;
+    });
+    ctx.fillStyle = "#a9c6d4"; ctx.font = "800 11px system-ui"; ctx.textAlign = "center";
+    if (!ids.length) ctx.fillText(t("billiards.openTable"), camera.centerX, 486);
+  }
+  // Event call-outs (group, fouls, the 8): upright, for ~1.6 s.
+  const ev = s.events[s.events.length - 1], age = ev ? s.tick - ev.tick : 999;
+  if (ev && age < 200) {
+    const text = ev.kind === "group" ? t(ev.group === "solids" ? "billiards.gotSolids" : "billiards.gotStripes")
+      : ev.kind === "foul" ? t(ev.reason === "scratch" ? "billiards.foulScratch" : "billiards.foulOther")
+      : ev.kind === "eightTarget" ? t("billiards.eightNow")
+      : ev.kind === "respotEight" ? t("billiards.eightRespot")
+      : ev.kind === "win" ? t("billiards.eightWin")
+      : t(ev.reason === "EIGHT_WRONG_POCKET" ? "billiards.eightWrong" : ev.reason === "EIGHT_SCRATCH" ? "billiards.eightScratch" : "billiards.eightEarly");
+    const good = ev.kind === "group" || ev.kind === "eightTarget" || ev.kind === "win" || ev.kind === "respotEight";
+    ctx.globalAlpha = Math.min(1, (200 - age) / 30);
+    ctx.font = "900 15px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const w = Math.min(360, ctx.measureText(text).width + 30), cy2 = camera.rotated ? 40 : 52;
+    ctx.fillStyle = "rgba(6,14,30,.88)"; ctx.strokeStyle = good ? "rgba(92,255,176,.6)" : "rgba(255,110,120,.7)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(camera.centerX - w / 2, cy2 - 17, w, 34, 17); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = good ? "#8affc6" : "#ff9aa4"; ctx.fillText(text, camera.centerX, cy2 + 1);
+    ctx.globalAlpha = 1; ctx.textBaseline = "alphabetic";
+  }
+  ctx.restore();
+}
+
+/** Slingshot band from where the finger touched down to where it is now (screen space). */
+function drawSling(ctx: CanvasRenderingContext2D, from: CorePoint, to: CorePoint) {
+  const len = Math.hypot(to.x - from.x, to.y - from.y);
+  if (len < 4) return;
+  ctx.save();
+  ctx.strokeStyle = "rgba(143,227,255,.55)"; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = "rgba(143,227,255,.8)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(from.x, from.y, 9, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = "rgba(229,197,139,.9)"; ctx.beginPath(); ctx.arc(to.x, to.y, 6, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 
 function createPresentation() {
   let camera = getBilliardsCamera({ width: 390, height: 620 });
   let viewportKey = "";
-  let drag: CueDrag | null = null;
+  // Slingshot: world point where the finger touched down (anywhere), plus both screen points for the band.
+  let drag: { from: { x: number; y: number }; screenFrom: CorePoint; screenNow: CorePoint } | null = null;
   return {
     clear() { drag = null; },
     render(
       ctx: CanvasRenderingContext2D,
-      state: BilliardsV2State,
+      state: BilliardsV5State,
       viewport: LogicalCanvasViewport,
     ) {
       const dpr =
@@ -334,21 +392,24 @@ function createPresentation() {
       }
       drawSpaceBackdrop(ctx, viewport.width, viewport.height, 0, state.tick);
       renderTable(ctx, state, camera);
+      if (drag && state.phase === "aim") drawSling(ctx, drag.screenFrom, drag.screenNow);
     },
     pointAction(
       point: CorePoint,
       phase: "down" | "move" | "up",
-      state: BilliardsV2State,
+      state: BilliardsV5State,
     ) {
       const p = unprojectBilliardsPoint(camera, point);
       if (state.phase !== "aim") { drag = null; return null; }
       if (phase === "down") {
         const cue = state.balls[0];
-        drag = cue && !cue.potted ? grabBilliardsCue(p, {x: cue.x / 1000, y: cue.y / 1000}, state.aim) : null;
+        // The pull can start anywhere: there is always room, even with the cue ball against a cushion.
+        drag = cue && !cue.potted ? { from: p, screenFrom: point, screenNow: point } : null;
         return null;
       }
       if (!drag) return null;
-      const actions = pullBilliardsCue(drag, p);
+      drag.screenNow = point;
+      const actions = pullBilliardsSling(drag.from, p);
       if (phase === "up") {
         drag = null;
         return actions ? [...actions, "SHOOT"] : null;
@@ -366,8 +427,12 @@ const keys = {
   "2": "POWER_06",
   "3": "POWER_12",
 };
-const hudLabel = (s: Readonly<BilliardsV2State>) =>
-  `${t("billiards.hud", { n: s.height, total: BILLIARDS_V2_RULES.targets, shots: s.shotsLeft })}${s.scratch ? ` · ${t("billiards.scratch")}` : ""}`;
+const hudLabel = (s: Readonly<BilliardsV5State>) => {
+  const base = s.group === "open" ? t("billiards.hudOpen", { shots: s.shotsLeft })
+    : s.ownDown === 7 ? t("billiards.hudEight", { shots: s.shotsLeft })
+    : t(s.group === "solids" ? "billiards.hudSolids" : "billiards.hudStripes", { n: s.ownDown, shots: s.shotsLeft });
+  return `${base}${s.scratch ? ` · ${t("billiards.scratch")}` : ""}`;
+};
 export default function Billiards(props: GameRuntimeProps) {
   useI18n();
   const presentation = useMemo(createPresentation, []);
@@ -382,7 +447,7 @@ export default function Billiards(props: GameRuntimeProps) {
     <div className="billiardsVerified" onPointerCancel={presentation.clear} onLostPointerCapture={presentation.clear}>
       <CoreCanvasGame
         {...props}
-        core={BILLIARDS_CORE_V4}
+        core={BILLIARDS_CORE_V5}
         name="Billar"
         render={presentation.render}
         pointAction={presentation.pointAction}

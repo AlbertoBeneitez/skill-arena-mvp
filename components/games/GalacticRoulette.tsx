@@ -2,13 +2,13 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V10,
-  ROULETTE_RULES_V10,
+  ROULETTE_CORE_V11,
+  ROULETTE_RULES_V11,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV10 as RouletteStateV2,
-  rouletteSurfaceV10,
-} from "@/lib/verified/galacticRouletteCore.v10";
+  type RouletteStateV11 as RouletteStateV2,
+  rouletteSurfaceV11,
+} from "@/lib/verified/galacticRouletteCore.v11";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -21,6 +21,14 @@ import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import { t, formatNumber, useI18n } from "@/lib/i18n";
 const cx = 195,
   cy = 195;
+/**
+ * v120: the wheel is drawn 8 % larger and lower (V11 logical height 440), so the row of last results sits above it
+ * with a clear gap. Physics coordinates never change: everything in wheel space is drawn through this transform and
+ * touches are mapped back with toWheel().
+ */
+const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
+export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
+const BALL_R = ROULETTE_RULES_V11.ballRadius / 1000;
 // Presentation radii (the authoritative ball physics live in the core).
 const NUMBER_OUTER = 121,
   NUMBER_INNER = 104,
@@ -32,7 +40,11 @@ function render(
   s: RouletteStateV2,
   drag: CorePoint | null = null,
 ) {
-  drawSpaceBackdrop(ctx, 390, 400, 1, s.tick);
+  drawSpaceBackdrop(ctx, 390, 440, 1, s.tick);
+  ctx.save();
+  ctx.translate(cx, cy + WHEEL_DY);
+  ctx.scale(WHEEL_SCALE, WHEEL_SCALE);
+  ctx.translate(-cx, -cy);
   const rotation = (s.wheelPhase / 65536) * Math.PI * 2 - Math.PI / 2;
   ctx.fillStyle = "#193545";
   ctx.strokeStyle = "#dbb783";
@@ -82,15 +94,16 @@ function render(
     ctx.lineWidth = 1;
     ctx.stroke();
     // Raised metal fret between pockets (a solid wall in the core): cast shadow, body and a bright top edge.
-    const sh = 0.018;
-    ctx.strokeStyle = "rgba(0,0,0,.45)";
-    ctx.lineWidth = 3;
+    // V11 frets are low (2.5 px): a thin bar with a short shadow.
+    const sh = 0.012;
+    ctx.strokeStyle = "rgba(0,0,0,.32)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx + Math.cos(a + sh) * POCKET_INNER, cy + Math.sin(a + sh) * POCKET_INNER);
     ctx.lineTo(cx + Math.cos(a + sh) * POCKET_OUTER, cy + Math.sin(a + sh) * POCKET_OUTER);
     ctx.stroke();
     ctx.strokeStyle = "#b8975a";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx + Math.cos(a) * (POCKET_INNER - 1), cy + Math.sin(a) * (POCKET_INNER - 1));
     ctx.lineTo(cx + Math.cos(a) * (POCKET_OUTER + 1), cy + Math.sin(a) * (POCKET_OUTER + 1));
@@ -201,21 +214,53 @@ function render(
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
   const radius = Math.hypot(x - cx, y - cy);
-  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV10(radius * 1000).z / 1000 : 0;
-  const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - 6);
-  // Launcher plate outside the wheel (the ball can only be thrown from here).
+  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV11(radius * 1000).z / 1000 : 0;
+  const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - BALL_R);
+  // Launcher: an orbital "magnetic cradle" outside the wheel — a hexagonal pad, three clamp prongs and counter-rotating
+  // coil rings that hold the ball in the air; dragging charges the coils (faster, warmer, sparks between the prongs).
   if (idle || s.tick - s.flightStart < 40) {
-    ctx.fillStyle = "rgba(14,38,52,.92)";
-    ctx.strokeStyle = "rgba(169,219,238,.65)";
-    ctx.lineWidth = 2;
+    const dock = ROULETTE_BALL_DOCK, t = s.tick;
+    let charge = 0;
+    if (idle && drag) charge = Math.max(0, Math.min(1, (Math.hypot(drag.x - dock.x, drag.y - dock.y) - 24) / 180));
+    ctx.save();
+    ctx.translate(dock.x, dock.y);
+    // Hex pad with a glowing rim.
     ctx.beginPath();
-    ctx.roundRect(ROULETTE_BALL_DOCK.x - 34, ROULETTE_BALL_DOCK.y - 34, 68, 68, 16);
-    ctx.fill();
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(169,219,238,.4)";
-    ctx.beginPath();
-    ctx.arc(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 22, 0, Math.PI * 2);
-    ctx.stroke();
+    for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + (i * Math.PI) / 3; i ? ctx.lineTo(Math.cos(a) * 36, Math.sin(a) * 36) : ctx.moveTo(Math.cos(a) * 36, Math.sin(a) * 36); }
+    ctx.closePath();
+    const pad = ctx.createRadialGradient(-8, -10, 4, 0, 0, 40);
+    pad.addColorStop(0, "#2a4a63"); pad.addColorStop(1, "#0a1826");
+    ctx.fillStyle = pad; ctx.fill();
+    ctx.strokeStyle = `rgba(${charge > 0 ? "255,214,120" : "127,227,238"},${0.55 + 0.35 * charge})`; ctx.lineWidth = 2; ctx.stroke();
+    // Floor glow under the floating ball.
+    const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 26);
+    glow.addColorStop(0, `rgba(${charge > 0 ? "255,220,140" : "140,235,255"},${0.35 + 0.4 * charge})`); glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0, 0, 26, 0, Math.PI * 2); ctx.fill();
+    // Counter-rotating coil rings.
+    const spin = 0.03 + 0.2 * charge;
+    for (const [r, dir, col] of [[17, 1, "127,227,238"], [23, -1, "199,155,255"], [29, 1, "255,210,122"]] as const) {
+      ctx.save(); ctx.rotate(dir * t * spin);
+      ctx.strokeStyle = `rgba(${col},${0.5 + 0.4 * charge})`; ctx.lineWidth = 1.6;
+      ctx.setLineDash([r * 0.9, r * 0.5]);
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+    ctx.setLineDash([]);
+    // Three clamp prongs pointing at the ball, with sparks while charging.
+    for (let i = 0; i < 3; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI * 2) / 3 + t * 0.004;
+      ctx.strokeStyle = "#c9d6e3"; ctx.lineWidth = 3; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(Math.cos(a) * 33, Math.sin(a) * 33); ctx.lineTo(Math.cos(a) * 12, Math.sin(a) * 12); ctx.stroke();
+      ctx.fillStyle = charge > 0 ? "#ffd27a" : "#7fe3ee";
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 12, Math.sin(a) * 12, 2, 0, Math.PI * 2); ctx.fill();
+      if (charge > 0.05 && (t + i * 3) % 6 < 3) {
+        const b = a + (Math.PI * 2) / 3;
+        ctx.strokeStyle = `rgba(255,240,190,${0.4 + 0.6 * charge})`; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(Math.cos(a) * 12, Math.sin(a) * 12);
+        ctx.lineTo(Math.cos((a + b) / 2) * 6 + (i - 1) * 2, Math.sin((a + b) / 2) * 6); ctx.lineTo(Math.cos(b) * 12, Math.sin(b) * 12); ctx.stroke();
+      }
+    }
+    ctx.restore();
   }
   if (idle && drag) {
     // Aim guide: direction and length of the throw (quantised like the real action).
@@ -251,11 +296,11 @@ function render(
   const drawBall = (bx: number, by: number, bh: number) => {
     ctx.fillStyle = "rgba(0,4,14,.45)";
     ctx.beginPath();
-    ctx.ellipse(bx + 2 + bh * 0.20, by + 3 + bh * 0.26, 6 + bh * 0.07, 4 + bh * 0.04, 0, 0, Math.PI * 2);
+    ctx.ellipse(bx + 2 + bh * 0.20, by + 3 + bh * 0.26, BALL_R + bh * 0.07, BALL_R * 0.66 + bh * 0.04, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#f0f7ff";
     ctx.beginPath();
-    ctx.arc(bx, by, 6 + Math.min(bh, 130) * 0.07, 0, Math.PI * 2);
+    ctx.arc(bx, by, BALL_R + Math.min(bh, 130) * 0.07, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#ffffff";
     ctx.beginPath();
@@ -297,24 +342,25 @@ function render(
     cx,
     377,
   );
-  // History of the last results, newest on the right; each dot has the pocket colour.
-  const shown = s.history.slice(-ROULETTE_RULES_V10.historyLength);
-  const slot = 24, left = cx - (ROULETTE_RULES_V10.historyLength * slot) / 2;
-  for (let i = 0; i < ROULETTE_RULES_V10.historyLength; i++) {
-    const n = shown[i - (ROULETTE_RULES_V10.historyLength - shown.length)];
+  ctx.restore();
+  // History of the last results above the wheel (screen space, clear of the rim), newest on the right.
+  const shown = s.history.slice(-ROULETTE_RULES_V11.historyLength);
+  const slot = 24, left = cx - (ROULETTE_RULES_V11.historyLength * slot) / 2;
+  for (let i = 0; i < ROULETTE_RULES_V11.historyLength; i++) {
+    const n = shown[i - (ROULETTE_RULES_V11.historyLength - shown.length)];
     const hx = left + i * slot + slot / 2;
     if (n === undefined) {
       ctx.strokeStyle = "rgba(168,198,213,.28)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(hx, 31, 9, 0, Math.PI * 2);
+      ctx.arc(hx, 22, 9, 0, Math.PI * 2);
       ctx.stroke();
       continue;
     }
-    const latest = i === ROULETTE_RULES_V10.historyLength - 1;
+    const latest = i === ROULETTE_RULES_V11.historyLength - 1;
     ctx.fillStyle = n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
     ctx.beginPath();
-    ctx.arc(hx, 31, latest ? 11 : 9, 0, Math.PI * 2);
+    ctx.arc(hx, 22, latest ? 11 : 9, 0, Math.PI * 2);
     ctx.fill();
     if (latest) {
       ctx.strokeStyle = "#ffe9a4";
@@ -323,12 +369,12 @@ function render(
     }
     ctx.fillStyle = n === 0 ? "#102d50" : "#f9edda";
     ctx.font = "bold 10px system-ui";
-    ctx.fillText(String(n), hx, 34.5);
+    ctx.fillText(String(n), hx, 25.5);
   }
   if (s.lastPayout > 0 && s.tick - s.lastLandingTick < 120) {
     ctx.fillStyle = "#ffe9a4";
     ctx.font = "bold 19px system-ui";
-    ctx.fillText(t("roulette.won", { n: formatNumber(s.lastPayout / 100) }), cx, 103);
+    ctx.fillText(t("roulette.won", { n: formatNumber(s.lastPayout / 100) }), cx, cy + WHEEL_DY + (103 - cy) * WHEEL_SCALE);
   }
 }
 const hudLabel = (s: Readonly<RouletteStateV2>) =>
@@ -452,7 +498,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V10}
+        core={ROULETTE_CORE_V11}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -460,10 +506,11 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
         hudLabel={hudLabel}
         feedbackScore={feedbackScore}
         choiceControl={choiceControl}
-        pointAction={(p, phase, s) => {
+        pointAction={(screen, phase, s) => {
+          const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V10.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V11.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

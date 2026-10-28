@@ -14,7 +14,7 @@ module.exports = (async () => {
     visual = await load("lib/dartsFlightPerspective.js"),
     sprite = await load("lib/dartsPresentation.js"),
     protocol = await load("lib/verified/dartsProtocol.v1.js"),
-    gesture = await load("lib/verified/dartsGesture.v3.js"),
+    gesture = await load("lib/verified/dartsGesture.v4.js"),
     runtime = await load("lib/verified/coreRuntime.v1.js");
   const file = path.join(root, "components/games/Darts.tsx"),
     source = fs.readFileSync(file, "utf8");
@@ -37,7 +37,7 @@ module.exports = (async () => {
       "@/lib/dartsFlightPerspective": visual,
       "@/lib/dartsPresentation": sprite,
       "@/lib/verified/dartsProtocol.v1": protocol,
-      "@/lib/verified/dartsGesture.v3": gesture,
+      "@/lib/verified/dartsGesture.v4": gesture,
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "./CoreCanvasGame": () => null,

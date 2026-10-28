@@ -11,6 +11,8 @@ export type PublicMatchView = {
   winnerSlot: "A" | "B" | null;
   policyVersion: string;
   reason?: string;
+  /** Once resolved: the opponent's verified score (absent if the opponent forfeited or there is none). */
+  opponentScore?: number;
 };
 export type PublicRecord = {
   inputs: { seq: number; tick: number; action: string }[];

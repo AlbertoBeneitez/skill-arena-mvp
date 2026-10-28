@@ -617,3 +617,12 @@ Detalle: [releases/v118-saturn.md](releases/v118-saturn.md).
 - **Bowling V2:** pista 1,5 veces más larga y celebraciones de televisión (repetición a cámara lenta del tiro real, título metálico y rótulo inferior).
 
 Detalle: [releases/v119-saturn.md](releases/v119-saturn.md).
+
+## v120-saturn · Ruleta 11, resultado del rival, dardos y Billar 5 (28-oct-2026)
+
+- **Resultado del rival:** marcador «Tú VS rival» en el resultado de todos los juegos (liga, duelo real con `opponentScore`, grupo o reto).
+- **Ruleta 11:** separadores más bajos y bote con tope (máximo 7,5 px frente a 15), proporciones de casino, rueda más grande sin que la fila de números la toque, y lanzador «cuna magnética».
+- **Dardos:** la altura depende de la velocidad y del punto donde sueltas, así que se llega a todo el tablero.
+- **Billar 5:** bola 8 en solitario (lisas y rayadas, la 8 al hueco contrario al de la séptima), tirón desde cualquier punto y mesa más pequeña.
+
+Detalle: [releases/v120-saturn.md](releases/v120-saturn.md).

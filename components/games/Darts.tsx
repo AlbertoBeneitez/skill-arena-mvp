@@ -14,7 +14,7 @@ import {
 } from "@/lib/dartsFlightPerspective";
 import { drawDart } from "@/lib/dartsPresentation";
 import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
-import { dartsFlickAimV3, type DartsGestureSample } from "@/lib/verified/dartsGesture.v3";
+import { dartsFlickAimV4, type DartsGestureSample } from "@/lib/verified/dartsGesture.v4";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import { t, formatNumber, useI18n } from "@/lib/i18n";
@@ -204,7 +204,7 @@ const hudLabel = (s: Readonly<DartsStateV3>) => t("play.points", { n: formatNumb
 export default function Darts(props: GameRuntimeProps) {
   useI18n();
   // Grab-and-throw: touching anywhere picks the dart up (it follows the finger); the flick itself — direction and
-  // speed at release — decides where it lands (dartsFlickAimV3). A slow or downward release puts it back.
+  // speed at release — decides where it lands (dartsFlickAimV4). A slow or downward release puts it back.
   const pathRef = useRef<DartsGestureSample[] | null>(null);
   useEffect(() => {
     pathRef.current = null;
@@ -234,7 +234,7 @@ export default function Darts(props: GameRuntimeProps) {
       if (phase === "move") return null;
       pathRef.current = null;
       held.active = false;
-      const flick = dartsFlickAimV3(path);
+      const flick = dartsFlickAimV4(path);
       if (!flick) return null;
       const out: string[] = [];
       if (flick.x !== state.aimX) out.push(dartsAimAction("X", flick.x));

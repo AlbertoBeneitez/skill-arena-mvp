@@ -319,6 +319,18 @@ export class PostgresPublicAttemptRepository
         [row.match_id],
       );
       const resolution = result.rows[0]?.resolution;
+      // After resolution the opponent's verified score is public to both players (shown on the result screen).
+      let opponentScore: number | undefined;
+      if (resolution) {
+        const other = (
+          await c.query<PublicAttempt>(
+            `SELECT * FROM arena_public_attempts WHERE match_id=$1 AND slot<>$2`,
+            [row.match_id, row.slot],
+          )
+        ).rows[0];
+        const score = other?.state === "verified" ? other.response?.score : undefined;
+        if (typeof score === "number" && Number.isFinite(score)) opponentScore = score;
+      }
       return {
         matchId: row.match_id,
         attemptId: id,
@@ -327,6 +339,7 @@ export class PostgresPublicAttemptRepository
         winnerSlot: resolution?.winnerSlot ?? null,
         policyVersion: PUBLIC_MATCH_POLICY,
         reason: resolution?.reason,
+        ...(opponentScore !== undefined ? { opponentScore } : {}),
       };
     });
   }

@@ -160,6 +160,9 @@ module.exports = (async () => {
   const v4 = await import(
     pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v4.js"))
   );
+  const v5 = await import(
+    pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v5.js"))
+  );
   const camera = await import(
     pathToFileURL(path.join(root, ".det-test/lib/billiardsPresentation.js"))
   );
@@ -175,15 +178,15 @@ module.exports = (async () => {
       "@/lib/verified/billiardsCore.v2": v2,
       "@/lib/verified/billiardsProtocol.v1": protocol,
       "@/lib/verified/billiardsCore.v4": v4,
-      "@/lib/billiardsPullback": await import(pathToFileURL(path.join(root, ".det-test/lib/billiardsPullback.js"))),
+      "@/lib/verified/billiardsCore.v5": v5,
+      "@/lib/billiardsSling": await import(pathToFileURL(path.join(root, ".det-test/lib/billiardsSling.js"))),
       "./CoreCanvasGame": { default() {} },
     },
     "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.hudLabel=hudLabel;",
   );
-  const state = v4.BILLIARDS_CORE_V4.create("ui-public-test");
-  assert.equal(state.bumpers.length, 0);
-  assert.equal(state.balls.length, 11);
-  assert.equal(state.shotsLeft, 18);
+  const state = v5.BILLIARDS_CORE_V5.create("ui-public-test");
+  assert.equal(state.balls.length, 16);
+  assert.equal(state.shotsLeft, 24);
   assert.equal(state.height, 0);
   const snapshot = JSON.stringify(state),
     presentation = ui.createPresentation();
@@ -194,8 +197,8 @@ module.exports = (async () => {
         ctx = recorder();
       presentation.render(ctx, s, { width: 390, height: 620 });
       assert.equal(JSON.stringify(s), before);
-      for (let id = 1; id <= 10; id++)
-        assert.equal(ctx.texts.filter((t) => t === String(id)).length, 1);
+      for (let id = 1; id <= 15; id++)
+        assert.equal(ctx.texts.filter((t) => t === String(id)).length, 1, `ball ${id} numbered once`);
       assert.ok(
         !ctx.texts.some((t) => /MESA \d|−250|TIRO EN CURSO|DESPEJADA/.test(t)),
       );
@@ -235,9 +238,10 @@ module.exports = (async () => {
     !ui.hudLabel({ ...state, scratch: false }).includes("BLANCA EMBOCADA"),
   );
   assert.equal(
-    ui.hudLabel({ ...state, height: 10, shotsLeft: 5 }),
-    "AVANCE 10 / 10 · 5 TIROS",
+    ui.hudLabel({ ...state, group: "stripes", ownDown: 3, shotsLeft: 5 }),
+    "RAYADAS 3/7 · 5 TIROS",
   );
+  assert.equal(ui.hudLabel({ ...state, group: "solids", ownDown: 7, shotsLeft: 2 }), "BOLA 8 · 2 TIROS");
   const dimensions = [
     [390, 780],
     [320, 760],
@@ -365,20 +369,32 @@ module.exports = (async () => {
     targetScore: 1e9,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core.gameVersion, "4.0.0");
+  assert.equal(surface.core.gameVersion, "5.0.0");
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.hideHudLabel, undefined);
   assert.equal(surface.expandHorizontalViewport, true);
-  assert.equal(surface.hudLabel(state), "AVANCE 0 / 10 · 18 TIROS");
+  assert.equal(surface.hudLabel(state), "MESA ABIERTA · 24 TIROS");
   assert.equal(surface.controls.length, 0);
+  // v120: the pull can start anywhere (a ball against a cushion still has room): far from the cue, pull down 62 px
+  // in table units and release → aim straight up the table (AIM_135) at power 6.
+  {
+    const adapter = ui.createPresentation(), view = camera.getBilliardsCamera({ width: 390, height: 620 });
+    const far = camera.projectBilliardsPoint(view, { x: 60, y: 120 }), pulled = camera.projectBilliardsPoint(view, { x: 60, y: 182 });
+    assert.equal(adapter.pointAction(far, "down", state), null);
+    assert.deepEqual(adapter.pointAction(pulled, "up", state), ["AIM_135", "POWER_06", "SHOOT"]);
+    const cueAtCushion = { ...state, balls: state.balls.map((b, i) => (i === 0 ? { ...b, x: 52000, y: 494000 } : b)) };
+    const top = camera.projectBilliardsPoint(view, { x: 200, y: 150 }), down = camera.projectBilliardsPoint(view, { x: 200, y: 260 });
+    assert.equal(adapter.pointAction(top, "down", cueAtCushion), null);
+    assert.deepEqual(adapter.pointAction(down, "up", cueAtCushion), ["AIM_135", "POWER_12", "SHOOT"], "full power with the cue in the corner");
+  }
   const source = fs.readFileSync(uiSource, "utf8");
   assert.ok(!source.includes("forecastBilliards"));
   assert.ok(!source.includes("s.stage"));
   console.log(
     JSON.stringify({
-      variant: "Billar V2 continuous presentation",
-      targetCount: 10,
-      shots: 18,
+      variant: "Billar V5 eight-ball presentation",
+      balls: 15,
+      shots: 24,
       aimPowerCombinations: 540,
       roundTrips,
       cssViewports: dimensions.length,
