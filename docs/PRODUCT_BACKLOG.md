@@ -605,3 +605,15 @@ Al tocar el megáfono, en el catálogo o en una partida, se abre un panel con el
 - **Shot Gallery:** caseta de feria de noche.
 
 Detalle: [releases/v118-saturn.md](releases/v118-saturn.md).
+
+## v119-saturn · Pinball 8, Galoku V4 y Bowling V2 (28-oct-2026)
+
+- **Pinball 8:**
+  - 100 s de reloj;
+  - se quitan las trampas laterales (postes y salida del raíl);
+  - rebote idéntico si la bola se atasca en un lado;
+  - raíles decorados con LED, abrazaderas y un chorro de energía.
+- **Galoku V4:** dos sudokus por partida, escritura libre con botón «Borrar», números más grandes y repetidos en rojo.
+- **Bowling V2:** pista 1,5 veces más larga y celebraciones de televisión (repetición a cámara lenta del tiro real, título metálico y rótulo inferior).
+
+Detalle: [releases/v119-saturn.md](releases/v119-saturn.md).

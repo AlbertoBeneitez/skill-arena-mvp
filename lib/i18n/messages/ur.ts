@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "ہدف پہچانیں۔ درستگی سے ردعمل دیں۔",
   "gameMeta.reaction-test.skill": "ردعمل + شناخت",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "ایک گیند، ایک منٹ: اسپرنگ چارج کریں، شاٹس جوڑیں اور ملٹی پلائر بڑھائیں۔",
+  "gameMeta.pinball.tagline": "ایک گیند، سو سیکنڈ: اسپرنگ چارج کریں، شاٹس جوڑیں اور ملٹی پلائر بڑھائیں۔",
   "gameMeta.pinball.skill": "ریفلیکس + ٹائمنگ",
 
   "play.points": "پوائنٹس {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "سمت کا جوائے اسٹک",
   "joystick.stop": "حرکت روکیں",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "سوڈوکو کے دو کنارے: پانچ خانے، تین پہیلیاں۔",
+  "gameMeta.corner-sudoku.tagline": "سوڈوکو کے دو رخ: پانچ خانے، دو پہیلیاں۔",
   "gameMeta.corner-sudoku.skill": "منطق + رفتار",
   "sudoku.progress": "سوڈوکو {n}/{total}",
   "sudoku.mistakes": "غلطیاں {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "آواز",
   "sound.menuTitle": "موسیقی منتخب کریں",
   "sound.nowPlaying": "چل رہا ہے",
+  "sudoku.erase": "مٹائیں",
+  "sudoku.timeUp": "وقت ختم!",
+  "bowling.replay": "ری پلے",
+  "bowling.frameN": "فریم {n}",
+  "bowling.total": "کل",
 };
 
 export default messages;

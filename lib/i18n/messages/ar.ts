@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "تعرّف على الهدف. تفاعل بدقة.",
   "gameMeta.reaction-test.skill": "ردّ الفعل + التعرّف",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "كرة واحدة ودقيقة واحدة: اشحن النابض وسلسل الضربات وارفع المضاعف.",
+  "gameMeta.pinball.tagline": "كرة واحدة ومئة ثانية: اشحن النابض، وسلسل الضربات، وارفع المضاعف.",
   "gameMeta.pinball.skill": "ردود الفعل + التوقيت",
 
   "play.points": "النقاط {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "عصا التوجيه",
   "joystick.stop": "إيقاف الحركة",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "ضلعان من السودوكو: خمسة مربعات وثلاثة ألغاز.",
+  "gameMeta.corner-sudoku.tagline": "ضلعان من سودوكو: خمسة مربعات، لغزان.",
   "gameMeta.corner-sudoku.skill": "منطق + سرعة",
   "sudoku.progress": "سودوكو {n}/{total}",
   "sudoku.mistakes": "الأخطاء {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "الصوت",
   "sound.menuTitle": "اختر الموسيقى",
   "sound.nowPlaying": "قيد التشغيل",
+  "sudoku.erase": "مسح",
+  "sudoku.timeUp": "انتهى الوقت!",
+  "bowling.replay": "إعادة",
+  "bowling.frameN": "الإطار {n}",
+  "bowling.total": "المجموع",
 };
 
 export default messages;

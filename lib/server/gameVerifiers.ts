@@ -24,10 +24,13 @@ import { PINBALL_CORE_V4 } from "../verified/pinballCore.v4";
 import { PINBALL_CORE_V5 } from "../verified/pinballCore.v5";
 import { PINBALL_CORE_V6 } from "../verified/pinballCore.v6";
 import { PINBALL_CORE_V7 } from "../verified/pinballCore.v7";
+import { PINBALL_CORE_V8 } from "../verified/pinballCore.v8";
 import { CORNER_SUDOKU_CORE_V1 } from "../verified/cornerSudokuCore.v1";
 import { CORNER_SUDOKU_CORE_V2 } from "../verified/cornerSudokuCore.v2";
 import { CORNER_SUDOKU_CORE_V3 } from "../verified/cornerSudokuCore.v3";
+import { CORNER_SUDOKU_CORE_V4 } from "../verified/cornerSudokuCore.v4";
 import { BOWLING_CORE_V1 } from "../verified/bowlingCore.v1";
+import { BOWLING_CORE_V2 } from "../verified/bowlingCore.v2";
 import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
 import { STACK_SHIFT_CORE_V4 } from "../verified/stackShiftCore.v4";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
@@ -278,10 +281,13 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PINBALL_CORE_V5.gameId,PINBALL_CORE_V5.gameVersion)]: coreAdapter(PINBALL_CORE_V5),
   [adapterKey(PINBALL_CORE_V6.gameId,PINBALL_CORE_V6.gameVersion)]: coreAdapter(PINBALL_CORE_V6),
   [adapterKey(PINBALL_CORE_V7.gameId,PINBALL_CORE_V7.gameVersion)]: coreAdapter(PINBALL_CORE_V7),
+  [adapterKey(PINBALL_CORE_V8.gameId,PINBALL_CORE_V8.gameVersion)]: coreAdapter(PINBALL_CORE_V8),
   [adapterKey(CORNER_SUDOKU_CORE_V1.gameId, CORNER_SUDOKU_CORE_V1.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V1),
   [adapterKey(CORNER_SUDOKU_CORE_V2.gameId, CORNER_SUDOKU_CORE_V2.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V2),
   [adapterKey(CORNER_SUDOKU_CORE_V3.gameId, CORNER_SUDOKU_CORE_V3.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V3),
+  [adapterKey(CORNER_SUDOKU_CORE_V4.gameId, CORNER_SUDOKU_CORE_V4.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V4),
   [adapterKey(BOWLING_CORE_V1.gameId, BOWLING_CORE_V1.gameVersion)]: coreAdapter(BOWLING_CORE_V1),
+  [adapterKey(BOWLING_CORE_V2.gameId, BOWLING_CORE_V2.gameVersion)]: coreAdapter(BOWLING_CORE_V2),
   [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
   [adapterKey(STACK_SHIFT_CORE_V4.gameId, STACK_SHIFT_CORE_V4.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V4),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),

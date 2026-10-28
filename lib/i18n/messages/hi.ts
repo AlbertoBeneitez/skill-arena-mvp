@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "लक्ष्य पहचानें। सटीकता से प्रतिक्रिया दें।",
   "gameMeta.reaction-test.skill": "प्रतिक्रिया + पहचान",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "एक बॉल, एक मिनट: स्प्रिंग चार्ज करें, शॉट जोड़ें और मल्टीप्लायर बढ़ाएँ।",
+  "gameMeta.pinball.tagline": "एक गेंद, सौ सेकंड: स्प्रिंग चार्ज करें, शॉट जोड़ें और मल्टीप्लायर बढ़ाएँ।",
   "gameMeta.pinball.skill": "रिफ़्लेक्स + टाइमिंग",
 
   "play.points": "अंक {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "दिशा जॉयस्टिक",
   "joystick.stop": "हिलना रोकें",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "सुडोकू की दो भुजाएँ: पाँच वर्ग, तीन पहेलियाँ।",
+  "gameMeta.corner-sudoku.tagline": "सुडोकू की दो भुजाएँ: पाँच बॉक्स, दो पहेलियाँ।",
   "gameMeta.corner-sudoku.skill": "तर्क + गति",
   "sudoku.progress": "सुडोकू {n}/{total}",
   "sudoku.mistakes": "गलतियाँ {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "ध्वनि",
   "sound.menuTitle": "संगीत चुनें",
   "sound.nowPlaying": "चल रहा है",
+  "sudoku.erase": "मिटाएँ",
+  "sudoku.timeUp": "समय समाप्त!",
+  "bowling.replay": "रीप्ले",
+  "bowling.frameN": "फ़्रेम {n}",
+  "bowling.total": "कुल",
 };
 
 export default messages;

@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "Reconnais la cible. Réagis avec précision.",
   "gameMeta.reaction-test.skill": "RÉACTION + RECONNAISSANCE",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "Une bille, une minute : arme le lanceur, enchaîne les tirs et fais monter le multiplicateur.",
+  "gameMeta.pinball.tagline": "Une bille, cent secondes : arme le lanceur, enchaîne les tirs et monte le multiplicateur.",
   "gameMeta.pinball.skill": "RÉFLEXES + TIMING",
 
   "play.points": "POINTS {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "Joystick de direction",
   "joystick.stop": "Arrêter le mouvement",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "Deux côtés d'un sudoku : cinq carrés, trois défis.",
+  "gameMeta.corner-sudoku.tagline": "Deux côtés d'un sudoku : cinq carrés, deux défis.",
   "gameMeta.corner-sudoku.skill": "LOGIQUE + RAPIDITÉ",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Erreurs {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "Son",
   "sound.menuTitle": "Choisis la musique",
   "sound.nowPlaying": "En cours",
+  "sudoku.erase": "Effacer",
+  "sudoku.timeUp": "Temps écoulé !",
+  "bowling.replay": "RALENTI",
+  "bowling.frameN": "Frame {n}",
+  "bowling.total": "TOTAL",
 };
 
 export default messages;

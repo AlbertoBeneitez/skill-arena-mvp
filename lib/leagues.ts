@@ -39,7 +39,7 @@ const REFERENCE: Record<string, number> = {
   "orb-burst": 10000,
   "precision-stack": 600000,
   "reaction-test": 15000, // accumulated ms (lower is better)
-  pinball: 40000,
+  pinball: 65000,
   "corner-sudoku": 3200,
   bowling: 180,
 };

@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "লক্ষ্য চিনুন। নির্ভুলভাবে প্রতিক্রিয়া দিন।",
   "gameMeta.reaction-test.skill": "প্রতিক্রিয়া + শনাক্তকরণ",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "একটি বল, এক মিনিট: স্প্রিং চার্জ করুন, শট জুড়ুন আর গুণক বাড়ান।",
+  "gameMeta.pinball.tagline": "একটি বল, একশো সেকেন্ড: স্প্রিং চার্জ করো, শট জোড়ো, গুণক বাড়াও।",
   "gameMeta.pinball.skill": "রিফ্লেক্স + টাইমিং",
 
   "play.points": "পয়েন্ট {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "দিক নির্দেশক জয়স্টিক",
   "joystick.stop": "চলা থামান",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "সুডোকুর দুটি বাহু: পাঁচটি বর্গ, তিনটি ধাঁধা।",
+  "gameMeta.corner-sudoku.tagline": "সুডোকুর দুই দিক: পাঁচটি বাক্স, দুটি ধাঁধা।",
   "gameMeta.corner-sudoku.skill": "যুক্তি + গতি",
   "sudoku.progress": "সুডোকু {n}/{total}",
   "sudoku.mistakes": "ভুল {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "শব্দ",
   "sound.menuTitle": "সংগীত বেছে নাও",
   "sound.nowPlaying": "বাজছে",
+  "sudoku.erase": "মুছুন",
+  "sudoku.timeUp": "সময় শেষ!",
+  "bowling.replay": "রিপ্লে",
+  "bowling.frameN": "ফ্রেম {n}",
+  "bowling.total": "মোট",
 };
 
 export default messages;

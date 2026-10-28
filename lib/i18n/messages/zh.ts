@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "识别目标，精准反应。",
   "gameMeta.reaction-test.skill": "反应 + 识别",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "一颗球，一分钟：拉动弹簧、连环击球、提升倍数。",
+  "gameMeta.pinball.tagline": "一颗球，一百秒：蓄力弹簧，连环击球，提高倍数。",
   "gameMeta.pinball.skill": "反应 + 时机",
 
   "play.points": "分数 {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "方向摇杆",
   "joystick.stop": "停止移动",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "数独的两条边：五个宫，三道题。",
+  "gameMeta.corner-sudoku.tagline": "数独的两条边：五个宫，两道题。",
   "gameMeta.corner-sudoku.skill": "逻辑 + 速度",
   "sudoku.progress": "数独 {n}/{total}",
   "sudoku.mistakes": "错误 {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "声音",
   "sound.menuTitle": "选择音乐",
   "sound.nowPlaying": "播放中",
+  "sudoku.erase": "擦除",
+  "sudoku.timeUp": "时间到！",
+  "bowling.replay": "回放",
+  "bowling.frameN": "第 {n} 局",
+  "bowling.total": "总分",
 };
 
 export default messages;

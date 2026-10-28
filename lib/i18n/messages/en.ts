@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "Recognise the target. React with precision.",
   "gameMeta.reaction-test.skill": "REACTION + RECOGNITION",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "One ball, one minute: charge the plunger, chain shots and raise the multiplier.",
+  "gameMeta.pinball.tagline": "One ball, a hundred seconds: charge the plunger, chain shots and raise the multiplier.",
   "gameMeta.pinball.skill": "REFLEXES + TIMING",
 
   "play.points": "POINTS {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "Direction joystick",
   "joystick.stop": "Stop moving",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "Two sides of a sudoku: five boxes, three puzzles.",
+  "gameMeta.corner-sudoku.tagline": "Two sides of a sudoku: five boxes, two puzzles.",
   "gameMeta.corner-sudoku.skill": "LOGIC + SPEED",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Mistakes {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "Sound",
   "sound.menuTitle": "Choose the music",
   "sound.nowPlaying": "Playing",
+  "sudoku.erase": "Erase",
+  "sudoku.timeUp": "Time's up!",
+  "bowling.replay": "REPLAY",
+  "bowling.frameN": "Frame {n}",
+  "bowling.total": "TOTAL",
 };
 
 export default messages;

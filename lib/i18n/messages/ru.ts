@@ -435,7 +435,7 @@ const messages: Messages = {
   "gameMeta.reaction-test.tagline": "Узнай цель. Реагируй точно.",
   "gameMeta.reaction-test.skill": "РЕАКЦИЯ + РАСПОЗНАВАНИЕ",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "Один шар, одна минута: зарядите пружину, связывайте удары и поднимайте множитель.",
+  "gameMeta.pinball.tagline": "Один шар, сто секунд: заряди пружину, связывай удары и поднимай множитель.",
   "gameMeta.pinball.skill": "РЕФЛЕКСЫ + ТАЙМИНГ",
 
   "play.points": "ОЧКИ {n}",
@@ -561,7 +561,7 @@ const messages: Messages = {
   "joystick.aria": "Джойстик направления",
   "joystick.stop": "Остановить движение",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "Две стороны судоку: пять квадратов, три задачи.",
+  "gameMeta.corner-sudoku.tagline": "Две стороны судоку: пять квадратов, две задачи.",
   "gameMeta.corner-sudoku.skill": "ЛОГИКА + СКОРОСТЬ",
   "sudoku.progress": "Судоку {n}/{total}",
   "sudoku.mistakes": "Ошибки {n}/{max}",
@@ -636,6 +636,11 @@ const messages: Messages = {
   "sound.toggle": "Звук",
   "sound.menuTitle": "Выберите музыку",
   "sound.nowPlaying": "Играет",
+  "sudoku.erase": "Стереть",
+  "sudoku.timeUp": "Время вышло!",
+  "bowling.replay": "ПОВТОР",
+  "bowling.frameN": "Фрейм {n}",
+  "bowling.total": "ИТОГО",
 };
 
 export default messages;

@@ -460,7 +460,7 @@ const es = {
   "gameMeta.reaction-test.tagline": "Reconoce el objetivo. Reacciona con precisión.",
   "gameMeta.reaction-test.skill": "REACCIÓN + RECONOCIMIENTO",
   "gameMeta.pinball.name": "Pinball",
-  "gameMeta.pinball.tagline": "Una bola, un minuto: carga el muelle, encadena tiros y sube el multiplicador.",
+  "gameMeta.pinball.tagline": "Una bola, cien segundos: carga el muelle, encadena tiros y sube el multiplicador.",
   "gameMeta.pinball.skill": "REFLEJOS + TIMING",
 
   // ---------- in-game: shared ----------
@@ -599,7 +599,7 @@ const es = {
   "joystick.aria": "Joystick de dirección",
   "joystick.stop": "Detener movimiento",
   "gameMeta.corner-sudoku.name": "Galoku",
-  "gameMeta.corner-sudoku.tagline": "Dos lados de un sudoku: cinco cuadrados, tres retos.",
+  "gameMeta.corner-sudoku.tagline": "Dos lados de un sudoku: cinco cuadrados, dos retos.",
   "gameMeta.corner-sudoku.skill": "LÓGICA + RAPIDEZ",
   "sudoku.progress": "Sudoku {n}/{total}",
   "sudoku.mistakes": "Errores {n}/{max}",
@@ -674,6 +674,11 @@ const es = {
   "sound.toggle": "Sonido",
   "sound.menuTitle": "Elige la música",
   "sound.nowPlaying": "Suena",
+  "sudoku.erase": "Borrar",
+  "sudoku.timeUp": "¡Tiempo!",
+  "bowling.replay": "REPETICIÓN",
+  "bowling.frameN": "Marco {n}",
+  "bowling.total": "TOTAL",
 } as const;
 
 export type MessageKey = keyof typeof es;
