@@ -1,3 +1,5 @@
+> **Congelado en v98.** El estado actual está en [STATE.md](STATE.md).
+
 # GALACTIC GAMES · Seguimiento de v98-mobile
 
 Este documento distingue validación técnica/jugable automatizada de aceptación comercial humana. No declara el backlog completo. Las pruebas físicas son seguimiento del propietario y no bloquean las siguientes iteraciones. La auditoría inicial está en V32_PRODUCT_AUDIT.md; checkpoints anteriores permanecen intactos.
