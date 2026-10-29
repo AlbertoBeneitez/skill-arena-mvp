@@ -1,11 +1,9 @@
 /**
- * Sign-in providers shown on the welcome screen (v121).
+ * Sign-in providers shown on the welcome screen (client-safe metadata).
  *
- * This is presentation and configuration scaffolding only. No provider is wired to a real
- * identity flow: production identity needs an approved ADR, server-side OAuth/OIDC handling,
- * secrets kept in the deployment environment and the RGPD consent/deletion paths
- * (see docs/AUTH_PROVIDERS.md). Until then every provider reports "not-configured" and the
- * welcome screen keeps the local session as the working entry.
+ * v122 (owner request, 29 Oct 2026): the server flow is live in app/api/auth/* and turns each provider
+ * on as soon as its credentials and AUTH_SECRET exist in the deployment environment
+ * (see docs/AUTH_PROVIDERS.md). The browser asks /api/auth/session which providers are configured.
  */
 export type AuthProviderId = "google" | "apple" | "x" | "discord" | "microsoft";
 
@@ -30,13 +28,5 @@ export const AUTH_PROVIDERS: readonly AuthProviderInfo[] = [
   { id: "microsoft", name: "Microsoft", placement: "secondary", protocol: "OpenID Connect", serverConfig: ["AUTH_MICROSOFT_CLIENT_ID", "AUTH_MICROSOFT_CLIENT_SECRET"], email: "verified" },
 ];
 
-export type ProviderAvailability = "not-configured";
-
-/**
- * Production identity is not activated in this version (AGENTS.md: stop before production auth
- * activation), so the answer is fixed. When an identity backend is approved this becomes the
- * single switch the welcome screen reads.
- */
-export function providerAvailability(_id: AuthProviderId): ProviderAvailability {
-  return "not-configured";
-}
+/** Server variable shared by every provider: the cookie signing key (≥ 32 characters). */
+export const AUTH_SHARED_CONFIG = ["AUTH_SECRET"] as const;

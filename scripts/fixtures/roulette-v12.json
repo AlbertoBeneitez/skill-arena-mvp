@@ -1,0 +1,150 @@
+{
+ "seed": "roulette11-golden",
+ "inputs": [
+  {
+   "seq": 0,
+   "tick": 0,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 1,
+   "tick": 1,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 2,
+   "tick": 2,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 3,
+   "tick": 3,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 4,
+   "tick": 4,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 5,
+   "tick": 5,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 6,
+   "tick": 6,
+   "action": "TOSS_D10_P06"
+  },
+  {
+   "seq": 7,
+   "tick": 898,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 8,
+   "tick": 899,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 9,
+   "tick": 900,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 10,
+   "tick": 901,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 11,
+   "tick": 902,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 12,
+   "tick": 903,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 13,
+   "tick": 904,
+   "action": "TOSS_D15_P07"
+  },
+  {
+   "seq": 14,
+   "tick": 1733,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 15,
+   "tick": 1734,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 16,
+   "tick": 1735,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 17,
+   "tick": 1736,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 18,
+   "tick": 1737,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 19,
+   "tick": 1738,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 20,
+   "tick": 1739,
+   "action": "TOSS_D20_P08"
+  },
+  {
+   "seq": 21,
+   "tick": 2225,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 22,
+   "tick": 2226,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 23,
+   "tick": 2227,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 24,
+   "tick": 2228,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 25,
+   "tick": 2229,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 26,
+   "tick": 2230,
+   "action": "TOSS_D25_P09"
+  },
+  {
+   "seq": 27,
+   "tick": 3388,
+   "action": "CASH_OUT"
+  }
+ ],
+ "score": 1100,
+ "finalTick": 3388,
+ "status": "won",
+ "failure": null,
+ "hash": "sha256:4f59fd40e32e1c959ff1f0004c64e097e6b3ea6dfcd645a7294a2bce4217cb33"
+}

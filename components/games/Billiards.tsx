@@ -14,16 +14,17 @@ import {
   BILLIARDS_RULES,
   billiardsDirection,
 } from "@/lib/verified/billiardsCore.v1";
+import { isStripe } from "@/lib/verified/billiardsCore.v5";
 import {
-  BILLIARDS_CORE_V5,
-  isSolid,
-  isStripe,
-  type BilliardsV5State,
-} from "@/lib/verified/billiardsCore.v5";
+  BILLIARDS_CORE_V6,
+  BILLIARDS_LEVEL_KINDS,
+  isTarget,
+  type BilliardsV6State as BilliardsV5State,
+} from "@/lib/verified/billiardsCore.v6";
 import { pullBilliardsSling } from "@/lib/billiardsSling";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
-import { t, formatNumber, useI18n } from "@/lib/i18n";
+import { t, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
 /** Pool colours: 1/9 yellow, 2/10 blue, 3/11 red, 4/12 purple, 5/13 orange, 6/14 green, 7/15 maroon, 8 black. */
 const POOL_COLORS = ["#f6f3ea", "#f5c22f", "#2558c9", "#d8322a", "#6a3aa8", "#f07a1f", "#1d8a4a", "#8a2432", "#141414"];
 const colorOf = (id: number) => POOL_COLORS[id === 0 ? 0 : id === 8 ? 8 : ((id - 1) % 8) + 1];
@@ -229,21 +230,11 @@ function renderTable(
     ctx.arc(x, y, 15, 0, Math.PI * 2);
     ctx.stroke();
   }
-  // Target pocket for the 8 (opposite the one the seventh ball dropped into).
-  if (s.eightPocket >= 0) {
-    const p = BILLIARDS_POCKETS[s.eightPocket], px = p.x / 1000, py = p.y / 1000, pulse = 0.5 + 0.5 * Math.sin(s.tick * 0.12);
-    ctx.save();
-    ctx.strokeStyle = `rgba(255,214,110,${0.55 + 0.45 * pulse})`; ctx.lineWidth = 3;
-    ctx.shadowColor = "#ffd36a"; ctx.shadowBlur = 14;
-    ctx.beginPath(); ctx.arc(px, py, 24 + pulse * 3, 0, Math.PI * 2); ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#141414"; ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#fbfaf4"; ctx.beginPath(); ctx.arc(px, py, 3.6, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-  }
   if (s.phase === "aim") drawAimGuide(ctx, s);
-  const own = s.group === "solids" ? isSolid : s.group === "stripes" ? isStripe : () => false;
-  const recommended = s.balls.find((ball) => !ball.potted && (s.ownDown === 7 ? ball.id === 8 : own(ball.id)));
+  const targetsLeft = s.balls.some((b) => !b.potted && isTarget(b.id));
+  const recommended = s.balls.find((ball) => !ball.potted && (targetsLeft ? isTarget(ball.id) : ball.id === 8));
+  // A new level fades its balls in.
+  const lvl = [...s.events].reverse().find((e) => e.kind === "level"), fadeIn = lvl ? Math.min(1, (s.tick - lvl.tick) / 45) : 1;
   const contactAge = s.tick - s.lastContactTick;
   for (const ball of s.balls) {
     if (ball.potted) continue;
@@ -270,11 +261,13 @@ function renderTable(
       ctx.arc(x, y, 13, 0, Math.PI * 2);
       ctx.stroke();
     }
+    ctx.globalAlpha = ball.id ? fadeIn : 1;
     ctx.fillStyle = "rgba(0,0,0,.35)";
     ctx.beginPath();
     ctx.ellipse(x + 3, y + 5, 10, 8, 0, 0, Math.PI * 2);
     ctx.fill();
     drawPoolBall(ctx, x, y, ball.id, !camera.rotated);
+    ctx.globalAlpha = 1;
     if (
       s.phase === "moving" &&
       contactAge >= 0 &&
@@ -317,28 +310,41 @@ function renderTable(
     ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
     ctx.fillRect(camera.centerX - 64 + i * 10, barY, 7, 8);
   }
-  // Your group: its seven balls (potted ones dimmed), then the 8.
+  // Gymkhana strip: the five levels (done / current / next) and this level's balls, potted ones dimmed.
   if (!camera.rotated) {
-    const ids = s.group === "solids" ? [1, 2, 3, 4, 5, 6, 7, 8] : s.group === "stripes" ? [9, 10, 11, 12, 13, 14, 15, 8] : [];
+    const y = 482;
+    for (let i = 0; i < 5; i++) {
+      const x = camera.centerX - 150 + i * 16, cur = i + 1 === s.level, done = i + 1 < s.level;
+      ctx.fillStyle = cur ? "#ffd36a" : done ? "#5cffb0" : "rgba(134,171,187,.28)";
+      ctx.beginPath(); ctx.roundRect(x, y - 5, 11, 10, 3); ctx.fill();
+      if (cur) { ctx.strokeStyle = "rgba(255,211,106,.6)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x - 2, y - 7, 15, 14, 4); ctx.stroke(); }
+    }
+    const ids = s.balls.filter((b) => isTarget(b.id) || b.id === 8).map((b) => b.id);
     ids.forEach((id, i) => {
-      const b = s.balls.find((q) => q.id === id)!, x = camera.centerX - 87 + i * 25, y = 482;
-      ctx.globalAlpha = b.potted ? 0.25 : id === 8 && s.ownDown < 7 ? 0.45 : 1;
+      const b = s.balls.find((q) => q.id === id)!, x = camera.centerX - 50 + i * 24;
+      ctx.globalAlpha = b.potted ? 0.22 : id === 8 && targetsLeft ? 0.5 : 1;
       drawPoolBall(ctx, x, y, id, true);
       ctx.globalAlpha = 1;
     });
-    ctx.fillStyle = "#a9c6d4"; ctx.font = "800 11px system-ui"; ctx.textAlign = "center";
-    if (!ids.length) ctx.fillText(t("billiards.openTable"), camera.centerX, 486);
+    for (let i = 0; i < s.levelShotsLeft; i++) {
+      ctx.fillStyle = "#e5c58b";
+      ctx.beginPath(); ctx.arc(camera.centerX + 146 - i * 9, y, 3, 0, Math.PI * 2); ctx.fill();
+    }
   }
   // Event call-outs (group, fouls, the 8): upright, for ~1.6 s.
-  const ev = s.events[s.events.length - 1], age = ev ? s.tick - ev.tick : 999;
+  // A level change pushes "cleared/out of shots" and "level N" on the same tick: show them one after the other.
+  const last = s.events[s.events.length - 1], prev = s.events[s.events.length - 2];
+  const chained = last?.kind === "level" && prev && prev.tick === last.tick && (prev.kind === "levelClear" || prev.kind === "levelOver");
+  const rawAge = last ? s.tick - last.tick : 999;
+  const ev = chained && rawAge < 110 ? prev : last, age = chained ? (rawAge < 110 ? rawAge * 1.8 : rawAge - 110) : rawAge;
   if (ev && age < 200) {
-    const text = ev.kind === "group" ? t(ev.group === "solids" ? "billiards.gotSolids" : "billiards.gotStripes")
-      : ev.kind === "foul" ? t(ev.reason === "scratch" ? "billiards.foulScratch" : "billiards.foulOther")
-      : ev.kind === "eightTarget" ? t("billiards.eightNow")
-      : ev.kind === "respotEight" ? t("billiards.eightRespot")
-      : ev.kind === "win" ? t("billiards.eightWin")
-      : t(ev.reason === "EIGHT_WRONG_POCKET" ? "billiards.eightWrong" : ev.reason === "EIGHT_SCRATCH" ? "billiards.eightScratch" : "billiards.eightEarly");
-    const good = ev.kind === "group" || ev.kind === "eightTarget" || ev.kind === "win" || ev.kind === "respotEight";
+    const text = ev.kind === "level" ? t("billiards.levelStart", { n: ev.level, name: t(`billiards.lvl.${BILLIARDS_LEVEL_KINDS[ev.level - 1]}` as MessageKey) })
+      : ev.kind === "levelClear" ? t("billiards.levelClear", { n: formatNumber(ev.bonus) })
+      : ev.kind === "levelOver" ? t("billiards.levelOver")
+      : ev.kind === "foul" ? t(ev.reason === "scratch" ? "billiards.foulScratch" : "billiards.foulBlocker")
+      : ev.kind === "eightEarly" ? t("billiards.eightFirst")
+      : t("billiards.eightLast");
+    const good = ev.kind === "level" || ev.kind === "levelClear" || ev.kind === "eightWin";
     ctx.globalAlpha = Math.min(1, (200 - age) / 30);
     ctx.font = "900 15px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     const w = Math.min(360, ctx.measureText(text).width + 30), cy2 = camera.rotated ? 40 : 52;
@@ -428,9 +434,8 @@ const keys = {
   "3": "POWER_12",
 };
 const hudLabel = (s: Readonly<BilliardsV5State>) => {
-  const base = s.group === "open" ? t("billiards.hudOpen", { shots: s.shotsLeft })
-    : s.ownDown === 7 ? t("billiards.hudEight", { shots: s.shotsLeft })
-    : t(s.group === "solids" ? "billiards.hudSolids" : "billiards.hudStripes", { n: s.ownDown, shots: s.shotsLeft });
+  const left = s.balls.filter((b) => !b.potted && (isTarget(b.id) || b.id === 8)).length;
+  const base = t("billiards.hudLevel", { n: s.level, left, shots: s.levelShotsLeft });
   return `${base}${s.scratch ? ` · ${t("billiards.scratch")}` : ""}`;
 };
 export default function Billiards(props: GameRuntimeProps) {
@@ -447,7 +452,7 @@ export default function Billiards(props: GameRuntimeProps) {
     <div className="billiardsVerified" onPointerCancel={presentation.clear} onLostPointerCapture={presentation.clear}>
       <CoreCanvasGame
         {...props}
-        core={BILLIARDS_CORE_V5}
+        core={BILLIARDS_CORE_V6}
         name="Billar"
         render={presentation.render}
         pointAction={presentation.pointAction}

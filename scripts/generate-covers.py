@@ -99,7 +99,8 @@ def cine(fx, fy, key="#ffd9a0", flare="#9fefff", beam=None, strength=.82, flare_
         out.append(f'<polygon points="{pts}" fill="url(#cb{uid})" filter="url(#soft)" style="mix-blend-mode:screen"/>')
     out.append(f'<rect width="640" height="440" fill="url(#cv{uid})"/>')
     if bloom:
-        out.append(f'<circle cx="{f(fx)}" cy="{f(fy)}" r="110" fill="{key}" opacity=".16" filter="url(#bigglow)" style="mix-blend-mode:screen"/>')
+        out.append(f'<radialGradient id="ck{uid}"><stop offset="0" stop-color="{key}" stop-opacity=".3"/><stop offset=".45" stop-color="{key}" stop-opacity=".1"/><stop offset="1" stop-color="{key}" stop-opacity="0"/></radialGradient>'
+                   f'<circle cx="{f(fx)}" cy="{f(fy)}" r="150" fill="url(#ck{uid})" style="mix-blend-mode:screen"/>')
     if streak:
         out.append(f'<ellipse cx="{f(fx)}" cy="{f(fy)}" rx="{flare_w}" ry="2.2" fill="{flare}" opacity=".55" filter="url(#glow)" style="mix-blend-mode:screen"/>')
         out.append(f'<ellipse cx="{f(fx)}" cy="{f(fy)}" rx="{flare_w * .45:.0f}" ry="1" fill="#ffffff" opacity=".7" style="mix-blend-mode:screen"/>')
@@ -375,37 +376,48 @@ def container(x, y, w, h, face, shade, label, idn):
 
 
 def tower():
-    d = ('<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0f2a"/><stop offset="1" stop-color="#2a1640"/></linearGradient>'
-         '<radialGradient id="planet" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#ff9a5a"/><stop offset=".4" stop-color="#7a3a5a"/><stop offset="1" stop-color="#1a1030"/></radialGradient>'
+    """v122 · Low angle at dusk: the stack rises from the bottom of the frame (clear of the league badge), a crane lowers
+    the next container through the haze, searchlights cross behind, the city glows out of focus."""
+    d = ('<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070b22"/><stop offset=".55" stop-color="#22143c"/><stop offset="1" stop-color="#5a2a4a"/></linearGradient>'
+         '<radialGradient id="planet" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#ffb070"/><stop offset=".35" stop-color="#8a3c5a"/><stop offset="1" stop-color="#1a1030"/></radialGradient>'
          '<linearGradient id="teth" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5d6c80"/><stop offset=".5" stop-color="#e6f4ff"/><stop offset="1" stop-color="#5d6c80"/></linearGradient>'
-         '<linearGradient id="sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b6fd8"/><stop offset="1" stop-color="#14265a"/></linearGradient>')
-    p = ['<rect width="640" height="440" fill="url(#sky)"/>', stars(16, 90, 300)]
-    p.append('<ellipse cx="320" cy="560" rx="560" ry="200" fill="url(#planet)"/>')
-    p.append('<ellipse cx="320" cy="560" rx="560" ry="200" fill="none" stroke="#ffc08a" stroke-opacity=".5" stroke-width="3" filter="url(#glow)"/>')
-    # station towers either side, out of focus
+         '<linearGradient id="beam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfe9ff" stop-opacity=".34"/><stop offset="1" stop-color="#cfe9ff" stop-opacity="0"/></linearGradient>'
+         '<linearGradient id="fog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a6a" stop-opacity="0"/><stop offset=".6" stop-color="#ff9a6a" stop-opacity=".16"/><stop offset="1" stop-color="#2a1640" stop-opacity=".55"/></linearGradient>')
+    p = ['<rect width="640" height="440" fill="url(#sky)"/>', stars(16, 110, 240)]
+    p.append('<ellipse cx="320" cy="600" rx="620" ry="230" fill="url(#planet)"/>')
+    p.append('<ellipse cx="320" cy="600" rx="620" ry="230" fill="none" stroke="#ffc08a" stroke-opacity=".55" stroke-width="3" filter="url(#glow)"/>')
+    # searchlights from below, crossing behind the tower
+    for (x0, x1, x2) in ((120, 360, 470), (520, 150, 250)):
+        p.append(f'<polygon points="{x0 - 8},440 {x0 + 8},440 {x2},-20 {x1},-20" fill="url(#beam)" filter="url(#soft)" style="mix-blend-mode:screen"/>')
+    # city towers both sides, out of focus, windows lit
     g = []
-    for (x, w, h) in [(-10, 70, 330), (70, 40, 220), (540, 60, 360), (600, 60, 260)]:
-        g.append(f'<rect x="{x}" y="{440 - h}" width="{w}" height="{h}" fill="#0b1430" stroke="#2fd9c8" stroke-opacity=".35"/>')
-        for q in range(10, h - 10, 22):
-            g.append(f'<rect x="{x + 8}" y="{440 - h + q}" width="{w - 16}" height="4" fill="#ffb86a" opacity=".5"/>')
-    p.append(f'<g filter="url(#dof)">{"".join(g)}</g>')
-    stackc = [("#e8742c", "#a9480f"), ("#1f8fa6", "#125e70"), ("#d2343f", "#8c1c26"), ("#e9b730", "#a6780e"), ("#3e5fbf", "#243d88"), ("#6a7ad8", "#3a46a0")]
-    y = 450
+    for (x, w, h) in [(-20, 80, 300), (66, 44, 210), (118, 30, 150), (500, 34, 170), (540, 60, 330), (604, 56, 250)]:
+        g.append(f'<rect x="{x}" y="{440 - h}" width="{w}" height="{h}" fill="#0a1230" stroke="#2fd9c8" stroke-opacity=".3"/>')
+        for q in range(12, h - 10, 18):
+            g.append(f'<rect x="{x + 7}" y="{440 - h + q}" width="{w - 14}" height="3" fill="#ffb86a" opacity="{.35 + (q % 3) * .12:.2f}"/>')
+        g.append(f'<circle cx="{x + w / 2}" cy="{440 - h - 4}" r="2.5" fill="#ff4a5a" filter="url(#glow)"/>')
+    p.append(f'<g filter="url(#dof2)">{"".join(g)}</g>')
+    p.append('<rect x="0" y="230" width="640" height="210" fill="url(#fog)"/>')
+    # the stack: low angle, wider at the bottom, starting well below the badge
+    stackc = [("#e8742c", "#a9480f"), ("#1f8fa6", "#125e70"), ("#d2343f", "#8c1c26"), ("#e9b730", "#a6780e"), ("#3e5fbf", "#243d88")]
+    y = 468
     for i, (fc, sc) in enumerate(stackc):
-        w = 340 - i * 10; h = 66; y -= h
-        p.append(container(320 - w / 2 + (i % 2) * 10 - 5, y, w, h, fc, sc, f"GX-{i + 1:02d}", f"ct{i}"))
-    # elevator module + hanging container (top right)
-    mx, my = 420, 40
-    p.append(f'<rect x="{mx - 7}" y="-10" width="14" height="{my}" fill="url(#teth)"/>')
-    for side in (-1, 1):
-        x0 = mx + side * 46 - (90 if side < 0 else 0)
-        p.append(f'<rect x="{x0}" y="{my - 14}" width="90" height="28" fill="url(#sol)" stroke="#9fc4ff"/>')
-    p.append(f'<rect x="{mx - 44}" y="{my - 26}" width="88" height="56" rx="18" fill="url(#chrome)" filter="url(#shadow)"/><rect x="{mx - 26}" y="{my - 12}" width="52" height="16" rx="5" fill="#c4eff8"/>')
-    hx, hy = 470, 92
-    p.append(f'<line x1="{mx}" y1="{my + 30}" x2="{hx}" y2="{hy - 10}" stroke="#d2effb" stroke-width="4"/>')
-    p.append(f'<g transform="rotate(-7 {hx} {hy})">{container(hx - 110, hy, 220, 60, "#d9dee6", "#9aa2ae", "GX-07", "ctop")}</g>')
-    p.append(f'<line x1="{hx - 6}" y1="{hy + 64}" x2="{hx - 20}" y2="{hy + 120}" stroke="#ffd23f" stroke-width="3" stroke-dasharray="4 6" opacity=".7"/>')
-    p.append(sparkle(560, 70, 12, "#ffe9b0"))
+        w = 400 - i * 34; h = 64 - i * 3; y -= h
+        p.append(container(318 - w / 2 + (i % 2) * 12 - 6, y, w, h, fc, sc, f"GX-{i + 1:02d}", f"ct{i}"))
+    top = y
+    # rim light from the dusk on the right edge of the stack
+    p.append(f'<rect x="{318 + 400 / 2 - 40}" y="{top}" width="30" height="{468 - top}" fill="#ffb070" opacity=".08" filter="url(#soft)"/>')
+    # crane cable, swinging container with motion echoes, landing guide
+    hx, hy, rot = 448, 74, -9
+    p.append(f'<rect x="{hx + 8}" y="-10" width="6" height="{hy - 2}" fill="url(#teth)"/>')
+    p.append(f'<path d="M{hx + 11},{hy - 12} l-14,14 h28 z" fill="#c9d6e3"/>')
+    for k, op in ((2, .12), (1, .22)):
+        p.append(f'<g opacity="{op}" transform="rotate({rot + k * 5} {hx + 11} {hy - 12})">{container(hx - 95, hy, 210, 56, "#d9dee6", "#9aa2ae", "", f"cg{k}")}</g>')
+    p.append(f'<g filter="url(#shadow)" transform="rotate({rot} {hx + 11} {hy - 12})">{container(hx - 95, hy, 210, 56, "#e6ebf2", "#9aa2ae", "GX-06", "ctop")}</g>')
+    p.append(f'<line x1="{hx + 4}" y1="{hy + 70}" x2="{hx - 70}" y2="{top - 8}" stroke="#ffd23f" stroke-width="3" stroke-dasharray="5 7" opacity=".75" filter="url(#glow)"/>')
+    p.append(f'<ellipse cx="{hx - 80}" cy="{top + 4}" rx="70" ry="10" fill="none" stroke="#ffd23f" stroke-width="2.5" opacity=".7" filter="url(#glow)"/>')
+    p.append(sparkle(575, 60, 11, "#ffe9b0"))
+    p.append(cine(hx, hy + 30, key="#ffd9a0", flare="#ffe7c0", beam=None, strength=.72, flare_w=260))
     return svg("".join(p), extra_defs=d)
 covers["tower-drop"] = tower()
 
@@ -558,68 +570,106 @@ def card(x, y, rank, suit, red, rot, s=1.0, blur=False):
 
 
 def solitaire():
-    d = ('<radialGradient id="felt" cx="50%" cy="40%" r="80%"><stop offset="0" stop-color="#16805f"/><stop offset=".7" stop-color="#0a4a37"/><stop offset="1" stop-color="#042419"/></radialGradient>')
+    """v122 · Under a single card-room lamp: a stream of cards flies from the deck to the four foundations in a speed arc,
+    the ace of spades sharp in the light, the rest of the table falling into shadow and motion blur."""
+    d = ('<radialGradient id="felt" cx="58%" cy="42%" r="78%"><stop offset="0" stop-color="#1a9a70"/><stop offset=".45" stop-color="#0c5a42"/><stop offset="1" stop-color="#021510"/></radialGradient>'
+         '<radialGradient id="lamp" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#fff4d6" stop-opacity=".5"/><stop offset="1" stop-color="#fff4d6" stop-opacity="0"/></radialGradient>'
+         '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2a14"/><stop offset=".5" stop-color="#8a5a30"/><stop offset="1" stop-color="#2a160a"/></linearGradient>'
+         '<linearGradient id="back" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3f8a"/><stop offset="1" stop-color="#121c48"/></linearGradient>'
+         '<linearGradient id="goldrim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#e9b730"/><stop offset="1" stop-color="#8a5a10"/></linearGradient>')
     p = ['<rect width="640" height="440" fill="url(#felt)"/>']
     r = random.Random(2)
-    for _ in range(900):
-        p.append(f'<circle cx="{f(r.uniform(0, 640))}" cy="{f(r.uniform(0, 440))}" r=".8" fill="#000" opacity=".12"/>')
-    # back cards out of focus
-    p.append(card(-40, -60, "A", "♣", False, -18, 1.0, True) + card(520, -40, "A", "♦", True, 16, 1.0, True))
-    fan = [("K", "♠", False), ("Q", "♥", True), ("J", "♣", False), ("10", "♦", True), ("9", "♠", False), ("A", "♥", True)]
-    for i, (rk, s, red) in enumerate(fan):
-        p.append(card(70 + i * 70, 120 + abs(i - 2.5) * 12, rk, s, red, -30 + i * 12, 1.15))
-    p.append(sparkle(560, 120, 14, "#ffe9b0") + sparkle(110, 330, 10, "#ffffff"))
+    for _ in range(1100):
+        p.append(f'<circle cx="{f(r.uniform(0, 640))}" cy="{f(r.uniform(0, 440))}" r=".8" fill="#000" opacity=".13"/>')
+    # padded table rim in the foreground (bottom), out of focus
+    p.append('<g filter="url(#dof2)"><path d="M-20,400 Q320,350 660,400 L660,460 L-20,460 Z" fill="url(#rim)"/><path d="M-20,400 Q320,350 660,400" fill="none" stroke="#e8b87a" stroke-opacity=".5" stroke-width="4"/></g>')
+    # the four foundations, top right, gold-rimmed, the next card arriving
+    for k, (rk, s, red) in enumerate([("K", "♣", False), ("Q", "♦", True), ("J", "♥", True), ("10", "♠", False)]):
+        x, y = 360 + k * 66, 44 + k * 4
+        p.append(f'<g filter="url(#dof)"><rect x="{x}" y="{y}" width="58" height="82" rx="7" fill="#fbfaf5" stroke="url(#goldrim)" stroke-width="3"/>'
+                 f'<text x="{x + 8}" y="{y + 22}" font-family="Georgia, serif" font-size="18" font-weight="700" fill="{"#cf1b30" if red else "#121826"}">{rk}</text>'
+                 f'<text x="{x + 29}" y="{y + 62}" font-family="Arial, sans-serif" font-size="30" fill="{"#cf1b30" if red else "#121826"}" text-anchor="middle">{s}</text></g>')
+    # the deck, lower left, backs
+    for k in range(6):
+        p.append(f'<g filter="url(#dof)"><rect x="{40 + k * 1.5}" y="{300 - k * 2}" width="96" height="134" rx="10" fill="url(#back)" stroke="#9fb4ff" stroke-opacity=".5"/></g>')
+    # the speed arc: cards flying from the deck to the foundations, blur growing with speed
+    arc = [(150, 250, -24, .55, True), (220, 190, -14, .62, True), (300, 150, -4, .7, True)]
+    for i, (x, y, rot, s, blur) in enumerate(arc):
+        for k in range(3):
+            p.append(f'<g opacity="{.12 + k * .06:.2f}" transform="translate({-26 * (3 - k)} {16 * (3 - k)})">{card(x, y, "", "", False, rot, s, True)}</g>')
+        p.append(card(x, y, ["7", "8", "9"][i], ["♥", "♣", "♦"][i], i != 1, rot, s, blur))
+    # hero: the ace of spades, sharp in the lamp light
+    p.append('<ellipse cx="300" cy="140" rx="300" ry="190" fill="url(#lamp)" style="mix-blend-mode:screen"/>')
+    p.append(card(214, 150, "A", "♠", False, 12, 1.08))
+    p.append(f'<path d="M150,330 C230,250 330,180 430,120" fill="none" stroke="#fff6d8" stroke-opacity=".35" stroke-width="2" stroke-dasharray="2 10" filter="url(#glow)"/>')
+    p.append(sparkle(392, 238, 12, "#fff3b0") + sparkle(578, 152, 9, "#ffffff"))
+    p.append(cine(300, 260, key="#fff1c8", flare="#ffe7a8", beam=(300, -60, 170), strength=.8, flare_w=280))
     return svg("".join(p), extra_defs=d)
 covers["solitaire-sprint"] = solitaire()
 
 
 # ---------- Mine Grid: perspective field to the edges, a mine exploding ----------
 def mine():
+    """v122 · A low, cinematic look across the minefield at night: the tiles run to a foggy horizon, a mine blows in the
+    middle distance and lights the board orange, debris and smoke rise, a flag stands sharp in the foreground."""
     d = ('<linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7aa0e6"/><stop offset="1" stop-color="#2f4a86"/></linearGradient>'
          '<linearGradient id="open" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17264a"/><stop offset="1" stop-color="#0c1630"/></linearGradient>'
-         '<radialGradient id="boom" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff6c8"/><stop offset=".3" stop-color="#ffb04a" stop-opacity=".9"/><stop offset=".7" stop-color="#ff3b5c" stop-opacity=".4"/><stop offset="1" stop-color="#ff3b5c" stop-opacity="0"/></radialGradient>')
-    p = ['<rect width="640" height="440" fill="#070d22"/>']
-    nums = {(4, 3): 1, (5, 3): 2, (4, 4): 1, (5, 4): 3, (6, 4): 2, (5, 5): 1, (4, 5): 1, (6, 3): 1, (6, 5): 1, (3, 4): 1, (7, 4): 2}
+         '<linearGradient id="msky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05070f"/><stop offset=".7" stop-color="#1b1d33"/><stop offset="1" stop-color="#3a2a3a"/></linearGradient>'
+         '<radialGradient id="boom" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff6c8"/><stop offset=".25" stop-color="#ffb04a" stop-opacity=".95"/><stop offset=".6" stop-color="#ff3b5c" stop-opacity=".45"/><stop offset="1" stop-color="#ff3b5c" stop-opacity="0"/></radialGradient>'
+         '<radialGradient id="glowfloor" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".7"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>'
+         '<linearGradient id="hfog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a9ac8" stop-opacity="0"/><stop offset=".5" stop-color="#8a9ac8" stop-opacity=".28"/><stop offset="1" stop-color="#8a9ac8" stop-opacity="0"/></linearGradient>')
+    HZ = 128
+    p = ['<rect width="640" height="440" fill="url(#msky)"/>', stars(9, 40, HZ - 20)]
+    nums = {(5, 4): 1, (6, 4): 2, (7, 4): 1, (5, 5): 1, (6, 5): 3, (7, 5): 2, (4, 6): 1, (5, 6): 1, (6, 6): 2, (7, 6): 1, (8, 6): 1, (5, 7): 1, (6, 7): 1}
     colors = {1: "#7fe3ee", 2: "#5cffb0", 3: "#ff8a4c"}
+    ROWS, COLS = 10, 13
 
     def P(i, j):
-        t = j / 7
-        y = -10 + 470 * (t ** 1.25)
-        half = 230 + 330 * t
-        return 320 - half + 2 * half * i / 11, y
-    for j in range(7):
-        for i in range(11):
+        t = j / ROWS
+        y = HZ + 330 * (t ** 1.7)
+        half = 150 + 560 * (t ** 1.7)
+        return 320 - half + 2 * half * i / COLS, y
+    for j in range(ROWS):
+        rows = []
+        for i in range(COLS):
             a, b, c, dd = P(i, j), P(i + 1, j), P(i + 1, j + 1), P(i, j + 1)
-            pad = 3
-            pts = f"{f(a[0] + pad)},{f(a[1] + pad)} {f(b[0] - pad)},{f(b[1] + pad)} {f(c[0] - pad)},{f(c[1] - pad)} {f(dd[0] + pad)},{f(dd[1] - pad)}"
-            opened = (i, j) in nums or (4 <= i <= 6 and 3 <= j <= 5)
-            blur = ' filter="url(#dof)"' if j <= 1 else ""
-            p.append(f'<polygon points="{pts}" fill="{"url(#open)" if opened else "url(#tile)"}" stroke="{"#23365e" if opened else "#b2ccf6"}" stroke-width="1.5"{blur}/>')
-            if (i, j) in nums:
+            pad = 1 + j * .5
+            pts = f"{f(a[0] + pad)},{f(a[1] + pad * .5)} {f(b[0] - pad)},{f(b[1] + pad * .5)} {f(c[0] - pad)},{f(c[1] - pad * .5)} {f(dd[0] + pad)},{f(dd[1] - pad * .5)}"
+            opened = (i, j) in nums
+            rows.append(f'<polygon points="{pts}" fill="{"url(#open)" if opened else "url(#tile)"}" stroke="{"#23365e" if opened else "#b2ccf6"}" stroke-width="{.6 + j * .15:.2f}"/>')
+            if opened:
                 cxx = (a[0] + b[0] + c[0] + dd[0]) / 4; cyy = (a[1] + b[1] + c[1] + dd[1]) / 4
-                p.append(f'<text x="{f(cxx)}" y="{f(cyy + 12)}" font-family="Arial Black, sans-serif" font-size="{26 + j * 6}" fill="{colors[nums[(i, j)]]}" text-anchor="middle" filter="url(#glow)">{nums[(i, j)]}</text>')
-    for (fi, fj) in [(7.5, 2.5), (2.5, 5.5)]:
-        fx, fy = P(fi, fj); s = .9 + fj * .25
-        p.append(f'<line x1="{f(fx)}" y1="{f(fy + 12 * s)}" x2="{f(fx)}" y2="{f(fy - 40 * s)}" stroke="#e9f4ff" stroke-width="{f(4 * s)}"/><polygon points="{f(fx)},{f(fy - 40 * s)} {f(fx + 34 * s)},{f(fy - 28 * s)} {f(fx)},{f(fy - 16 * s)}" fill="#ff3b5c"/>')
-    mx, my = P(8.5, 5.6)
-    p.append(f'<circle cx="{f(mx)}" cy="{f(my)}" r="150" fill="url(#boom)"/>')
+                fs = 8 + j * 4.2
+                rows.append(f'<text x="{f(cxx)}" y="{f(cyy + fs * .36)}" font-family="Arial Black, sans-serif" font-size="{f(fs)}" fill="{colors[nums[(i, j)]]}" text-anchor="middle" filter="url(#glow)">{nums[(i, j)]}</text>')
+        blur = ' filter="url(#dof)"' if j <= 2 or j >= 9 else ""
+        p.append(f'<g{blur}>{"".join(rows)}</g>')
+    p.append(f'<rect x="0" y="{HZ - 30}" width="640" height="90" fill="url(#hfog)"/>')
+    # the blast, middle distance right
+    mx, my = P(9.5, 5.4)
+    p.append(f'<ellipse cx="{f(mx)}" cy="{f(my + 8)}" rx="230" ry="70" fill="url(#glowfloor)" style="mix-blend-mode:screen"/>')
+    for k in range(3):
+        p.append(f'<ellipse cx="{f(mx)}" cy="{f(my + 8)}" rx="{70 + k * 46}" ry="{16 + k * 11}" fill="none" stroke="#ffd6a0" stroke-opacity="{.5 - k * .14:.2f}" stroke-width="{3 - k * .8:.1f}"/>')
+    for k in range(7):
+        p.append(f'<ellipse cx="{f(mx - 20 + k * 8)}" cy="{f(my - 70 - k * 34)}" rx="{50 + k * 16}" ry="{26 + k * 9}" fill="#2a2c3a" opacity="{.5 - k * .05:.2f}" filter="url(#soft)"/>')
+    p.append(f'<circle cx="{f(mx)}" cy="{f(my - 18)}" r="120" fill="url(#boom)"/>')
     rr = random.Random(2)
     for q in range(22):
-        a = q * math.pi / 11 + rr.uniform(-.1, .1); d0, d1 = 50, 50 + rr.uniform(40, 110)
-        p.append(f'<line x1="{f(mx + math.cos(a) * d0)}" y1="{f(my + math.sin(a) * d0 * .8)}" x2="{f(mx + math.cos(a) * d1)}" y2="{f(my + math.sin(a) * d1 * .8)}" stroke="#ffd36a" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>')
-    for q in range(8):
-        a = q * math.pi / 4
-        p.append(f'<line x1="{f(mx)}" y1="{f(my)}" x2="{f(mx + 40 * math.cos(a))}" y2="{f(my + 40 * math.sin(a))}" stroke="#2a2f3a" stroke-width="7" stroke-linecap="round"/>')
-    p.append(sphere(mx, my, 28, "#3a3f4c", "mine", hi="#9aa3b5", shadow=False))
-    p.append(f'<circle cx="{f(mx + 7)}" cy="{f(my - 7)}" r="5" fill="#ff3b5c" filter="url(#glow)"/>')
-    # v121 · smoke and embers drifting off the blast, film grade centred on the mine
-    rr2 = random.Random(21)
-    for q in range(16):
-        a = rr2.uniform(-math.pi, 0); dd = rr2.uniform(70, 210)
-        p.append(f'<circle cx="{f(mx + math.cos(a) * dd)}" cy="{f(my + math.sin(a) * dd * .7)}" r="{f(rr2.uniform(1.4, 3.2))}" fill="#ffcf6a" opacity="{rr2.uniform(.5, .95):.2f}" filter="url(#glow)"/>')
-    for q in range(5):
-        p.append(f'<ellipse cx="{f(mx - 60 + q * 34)}" cy="{f(my - 70 - q * 18)}" rx="{70 + q * 12}" ry="{26 + q * 4}" fill="#2a2f3a" opacity=".22" filter="url(#soft)"/>')
-    p.append(cine(mx - 40, my - 20, key="#ffb04a", flare="#ffd9a0", beam=(120, -30, 120), strength=.7, flare_w=340))
+        a = -math.pi + q * math.pi / 21 + rr.uniform(-.08, .08); d0, d1 = 34, 34 + rr.uniform(50, 130)
+        p.append(f'<line x1="{f(mx + math.cos(a) * d0)}" y1="{f(my - 18 + math.sin(a) * d0 * .9)}" x2="{f(mx + math.cos(a) * d1)}" y2="{f(my - 18 + math.sin(a) * d1 * .9)}" stroke="#ffd36a" stroke-width="3" stroke-linecap="round" filter="url(#glow)"/>')
+    for q in range(9):
+        a = -math.pi * .9 + q * .32; dd = rr.uniform(70, 150); s = rr.uniform(8, 16)
+        x, y = mx + math.cos(a) * dd, my - 30 + math.sin(a) * dd * .8
+        p.append(f'<rect x="{f(x - s / 2)}" y="{f(y - s / 3)}" width="{f(s)}" height="{f(s * .66)}" fill="url(#tile)" stroke="#b2ccf6" stroke-width=".8" transform="rotate({rr.randint(0, 80)} {f(x)} {f(y)})"/>')
+    for q in range(18):
+        a = rr.uniform(-math.pi, 0); dd = rr.uniform(40, 200)
+        p.append(f'<circle cx="{f(mx + math.cos(a) * dd)}" cy="{f(my - 20 + math.sin(a) * dd * .8)}" r="{f(rr.uniform(1.2, 3))}" fill="#ffcf6a" opacity="{rr.uniform(.5, .95):.2f}" filter="url(#glow)"/>')
+    p.append(sphere(mx, my - 18, 18, "#3a3f4c", "mine", hi="#9aa3b5", shadow=False))
+    # flags: one small mid-left, one big and sharp in the foreground left
+    for (fi, fj, s) in [(3.3, 4.2, .8), (3.7, 8.4, 2.0)]:
+        fx, fy = P(fi, fj)
+        p.append(f'<line x1="{f(fx)}" y1="{f(fy + 10 * s)}" x2="{f(fx)}" y2="{f(fy - 44 * s)}" stroke="#e9f4ff" stroke-width="{f(3.5 * s)}"/><polygon points="{f(fx)},{f(fy - 44 * s)} {f(fx + 36 * s)},{f(fy - 31 * s)} {f(fx)},{f(fy - 18 * s)}" fill="#ff3b5c"/>'
+                 f'<polygon points="{f(fx)},{f(fy - 44 * s)} {f(fx + 36 * s)},{f(fy - 31 * s)} {f(fx + 20 * s)},{f(fy - 36 * s)}" fill="#ff8aa0" opacity=".5"/>')
+    p.append(cine(mx - 30, my - 20, key="#ffb04a", flare="#ffd9a0", beam=None, strength=.76, flare_w=360))
     return svg("".join(p), extra_defs=d)
 covers["mine-grid"] = mine()
 
@@ -728,40 +778,51 @@ covers["stack-3d"] = covers["precision-stack"]
 
 # ---------- Pinball: the playfield in close-up, bumpers lit, ball flying off a flipper ----------
 def pinball():
-    d = ('<linearGradient id="pf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1a6c"/><stop offset="1" stop-color="#081638"/></linearGradient>'
-         '<linearGradient id="ramp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9fe8ff" stop-opacity=".25"/><stop offset=".5" stop-color="#9fe8ff" stop-opacity=".75"/><stop offset="1" stop-color="#9fe8ff" stop-opacity=".25"/></linearGradient>')
-    p = ['<rect width="640" height="440" fill="url(#pf)"/>']
-    for (x, y, r, c) in [(140, 120, 200, "rgba(170,60,220,.35)"), (520, 300, 220, "rgba(30,170,220,.28)")]:
+    """v122 · From the flippers, looking up the playfield: a chrome ball in the foreground catching the neon, the bumpers
+    lit in the middle distance, ramps glowing and the backbox score blurred at the top."""
+    d = ('<linearGradient id="pf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a0f4a"/><stop offset=".6" stop-color="#2a1a6c"/><stop offset="1" stop-color="#0a0f2e"/></linearGradient>'
+         '<linearGradient id="ramp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9fe8ff" stop-opacity=".2"/><stop offset=".5" stop-color="#9fe8ff" stop-opacity=".85"/><stop offset="1" stop-color="#9fe8ff" stop-opacity=".2"/></linearGradient>'
+         '<radialGradient id="chromeBall" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".18" stop-color="#e8f1fb"/><stop offset=".45" stop-color="#7d8aa6"/><stop offset=".62" stop-color="#2a3150"/><stop offset=".8" stop-color="#ff4fa0"/><stop offset=".9" stop-color="#5a6a9a"/><stop offset="1" stop-color="#0c1022"/></radialGradient>'
+         '<linearGradient id="flip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c7cde0"/></linearGradient>'
+         '<linearGradient id="backbox" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff3d9a"/><stop offset=".5" stop-color="#ffb03a"/><stop offset="1" stop-color="#7fe3ee"/></linearGradient>')
+    p = ['<rect width="640" height="440" fill="url(#pf)"/>', stars(22, 50, 200)]
+    # perspective lane lines converging up the table
+    for k in range(-7, 8):
+        p.append(f'<line x1="{320 + k * 26}" y1="60" x2="{320 + k * 120}" y2="440" stroke="#9fe8ff" stroke-opacity="{.05 if k % 2 else .1}" stroke-width="1.5"/>')
+    # backbox glow and score, far and out of focus
+    p.append('<g filter="url(#dof2)"><rect x="150" y="-30" width="340" height="70" rx="12" fill="url(#backbox)" opacity=".55"/>'
+             '<rect x="210" y="4" width="220" height="38" rx="6" fill="#120700" stroke="#ff8a1f" stroke-width="3"/>'
+             '<text x="320" y="33" font-family="Menlo, monospace" font-size="26" font-weight="900" fill="#ffb03a" text-anchor="middle">2.450.000</text></g>')
+    for (x, y, r, c) in [(150, 150, 170, "rgba(255,61,154,.28)"), (520, 210, 190, "rgba(30,170,220,.26)")]:
         p.append(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{c}" filter="url(#soft)"/>')
-    p.append(stars(22, 70))
-    # habitrails sweeping across
-    for path in ["M-20,300 C80,60 260,10 400,30 S640,120 660,60", "M660,330 C560,120 420,80 300,90"]:
-        p.append(f'<path d="{path}" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="34" transform="translate(6 10)"/><path d="{path}" fill="none" stroke="url(#ramp)" stroke-width="30"/>')
-        p.append(f'<path d="{path}" fill="none" stroke="#e9f2fb" stroke-width="3" transform="translate(0 -13)"/><path d="{path}" fill="none" stroke="#e9f2fb" stroke-width="3" transform="translate(0 13)"/>')
-    # bumpers big
-    for (x, y, r, c, lit) in [(190, 210, 62, "#e12d3f", False), (400, 170, 58, "#ffb81f", True), (330, 330, 66, "#2f8fff", False)]:
-        p.append(f'<circle cx="{x + 6}" cy="{y + 12}" r="{r + 10}" fill="#000" opacity=".45" filter="url(#soft)"/><circle cx="{x}" cy="{y}" r="{r + 10}" fill="#141a2c"/>')
+    # ramps: neon habitrails sweeping across the middle distance
+    for path in ["M-20,250 C90,90 250,60 380,80 S600,150 660,110", "M660,280 C560,150 430,120 300,130"]:
+        p.append(f'<g filter="url(#dof)"><path d="{path}" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="26" transform="translate(5 8)"/><path d="{path}" fill="none" stroke="url(#ramp)" stroke-width="22"/>'
+                 f'<path d="{path}" fill="none" stroke="#e9f2fb" stroke-width="2.5" transform="translate(0 -10)"/><path d="{path}" fill="none" stroke="#e9f2fb" stroke-width="2.5" transform="translate(0 10)"/></g>')
+    # bumpers in the middle distance, lit
+    for (x, y, r, c, lit) in [(220, 178, 34, "#e12d3f", False), (330, 150, 30, "#ffb81f", True), (430, 186, 36, "#2f8fff", True)]:
+        g = f'<circle cx="{x + 4}" cy="{y + 8}" r="{r + 8}" fill="#000" opacity=".45" filter="url(#soft)"/><circle cx="{x}" cy="{y}" r="{r + 7}" fill="#141a2c"/>'
         if lit:
-            p.append(f'<circle cx="{x}" cy="{y}" r="{r + 40}" fill="{c}" opacity=".35" filter="url(#bigglow)"/>')
-        p.append(sphere(x, y, r, c, f"bp{x}", shadow=False))
-        p.append(f'<circle cx="{x}" cy="{y}" r="{r * .58}" fill="#f2f6fb"/>')
-        p.append(f'<g fill="{c}">{shape("star", x, y, r * .38)}</g>')
-        for n in range(14):
-            a = n / 14 * 2 * math.pi
-            p.append(f'<circle cx="{f(x + math.cos(a) * (r + 5))}" cy="{f(y + math.sin(a) * (r + 5))}" r="3" fill="{c if lit else "#fff"}" opacity="{1 if lit else .3}"/>')
-    p.append('<circle cx="400" cy="170" r="94" fill="none" stroke="#fff3b0" stroke-width="5" opacity=".7" filter="url(#glow)"/>')
-    # flipper at the bottom right, ball shooting up off it
-    p.append('<g filter="url(#shadow)"><path d="M640,410 L470,372 Q456,370 458,384 L630,440 Z" fill="#fbfbff" stroke="#e12d3f" stroke-width="6"/></g>')
-    pts = [(520 - t * 14, 360 - t * 22) for t in range(9)]
-    p.append(trail(pts, "#bdf6ff", 30, .6))
-    p.append(sphere(pts[-1][0], pts[-1][1], 26, "#dfe7f1", "pbb"))
-    # score display strip at the top
-    p.append('<rect x="200" y="12" width="240" height="44" rx="8" fill="#120700" stroke="#ff8a1f" stroke-width="3"/><text x="320" y="46" font-family="Menlo, monospace" font-size="30" font-weight="900" fill="#ffb03a" text-anchor="middle" filter="url(#glow)">2.450.000</text>')
+            g += f'<circle cx="{x}" cy="{y}" r="{r + 30}" fill="{c}" opacity=".35" filter="url(#bigglow)"/>'
+        g += sphere(x, y, r, c, f"bp{x}", shadow=False) + f'<circle cx="{x}" cy="{y}" r="{r * .55:.1f}" fill="#f2f6fb"/><g fill="{c}">{shape("star", x, y, r * .36)}</g>'
+        p.append(f'<g filter="url(#dof)">{g}</g>')
+    # flippers huge in the foreground, inlane guides
+    p.append('<g filter="url(#shadow)"><path d="M-30,352 L250,420 Q268,428 252,440 L-30,440 Z" fill="url(#flip)" stroke="#e12d3f" stroke-width="7"/>'
+             '<path d="M670,352 L470,404 Q452,410 462,428 L670,440 Z" fill="url(#flip)" stroke="#e12d3f" stroke-width="7"/></g>')
+    p.append('<path d="M-10,300 L120,352" stroke="#d6dde6" stroke-width="6" stroke-linecap="round"/><path d="M650,300 L560,340" stroke="#d6dde6" stroke-width="6" stroke-linecap="round"/>')
+    # hero: the chrome ball, sharp, with a speed trail up the table and neon reflections
+    bx, by, br = 392, 286, 46
+    pts = [(bx + 80 - t * 10, by + 120 - t * 15) for t in range(9)]
+    p.append(trail(pts, "#bdf6ff", 60, .5))
+    p.append(f'<ellipse cx="{bx + 10}" cy="{by + br * .95}" rx="{br * .9}" ry="{br * .22}" fill="#000" opacity=".55" filter="url(#soft)"/>')
+    p.append(f'<circle cx="{bx}" cy="{by}" r="{br + 10}" fill="#7fe3ee" opacity=".22" filter="url(#bigglow)"/>')
+    p.append(f'<circle cx="{bx}" cy="{by}" r="{br}" fill="url(#chromeBall)"/>')
+    p.append(f'<path d="M{bx - br * .8},{by + br * .2} A{br},{br * .55} 0 0 0 {bx + br * .8},{by + br * .2}" fill="none" stroke="#7fe3ee" stroke-opacity=".7" stroke-width="3"/>')
+    p.append(f'<ellipse cx="{bx - br * .32}" cy="{by - br * .42}" rx="{br * .3}" ry="{br * .16}" fill="#fff" opacity=".85" transform="rotate(-28 {bx - br * .32} {by - br * .42})"/>')
     for i in range(7):
-        p.append(f'<circle cx="{60 + i * 34}" cy="410" r="8" fill="{"#5cffb0" if i % 2 else "#24463a"}" filter="url(#glow)"/>')
-    p.append(sparkle(400, 170, 22, "#fff3b0"))
-    # v121 · the ball is the hero: grade and streak follow it off the flipper
-    p.append(cine(pts[-1][0], pts[-1][1], key="#bdf6ff", flare="#9fefff", beam=(560, -40, 130), strength=.8, flare_w=300))
+        p.append(f'<circle cx="{70 + i * 34}" cy="420" r="7" fill="{"#5cffb0" if i % 2 else "#24463a"}" filter="url(#glow)"/>')
+    p.append(sparkle(bx - 20, by - 36, 18, "#ffffff"))
+    p.append(cine(bx, by, key="#bdf6ff", flare="#9fefff", beam=(330, -40, 140), strength=.78, flare_w=320))
     return svg("".join(p), extra_defs=d)
 covers["pinball"] = pinball()
 

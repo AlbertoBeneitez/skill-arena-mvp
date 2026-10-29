@@ -31,7 +31,7 @@ export const emptyLeague = (): LeagueRecord => ({ tier: 0, results: [], series: 
 /** Platinum-level reference score per game (higher is better). Balance games use their own goals. */
 const REFERENCE: Record<string, number> = {
   darts: 800,
-  billiards: 7000,
+  billiards: 8000,
   "tower-drop": 6200,
   "solitaire-sprint": 22500,
   "mine-grid": 6000,

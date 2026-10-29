@@ -1,30 +1,39 @@
-# Cuentas de inicio de sesión (estado v121)
+# Inicio de sesión con otras cuentas (estado v122)
 
-La pantalla de inicio muestra «Continuar con Google», «Continuar con Apple» y, en «Otras cuentas», X, Discord y Microsoft.
-**Ninguna está activada.** Al tocarlas aparece un aviso y la entrada que funciona sigue siendo la sesión local.
-La configuración está en `lib/authProviders.ts`; `providerAvailability()` devuelve siempre `not-configured`.
+**Activado por el propietario el 29-oct-2026.** El flujo OAuth 2.0 / OpenID Connect está en el servidor:
 
-## Qué falta para activarlas (requiere aprobación del propietario: AGENTS.md, «production auth activation»)
-1. Un ADR de identidad que decida:
-   - la librería o el backend de OAuth/OIDC;
-   - cómo se guardan las sesiones;
-   - cómo se vinculan con la identidad local, el consentimiento RGPD y el borrado.
-2. Credenciales de cada proveedor, solo como variables de entorno de Vercel y nunca en el repositorio:
+| Ruta | Qué hace |
+|---|---|
+| `GET /api/auth/{proveedor}/start` | Crea `state` y PKCE, los guarda 10 min en la cookie `ga_oauth` y redirige al proveedor. |
+| `GET\|POST /api/auth/{proveedor}/callback` | Comprueba el `state`, canjea el código y lee el perfil mínimo. Guarda la sesión en `ga_session` (firmada HMAC-SHA256, 30 días) y vuelve a `/?auth=ok`. Apple vuelve por POST. |
+| `GET /api/auth/session` | Devuelve qué proveedores están configurados y quién ha entrado: proveedor y nombre. |
+| `DELETE /api/auth/session` | Cierra la sesión. También lo hacen «Cerrar sesión» y «Borrar mis datos». |
 
-| Proveedor | Protocolo | Variables | Correo |
+**Datos (RGPD):**
+- Solo el identificador de la cuenta en el proveedor y el nombre visible. No se pide el correo.
+- Nada se guarda en el servidor: la cookie firmada vive en el dispositivo del jugador.
+- La política de privacidad y la de cookies de la app ya lo explican.
+
+**Alcance:** identifica al jugador en este dispositivo. No activa dinero real, liquidación ni rankings reales.
+
+## Cada botón se enciende solo cuando sus credenciales están en Vercel
+
+Mientras falten, el botón muestra el aviso «aún no está activo» y la entrada sigue siendo la sesión local.
+Las variables se configuran en Vercel → Project → Settings → Environment Variables (Production y Preview), **nunca en el repositorio**:
+
+| Variable | Para qué |
+|---|---|
+| `AUTH_SECRET` | Obligatoria para todos. Cadena aleatoria de 32 caracteres o más, por ejemplo `openssl rand -base64 48`. |
+| `AUTH_URL` | Recomendada. Dominio fijo de la app, por ejemplo `https://skill-arena-mvp-git-mobile-test-skill-arena2.vercel.app`. Las URL de retorno y las cookies se quedan siempre en él. |
+
+URL de retorno que hay que registrar en cada proveedor: `{AUTH_URL}/api/auth/{proveedor}/callback`.
+
+| Proveedor | Dónde se crea | Variables | Notas |
 |---|---|---|---|
-| Google | OpenID Connect | `AUTH_GOOGLE_CLIENT_ID`, `AUTH_GOOGLE_CLIENT_SECRET` | verificado |
-| Apple | OpenID Connect | `AUTH_APPLE_SERVICES_ID`, `AUTH_APPLE_TEAM_ID`, `AUTH_APPLE_KEY_ID`, `AUTH_APPLE_PRIVATE_KEY` | puede ser un relé privado u ocultarse |
-| X | OAuth 2.0 | `AUTH_X_CLIENT_ID`, `AUTH_X_CLIENT_SECRET` | no garantizado |
-| Discord | OAuth 2.0 | `AUTH_DISCORD_CLIENT_ID`, `AUTH_DISCORD_CLIENT_SECRET` | verificado |
-| Microsoft | OpenID Connect | `AUTH_MICROSOFT_CLIENT_ID`, `AUTH_MICROSOFT_CLIENT_SECRET` | verificado |
+| Google | Google Cloud Console → APIs y servicios → Credenciales → ID de cliente OAuth (aplicación web) | `AUTH_GOOGLE_CLIENT_ID`, `AUTH_GOOGLE_CLIENT_SECRET` | Alcances `openid profile`. Pantalla de consentimiento en modo «Producción». |
+| Apple | Apple Developer → Identifiers → Services ID (Sign in with Apple) + Keys (clave .p8) | `AUTH_APPLE_SERVICES_ID`, `AUTH_APPLE_TEAM_ID`, `AUTH_APPLE_KEY_ID`, `AUTH_APPLE_PRIVATE_KEY` (contenido PEM del .p8) | Requiere la cuenta de pago de Apple Developer. Apple solo envía el nombre la primera vez. |
+| X | developer.x.com → proyecto → app → User authentication settings (OAuth 2.0, tipo «Web App») | `AUTH_X_CLIENT_ID`, `AUTH_X_CLIENT_SECRET` | Alcances `users.read tweet.read`. |
+| Discord | discord.com/developers → Applications → OAuth2 | `AUTH_DISCORD_CLIENT_ID`, `AUTH_DISCORD_CLIENT_SECRET` | Alcance `identify`. |
+| Microsoft | portal.azure.com → Microsoft Entra ID → Registros de aplicaciones (cuentas personales y de cualquier organización) | `AUTH_MICROSOFT_CLIENT_ID`, `AUTH_MICROSOFT_CLIENT_SECRET` | Tenant `common`, alcances `openid profile`. |
 
-3. URLs de retorno en el dominio de producción, rutas de servidor para iniciar y terminar el flujo, y pruebas con cuentas reales.
-
-## Recomendación
-- **Google y Apple como principales.** Apple exige «Iniciar sesión con Apple» en apps de iOS que ofrezcan otros inicios sociales.
-- **Discord encaja con el público de juegos.** Microsoft cubre cuentas de Xbox y de trabajo.
-- **X es posible pero menos práctico:**
-  - no siempre da correo para recuperar la cuenta;
-  - su API tiene niveles de acceso que pueden cambiar.
-- **Un acceso por correo con enlace mágico** sería la alternativa sin red social.
+Después de guardar las variables, hay que volver a desplegar (Redeploy) para que entren en vigor.

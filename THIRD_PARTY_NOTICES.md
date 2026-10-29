@@ -283,3 +283,9 @@ Uses the project's existing synthesized audio and shared orbital background.
 - Apple, X y Discord: trazados del paquete npm `simple-icons` 13.21.0 — licencia CC0-1.0.
 - Google («G» de cuatro colores) y Microsoft (cuatro cuadrados): dibujados según las guías de botones de inicio de sesión de cada marca.
 - Las marcas pertenecen a sus propietarios. Se usan para identificar el proveedor de inicio de sesión, no implican patrocinio, y el acceso con esos proveedores todavía no está activo.
+
+## arctic 3.7.0 (clientes OAuth 2.0 / OpenID Connect, v122)
+
+- Uso: `lib/server/authProviders.ts` para el inicio de sesión con Google, Apple, X, Discord y Microsoft (solo en el servidor).
+- Origen: paquete npm `arctic` 3.7.0 (pilcrowonpaper), con sus dependencias `@oslojs/*`.
+- Licencia: MIT.

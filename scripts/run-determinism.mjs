@@ -11,6 +11,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-persisted-hidden-training.js");
 } else {
   await import("../.det-test/scripts/verify-interactions-v96.js");
+  await import("../.det-test/scripts/verify-auth-session.js");
   await import("../.det-test/scripts/verify-roulette-v1.js");
   await import("../.det-test/scripts/verify-roulette-v2.js");
   await import("../.det-test/scripts/verify-roulette-v4.js");
@@ -72,6 +73,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-roulette-v9.js");
   await import("../.det-test/scripts/verify-roulette-v10.js");
   await import("../.det-test/scripts/verify-roulette-v11.js");
+  await import("../.det-test/scripts/verify-roulette-v12.js");
   await (await import("./verify-orb-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-gallery-v1.js");
   await import("../.det-test/scripts/verify-gallery-v2.js");
@@ -95,6 +97,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-billiards-v2.js");
   await import("../.det-test/scripts/verify-billiards-v4.js");
   await import("../.det-test/scripts/verify-billiards-v5.js");
+  await import("../.det-test/scripts/verify-billiards-v6.js");
   await (await import("./verify-billiards-presentation.cjs")).default;
   await import("../.det-test/scripts/verify-mine-v1.js");
   await import("../.det-test/scripts/verify-mine-v2.js");

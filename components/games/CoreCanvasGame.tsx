@@ -1,5 +1,6 @@
 "use client";
 
+import SegmentDigits, { groupDigits } from "../SegmentDigits";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import GameActionButton from "../GameActionButton";
 import DirectionalJoystick from "./DirectionalJoystick";
@@ -48,6 +49,13 @@ type Props<S extends CoreState> = GameRuntimeProps & {
 };
 
 /** Presentation/input adapter. The core and shared server replay own outcomes. */
+/** v122 · HUD read-out on an LED strip: numbers become seven-segment digits, words stay as small labels. */
+function ledParts(text: string) {
+  return text.split(/(\d[\d.,]*\d|\d)/).map((part, i) =>
+    i % 2 ? <SegmentDigits key={i} value={part} /> : part ? <small key={i} aria-hidden="true">{part}</small> : null,
+  );
+}
+
 export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   useI18n();
   const { core, active, stake, targetScore, instruction, render } = props;
@@ -389,7 +397,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       }}
     />
     {pop && <div className="scorePop" key={pop.id} aria-hidden="true"><b>+{formatNumber(pop.gain)}</b>{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} style={{ ["--a" as string]: `${i * 60 + 20}deg` }} />)}</div>}
-    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span>{hud.label ?? t("game.height", { n: hud.height ?? 0 })}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop">{formatNumber(hud.score)}</strong>}{hud.lives !== undefined && <span>{t("game.lives", { n: hud.lives })}</span>}</div>
+    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span className="hudLed" aria-label={hud.label ?? t("game.height", { n: hud.height ?? 0 })}>{ledParts(hud.label ?? t("game.height", { n: hud.height ?? 0 }))}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop hudSeg"><SegmentDigits value={groupDigits(hud.score)} label={formatNumber(hud.score)} /></strong>}{hud.lives !== undefined && <span>{t("game.lives", { n: hud.lives })}</span>}</div>
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
     {props.choiceControl && (props.choiceControl.presentation === "table" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel coreChoiceTable">
       {/* Always visible: one tap places the chip, no panel to open or close. */}

@@ -1,0 +1,23 @@
+import assert from "node:assert/strict";
+import { authSecret, cleanDisplayName, cookieHeader, decodeSession, encodeSession, readCookie, type AuthSession } from "../lib/server/authSession";
+
+const secret = "x".repeat(40);
+const now = 1_800_000_000;
+const s: AuthSession = { p: "google", sub: "1234567890", n: "Alberto", iat: now, exp: now + 3600 };
+const token = encodeSession(s, secret);
+assert.deepEqual(decodeSession(token, secret, now), s, "round trip");
+assert.equal(decodeSession(token, "y".repeat(40), now), null, "other key rejected");
+assert.equal(decodeSession(token.replace(/^./, (c) => (c === "a" ? "b" : "a")), secret, now), null, "tampered body rejected");
+assert.equal(decodeSession(token + "x", secret, now), null, "tampered mac rejected");
+assert.equal(decodeSession(token, secret, now + 3601), null, "expired rejected");
+assert.equal(decodeSession(undefined, secret, now), null);
+assert.equal(decodeSession("nodot", secret, now), null);
+assert.equal(authSecret({ AUTH_SECRET: "short" }), null, "short secret refused");
+assert.equal(authSecret({}), null);
+assert.equal(cleanDisplayName("  <Ana>\u0007  María   de la Torre Fernández "), "Ana María de la To");
+assert.equal(cleanDisplayName(undefined), "");
+const c = cookieHeader("ga_session", "v", { maxAge: 60 });
+assert.match(c, /HttpOnly/); assert.match(c, /SameSite=Lax/);
+assert.match(cookieHeader("ga_oauth", "v", { maxAge: 60, sameSite: "None" }), /Secure/, "SameSite=None is always Secure");
+assert.equal(readCookie(new Request("http://x/", { headers: { cookie: "a=1; ga_session=abc.def; b=2" } }), "ga_session"), "abc.def");
+console.log("Auth session: signed cookie round trip, tamper/expiry/short-secret rejection, name cleaning, cookie flags");

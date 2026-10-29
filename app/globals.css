@@ -8102,3 +8102,98 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   text-transform: none;
 }
 .bottomNav.bottomNavThree.gxTabBar button:focus-visible { outline: 2px solid var(--st-ion); outline-offset: -6px; border-radius: 16px !important; }
+
+/* =====================================================================
+   v122 · Digital scoreboards: seven-segment read-outs on LED panels
+   ===================================================================== */
+.segDigits { display: inline-flex; align-items: center; line-height: 1; }
+.segDigits svg { display: block; overflow: visible; }
+.segDigits .segOn { fill: currentColor; }
+.segDigits .segOff { fill: currentColor; opacity: .1; }
+
+/* Pre-game rival board */
+.gxIntroRival.gxRivalBoard {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 330px);
+  max-width: none;
+  margin: 6px auto 12px;
+  padding: 10px 10px 10px 10px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--tier) 60%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 40%),
+    linear-gradient(160deg, #101c38, #070d1f);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 26px color-mix(in srgb, var(--tier) 28%, transparent), 0 16px 34px rgba(0, 4, 16, .5);
+}
+.gxRivalBoard img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--tier); box-shadow: 0 0 14px color-mix(in srgb, var(--tier) 45%, transparent); }
+.gxRivalBoard .gxRivalWho { display: grid; gap: 3px; min-width: 0; text-align: start; }
+.gxRivalBoard .gxRivalWho small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--tier);
+  font: 700 11px/1.1 Inter, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .02em;
+}
+.gxRivalBoard .gxRivalWho b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+  font-family: var(--gx-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  line-height: 1.1;
+}
+.gxRivalTarget {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  padding: 8px 10px 6px;
+  border-radius: 11px;
+  background: #02050d;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 6px 14px rgba(0, 0, 0, .7), inset 0 -10px 18px color-mix(in srgb, var(--seg) 10%, transparent);
+  --seg: #7ff4ff;
+  color: var(--seg);
+}
+.gxRivalBoard.chips .gxRivalTarget { --seg: #ffc94d; }
+.gxRivalTarget .segDigits { font-size: 28px; color: var(--seg) !important; filter: drop-shadow(0 0 4px var(--seg)); }
+.gxRivalTarget small { font: 700 9.5px/1 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: .14em; color: color-mix(in srgb, var(--seg) 70%, #8ea3c0); text-transform: uppercase; }
+
+/* In-game score: LED panel at the top right of the HUD */
+.coreHud strong.hudSeg {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 10px;
+  background: rgba(2, 5, 13, .82);
+  border: 1px solid rgba(127, 227, 238, .3);
+  box-shadow: inset 0 4px 10px rgba(0, 0, 0, .7), 0 0 14px rgba(127, 227, 238, .18);
+  color: #8ff6ff;
+  font-size: 21px;
+}
+.coreHud strong.hudSeg .segDigits { filter: drop-shadow(0 0 4px rgba(127, 244, 255, .75)); }
+/* HUD label as an LED strip (numbers in segments) */
+.coreHud > span.hudLed {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: rgba(2, 5, 13, .78);
+  border: 1px solid rgba(127, 227, 238, .26);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, .7), 0 0 12px rgba(127, 227, 238, .14);
+  color: #8ff6ff;
+  white-space: nowrap;
+}
+.coreHud > span.hudLed .segDigits { font-size: 15px; filter: drop-shadow(0 0 3px rgba(127, 244, 255, .8)); }
+.coreHud > span.hudLed small { font: 700 9.5px/1 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: .1em; color: #9fc4d6; text-transform: uppercase; }

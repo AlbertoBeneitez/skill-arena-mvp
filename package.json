@@ -13,6 +13,7 @@
     "test:i18n": "node scripts/verify-i18n.cjs"
   },
   "dependencies": {
+    "arctic": "3.7.0",
     "next": "16.4.2",
     "pg": "8.23.1",
     "qrcode-generator": "1.4.4",

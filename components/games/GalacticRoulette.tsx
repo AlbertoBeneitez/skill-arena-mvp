@@ -2,13 +2,13 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V11,
-  ROULETTE_RULES_V11,
+  ROULETTE_CORE_V12,
+  ROULETTE_RULES_V12,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV11 as RouletteStateV2,
-  rouletteSurfaceV11,
-} from "@/lib/verified/galacticRouletteCore.v11";
+  type RouletteStateV12 as RouletteStateV2,
+  rouletteSurfaceV12,
+} from "@/lib/verified/galacticRouletteCore.v12";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -28,7 +28,7 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V11.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V12.ballRadius / 1000;
 // Presentation radii (the authoritative ball physics live in the core).
 const NUMBER_OUTER = 121,
   NUMBER_INNER = 104,
@@ -171,10 +171,18 @@ function render(
   ctx.stroke();
   for (let i = 0; i < 8; i++) {
     const a = (i * Math.PI) / 4;
+    const dx0 = cx + Math.cos(a) * 130, dy0 = cy + Math.sin(a) * 130;
+    // V12: the diamonds are real deflectors; the one the ball is striking lights up.
+    const struck = s.landingTick !== -1 && s.inBowl && Math.hypot(s.ballX / 1000 - dx0, s.ballY / 1000 - dy0) < 13;
     ctx.save();
-    ctx.translate(cx + Math.cos(a) * 130, cy + Math.sin(a) * 130);
+    ctx.translate(dx0, dy0);
     ctx.rotate(a);
-    ctx.fillStyle = "#c7ac7a";
+    if (struck) {
+      const g = ctx.createRadialGradient(0, 0, 1, 0, 0, 16);
+      g.addColorStop(0, "rgba(255,240,200,.95)"); g.addColorStop(1, "rgba(255,210,122,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = struck ? "#fff1c8" : "#c7ac7a";
     ctx.beginPath();
     ctx.moveTo(0, -5);
     ctx.lineTo(5, 0);
@@ -214,7 +222,7 @@ function render(
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
   const radius = Math.hypot(x - cx, y - cy);
-  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV11(radius * 1000).z / 1000 : 0;
+  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV12(radius * 1000).z / 1000 : 0;
   const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - BALL_R);
   // Launcher: an orbital "magnetic cradle" outside the wheel — a hexagonal pad, three clamp prongs and counter-rotating
   // coil rings that hold the ball in the air; dragging charges the coils (faster, warmer, sparks between the prongs).
@@ -312,6 +320,19 @@ function render(
     drawBall(x, y, 0);
     drawBall(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 0);
   } else drawBall(x, y, height);
+  if (idle && s.chips.length === 0) {
+    // V12 · no chips on the cloth: the cradle is locked, the ball cannot be picked up until a bet is placed.
+    ctx.save();
+    ctx.translate(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y);
+    ctx.fillStyle = "rgba(5,10,26,.62)";
+    ctx.beginPath(); ctx.arc(0, 0, 34, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#ffcf6a"; ctx.lineWidth = 2.4; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(0, -4, 6.5, Math.PI, 0); ctx.stroke();
+    ctx.fillStyle = "#ffcf6a";
+    ctx.beginPath(); ctx.roundRect(-9, -4, 18, 14, 3); ctx.fill();
+    ctx.fillStyle = "#3a2a08"; ctx.beginPath(); ctx.arc(0, 2, 2.2, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-1, 2, 2, 5);
+    ctx.restore();
+  }
   ctx.strokeStyle = "#c7ac7a";
   ctx.lineWidth = 5;
   ctx.beginPath();
@@ -332,22 +353,12 @@ function render(
   ctx.font = "900 28px system-ui";
   ctx.textAlign = "center";
   ctx.fillText(s.lastNumber === null ? "" : String(s.lastNumber), cx, 270);
-    const onCloth = s.landingTick !== -1 ? s.lockedChips : s.chips;
-  const onClothValues = s.landingTick !== -1 ? s.lockedValues : s.chipValues;
-  const stake = onClothValues.reduce((a, b) => a + b, 0);
-  ctx.fillStyle = "#a8c6d5";
-  ctx.font = "bold 14px system-ui";
-  ctx.fillText(
-    onCloth.length ? (stake === 1 ? t("roulette.onTableOne") : t("roulette.onTable", { n: stake })) : t("roulette.noChips"),
-    cx,
-    377,
-  );
   ctx.restore();
   // History of the last results above the wheel (screen space, clear of the rim), newest on the right.
-  const shown = s.history.slice(-ROULETTE_RULES_V11.historyLength);
-  const slot = 24, left = cx - (ROULETTE_RULES_V11.historyLength * slot) / 2;
-  for (let i = 0; i < ROULETTE_RULES_V11.historyLength; i++) {
-    const n = shown[i - (ROULETTE_RULES_V11.historyLength - shown.length)];
+  const shown = s.history.slice(-ROULETTE_RULES_V12.historyLength);
+  const slot = 24, left = cx - (ROULETTE_RULES_V12.historyLength * slot) / 2;
+  for (let i = 0; i < ROULETTE_RULES_V12.historyLength; i++) {
+    const n = shown[i - (ROULETTE_RULES_V12.historyLength - shown.length)];
     const hx = left + i * slot + slot / 2;
     if (n === undefined) {
       ctx.strokeStyle = "rgba(168,198,213,.28)";
@@ -357,7 +368,7 @@ function render(
       ctx.stroke();
       continue;
     }
-    const latest = i === ROULETTE_RULES_V11.historyLength - 1;
+    const latest = i === ROULETTE_RULES_V12.historyLength - 1;
     ctx.fillStyle = n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
     ctx.beginPath();
     ctx.arc(hx, 22, latest ? 11 : 9, 0, Math.PI * 2);
@@ -498,7 +509,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V11}
+        core={ROULETTE_CORE_V12}
         name="Galactic Roulette"
         instruction=""
         render={canvasRender}
@@ -510,7 +521,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V11.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V12.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

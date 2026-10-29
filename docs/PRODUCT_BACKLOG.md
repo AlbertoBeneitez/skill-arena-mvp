@@ -642,3 +642,17 @@ Detalle: [releases/v120-saturn.md](releases/v120-saturn.md).
 - **Portadas:** Shot Gallery táctica, Stack Shift fiel al juego, y pase de cine en Mine Grid, Galoku, Dardos y Pinball.
 
 Detalle: [releases/v121-saturn.md](releases/v121-saturn.md).
+
+## v122-saturn · Inicio de sesión activado, marcadores digitales, Ruleta 12, Billar 6 y portadas (29-oct-2026)
+
+- **Inicio de sesión:** Google, Apple, X, Discord y Microsoft tienen flujo real de servidor y cookie firmada en el dispositivo. Cada uno se enciende al poner sus credenciales en Vercel (`docs/AUTH_PROVIDERS.md`).
+- **Pantalla previa:** sin descripción ni cualidades; tablero del rival con dígitos LED.
+- **En partida:** marcador en tira LED.
+- **Ruleta 12:** rombos que hacen saltar la bola, más rebote y candado sin apuestas.
+- **Billar 6:** gymkana de 5 niveles con mesas aleatorias por partida.
+- **Portadas:** Tower Drop, Solitaire, Mine Grid y Pinball de cine; Tower Drop ya no tapa la liga.
+- **Pendiente:**
+  - credenciales de los proveedores;
+  - decidir sobre `chore/fase-0-orden` y las ramas antiguas.
+
+Detalle: [releases/v122-saturn.md](releases/v122-saturn.md).

@@ -100,6 +100,9 @@ function recorder(width = 390, height = 620, cssScale = 1) {
       beginPath() {
         this.paths = [];
       },
+      measureText(text) {
+        return { width: String(text).length * 7 };
+      },
       moveTo(x, y) {
         this.paths.push({ x, y });
       },
@@ -163,6 +166,9 @@ module.exports = (async () => {
   const v5 = await import(
     pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v5.js"))
   );
+  const v6 = await import(
+    pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v6.js"))
+  );
   const camera = await import(
     pathToFileURL(path.join(root, ".det-test/lib/billiardsPresentation.js"))
   );
@@ -179,15 +185,16 @@ module.exports = (async () => {
       "@/lib/verified/billiardsProtocol.v1": protocol,
       "@/lib/verified/billiardsCore.v4": v4,
       "@/lib/verified/billiardsCore.v5": v5,
+      "@/lib/verified/billiardsCore.v6": v6,
       "@/lib/billiardsSling": await import(pathToFileURL(path.join(root, ".det-test/lib/billiardsSling.js"))),
       "./CoreCanvasGame": { default() {} },
     },
     "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.hudLabel=hudLabel;",
   );
-  const state = v5.BILLIARDS_CORE_V5.create("ui-public-test");
-  assert.equal(state.balls.length, 16);
-  assert.equal(state.shotsLeft, 24);
-  assert.equal(state.height, 0);
+  const state = v6.BILLIARDS_CORE_V6.create("ui-public-test");
+  assert.equal(state.balls.length, 3, "level 1: cue ball and two targets");
+  assert.equal(state.levelShotsLeft, 4);
+  assert.equal(state.height, 1);
   const snapshot = JSON.stringify(state),
     presentation = ui.createPresentation();
   for (let power = 0; power < 3; power++)
@@ -197,8 +204,8 @@ module.exports = (async () => {
         ctx = recorder();
       presentation.render(ctx, s, { width: 390, height: 620 });
       assert.equal(JSON.stringify(s), before);
-      for (let id = 1; id <= 15; id++)
-        assert.equal(ctx.texts.filter((t) => t === String(id)).length, 1, `ball ${id} numbered once`);
+      for (const b of state.balls.slice(1))
+        assert.equal(ctx.texts.filter((t) => t === String(b.id)).length, 2, `ball ${b.id} on the table and in the level strip`);
       assert.ok(
         !ctx.texts.some((t) => /MESA \d|−250|TIRO EN CURSO|DESPEJADA/.test(t)),
       );
@@ -237,11 +244,7 @@ module.exports = (async () => {
   assert.ok(
     !ui.hudLabel({ ...state, scratch: false }).includes("BLANCA EMBOCADA"),
   );
-  assert.equal(
-    ui.hudLabel({ ...state, group: "stripes", ownDown: 3, shotsLeft: 5 }),
-    "RAYADAS 3/7 · 5 TIROS",
-  );
-  assert.equal(ui.hudLabel({ ...state, group: "solids", ownDown: 7, shotsLeft: 2 }), "BOLA 8 · 2 TIROS");
+  assert.equal(ui.hudLabel({ ...state, level: 3, levelShotsLeft: 5 }), "NIVEL 3/5 · 2 BOLAS · 5 TIROS");
   const dimensions = [
     [390, 780],
     [320, 760],
@@ -369,11 +372,11 @@ module.exports = (async () => {
     targetScore: 1e9,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core.gameVersion, "5.0.0");
+  assert.equal(surface.core.gameVersion, "6.0.0");
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.hideHudLabel, undefined);
   assert.equal(surface.expandHorizontalViewport, true);
-  assert.equal(surface.hudLabel(state), "MESA ABIERTA · 24 TIROS");
+  assert.equal(surface.hudLabel(state), "NIVEL 1/5 · 2 BOLAS · 4 TIROS");
   assert.equal(surface.controls.length, 0);
   // v120: the pull can start anywhere (a ball against a cushion still has room): far from the cue, pull down 62 px
   // in table units and release → aim straight up the table (AIM_135) at power 6.
@@ -392,9 +395,9 @@ module.exports = (async () => {
   assert.ok(!source.includes("s.stage"));
   console.log(
     JSON.stringify({
-      variant: "Billar V5 eight-ball presentation",
-      balls: 15,
-      shots: 24,
+      variant: "Billar V6 gymkhana presentation",
+      balls: state.balls.length - 1,
+      shots: state.levelShotsLeft,
       aimPowerCombinations: 540,
       roundTrips,
       cssViewports: dimensions.length,

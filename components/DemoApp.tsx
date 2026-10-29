@@ -10,8 +10,9 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePublicMatchAvailability, usePendingMatchResolution } from "@/lib/usePublicMatchState";
 import OrbitalScene from "./OrbitalScene";
 import UiIcon from "./UiIcon";
+import SegmentDigits, { groupDigits } from "./SegmentDigits";
 import ProviderLogo from "./ProviderLogo";
-import { AUTH_PROVIDERS, providerAvailability, type AuthProviderInfo } from "@/lib/authProviders";
+import { AUTH_PROVIDERS, type AuthProviderId, type AuthProviderInfo } from "@/lib/authProviders";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
@@ -23,7 +24,7 @@ import SoundMenu from "./SoundMenu";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
 import { matchLocale } from "@/lib/i18n/locales";
-import { gameCategory, gameName, gameSkill, gameTagline } from "@/lib/i18n/games";
+import { gameName } from "@/lib/i18n/games";
 import type { DocId } from "@/lib/i18n/docs";
 import { initSettings, resetSettings, useSettings, SETTINGS_STORAGE_KEY } from "@/lib/settings";
 import DocSheet from "./DocSheet";
@@ -35,7 +36,7 @@ import RankingHub from "./GameRanking";
 import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
 
 type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking" | "settings";
-type Provider = "google" | "apple" | null;
+type Provider = AuthProviderId | null;
 type Turn = "create" | "existing";
 type MatchScope = "duel" | "group";
 
@@ -265,8 +266,51 @@ export default function DemoApp() {
     const trigger = avatarMenuTriggerRef.current;
     return () => trigger?.focus({ preventScroll: true });
   }, [avatarMenuOpen]);
-  // Welcome: a provider tap explains that the account link is not active yet.
+  // Welcome: live providers start the real sign-in; the others explain that they are not active yet.
   const [providerNotice, setProviderNotice] = useState<AuthProviderInfo | null>(null);
+  const [authProviders, setAuthProviders] = useState<AuthProviderId[]>([]);
+  const [authMessage, setAuthMessage] = useState<MessageKey | "">("");
+  useEffect(() => {
+    let alive = true;
+    const params = new URLSearchParams(window.location.search);
+    const outcome = params.get("auth");
+    if (outcome) {
+      params.delete("auth"); params.delete("reason");
+      const q = params.toString();
+      window.history.replaceState(null, "", window.location.pathname + (q ? `?${q}` : "") + window.location.hash);
+    }
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { providers?: AuthProviderId[]; session?: { provider: AuthProviderId; name: string } | null } | null) => {
+        if (!alive || !data) return;
+        setAuthProviders(Array.isArray(data.providers) ? data.providers : []);
+        const s = data.session;
+        if (s && AUTH_PROVIDERS.some((p) => p.id === s.provider)) {
+          setProvider(s.provider);
+          if (outcome === "ok") {
+            setPlayerName((name) => name || s.name);
+            setScreen((current) => (current === "welcome" ? "avatar-setup" : current));
+          }
+        } else if (outcome === "error" || outcome === "unavailable") {
+          setAuthMessage(outcome === "error" ? "welcome.authFailed" : "welcome.authUnavailable");
+        }
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  useEffect(() => {
+    if (!authMessage) return;
+    const id = window.setTimeout(() => setAuthMessage(""), 6000);
+    return () => window.clearTimeout(id);
+  }, [authMessage]);
+  function chooseProvider(p: AuthProviderInfo) {
+    if (authProviders.includes(p.id)) {
+      setProviderNotice(null);
+      window.location.assign(`/api/auth/${p.id}/start`);
+      return;
+    }
+    setProviderNotice(p);
+  }
   useEffect(() => {
     if (!providerNotice) return;
     const id = window.setTimeout(() => setProviderNotice(null), 6000);
@@ -435,8 +479,8 @@ export default function DemoApp() {
           setOnboarded(true);
           setScreen(joinCode ? "group" : "home");
         }
-        if (data.provider === "google" || data.provider === "apple") {
-          setProvider(data.provider);
+        if (AUTH_PROVIDERS.some((p) => p.id === data.provider)) {
+          setProvider(data.provider as AuthProviderId);
         }
         if (typeof data.playerName === "string") {
           setPlayerName(data.playerName);
@@ -770,6 +814,7 @@ export default function DemoApp() {
   }, [earnings]);
 
   function continueWithoutProvider() {
+    if (provider) void fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
     setProvider(null);
     const firstAvatar = Math.floor(Math.random() * AVATARS.length);
     setAvatarId(firstAvatar);
@@ -1225,6 +1270,7 @@ export default function DemoApp() {
   }
 
   function logoutDemo() {
+    void fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
     safeStorage.removeItem(STORAGE_KEY);
     safeStorage.removeItem(TUTORIAL_KEY);
     safeStorage.removeItem("skill-arena-v10");
@@ -1261,7 +1307,7 @@ export default function DemoApp() {
             <div className="gxProviderList">
               {AUTH_PROVIDERS.filter((p) => p.placement === "primary").map((p) => (
                 <button key={p.id} type="button" className={`gxProvider gxProvider-${p.id}`} aria-describedby={providerNotice?.id === p.id ? "provider-notice" : undefined}
-                  onClick={() => setProviderNotice(providerAvailability(p.id) === "not-configured" ? p : null)}>
+                  onClick={() => chooseProvider(p)}>
                   <ProviderLogo id={p.id} />
                   <span>{t("welcome.continueWith", { provider: p.name })}</span>
                 </button>
@@ -1273,13 +1319,13 @@ export default function DemoApp() {
                 {AUTH_PROVIDERS.filter((p) => p.placement === "secondary").map((p) => (
                   <button key={p.id} type="button" className={`gxProviderIcon gxProvider-${p.id}`} aria-label={t("welcome.continueWith", { provider: p.name })}
                     aria-describedby={providerNotice?.id === p.id ? "provider-notice" : undefined}
-                    onClick={() => setProviderNotice(providerAvailability(p.id) === "not-configured" ? p : null)}>
+                    onClick={() => chooseProvider(p)}>
                     <ProviderLogo id={p.id} size={p.id === "x" ? 17 : 20} />
                   </button>
                 ))}
               </div>
             </div>
-            <p id="provider-notice" className="gxProviderNotice" role="status">{providerNotice ? t("welcome.providerSoon", { provider: providerNotice.name }) : ""}</p>
+            <p id="provider-notice" className="gxProviderNotice" role="status">{providerNotice ? t("welcome.providerSoon", { provider: providerNotice.name }) : authMessage ? t(authMessage) : ""}</p>
             <button className="authButton guest galacticEntryAction gxLocalEntry" aria-label={t("welcome.loginAria")} onClick={continueWithoutProvider}><span>{t("welcome.login")}</span><small>{t("welcome.loginLocal")}</small></button>
           </div>
           <p className="welcomeLegal">
@@ -1559,19 +1605,24 @@ export default function DemoApp() {
                   <div className="gxIntroStage" aria-hidden="true">
                     <div className="gxIntroArt"><img src={selectedGame.cover} alt="" /></div>
                   </div>
-                  <p className="gxIntroTagline" dir="auto">{gameTagline(selectedGame)}</p>
-                  <div className="gxIntroChips" aria-hidden="true">
-                    {!gameSkill(selectedGame).includes(gameCategory(selectedGame)) && <span>{gameCategory(selectedGame)}</span>}
-                    <span>{gameSkill(selectedGame)}</span>
-                  </div>
                   {leagueMatch && leagueMatch.gameId === selectedGame.id && (
-                    <div className="gxIntroRival" style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
-                      <img src={leagueMatch.rival.avatar} alt="" width={40} height={40} />
-                      <span>
+                    <div className={`gxIntroRival gxRivalBoard ${leagueMatch.rival.balanceGoal ? "chips" : "points"}`} style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
+                      <img src={leagueMatch.rival.avatar} alt="" width={44} height={44} />
+                      <span className="gxRivalWho">
                         <small>{LEAGUE_ICONS[leagueMatch.tier]} {t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) })}</small>
                         <b>{leagueMatch.rival.name}</b>
                       </span>
-                      <strong>{leagueMatch.rival.balanceGoal ? t("league.goalChips", { n: formatNumber(leagueMatch.rival.target / 100) }) : lowerScoreWins(selectedGame) ? t("common.ms", { n: formatNumber(leagueMatch.rival.target) }) : formatNumber(leagueMatch.rival.target)}</strong>
+                      {(() => {
+                        const chips = leagueMatch.rival.balanceGoal, ms = !chips && lowerScoreWins(selectedGame);
+                        const n = chips ? leagueMatch.rival.target / 100 : leagueMatch.rival.target;
+                        const label = chips ? t("league.goalChips", { n: formatNumber(n) }) : ms ? t("common.ms", { n: formatNumber(n) }) : formatNumber(n);
+                        return (
+                          <span className="gxRivalTarget">
+                            <SegmentDigits value={groupDigits(n)} label={label} />
+                            <small aria-hidden="true">{t(chips ? "game.unitChips" : ms ? "game.unitMs" : "game.unitPoints")}</small>
+                          </span>
+                        );
+                      })()}
                     </div>
                   )}
                   <div className="gxIntroCount" key={countdown}>
@@ -1700,7 +1751,7 @@ export default function DemoApp() {
             </nav>
             {avatarSection === "ranking" ? <RankingHub bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
             <p className={shellStyles.demoNote}>{t("profile.note")}</p>
-            <div className="profileStrip"><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span>{t("profile.localAccount")}</span></div><b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <div className="profileStrip"><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span>{provider ? t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider }) : t("profile.localAccount")}</span></div><b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
 
             <div className="profileStats" aria-label={t("profile.stats")}>
               <div><b>{matchesPlayed}</b><span>{t("profile.played")}</span></div>

@@ -46,6 +46,8 @@ Preferred progression:
 
 Galactic Birds V5 is the owner-requested exception (13 October 2026): one
 fixed-screen building per level, without horizontal scrolling. Preserve V1–V4.
+Billiards V6 is a second owner-requested exception (29 October 2026): a five-level
+"gymkana" with a seeded layout per level. Preserve V1–V5.
 
 Other product sessions are one continuous run. Do not introduce levels or disguise
 separate levels as sectors. Remove existing level mechanics incrementally in
@@ -173,6 +175,13 @@ that fictitious money, local identity or sample ranking data is real.
 Do not activate real-money competition until production identity, PostgreSQL, settlement, and required compliance boundaries are configured.
 
 Do not request or commit secrets.
+
+Social sign-in (Google, Apple, X, Discord, Microsoft) was activated by the owner on
+29 October 2026 (v122): server OAuth/OIDC flow in `app/api/auth/*`, a signed
+device cookie with provider, account id and display name only. Each provider is
+live only when its credentials and AUTH_SECRET are set in the deployment
+environment (`docs/AUTH_PROVIDERS.md`). It does not identify players for real
+money, settlement or real rankings.
 
 ## Privacy / RGPD
 Follow `docs/RGPD_PACKAGE_AUDIT.md`.
