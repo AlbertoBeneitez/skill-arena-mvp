@@ -27,7 +27,7 @@ const messages: Messages = {
 
   "welcome.soon": "{provider}، قريبًا",
   "welcome.login": "تسجيل الدخول",
-  "welcome.loginLocal": "جلسة محلية",
+  "welcome.loginLocal": "جلسة محلية على هذا الجهاز",
   "welcome.loginAria": "تسجيل الدخول بجلسة محلية",
   "welcome.language": "اللغة",
   "identity.chooseAvatar": "اختر صورة رمزية",
@@ -572,8 +572,8 @@ const messages: Messages = {
   "league.tier2": "ذهبي",
   "league.tier3": "بلاتيني",
   "league.tier4": "ماسي",
-  "league.leagueOf": "الدوري {tier}",
-  "league.rivalOf": "منافس الدوري {tier}",
+  "league.leagueOf": "{tier}",
+  "league.rivalOf": "منافس {tier}",
   "league.goalChips": "{n} فيشة",
   "league.beat": "فزت على {name}",
   "league.lostTo": "فاز {name}",
@@ -583,7 +583,7 @@ const messages: Messages = {
   "league.top": "تبقى في {tier}، أعلى دوري",
   "league.seriesWins": "{n} من {total} انتصارات في السلسلة",
   "league.progress": "السلسلة: المباراة {n} من {total} · {wins} انتصارات",
-  "league.badgeAria": "الدوري {tier} · {n} من {total} مباريات السلسلة",
+  "league.badgeAria": "{tier} · {n} من {total} مباريات السلسلة",
   "ranking.tabGame": "حسب اللعبة",
   "ranking.tabGlobal": "عام",
   "ranking.gamePick": "اللعبة",
@@ -664,6 +664,10 @@ const messages: Messages = {
   "billiards.hudSolids": "صلبة {n}/7 · {shots} ضربة",
   "billiards.hudStripes": "مخططة {n}/7 · {shots} ضربة",
   "billiards.hudEight": "الكرة 8 · {shots} ضربة",
+  "welcome.continueWith": "المتابعة باستخدام {provider}",
+  "welcome.otherAccounts": "حسابات أخرى",
+  "welcome.providerSoon": "تسجيل الدخول عبر {provider} غير مفعّل بعد. ادخل بجلستك المحلية؛ يمكنك ربط الحساب عند تفعيله.",
+  "identity.uploadShort": "رفع صورة",
 };
 
 export default messages;

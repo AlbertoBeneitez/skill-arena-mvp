@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import GameActionButton from "./GameActionButton";
+import UiIcon from "./UiIcon";
 import { FOCUS_TRACKS, currentMusicTrack, type MusicChoice } from "@/lib/gameFeedback";
 import { updateSettings, useSettings } from "@/lib/settings";
 import { t, useI18n, type MessageKey } from "@/lib/i18n";
@@ -60,10 +61,10 @@ export default function SoundMenu({ musicOn, onToggleSound, variant }: Props) {
 
   const playing = musicOn && settings.music ? currentMusicTrack() : null;
   const label = t("sound.menuAria");
-  const icon = musicOn ? "🔊" : "🔇";
+  const icon = <><UiIcon name={musicOn ? "sound" : "soundOff"} /><i className="gxLed" aria-hidden="true" /></>;
   const trigger = variant === "game"
-    ? <GameActionButton className={`gameSoundToggle ${musicOn ? "on" : "off"}`} aria-label={label} aria-haspopup="dialog" aria-expanded={open} onActivate={toggleOpen}>{icon}</GameActionButton>
-    : <button className={`soundToggle ${musicOn ? "on" : "off"}`} type="button" aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={toggleOpen}>{icon}</button>;
+    ? <GameActionButton className={`gameSoundToggle gxIconBtn ${musicOn ? "on" : "off"}`} aria-label={label} aria-haspopup="dialog" aria-expanded={open} onActivate={toggleOpen}>{icon}</GameActionButton>
+    : <button className={`soundToggle gxIconBtn ${musicOn ? "on" : "off"}`} type="button" aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={toggleOpen}>{icon}</button>;
 
   return (
     <span className="soundMenuAnchor" ref={anchor}>

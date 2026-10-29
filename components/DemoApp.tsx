@@ -8,7 +8,10 @@ import shellStyles from "./ProductShell.module.css";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePublicMatchAvailability, usePendingMatchResolution } from "@/lib/usePublicMatchState";
-import GalacticMark from "./GalacticMark";
+import OrbitalScene from "./OrbitalScene";
+import UiIcon from "./UiIcon";
+import ProviderLogo from "./ProviderLogo";
+import { AUTH_PROVIDERS, providerAvailability, type AuthProviderInfo } from "@/lib/authProviders";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
@@ -70,8 +73,6 @@ function isScreen(value: unknown): value is Screen {
 const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
 /** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
 const smallAvatar = (src: string) => (/^\/avatars\/portrait-\d\d\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
-/** Small variant for grids/lists; the full 512 px image is only used for the large preview. */
-const avatarThumb = (src: string) => (/\/portrait-\d{2}\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 const START_BALANCE = 25;
 const APP_ITERATION = "v12";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
@@ -253,27 +254,24 @@ export default function DemoApp() {
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Avatar dropdown: the 15 alternatives open as a grid under the portrait (no vertical scroll).
+  // Avatar sheet (v121): the 16 portraits fill the phone screen as 8 rows × 2 columns.
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const [avatarMenuTop, setAvatarMenuTop] = useState<number | undefined>(undefined);
-  const avatarCardRef = useRef<HTMLElement>(null);
-  const avatarPortraitRef = useRef<HTMLDivElement>(null);
   const avatarMenuRef = useRef<HTMLDivElement>(null);
+  const avatarMenuTriggerRef = useRef<HTMLButtonElement>(null);
   useLayoutEffect(() => {
     if (!avatarMenuOpen) return;
-    const place = () => {
-      const card = avatarCardRef.current, portrait = avatarPortraitRef.current, menu = avatarMenuRef.current;
-      if (!card || !portrait || !menu) return;
-      const c = card.getBoundingClientRect(), p = portrait.getBoundingClientRect();
-      const wanted = p.bottom - c.top + 10;
-      const max = c.height - menu.offsetHeight - 12;
-      setAvatarMenuTop(Math.max(12, Math.min(wanted, max)));
-    };
-    place();
-    avatarMenuRef.current?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
-    window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
+    const menu = avatarMenuRef.current;
+    (menu?.querySelector<HTMLButtonElement>("button[aria-pressed='true']") ?? menu?.querySelector<HTMLButtonElement>("button"))?.focus({ preventScroll: true });
+    const trigger = avatarMenuTriggerRef.current;
+    return () => trigger?.focus({ preventScroll: true });
   }, [avatarMenuOpen]);
+  // Welcome: a provider tap explains that the account link is not active yet.
+  const [providerNotice, setProviderNotice] = useState<AuthProviderInfo | null>(null);
+  useEffect(() => {
+    if (!providerNotice) return;
+    const id = window.setTimeout(() => setProviderNotice(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [providerNotice]);
   const cropCanvasRef = useRef<HTMLCanvasElement>(null);
   const cropDragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const [cropSource, setCropSource] = useState<string | null>(null);
@@ -1252,18 +1250,37 @@ export default function DemoApp() {
 
   if (screen === "welcome") {
     return (
-      <main className="onboarding arenaOnboarding">
-        <section className="welcomeCard welcomeCardCompact">
+      <main className="onboarding arenaOnboarding gxStage gxStageWelcome">
+        <OrbitalScene variant="welcome" />
+        <section className="welcomeCard welcomeCardCompact gxWelcome">
           <div className="welcomeTopBar"><LanguagePicker compact /></div>
-          <GalacticMark className="galacticWelcomeMark" />
-          <h1 className="wordmark">{PRODUCT_NAME}</h1>
-          <div className="authStack">
-
-            <div className="galacticProviderRow">
-              <button className="authButton google" disabled aria-label={t("welcome.soon", { provider: "Google" })}><span aria-hidden="true">G</span>Google</button>
-              <button className="authButton apple" disabled aria-label={t("welcome.soon", { provider: "Apple" })}><span aria-hidden="true">●</span>Apple</button>
+          <h1 className="wordmark gxWordmark" aria-label={PRODUCT_NAME}>
+            {PRODUCT_NAME.split(" ").map((word) => <span key={word}>{word}</span>)}
+          </h1>
+          <div className="authStack gxAuth">
+            <div className="gxProviderList">
+              {AUTH_PROVIDERS.filter((p) => p.placement === "primary").map((p) => (
+                <button key={p.id} type="button" className={`gxProvider gxProvider-${p.id}`} aria-describedby={providerNotice?.id === p.id ? "provider-notice" : undefined}
+                  onClick={() => setProviderNotice(providerAvailability(p.id) === "not-configured" ? p : null)}>
+                  <ProviderLogo id={p.id} />
+                  <span>{t("welcome.continueWith", { provider: p.name })}</span>
+                </button>
+              ))}
             </div>
-            <button className="authButton guest galacticEntryAction" aria-label={t("welcome.loginAria")} onClick={continueWithoutProvider}><span>{t("welcome.login")}</span><small>{t("welcome.loginLocal")}</small></button>
+            <div className="gxProviderMore">
+              <span className="gxProviderMoreLabel">{t("welcome.otherAccounts")}</span>
+              <div className="gxProviderIcons">
+                {AUTH_PROVIDERS.filter((p) => p.placement === "secondary").map((p) => (
+                  <button key={p.id} type="button" className={`gxProviderIcon gxProvider-${p.id}`} aria-label={t("welcome.continueWith", { provider: p.name })}
+                    aria-describedby={providerNotice?.id === p.id ? "provider-notice" : undefined}
+                    onClick={() => setProviderNotice(providerAvailability(p.id) === "not-configured" ? p : null)}>
+                    <ProviderLogo id={p.id} size={p.id === "x" ? 17 : 20} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p id="provider-notice" className="gxProviderNotice" role="status">{providerNotice ? t("welcome.providerSoon", { provider: providerNotice.name }) : ""}</p>
+            <button className="authButton guest galacticEntryAction gxLocalEntry" aria-label={t("welcome.loginAria")} onClick={continueWithoutProvider}><span>{t("welcome.login")}</span><small>{t("welcome.loginLocal")}</small></button>
           </div>
           <p className="welcomeLegal">
             {t("identity.terms", { terms: "\u0001", privacy: "\u0002" }).split(/(\u0001|\u0002)/).map((part, index) =>
@@ -1279,32 +1296,20 @@ export default function DemoApp() {
 
   if (screen === "avatar-setup") {
     return (
-      <main className="onboarding arenaOnboarding">
-        <section ref={avatarCardRef} className={`setupCard avatarSetupCard avatarSetupMinimal galacticAvatarSetup ${avatarMenuOpen ? "avatarMenuIsOpen" : ""}`}>
-          <small className="galacticSetupBrand">{PRODUCT_NAME}</small>
+      <main className="onboarding arenaOnboarding gxStage gxStageAvatar">
+        <OrbitalScene variant="avatar" />
+        <section className={`setupCard avatarSetupCard avatarSetupMinimal galacticAvatarSetup gxAvatarSetup ${avatarMenuOpen ? "avatarMenuIsOpen" : ""}`}>
+          <h1 className="galacticSetupBrand gxSetupBrand">{PRODUCT_NAME}</h1>
           <div className="avatarPortraitWrap">
-            <div className="avatarPortrait" ref={avatarPortraitRef}>
+            <div className="avatarPortrait">
               <button
                 type="button"
                 className="avatarPortraitTrigger"
-                aria-haspopup="dialog"
-                aria-expanded={avatarMenuOpen}
-                aria-controls="avatar-menu"
-                aria-label={t("identity.chooseAvatar")}
-                onClick={() => setAvatarMenuOpen((open) => !open)}
+                tabIndex={-1}
+                aria-hidden="true"
+                onClick={() => setAvatarMenuOpen(true)}
               >
                 <img src={avatarSrc} alt="" />
-                <span className="avatarMenuChevron" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                </span>
-              </button>
-              <button
-                className={`avatarChangeButton ${avatarEditorOpen ? "open" : ""}`}
-                type="button"
-                onClick={() => { setAvatarError(""); fileInputRef.current?.click(); }}
-                aria-label={t("identity.uploadPhoto")}
-              >
-                ↻
               </button>
             </div>
             <input
@@ -1315,20 +1320,31 @@ export default function DemoApp() {
               onChange={(e) => { handleAvatarUpload(e.target.files?.[0]); e.target.value = ""; }}
             />
           </div>
+          <div className="gxAvatarActions">
+            <button ref={avatarMenuTriggerRef} type="button" className="gxAvatarAction" aria-haspopup="dialog" aria-expanded={avatarMenuOpen} aria-controls="avatar-menu" onClick={() => setAvatarMenuOpen(true)}>
+              <UiIcon name="grid" size={20} /><span>{t("identity.chooseAvatar")}</span>
+            </button>
+            <button type="button" className={`gxAvatarAction ${avatarEditorOpen ? "open" : ""}`} aria-label={t("identity.uploadPhoto")} onClick={() => { setAvatarError(""); fileInputRef.current?.click(); }}>
+              <UiIcon name="upload" size={20} /><span>{t("identity.uploadShort")}</span>
+            </button>
+          </div>
 
           {avatarMenuOpen && (
             <>
-              <button type="button" className="avatarMenuScrim" aria-label={t("identity.closeAvatars")} tabIndex={-1} onClick={() => setAvatarMenuOpen(false)} />
               <div
                 id="avatar-menu"
                 ref={avatarMenuRef}
-                className="avatarMenu"
+                className="avatarMenu gxAvatarSheet"
                 role="dialog"
-                aria-label={t("identity.avatarMenu")}
-                style={{ top: avatarMenuTop }}
+                aria-modal="true"
+                aria-labelledby="avatar-menu-title"
                 onKeyDown={(event) => { if (event.key === "Escape") setAvatarMenuOpen(false); }}
               >
-                <div className="avatarMenuGrid" role="group" aria-label={t("identity.availableAvatars")}>
+                <header className="gxSheetHead">
+                  <h2 id="avatar-menu-title">{t("identity.avatarMenu")}</h2>
+                  <button type="button" className="gxIconBtn" aria-label={t("identity.closeAvatars")} onClick={() => setAvatarMenuOpen(false)}><UiIcon name="close" /></button>
+                </header>
+                <div className="avatarMenuGrid gxAvatarGrid" role="group" aria-label={t("identity.availableAvatars")}>
                   {AVATARS.map((src, index) => {
                     const current = src === avatarSrc;
                     return (
@@ -1340,7 +1356,9 @@ export default function DemoApp() {
                         aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
-                        <img src={avatarThumb(src)} alt="" width={96} height={96} decoding="async" />
+                        <img src={src} alt="" width={256} height={256} decoding="async" />
+                        <span className="gxAvatarTileNo" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                        {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
                       </button>
                     );
                   })}
@@ -1438,14 +1456,15 @@ export default function DemoApp() {
 
   return (
     <main className={`appShell ${shellStyles.shell}`}>
+      {screen !== "game" && <OrbitalScene variant="catalog" />}
       {screen !== "game" && (
         <header className="appHeader">
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
             <button className="balanceChip" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><small>{t("shell.balanceLabel")}</small><b>{euro(balance)}</b></button>
-            <button className="settingsGear" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
+            <button className="settingsGear gxIconBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
+              <UiIcon name="gear" />
             </button>
           </div>
         </header>
@@ -1454,9 +1473,9 @@ export default function DemoApp() {
       <div className={`appBody ${screen === "game" ? "gameBody" : ""}`}>
         {screen === "home" && (
           <section className="catalogScreen playCatalogSimple homePlayMerged">
-            <div className="homePlayHeading">
-              <h1>{t("home.title")}</h1>
-              <button type="button" className="globalRankingShortcut" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}>{t("home.ranking")} <span aria-hidden="true" className="dirArrow">→</span></button>
+            <h1 className="visuallyHidden">{t("home.title")}</h1>
+            <div className="homePlayHeading gxHomeBar">
+              <button type="button" className="globalRankingShortcut gxRankingPill" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={17} /><span>{t("home.ranking")}</span></button>
             </div>
 
 
@@ -1484,11 +1503,11 @@ export default function DemoApp() {
           <section className="gameScreen" dir="ltr">
             <div className="mobileGameHeader">
               <GameActionButton
-                className="mobileGameBack"
+                className="mobileGameBack gxIconBtn"
                 onActivate={requestExitGame}
                 aria-label={t("common.back")}
               >
-                ←
+                <UiIcon name="back" mirrorRtl />
               </GameActionButton>
               <div>
                 <strong>{gameName(selectedGame)}</strong>
@@ -1504,12 +1523,12 @@ export default function DemoApp() {
                 <SoundMenu variant="game" musicOn={musicOn} onToggleSound={toggleSound} />
                 {!persistentTraining && selectedMode === "existing" && matchScope === "duel" && (
                   <button
-                    className={`ghostToggle ${ghostEnabled ? "active" : ""}`}
+                    className={`ghostToggle gxIconBtn ${ghostEnabled ? "active" : ""}`}
                     onClick={() => setGhostEnabled((value) => !value)}
                     aria-pressed={ghostEnabled}
                     aria-label={t("catalog.ghost")}
                   >
-                    👻
+                    <UiIcon name="ghost" />
                   </button>
                 )}
               </div>
@@ -1754,15 +1773,15 @@ export default function DemoApp() {
       </div>
 
       {screen !== "game" && screen !== "legal" && screen !== "settings" && (
-        <nav className="bottomNav bottomNavThree" aria-label={t("nav.main")}>
+        <nav className="bottomNav bottomNavThree gxTabBar" aria-label={t("nav.main")}>
           <button className={screen === "home" ? "active" : ""} aria-current={screen === "home" ? "page" : undefined} onClick={() => navigate("home")}>
-            <span>▶</span>{t("nav.games")}
+            <span className="gxTabGlyph"><UiIcon name="games" size={24} /></span><em className="gxTabLabel">{t("nav.games")}</em>
           </button>
           <button className={screen === "group" ? "active" : ""} aria-current={screen === "group" ? "page" : undefined} onClick={() => navigate("group")}>
-            <span>◉</span>{t("nav.group")}
+            <span className="gxTabGlyph"><UiIcon name="group" size={24} /></span><em className="gxTabLabel">{t("nav.group")}</em>
           </button>
           <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
-            <img src={smallAvatar(avatarSrc)} alt="" /><em className="navName">{playerName || t("nav.avatar")}</em>
+            <span className="gxTabGlyph gxTabAvatar"><img src={smallAvatar(avatarSrc)} alt="" /></span><em className="gxTabLabel navName">{playerName || t("nav.avatar")}</em>
           </button>
         </nav>
       )}

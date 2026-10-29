@@ -99,7 +99,7 @@
 
 /* v105 · category accent, glow and animated gradient edge */
 .card { position: relative; border-color: color-mix(in srgb, var(--accent, #9ce6e8) 45%, #2c4059); box-shadow: 0 0 0 0 transparent; transition: transform .2s, box-shadow .25s; }
-.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; z-index: 2; background: linear-gradient(90deg, transparent, var(--accent, #9ce6e8), transparent); background-size: 200% 100%; animation: cardSweep 4s linear infinite; }
+.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; z-index: 2; background: linear-gradient(90deg, transparent, var(--accent, #9ce6e8), transparent); } /* v121: static edge (the sweep repainted every card on every frame) */
 .card:hover, .card:focus-within { transform: translateY(-2px); box-shadow: 0 8px 26px color-mix(in srgb, var(--accent, #9ce6e8) 30%, transparent); }
 .play { background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #9ce6e8) 70%, #fff), var(--accent, #9ce6e8)); border-color: var(--accent, #9ce6e8); }
 @keyframes cardSweep { from { background-position: 200% 0; } to { background-position: -200% 0; } }
@@ -128,17 +128,18 @@
     0 -3px 0 rgba(120, 10, 60, .35) inset,
     0 4px 0 #a3134f,
     0 8px 22px rgba(255, 70, 120, .45);
-  animation: playGlow 2.4s ease-in-out infinite;
 }
 /* v116: no play glyph before the game name. */
 .play::after {
   content: "";
   position: absolute;
-  inset: -20% auto -20% -40%;
+  inset: -20% auto -20% 0;
   width: 34%;
   z-index: -1;
   background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
-  transform: skewX(-18deg);
+  transform: translate3d(-140%, 0, 0) skewX(-18deg);
+  will-change: transform;
+  /* v121: compositor-only shine (transform), no per-frame repaint while scrolling */
   animation: playShine 3.2s ease-in-out infinite;
 }
 .play:active:not(:disabled) {
@@ -152,6 +153,6 @@
   0%, 100% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 22px rgba(255,70,120,.4); }
   50% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 30px rgba(255,140,40,.7); }
 }
-@keyframes playShine { 0%, 55% { left: -40%; } 85%, 100% { left: 120%; } }
+@keyframes playShine { 0%, 55% { transform: translate3d(-140%, 0, 0) skewX(-18deg); } 85%, 100% { transform: translate3d(380%, 0, 0) skewX(-18deg); } }
 @media (prefers-reduced-motion: reduce) { .play, .play::after { animation: none; } }
 :global(html[data-reduce-motion="1"]) .play, :global(html[data-reduce-motion="1"]) .play::after { animation: none; }

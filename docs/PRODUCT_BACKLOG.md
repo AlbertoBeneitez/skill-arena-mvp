@@ -626,3 +626,19 @@ Detalle: [releases/v119-saturn.md](releases/v119-saturn.md).
 - **Billar 5:** bola 8 en solitario (lisas y rayadas, la 8 al hueco contrario al de la séptima), tirón desde cualquier punto y mesa más pequeña.
 
 Detalle: [releases/v120-saturn.md](releases/v120-saturn.md).
+
+## v121-saturn · Escenario orbital común, cuentas de inicio y catálogo fluido (29-oct-2026)
+
+- **Escena común:** planeta con anillos y órbita con lunas de juego compartidos por bienvenida, avatar y catálogo, con un movimiento de cámara entre pantallas.
+- **Interfaz:**
+  - «Liga X» pasa a «X»;
+  - iconos dibujados propios para sonido, ajustes, atrás, fantasma y demás.
+- **Inicio:** botones de Google, Apple, X, Discord y Microsoft. **No están activados**; falta la decisión de identidad de producción (`docs/AUTH_PROVIDERS.md`).
+- **Avatar:** título arriba, botones «Elegir avatar» y «Subir foto», y 16 avatares a pantalla completa en 8 × 2.
+- **Juegos:**
+  - sin «Elige tu reto»;
+  - barra de pestañas profesional;
+  - 0 repintados en reposo, frente a 480 en 3 s.
+- **Portadas:** Shot Gallery táctica, Stack Shift fiel al juego, y pase de cine en Mine Grid, Galoku, Dardos y Pinball.
+
+Detalle: [releases/v121-saturn.md](releases/v121-saturn.md).

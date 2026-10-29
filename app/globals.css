@@ -7558,3 +7558,547 @@ html[data-reduce-motion="1"] .soundMenu, html[data-reduce-motion="1"] .soundMenu
 .rivalWinTag { position: absolute; top: -9px; padding: 2px 8px; border-radius: 999px; background: #5cffb0; color: #06281a; font: 900 10px/1.4 system-ui, sans-serif; font-style: normal; letter-spacing: .04em; text-transform: uppercase; }
 .rivalVs { font: 900 13px/1 system-ui, sans-serif; color: #f3c55a; padding: 6px 8px; border-radius: 10px; background: rgba(243,197,90,.1); }
 .rivalTie { grid-column: 1 / -1; margin: 0; text-align: center; font-size: 13px; font-weight: 800; color: #f3c55a; }
+
+/* =====================================================================
+   v121 · Saturn orbital stage: one illustrated world across welcome,
+   avatar and catalogue; crafted icon buttons; pro tab bar; light scroll.
+   Palette: abyss #050a1a · deep #0b1630 · ion #7fe3ee · ring gold #e9c27a
+            · nebula #8c7bff · ink #e8f0fb
+   ===================================================================== */
+:root {
+  --st-abyss: #050a1a;
+  --st-deep: #0b1630;
+  --st-ion: #7fe3ee;
+  --st-gold: #e9c27a;
+  --st-nebula: #8c7bff;
+  --st-ink: #e8f0fb;
+  --st-mute: #8ea3c0;
+  --st-panel: linear-gradient(180deg, #13223f 0%, #0c1731 100%);
+  --st-edge: rgba(127, 227, 238, .2);
+  --st-hair: rgba(232, 240, 251, .12);
+}
+
+/* The stage (fixed, composited once; nothing on it animates while scrolling) */
+html, body { background-color: var(--st-abyss); background-image: none; background-attachment: scroll; }
+.orbitalScene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--st-abyss);
+  contain: strict;
+}
+.orbitalWorld {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  will-change: transform;
+  transform: translate3d(0, var(--orbital-ty), 0);
+  transition: transform 1.15s cubic-bezier(.65, 0, .25, 1);
+}
+.orbital-welcome { --orbital-ty: calc(30dvh - 300 * 100vw / 390); animation: gxStageIn 1.3s cubic-bezier(.2, .7, .2, 1) both; }
+.orbital-avatar { --orbital-ty: calc(-13dvh - 300 * 100vw / 390); }
+.orbital-catalog { --orbital-ty: calc(-38dvh - 300 * 100vw / 390); animation: gxFadeIn .5s ease both; }
+.orbitalVeil { position: absolute; inset: 0; }
+.orbital-welcome .orbitalVeil { background: linear-gradient(180deg, transparent 52%, rgba(5, 10, 26, .55) 78%, rgba(5, 10, 26, .82)); }
+.orbital-avatar .orbitalVeil { background: linear-gradient(180deg, rgba(5, 10, 26, .1), transparent 30%, rgba(5, 10, 26, .55) 85%); }
+.orbital-catalog .orbitalVeil { background: linear-gradient(180deg, rgba(5, 10, 26, .3), rgba(5, 10, 26, .5)); }
+@keyframes gxStageIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
+@keyframes gxFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .orbitalScene, .orbitalWorld { animation: none !important; transition: none !important; } }
+html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
+
+.onboarding.arenaOnboarding.gxStage {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  min-height: 100dvh;
+  padding: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+.onboarding.arenaOnboarding.gxStage::before, .onboarding.arenaOnboarding.gxStage::after { display: none; }
+.appShell { isolation: isolate; }
+.shell:is(.appShell) { background-image: none; }
+
+/* ---------- Crafted icon buttons (sound, settings, back, ghost, close) ---------- */
+.gxIconBtn.gxIconBtn {
+  position: relative;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 13px !important;
+  border: 1px solid var(--st-edge) !important;
+  background: var(--st-panel) !important;
+  color: #cdeff5 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), inset 0 -1px 0 rgba(0, 0, 0, .35), 0 6px 14px rgba(0, 4, 16, .35) !important;
+  font-size: 0 !important;
+  line-height: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, border-color .2s ease, color .2s ease;
+}
+.gxIconBtn.gxIconBtn:active { transform: scale(.93); }
+.gxIconBtn.gxIconBtn:focus-visible { outline: 2px solid var(--st-ion); outline-offset: 2px; }
+.gxIconBtn .uiIcon { width: 22px; height: 22px; }
+.gxIconBtn.off { color: var(--st-mute) !important; }
+.gxIconBtn.active, .gxIconBtn[aria-pressed="true"], .gxIconBtn[aria-expanded="true"] { border-color: rgba(127, 227, 238, .6) !important; color: #fff !important; }
+.gxLed {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--st-ion);
+  box-shadow: 0 0 6px var(--st-ion);
+}
+.gxIconBtn.off .gxLed { background: #43536f; box-shadow: none; }
+[dir="rtl"] .uiIconDir { transform: scaleX(-1); }
+[dir="rtl"] .docSheetBack span { transform: none; }
+.mobileGameHeader .gxIconBtn.gxIconBtn { width: 40px; height: 40px; min-width: 40px !important; min-height: 40px !important; border-radius: 12px !important; }
+
+/* ---------- Header: solid surface, no live blur ---------- */
+.appShell .appHeader.appHeader {
+  background: rgba(6, 11, 26, .97) !important;
+  border-bottom: 1px solid var(--st-hair) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.appHeader .appHeaderActions { gap: 8px; }
+.appHeader .balanceChip.balanceChip {
+  min-height: 42px !important;
+  height: 42px;
+  border-radius: 13px !important;
+  border: 1px solid rgba(233, 194, 122, .42) !important;
+  background: linear-gradient(180deg, rgba(233, 194, 122, .16), rgba(233, 194, 122, .05)) !important;
+  color: #ffe6b0 !important;
+}
+
+/* ---------- Welcome: a film-poster lockup under the planet ---------- */
+.gxStage .welcomeCard.gxWelcome {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  min-height: 100dvh !important;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0;
+  padding: calc(env(safe-area-inset-top) + 18px) 22px calc(env(safe-area-inset-bottom) + 16px) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible;
+}
+.gxWelcome .welcomeTopBar { position: absolute; top: calc(env(safe-area-inset-top) + 14px); inset-inline-end: 16px; }
+.gxWelcome .languageSelect { background: rgba(6, 11, 26, .72); border-color: var(--st-hair); }
+.gxWordmark.gxWordmark {
+  margin: clamp(250px, 47dvh, 410px) 0 0 !important;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  background: none !important;
+  color: var(--st-ink) !important;
+  -webkit-text-fill-color: initial;
+  text-align: center;
+  line-height: 1;
+}
+.gxWordmark span:first-child {
+  font-family: var(--gx-display);
+  font-weight: 800;
+  font-size: clamp(36px, 11vw, 46px);
+  letter-spacing: .035em;
+  background: linear-gradient(180deg, #ffffff 25%, #bfe9f2 70%, #7fc9dc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 6px 18px rgba(5, 10, 26, .8));
+  animation: gxTitleIn .9s .35s cubic-bezier(.2, .8, .2, 1) both;
+}
+.gxWordmark span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--gx-display);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: .62em;
+  margin-inline-end: -.62em;
+  color: var(--st-gold);
+  animation: gxTitleIn .9s .55s cubic-bezier(.2, .8, .2, 1) both;
+}
+.gxWordmark span:last-child::before, .gxWordmark span:last-child::after {
+  content: "";
+  width: 46px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(233, 194, 122, .8));
+}
+.gxWordmark span:last-child::after { transform: scaleX(-1); margin-inline-start: -.62em; }
+@keyframes gxTitleIn { from { opacity: 0; transform: translateY(14px); letter-spacing: .12em; } }
+.gxWordmark span:last-child { animation-name: gxTitleInWide; }
+@keyframes gxTitleInWide { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .gxWordmark span { animation: none !important; } }
+
+.gxWelcome .gxAuth { display: grid; gap: 12px; margin: clamp(22px, 4dvh, 36px) 0 0 !important; }
+.gxProviderList { display: grid; gap: 10px; }
+.gxProvider, .gxProviderIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(232, 240, 251, .16);
+  background: rgba(9, 16, 34, .9);
+  color: #eef3fb;
+  font: 600 15px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .005em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 8px 20px rgba(0, 4, 16, .35);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, border-color .2s ease, background .2s ease;
+}
+.gxProvider svg { position: absolute; inset-inline-start: 18px; }
+.gxProvider:active, .gxProviderIcon:active { transform: scale(.98); }
+.gxProvider:focus-visible, .gxProviderIcon:focus-visible { outline: 2px solid var(--st-ion); outline-offset: 2px; }
+.gxProvider[aria-describedby], .gxProviderIcon[aria-describedby] { border-color: rgba(127, 227, 238, .55); }
+.gxProviderMore { display: grid; gap: 10px; justify-items: center; }
+.gxProviderMoreLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--st-mute);
+}
+.gxProviderMoreLabel::before, .gxProviderMoreLabel::after { content: ""; flex: 1; height: 1px; background: var(--st-hair); }
+.gxProviderIcons { display: flex; gap: 12px; }
+.gxProviderIcon { width: 64px; min-height: 46px; padding: 0; }
+/* The notice floats over the stage so the entry button never moves. */
+.gxProviderNotice {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 64px);
+  left: 50%;
+  z-index: 30;
+  width: min(calc(100% - 32px), 400px);
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(127, 227, 238, .34);
+  background: rgba(9, 18, 38, .97);
+  box-shadow: 0 16px 40px rgba(0, 4, 16, .55);
+  font-size: 13px;
+  line-height: 1.45;
+  color: #d7f4f8;
+  text-align: center;
+  transform: translateX(-50%);
+  animation: gxNoticeIn .25s cubic-bezier(.2, .8, .2, 1) both;
+}
+.gxProviderNotice:empty { display: none; }
+@keyframes gxNoticeIn { from { opacity: 0; transform: translate(-50%, -8px); } }
+.gxWelcome .gxLocalEntry.gxLocalEntry {
+  display: grid;
+  gap: 3px;
+  min-height: 58px !important;
+  margin-top: 4px;
+  border-radius: 16px !important;
+  font-family: var(--gx-display);
+  letter-spacing: .02em !important;
+}
+.gxWelcome .gxLocalEntry span { font-size: 16px; font-weight: 700; }
+.gxWelcome .gxLocalEntry small { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: .01em; opacity: .72; }
+.gxWelcome .welcomeLegal { margin-top: auto; padding-top: 16px; }
+@media (max-height: 720px) {
+  .orbital-welcome { --orbital-ty: calc(21dvh - 300 * 100vw / 390); }
+  .gxWordmark.gxWordmark { margin-top: clamp(200px, 43dvh, 300px) !important; }
+  .gxWordmark span:first-child { font-size: clamp(32px, 9.6vw, 40px); }
+  .gxProvider { min-height: 46px; }
+  .gxProviderIcon { min-height: 42px; }
+  .gxWelcome .gxAuth { gap: 9px; margin-top: 18px !important; }
+  .gxWelcome .gxLocalEntry.gxLocalEntry { min-height: 52px !important; }
+}
+
+/* ---------- Avatar setup: the camera has tilted down from the planet ---------- */
+.arenaOnboarding.gxStage:has(.galacticAvatarSetup) { height: 100dvh; overflow: hidden; padding: 0 !important; }
+.gxStage .galacticAvatarSetup.avatarSetupMinimal.gxAvatarSetup {
+  width: 100%;
+  max-width: 440px;
+  height: 100dvh;
+  max-height: none;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0;
+  padding: calc(env(safe-area-inset-top) + clamp(56px, 10dvh, 96px)) 22px calc(env(safe-area-inset-bottom) + 18px);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: visible;
+}
+.gxAvatarSetup .gxSetupBrand.gxSetupBrand {
+  margin: 0;
+  font-family: var(--gx-display);
+  font-size: clamp(19px, 5.6vw, 23px);
+  font-weight: 800;
+  letter-spacing: .08em;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--st-ink);
+  text-shadow: 0 4px 18px rgba(5, 10, 26, .9);
+}
+.gxAvatarSetup.avatarSetupMinimal .avatarPortraitWrap { margin: auto auto 0; padding: 0; }
+.gxAvatarSetup.avatarSetupMinimal .avatarPortrait {
+  width: clamp(140px, 28dvh, 228px);
+  height: clamp(140px, 28dvh, 228px);
+  padding: 5px;
+  box-shadow: 0 0 0 10px rgba(127, 227, 238, .05), 0 0 0 11px rgba(127, 227, 238, .14), 0 0 46px rgba(127, 227, 238, .2), 0 18px 36px rgba(0, 0, 0, .5);
+}
+.gxAvatarSetup.avatarSetupMinimal .avatarPortrait::before { animation: none; background: conic-gradient(from 210deg, var(--st-gold), #fff1c4 18%, var(--st-ion) 40%, #2c5ea8 70%, var(--st-gold)); }
+.gxAvatarSetup.avatarSetupMinimal .avatarPortrait::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  right: -9px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--st-gold);
+  box-shadow: 0 0 10px rgba(233, 194, 122, .9);
+}
+.gxAvatarActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: clamp(22px, 4.4dvh, 38px);
+}
+.gxAvatarAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(232, 240, 251, .16);
+  background: rgba(9, 16, 34, .88);
+  color: var(--st-ink);
+  font: 600 14px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 8px 18px rgba(0, 4, 16, .35);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, border-color .2s ease;
+}
+.gxAvatarAction .uiIcon { color: var(--st-ion); flex: none; }
+.gxAvatarAction:active { transform: scale(.98); }
+.gxAvatarAction:focus-visible { outline: 2px solid var(--st-ion); outline-offset: 2px; }
+.gxAvatarAction[aria-expanded="true"] { border-color: rgba(127, 227, 238, .6); }
+.gxAvatarSetup .nameInput { margin-top: 14px; }
+.gxAvatarSetup .nameAvailability.nameAvailability { margin: 6px 0 0 !important; }
+.gxAvatarSetup .mainAction { margin-top: auto; }
+.gxAvatarSetup .nameAvailability.nameAvailability { min-height: 16px !important; }
+
+/* Avatar sheet: 16 portraits, 8 rows × 2 columns, the whole phone screen */
+.galacticAvatarSetup .avatarMenu.gxAvatarSheet {
+  position: fixed;
+  inset: 0;
+  top: 0 !important;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 12px);
+  border: 0;
+  border-radius: 0;
+  background: rgba(5, 10, 26, .97);
+  box-shadow: none;
+  animation: gxSheetUp .28s cubic-bezier(.2, .8, .2, 1) both;
+}
+.galacticAvatarSetup .avatarMenu.gxAvatarSheet::before { display: none; }
+@keyframes gxSheetUp { from { opacity: 0; transform: translateY(24px); } }
+.gxSheetHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: none; min-height: 44px; }
+.gxSheetHead h2 { margin: 0; font-family: var(--gx-display); font-size: 17px; font-weight: 700; letter-spacing: .02em; color: var(--st-ink); }
+.galacticAvatarSetup .avatarMenuGrid.gxAvatarGrid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+.galacticAvatarSetup .gxAvatarGrid button {
+  position: relative;
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--st-hair);
+  background: #0c1731;
+  animation: none;
+  transform: none;
+}
+.galacticAvatarSetup .gxAvatarGrid button img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 26%;
+  border-radius: 0;
+}
+.galacticAvatarSetup .gxAvatarGrid button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(5, 10, 26, .55), transparent 38%);
+  pointer-events: none;
+}
+.gxAvatarTileNo {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  z-index: 1;
+  font-family: var(--gx-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: rgba(232, 240, 251, .85);
+}
+.gxAvatarTileCheck {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--st-ion);
+  color: #062530;
+}
+.gxAvatarTileCheck .uiIcon { stroke-width: 2.6; }
+.galacticAvatarSetup .gxAvatarGrid button[aria-pressed="true"] { border: 2px solid var(--st-ion); box-shadow: 0 0 0 3px rgba(127, 227, 238, .18); transform: none; }
+.galacticAvatarSetup .gxAvatarGrid button:is(:hover, :focus-visible) { outline: none; border-color: var(--st-gold); transform: none; box-shadow: 0 0 0 3px rgba(233, 194, 122, .25); }
+
+/* ---------- Catalogue: no title, small rankings pill, no idle paint ---------- */
+.appShell .homePlayHeading.gxHomeBar { display: flex; justify-content: flex-end; padding: 0; margin: 0 0 -4px; }
+.appShell .globalRankingShortcut.gxRankingPill.gxRankingPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 14px 0 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(233, 194, 122, .4);
+  background: rgba(9, 16, 34, .85);
+  color: #ffe6b0;
+  font: 600 12.5px/1 Inter, ui-sans-serif, system-ui, sans-serif;
+  box-shadow: none;
+}
+.gxRankingPill .uiIcon { color: var(--st-gold); }
+.catalogScreen.playCatalogSimple.homePlay::before, .homePlayMerged::before { animation: none !important; display: none; }
+
+/* ---------- Tab bar: JUEGOS · GRUPO · avatar ---------- */
+.appShell .bottomNav.bottomNavThree.gxTabBar {
+  left: 12px !important;
+  right: 12px !important;
+  bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  height: 68px !important;
+  padding: 0 6px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  border: 1px solid rgba(127, 227, 238, .16) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(180deg, rgba(14, 25, 50, .98), rgba(7, 13, 30, .98)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 18px 40px rgba(0, 4, 16, .6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.appShell .bottomNav.bottomNavThree.gxTabBar button {
+  position: relative;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px !important;
+  min-width: 0;
+  min-height: 0 !important;
+  height: 100%;
+  padding: 0 4px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--st-mute) !important;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: 0 !important;
+  transition: color .2s ease;
+}
+.bottomNav.bottomNavThree.gxTabBar button::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  width: 30px;
+  height: 3px;
+  margin-left: -15px;
+  border-radius: 0 0 4px 4px;
+  background: var(--st-ion);
+  box-shadow: 0 0 14px var(--st-ion);
+  opacity: 0;
+  transform: scaleX(.3);
+  transition: opacity .2s ease, transform .25s cubic-bezier(.2, .8, .2, 1);
+}
+.appShell .bottomNav.bottomNavThree.gxTabBar button.active { color: var(--st-ink) !important; }
+.bottomNav.bottomNavThree.gxTabBar button.active::before { opacity: 1; transform: none; }
+.bottomNav.bottomNavThree.gxTabBar button.active::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 64px;
+  height: 30px;
+  margin-left: -32px;
+  background: radial-gradient(50% 100% at 50% 0%, rgba(127, 227, 238, .2), transparent);
+  pointer-events: none;
+}
+.gxTabGlyph { display: grid; place-items: center; width: 28px; height: 28px; }
+.bottomNav.bottomNavThree.gxTabBar button.active .gxTabGlyph { color: var(--st-ion); }
+.gxTabAvatar img { width: 28px !important; height: 28px !important; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 1.5px rgba(232, 240, 251, .35); }
+.bottomNav.bottomNavThree.gxTabBar button.active .gxTabAvatar img { box-shadow: 0 0 0 2px var(--st-ion), 0 0 12px rgba(127, 227, 238, .45); }
+.gxTabLabel.gxTabLabel {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: normal;
+  font-size: 11.5px !important;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: .01em;
+  text-transform: none;
+}
+.bottomNav.bottomNavThree.gxTabBar button:focus-visible { outline: 2px solid var(--st-ion); outline-offset: -6px; border-radius: 16px !important; }

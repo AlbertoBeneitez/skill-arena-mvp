@@ -27,7 +27,7 @@ const messages: Messages = {
 
   "welcome.soon": "{provider}，即将推出",
   "welcome.login": "登录",
-  "welcome.loginLocal": "本地会话",
+  "welcome.loginLocal": "在此设备上的本地会话",
   "welcome.loginAria": "以本地会话登录",
   "welcome.language": "语言",
   "identity.chooseAvatar": "选择头像",
@@ -572,8 +572,8 @@ const messages: Messages = {
   "league.tier2": "黄金",
   "league.tier3": "铂金",
   "league.tier4": "钻石",
-  "league.leagueOf": "{tier}联赛",
-  "league.rivalOf": "{tier}联赛对手",
+  "league.leagueOf": "{tier}",
+  "league.rivalOf": "{tier}对手",
   "league.goalChips": "{n} 枚筹码",
   "league.beat": "你战胜了 {name}",
   "league.lostTo": "{name} 获胜",
@@ -583,7 +583,7 @@ const messages: Messages = {
   "league.top": "保持在{tier}，最高级联赛",
   "league.seriesWins": "本轮系列赛 {n}/{total} 胜",
   "league.progress": "系列赛：第 {n}/{total} 场 · {wins} 胜",
-  "league.badgeAria": "{tier}联赛 · 系列赛 {n}/{total} 场",
+  "league.badgeAria": "{tier} · 系列赛 {n}/{total} 场",
   "ranking.tabGame": "按游戏",
   "ranking.tabGlobal": "总榜",
   "ranking.gamePick": "游戏",
@@ -664,6 +664,10 @@ const messages: Messages = {
   "billiards.hudSolids": "全色 {n}/7 · {shots} 杆",
   "billiards.hudStripes": "花色 {n}/7 · {shots} 杆",
   "billiards.hudEight": "8 号球 · {shots} 杆",
+  "welcome.continueWith": "使用 {provider} 继续",
+  "welcome.otherAccounts": "其他账号",
+  "welcome.providerSoon": "{provider} 登录尚未开放。请先使用本地会话，开放后即可关联账号。",
+  "identity.uploadShort": "上传照片",
 };
 
 export default messages;

@@ -27,7 +27,7 @@ const messages: Messages = {
 
   "welcome.soon": "{provider}, শীঘ্রই আসছে",
   "welcome.login": "সাইন ইন",
-  "welcome.loginLocal": "লোকাল সেশন",
+  "welcome.loginLocal": "এই ডিভাইসে লোকাল সেশন",
   "welcome.loginAria": "লোকাল সেশনে সাইন ইন করুন",
   "welcome.language": "ভাষা",
   "identity.chooseAvatar": "অবতার বেছে নিন",
@@ -572,8 +572,8 @@ const messages: Messages = {
   "league.tier2": "সোনা",
   "league.tier3": "প্লাটিনাম",
   "league.tier4": "হীরা",
-  "league.leagueOf": "{tier} লিগ",
-  "league.rivalOf": "{tier} লিগের প্রতিদ্বন্দ্বী",
+  "league.leagueOf": "{tier}",
+  "league.rivalOf": "{tier} প্রতিদ্বন্দ্বী",
   "league.goalChips": "{n} চিপ",
   "league.beat": "আপনি {name}-কে হারালেন",
   "league.lostTo": "{name} জিতল",
@@ -583,7 +583,7 @@ const messages: Messages = {
   "league.top": "আপনি {tier}-এই থাকছেন, সর্বোচ্চ লিগ",
   "league.seriesWins": "সিরিজে {total}-এর মধ্যে {n} জয়",
   "league.progress": "সিরিজ: {total}-এর মধ্যে ম্যাচ {n} · {wins} জয়",
-  "league.badgeAria": "{tier} লিগ · সিরিজের {total}-এর মধ্যে {n} ম্যাচ",
+  "league.badgeAria": "{tier} · সিরিজের {total}-এর মধ্যে {n} ম্যাচ",
   "ranking.tabGame": "গেম অনুযায়ী",
   "ranking.tabGlobal": "গ্লোবাল",
   "ranking.gamePick": "গেম",
@@ -664,6 +664,10 @@ const messages: Messages = {
   "billiards.hudSolids": "সলিড {n}/7 · {shots} শট",
   "billiards.hudStripes": "স্ট্রাইপ {n}/7 · {shots} শট",
   "billiards.hudEight": "৮ বল · {shots} শট",
+  "welcome.continueWith": "{provider} দিয়ে চালিয়ে যান",
+  "welcome.otherAccounts": "অন্যান্য অ্যাকাউন্ট",
+  "welcome.providerSoon": "{provider} দিয়ে সাইন ইন এখনও চালু হয়নি। লোকাল সেশনে ঢুকুন; চালু হলে অ্যাকাউন্ট যুক্ত করতে পারবেন।",
+  "identity.uploadShort": "ছবি আপলোড",
 };
 
 export default messages;

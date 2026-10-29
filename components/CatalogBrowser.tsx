@@ -1,4 +1,5 @@
 "use client";
+import UiIcon from "./UiIcon";
 import { useEffect } from "react";
 import { LeagueBadge } from "./LeagueResult";
 import { emptyLeague, type LeagueState } from "@/lib/leagues";
@@ -75,7 +76,7 @@ export default function CatalogBrowser(props: Props) {
                   aria-pressed={props.ghostEnabled}
                   aria-label={t("catalog.ghost")}
                 >
-                  👻
+                  <UiIcon name="ghost" size={20} />
                 </button>
               )}
             </div>

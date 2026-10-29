@@ -1,4 +1,5 @@
 "use client";
+import UiIcon from "./UiIcon";
 import { useEffect, useRef } from "react";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { DOC_BLOCKS, DOC_TITLES, LICENSES, type DocId } from "@/lib/i18n/docs";
@@ -21,8 +22,8 @@ export default function DocSheet({ doc, onClose }: { doc: DocId; onClose(): void
   return (
     <div className="docSheet" role="dialog" aria-modal="true" aria-labelledby="doc-title" ref={ref} tabIndex={-1}>
       <header className="docSheetHead">
-        <button type="button" className="docSheetBack" onClick={onClose} aria-label={t("common.back")}>
-          <span aria-hidden="true">←</span>
+        <button type="button" className="docSheetBack gxIconBtn" onClick={onClose} aria-label={t("common.back")}>
+          <UiIcon name="back" mirrorRtl />
         </button>
         <h1 id="doc-title">{t(DOC_TITLES[doc])}</h1>
       </header>

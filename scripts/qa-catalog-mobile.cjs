@@ -75,7 +75,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
     );
     assert.equal(
       await page.locator('.bottomNav button[aria-current="page"]').innerText(),
-      "▶\nJUEGOS",
+      "Juegos",
     );
     assert.equal(
       await page.evaluate(

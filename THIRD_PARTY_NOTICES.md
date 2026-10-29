@@ -276,3 +276,10 @@ Uses the project's existing synthesized audio and shared orbital background.
 - Uso: `components/MobileOnlyGate.tsx` genera el QR de la dirección actual (dibujado como SVG propio).
 - Origen: paquete npm `qrcode-generator` 1.4.4 (Kazuhiko Arase).
 - Licencia: MIT. "QR Code" es marca registrada de DENSO WAVE INCORPORATED.
+
+## Logotipos de inicio de sesión (v121)
+
+- Uso: `components/ProviderLogo.tsx`, solo para identificar cada opción en los botones «Continuar con …» de la pantalla de inicio.
+- Apple, X y Discord: trazados del paquete npm `simple-icons` 13.21.0 — licencia CC0-1.0.
+- Google («G» de cuatro colores) y Microsoft (cuatro cuadrados): dibujados según las guías de botones de inicio de sesión de cada marca.
+- Las marcas pertenecen a sus propietarios. Se usan para identificar el proveedor de inicio de sesión, no implican patrocinio, y el acceso con esos proveedores todavía no está activo.

@@ -47,7 +47,7 @@ const assert = require("node:assert/strict");
     await page
       .getByRole("heading", { name: "Tu avatar", exact: true })
       .waitFor();
-    assert.match(await page.locator('.bottomNav button').last().innerText(), /AVATAR/);
+    assert.match(await page.locator('.bottomNav button').last().innerText(), /avatar/i);
     await page.getByRole('button', {name:'Ver ranking global desde avatar',exact:true}).tap();
     await page.getByRole('heading', {name:'El ranking real aún no está disponible',exact:true}).waitFor();
     await page.locator('.bottomNav button').last().tap();
@@ -216,7 +216,7 @@ const assert = require("node:assert/strict");
     );
     await page.reload();
     await page.locator(".bottomNav button").last().tap();
-    assert.match(await page.locator('.bottomNav button').last().innerText(), /AVATAR/);
+    assert.match(await page.locator('.bottomNav button').last().innerText(), /avatar/i);
     await page.getByRole('button', {name:'Ver ranking global desde avatar',exact:true}).tap();
     await page.getByRole('heading', {name:'El ranking real aún no está disponible',exact:true}).waitFor();
     await page.locator('.bottomNav button').last().tap();

@@ -1,4 +1,5 @@
 "use client";
+import UiIcon from "./UiIcon";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { MUSIC_CHOICES } from "@/lib/gameFeedback";
 import { DOC_ORDER, DOC_TITLES, type DocId } from "@/lib/i18n/docs";
@@ -42,8 +43,8 @@ export default function SettingsScreen({
   return (
     <section className="settingsScreen" aria-labelledby="settings-title">
       <header className="settingsHead">
-        <button type="button" className="docSheetBack" onClick={onBack} aria-label={t("settings.back")}>
-          <span aria-hidden="true">←</span>
+        <button type="button" className="docSheetBack gxIconBtn" onClick={onBack} aria-label={t("settings.back")}>
+          <UiIcon name="back" mirrorRtl />
         </button>
         <h1 id="settings-title">{t("settings.title")}</h1>
       </header>
@@ -112,11 +113,11 @@ export default function SettingsScreen({
         </button>
         <button type="button" className="settingsRow settingsLink" onClick={onLogout}>
           <span><strong>{t("settings.logout")}</strong></span>
-          <b aria-hidden="true">⎋</b>
+          <b aria-hidden="true"><UiIcon name="logout" size={20} /></b>
         </button>
         <button type="button" className="settingsRow settingsLink danger" onClick={onDeleteData}>
           <span><strong>{t("settings.deleteData")}</strong></span>
-          <b aria-hidden="true">✕</b>
+          <b aria-hidden="true"><UiIcon name="trash" size={20} /></b>
         </button>
       </section>
 

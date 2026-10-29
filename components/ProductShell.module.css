@@ -1,11 +1,7 @@
 /* Scoped product chrome; game simulation, onboarding and individual views stay independent. */
 .shell:global(.appShell) {
-  background-color: #050d21;
-  background-image: var(--galactic-space-wash), var(--galactic-space-art);
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
+  /* v121: the illustrated stage is the fixed <OrbitalScene>; no fixed background repaint on scroll */
+  background-color: #050a1a;
   color: #e8f0fb;
 }
 .shell :global(.appHeader) {
