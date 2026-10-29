@@ -1,7 +1,7 @@
 # Revisión de estructura y determinismo — Galactic Games
 
 Checkout revisado: `/home/claude/skill-arena-mvp`, rama `mobile-test`, HEAD `e15e17d` (solo lectura).
-Método: grafo de imports construido con un script propio (479 ficheros TS/JS, 0 imports sin resolver), Tarjan SCC para ciclos, cierre transitivo desde `app/`, inspección del build `.next/` existente, grep dirigido en cores y **replay de golden fixtures bajo JavaScriptCore (bun 1.4.4)** sobre copias en el scratchpad. Scripts y datos en `/tmp/claude-0/-home-claude/5b58732f-982f-5ffa-9ef3-721020a88a3c/scratchpad/review-structure/`.
+Método: grafo de imports construido con un script propio (479 ficheros TS/JS, 0 imports sin resolver), Tarjan SCC para ciclos, cierre transitivo desde `app/`, inspección del build `.next/` existente, grep dirigido en cores y **replay de golden fixtures bajo JavaScriptCore (bun 1.4.4)** sobre copias en el scratchpad. Scripts y datos en `(scripts de análisis fuera del repo)/review-structure/`.
 
 ---
 
