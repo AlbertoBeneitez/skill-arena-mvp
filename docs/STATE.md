@@ -42,15 +42,21 @@ para replay). Fuente de verdad: `lib/games.ts`.
 | PostgreSQL alojado | No existe. Migraciones `db/migrations/001`–`003` listas, se aplican a mano |
 | Identidad | Cookie anónima y perfil local. Sin OAuth |
 | Saldo y premios | Ficticios, calculados en el navegador (`localStorage`) |
-| CI | `build-v4.yml` (typecheck, determinismo, PostgreSQL, build, smoke móvil), CodeQL, Dependabot |
+| CI | `build-v4.yml` (typecheck, determinismo, PostgreSQL, build, smoke móvil), CodeQL, Dependabot. Dependabot y el CodeQL semanal leen `main`, que aún no tiene `.github/`, así que no se ejecutan. El flujo antiguo «Sync Mobile Test» (forzaba `mobile-test`) se desactivó el 29 de octubre |
 
-## Decisiones abiertas del propietario
+## Decisiones del propietario
 
+- [x] Archivar las versiones de núcleo anteriores al lanzamiento (solo la vigente por juego). Aprobado el 29 de octubre.
+- [x] Convertir las ramas `vNN-*` en etiquetas y borrar las ramas. Aprobado el 29 de octubre.
 - [ ] Publicar en producción lo que se prueba en las vistas previas.
-- [ ] Archivar las versiones de núcleo anteriores al lanzamiento (solo la vigente por juego).
 - [ ] Hacer privado el repositorio.
-- [ ] Convertir las ramas `vNN-*` en etiquetas y borrar las ramas.
 - [ ] Mantener `mobile-test` o probar solo desde la vista previa de cada pull request.
+- [ ] Tolerar cortes breves de conexión durante la partida (C3: cambia cuándo se pierde por abandono).
+- [ ] Dejar de borrar los datos locales al abrir una pestaña nueva (C6).
+
+## Revisión de código
+
+La del 29 de octubre está en `docs/reviews/2026-10-29/` (servidor, cliente, estructura, calidad), con hallazgos S*, C*, E* y Q*. Al arreglar uno, cita su id en el pull request.
 
 ## Hoja de ruta
 
