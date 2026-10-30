@@ -10,11 +10,12 @@ Current conversational instructions override this file only when explicit.
 ## Read first
 Before substantial work, read:
 1. `AGENTS.md`
-2. `docs/PRODUCT_BACKLOG.md`
-3. `docs/GAME_PROFESSIONALIZATION_CYCLE.md`
-4. `docs/GAME_ARCHITECTURE.md`
-5. Relevant ADRs under `docs/adr/`
-6. The actual current branch/code/tests
+2. `docs/STATE.md` (current state; overrides older status documents)
+3. `docs/PRODUCT_BACKLOG.md`
+4. `docs/GAME_PROFESSIONALIZATION_CYCLE.md`
+5. `docs/GAME_ARCHITECTURE.md`
+6. Relevant ADRs under `docs/adr/`
+7. The actual current branch/code/tests
 
 Code reality overrides stale documentation.
 

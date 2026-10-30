@@ -12,6 +12,7 @@ on:
       - "audit/**"
       - "qa/**"
       - "v*-mobile"
+      - "v*-saturn"
   pull_request:
   workflow_dispatch:
 
@@ -55,7 +56,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          # Same major as Vercel (Project Settings -> Node.js Version) and .nvmrc.
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install
@@ -81,6 +83,34 @@ jobs:
         run: pnpm audit --prod --audit-level=high
         continue-on-error: true
 
+  # The cores must give identical results on every engine that runs them. Production
+  # verifies on the .nvmrc version; this job replays the same suite on the previous
+  # LTS so an engine change cannot silently alter an authoritative result.
+  determinism-previous-node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: 12.7.0
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Determinism and device-equivalence tests
+        run: pnpm test:determinism
+
   # Opens every game on a 390x844 mobile viewport against the production build and
   # fails on console errors, CSP violations or horizontal overflow.
   mobile-smoke:
@@ -99,7 +129,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          # Same major as Vercel (Project Settings -> Node.js Version) and .nvmrc.
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install
