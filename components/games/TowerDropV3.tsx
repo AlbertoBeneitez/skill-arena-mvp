@@ -11,8 +11,19 @@ import { t, formatNumber, useI18n } from "@/lib/i18n";
 // Presentation-only smoothing. Never read by the core; a new run (tick going
 // backwards) resets it, so replays and previews stay deterministic.
 const motion = { tick: -1, offsetY: Number.NaN, jaw: 1 };
+/**
+ * v123 · Realistic loss: the core discards a failed block the moment it tips past 78° or drops past the landing line.
+ * The renderer keeps the last pose and lets it go on as a rigid body — it keeps the spin it had while toppling over
+ * the edge, scrapes the side of the tower and falls away under the same gravity (820 px/s²), with a puff of dust.
+ * Presentation only: never read by the core; a new run (tick going backwards) clears it.
+ */
+type Pose = { kind: "tip" | "fall"; tick: number; cx: number; cy: number; angle: number; omega: number; vx: number; vy: number; w: number; level: number };
+type Debris = Pose & { born: number; edge: number; dir: number; scraped: boolean };
+const GRAVITY_PX_TICK2 = 820 / (120 * 120);
+const fall = { lastPose: null as Pose | null, lastLoss: -1, items: [] as Debris[], dust: [] as { x: number; y: number; vx: number; vy: number; born: number }[] };
 function ease(state: TowerDropV3State, offsetY: number, gripping: boolean) {
   // Backwards or repeated ticks (new run, resize redraw, test) snap in place.
+  if (state.tick < motion.tick) { fall.lastPose = null; fall.lastLoss = state.lastLossTick; fall.items = []; fall.dust = []; }
   if (state.tick <= motion.tick || Number.isNaN(motion.offsetY)) {
     motion.offsetY = offsetY;
     motion.jaw = gripping ? 0 : 1;
@@ -188,6 +199,14 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State, view?: {
       y = floor - blockH - 320 + state.fallYMilli / 1000;
     if (state.phase === "tipping-left" || state.phase === "tipping-right") {
       const pivot = state.tipPivotXMilli / 1000;
+      {
+        // Remember the pose (centre, angle, spin) so the block can carry on after the core lets it go.
+        const ang = (((state.tipDirection * state.tipAngleMilliDeg) / 1000) * Math.PI) / 180;
+        const lx = x - pivot + state.movingWMilli / 2000, ly = -blockH / 2;
+        const omega = (state.tipDirection * state.tipAngularVelocityMilliDegPerSecond / 1000) * Math.PI / 180 / 120;
+        const rx = lx * Math.cos(ang) - ly * Math.sin(ang), ry = lx * Math.sin(ang) + ly * Math.cos(ang);
+        fall.lastPose = { kind: "tip", tick: state.tick, cx: pivot + rx, cy: floor + ry, angle: ang, omega, vx: -omega * ry, vy: omega * rx, w: state.movingWMilli / 1000, level: state.height + 1 };
+      }
       ctx.save();
       ctx.translate(pivot, floor);
       ctx.rotate(
@@ -196,8 +215,60 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State, view?: {
       );
       block(x - pivot, -blockH, state.movingWMilli / 1000, state.height + 1);
       ctx.restore();
-    } else block(x, y, state.movingWMilli / 1000, state.height + 1);
+    } else {
+      block(x, y, state.movingWMilli / 1000, state.height + 1);
+      if (state.phase === "falling-out") {
+        const w = state.movingWMilli / 1000;
+        fall.lastPose = { kind: "fall", tick: state.tick, cx: x + w / 2, cy: y + blockH / 2, angle: 0, omega: (state.fallVXMilliPerSecond / 1000 / 120) / 70, vx: state.fallVXMilliPerSecond / 1000 / 120, vy: state.fallVYMilliPerSecond / 1000 / 120, w, level: state.height + 1 };
+      }
+    }
   }
+  // A life was just lost: the block that the core discarded carries on as a falling rigid body.
+  if (state.lastLossTick >= 0 && state.lastLossTick !== fall.lastLoss) {
+    fall.lastLoss = state.lastLossTick;
+    const p = fall.lastPose;
+    if (p && state.lastLossTick - p.tick < 12) {
+      const top = state.blocks[state.blocks.length - 1];
+      const dir = p.kind === "tip" ? Math.sign(p.omega) || 1 : Math.sign(p.vx) || (p.cx < 195 ? -1 : 1);
+      const edge = top ? (dir > 0 ? top.xMilli / 1000 + top.wMilli / 1000 : top.xMilli / 1000) : 195;
+      fall.items.push({ ...p, born: state.lastLossTick, edge, dir, scraped: false });
+      if (p.kind === "tip") for (let k = 0; k < 10; k++) fall.dust.push({ x: edge, y: floor, vx: dir * (0.3 + (k % 5) * 0.25), vy: -0.4 - (k % 3) * 0.3, born: state.lastLossTick });
+    }
+    fall.lastPose = null;
+  }
+  for (const d of fall.items) {
+    const t = state.tick - d.born;
+    if (t < 0) continue;
+    // Free flight from the release pose; a small air drag on the spin; it scrapes the tower edge once if it would cut into it.
+    let cx = d.cx + d.vx * t, cy = d.cy + d.vy * t + 0.5 * GRAVITY_PX_TICK2 * t * t;
+    const reach = Math.hypot(d.w / 2, blockH / 2) * 0.6;
+    // It cannot pass through the tower: find the outermost face of every layer (and the deck, then the pylon) it
+    // overlaps vertically, and keep it outside that face — it scrapes down the side and drops past the wider steps.
+    const yTop = cy - reach, yBot = cy + reach;
+    let face = d.dir > 0 ? -Infinity : Infinity;
+    state.blocks.forEach((b, index) => {
+      const fromTop = state.blocks.length - 1 - index, by = fromTop === 0 ? floor : floor + blockH + (fromTop - 1) * olderBlockH;
+      if (yBot > by && yTop < by + blockH) face = d.dir > 0 ? Math.max(face, (b.xMilli + b.wMilli) / 1000) : Math.min(face, b.xMilli / 1000);
+    });
+    if (yBot > groundY && yTop < groundY + 18) face = d.dir > 0 ? Math.max(face, 355) : Math.min(face, 35);
+    if (yBot > groundY + 18) face = d.dir > 0 ? Math.max(face, 270) : Math.min(face, 120);
+    if (Number.isFinite(face) && ((d.dir > 0 && cx - reach < face) || (d.dir < 0 && cx + reach > face))) cx = face + d.dir * reach;
+    const angle = d.angle + d.omega * t * (1 - Math.min(0.35, t / 600));
+    if (cy > floor + 1400) continue;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    block(-d.w / 2, -blockH / 2, d.w, d.level);
+    ctx.restore();
+  }
+  fall.items = fall.items.filter((d) => state.tick - d.born < 900);
+  for (const p of fall.dust) {
+    const t = state.tick - p.born;
+    if (t < 0 || t > 70) continue;
+    ctx.fillStyle = `rgba(210,225,240,${0.5 * (1 - t / 70)})`;
+    ctx.beginPath(); ctx.arc(p.x + p.vx * t, p.y + p.vy * t + 0.012 * t * t, 2 + t * 0.06, 0, Math.PI * 2); ctx.fill();
+  }
+  fall.dust = fall.dust.filter((p) => state.tick - p.born <= 70);
   // Hinged claw: the arms clamp the block's top corners while it swings and
   // swing upward and outward after DROP, so the release is visible. Presentation only.
   const open = motion.jaw,

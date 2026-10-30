@@ -5,6 +5,7 @@ import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import {
   applyBilliardsCamera,
+  billiardsTableBottom,
   getBilliardsCamera,
   unprojectBilliardsPoint,
   type BilliardsCamera,
@@ -16,11 +17,11 @@ import {
 } from "@/lib/verified/billiardsCore.v1";
 import { isStripe } from "@/lib/verified/billiardsCore.v5";
 import {
-  BILLIARDS_CORE_V6,
+  BILLIARDS_CORE_V7,
   BILLIARDS_LEVEL_KINDS,
   isTarget,
-  type BilliardsV6State as BilliardsV5State,
-} from "@/lib/verified/billiardsCore.v6";
+  type BilliardsV7State as BilliardsV5State,
+} from "@/lib/verified/billiardsCore.v7";
 import { pullBilliardsSling } from "@/lib/billiardsSling";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 
@@ -231,6 +232,14 @@ function renderTable(
     ctx.stroke();
   }
   if (s.phase === "aim") drawAimGuide(ctx, s);
+  // Middle third: the pull starts on the cue ball — a soft grab ring marks it.
+  if (s.phase === "aim" && s.balls[0] && !s.balls[0].potted && !billiardsFreePull(s.balls[0])) {
+    const cx0 = s.balls[0].x / 1000, cy0 = s.balls[0].y / 1000, pulse = 0.5 + 0.5 * Math.sin(s.tick * 0.08);
+    ctx.save();
+    ctx.strokeStyle = `rgba(229,197,139,${0.35 + 0.25 * pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
+    ctx.beginPath(); ctx.arc(cx0, cy0, 20 + pulse * 2, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
   const targetsLeft = s.balls.some((b) => !b.potted && isTarget(b.id));
   const recommended = s.balls.find((ball) => !ball.potted && (targetsLeft ? isTarget(ball.id) : ball.id === 8));
   // A new level fades its balls in.
@@ -305,14 +314,14 @@ function renderTable(
   ctx.restore();
   // Power stays upright, separate from the rotated physical table.
   ctx.save();
-  const barY = camera.rotated ? 592 : 452;
+  const tableBottom = billiardsTableBottom(camera), barY = camera.rotated ? 592 : tableBottom + 12;
   for (let i = 0; i < 13; i++) {
     ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
     ctx.fillRect(camera.centerX - 64 + i * 10, barY, 7, 8);
   }
   // Gymkhana strip: the five levels (done / current / next) and this level's balls, potted ones dimmed.
   if (!camera.rotated) {
-    const y = 482;
+    const y = tableBottom + 44;
     for (let i = 0; i < 5; i++) {
       const x = camera.centerX - 150 + i * 16, cur = i + 1 === s.level, done = i + 1 < s.level;
       ctx.fillStyle = cur ? "#ffd36a" : done ? "#5cffb0" : "rgba(134,171,187,.28)";
@@ -370,6 +379,15 @@ function drawSling(ctx: CanvasRenderingContext2D, from: CorePoint, to: CorePoint
   ctx.restore();
 }
 
+/** Finger distance (table px) that counts as touching the cue ball. */
+const BILLIARDS_CUE_GRAB = 46;
+/** Outer third of the table (either axis): the pull may start anywhere. */
+export function billiardsFreePull(cue: { x: number; y: number }) {
+  const L = BILLIARDS_RULES.left, Rt = BILLIARDS_RULES.right, T = BILLIARDS_RULES.top, B = BILLIARDS_RULES.bottom;
+  const w3 = (Rt - L) / 3, h3 = (B - T) / 3;
+  return cue.x < L + w3 || cue.x > Rt - w3 || cue.y < T + h3 || cue.y > B - h3;
+}
+
 function createPresentation() {
   let camera = getBilliardsCamera({ width: 390, height: 620 });
   let viewportKey = "";
@@ -409,8 +427,10 @@ function createPresentation() {
       if (state.phase !== "aim") { drag = null; return null; }
       if (phase === "down") {
         const cue = state.balls[0];
-        // The pull can start anywhere: there is always room, even with the cue ball against a cushion.
-        drag = cue && !cue.potted ? { from: p, screenFrom: point, screenNow: point } : null;
+        // v123: the pull can start anywhere only when the cue ball is in the outer third of the table (near a cushion,
+        // where there may be no room behind it); in the middle third it starts on the cue ball, as on a real table.
+        const nearCue = cue && Math.hypot(p.x - cue.x / 1000, p.y - cue.y / 1000) <= BILLIARDS_CUE_GRAB;
+        drag = cue && !cue.potted && (billiardsFreePull(cue) || nearCue) ? { from: p, screenFrom: point, screenNow: point } : null;
         return null;
       }
       if (!drag) return null;
@@ -452,11 +472,11 @@ export default function Billiards(props: GameRuntimeProps) {
     <div className="billiardsVerified" onPointerCancel={presentation.clear} onLostPointerCapture={presentation.clear}>
       <CoreCanvasGame
         {...props}
-        core={BILLIARDS_CORE_V6}
+        core={BILLIARDS_CORE_V7}
         name="Billar"
         render={presentation.render}
         pointAction={presentation.pointAction}
-        expandHorizontalViewport
+        expandVerticalViewport
         controls={controls}
         keys={keys}
         inputTones={tones}

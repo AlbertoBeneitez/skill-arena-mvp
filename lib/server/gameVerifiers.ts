@@ -6,6 +6,7 @@ import { ROULETTE_CORE_V9 } from "../verified/galacticRouletteCore.v9";
 import { ROULETTE_CORE_V10 } from "../verified/galacticRouletteCore.v10";
 import { ROULETTE_CORE_V11 } from "../verified/galacticRouletteCore.v11";
 import { ROULETTE_CORE_V12 } from "../verified/galacticRouletteCore.v12";
+import { ROULETTE_CORE_V13 } from "../verified/galacticRouletteCore.v13";
 import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
@@ -14,6 +15,7 @@ import { BILLIARDS_CORE_V3 } from "../verified/billiardsCore.v3";
 import { BILLIARDS_CORE_V4 } from "../verified/billiardsCore.v4";
 import { BILLIARDS_CORE_V5 } from "../verified/billiardsCore.v5";
 import { BILLIARDS_CORE_V6 } from "../verified/billiardsCore.v6";
+import { BILLIARDS_CORE_V7 } from "../verified/billiardsCore.v7";
 import { ROULETTE_CORE_V2 } from "../verified/galacticRouletteCore.v2";
 import { ROULETTE_CORE } from "../verified/galacticRouletteCore.v1";
 import { SLOT_CORE } from "../verified/galacticSlotCore.v1";
@@ -271,6 +273,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ROULETTE_CORE_V10.gameId,ROULETTE_CORE_V10.gameVersion)]: coreAdapter(ROULETTE_CORE_V10),
   [adapterKey(ROULETTE_CORE_V11.gameId,ROULETTE_CORE_V11.gameVersion)]: coreAdapter(ROULETTE_CORE_V11),
   [adapterKey(ROULETTE_CORE_V12.gameId,ROULETTE_CORE_V12.gameVersion)]: coreAdapter(ROULETTE_CORE_V12),
+  [adapterKey(ROULETTE_CORE_V13.gameId,ROULETTE_CORE_V13.gameVersion)]: coreAdapter(ROULETTE_CORE_V13),
   [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
@@ -315,6 +318,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BILLIARDS_CORE_V4.gameId,BILLIARDS_CORE_V4.gameVersion)]: coreAdapter(BILLIARDS_CORE_V4),
   [adapterKey(BILLIARDS_CORE_V5.gameId,BILLIARDS_CORE_V5.gameVersion)]: coreAdapter(BILLIARDS_CORE_V5),
   [adapterKey(BILLIARDS_CORE_V6.gameId,BILLIARDS_CORE_V6.gameVersion)]: coreAdapter(BILLIARDS_CORE_V6),
+  [adapterKey(BILLIARDS_CORE_V7.gameId,BILLIARDS_CORE_V7.gameVersion)]: coreAdapter(BILLIARDS_CORE_V7),
   [adapterKey(BILLIARDS_CORE_V2.gameId,BILLIARDS_CORE_V2.gameVersion)]: coreAdapter(BILLIARDS_CORE_V2),
   [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(MINE_GRID_CORE_V2.gameId,MINE_GRID_CORE_V2.gameVersion)]: coreAdapter(MINE_GRID_CORE_V2),

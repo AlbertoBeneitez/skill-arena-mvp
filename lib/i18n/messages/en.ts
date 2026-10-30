@@ -209,7 +209,7 @@ const messages: Messages = {
   "terms.h1": "1. What it is",
   "terms.p1": "GALACTIC GAMES is a web app of skill and entertainment mini-games. All balances, entries, bets and prizes are fictitious: they have no monetary value, cannot be withdrawn or exchanged, and no payments are made.",
   "terms.h2": "2. Age",
-  "terms.p2": "The service is not aimed at children under 14. Galactic Slot and Galactic Roulette simulate games of chance with a fictitious balance and are intended only for people aged 18 or over.",
+  "terms.p2": "The service is not aimed at children under 14. Galactic Slot and Roulette simulate games of chance with a fictitious balance and are intended only for people aged 18 or over.",
   "terms.h3": "3. Results and ranking",
   "terms.p3": "In verified games the server replays the match from the data sent and calculates the result; if verification fails, the win is not confirmed. The example ranking uses fictitious data and is kept separate from the real ranking.",
   "terms.h4": "4. Acceptable use",
@@ -240,7 +240,7 @@ const messages: Messages = {
   "rules.p4": "In groups, the fictitious pot is split 70% / 30% between the top two or 100% to the winner, as chosen when creating the competition.",
 
   "responsible.p1": "GALACTIC GAMES is entertainment: you do not play with real money and you cannot win real money.",
-  "responsible.p2": "Galactic Slot and Galactic Roulette simulate games of chance. They are only for people aged 18 or over and do not predict results of real-money games.",
+  "responsible.p2": "Galactic Slot and Roulette simulate games of chance. They are only for people aged 18 or over and do not predict results of real-money games.",
   "responsible.p3": "Set your limits: turn on the play-time reminder in Settings and take frequent breaks.",
   "responsible.p4": "If gaming stops being fun or you are worried about your relationship with gambling, talk to someone you trust and look for the support services in your country.",
 
@@ -398,7 +398,7 @@ const messages: Messages = {
   "cat.CARTAS": "CARDS",
   "cat.LÓGICA": "LOGIC",
   "cat.CONTROL": "CONTROL",
-  "gameMeta.galactic-roulette.name": "Galactic Roulette",
+  "gameMeta.galactic-roulette.name": "Roulette",
   "gameMeta.galactic-roulette.tagline": "An orbital wheel and a precise throw.",
   "gameMeta.galactic-roulette.skill": "TIMING + THROW",
   "gameMeta.galactic-slot.name": "Galactic Slot",

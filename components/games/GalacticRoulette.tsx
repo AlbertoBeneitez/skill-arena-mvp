@@ -2,13 +2,13 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V12,
-  ROULETTE_RULES_V12,
+  ROULETTE_CORE_V13,
+  ROULETTE_RULES_V13,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV12 as RouletteStateV2,
-  rouletteSurfaceV12,
-} from "@/lib/verified/galacticRouletteCore.v12";
+  type RouletteStateV13 as RouletteStateV2,
+  rouletteSurfaceV13,
+} from "@/lib/verified/galacticRouletteCore.v13";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -28,7 +28,7 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V12.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V13.ballRadius / 1000;
 // Presentation radii (the authoritative ball physics live in the core).
 const NUMBER_OUTER = 121,
   NUMBER_INNER = 104,
@@ -196,15 +196,13 @@ function render(
   const settled = idle && s.lastNumber !== null && !s.lastMiss;
   const pocketAngle = rotation + ROULETTE_WHEEL.findIndex(n => n === s.lastNumber) * Math.PI * 2 / 37;
   // The ball waits on the launcher outside the wheel; a swipe only aims it.
-  // The last moment is slow and soft: the ball drifts into its pocket with a damped wobble.
-  const settleT = settled ? Math.min(1, Math.max(0, (s.tick - s.lastLandingTick) / 150)) : 1;
-  const ease = 1 - (1 - settleT) ** 3;
-  const wobble = settled ? Math.sin(settleT * Math.PI * 3) * (1 - settleT) * 3.5 : 0;
-  const pocketX = cx + Math.cos(pocketAngle) * (POCKET_REST + wobble), pocketY = cy + Math.sin(pocketAngle) * (POCKET_REST + wobble);
-  const x = settled ? s.ballX / 1000 + (pocketX - s.ballX / 1000) * ease
-    : idle ? ROULETTE_BALL_DOCK.x : s.ballX / 1000;
-  const y = settled ? s.ballY / 1000 + (pocketY - s.ballY / 1000) * ease
-    : idle ? ROULETTE_BALL_DOCK.y : s.ballY / 1000;
+  // V13: the ball rests exactly where physics stopped it and simply turns with the wheel (no scripted glide).
+  const rotationAtSettle = ((((s.wheelPhase - s.wheelSpeed * (s.tick - s.lastLandingTick)) % 65536) + 65536) % 65536 / 65536) * Math.PI * 2 - Math.PI / 2;
+  const restAngle = Math.atan2(s.ballY / 1000 - cy, s.ballX / 1000 - cx) + (rotation - rotationAtSettle);
+  const restR = Math.hypot(s.ballX / 1000 - cx, s.ballY / 1000 - cy);
+  const x = settled ? cx + Math.cos(restAngle) * restR : idle ? ROULETTE_BALL_DOCK.x : s.ballX / 1000;
+  const y = settled ? cy + Math.sin(restAngle) * restR : idle ? ROULETTE_BALL_DOCK.y : s.ballY / 1000;
+  const settleT = settled ? Math.min(1, Math.max(0, (s.tick - s.lastLandingTick) / 40)) : 1;
   if (settled && settleT >= 1) {
     const half = Math.PI / 37;
     ctx.save();
@@ -222,7 +220,7 @@ function render(
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
   const radius = Math.hypot(x - cx, y - cy);
-  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV12(radius * 1000).z / 1000 : 0;
+  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV13(radius * 1000).z / 1000 : 0;
   const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - BALL_R);
   // Launcher: an orbital "magnetic cradle" outside the wheel — a hexagonal pad, three clamp prongs and counter-rotating
   // coil rings that hold the ball in the air; dragging charges the coils (faster, warmer, sparks between the prongs).
@@ -355,10 +353,10 @@ function render(
   ctx.fillText(s.lastNumber === null ? "" : String(s.lastNumber), cx, 270);
   ctx.restore();
   // History of the last results above the wheel (screen space, clear of the rim), newest on the right.
-  const shown = s.history.slice(-ROULETTE_RULES_V12.historyLength);
-  const slot = 24, left = cx - (ROULETTE_RULES_V12.historyLength * slot) / 2;
-  for (let i = 0; i < ROULETTE_RULES_V12.historyLength; i++) {
-    const n = shown[i - (ROULETTE_RULES_V12.historyLength - shown.length)];
+  const shown = s.history.slice(-ROULETTE_RULES_V13.historyLength);
+  const slot = 24, left = cx - (ROULETTE_RULES_V13.historyLength * slot) / 2;
+  for (let i = 0; i < ROULETTE_RULES_V13.historyLength; i++) {
+    const n = shown[i - (ROULETTE_RULES_V13.historyLength - shown.length)];
     const hx = left + i * slot + slot / 2;
     if (n === undefined) {
       ctx.strokeStyle = "rgba(168,198,213,.28)";
@@ -368,7 +366,7 @@ function render(
       ctx.stroke();
       continue;
     }
-    const latest = i === ROULETTE_RULES_V12.historyLength - 1;
+    const latest = i === ROULETTE_RULES_V13.historyLength - 1;
     ctx.fillStyle = n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
     ctx.beginPath();
     ctx.arc(hx, 22, latest ? 11 : 9, 0, Math.PI * 2);
@@ -509,8 +507,8 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V12}
-        name="Galactic Roulette"
+        core={ROULETTE_CORE_V13}
+        name="Roulette"
         instruction=""
         render={canvasRender}
         hideHudScore
@@ -521,7 +519,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V12.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V13.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

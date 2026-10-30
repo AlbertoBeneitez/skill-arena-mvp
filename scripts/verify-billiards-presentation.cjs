@@ -167,7 +167,7 @@ module.exports = (async () => {
     pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v5.js"))
   );
   const v6 = await import(
-    pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v6.js"))
+    pathToFileURL(path.join(root, ".det-test/lib/verified/billiardsCore.v7.js"))
   );
   const camera = await import(
     pathToFileURL(path.join(root, ".det-test/lib/billiardsPresentation.js"))
@@ -185,13 +185,13 @@ module.exports = (async () => {
       "@/lib/verified/billiardsProtocol.v1": protocol,
       "@/lib/verified/billiardsCore.v4": v4,
       "@/lib/verified/billiardsCore.v5": v5,
-      "@/lib/verified/billiardsCore.v6": v6,
+      "@/lib/verified/billiardsCore.v7": v6,
       "@/lib/billiardsSling": await import(pathToFileURL(path.join(root, ".det-test/lib/billiardsSling.js"))),
       "./CoreCanvasGame": { default() {} },
     },
     "\nexports.createPresentation=createPresentation;exports.drawAimGuide=drawAimGuide;exports.hudLabel=hudLabel;",
   );
-  const state = v6.BILLIARDS_CORE_V6.create("ui-public-test");
+  const state = v6.BILLIARDS_CORE_V7.create("ui-public-test");
   assert.equal(state.balls.length, 3, "level 1: cue ball and two targets");
   assert.equal(state.levelShotsLeft, 4);
   assert.equal(state.height, 1);
@@ -372,10 +372,10 @@ module.exports = (async () => {
     targetScore: 1e9,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core.gameVersion, "6.0.0");
+  assert.equal(surface.core.gameVersion, "7.0.0");
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.hideHudLabel, undefined);
-  assert.equal(surface.expandHorizontalViewport, true);
+  assert.equal(surface.expandVerticalViewport, true);
   assert.equal(surface.hudLabel(state), "NIVEL 1/5 · 2 BOLAS · 4 TIROS");
   assert.equal(surface.controls.length, 0);
   // v120: the pull can start anywhere (a ball against a cushion still has room): far from the cue, pull down 62 px
@@ -389,13 +389,20 @@ module.exports = (async () => {
     const top = camera.projectBilliardsPoint(view, { x: 200, y: 150 }), down = camera.projectBilliardsPoint(view, { x: 200, y: 260 });
     assert.equal(adapter.pointAction(top, "down", cueAtCushion), null);
     assert.deepEqual(adapter.pointAction(down, "up", cueAtCushion), ["AIM_135", "POWER_12", "SHOOT"], "full power with the cue in the corner");
+    // v123: with the cue ball in the middle third the pull must start on it; far touches do nothing.
+    const cueInMiddle = { ...state, balls: state.balls.map((b, i) => (i === 0 ? { ...b, x: 195000, y: 300000 } : b)) };
+    assert.equal(adapter.pointAction(top, "down", cueInMiddle), null);
+    assert.equal(adapter.pointAction(down, "up", cueInMiddle), null, "no pull from far away in the middle third");
+    const onCue = camera.projectBilliardsPoint(view, { x: 195, y: 300 }), back = camera.projectBilliardsPoint(view, { x: 195, y: 360 });
+    assert.equal(adapter.pointAction(onCue, "down", cueInMiddle), null);
+    assert.deepEqual(adapter.pointAction(back, "up", cueInMiddle).slice(0, 1), ["AIM_135"], "pull from the cue ball works");
   }
   const source = fs.readFileSync(uiSource, "utf8");
   assert.ok(!source.includes("forecastBilliards"));
   assert.ok(!source.includes("s.stage"));
   console.log(
     JSON.stringify({
-      variant: "Billar V6 gymkhana presentation",
+      variant: "Billar V7 gymkhana presentation",
       balls: state.balls.length - 1,
       shots: state.levelShotsLeft,
       aimPowerCombinations: 540,

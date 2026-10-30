@@ -656,3 +656,16 @@ Detalle: [releases/v121-saturn.md](releases/v121-saturn.md).
   - decidir sobre `chore/fase-0-orden` y las ramas antiguas.
 
 Detalle: [releases/v122-saturn.md](releases/v122-saturn.md).
+
+## v123-saturn · Saturno realista, transiciones limpias, Roulette 13, Billar 7, Dardos y Tower Drop (30-oct-2026)
+
+- **Inicio:** Saturno y nebulosa renderizados (arte propio generado por código).
+- **Transiciones:** sin destello azul entre avatar y juegos; la verificación es invisible salvo que tarde más de 1,6 s.
+- **Roulette 13:** se llama «Roulette»; la bola se frena en el hueco y gira con la rueda, sin interpolación.
+- **Dardos:** escenario con focos, público, diana detallada e impactos.
+- **Billar 7:** mesa un 40 % mayor, un 36 % más de fuerza, y tiro desde el otro lado solo en el tercio exterior.
+- **Tower Drop:** el bloque que se sale vuelca, roza la torre y cae girando con polvo.
+- **Vista:** barra de pestañas pegada abajo; la lista termina más abajo.
+- **Pendiente:** decidir sobre `chore/fase-0-orden` y las ramas antiguas.
+
+Detalle: [releases/v123-saturn.md](releases/v123-saturn.md).

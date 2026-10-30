@@ -111,7 +111,7 @@ register(pathToFileURL(path.join(__dirname, "determinism-loader.mjs")));
         r.url().includes("/verified-match/start"),
       );
       await page
-        .getByRole("button", { name: "Jugar a Galactic Roulette", exact: true })
+        .getByRole("button", { name: "Jugar a Roulette", exact: true })
         .tap();
       const issued = await (await starting).json();
       assert.equal(issued.manifest.game_version, "3.0.0");

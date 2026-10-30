@@ -58,6 +58,7 @@ module.exports = (async () => {
       {
         get(obj, key) {
           if (key in obj) return obj[key];
+          if (key === "createLinearGradient" || key === "createRadialGradient") return () => ({ addColorStop() {} });
           return (...args) => {
             if (key === "save")
               stack.push({

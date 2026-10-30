@@ -222,7 +222,7 @@ const es = {
   "terms.h1": "1. Qué es",
   "terms.p1": "GALACTIC GAMES es una aplicación web de minijuegos de habilidad y entretenimiento. Todos los saldos, entradas, apuestas y premios son ficticios: no tienen valor económico, no se pueden retirar ni canjear y no se realizan pagos.",
   "terms.h2": "2. Edad",
-  "terms.p2": "El servicio no está dirigido a menores de 14 años. Galactic Slot y Galactic Roulette simulan juegos de azar con saldo ficticio y están pensados solo para mayores de 18 años.",
+  "terms.p2": "El servicio no está dirigido a menores de 14 años. Galactic Slot y Roulette simulan juegos de azar con saldo ficticio y están pensados solo para mayores de 18 años.",
   "terms.h3": "3. Resultados y ranking",
   "terms.p3": "En los juegos verificados el servidor repite la partida a partir de los datos enviados y calcula el resultado; si la verificación falla, no se confirma la victoria. El ranking de ejemplo usa datos ficticios y está separado del ranking real.",
   "terms.h4": "4. Uso adecuado",
@@ -257,7 +257,7 @@ const es = {
 
   // ---------- responsible gaming ----------
   "responsible.p1": "GALACTIC GAMES es entretenimiento: no se juega con dinero real y no se puede ganar dinero real.",
-  "responsible.p2": "Galactic Slot y Galactic Roulette simulan juegos de azar. Son solo para mayores de 18 años y no predicen resultados de juegos con dinero.",
+  "responsible.p2": "Galactic Slot y Roulette simulan juegos de azar. Son solo para mayores de 18 años y no predicen resultados de juegos con dinero.",
   "responsible.p3": "Marca tus límites: activa el recordatorio de tiempo de juego en Ajustes y haz pausas con frecuencia.",
   "responsible.p4": "Si el juego deja de ser divertido o te preocupa tu relación con las apuestas, habla con alguien de confianza y busca los servicios de ayuda de tu país.",
 
@@ -423,7 +423,7 @@ const es = {
   "cat.CARTAS": "CARTAS",
   "cat.LÓGICA": "LÓGICA",
   "cat.CONTROL": "CONTROL",
-  "gameMeta.galactic-roulette.name": "Galactic Roulette",
+  "gameMeta.galactic-roulette.name": "Roulette",
   "gameMeta.galactic-roulette.tagline": "Una rueda orbital y un lanzamiento preciso.",
   "gameMeta.galactic-roulette.skill": "TIMING + LANZAMIENTO",
   "gameMeta.galactic-slot.name": "Galactic Slot",

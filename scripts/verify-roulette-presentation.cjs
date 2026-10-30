@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const coreModule = await load("lib/verified/galacticRouletteCore.v12.js"),
+  const coreModule = await load("lib/verified/galacticRouletteCore.v13.js"),
     protocol = await load("lib/verified/galacticRouletteProtocol.v3.js"),
     protocol8 = await load("lib/verified/galacticRouletteProtocol.v8.js"),
     gesture = await load("lib/rouletteLaunchGesture.js"),
@@ -31,7 +31,7 @@ module.exports = (async () => {
   );
   const exports = {},
     deps = {
-      "@/lib/verified/galacticRouletteCore.v12": coreModule,
+      "@/lib/verified/galacticRouletteCore.v13": coreModule,
       "@/lib/verified/galacticRouletteProtocol.v3": protocol,
       "@/lib/verified/galacticRouletteProtocol.v8": protocol8,
       "@/lib/rouletteLaunchGesture": gesture,
@@ -46,10 +46,10 @@ module.exports = (async () => {
   let frames = 0;
   for (let seed = 0; seed < 16; seed++)
     for (const impulse of [0, 7, 15]) {
-      const s = coreModule.ROULETTE_CORE_V12.create("roulette2-render-" + seed);
-      runtime.applyCoreInput(coreModule.ROULETTE_CORE_V12, s, "BET_RED", 1e9);
+      const s = coreModule.ROULETTE_CORE_V13.create("roulette2-render-" + seed);
+      runtime.applyCoreInput(coreModule.ROULETTE_CORE_V13, s, "BET_RED", 1e9);
       runtime.applyCoreInput(
-        coreModule.ROULETTE_CORE_V12,
+        coreModule.ROULETTE_CORE_V13,
         s,
         protocol.rouletteTossAction(20, impulse),
         1e9,
@@ -86,21 +86,25 @@ module.exports = (async () => {
           assert.equal(Math.round(balls[0][0] * 1000), s.ballX);
           assert.equal(Math.round(balls[0][1] * 1000), s.ballY);
           const r = Math.hypot(s.ballX / 1000 - 195,s.ballY / 1000 - 195);
-          const surface = s.inBowl && r <= 151 ? coreModule.rouletteSurfaceV12(r * 1000).z / 1000 : 0;
-          const BR = coreModule.ROULETTE_RULES_V12.ballRadius / 1000;
+          const surface = s.inBowl && r <= 151 ? coreModule.rouletteSurfaceV13(r * 1000).z / 1000 : 0;
+          const BR = coreModule.ROULETTE_RULES_V13.ballRadius / 1000;
           assert.ok(Math.abs(balls[0][2] - (BR + Math.min(130,Math.max(0,s.ballZ/1000-surface-BR))*.07)) < 1e-9);
           frames++;
         }
-        runtime.stepCore(coreModule.ROULETTE_CORE_V12, s, 1e9);
+        runtime.stepCore(coreModule.ROULETTE_CORE_V13, s, 1e9);
       }
     }
   // A landed ball remains in the awarded rotating pocket, never back at dock.
-  const s = coreModule.ROULETTE_CORE_V12.create("settled-zenithal");
+  const s = coreModule.ROULETTE_CORE_V13.create("settled-zenithal");
   s.lastNumber = 32;
-  s.ballX = 250000;
-  s.ballY = 195000;
   s.lastLandingTick = 240;
   s.tick = 240;
+  // V13: physics leaves the ball resting in pocket 32 (centre line, radius 93.5); from then on it only turns with the wheel.
+  {
+    const a0 = s.wheelPhase / 65536 * Math.PI * 2 - Math.PI / 2 + coreModule.ROULETTE_WHEEL.indexOf(32) * Math.PI * 2 / 37;
+    s.ballX = Math.round(195000 + Math.cos(a0) * 93500);
+    s.ballY = Math.round(195000 + Math.sin(a0) * 93500);
+  }
   for (let age = 0; age < 200; age++) {
     const balls = [], stack = [];
     let arc;
@@ -119,13 +123,11 @@ module.exports = (async () => {
     assert.equal(JSON.stringify(s),before);
     const angle = s.wheelPhase / 65536 * Math.PI * 2 - Math.PI / 2 + coreModule.ROULETTE_WHEEL.indexOf(32) * Math.PI * 2 / 37;
     assert.equal(balls.length,2); // pocketed ball stays + next ball waits on the launcher
-    // The last moment is slow and soft (150 ticks of easing); afterwards the ball rests exactly in the pocket.
-    // v106: each number has its own square pocket inside the numbered band; its centre is at radius 93.5.
+    // V13: no scripted glide — at every frame the ball is where physics left it, turned with the wheel.
     const POCKET_REST = 93.5;
     const miss = Math.hypot(balls[0][0] - (195 + Math.cos(angle) * POCKET_REST), balls[0][1] - (195 + Math.sin(angle) * POCKET_REST));
-    if (age >= 150) assert.ok(miss < 1e-8);
-    else assert.ok(miss <= 200, "ball drifts toward the pocket");
-    runtime.stepCore(coreModule.ROULETTE_CORE_V12,s,1e9);
+    assert.ok(miss < 0.01, `resting ball rides with its pocket (age ${age}, off by ${miss})`);
+    runtime.stepCore(coreModule.ROULETTE_CORE_V13,s,1e9);
   }
   console.log(
     JSON.stringify({

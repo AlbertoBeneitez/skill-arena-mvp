@@ -209,7 +209,7 @@ const messages: Messages = {
   "terms.h1": "1. 这是什么",
   "terms.p1": "GALACTIC GAMES 是一款技巧与娱乐小游戏网页应用。所有余额、报名费、下注和奖励都是虚拟的：没有任何金钱价值，不能提取或兑换，也不会产生任何付款。",
   "terms.h2": "2. 年龄",
-  "terms.p2": "本服务不面向 14 岁以下儿童。Galactic Slot 和 Galactic Roulette 使用虚拟余额模拟博彩游戏，仅适合 18 岁及以上人士。",
+  "terms.p2": "本服务不面向 14 岁以下儿童。Galactic Slot 和 Roulette 使用虚拟余额模拟博彩游戏，仅适合 18 岁及以上人士。",
   "terms.h3": "3. 结果与排行榜",
   "terms.p3": "在经过核验的游戏中，服务器会根据提交的数据重放对局并计算结果；如果核验失败，胜利不会被确认。示例排行榜使用虚构数据，并与真实排行榜分开。",
   "terms.h4": "4. 合理使用",
@@ -240,7 +240,7 @@ const messages: Messages = {
   "rules.p4": "在群组中，虚拟奖池按创建比赛时的选择分配：前两名 70% / 30%，或冠军独得 100%。",
 
   "responsible.p1": "GALACTIC GAMES 是娱乐：不使用真钱，也无法赢得真钱。",
-  "responsible.p2": "Galactic Slot 和 Galactic Roulette 模拟博彩游戏，仅适合 18 岁及以上人士，且不能预测真钱游戏的结果。",
+  "responsible.p2": "Galactic Slot 和 Roulette 模拟博彩游戏，仅适合 18 岁及以上人士，且不能预测真钱游戏的结果。",
   "responsible.p3": "为自己设定界限：在设置中开启游戏时长提醒，并经常休息。",
   "responsible.p4": "如果游戏不再有趣，或你担心自己与博彩的关系，请与信任的人谈谈，并寻求你所在国家的援助服务。",
 
@@ -398,7 +398,7 @@ const messages: Messages = {
   "cat.CARTAS": "纸牌",
   "cat.LÓGICA": "逻辑",
   "cat.CONTROL": "操控",
-  "gameMeta.galactic-roulette.name": "Galactic Roulette",
+  "gameMeta.galactic-roulette.name": "Roulette",
   "gameMeta.galactic-roulette.tagline": "一只轨道轮盘，一次精准投掷。",
   "gameMeta.galactic-roulette.skill": "时机 + 投掷",
   "gameMeta.galactic-slot.name": "Galactic Slot",

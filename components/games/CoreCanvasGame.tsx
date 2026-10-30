@@ -88,6 +88,15 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const heldRef = useRef(new Set<string>());
   const pointerRef = useRef<{ id: number; origin: CorePoint } | null>(null);
   const [presentingFinale, setPresentingFinale] = useState(false);
+  // v123: the server round-trip (ticket at the start, replay check at the end) is normally a few hundred ms and stays
+  // invisible: the game keeps its last frame. Only if it takes longer than 1.6 s does a small, quiet ring appear.
+  const busyNow = attempt.state.status === "starting" || (attempt.state.status === "verifying" && !presentingFinale);
+  const [slowBusy, setSlowBusy] = useState(false);
+  useEffect(() => {
+    if (!busyNow) { setSlowBusy(false); return; }
+    const id = window.setTimeout(() => setSlowBusy(true), 1600);
+    return () => window.clearTimeout(id);
+  }, [busyNow]);
   const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined, label: undefined as string | undefined });
   // Player-experience overlay: a floating "+N" and sparks whenever the score rises (presentation only).
   const prevScoreRef = useRef(0);
@@ -424,6 +433,6 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       onKeyUp={event => { if ((event.key === " " || event.key === "Enter") && control.releaseAction) { heldRef.current.delete(control.releaseAction); send(control.releaseAction); } }}
       onBlur={releaseHeld}
     >{control.symbol}</button>)}</div>}
-    {(attempt.state.status === "starting" || (attempt.state.status === "verifying" && !presentingFinale)) && <div className="verificationOverlay"><span>{attempt.state.status === "starting" ? t("game.preparing") : t("game.verifying")}</span></div>}
+    {slowBusy && <div className="verificationOverlay quietBusy" role="status"><i className="quietBusyRing" aria-hidden="true" /><span className="visuallyHidden">{attempt.state.status === "starting" ? t("game.preparing") : t("game.verifying")}</span></div>}
   </div>;
 }

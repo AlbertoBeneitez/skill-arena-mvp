@@ -209,7 +209,7 @@ const messages: Messages = {
   "terms.h1": "1. Qu'est-ce que c'est",
   "terms.p1": "GALACTIC GAMES est une application web de mini-jeux d'adresse et de divertissement. Tous les soldes, inscriptions, mises et gains sont fictifs : ils n'ont aucune valeur monétaire, ne peuvent être ni retirés ni échangés, et aucun paiement n'est effectué.",
   "terms.h2": "2. Âge",
-  "terms.p2": "Le service ne s'adresse pas aux moins de 14 ans. Galactic Slot et Galactic Roulette simulent des jeux de hasard avec un solde fictif et sont réservés aux personnes de 18 ans ou plus.",
+  "terms.p2": "Le service ne s'adresse pas aux moins de 14 ans. Galactic Slot et Roulette simulent des jeux de hasard avec un solde fictif et sont réservés aux personnes de 18 ans ou plus.",
   "terms.h3": "3. Résultats et classement",
   "terms.p3": "Dans les jeux vérifiés, le serveur rejoue la partie à partir des données envoyées et calcule le résultat ; si la vérification échoue, la victoire n'est pas confirmée. Le classement d'exemple utilise des données fictives et reste séparé du classement réel.",
   "terms.h4": "4. Utilisation appropriée",
@@ -240,7 +240,7 @@ const messages: Messages = {
   "rules.p4": "Dans les groupes, la cagnotte fictive est répartie 70 % / 30 % entre les deux premiers ou 100 % pour le gagnant, selon le choix fait à la création de la compétition.",
 
   "responsible.p1": "GALACTIC GAMES est un divertissement : on ne joue pas avec de l'argent réel et on ne peut pas gagner d'argent réel.",
-  "responsible.p2": "Galactic Slot et Galactic Roulette simulent des jeux de hasard. Ils sont réservés aux 18 ans et plus et ne prédisent pas les résultats des jeux d'argent.",
+  "responsible.p2": "Galactic Slot et Roulette simulent des jeux de hasard. Ils sont réservés aux 18 ans et plus et ne prédisent pas les résultats des jeux d'argent.",
   "responsible.p3": "Fixe-toi des limites : active le rappel du temps de jeu dans Paramètres et fais des pauses régulières.",
   "responsible.p4": "Si le jeu n'est plus amusant ou si ta relation aux jeux d'argent t'inquiète, parles-en à une personne de confiance et cherche les services d'aide de ton pays.",
 
@@ -398,7 +398,7 @@ const messages: Messages = {
   "cat.CARTAS": "CARTES",
   "cat.LÓGICA": "LOGIQUE",
   "cat.CONTROL": "CONTRÔLE",
-  "gameMeta.galactic-roulette.name": "Galactic Roulette",
+  "gameMeta.galactic-roulette.name": "Roulette",
   "gameMeta.galactic-roulette.tagline": "Une roue orbitale et un lancer précis.",
   "gameMeta.galactic-roulette.skill": "TIMING + LANCER",
   "gameMeta.galactic-slot.name": "Galactic Slot",

@@ -36,11 +36,17 @@ export function getBilliardsCamera(
   cssScale = 1,
 ): BilliardsCamera {
   if (viewport.width <= viewport.height) {
+    // v123: the table fills the width (up to 1.1×) and the table + its strip below are centred in the free height
+    // under the HUD line; the logical viewport grows with tall phones (expand-vertical).
+    const w = BILLIARDS_TABLE_VIEW_BOUNDS.right - BILLIARDS_TABLE_VIEW_BOUNDS.left;
+    const h = BILLIARDS_TABLE_VIEW_BOUNDS.bottom - BILLIARDS_TABLE_VIEW_BOUNDS.top;
+    const hud = 48, strip = 78;
+    const scale = Math.min((viewport.width - 12) / w, (viewport.height - hud - strip - 8) / h, 1.1);
+    const top = hud + Math.max(0, (viewport.height - hud - strip - h * scale) / 2);
     return {
-      // v120: smaller still (0.78) and anchored high, leaving room around the table to pull from anywhere.
       centerX: viewport.width / 2,
-      centerY: 258,
-      scale: 0.78,
+      centerY: top + (worldCenterY - BILLIARDS_TABLE_VIEW_BOUNDS.top) * scale,
+      scale,
       rotated: false,
     };
   }
@@ -83,4 +89,9 @@ export function applyBilliardsCamera(
   camera: BilliardsCamera,
 ) {
   applyCanvasCamera(ctx, sharedCamera(camera));
+}
+
+/** Screen y just below the drawn table frame (portrait), where the power bar and the level strip go. */
+export function billiardsTableBottom(camera: BilliardsCamera) {
+  return camera.centerY + (BILLIARDS_TABLE_VIEW_BOUNDS.bottom - worldCenterY) * camera.scale;
 }

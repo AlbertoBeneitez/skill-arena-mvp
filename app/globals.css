@@ -7601,7 +7601,7 @@ html, body { background-color: var(--st-abyss); background-image: none; backgrou
 }
 .orbital-welcome { --orbital-ty: calc(30dvh - 300 * 100vw / 390); animation: gxStageIn 1.3s cubic-bezier(.2, .7, .2, 1) both; }
 .orbital-avatar { --orbital-ty: calc(-13dvh - 300 * 100vw / 390); }
-.orbital-catalog { --orbital-ty: calc(-38dvh - 300 * 100vw / 390); animation: gxFadeIn .5s ease both; }
+.orbital-catalog { --orbital-ty: calc(-38dvh - 300 * 100vw / 390); }
 .orbitalVeil { position: absolute; inset: 0; }
 .orbital-welcome .orbitalVeil { background: linear-gradient(180deg, transparent 52%, rgba(5, 10, 26, .55) 78%, rgba(5, 10, 26, .82)); }
 .orbital-avatar .orbitalVeil { background: linear-gradient(180deg, rgba(5, 10, 26, .1), transparent 30%, rgba(5, 10, 26, .55) 85%); }
@@ -8197,3 +8197,40 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
 }
 .coreHud > span.hudLed .segDigits { font-size: 15px; filter: drop-shadow(0 0 3px rgba(127, 244, 255, .8)); }
 .coreHud > span.hudLed small { font: 700 9.5px/1 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: .1em; color: #9fc4d6; text-transform: uppercase; }
+
+/* =====================================================================
+   v123
+   ===================================================================== */
+/* Server round-trip: no curtain; a quiet ring only if it takes longer than 1.6 s. */
+.verificationOverlay.quietBusy {
+  inset: 0;
+  background: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  pointer-events: none;
+  animation: gxFadeIn .4s ease both;
+}
+.quietBusyRing {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid rgba(127, 227, 238, .18);
+  border-top-color: #7fe3ee;
+  animation: quietSpin .9s linear infinite;
+}
+@keyframes quietSpin { to { transform: rotate(360deg); } }
+/* No light legacy gradient behind the stage (it flashed light blue for a frame between the avatar and the games). */
+main.appShell { background-image: none !important; background-color: #050a1a !important; }
+/* The games view reaches further down: the tab bar is docked to the bottom edge (no floating gap). */
+.appShell .bottomNav.bottomNavThree.gxTabBar {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: calc(62px + env(safe-area-inset-bottom)) !important;
+  padding: 0 6px env(safe-area-inset-bottom) !important;
+  border-width: 1px 0 0 !important;
+  border-radius: 20px 20px 0 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 -12px 30px rgba(0, 4, 16, .55) !important;
+}
+main.appShell { padding-bottom: calc(66px + env(safe-area-inset-bottom)) !important; }
+.appShell .catalogScreen.homePlayMerged { padding-bottom: 4px !important; }
