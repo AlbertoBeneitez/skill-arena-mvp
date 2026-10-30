@@ -10,6 +10,7 @@ import {
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
+import SegmentDigits, { SegmentGlowFilter } from "../SegmentDigits";
 type Props = {
   active: boolean;
   targetScore: number;
@@ -334,21 +335,32 @@ export default function MineGrid({
 
   return (
     <div
-      className="detGameSurface mineGridGame mineGridAdvanced"
+      className="detGameSurface mineGridGame mineGridAdvanced mineGridDigital"
       aria-label="Mine Grid"
     >
-      <div className="gameTimerChip mineTimerChip">
-        {String(Math.floor(elapsedMs / 60000)).padStart(2, "0")}:
-        {String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0")}
-      </div>
-      <div className="gameTimerChip mineTimerChip" style={{ left: 12, right: "auto", transform: "none" }}>
-        {challenge.id} ·{" "}
-        {challenge.deductionRounds <= 9
-          ? tx("mine.easy")
-          : challenge.deductionRounds <= 12
-            ? tx("mine.medium")
-            : tx("mine.hard")}
-      </div>
+      {(() => {
+        const mm = String(Math.floor(elapsedMs / 60000)).padStart(2, "0"), ss = String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0");
+        const level = challenge.deductionRounds <= 9 ? tx("mine.easy") : challenge.deductionRounds <= 12 ? tx("mine.medium") : tx("mine.hard");
+        const left = Math.max(0, MINES - flagged.size), fieldNo = challenge.id.replace(/\D+/g, "") || "0";
+        return (
+          <div className="mineConsole" aria-hidden="false">
+            <div className="mineConsoleCell">
+              <small className="dotMatrix">{tx("mine.fieldLabel")}</small>
+              <SegmentDigits value={fieldNo.padStart(2, "0")} label={challenge.id} />
+              <small className="dotMatrix mineLevel">{level}</small>
+            </div>
+            <div className="mineConsoleCell mineConsoleTime">
+              <small className="dotMatrix">{tx("mine.timeLabel")}</small>
+              <SegmentDigits value={`${mm}:${ss}`} label={`${mm}:${ss}`} />
+            </div>
+            <div className="mineConsoleCell mineConsoleMines">
+              <small className="dotMatrix">{tx("mine.minesLabel")}</small>
+              <SegmentDigits value={String(left).padStart(2, "0")} label={tx("mine.minesLeft", { n: left })} />
+            </div>
+          </div>
+        );
+      })()}
+      <svg className="mineSegDefs" width="0" height="0" aria-hidden="true" focusable="false"><defs><SegmentGlowFilter id="mineSegGlow" /></defs></svg>
       <div
         className="mineGridBoard"
         style={{
@@ -387,13 +399,13 @@ export default function MineGrid({
               }
             >
               {isFlagged
-                ? "⚑"
+                ? <svg className="mineFlagIcon" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 17V3" /><path d="M6.5 3.5h8.5l-2.4 3.2 2.4 3.3H6.5z" /></svg>
                 : open
                   ? value === -1
-                    ? "✦"
-                    : value || ""
+                    ? <svg className="mineBombIcon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="4.6" /><path d="M10 1.8v3M10 15.2v3M1.8 10h3M15.2 10h3M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1" /></svg>
+                    : value ? <SegmentDigits value={String(value)} filterId="mineSegGlow" ghost={false} className={`mineN mineN${value}`} /> : ""
                   : isStart
-                    ? "●"
+                    ? <i className="mineStartDot" aria-hidden="true" />
                     : ""}
             </button>
           );
@@ -404,30 +416,32 @@ export default function MineGrid({
         {ended && !ended.solved ? (
           <>
             <span className="mineStartHint">
-              {ended.score === 1 ? tx("mine.endOne", { n: ended.score }) : tx("mine.endMany", { n: ended.score })}
+              <b className="dotMatrix mineMarquee mineAlarm">{ended.score === 1 ? tx("mine.endOne", { n: ended.score }) : tx("mine.endMany", { n: ended.score })}</b>
             </span>
             <button type="button" className="active" onClick={() => onFinish({ won: false, score: ended.score, timeMs: ended.timeMs })}>
               {tx("mine.seeResult")}
             </button>
           </>
         ) : !started ? (
-          <span className="mineStartHint">{tx("mine.startHint")}</span>
+          <span className="mineStartHint"><b className="dotMatrix mineMarquee">{tx("mine.startHint")}</b></span>
         ) : (
           <>
-            <span className="mineStartHint">{tx("mine.ok", { n: hudCorrect })}</span>
+            <span className="mineStartHint mineOkCounter"><SegmentDigits value={String(hudCorrect).padStart(3, "0")} label={tx("mine.ok", { n: hudCorrect })} /><small className="dotMatrix">OK</small></span>
             <button
               type="button"
               className={!flagMode ? "active" : ""}
+              aria-pressed={!flagMode}
               onClick={() => setFlagMode(false)}
             >
-              {tx("mine.open")}
+              <i className="mineLed" aria-hidden="true" />{tx("mine.open")}
             </button>
             <button
               type="button"
               className={flagMode ? "active" : ""}
+              aria-pressed={flagMode}
               onClick={() => setFlagMode(true)}
             >
-              {tx("mine.flag")}
+              <i className="mineLed" aria-hidden="true" />{tx("mine.flag")}
             </button>
           </>
         )}

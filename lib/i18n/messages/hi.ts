@@ -689,6 +689,21 @@ const messages: Messages = {
   "billiards.eightFirst": "8 सबसे आख़िर में −500",
   "billiards.eightLast": "आख़िर में 8! +2000",
   "billiards.hudLevel": "लेवल {n}/5 · {left} गेंदें · {shots} शॉट",
+  "gallery.target": "लक्ष्य",
+  "gallery.sp.kraken": "क्रैकन",
+  "gallery.sp.drone": "ड्रोन",
+  "gallery.sp.mantis": "मैंटिस",
+  "gallery.sp.slime": "स्लाइम",
+  "gallery.sp.wraith": "प्रेत",
+  "gallery.sp.golem": "गोलेम",
+  "gallery.civilian": "नागरिक!",
+  "gallery.holo": "होलोग्राम",
+  "gallery.decoy": "छलावा",
+  "gallery.clear": "इलाका साफ़!",
+  "mine.fieldLabel": "मैदान",
+  "mine.timeLabel": "समय",
+  "mine.minesLabel": "माइन",
+  "mine.minesLeft": "चिह्नित करने के लिए {n} माइन बाकी",
 };
 
 export default messages;

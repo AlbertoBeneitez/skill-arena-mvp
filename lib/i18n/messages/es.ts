@@ -727,6 +727,21 @@ const es = {
   "billiards.eightFirst": "La 8 va la última −500",
   "billiards.eightLast": "¡La 8 al final! +2000",
   "billiards.hudLevel": "NIVEL {n}/5 · {left} BOLAS · {shots} TIROS",
+  "gallery.target": "OBJETIVO",
+  "gallery.sp.kraken": "Kraken",
+  "gallery.sp.drone": "Dron",
+  "gallery.sp.mantis": "Mantis",
+  "gallery.sp.slime": "Gelatina",
+  "gallery.sp.wraith": "Espectro",
+  "gallery.sp.golem": "Gólem",
+  "gallery.civilian": "¡CIVIL!",
+  "gallery.holo": "HOLOGRAMA",
+  "gallery.decoy": "SEÑUELO",
+  "gallery.clear": "¡ZONA LIMPIA!",
+  "mine.fieldLabel": "CAMPO",
+  "mine.timeLabel": "TIEMPO",
+  "mine.minesLabel": "MINAS",
+  "mine.minesLeft": "Quedan {n} minas por marcar",
 } as const;
 
 export type MessageKey = keyof typeof es;

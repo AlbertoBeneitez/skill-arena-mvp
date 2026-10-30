@@ -689,6 +689,21 @@ const messages: Messages = {
   "billiards.eightFirst": "8号球要最后打 −500",
   "billiards.eightLast": "8号球收尾！+2000",
   "billiards.hudLevel": "第 {n}/5 关 · 剩 {left} 球 · {shots} 杆",
+  "gallery.target": "目标",
+  "gallery.sp.kraken": "克拉肯",
+  "gallery.sp.drone": "无人机",
+  "gallery.sp.mantis": "螳螂",
+  "gallery.sp.slime": "黏液怪",
+  "gallery.sp.wraith": "幽灵",
+  "gallery.sp.golem": "石魔",
+  "gallery.civilian": "平民！",
+  "gallery.holo": "全息",
+  "gallery.decoy": "诱饵",
+  "gallery.clear": "区域清除！",
+  "mine.fieldLabel": "雷区",
+  "mine.timeLabel": "时间",
+  "mine.minesLabel": "地雷",
+  "mine.minesLeft": "还有 {n} 颗地雷待标记",
 };
 
 export default messages;

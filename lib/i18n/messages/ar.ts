@@ -689,6 +689,21 @@ const messages: Messages = {
   "billiards.eightFirst": "الكرة 8 في الأخير −500",
   "billiards.eightLast": "الكرة 8 في النهاية! +2000",
   "billiards.hudLevel": "المستوى {n}/5 · {left} كرات · {shots} ضربات",
+  "gallery.target": "الهدف",
+  "gallery.sp.kraken": "كراكن",
+  "gallery.sp.drone": "درون",
+  "gallery.sp.mantis": "السرعوف",
+  "gallery.sp.slime": "الهلام",
+  "gallery.sp.wraith": "الشبح",
+  "gallery.sp.golem": "الغولم",
+  "gallery.civilian": "مدني!",
+  "gallery.holo": "هولوغرام",
+  "gallery.decoy": "طُعم",
+  "gallery.clear": "المنطقة آمنة!",
+  "mine.fieldLabel": "الحقل",
+  "mine.timeLabel": "الوقت",
+  "mine.minesLabel": "الألغام",
+  "mine.minesLeft": "تبقّى {n} لغمًا للتعليم",
 };
 
 export default messages;

@@ -1,4 +1,4 @@
-// Shot Gallery V11 renderer: pure, finite, and its tap mapping agrees with the core.
+// Shot Gallery V12 renderer: pure, finite, and its tap mapping agrees with the core.
 const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path");
@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const core = await load("lib/verified/shotGalleryCore.v11.js");
+  const core = await load("lib/verified/shotGalleryCore.v12.js");
   const file = path.join(root, "components/games/ShotGallery.tsx"),
     swc = req("next/dist/build/swc");
   await swc.loadBindings();
@@ -20,7 +20,8 @@ module.exports = (async () => {
   });
   const deps = {
       react: { ...req("react"), useCallback: (f) => f },
-      "@/lib/verified/shotGalleryCore.v11": core,
+      "@/lib/verified/shotGalleryCore.v12": core,
+      "react-dom": { preload() {} },
       "@/lib/spaceBackdrop": { drawSpaceBackdrop() {} },
       "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/gameFeedback": { gameTone() {} },
@@ -35,7 +36,7 @@ module.exports = (async () => {
   for (let seed = 0; seed < 12; seed++)
     for (let trial = 0; trial < 12; trial++)
       for (const phase of ["waiting", "ready", "feedback"]) {
-        const s = core.SHOT_GALLERY_CORE_V11.create(`gallery11-render-${seed}`);
+        const s = core.SHOT_GALLERY_CORE_V12.create(`gallery12-render-${seed}`);
         s.trial = trial;
         s.phase = phase;
         s.readyTick = 0;
@@ -45,7 +46,8 @@ module.exports = (async () => {
           s.tapTicks = [40];
         }
         if (phase === "feedback")
-          s.results = [{ trial, type: ["CORRECT", "FALSE_START", "TIMEOUT"][trial % 3], taps: [40], wrongs: 0, addedMs: 333 }];
+          s.results = [{ trial, type: ["CORRECT", "FALSE_START", "TIMEOUT"][trial % 3], taps: [40], wrongs: 0, civilians: 0, addedMs: 333 }];
+        if (phase === "ready" && trial % 2) { s.lastPick = s.trials[trial].targets.findIndex((_, i) => !s.trials[trial].answers.includes(i)); s.lastTapTick = 28; s.lastAddedMs = 400; }
         const before = JSON.stringify(s),
           stack = [];
         let finite = true;
@@ -74,18 +76,29 @@ module.exports = (async () => {
         assert.ok(finite, "finite coordinates");
         frames++;
       }
-  // Taps: before green any tap is a false start; afterwards the nearest unhit target wins.
-  const s = core.SHOT_GALLERY_CORE_V11.create("gallery11-pick");
-  assert.equal(pick({ x: 5, y: 5 }, "down", s), "PICK_0");
+  // Taps: before they pop out any tap is a false start; afterwards the creature under the finger wins.
+  const s = core.SHOT_GALLERY_CORE_V12.create("gallery12-pick");
+  assert.equal(pick({ x: 195, y: 400 }, "down", s), "PICK_0");
+  assert.equal(pick({ x: 195, y: 60 }, "down", s), null, "the briefing panel is not a target");
   s.phase = "ready";
   s.readyTick = s.tick;
-  const t = core.galleryTargetPosV11(s.trials[0].targets[3]);
-  assert.equal(pick({ x: t.x + 4, y: t.y - 3 }, "down", s), "PICK_3");
-  assert.equal(pick({ x: 2, y: 2 }, "down", s), null);
-  assert.equal(pick({ x: t.x, y: t.y }, "move", s), null);
+  s.tick += 20;
+  let checked = 0;
+  s.trials[0].targets.forEach((t, i) => {
+    const sc = t.scaleMilli / 1000;
+    assert.equal(pick({ x: t.x + 3, y: t.y - 16 * sc }, "down", s), `PICK_${i}`, `creature ${i} under the finger`);
+    checked++;
+  });
+  assert.equal(pick({ x: 195, y: 160 }, "move", s), null);
+  const t3 = s.trials[0].targets[3];
   s.hits = [3];
-  assert.notEqual(pick({ x: t.x, y: t.y }, "down", s), "PICK_3");
-  console.log(JSON.stringify({ variant: "Shot Gallery V11", frames, rendererPure: true }));
+  assert.notEqual(pick({ x: t3.x, y: t3.y - 14 }, "down", s), "PICK_3", "a creature already down is not hit twice");
+  // Hidden creatures (still waiting below cover) are never hit.
+  const w = core.SHOT_GALLERY_CORE_V12.create("gallery12-pick-hidden");
+  w.phase = "ready"; w.readyTick = w.tick; // rise 0 at age 0
+  const t0 = w.trials[0].targets[0];
+  assert.equal(pick({ x: t0.x, y: t0.y - 14 }, "down", w), null);
+  console.log(JSON.stringify({ variant: "Shot Gallery V12 hangar", frames, pickedCreatures: checked, multiTouch: element.props.children.props.multiTouch === true, rendererPure: true }));
 })().catch((e) => {
   console.error(e);
   throw e;

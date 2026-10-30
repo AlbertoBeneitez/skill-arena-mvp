@@ -87,6 +87,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-gallery-v9.js");
   await import("../.det-test/scripts/verify-gallery-v10.js");
   await import("../.det-test/scripts/verify-gallery-v11.js");
+  await import("../.det-test/scripts/verify-gallery-v12.js");
   await import("../.det-test/scripts/verify-solitaire-solvable.js");
   await import("../.det-test/scripts/verify-progression.js");
   await (await import("./verify-gallery-presentation.cjs")).default;

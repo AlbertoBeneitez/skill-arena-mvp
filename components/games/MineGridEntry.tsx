@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import type { GameRuntimeProps } from "@/lib/games";
+import GameLoading from "../GameLoading";
 const Authority = dynamic(() => import("./MineGridAuthority"));
 const Legacy = dynamic(() => import("./MineGrid"));
 /** Preserve existing training until private durable transport is configured. */
@@ -23,7 +24,6 @@ export default function MineGridEntry(props: GameRuntimeProps) {
       });
     return () => controller.abort();
   }, []);
-  if (available === null)
-    return <div className="gameLoading">PREPARANDO JUEGO…</div>;
+  if (available === null) return <GameLoading />;
   return available ? <Authority {...props} /> : <Legacy {...props} />;
 }

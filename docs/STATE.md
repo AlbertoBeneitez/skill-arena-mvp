@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 29 de octubre de 2026 · base `mobile-test` en v120-saturn (`e15e17d`).
+Actualizado: 30 de octubre de 2026 · base `mobile-test` en v124-saturn.
 
 ## Catálogo
 
@@ -13,15 +13,15 @@ resultado aún no verificado de extremo a extremo.
 
 | id interno | Nombre visible | Versión | Estado |
 | --- | --- | --- | --- |
-| galactic-roulette | Galactic Roulette | 11.0.0 | VERIFIED |
+| galactic-roulette | Roulette | 13.0.0 | VERIFIED |
 | galactic-slot | Galactic Slot | 3.0.0 | VERIFIED |
 | darts | Dardos | 3.0.0 | VERIFIED |
-| billiards | Billar | 5.0.0 | VERIFIED |
+| billiards | Billar | 7.0.0 | VERIFIED |
 | tower-drop | Tower Drop | 5.0.0 | VERIFIED |
 | stack-shift | Stack Shift | 4.0.0 | VERIFIED |
 | orb-burst | Orb Burst | 7.0.0 | VERIFIED |
 | precision-stack | Stack | 4.0.0 | VERIFIED |
-| reaction-test | Shot Gallery | 11.0.0 | VERIFIED |
+| reaction-test | Shot Gallery | 12.0.0 | VERIFIED |
 | pinball | Pinball | 8.0.0 | VERIFIED |
 | bowling | Bowling | 2.0.0 | VERIFIED |
 | corner-sudoku | Galoku | 4.0.0 | VERIFIED |
@@ -40,7 +40,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 | Node | 24 (`.nvmrc`, Vercel). La CI repite el determinismo en Node 22 |
 | Variables en Vercel | `MATCH_SIGNING_SECRET` y `ALLOW_LEGACY_STATELESS_TRAINING` en producción y preview. Sin `DATABASE_URL` |
 | PostgreSQL alojado | No existe. Migraciones `db/migrations/001`–`003` listas, se aplican a mano |
-| Identidad | Cookie anónima y perfil local. Sin OAuth |
+| Identidad | Cookie anónima y perfil local. Inicio de sesión con Google, Apple, X, Discord y Microsoft activado en el código (v122); cada proveedor se enciende al poner sus credenciales en Vercel (`docs/AUTH_PROVIDERS.md`). Hoy no hay ninguna |
 | Saldo y premios | Ficticios, calculados en el navegador (`localStorage`) |
 | CI | `build-v4.yml` (typecheck, determinismo, PostgreSQL, build, smoke móvil), CodeQL, Dependabot. Dependabot y el CodeQL semanal leen `main`, que aún no tiene `.github/`, así que no se ejecutan. El flujo antiguo «Sync Mobile Test» (forzaba `mobile-test`) se desactivó el 29 de octubre |
 
@@ -48,6 +48,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
 
 - [x] Archivar las versiones de núcleo anteriores al lanzamiento (solo la vigente por juego). Aprobado el 29 de octubre.
 - [x] Convertir las ramas `vNN-*` en etiquetas y borrar las ramas. Aprobado el 29 de octubre.
+- [x] Integrar `chore/fase-0-orden` (revisión y limpieza). Aprobado e integrado el 30 de octubre (v124).
+- [x] Borrar las ramas de trabajo antiguas (`archive/pre-saturn`, `audit/…`, `feature/…`, `improve/…`, `qa/…`, `refactor/…`, `skillarena2`). Aprobado el 30 de octubre. Pendiente de ejecutar: la sesión de Claude no puede borrar ramas ni subir etiquetas (403 de la política de git); copia completa en un git bundle entregado al propietario.
 - [ ] Publicar en producción lo que se prueba en las vistas previas.
 - [ ] Hacer privado el repositorio.
 - [ ] Mantener `mobile-test` o probar solo desde la vista previa de cada pull request.

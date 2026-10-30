@@ -689,6 +689,21 @@ const messages: Messages = {
   "billiards.eightFirst": "The 8 goes last −500",
   "billiards.eightLast": "The 8 last! +2000",
   "billiards.hudLevel": "LEVEL {n}/5 · {left} BALLS · {shots} SHOTS",
+  "gallery.target": "TARGET",
+  "gallery.sp.kraken": "Kraken",
+  "gallery.sp.drone": "Drone",
+  "gallery.sp.mantis": "Mantis",
+  "gallery.sp.slime": "Slime",
+  "gallery.sp.wraith": "Wraith",
+  "gallery.sp.golem": "Golem",
+  "gallery.civilian": "CIVILIAN!",
+  "gallery.holo": "HOLOGRAM",
+  "gallery.decoy": "DECOY",
+  "gallery.clear": "AREA CLEAR!",
+  "mine.fieldLabel": "FIELD",
+  "mine.timeLabel": "TIME",
+  "mine.minesLabel": "MINES",
+  "mine.minesLeft": "{n} mines left to flag",
 };
 
 export default messages;

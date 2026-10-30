@@ -669,3 +669,22 @@ Detalle: [releases/v122-saturn.md](releases/v122-saturn.md).
 - **Pendiente:** decidir sobre `chore/fase-0-orden` y las ramas antiguas.
 
 Detalle: [releases/v123-saturn.md](releases/v123-saturn.md).
+
+## v124-saturn · Shot Gallery 12 «Hangar 7», marcadores LED, Mine Grid digital, carga y avatares (30-oct-2026)
+
+- **Revisión y limpieza:** `chore/fase-0-orden` integrada; `docs/STATE.md` al día.
+- **Shot Gallery 12:**
+  - hangar de película con seis especies espaciales como blancos;
+  - señuelos: camuflados, hologramas y civiles;
+  - dos disparos a la vez;
+  - las marcas de los disparos se quedan;
+  - portada renderizada con el juego.
+- **Marcadores:** dígitos de siete segmentos redibujados y paneles LED con bisel y cristal.
+- **Mine Grid:** consola LED (campo, tiempo, minas), números en segmentos e interruptores con LED.
+- **Carga:** emblema de Saturno con cometa, logotipo y progreso; intro con la imagen del juego más grande.
+- **Avatares:** cada tarjeta encuadra la cara.
+- **Pendiente:**
+  - borrar desde GitHub las 10 ramas antiguas (la sesión no tiene permiso; copia en bundle);
+  - credenciales de los proveedores de inicio de sesión.
+
+Detalle: [releases/v124-saturn.md](releases/v124-saturn.md).

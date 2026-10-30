@@ -272,13 +272,13 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "11.0.0",
+    version: "12.0.0",
     resultMetric: "reaction-time-ms",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
     name: "Shot Gallery",
-    cover: "/covers/shot-gallery.webp?v=121",
+    cover: "/covers/shot-gallery.webp?v=124",
     enabled: true,
     waitingStakes: [1, 50],
     category: "REACCIÓN",
@@ -288,8 +288,8 @@ const GAME_DEFINITIONS = [
     rivalScore: 15000,
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
-    instruction: "Cuando se abre la lona, dispara a las dianas que tienen el color y la figura de la orden.",
-    scoring: "Doce órdenes que combinan un color y una figura. Una lona con doce ventanas se abre al empezar cada orden y descubre de 8 a 12 dianas, 2 a 4 de ellas buenas. La puntuación es tu tiempo de reacción acumulado (menos es mejor): cada acierto suma el tiempo desde que se abre la lona o desde el acierto anterior; una diana equivocada suma 400 ms, disparar antes de que se abra 600 ms y cada diana buena que quede en pie 1500 ms.",
+    instruction: "Cuando asoman las criaturas, abate a las de la especie que marca la orden. Puedes disparar con dos dedos a la vez.",
+    scoring: "Doce órdenes en el hangar 7: una especie, y dos desde la séptima. Asoman de 8 a 12 figuras tras la barandilla, la pasarela, las cajas y la barricada; 2 a 4 son blancos reales y el resto señuelos: otras especies, camuflados con los colores del blanco, hologramas y civiles. La puntuación es tu tiempo de reacción acumulado (menos es mejor): cada blanco abatido suma el tiempo desde que asoman o desde el anterior; un señuelo suma 400 ms, un civil 800 ms, disparar antes de tiempo 600 ms y cada blanco que quede en pie 1500 ms.",
   },
 
   {

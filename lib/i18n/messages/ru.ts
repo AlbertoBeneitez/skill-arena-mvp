@@ -689,6 +689,21 @@ const messages: Messages = {
   "billiards.eightFirst": "Восьмёрка — последней −500",
   "billiards.eightLast": "Восьмёрка в конце! +2000",
   "billiards.hudLevel": "УРОВЕНЬ {n}/5 · {left} ШАРОВ · {shots} УДАРОВ",
+  "gallery.target": "ЦЕЛЬ",
+  "gallery.sp.kraken": "Кракен",
+  "gallery.sp.drone": "Дрон",
+  "gallery.sp.mantis": "Богомол",
+  "gallery.sp.slime": "Слизень",
+  "gallery.sp.wraith": "Призрак",
+  "gallery.sp.golem": "Голем",
+  "gallery.civilian": "МИРНЫЙ!",
+  "gallery.holo": "ГОЛОГРАММА",
+  "gallery.decoy": "ПРИМАНКА",
+  "gallery.clear": "ЗОНА ЗАЧИЩЕНА!",
+  "mine.fieldLabel": "ПОЛЕ",
+  "mine.timeLabel": "ВРЕМЯ",
+  "mine.minesLabel": "МИНЫ",
+  "mine.minesLeft": "Осталось отметить мин: {n}",
 };
 
 export default messages;

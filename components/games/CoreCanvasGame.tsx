@@ -31,6 +31,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   /** Single-axis destination survives the core cooldown; ordered gestures keep their normal queue. */
   coalescePointActions?: boolean;
   pointAction?(point: CorePoint, phase: "down" | "move" | "up", state: S): string | readonly string[] | null;
+  /** v124: every extra finger that touches down is also a "down" (e.g. two shots at once); moves follow the first. */
+  multiTouch?: boolean;
   gestureAction?(from: CorePoint, to: CorePoint, state: S): string | null;
   keys?: Readonly<Record<string, string>>;
   keyReleases?: Readonly<Record<string, string>>;
@@ -366,7 +368,12 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     <canvas ref={canvasRef} className="gameCanvas deterministicCanvas" role="application" aria-label={`${name}. ${instruction}`} tabIndex={0}
       onPointerDown={event => {
         event.preventDefault();
-        if (pointerRef.current !== null) return;
+        if (pointerRef.current !== null) {
+          if (!props.multiTouch || pointerRef.current.id === event.pointerId) return;
+          const extra = props.pointAction?.(point(event.clientX, event.clientY), "down", stateRef.current);
+          if (extra) sendPointActions(extra);
+          return;
+        }
         event.currentTarget.focus({ preventScroll: true });
         event.currentTarget.setPointerCapture(event.pointerId);
         const p = point(event.clientX, event.clientY);

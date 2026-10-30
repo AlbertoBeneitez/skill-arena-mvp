@@ -689,6 +689,21 @@ const messages: Messages = {
   "billiards.eightFirst": "8 سب سے آخر میں −500",
   "billiards.eightLast": "آخر میں 8! +2000",
   "billiards.hudLevel": "لیول {n}/5 · {left} گیندیں · {shots} شاٹس",
+  "gallery.target": "ہدف",
+  "gallery.sp.kraken": "کریکن",
+  "gallery.sp.drone": "ڈرون",
+  "gallery.sp.mantis": "مینٹس",
+  "gallery.sp.slime": "لیس دار",
+  "gallery.sp.wraith": "بھوت",
+  "gallery.sp.golem": "گولم",
+  "gallery.civilian": "شہری!",
+  "gallery.holo": "ہولوگرام",
+  "gallery.decoy": "دھوکا",
+  "gallery.clear": "علاقہ صاف!",
+  "mine.fieldLabel": "میدان",
+  "mine.timeLabel": "وقت",
+  "mine.minesLabel": "بارودی سرنگیں",
+  "mine.minesLeft": "نشان لگانے کو {n} سرنگیں باقی",
 };
 
 export default messages;

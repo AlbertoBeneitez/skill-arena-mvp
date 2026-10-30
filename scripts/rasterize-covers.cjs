@@ -5,7 +5,8 @@ const { chromium } = require("playwright");
 const fs = require("node:fs"), path = require("node:path"), os = require("node:os"), { execFileSync } = require("node:child_process");
 const dir = path.join(__dirname, "..", "public", "covers");
 const names = ["galactic-roulette", "galactic-slot", "darts", "billiards", "tower-drop", "solitaire-sprint", "mine-grid", "stack-shift",
-  "orb-burst", "stack-3d", "shot-gallery", "pinball", "bowling", "corner-sudoku"];
+  "orb-burst", "stack-3d", "pinball", "bowling", "corner-sudoku"];
+// shot-gallery.webp is rendered from the game's own renderer since v124 (scripts/render-gallery-cover.mjs).
 (async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "covers-"));
   const browser = await chromium.launch();

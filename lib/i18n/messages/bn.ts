@@ -689,6 +689,21 @@ const messages: Messages = {
   "billiards.eightFirst": "৮ সবার শেষে −500",
   "billiards.eightLast": "শেষে ৮! +2000",
   "billiards.hudLevel": "লেভেল {n}/5 · {left} বল · {shots} শট",
+  "gallery.target": "লক্ষ্য",
+  "gallery.sp.kraken": "ক্র্যাকেন",
+  "gallery.sp.drone": "ড্রোন",
+  "gallery.sp.mantis": "ম্যান্টিস",
+  "gallery.sp.slime": "স্লাইম",
+  "gallery.sp.wraith": "প্রেত",
+  "gallery.sp.golem": "গোলেম",
+  "gallery.civilian": "বেসামরিক!",
+  "gallery.holo": "হলোগ্রাম",
+  "gallery.decoy": "ফাঁদ",
+  "gallery.clear": "এলাকা পরিষ্কার!",
+  "mine.fieldLabel": "ক্ষেত্র",
+  "mine.timeLabel": "সময়",
+  "mine.minesLabel": "মাইন",
+  "mine.minesLeft": "চিহ্নিত করতে {n}টি মাইন বাকি",
 };
 
 export default messages;

@@ -1,0 +1,178 @@
+{
+ "seed": "gallery12-golden",
+ "inputs": [
+  {
+   "seq": 0,
+   "tick": 184,
+   "action": "PICK_4"
+  },
+  {
+   "seq": 1,
+   "tick": 185,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 2,
+   "tick": 447,
+   "action": "PICK_2"
+  },
+  {
+   "seq": 3,
+   "tick": 448,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 4,
+   "tick": 736,
+   "action": "PICK_1"
+  },
+  {
+   "seq": 5,
+   "tick": 737,
+   "action": "PICK_6"
+  },
+  {
+   "seq": 6,
+   "tick": 962,
+   "action": "PICK_3"
+  },
+  {
+   "seq": 7,
+   "tick": 963,
+   "action": "PICK_7"
+  },
+  {
+   "seq": 8,
+   "tick": 1011,
+   "action": "PICK_8"
+  },
+  {
+   "seq": 9,
+   "tick": 1256,
+   "action": "PICK_1"
+  },
+  {
+   "seq": 10,
+   "tick": 1257,
+   "action": "PICK_2"
+  },
+  {
+   "seq": 11,
+   "tick": 1293,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 12,
+   "tick": 1527,
+   "action": "PICK_0"
+  },
+  {
+   "seq": 13,
+   "tick": 1528,
+   "action": "PICK_3"
+  },
+  {
+   "seq": 14,
+   "tick": 1568,
+   "action": "PICK_7"
+  },
+  {
+   "seq": 15,
+   "tick": 1857,
+   "action": "PICK_0"
+  },
+  {
+   "seq": 16,
+   "tick": 1858,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 17,
+   "tick": 1902,
+   "action": "PICK_8"
+  },
+  {
+   "seq": 18,
+   "tick": 2144,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 19,
+   "tick": 2145,
+   "action": "PICK_8"
+  },
+  {
+   "seq": 20,
+   "tick": 2193,
+   "action": "PICK_9"
+  },
+  {
+   "seq": 21,
+   "tick": 2415,
+   "action": "PICK_0"
+  },
+  {
+   "seq": 22,
+   "tick": 2416,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 23,
+   "tick": 2452,
+   "action": "PICK_8"
+  },
+  {
+   "seq": 24,
+   "tick": 2453,
+   "action": "PICK_9"
+  },
+  {
+   "seq": 25,
+   "tick": 2700,
+   "action": "PICK_0"
+  },
+  {
+   "seq": 26,
+   "tick": 2701,
+   "action": "PICK_4"
+  },
+  {
+   "seq": 27,
+   "tick": 2935,
+   "action": "PICK_3"
+  },
+  {
+   "seq": 28,
+   "tick": 2936,
+   "action": "PICK_5"
+  },
+  {
+   "seq": 29,
+   "tick": 2980,
+   "action": "PICK_6"
+  },
+  {
+   "seq": 30,
+   "tick": 3205,
+   "action": "PICK_1"
+  },
+  {
+   "seq": 31,
+   "tick": 3206,
+   "action": "PICK_3"
+  },
+  {
+   "seq": 32,
+   "tick": 3254,
+   "action": "PICK_4"
+  },
+  {
+   "seq": 33,
+   "tick": 3255,
+   "action": "PICK_5"
+  }
+ ],
+ "finalTick": 3339,
+ "score": 7179,
+ "hash": "sha256:7ec007f9919186426e1b8ac60cd448e2a5223db120517ead1a559fd370a487b4"
+}

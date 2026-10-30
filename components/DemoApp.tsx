@@ -72,6 +72,21 @@ function isScreen(value: unknown): value is Screen {
 }
 
 const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
+/**
+ * v124 · Where each portrait's face is (percent of the square image). The 2:1 picker tiles crop to that band and
+ * zoom in around the face, so every tile shows the character's face instead of its chest.
+ */
+const AVATAR_FACES: readonly (readonly [number, number])[] = [
+  [55, 34], [60, 15], [48, 21], [54, 9], [56, 20], [55, 18], [55, 13], [50, 15],
+  [62, 36], [56, 11], [50, 12], [50, 12], [52, 15], [44, 13], [40, 18], [40, 13],
+];
+function avatarFaceStyle(index: number) {
+  const [fx, fy] = AVATAR_FACES[index] ?? [50, 26];
+  // A square image in a 2:1 tile shows half its height: pick that band (object-position) so the face is as central
+  // as possible, then zoom around the face's spot in the tile.
+  const oy = Math.min(100, Math.max(0, 2 * fy - 50)), cy = 2 * fy - oy;
+  return { ["--face-x" as string]: `${fx}%`, ["--face-oy" as string]: `${oy}%`, ["--face-cy" as string]: `${cy}%` };
+}
 /** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
 const smallAvatar = (src: string) => (/^\/avatars\/portrait-\d\d\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 const START_BALANCE = 25;
@@ -1402,7 +1417,7 @@ export default function DemoApp() {
                         aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
-                        <img src={src} alt="" width={256} height={256} decoding="async" />
+                        <img src={src} alt="" width={256} height={256} decoding="async" style={avatarFaceStyle(index)} />
                         <span className="gxAvatarTileNo" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
                       </button>

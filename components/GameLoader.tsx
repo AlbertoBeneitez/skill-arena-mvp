@@ -3,21 +3,13 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { GameResult } from "@/lib/types";
+import { GameLoading } from "./GameLoading";
 import {
   GAMES,
   type GameId,
   type GameMeta,
   type GameRuntimeProps,
 } from "@/lib/games";
-
-function GameLoading() {
-  return (
-    <div className="gameLoading" role="status">
-      <span className="gxLoadingOrbit" aria-hidden="true"><i /><i /></span>
-      <span>Preparando juego</span>
-    </div>
-  );
-}
 
 type Props = {
   game: GameMeta;
