@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 30 de octubre de 2026 · base `mobile-test` en v124-saturn.
+Actualizado: 31 de octubre de 2026 · base `mobile-test` en v125-saturn.
 
 ## Catálogo
 
@@ -23,7 +23,7 @@ resultado aún no verificado de extremo a extremo.
 | precision-stack | Stack | 4.0.0 | VERIFIED |
 | reaction-test | Shot Gallery | 12.0.0 | VERIFIED |
 | pinball | Pinball | 8.0.0 | VERIFIED |
-| bowling | Bowling | 2.0.0 | VERIFIED |
+| bowling | Bowling | 3.0.0 | VERIFIED |
 | corner-sudoku | Galoku | 4.0.0 | VERIFIED |
 | solitaire-sprint | Solitaire Sprint | 0.2.0 | INTEGRATED |
 | mine-grid | Mine Grid | 0.2.0 | INTEGRATED |
@@ -49,7 +49,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
 - [x] Archivar las versiones de núcleo anteriores al lanzamiento (solo la vigente por juego). Aprobado el 29 de octubre.
 - [x] Convertir las ramas `vNN-*` en etiquetas y borrar las ramas. Aprobado el 29 de octubre.
 - [x] Integrar `chore/fase-0-orden` (revisión y limpieza). Aprobado e integrado el 30 de octubre (v124).
-- [x] Borrar las ramas de trabajo antiguas (`archive/pre-saturn`, `audit/…`, `feature/…`, `improve/…`, `qa/…`, `refactor/…`, `skillarena2`). Aprobado el 30 de octubre. Pendiente de ejecutar: la sesión de Claude no puede borrar ramas ni subir etiquetas (403 de la política de git); copia completa en un git bundle entregado al propietario.
+- [ ] Borrar las ramas de trabajo antiguas (`archive/pre-saturn`, `audit/…`, `feature/…`, `improve/…`, `qa/…`, `refactor/…`, `skillarena2`). Aprobado el 30 de octubre y confirmado de nuevo el 31 (también `chore/fase-0-orden`, ya contenida en `mobile-test`). Pendiente de ejecutar por el propietario: la sesión de Claude recibe 403 de la política de git al borrar ramas o subir etiquetas; copia completa en un git bundle entregado al propietario.
+  Comando: `git push origin --delete archive/pre-saturn audit/production-readiness-v97 feature/dino-dash-professional feature/precision-stack-pro feature/precision-stack-professional improve/alien-sky-river qa/gameplay-polish-v99 qa/precision-stack-professional-pass refactor/game-architecture skillarena2 chore/fase-0-orden`
 - [ ] Publicar en producción lo que se prueba en las vistas previas.
 - [ ] Hacer privado el repositorio.
 - [ ] Mantener `mobile-test` o probar solo desde la vista previa de cada pull request.

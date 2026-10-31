@@ -9,7 +9,7 @@ import { BILLIARDS_ACTIONS_V3 } from "./verified/billiardsCore.v3";
 import { ORB_ACTIONS_V6 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v6";
 import { PINBALL_ACTIONS_V3 } from "./verified/pinballProtocol.v3";
 import { CORNER_SUDOKU_ACTIONS_V3 } from "./verified/cornerSudokuProtocol.v3";
-import { BOWLING_ACTIONS_V1 } from "./verified/bowlingProtocol.v1";
+import { BOWLING_ACTIONS_V2 } from "./verified/bowlingProtocol.v2";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -314,12 +314,12 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "bowling",
-    version: "2.0.0",
+    version: "3.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/Bowling")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: BOWLING_ACTIONS_V1 },
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 2, allowedActions: BOWLING_ACTIONS_V2 },
     name: "Bowling",
-    cover: "/covers/bowling.webp",
+    cover: "/covers/bowling.webp?v=125",
     enabled: true,
     waitingStakes: [1, 5],
     category: "PRECISIÓN",
@@ -330,7 +330,7 @@ const GAME_DEFINITIONS = [
     rivalName: "PINS",
     rivalAvatar: "/avatars/avatar-4.svg",
     instruction: "",
-    scoring: "Bolos de diez: diez marcos con plenos y semiplenos según el reglamento (bolas extra en el décimo). Arrastra la bola para colocarla y desliza hacia arriba: la dirección marca el ángulo, la velocidad la potencia y la curva del gesto el efecto. Pista larga de 27,4 m (una vez y media la reglamentaria): la bola tarda más en llegar. Física determinista de bola y bolos. Replay de servidor.",
+    scoring: "Bolos de diez: diez marcos con plenos y semiplenos según el reglamento (bolas extra en el décimo). Arrastra la bola de lado para colocarla y traza el lanzamiento hacia arriba: la recta entre el principio y el final del trazo marca la dirección, la curvatura de la línea el efecto y la velocidad final la potencia. Pista de 32 m y tirada sensible: 49 pasos de dirección y 17 de efecto, así que un trazo poco preciso se nota. Física determinista de bola y bolos. Replay de servidor.",
   },
   {
     id: "corner-sudoku",

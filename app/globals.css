@@ -6169,6 +6169,7 @@ html, body, .arenaOnboarding, .gameScreen {
   background-size: cover;
   background-attachment: fixed;
 }
+
 .gameScreen .gameArenaWrap, .gameScreen .coreGameSurface {
   background: transparent;
 }
@@ -8241,11 +8242,11 @@ main.appShell { padding-bottom: calc(66px + env(safe-area-inset-bottom)) !import
 /* Avatar picker: every tile frames the character's face (positions per portrait in DemoApp AVATAR_FACES). */
 .galacticAvatarSetup .gxAvatarGrid button img {
   object-position: 50% var(--face-oy, 26%);
-  transform: scale(1.5);
+  transform: scale(1.28);
   transform-origin: var(--face-x, 50%) var(--face-cy, 50%);
   transition: transform .35s cubic-bezier(.2, .7, .2, 1);
 }
-.galacticAvatarSetup .gxAvatarGrid button:is(:hover, :focus-visible, [aria-pressed="true"]) img { transform: scale(1.62); }
+.galacticAvatarSetup .gxAvatarGrid button:is(:hover, :focus-visible, [aria-pressed="true"]) img { transform: scale(1.36); }
 @media (prefers-reduced-motion: reduce) { .galacticAvatarSetup .gxAvatarGrid button img { transition: none; } }
 
 /* Digital scoreboards, v124: glass LED windows with a metal bezel, scan mesh and gloss; the digits carry their own
@@ -8555,3 +8556,19 @@ main.appShell { padding-bottom: calc(66px + env(safe-area-inset-bottom)) !import
 .gxBootEmblem { width: 230px; }
 .gxBootOrbit { left: calc(50% + 24px); top: calc(50% + 6px); width: 236px; height: 236px; margin: -118px 0 0 -118px; }
 .gameLoading.gxBoot { width: 100%; }
+
+/* v125 · Game screens without a cut at the bottom. The art used to be a fixed background of .gameScreen, whose box
+   ends at 100dvh; an edge-to-edge phone also paints under the gesture bar, where the page's plain colour showed in a
+   hard line. The art now sits on one fixed layer taller than the large viewport plus the safe area, and the page
+   below a game no longer reserves room for the tab bar (it is hidden there). */
+.gameScreen { background-image: none !important; background-color: transparent !important; }
+.gameScreen::before {
+  content: "";
+  position: fixed;
+  left: 0; right: 0; top: 0;
+  height: calc(100lvh + env(safe-area-inset-bottom, 0px) + 120px);
+  z-index: -1;
+  pointer-events: none;
+  background: var(--galactic-space-wash), var(--galactic-space-art) center top / cover no-repeat, #050d21;
+}
+main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-bottom: 0 !important; min-height: 100dvh; }

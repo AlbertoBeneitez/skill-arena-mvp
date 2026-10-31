@@ -688,3 +688,20 @@ Detalle: [releases/v123-saturn.md](releases/v123-saturn.md).
   - credenciales de los proveedores de inicio de sesión.
 
 Detalle: [releases/v124-saturn.md](releases/v124-saturn.md).
+
+## v125-saturn · Bowling 3 con dibujos animados, fondo sin corte, icono nuevo (31-oct-2026)
+
+- **Bowling 3 (`bowling@3.0.0`, V1–V2 intactos):**
+  - pista de 32 m y tirada más sensible (protocolo V2: 49 pasos de dirección, 17 de efecto);
+  - el gesto: la recta entre el inicio y el final del trazo es la dirección y la curvatura de la línea el efecto (`lib/bowlingGesture.v3.ts`, con prueba);
+  - pista con textura de madera renderizada, foso con panel de neón, kickbacks y reflejos de los bolos;
+  - pleno y semipleno: repetición corta y un corto de 10 s con los bolos como personajes («Despegue», «Disco orbital» y «Abducción»);
+  - portada nueva renderizada con el juego.
+- **Fondo de juego:** ya no se corta encima de la barra de gestos (capa fija más alta que la pantalla) y la página de juego no se desplaza.
+- **Avatares:** algo menos de zoom en el selector.
+- **Icono de la app y pantalla de arranque:** planeta con la G tallada y luminosa, anillo y luna (`scripts/render-app-icon.py`).
+- **Pendiente:**
+  - borrar las 11 ramas antiguas desde GitHub (la sesión recibe 403);
+  - credenciales de los proveedores de inicio de sesión.
+
+Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).

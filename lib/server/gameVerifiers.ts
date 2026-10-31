@@ -37,6 +37,7 @@ import { CORNER_SUDOKU_CORE_V3 } from "../verified/cornerSudokuCore.v3";
 import { CORNER_SUDOKU_CORE_V4 } from "../verified/cornerSudokuCore.v4";
 import { BOWLING_CORE_V1 } from "../verified/bowlingCore.v1";
 import { BOWLING_CORE_V2 } from "../verified/bowlingCore.v2";
+import { BOWLING_CORE_V3 } from "../verified/bowlingCore.v3";
 import { STACK_SHIFT_CORE_V3 } from "../verified/stackShiftCore.v3";
 import { STACK_SHIFT_CORE_V4 } from "../verified/stackShiftCore.v4";
 import { SHOT_GALLERY_CORE_V2 } from "../verified/shotGalleryCore.v2";
@@ -298,6 +299,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(CORNER_SUDOKU_CORE_V4.gameId, CORNER_SUDOKU_CORE_V4.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V4),
   [adapterKey(BOWLING_CORE_V1.gameId, BOWLING_CORE_V1.gameVersion)]: coreAdapter(BOWLING_CORE_V1),
   [adapterKey(BOWLING_CORE_V2.gameId, BOWLING_CORE_V2.gameVersion)]: coreAdapter(BOWLING_CORE_V2),
+  [adapterKey(BOWLING_CORE_V3.gameId, BOWLING_CORE_V3.gameVersion)]: coreAdapter(BOWLING_CORE_V3),
   [adapterKey(STACK_SHIFT_CORE_V3.gameId, STACK_SHIFT_CORE_V3.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V3),
   [adapterKey(STACK_SHIFT_CORE_V4.gameId, STACK_SHIFT_CORE_V4.gameVersion)]: coreAdapter(STACK_SHIFT_CORE_V4),
   [adapterKey(SHOT_GALLERY_CORE.gameId,SHOT_GALLERY_CORE.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE),

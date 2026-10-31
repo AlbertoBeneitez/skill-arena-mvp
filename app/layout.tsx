@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-192.png?v=125", sizes: "192x192", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [{ url: "/apple-touch-icon.png?v=125", sizes: "180x180" }],
   },
   appleWebApp: { capable: true, title: "Galactic Games", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },

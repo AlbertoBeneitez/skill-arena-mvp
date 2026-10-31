@@ -4,19 +4,25 @@ import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  BOWLING_CORE_V2 as core,
-  BOWLING_RULES_V2 as R,
+  BOWLING_CORE_V3 as core,
+  BOWLING_RULES_V3 as R,
   bowlingScore,
-  type BowlingStateV2,
-} from "@/lib/verified/bowlingCore.v2";
-import { bowlingAction } from "@/lib/verified/bowlingProtocol.v1";
+  type BowlingStateV3,
+} from "@/lib/verified/bowlingCore.v3";
+import { BOWLING_V2_ANGLE_CENTRE, bowlingActionV2 as bowlingAction } from "@/lib/verified/bowlingProtocol.v2";
+import { drawCartoon } from "./bowlingShow";
+import { strokeOf, swipePower, throwFromStroke } from "@/lib/bowlingGesture.v3";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import { t as tx, useI18n } from "@/lib/i18n";
 
 /*
- * Presentation only. A perspective lane whose camera dollies after the ball, pins drawn as lit sprites, a score
- * sheet and the strike celebration (skippable: a tap sends SKIP, which the core records). The throw gesture is
- * turned into quantised AIM / ANGLE / SPIN / POWER actions here; only those reach the recorder and the replay.
+ * Presentation only (Bowling V3, v125). A perspective lane — a rendered maple/pine texture sampled one screen line at
+ * a time, the pit wall with its masking unit, kickbacks and the pins reflected on the varnish — whose camera dollies
+ * after the ball; a score sheet; and the strike / spare celebration (instant replay + a 10 s cartoon with the pins
+ * as characters, skippable: a tap sends SKIP, which the core records). The throw gesture is turned into quantised
+ * AIM / ANGLE / SPIN / POWER actions here: the straight line from where the stroke starts to where it ends is the
+ * direction, the stroke's bend away from that line is the spin, the final flick speed is the power. Only those
+ * actions reach the recorder and the replay.
  */
 const MMU = 1000; // µm per mm
 const F = 14000; // perspective focal distance (mm)
@@ -24,6 +30,15 @@ const KX = 0.3; // px per mm at the foul line
 const LANE_MM = R.laneWidth / MMU;
 
 type View = { H: number; nearY: number; horizonY: number; camZ: number; camX: number };
+/** Rendered art (scripts/render-bowling-art.py); the procedural lane is the fallback until it has loaded. */
+const art: { lane: HTMLImageElement | null; pit: HTMLImageElement | null; started: boolean } = { lane: null, pit: null, started: false };
+function loadArt() {
+  if (art.started || typeof Image === "undefined") return;
+  art.started = true;
+  const load = (src: string, key: "lane" | "pit") => { const img = new Image(); img.decoding = "async"; img.onload = () => { art[key] = img; }; img.src = src; };
+  load("/art/bowling-lane.webp?v=125", "lane");
+  load("/art/bowling-pit.webp?v=125", "pit");
+}
 const motion = { tick: -1, camZ: 0, camX: 0, seed: "" };
 type Gesture = { x: number; y: number; t: number; path: { x: number; y: number; t: number }[]; aimDrag: boolean };
 
@@ -48,7 +63,7 @@ function sheetMarks(frames: number[][]) {
   });
 }
 
-function drawSheet(ctx: CanvasRenderingContext2D, s: BowlingStateV2) {
+function drawSheet(ctx: CanvasRenderingContext2D, s: BowlingStateV3) {
   const marks = sheetMarks(s.frames), totals = bowlingScore(s.rolls).frames;
   const x0 = 8, y0 = 6, h = 46, w9 = 34, w10 = 68;
   ctx.fillStyle = "rgba(6,12,28,.92)";
@@ -80,21 +95,61 @@ function drawSheet(ctx: CanvasRenderingContext2D, s: BowlingStateV2) {
   }
 }
 
+const GUTTER = 235, TEX_X0 = -GUTTER, TEX_X1 = LANE_MM + GUTTER;
+/** The lane texture drawn row by row: each screen line samples the texture row of the lane distance it shows. */
+function drawLaneTexture(ctx: CanvasRenderingContext2D, v: View, img: HTMLImageElement, near: number, pit: number) {
+  const top = Math.max(0, Math.ceil(project(v, 0, pit).y)), bottom = Math.min(v.H, Math.floor(project(v, 0, near).y));
+  const tw = img.naturalWidth, th = img.naturalHeight;
+  for (let y = top; y <= bottom; y++) {
+    const sc = (y - v.horizonY) / (v.nearY - v.horizonY);
+    if (sc <= 0) continue;
+    const wy = F / sc - F + v.camZ;
+    if (wy < near - 1 || wy > pit) continue;
+    const ty = Math.max(0, Math.min(th - 1, Math.floor((1 - wy / pit) * th)));
+    const xl = 195 + (TEX_X0 - LANE_MM / 2 - v.camX * sc) * KX * sc, xr = 195 + (TEX_X1 - LANE_MM / 2 - v.camX * sc) * KX * sc;
+    ctx.drawImage(img, 0, ty, tw, 1, xl, y, xr - xl, 1.25);
+  }
+}
+/** Kickbacks: the side walls along the pin deck, with a neon edge. */
+function drawKickbacks(ctx: CanvasRenderingContext2D, v: View, pit: number) {
+  const y0 = R.headPinY / MMU - 900;
+  for (const x of [TEX_X0, TEX_X1]) {
+    const a = project(v, x, y0), b = project(v, x, pit), ha = 650 * KX * a.s, hb = 650 * KX * b.s;
+    const g = ctx.createLinearGradient(0, a.y - ha, 0, a.y);
+    g.addColorStop(0, "#1a2340"); g.addColorStop(1, "#0a0f22");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(b.x, b.y - hb); ctx.lineTo(a.x, a.y - ha); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#ff3d9a"; ctx.lineWidth = 2; ctx.shadowColor = "#ff3d9a"; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y - ha); ctx.lineTo(b.x, b.y - hb); ctx.stroke(); ctx.shadowBlur = 0;
+  }
+}
+
 function drawLane(ctx: CanvasRenderingContext2D, v: View, tick: number) {
   const pit = R.pitY / MMU, near = Math.max(0, v.camZ - 400);
   const quad = (x0: number, x1: number, y0: number, y1: number, fill: string | CanvasGradient) => {
     const a = project(v, x0, y0), b = project(v, x1, y0), c = project(v, x1, y1), d = project(v, x0, y1);
     ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.closePath(); ctx.fill();
   };
-  // Back wall of the pit with a neon band.
-  const back = project(v, 0, pit + 400);
-  ctx.fillStyle = "#070b18";
-  ctx.fillRect(0, back.y - 120 * back.s, 390, 120 * back.s + 4);
-  ctx.fillStyle = "#ff3d9a"; ctx.shadowColor = "#ff3d9a"; ctx.shadowBlur = 14;
-  ctx.fillRect(0, back.y - 6, 390, 3);
-  ctx.shadowBlur = 0;
+  // Back wall of the pit: the rendered masking unit, or a neon band until it has loaded.
+  const back = project(v, 0, pit + 300);
+  if (art.pit) {
+    const l = project(v, -1500, pit + 300), r = project(v, LANE_MM + 1500, pit + 300), hh = 2200 * KX * l.s;
+    ctx.drawImage(art.pit, l.x, l.y - hh, r.x - l.x, hh);
+  } else {
+    ctx.fillStyle = "#070b18";
+    ctx.fillRect(0, back.y - 120 * back.s, 390, 120 * back.s + 4);
+    ctx.fillStyle = "#ff3d9a"; ctx.shadowColor = "#ff3d9a"; ctx.shadowBlur = 14;
+    ctx.fillRect(0, back.y - 6, 390, 3);
+    ctx.shadowBlur = 0;
+  }
   // Approach floor beyond the gutters.
-  quad(-900, LANE_MM + 900, near, pit + 400, "#0b1226");
+  quad(-900, LANE_MM + 900, near, pit + 300, "#0b1226");
+  if (art.lane) {
+    drawLaneTexture(ctx, v, art.lane, near, pit);
+    quad(0, LANE_MM, R.headPinY / MMU - 300, pit, "rgba(255,240,210,.12)");
+    drawKickbacks(ctx, v, pit);
+    drawEdgeLights(ctx, v, near, pit, tick);
+    return;
+  }
   // Gutters.
   quad(-235, 0, near, pit, "#151c2e");
   quad(LANE_MM, LANE_MM + 235, near, pit, "#151c2e");
@@ -113,15 +168,17 @@ function drawLane(ctx: CanvasRenderingContext2D, v: View, tick: number) {
   quad(0, LANE_MM, R.headPinY / MMU - 300, pit, "rgba(255,240,210,.18)");
   // Oil sheen on the front part.
   quad(0, LANE_MM, near, R.oilEndY / MMU, "rgba(255,255,255,.06)");
-  // Targeting arrows and dots.
+  // Targeting arrows at the same fraction of the (longer) lane as on a regulation lane.
   for (let k = 0; k < 7; k++) {
-    // Targeting arrows at the same fraction of the (longer) lane as on a regulation lane.
-    const x = LANE_MM / 2 + (k - 3) * 135, y = 6900 + Math.abs(k - 3) * 450;
-    const tip = project(v, x, y), l = project(v, x - 25, y - 560), r = project(v, x + 25, y - 560);
+    const x = LANE_MM / 2 + (k - 3) * 135, y = 8050 + Math.abs(k - 3) * 525;
+    const tip = project(v, x, y), l = project(v, x - 25, y - 660), r = project(v, x + 25, y - 660);
     ctx.fillStyle = "rgba(60,30,10,.75)"; ctx.beginPath(); ctx.moveTo(tip.x, tip.y); ctx.lineTo(l.x, l.y); ctx.lineTo(r.x, r.y); ctx.closePath(); ctx.fill();
   }
-  // Neon edge lights chasing toward the pins.
-  for (const x of [-235, LANE_MM + 235]) {
+  drawEdgeLights(ctx, v, near, pit, tick);
+}
+/** Neon edge lights on the cappings, chasing toward the pins. */
+function drawEdgeLights(ctx: CanvasRenderingContext2D, v: View, near: number, pit: number, tick: number) {
+  for (const x of [-GUTTER - 18, LANE_MM + GUTTER + 18]) {
     for (let k = 0; k < 26; k++) {
       const y = near + ((k * 1200 + tick * 30) % Math.round(pit + 600));
       if (y > pit) continue;
@@ -135,7 +192,6 @@ function drawLane(ctx: CanvasRenderingContext2D, v: View, tick: number) {
 }
 
 type PinFace = "plain" | "happy" | "dizzy" | "wow";
-const hash01 = (n: number) => { const q = Math.sin(n * 12.9898) * 43758.5453; return q - Math.floor(q); };
 
 /**
  * A pin. On the lane it is a plain, still pin (it only moves when the physics knocks it). Faces are used only in
@@ -177,7 +233,7 @@ function drawPin(ctx: CanvasRenderingContext2D, x: number, y: number, s: number,
   ctx.restore();
 }
 
-function drawBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV2) {
+function drawBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV3) {
   const b = s.ball;
   if (b.y / MMU < v.camZ - 300) return;
   const p = project(v, b.x / MMU, b.y / MMU), r = (R.ballRadius / MMU) * KX * p.s;
@@ -199,9 +255,22 @@ function drawBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV2) {
   ctx.beginPath(); ctx.ellipse(p.x - r * 0.35, cy - r * 0.42, r * 0.28, r * 0.15, -0.5, 0, Math.PI * 2); ctx.fill();
 }
 
-function drawPinsAndBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV2) {
+function drawPinsAndBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV3) {
   type Item = { y: number; draw: () => void };
   const items: Item[] = [];
+  // Reflections on the varnished deck first (standing pins and the ball, mirrored at their base).
+  ctx.save();
+  ctx.globalAlpha = 0.17;
+  for (const pin of s.pins) {
+    if (!pin.present || !pin.standing) continue;
+    const p = project(v, pin.x / MMU, pin.y / MMU);
+    ctx.save(); ctx.translate(0, p.y * 2); ctx.scale(1, -1); drawPin(ctx, p.x, p.y, p.s, 0, 0, "plain", false); ctx.restore();
+  }
+  if (s.ball.active && !s.ball.gutter && s.ball.y / MMU > v.camZ - 300) {
+    const p = project(v, s.ball.x / MMU, s.ball.y / MMU), r = (R.ballRadius / MMU) * KX * p.s;
+    ctx.fillStyle = "#7a4dff"; ctx.beginPath(); ctx.arc(p.x, p.y + r * 0.9, r * 0.9, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
   s.pins.forEach((pin) => {
     if (!pin.present) return;
     const p = project(v, pin.x / MMU, pin.y / MMU);
@@ -218,8 +287,8 @@ function drawPinsAndBall(ctx: CanvasRenderingContext2D, v: View, s: BowlingState
   items.sort((a, b) => b.y - a.y).forEach((it) => it.draw());
 }
 
-function drawAimGuide(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV2) {
-  const x0 = (R.aimX0 + s.aim * R.aimStep) / MMU, slope = ((s.angle - 12) * R.angleStep) / 1_000_000;
+function drawAimGuide(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV3) {
+  const x0 = (R.aimX0 + s.aim * R.aimStep) / MMU, slope = ((s.angle - BOWLING_V2_ANGLE_CENTRE) * R.angleStep) / 1_000_000;
   ctx.save();
   for (let k = 1; k < 12; k++) {
     const y = k * 900, p = project(v, x0 + slope * y, y);
@@ -239,10 +308,10 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV2)
  * looks random but is identical on replay. Everything is a function of the state, the time since the celebration
  * started and the captured replay; the core decides how long it lasts and records the SKIP.
  */
-type ReplayFrame = { tick: number; ball: BowlingStateV2["ball"]; pins: BowlingStateV2["pins"] };
+type ReplayFrame = { tick: number; ball: BowlingStateV3["ball"]; pins: BowlingStateV3["pins"] };
 const capture: { seed: string; rollStart: number; frames: ReplayFrame[] } = { seed: "", rollStart: -1, frames: [] };
 /** Record the rolling ball and pins once per simulated tick (presentation memory only, never sent anywhere). */
-function captureRoll(s: BowlingStateV2) {
+function captureRoll(s: BowlingStateV3) {
   if (s.phase !== "rolling") return;
   if (capture.seed !== s.seed || capture.rollStart !== s.rollStartTick) { capture.seed = s.seed; capture.rollStart = s.rollStartTick; capture.frames = []; }
   const last = capture.frames[capture.frames.length - 1];
@@ -258,175 +327,8 @@ function capturedFrame(tick: number) {
   return f[lo];
 }
 
-const STRIKE_THEMES = ["gold", "neon", "cosmic"] as const;
-const SPARE_THEMES = ["steel", "neon", "gold"] as const;
-type Theme = (typeof STRIKE_THEMES)[number] | (typeof SPARE_THEMES)[number];
-function seedHash(seed: string) {
-  let h = 7;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 1000003;
-  return h;
-}
-function bowlingShow(s: Pick<BowlingStateV2, "seed" | "rolls" | "lastResult">): Theme {
-  const strike = s.lastResult?.kind === "strike";
-  const list = strike ? STRIKE_THEMES : SPARE_THEMES;
-  const pick = Math.floor(hash01(seedHash(s.seed) * 0.001 + (s.lastResult?.frame ?? 0) * 7.13 + s.rolls.length * 3.7) * list.length);
-  return list[Math.min(list.length - 1, pick)];
-}
-const PALETTE: Record<Theme, { face: string[]; edge: string; glow: string; spark: string[]; beam: string; bg: string }> = {
-  gold: { face: ["#fffbe0", "#ffe27a", "#f5b52e", "#b86a00", "#ffd76a"], edge: "#5a2c00", glow: "#ffcf4a", spark: ["#fff3c4", "#ffd23f", "#ff9a3d"], beam: "255,205,90", bg: "rgba(26,10,40,.78)" },
-  neon: { face: ["#ffffff", "#bff6ff", "#7fe3ee", "#ff6fd8", "#ffd6f5"], edge: "#2a0a4a", glow: "#ff6fd8", spark: ["#7fe3ee", "#ff6fd8", "#ffffff"], beam: "255,111,216", bg: "rgba(6,4,24,.8)" },
-  cosmic: { face: ["#ffffff", "#e6ecff", "#a9b8ff", "#6a4dff", "#d9c8ff"], edge: "#120a3a", glow: "#9f8bff", spark: ["#ffffff", "#b9a8ff", "#7fe3ee"], beam: "160,140,255", bg: "rgba(4,4,22,.82)" },
-  steel: { face: ["#ffffff", "#e8eef6", "#aab8c8", "#5a6a7e", "#dfe8f2"], edge: "#1a2230", glow: "#9fe8ff", spark: ["#ffffff", "#9fe8ff", "#dfe8f2"], beam: "160,230,255", bg: "rgba(6,12,26,.76)" },
-};
-
-/** Extruded metallic title with entrance slam, chromatic split, motion ghosts and a specular sweep. */
-function proTitle(ctx: CanvasRenderingContext2D, label: string, t: number, cy: number, size: number, theme: Theme) {
-  const pal = PALETTE[theme];
-  const enter = Math.min(1, Math.max(0, t / 16));
-  const ease = 1 - Math.pow(1 - enter, 3);
-  const settle = t > 16 ? 1 + 0.06 * Math.exp(-(t - 16) / 6) * Math.cos((t - 16) * 0.9) : 1;
-  const scale = (2.4 - 1.4 * ease) * settle;
-  ctx.save();
-  ctx.font = `900 ${size}px system-ui, sans-serif`;
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  const w = ctx.measureText(label).width;
-  const fit = Math.min(1, 340 / Math.max(1, w));
-  ctx.translate(195, cy);
-  // Motion ghosts while slamming in.
-  if (t < 16) {
-    for (let g = 3; g > 0; g--) {
-      const sc = (scale + g * 0.18) * fit;
-      ctx.save(); ctx.scale(sc, sc); ctx.globalAlpha = 0.12 * g * (1 - enter);
-      ctx.fillStyle = pal.glow; ctx.fillText(label, 0, 0); ctx.restore();
-    }
-  }
-  ctx.scale(scale * fit, scale * fit);
-  ctx.globalAlpha = Math.min(1, t / 6);
-  // Extrusion (depth) with a darkening gradient.
-  for (let k = 9; k > 0; k--) {
-    ctx.fillStyle = k > 6 ? "rgba(0,0,0,.55)" : pal.edge;
-    ctx.fillText(label, k * 0.35, k * 0.9);
-  }
-  // Chromatic split right after the slam.
-  const split = t < 30 ? (1 - t / 30) * 6 : 0;
-  if (split > 0.3) {
-    ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = "rgba(255,40,80,.55)"; ctx.fillText(label, -split, 0);
-    ctx.fillStyle = "rgba(40,220,255,.55)"; ctx.fillText(label, split, 0);
-    ctx.globalCompositeOperation = "source-over";
-  }
-  // Metallic face: banded gradient like polished metal.
-  const face = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
-  face.addColorStop(0, pal.face[0]); face.addColorStop(0.42, pal.face[1]); face.addColorStop(0.5, pal.face[2]);
-  face.addColorStop(0.78, pal.face[3]); face.addColorStop(1, pal.face[4]);
-  ctx.shadowColor = pal.glow; ctx.shadowBlur = 22;
-  ctx.fillStyle = face; ctx.fillText(label, 0, 0);
-  ctx.shadowBlur = 0;
-  // Bevel: thin light stroke on top, darker below.
-  ctx.lineWidth = 1.6; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.strokeText(label, 0, -0.6);
-  ctx.lineWidth = 1; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.strokeText(label, 0, 1.2);
-  if (theme === "neon") {
-    const flicker = t % 47 < 2 ? 0.4 : 1;
-    ctx.globalAlpha = flicker; ctx.lineWidth = 3; ctx.strokeStyle = "#7fe3ee"; ctx.shadowColor = "#7fe3ee"; ctx.shadowBlur = 16; ctx.strokeText(label, 0, 0); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-  }
-  // Specular sweep through the letters only.
-  const half = w / 2 + 40, band = ((t * 7) % 520) - 260;
-  const pos = (x: number) => Math.max(0, Math.min(1, (x + half) / (2 * half)));
-  const sh = ctx.createLinearGradient(-half, -size / 2, half, size / 2);
-  sh.addColorStop(0, "rgba(255,255,255,0)"); sh.addColorStop(pos(band - 30), "rgba(255,255,255,0)");
-  sh.addColorStop(pos(band), "rgba(255,255,255,.85)"); sh.addColorStop(pos(band + 30), "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = sh; ctx.fillText(label, 0, 0);
-  ctx.restore();
-}
-function lensFlare(ctx: CanvasRenderingContext2D, t: number, cy: number, color: string) {
-  const k = Math.min(1, t / 40), x = -60 + 510 * k, a = Math.sin(Math.min(Math.PI, k * Math.PI));
-  ctx.save(); ctx.globalCompositeOperation = "lighter";
-  const g = ctx.createLinearGradient(0, cy, 390, cy);
-  g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(Math.max(0, Math.min(1, x / 390)), `rgba(255,255,255,${0.95 * a})`); g.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = g; ctx.fillRect(0, cy - 3, 390, 6);
-  const core = ctx.createRadialGradient(x, cy, 0, x, cy, 64);
-  core.addColorStop(0, `rgba(255,255,255,${0.9 * a})`); core.addColorStop(0.3, `rgba(${color},${0.4 * a})`); core.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = core; ctx.beginPath(); ctx.arc(x, cy, 64, 0, Math.PI * 2); ctx.fill();
-  // Ghost discs on the line through the centre of the screen, opposite the flare.
-  for (const [f, r] of [[0.4, 10], [0.7, 6], [1.3, 14], [1.6, 5]] as const) {
-    const gx = 195 + (195 - x) * f, gy = cy + (f - 1) * 18;
-    ctx.fillStyle = `rgba(${color},${0.22 * a})`; ctx.beginPath(); ctx.arc(gx, gy, r, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.restore();
-}
-function shockwaves(ctx: CanvasRenderingContext2D, t: number, x: number, y: number, color: string) {
-  for (let i = 0; i < 3; i++) {
-    const u = t - i * 7;
-    if (u < 0 || u > 46) continue;
-    const r = 20 + u * 7.5, a = 1 - u / 46;
-    ctx.strokeStyle = `rgba(${color},${0.7 * a})`; ctx.lineWidth = 6 * a + 1;
-    ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.42, 0, 0, Math.PI * 2); ctx.stroke();
-  }
-}
-function beams(ctx: CanvasRenderingContext2D, t: number, H: number, color: string, alpha: number) {
-  ctx.save(); ctx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 6; i++) {
-    const base = 30 + i * 66, ang = -Math.PI / 2 + Math.sin(t * 0.02 + i * 1.3) * 0.35;
-    const len = H * 1.1, wdt = 0.07;
-    const g = ctx.createLinearGradient(base, H, base + Math.cos(ang) * len, H + Math.sin(ang) * len);
-    g.addColorStop(0, `rgba(${color},${0.3 * alpha})`); g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(base, H + 10);
-    ctx.lineTo(base + Math.cos(ang - wdt) * len, H + Math.sin(ang - wdt) * len); ctx.lineTo(base + Math.cos(ang + wdt) * len, H + Math.sin(ang + wdt) * len);
-    ctx.closePath(); ctx.fill();
-  }
-  ctx.restore();
-}
-/** Deterministic spark shower: ballistic streaks from the title centre (no RNG, hash per particle). */
-function sparks(ctx: CanvasRenderingContext2D, t: number, x0: number, y0: number, n: number, colors: string[], seed: number, H: number) {
-  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
-  for (let i = 0; i < n; i++) {
-    const h = (k: number) => hash01((i + 1) * 12.9898 + seed * 78.233 + k * 37.719);
-    const a = h(1) * Math.PI * 2, sp = 2.5 + h(2) * 6.5, delay = h(3) * 10, u = t - delay;
-    if (u <= 0) continue;
-    const vx = Math.cos(a) * sp, vy = Math.sin(a) * sp * 0.75 - 2.5, g = 0.09;
-    const x = x0 + vx * u, y = y0 + vy * u + 0.5 * g * u * u;
-    if (y > H + 20 || u > 120) continue;
-    const life = 1 - u / 120;
-    ctx.strokeStyle = colors[i % colors.length]; ctx.globalAlpha = Math.max(0, life);
-    ctx.lineWidth = 1.2 + h(4) * 2;
-    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - vx * 2.2, y - (vy + g * u) * 2.2); ctx.stroke();
-  }
-  ctx.restore();
-}
-function lowerThird(ctx: CanvasRenderingContext2D, s: BowlingStateV2, t: number, H: number, theme: Theme, label: string) {
-  const k = Math.min(1, Math.max(0, t / 18)), ease = 1 - Math.pow(1 - k, 3), pal = PALETTE[theme];
-  const y = H - 150, w = 326, x = -w + (w + 32) * ease;
-  ctx.save();
-  ctx.globalAlpha = k;
-  const g = ctx.createLinearGradient(x, 0, x + w, 0);
-  g.addColorStop(0, "rgba(8,12,30,.96)"); g.addColorStop(1, "rgba(18,24,52,.9)");
-  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, w, 58, 10); ctx.fill();
-  ctx.fillStyle = pal.glow; ctx.fillRect(x, y, 6, 58);
-  ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(x + 6, y + 28, w - 6, 1);
-  const frame = (s.lastResult?.frame ?? 0) + 1;
-  ctx.textBaseline = "middle"; ctx.textAlign = "left";
-  ctx.fillStyle = pal.face[1]; ctx.font = "900 15px system-ui"; ctx.fillText(label, x + 18, y + 15);
-  ctx.fillStyle = "#c7d4ea"; ctx.font = "700 12px system-ui"; ctx.fillText(tx("bowling.frameN", { n: frame }), x + 18, y + 43);
-  if (s.lastResult?.kind === "strike" && s.streak >= 2) {
-    ctx.fillStyle = "#7fe3ee"; ctx.fillText(s.streak >= 3 ? tx("bowling.turkey", { n: s.streak }) : tx("bowling.double"), x + 108, y + 43);
-  }
-  // Right: the running total once a frame is scored, otherwise the scoresheet mark (X / slash), like on TV.
-  const total = bowlingScore(s.rolls).total;
-  ctx.textAlign = "right";
-  if (total > 0) {
-    ctx.fillStyle = "#ffffff"; ctx.font = "900 26px system-ui"; ctx.fillText(String(total), x + w - 16, y + 32);
-    ctx.font = "700 10px system-ui"; ctx.fillStyle = "#93a6c4"; ctx.fillText(tx("bowling.total"), x + w - 16, y + 11);
-  } else {
-    const strikeMark = s.lastResult?.kind === "strike";
-    ctx.fillStyle = pal.glow; ctx.beginPath(); ctx.roundRect(x + w - 54, y + 11, 38, 36, 8); ctx.fill();
-    ctx.fillStyle = "#0b1022"; ctx.font = "900 24px system-ui"; ctx.textAlign = "center";
-    ctx.fillText(strikeMark ? "X" : "/", x + w - 35, y + 30);
-  }
-  ctx.restore();
-}
-
 /** Act 1: the captured throw in slow motion, close and low on the pin deck. Returns false when nothing was captured. */
-function drawReplay(ctx: CanvasRenderingContext2D, s: BowlingStateV2, H: number, t: number, len: number, strike: boolean) {
+function drawReplay(ctx: CanvasRenderingContext2D, s: BowlingStateV3, H: number, t: number, len: number, strike: boolean) {
   if (capture.seed !== s.seed || !capture.frames.length) return false;
   const frames = capture.frames;
   const firstHit = Math.min(...frames[frames.length - 1].pins.filter((p) => !p.standing && p.hitTick >= 0).map((p) => p.hitTick), Infinity);
@@ -446,7 +348,7 @@ function drawReplay(ctx: CanvasRenderingContext2D, s: BowlingStateV2, H: number,
   drawSpaceBackdrop(ctx, 390, H, 0, Math.floor(rt));
   ctx.fillStyle = "rgba(4,6,16,.45)"; ctx.fillRect(0, 0, 390, H);
   drawLane(ctx, v, Math.floor(rt));
-  drawPinsAndBall(ctx, v, { ...s, tick: Math.floor(rt), ball: f.ball, pins: f.pins } as BowlingStateV2);
+  drawPinsAndBall(ctx, v, { ...s, tick: Math.floor(rt), ball: f.ball, pins: f.pins } as BowlingStateV3);
   // Impact flashes and sparks where pins are being hit right now.
   for (const p of f.pins) {
     const age = rt - p.hitTick;
@@ -481,37 +383,22 @@ function drawReplay(ctx: CanvasRenderingContext2D, s: BowlingStateV2, H: number,
   return true;
 }
 
-function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV2, H: number) {
+const REPLAY_TICKS = 210;
+/** True when the roll that ended in this strike / spare was captured and has a first hit to replay. */
+function replayReady(s: BowlingStateV3) {
+  if (capture.seed !== s.seed || !capture.frames.length) return false;
+  return capture.frames[capture.frames.length - 1].pins.some((p) => !p.standing && p.hitTick >= 0);
+}
+/** Strike / spare: 1.75 s instant replay, then the 10 s cartoon (bowlingShow.ts). */
+function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV3, H: number) {
   const kind = s.lastResult?.kind, t = s.tick - s.phaseTick;
   if (kind !== "strike" && kind !== "spare") return;
   const strike = kind === "strike", dur = strike ? R.strikeTicks : R.spareTicks;
-  const theme = bowlingShow(s), pal = PALETTE[theme], label = strike ? tx("bowling.strike") : tx("bowling.spare");
-  const replayLen = strike ? 250 : 140;
-  const fadeOut = Math.max(0, Math.min(1, (dur - t) / 24));
+  const fadeOut = Math.max(0, Math.min(1, (dur - t) / 24)), replay = replayReady(s);
   ctx.save();
   ctx.globalAlpha = fadeOut;
-  // Act 1: instant replay (falls through to the title if nothing was captured).
-  const replaying = t < replayLen && drawReplay(ctx, s, H, t, replayLen, strike);
-  const t2 = replaying ? -1 : t - (capture.seed === s.seed && capture.frames.length ? replayLen : 0);
-  if (t2 >= 0) {
-    // Act 2: the title.
-    const cy = H * 0.4;
-    if (t2 < 10) { ctx.fillStyle = `rgba(255,255,255,${0.75 * (1 - t2 / 10)})`; ctx.fillRect(0, 0, 390, H); }
-    ctx.fillStyle = pal.bg; ctx.fillRect(0, 0, 390, H);
-    beams(ctx, t2, H, pal.beam, Math.min(1, t2 / 20));
-    if (theme === "cosmic") {
-      for (let i = 0; i < 60; i++) {
-        const a = hash01(i * 3.1) * Math.PI * 2, r = ((hash01(i * 7.7) * 300 + t2 * (4 + hash01(i) * 6)) % 340);
-        ctx.fillStyle = `rgba(255,255,255,${Math.min(1, r / 200)})`;
-        ctx.fillRect(195 + Math.cos(a) * r, cy + Math.sin(a) * r, 2, 2);
-      }
-    }
-    shockwaves(ctx, t2 - 12, 195, cy, pal.beam);
-    sparks(ctx, t2 - 12, 195, cy, strike ? 130 : 70, pal.spark, (s.lastResult?.frame ?? 0) + s.rolls.length, H);
-    proTitle(ctx, label, t2, cy, strike ? 80 : 62, theme);
-    if (t2 > 8) lensFlare(ctx, t2 - 8, cy - 4, pal.beam);
-    lowerThird(ctx, s, t2 - 24, H, theme, label);
-  }
+  ctx.fillStyle = "#050812"; ctx.fillRect(0, 0, 390, H);
+  if (!(replay && t < REPLAY_TICKS && drawReplay(ctx, s, H, t, REPLAY_TICKS, strike))) drawCartoon(ctx, s, H, t - (replay ? REPLAY_TICKS : 0));
   // Skip pill.
   ctx.globalAlpha = Math.min(1, t / 20) * fadeOut;
   ctx.fillStyle = "rgba(6,12,28,.85)"; ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 1.5;
@@ -522,7 +409,7 @@ function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV2, H: nu
 }
 
 /** Chase-cam speed streaks around the ball (presentation). */
-function drawSpeedLines(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV2, H: number) {
+function drawSpeedLines(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV3, H: number) {
   const p = project(v, s.ball.x / MMU, s.ball.y / MMU), speed = Math.min(1, s.ball.vy / (R.powerMin + 8 * R.powerStep));
   if (p.y > H) return;
   ctx.save();
@@ -534,19 +421,21 @@ function drawSpeedLines(ctx: CanvasRenderingContext2D, v: View, s: BowlingStateV
   ctx.restore();
 }
 
-/** Live swipe trail with a power bar so the throw reads before release (presentation). */
+/** Live stroke with its direction line and a power bar, so the throw reads before release (presentation). */
 function drawSwipe(ctx: CanvasRenderingContext2D, g: Gesture | null) {
-  if (!g || g.aimDrag || g.path.length < 2) return;
-  const last = g.path[g.path.length - 1], up = g.y - last.y;
-  if (up < 12) return;
+  if (!g || g.path.length < 2) return;
+  const stroke = strokeOf(g), a = stroke[0], last = stroke[stroke.length - 1];
+  if (!a || a.y - last.y < 12) return;
   ctx.save();
   ctx.lineCap = "round";
-  for (let i = 1; i < g.path.length; i++) {
-    const a = g.path[i - 1], b = g.path[i];
-    ctx.strokeStyle = `rgba(127,227,238,${0.15 + 0.7 * (i / g.path.length)})`; ctx.lineWidth = 2 + 8 * (i / g.path.length);
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  ctx.setLineDash([5, 6]); ctx.strokeStyle = "rgba(255,255,255,.45)"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(last.x, last.y); ctx.stroke(); ctx.setLineDash([]);
+  for (let i = 1; i < stroke.length; i++) {
+    const p0 = stroke[i - 1], p1 = stroke[i];
+    ctx.strokeStyle = `rgba(127,227,238,${0.15 + 0.7 * (i / stroke.length)})`; ctx.lineWidth = 2 + 8 * (i / stroke.length);
+    ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
   }
-  const power = swipePower(g);
+  const power = swipePower(stroke);
   ctx.fillStyle = "rgba(6,12,28,.8)"; ctx.beginPath(); ctx.roundRect(362, 250, 14, 200, 7); ctx.fill();
   const fill = ctx.createLinearGradient(0, 450, 0, 250);
   fill.addColorStop(0, "#5cffb0"); fill.addColorStop(0.6, "#ffd23f"); fill.addColorStop(1, "#ff3d9a");
@@ -554,58 +443,51 @@ function drawSwipe(ctx: CanvasRenderingContext2D, g: Gesture | null) {
   ctx.restore();
 }
 
-/** Throw speed measured over the last ~110 ms of the swipe (the flick), mapped onto POWER 0–8 on a gentler curve. */
-function swipePower(g: Gesture) {
-  const end = g.path[g.path.length - 1];
-  let k = g.path.length - 1;
-  while (k > 0 && end.t - g.path[k].t < 110) k--;
-  const from = g.path[k], ms = Math.max(30, end.t - from.t), recent = (from.y - end.y) / ms;
-  const overall = (g.y - end.y) / Math.max(60, end.t - g.t);
-  const speed = Math.max(recent, overall);
-  return Math.max(0, Math.min(8, Math.round((speed - 0.3) / 0.26)));
-}
+const hudLabel = (s: Readonly<BowlingStateV3>) => tx("bowling.hud", { frame: Math.min(10, s.frame + 1), roll: s.rollInFrame + 1 });
 
-const hudLabel = (s: Readonly<BowlingStateV2>) => tx("bowling.hud", { frame: Math.min(10, s.frame + 1), roll: s.rollInFrame + 1 });
+/** One frame of the game (pure presentation of the state; exported for the offline render checks). */
+export function renderBowling(ctx: CanvasRenderingContext2D, s: BowlingStateV3, view: { width: number; height: number }, g: Gesture | null = null) {
+  const H = Math.max(620, view.height);
+  loadArt();
+  if (s.seed !== motion.seed || s.tick < motion.tick) { motion.seed = s.seed; motion.camZ = 0; motion.camX = 0; }
+  // Chase camera: tight behind the ball while it rolls (and panned onto its line), easing off near the pins so
+  // the whole deck is in frame; glides back for the next throw.
+  const rolling = s.phase === "rolling" && s.ball.active;
+  const want = rolling ? Math.max(0, Math.min(R.headPinY / MMU - 4200, s.ball.y / MMU - 1500)) : s.phase === "rolling" ? motion.camZ : 0;
+  const near = rolling ? Math.max(0, Math.min(1, (R.headPinY / MMU - 4200 - s.ball.y / MMU + 1500) / 3000)) : 0;
+  const wantX = rolling ? (s.ball.x / MMU - LANE_MM / 2) * 0.7 * near : 0;
+  const steps = Math.min(10, Math.max(0, s.tick - motion.tick));
+  for (let i = 0; i < steps; i++) {
+    motion.camZ += (want - motion.camZ) * (want > motion.camZ ? 0.32 : 0.06);
+    motion.camX += (wantX - motion.camX) * 0.15;
+  }
+  motion.tick = s.tick;
+  captureRoll(s);
+  const nearY = H - 70, sPins = F / (F + R.headPinY / MMU), horizonY = (150 - sPins * nearY) / (1 - sPins);
+  const v: View = { H, nearY, horizonY, camZ: motion.camZ, camX: motion.camX };
+  drawSpaceBackdrop(ctx, 390, H, 0, s.tick);
+  drawLane(ctx, v, s.tick);
+  if (s.phase === "aim") drawAimGuide(ctx, v, s);
+  drawPinsAndBall(ctx, v, s);
+  if (rolling) drawSpeedLines(ctx, v, s, H);
+  if (s.phase === "aim") drawSwipe(ctx, g);
+  drawSheet(ctx, s);
+  const last = s.lastResult, since = last ? s.tick - last.tick : 999;
+  if (s.phase === "celebrate") drawCelebration(ctx, s, H);
+  else if (last && since < 80 && (last.kind === "gutter" || last.kind === "open")) {
+    ctx.globalAlpha = Math.max(0, 1 - since / 80);
+    ctx.fillStyle = last.kind === "gutter" ? "#ff8a96" : "#f9ecd2";
+    ctx.font = "900 26px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(last.kind === "gutter" ? tx("bowling.gutter") : String(last.knocked), 195, H * 0.4 - since * 0.3);
+    ctx.globalAlpha = 1;
+  }
+}
 
 export default function Bowling(props: GameRuntimeProps) {
   useI18n();
   const gesture = useRef<Gesture | null>(null);
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: BowlingStateV2, view: { width: number; height: number }) => {
-    const H = Math.max(620, view.height);
-    if (s.seed !== motion.seed || s.tick < motion.tick) { motion.seed = s.seed; motion.camZ = 0; motion.camX = 0; }
-    // Chase camera: tight behind the ball while it rolls (and panned onto its line), easing off near the pins so
-    // the whole deck is in frame; glides back for the next throw.
-    const rolling = s.phase === "rolling" && s.ball.active;
-    const want = rolling ? Math.max(0, Math.min(R.headPinY / MMU - 4200, s.ball.y / MMU - 1500)) : s.phase === "rolling" ? motion.camZ : 0;
-    const near = rolling ? Math.max(0, Math.min(1, (R.headPinY / MMU - 4200 - s.ball.y / MMU + 1500) / 3000)) : 0;
-    const wantX = rolling ? (s.ball.x / MMU - LANE_MM / 2) * 0.7 * near : 0;
-    const steps = Math.min(10, Math.max(0, s.tick - motion.tick));
-    for (let i = 0; i < steps; i++) {
-      motion.camZ += (want - motion.camZ) * (want > motion.camZ ? 0.32 : 0.06);
-      motion.camX += (wantX - motion.camX) * 0.15;
-    }
-    motion.tick = s.tick;
-    captureRoll(s);
-    const nearY = H - 70, sPins = F / (F + R.headPinY / MMU), horizonY = (150 - sPins * nearY) / (1 - sPins);
-    const v: View = { H, nearY, horizonY, camZ: motion.camZ, camX: motion.camX };
-    drawSpaceBackdrop(ctx, 390, H, 0, s.tick);
-    drawLane(ctx, v, s.tick);
-    if (s.phase === "aim") drawAimGuide(ctx, v, s);
-    drawPinsAndBall(ctx, v, s);
-    if (rolling) drawSpeedLines(ctx, v, s, H);
-    if (s.phase === "aim") drawSwipe(ctx, gesture.current);
-    drawSheet(ctx, s);
-    const last = s.lastResult, since = last ? s.tick - last.tick : 999;
-    if (s.phase === "celebrate") drawCelebration(ctx, s, H);
-    else if (last && since < 80 && (last.kind === "gutter" || last.kind === "open")) {
-      ctx.globalAlpha = Math.max(0, 1 - since / 80);
-      ctx.fillStyle = last.kind === "gutter" ? "#ff8a96" : "#f9ecd2";
-      ctx.font = "900 26px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(last.kind === "gutter" ? tx("bowling.gutter") : String(last.knocked), 195, H * 0.4 - since * 0.3);
-      ctx.globalAlpha = 1;
-    }
-  }, []);
-  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: BowlingStateV2) => {
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: BowlingStateV3, view: { width: number; height: number }) => renderBowling(ctx, s, view, gesture.current), []);
+  const pick = useCallback((point: CorePoint, phase: "down" | "move" | "up", s: BowlingStateV3) => {
     if (s.phase === "celebrate") return phase === "down" ? "SKIP" : null;
     if (s.phase !== "aim") return null;
     const now = typeof performance === "undefined" ? 0 : performance.now();
@@ -625,15 +507,10 @@ export default function Bowling(props: GameRuntimeProps) {
       return null;
     }
     gesture.current = null;
-    if (dy > -30) return null;
-    // Release: direction of the swipe → angle (gentler gain, small wobble ignored), flick speed → power,
-    // bend of the path → spin.
-    const tilt = dx / -dy, angle = Math.max(0, Math.min(24, Math.round(12 + (Math.abs(tilt) < 0.04 ? 0 : tilt) * 26)));
-    const power = swipePower(g);
-    const mid = g.path[Math.floor(g.path.length / 2)], chord = g.x + dx * ((mid.y - g.y) / (dy || -1));
-    const bend = (chord - mid.x) / -dy, spin = Math.max(0, Math.min(8, Math.round(4 + (Math.abs(bend) < 0.03 ? 0 : bend) * 24)));
+    const th = throwFromStroke(strokeOf(g));
+    if (!th) return null;
     gameTone("tap");
-    return [bowlingAction("ANGLE", angle), bowlingAction("SPIN", spin), bowlingAction("POWER", power), "ROLL"];
+    return [bowlingAction("ANGLE", th.angle), bowlingAction("SPIN", th.spin), bowlingAction("POWER", th.power), "ROLL"];
   }, []);
   return (
     <div className="bowlingVerified">

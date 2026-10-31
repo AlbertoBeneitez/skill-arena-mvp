@@ -61,9 +61,12 @@ function paintCanvasSpace(
   const image = readySpaceImage();
   if (!image) return false;
   const viewport = frame ?? standaloneViewport(ctx.canvas);
+  // Cover the viewport and anything the canvas paints below it (the gesture-bar / safe-area strip on phones that
+  // draw edge to edge), so the art never ends in a visible cut at the bottom.
+  const coverHeight = Math.max(viewport.viewportHeight, viewport.top + viewport.cssHeight) + 48;
   const scale = Math.max(
     viewport.viewportWidth / image.naturalWidth,
-    viewport.viewportHeight / image.naturalHeight,
+    coverHeight / image.naturalHeight,
   );
   const imageWidth = image.naturalWidth * scale;
   const imageHeight = image.naturalHeight * scale;
@@ -82,7 +85,7 @@ function paintCanvasSpace(
     0,
     -viewport.top * pixelY,
     0,
-    (viewport.viewportHeight - viewport.top) * pixelY,
+    (coverHeight - viewport.top) * pixelY,
   );
   wash.addColorStop(0, "rgba(3,9,21,.66)");
   wash.addColorStop(0.45, "rgba(3,9,21,.48)");
