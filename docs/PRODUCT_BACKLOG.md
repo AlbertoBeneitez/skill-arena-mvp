@@ -735,3 +735,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - imagen inicial antes del inicio de sesión y portadas con diseño propio (a concretar con el propietario);
   - grupos (v128);
   - especificación de la plataforma de juegos externos.
+
+## v128-saturn · Grupos: individual, liga (rondas o duelos) y torneo con una sola inscripción (1-nov-2026)
+
+- **Reglas puras** en `lib/groupCompetition.ts`, reutilizables en servidor:
+  - formatos: partida única, liga de jornadas individuales, liga de duelos 1 contra 1 (calendario todos contra todos) y torneo por eliminación;
+  - una sola inscripción; el bote paga al cerrar menos el 5 % de comisión; reparto 100 % o 70/30, y los empates comparten;
+  - la liga termina tras N jornadas o cuando vota la mayoría;
+  - se clasifica por victorias.
+- **Creación en un solo formulario corto:** formato → modalidad → final → juego (o variados) → inscripción → reparto, con el bote calculado en vivo.
+- **Competición en curso:** clasificación, siguiente partida (rival en duelos), votación para terminar y premio al acabar.
+- **Persistencia:** se guarda en el dispositivo y sigue al reabrir la app. Salir de una partida empezada cuenta como derrota.
+- **Limpieza:** `GroupHub.tsx` pasa de 1050 a ~400 líneas; la interfaz ya no decide premios.
+- **Pendiente:**
+  - grupos con jugadores reales en servidor (fase 3);
+  - especificación de la plataforma de juegos externos (WebAssembly).

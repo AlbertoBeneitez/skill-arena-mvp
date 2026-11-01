@@ -53,6 +53,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-bowling-v2.js");
   await import("../.det-test/scripts/verify-bowling-v3.js");
   await import("../.det-test/scripts/verify-bowling-gesture.js");
+  await import("../.det-test/scripts/verify-group-competition.js");
   await import("../.det-test/scripts/verify-stack-shift-v3.js");
   await import("../.det-test/scripts/verify-stack-shift-v4.js");
   await import("../.det-test/scripts/verify-directional-joystick.js");

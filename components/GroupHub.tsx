@@ -1,17 +1,12 @@
 "use client";
-
+/*
+ * Groups (v128): create or join a local group, set up a competition in one short form and play it through.
+ * The rules — rounds, duels, eliminations, votes and the pot — live in lib/groupCompetition.ts (pure); this screen
+ * only collects the choices and shows the state. Members other than you are simulated (sample data).
+ */
 import { useEffect, useMemo, useRef, useState } from "react";
-import type {
-  ClosedGroup,
-  CompetitionType,
-  GroupCompetitionConfig,
-  PotDistribution,
-} from "@/lib/groupPlay";
-import {
-  groupPot,
-  maxUsefulPayout,
-  payoutLabel,
-} from "@/lib/groupPlay";
+import type { ClosedGroup } from "@/lib/groupPlay";
+import { GROUP_COMMISSION_BPS, groupMoney, groupStandings, nextGroupMatch, type GroupCompetition, type GroupConfig, type GroupFormat, type GroupSplit } from "@/lib/groupCompetition";
 import { createRng } from "@/lib/deterministic/seeded";
 import { GAMES, type GameMeta } from "@/lib/games";
 import { formatMoney, t, useI18n } from "@/lib/i18n";
@@ -19,386 +14,87 @@ import { gameName } from "@/lib/i18n/games";
 
 type Props = {
   group: ClosedGroup | null;
+  competition: GroupCompetition | null;
   balance: number;
   playerName: string;
   avatarSrc: string;
   initialJoinCode?: string;
   onCreateGroup: (name: string, stake: number) => void;
   onJoinGroup: (code: string) => void;
-  onSetStake: (stake: number) => void;
-  onStartCompetition: (
-    game: GameMeta,
-    config: GroupCompetitionConfig
-  ) => void;
+  onCreateCompetition: (config: GroupConfig) => void;
+  onPlay: () => void;
+  onVote: () => void;
+  onClearCompetition: () => void;
 };
-
-type EntryMode = "create" | "join";
-type GameSelectionMode = "manual" | "random";
-
-function moneyValue(value: string) {
-  const parsed = Number(value.replace(",", "."));
-  if (!Number.isFinite(parsed)) return 0;
-  return Math.max(0, Math.round(parsed * 100) / 100);
-}
-
-function integerValue(value: string) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return 0;
-  return Math.max(0, Math.floor(parsed));
-}
+type Kind = "single" | "league" | "tournament";
+const MIXED = "mixed";
 
 function normalizeJoinCode(value: string) {
   const trimmed = value.trim();
-
   if (/^https?:\/\//i.test(trimmed)) {
     try {
-      const url = new URL(trimmed);
-      const code = url.searchParams.get("join");
-      if (code) {
-        return code
-          .toUpperCase()
-          .replace(/[^A-Z0-9]/g, "")
-          .slice(0, 12);
-      }
+      const code = new URL(trimmed).searchParams.get("join");
+      if (code) return code.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
     } catch {
       // Fall through to plain-code normalization.
     }
   }
-
-  return trimmed
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "")
-    .slice(0, 12);
+  return trimmed.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
 }
+const euros = (minor: number) => formatMoney(minor / 100);
 
-export default function GroupHub({
-  group,
-  balance,
-  playerName,
-  avatarSrc,
-  initialJoinCode = "",
-  onCreateGroup,
-  onJoinGroup,
-  onSetStake,
-  onStartCompetition,
-}: Props) {
+export default function GroupHub({ group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition }: Props) {
   useI18n();
-  const [entryMode, setEntryMode] = useState<EntryMode>(
-    initialJoinCode ? "join" : "create"
-  );
+  const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
   const [joinCode, setJoinCode] = useState(normalizeJoinCode(initialJoinCode));
   const mountedRef = useRef(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [shareError, setShareError] = useState("");
   const [shareFallback, setShareFallback] = useState("");
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
-    };
-  }, []);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-
-  const [competitionType, setCompetitionType] =
-    useState<CompetitionType>("quick");
-  const [entryPrice, setEntryPrice] = useState("5");
-  const [leagueRoundsInput, setLeagueRoundsInput] = useState("5");
-  const [eliminatedInput, setEliminatedInput] = useState("1");
-  const [distribution, setDistribution] =
-    useState<PotDistribution>("winner-takes-all");
-
-  const [selectedGameId, setSelectedGameId] =
-    useState<GameMeta["id"]>(GAMES[0].id);
-
-  const [leagueGameMode, setLeagueGameMode] =
-    useState<GameSelectionMode>("manual");
-  const [leagueGameIds, setLeagueGameIds] = useState<
-    GameMeta["id"][]
-  >([]);
-
-  const [tournamentGameMode, setTournamentGameMode] =
-    useState<GameSelectionMode>("manual");
-  const [tournamentGameIds, setTournamentGameIds] = useState<
-    GameMeta["id"][]
-  >([]);
-
-  const [ready, setReady] = useState(false);
-
-  const playableGames = useMemo(
-    () => GAMES.filter((game) => game.enabled),
-    []
-  );
-
-  const selectedGame =
-    playableGames.find((game) => game.id === selectedGameId) ??
-    playableGames[0];
-
-  const entryPriceNumber = moneyValue(entryPrice);
-  const leagueRounds = integerValue(leagueRoundsInput);
-  const eliminatedPerRound = integerValue(eliminatedInput);
-
-  const maxEliminated = Math.max(
-    0,
-    (group?.members.length ?? 1) - 2
-  );
-
-  const tournamentRounds =
-    group && eliminatedPerRound >= 1
-      ? Math.max(
-          1,
-          Math.ceil(
-            (group.members.length - 1) /
-              eliminatedPerRound
-          )
-        )
-      : 0;
-
-  const payoutOptions = group
-    ? maxUsefulPayout(group)
-    : (["winner-takes-all"] as PotDistribution[]);
-
-  const pot = group
-    ? groupPot(group, entryPriceNumber)
-    : 0;
-
-  const leagueRulesValid =
-    competitionType !== "league" ||
-    (leagueRounds >= 1 && leagueRounds <= 50);
-
-  const leagueScheduleComplete =
-    competitionType !== "league" ||
-    leagueGameMode === "random" ||
-    (leagueRounds >= 1 &&
-      leagueGameIds.length === leagueRounds);
-
-  const tournamentRulesValid =
-    competitionType !== "tournament" ||
-    (eliminatedPerRound >= 1 &&
-      eliminatedPerRound <= maxEliminated);
-
-  const tournamentScheduleComplete =
-    competitionType !== "tournament" ||
-    tournamentGameMode === "random" ||
-    (tournamentRounds >= 1 &&
-      tournamentGameIds.length === tournamentRounds);
-
-  const rawPrice = Number(entryPrice.replace(",", "."));
-  const priceValid =
-    entryPrice.trim() !== "" &&
-    Number.isFinite(rawPrice) &&
-    rawPrice >= 0 &&
-    rawPrice <= balance;
-  const configurationHint = !priceValid
-    ? t("group.hintPrice", { max: formatMoney(balance) })
-    : !leagueRulesValid
-      ? t("group.hintRounds")
-      : !leagueScheduleComplete
-        ? t("group.hintLeagueMissing", { n: Math.max(0, leagueRounds - leagueGameIds.length) })
-        : !tournamentRulesValid
-          ? t("group.hintEliminated", { max: maxEliminated })
-          : !tournamentScheduleComplete
-            ? t("group.hintTournamentMissing", { n: Math.max(0, tournamentRounds - tournamentGameIds.length) })
-            : t("group.hintComplete");
-
-  const allMembersReady = Boolean(
-    group &&
-      ready &&
-      group.members.length > 1 &&
-      priceValid &&
-      leagueRulesValid &&
-      leagueScheduleComplete &&
-      tournamentRulesValid &&
-      tournamentScheduleComplete
-  );
-
+  const [kind, setKind] = useState<Kind>("league");
+  const [duels, setDuels] = useState(false);
+  const [gameId, setGameId] = useState<string>(MIXED);
+  const [entry, setEntry] = useState("5");
+  const [byVote, setByVote] = useState(false);
+  const [rounds, setRounds] = useState(5);
+  const [split, setSplit] = useState<GroupSplit>("winner");
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current); };
+  }, []);
   useEffect(() => {
     if (!initialJoinCode || group) return;
-
     setEntryMode("join");
     setJoinCode(normalizeJoinCode(initialJoinCode));
   }, [group, initialJoinCode]);
+  const playable = useMemo(() => GAMES.filter((game) => game.enabled), []);
 
-  useEffect(() => {
-    if (leagueGameMode !== "manual") return;
-
-    setLeagueGameIds((current) =>
-      current.slice(0, Math.max(0, leagueRounds))
-    );
-  }, [leagueGameMode, leagueRounds]);
-
-  useEffect(() => {
-    if (tournamentGameMode !== "manual") return;
-
-    setTournamentGameIds((current) =>
-      current.slice(0, Math.max(0, tournamentRounds))
-    );
-  }, [tournamentGameMode, tournamentRounds]);
-
-  function buildRandomSchedule(
-    scope: "league" | "tournament",
-    count: number
-  ) {
-    if (!group || count < 1 || !playableGames.length) {
-      return [] as GameMeta["id"][];
-    }
-
-    const rng = createRng(
-      `${group.code}:${scope}:${count}:${entryPriceNumber}:hidden-games`
-    );
-
-    return Array.from({ length: count }, () => {
-      return playableGames[
-        rng.nextInt(playableGames.length)
-      ].id;
-    });
-  }
-
-  async function copyShare(value: string, kind: "code" | "link") {
-    setShareError("");
-    setShareFallback("");
-    setCopiedCode(false);
-    setCopiedLink(false);
+  async function copyShare(value: string, which: "code" | "link") {
+    setShareError(""); setShareFallback(""); setCopiedCode(false); setCopiedLink(false);
     if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
     try {
       await navigator.clipboard.writeText(value);
       if (!mountedRef.current) return;
-      setCopiedCode(kind === "code");
-      setCopiedLink(kind === "link");
-      copyTimerRef.current = setTimeout(() => {
-        setCopiedCode(false);
-        setCopiedLink(false);
-        copyTimerRef.current = null;
-      }, 2000);
+      setCopiedCode(which === "code"); setCopiedLink(which === "link");
+      copyTimerRef.current = setTimeout(() => { setCopiedCode(false); setCopiedLink(false); copyTimerRef.current = null; }, 2000);
     } catch {
       if (!mountedRef.current) return;
-      setShareError(t("group.copyFailed"));
-      setShareFallback(value);
+      setShareError(t("group.copyFailed")); setShareFallback(value);
     }
   }
-
-  function copyCode() {
-    if (group) void copyShare(group.code, "code");
-  }
-
+  function copyCode() { if (group) void copyShare(group.code, "code"); }
   function copyInviteLink() {
     if (!group) return;
     const url = new URL(window.location.href);
-    url.search = "";
-    url.searchParams.set("join", group.code);
-    url.hash = "group";
+    url.search = ""; url.searchParams.set("join", group.code); url.hash = "group";
     void copyShare(url.toString(), "link");
   }
-
   function submitJoin() {
     const code = normalizeJoinCode(joinCode);
     if (code.length < 4) return;
-
-    setJoinCode(code);
-    onJoinGroup(code);
-  }
-
-  function chooseCompetition(next: CompetitionType) {
-    setCompetitionType(next);
-    setReady(false);
-
-    if (next === "quick") {
-      setDistribution("winner-takes-all");
-    }
-  }
-
-  function changePrice(value: string) {
-    setEntryPrice(value);
-    setReady(false);
-    onSetStake(moneyValue(value));
-  }
-
-  function chooseSingleGame(id: GameMeta["id"]) {
-    setSelectedGameId(id);
-    setReady(false);
-  }
-
-  function appendLeagueGame(id: GameMeta["id"]) {
-    if (
-      leagueGameMode !== "manual" ||
-      leagueRounds < 1 ||
-      leagueGameIds.length >= leagueRounds
-    ) {
-      return;
-    }
-
-    setLeagueGameIds((current) => [...current, id]);
-    setReady(false);
-  }
-
-  function appendTournamentGame(id: GameMeta["id"]) {
-    if (
-      tournamentGameMode !== "manual" ||
-      tournamentRounds < 1 ||
-      tournamentGameIds.length >= tournamentRounds
-    ) {
-      return;
-    }
-
-    setTournamentGameIds((current) => [...current, id]);
-    setReady(false);
-  }
-
-  function buildConfig(): GroupCompetitionConfig {
-    if (competitionType === "league") {
-      const gameIds =
-        leagueGameMode === "random"
-          ? buildRandomSchedule("league", leagueRounds)
-          : leagueGameIds;
-
-      return {
-        type: "league",
-        stake: entryPriceNumber,
-        rounds: leagueRounds,
-        distribution,
-        gameSelectionMode: leagueGameMode,
-        gameIds,
-      };
-    }
-
-    if (competitionType === "tournament") {
-      const gameIds =
-        tournamentGameMode === "random"
-          ? buildRandomSchedule(
-              "tournament",
-              tournamentRounds
-            )
-          : tournamentGameIds;
-
-      return {
-        type: "tournament",
-        stake: entryPriceNumber,
-        eliminatedPerRound,
-        distribution,
-        gameSelectionMode: tournamentGameMode,
-        gameIds,
-      };
-    }
-
-    return {
-      type: "quick",
-      stake: entryPriceNumber,
-      distribution: "winner-takes-all",
-      gameIds: [selectedGame.id],
-    };
-  }
-
-  function startCompetition() {
-    if (!group || !allMembersReady) return;
-
-    const config = buildConfig();
-    const firstGameId = config.gameIds[0];
-    const firstGame =
-      playableGames.find((game) => game.id === firstGameId) ??
-      selectedGame;
-
-    onStartCompetition(firstGame, config);
+    setJoinCode(code); onJoinGroup(code);
   }
 
   if (!group) {
@@ -500,39 +196,94 @@ export default function GroupHub({
     );
   }
 
+  const entryMinor = Math.max(0, Math.round(Number(entry.replace(",", ".")) * 100) || 0);
+  const format: GroupFormat = kind === "league" ? (duels ? "league-duels" : "league-rounds") : kind;
+  const players = group.members.length;
+  const effectiveSplit: GroupSplit = players < 3 ? "winner" : split;
+  const money = groupMoney({ config: { entryMinor } as GroupConfig, players: group.members });
+  const affordable = entryMinor <= Math.round(balance * 100);
+  function buildConfig(): GroupConfig {
+    const ids = gameId !== MIXED ? [gameId] : (() => {
+      const rng = createRng(`${group!.code}:${format}:games`), pool = playable.map((g) => g.id);
+      return Array.from({ length: 12 }, () => pool[rng.nextInt(pool.length)]);
+    })();
+    return {
+      format, entryMinor, split: effectiveSplit, gameIds: ids,
+      lowerWinsGameIds: playable.filter((g) => g.resultMetric === "reaction-time-ms").map((g) => g.id),
+      end: kind === "league" && byVote ? { kind: "vote" } : { kind: "rounds", rounds: kind === "league" ? rounds : 1 },
+    };
+  }
+  const header = (
+    <div className="groupHeaderCard groupHeaderSinglePage">
+      <div>
+        <small>{t("group.local")}</small>
+        <h1>{group.name}</h1>
+      </div>
+      <span className="groupCodeBadge">{group.code}</span>
+    </div>
+  );
+
+  if (competition) {
+    const you = group.members.find((m) => m.isYou)?.id ?? "you";
+    const standings = groupStandings(competition), next = nextGroupMatch(competition, you);
+    const match = next >= 0 ? competition.matches[next] : null;
+    const round = competition.matches.reduce((r, m) => Math.max(r, m.round), 0);
+    const nameOf = (id: string) => competition.players.find((p) => p.id === id)?.name ?? id;
+    const opponent = match && competition.config.format === "league-duels" ? match.players.find((p) => p !== you) : undefined;
+    const game = match ? playable.find((g) => g.id === match.gameId) : undefined;
+    const voting = competition.config.end.kind === "vote" && !competition.finished;
+    const voted = competition.votes.includes(you);
+    const tournament = competition.config.format === "tournament";
+    return (
+      <section className="groupScreen">
+        {header}
+        <div className="groupCompCard">
+          <div className="groupCompTitle">
+            <strong>{t(tournament ? "group.tournament" : competition.config.format === "single" ? "group.singleMatch" : "group.league")}</strong>
+            <span>{competition.finished ? t("group.finished") : t(tournament ? "group.roundN" : "group.matchdayN", { n: round })}</span>
+          </div>
+          <p className="groupCompPot">{t("group.potLine", { pot: euros(groupMoney(competition).pot), fee: euros(groupMoney(competition).commission), prize: euros(groupMoney(competition).prize) })}</p>
+          <ol className="groupStandings" aria-label={t("group.standings")}>
+            {standings.map((s) => {
+              const p = competition.players.find((x) => x.id === s.id)!;
+              return (
+                <li key={s.id} className={`${s.id === you ? "you" : ""} ${s.out ? "out" : ""}`}>
+                  <b>{s.place}</b>
+                  <img src={p.avatar} alt="" />
+                  <span>{p.name}{p.simulated ? <small>{t("common.simulated")}</small> : null}</span>
+                  <em>{competition.payouts ? (competition.payouts[s.id] ? `+${euros(competition.payouts[s.id])}` : "—") : s.out ? t("group.out") : tournament ? "" : t("group.winsShort", { n: s.wins })}</em>
+                </li>
+              );
+            })}
+          </ol>
+          {competition.finished ? (
+            <button className="groupPrimaryAction" type="button" onClick={onClearCompetition}>{t("group.newCompetition")}</button>
+          ) : match ? (
+            <button className="groupPrimaryAction" type="button" onClick={onPlay}>
+              {t("group.playNext", { game: game ? gameName(game) : match.gameId })}{opponent ? ` · ${t("group.vs", { name: nameOf(opponent) })}` : ""}
+            </button>
+          ) : (
+            <p className="groupCompWait" role="status">{t("group.waitingRound")}</p>
+          )}
+          {voting && (
+            <button className="groupVoteAction" type="button" disabled={voted} onClick={onVote}>
+              {voted ? t("group.voted", { n: competition.votes.length, total: competition.players.length }) : t("group.voteEnd")}
+            </button>
+          )}
+          <p className="groupDemoNotice">{t("group.resume")} · {t("group.notice")}</p>
+        </div>
+      </section>
+    );
+  }
+
+  const seg = <T extends string | boolean>(value: T, current: T, set: (v: T) => void, label: string, sub?: string) => (
+    <button type="button" className={value === current ? "active" : ""} aria-pressed={value === current} onClick={() => set(value)}>
+      <strong>{label}</strong>{sub ? <span>{sub}</span> : null}
+    </button>
+  );
   return (
     <section className="groupScreen">
-      <div className="groupHeaderCard groupHeaderSinglePage">
-        <div>
-          <small>{t("group.local")}</small>
-          <h1>{group.name}</h1>
-        </div>
-        <span className="groupCodeBadge">{group.code}</span>
-      </div>
-
-      <ol className="groupStepper" aria-label={t("group.steps")}>
-        {[
-          { label: t("group.stepCreate"), done: true },
-          { label: t("group.stepInvite"), done: group.members.length > 1 || copiedCode || copiedLink },
-          { label: t("group.stepRules"), done: priceValid && leagueRulesValid && leagueScheduleComplete && tournamentRulesValid && tournamentScheduleComplete },
-          { label: t("group.stepPlay"), done: allMembersReady },
-        ].map((step, index, all) => {
-          const current = !step.done && all.slice(0, index).every((x) => x.done);
-          return (
-            <li key={step.label} className={step.done ? "done" : current ? "current" : ""} aria-current={current ? "step" : undefined}>
-              <b>{step.done ? "✓" : index + 1}</b>
-              <span>{step.label}</span>
-            </li>
-          );
-        })}
-      </ol>
-      <p className="groupNextStep" role="status">
-        {group.members.length < 2 && !copiedCode && !copiedLink
-          ? t("group.nextInvite")
-          : !allMembersReady
-            ? configurationHint
-            : t("group.allReady")}
-      </p>
+      {header}
       <p className="groupDemoNotice">
         {t("group.notice")}
       </p>
@@ -587,462 +338,62 @@ export default function GroupHub({
         </div>
       </div>
 
-      <div className="groupMatchSetupHead">
-        <small>{t("group.newCompetition")}</small>
-        <h1>{t("group.defineRules")}</h1>
-      </div>
-
-      <div className="competitionTypeGrid">
-        <button
-          type="button"
-          className={
-            competitionType === "quick" ? "active" : ""
-          }
-          onClick={() => chooseCompetition("quick")}
-        >
-          <strong>{t("group.quick")}</strong>
-          <span>{t("group.quickSub")}</span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            competitionType === "league" ? "active" : ""
-          }
-          onClick={() => chooseCompetition("league")}
-        >
-          <strong>{t("group.league")}</strong>
-          <span>{t("group.leagueSub")}</span>
-        </button>
-
-        <button
-          type="button"
-          className={
-            competitionType === "tournament"
-              ? "active"
-              : ""
-          }
-          onClick={() => chooseCompetition("tournament")}
-        >
-          <strong>{t("group.tournament")}</strong>
-          <span>{t("group.tournamentSub")}</span>
-        </button>
-      </div>
-
-      <div className="competitionConfigCard numericConfigCard">
-        <label>
-          <span>{t("group.entryPrice")}</span>
+      <div className="groupFormCard">
+        <span className="groupFormLabel">{t("group.format")}</span>
+        <div className="competitionTypeGrid">
+          {seg<Kind>("single", kind, setKind, t("group.singleMatch"), t("group.quickSub"))}
+          {seg<Kind>("league", kind, setKind, t("group.league"), t("group.leagueSub"))}
+          {seg<Kind>("tournament", kind, setKind, t("group.tournament"), t("group.tournamentSub"))}
+        </div>
+        {kind === "league" && (
+          <>
+            <span className="groupFormLabel">{t("group.leagueMode")}</span>
+            <div className="competitionTypeGrid two">
+              {seg(false, duels, setDuels, t("group.modeRounds"), t("group.modeRoundsSub"))}
+              {seg(true, duels, setDuels, t("group.modeDuels"), t("group.modeDuelsSub"))}
+            </div>
+            <span className="groupFormLabel">{t("group.end")}</span>
+            <div className="competitionTypeGrid two">
+              {seg(false, byVote, setByVote, t("group.endRounds", { n: rounds }))}
+              {seg(true, byVote, setByVote, t("group.endVote"))}
+            </div>
+            {!byVote && (
+              <div className="groupStepperRow">
+                <button type="button" aria-label="−" disabled={rounds <= 1} onClick={() => setRounds((n) => Math.max(1, n - 1))}>−</button>
+                <output aria-live="polite">{rounds}</output>
+                <button type="button" aria-label="+" disabled={rounds >= 20} onClick={() => setRounds((n) => Math.min(20, n + 1))}>+</button>
+              </div>
+            )}
+          </>
+        )}
+        <label className="groupField">
+          <span className="groupFormLabel">{t("group.chooseGame")}</span>
+          <select value={gameId} onChange={(event) => setGameId(event.target.value)}>
+            {kind !== "single" && <option value={MIXED}>{t("group.random")}</option>}
+            {playable.map((g: GameMeta) => <option key={g.id} value={g.id}>{gameName(g)}</option>)}
+          </select>
+        </label>
+        <label className="groupField">
+          <span className="groupFormLabel">{t("group.entryPrice")}</span>
           <div className="numberInputWithUnit">
-            <input
-              type="number"
-              min="0"
-              max={balance}
-              step="0.5"
-              inputMode="decimal"
-              value={entryPrice}
-              onChange={(event) =>
-                changePrice(event.target.value)
-              }
-            />
+            <input type="number" min="0" max={balance} step="0.5" inputMode="decimal" value={entry} onChange={(event) => setEntry(event.target.value)} />
             <b>€</b>
           </div>
+          <small>{t("group.entryOnce")} {t("group.available", { amount: formatMoney(balance) })}</small>
         </label>
-        <small>{t("group.available", { amount: formatMoney(balance) })}</small>
-      </div>
-
-      {competitionType === "league" && (
-        <>
-          <div className="competitionConfigCard numericConfigCard">
-            <label>
-              <span>{t("group.rounds")}</span>
-              <input
-                type="number"
-                min="1"
-                max="50"
-                step="1"
-                inputMode="numeric"
-                value={leagueRoundsInput}
-                onChange={(event) => {
-                  setLeagueRoundsInput(event.target.value);
-                  setReady(false);
-                }}
-              />
-            </label>
-            <small>{t("group.roundsHint")}</small>
-          </div>
-
-          <div className="competitionConfigCard">
-            <span>{t("group.leagueGames")}</span>
-
-            <div className="leagueModeToggle">
-              <button
-                type="button"
-                className={
-                  leagueGameMode === "manual"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() => {
-                  setLeagueGameMode("manual");
-                  setLeagueGameIds([]);
-                  setReady(false);
-                }}
-              >
-                {t("group.pickGames")}
-              </button>
-
-              <button
-                type="button"
-                className={
-                  leagueGameMode === "random"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() => {
-                  setLeagueGameMode("random");
-                  setReady(false);
-                }}
-              >
-                {t("group.random")}
-              </button>
+        {players >= 3 && (
+          <>
+            <span className="groupFormLabel">{t("group.split")}</span>
+            <div className="competitionTypeGrid two">
+              {seg<GroupSplit>("winner", split, setSplit, t("group.splitWinner"))}
+              {seg<GroupSplit>("70-30", split, setSplit, t("group.split7030"))}
             </div>
-
-            {leagueGameMode === "manual" ? (
-              <>
-                <div className="leagueScheduleStatus">
-                  <strong>
-                    {leagueGameIds.length}/{leagueRounds || 0}
-                  </strong>
-                  <span>{t("group.leaguePickHint")}</span>
-                </div>
-
-                <div className="groupGameGrid selectionMode leaguePickGrid">
-                  {playableGames.map((game) => (
-                    <button
-                      key={game.id}
-                      type="button"
-                      disabled={
-                        leagueRounds < 1 ||
-                        leagueGameIds.length >= leagueRounds
-                      }
-                      onClick={() =>
-                        appendLeagueGame(game.id)
-                      }
-                    >
-                      <img src={game.cover} alt="" />
-                      <strong>{gameName(game)}</strong>
-                    </button>
-                  ))}
-                </div>
-
-                {leagueGameIds.length > 0 && (
-                  <button
-                    type="button"
-                    className="secondaryScheduleAction"
-                    onClick={() => {
-                      setLeagueGameIds((current) =>
-                        current.slice(0, -1)
-                      );
-                      setReady(false);
-                    }}
-                  >
-                    {t("group.deleteLast")}
-                  </button>
-                )}
-
-                <div className="leagueScheduleList">
-                  {Array.from({
-                    length: Math.max(0, leagueRounds),
-                  }).map((_, index) => {
-                    const gameId = leagueGameIds[index];
-                    const game = playableGames.find(
-                      (item) => item.id === gameId
-                    );
-
-                    return (
-                      <div
-                        key={index}
-                        className={game ? "filled" : ""}
-                      >
-                        <span>{t("group.matchdayShort", { n: index + 1 })}</span>
-                        <strong>
-                          {game ? gameName(game) : t("common.pending")}
-                        </strong>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            ) : (
-              <div className="hiddenGameSchedule">
-                <span>🎲</span>
-                <strong>{t("group.hiddenGames")}</strong>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {competitionType === "tournament" && (
-        <>
-          <div className="competitionConfigCard numericConfigCard">
-            <label>
-              <span>{t("group.eliminated")}</span>
-              <input
-                type="number"
-                min="1"
-                max={maxEliminated}
-                step="1"
-                inputMode="numeric"
-                value={eliminatedInput}
-                onChange={(event) => {
-                  setEliminatedInput(event.target.value);
-                  setReady(false);
-                }}
-              />
-            </label>
-
-            <small>{t("group.eliminatedHint", { players: group.members.length, max: maxEliminated })}</small>
-          </div>
-
-          <div className="competitionConfigCard">
-            <span>{t("group.tournamentGames")}</span>
-
-            <div className="leagueModeToggle">
-              <button
-                type="button"
-                className={
-                  tournamentGameMode === "manual"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() => {
-                  setTournamentGameMode("manual");
-                  setTournamentGameIds([]);
-                  setReady(false);
-                }}
-              >
-                {t("group.pickGames")}
-              </button>
-
-              <button
-                type="button"
-                className={
-                  tournamentGameMode === "random"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() => {
-                  setTournamentGameMode("random");
-                  setReady(false);
-                }}
-              >
-                {t("group.random")}
-              </button>
-            </div>
-
-            {tournamentGameMode === "manual" ? (
-              <>
-                <div className="leagueScheduleStatus">
-                  <strong>
-                    {tournamentGameIds.length}/{tournamentRounds || 0}
-                  </strong>
-                  <span>{t("group.tournamentPickHint")}</span>
-                </div>
-
-                <div className="groupGameGrid selectionMode leaguePickGrid">
-                  {playableGames.map((game) => (
-                    <button
-                      key={game.id}
-                      type="button"
-                      disabled={
-                        tournamentRounds < 1 ||
-                        tournamentGameIds.length >=
-                          tournamentRounds
-                      }
-                      onClick={() =>
-                        appendTournamentGame(game.id)
-                      }
-                    >
-                      <img src={game.cover} alt="" />
-                      <strong>{gameName(game)}</strong>
-                    </button>
-                  ))}
-                </div>
-
-                {tournamentGameIds.length > 0 && (
-                  <button
-                    type="button"
-                    className="secondaryScheduleAction"
-                    onClick={() => {
-                      setTournamentGameIds((current) =>
-                        current.slice(0, -1)
-                      );
-                      setReady(false);
-                    }}
-                  >
-                    {t("group.deleteLast")}
-                  </button>
-                )}
-
-                <div className="leagueScheduleList">
-                  {Array.from({
-                    length: Math.max(0, tournamentRounds),
-                  }).map((_, index) => {
-                    const gameId = tournamentGameIds[index];
-                    const game = playableGames.find(
-                      (item) => item.id === gameId
-                    );
-
-                    return (
-                      <div
-                        key={index}
-                        className={game ? "filled" : ""}
-                      >
-                        <span>{t("group.roundShort", { n: index + 1 })}</span>
-                        <strong>
-                          {game ? gameName(game) : t("common.pending")}
-                        </strong>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            ) : (
-              <div className="hiddenGameSchedule">
-                <span>🎲</span>
-                <strong>{t("group.hiddenGames")}</strong>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {competitionType === "quick" && (
-        <>
-          <div className="groupSectionTitle groupGameTitle">
-            <span>{t("group.chooseGame")}</span>
-            <small>{t("group.singleMatch")}</small>
-          </div>
-
-          <div className="groupGameGrid selectionMode">
-            {playableGames.map((game) => (
-              <button
-                key={game.id}
-                type="button"
-                className={
-                  selectedGameId === game.id
-                    ? "selected"
-                    : ""
-                }
-                onClick={() =>
-                  chooseSingleGame(game.id)
-                }
-              >
-                <img src={game.cover} alt="" />
-                <strong>{gameName(game)}</strong>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-
-      {competitionType !== "quick" && (
-        <div className="competitionConfigCard">
-          <span>{t("group.split")}</span>
-
-          <div className="payoutOptionList">
-            {payoutOptions.map((option) => (
-              <button
-                key={option}
-                type="button"
-                className={
-                  distribution === option
-                    ? "selected"
-                    : ""
-                }
-                onClick={() => {
-                  setDistribution(option);
-                  setReady(false);
-                }}
-              >
-                {payoutLabel(option)}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="groupMatchSummary">
-        <div>
-          <span>{t("group.players")}</span>
-          <strong>{group.members.length}</strong>
-        </div>
-        <div>
-          <span>{t("group.pot")}</span>
-          <strong dir="ltr">{pot === 0 ? "—" : formatMoney(pot)}</strong>
-        </div>
-      </div>
-
-      <div className="readyRoomCard">
-        <div className="groupSectionTitle">
-          <span>{t("group.prep")}</span>
-          <small>
-            {t("group.readyCount", { n: ready ? group.members.length : group.members.length - 1, total: group.members.length })}
-          </small>
-        </div>
-
-        <div className="readyMemberList">
-          {group.members.map((member) => {
-            const memberReady = !member.isYou || ready;
-
-            return (
-              <div key={member.id}>
-                <img src={member.avatar} alt="" />
-                <strong>{member.name}</strong>
-                <span className={memberReady ? "ready" : ""}>
-                  {memberReady
-                    ? member.isYou
-                      ? t("common.ready")
-                      : t("common.simulated")
-                    : t("common.pending")}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <p className="groupConfigurationHint" role="status" aria-live="polite">
-          {configurationHint}
-        </p>
-        <button
-          className={`readyToggle ${ready ? "ready" : ""}`}
-          type="button"
-          disabled={
-            !priceValid ||
-            !leagueRulesValid ||
-            !leagueScheduleComplete ||
-            !tournamentRulesValid ||
-            !tournamentScheduleComplete
-          }
-          onClick={() =>
-            setReady((value) => !value)
-          }
-        >
-          {ready ? t("group.youReady") : t("group.imReady")}
-        </button>
-
-        <button
-          className="groupPrimaryAction"
-          type="button"
-          disabled={!allMembersReady}
-          onClick={startCompetition}
-        >
-          {competitionType === "quick"
-            ? t("group.startQuick")
-            : competitionType === "league"
-              ? t("group.startLeague")
-              : t("group.startTournament")}
+          </>
+        )}
+        <p className="groupCompPot">{t("group.potLine", { pot: euros(money.pot), fee: euros(money.commission), prize: euros(money.prize) })} · {GROUP_COMMISSION_BPS / 100} %</p>
+        <button className="groupPrimaryAction" type="button" disabled={!affordable || (kind === "single" && gameId === MIXED)}
+          onClick={() => onCreateCompetition(buildConfig())}>
+          {t("group.payAndStart", { amount: euros(entryMinor) })}
         </button>
       </div>
     </section>

@@ -165,6 +165,7 @@
     "scripts/verify-bowling-v2.ts",
     "scripts/verify-bowling-v3.ts",
     "scripts/verify-bowling-gesture.ts",
+    "scripts/verify-group-competition.ts",
     "lib/bowlingGesture.v3.ts",
     "scripts/bowling-v3-play-fixture.ts",
     "scripts/gen-bowling-v3-fixture.ts",

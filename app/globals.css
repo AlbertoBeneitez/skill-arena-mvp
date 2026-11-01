@@ -8603,3 +8603,50 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 @keyframes slotSpinGlow { 50% { box-shadow: 0 0 0 2px #0b0c12, 0 0 0 4px #c9ced9, 0 0 0 5px #6b7184, inset 0 -5px 9px rgba(0,0,0,.35), 0 5px 0 #07080d, 0 0 28px var(--glow); } }
 @media (prefers-reduced-motion: reduce) { .slotVerified .coreControls button:last-child { animation: none; } }
 @media (max-width: 759px) { .slotVerified .coreGameSurface .deterministicCanvas { height: calc(100% - 146px) !important; } }
+
+/* v128 · Groups: one short set-up form and the competition in progress (standings, next match, vote). */
+.groupScreen :is(.groupFormCard, .groupCompCard) {
+  display: grid; gap: 10px; padding: 14px; border-radius: 18px;
+  background: var(--st-panel); border: 1px solid var(--st-edge); color: var(--st-ink);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 10px 24px rgba(0,0,0,.35);
+}
+.groupScreen .groupFormLabel { margin-top: 4px; font: 800 11px/1.2 system-ui, sans-serif; letter-spacing: .06em; color: var(--st-mute); }
+.groupScreen .groupFormCard .competitionTypeGrid { gap: 8px; }
+.groupScreen .groupFormCard .competitionTypeGrid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.groupScreen .groupFormCard .competitionTypeGrid > button {
+  min-height: 62px; border-radius: 14px; border: 1px solid var(--st-hair); background: rgba(5,10,26,.55); color: var(--st-ink); box-shadow: none;
+}
+.groupScreen .groupFormCard .competitionTypeGrid > button strong { font-size: 13px; }
+.groupScreen .groupFormCard .competitionTypeGrid > button span { font-size: 11px; line-height: 1.25; color: var(--st-mute); opacity: 1; }
+.groupScreen .groupFormCard .competitionTypeGrid > button.active {
+  border-color: var(--st-ion); background: linear-gradient(180deg, rgba(127,227,238,.22), rgba(127,227,238,.08)); box-shadow: 0 0 0 1px var(--st-ion) inset;
+}
+.groupScreen .groupFormCard .competitionTypeGrid > button.active span { color: var(--st-ink); }
+.groupScreen .groupStepperRow { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 8px; }
+.groupScreen .groupStepperRow button { height: 44px; border-radius: 12px; border: 1px solid var(--st-hair); background: rgba(5,10,26,.6); color: var(--st-ink); font-size: 22px; font-weight: 900; }
+.groupScreen .groupStepperRow output { text-align: center; font-weight: 900; font-size: 16px; }
+.groupScreen .groupField { display: grid; gap: 6px; }
+.groupScreen .groupField select, .groupScreen .groupField input {
+  min-height: 46px; width: 100%; border-radius: 12px; border: 1px solid var(--st-hair); background: rgba(5,10,26,.7); color: var(--st-ink); padding: 0 12px; font-size: 16px;
+}
+.groupScreen .groupField small { color: var(--st-mute); font-size: 12px; }
+.groupScreen .groupCompPot { margin: 2px 0 0; font-weight: 800; font-size: 13px; color: var(--st-gold); }
+.groupScreen .groupCompTitle { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.groupScreen .groupCompTitle strong { font-size: 18px; letter-spacing: .04em; }
+.groupScreen .groupCompTitle span { color: var(--st-ion); font-weight: 800; }
+.groupScreen .groupStandings { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.groupScreen .groupStandings li {
+  display: grid; grid-template-columns: 26px 36px 1fr auto; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 12px; background: rgba(5,10,26,.5);
+}
+.groupScreen .groupStandings li.you { box-shadow: 0 0 0 1px var(--st-ion) inset; background: rgba(127,227,238,.1); }
+.groupScreen .groupStandings li.out { opacity: .55; }
+.groupScreen .groupStandings b { font-size: 16px; color: var(--st-gold); text-align: center; }
+.groupScreen .groupStandings img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.groupScreen .groupStandings span { display: grid; font-weight: 800; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.groupScreen .groupStandings span small { font-size: 10px; color: var(--st-mute); letter-spacing: .05em; }
+.groupScreen .groupStandings em { font-style: normal; font-weight: 900; color: var(--st-ink); }
+.groupScreen .groupCompWait { margin: 0; text-align: center; color: var(--st-mute); }
+.groupScreen .groupVoteAction {
+  min-height: 46px; border-radius: 14px; border: 1px solid rgba(233,194,122,.5); background: rgba(233,194,122,.1); color: var(--st-gold); font-weight: 900; letter-spacing: .04em;
+}
+.groupScreen .groupVoteAction:disabled { opacity: .7; }

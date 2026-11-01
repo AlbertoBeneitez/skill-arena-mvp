@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v127-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v128-saturn.
 
 ## Catálogo
 
@@ -61,7 +61,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - una sola cuota de entrada da derecho a todas las partidas hasta el final; va al bote menos la comisión;
   - antes de empezar se fija el final: N partidas por jugador, o cuando la mayoría vote cerrarlo;
   - mientras no termine se pueden seguir jugando partidas aunque se cierre la app (el estado vive en el servidor).
-  - Pendiente de diseño técnico (v128) y siempre con saldo ficticio hasta la fase 4.
+  - Comisión del 5 % (1 de noviembre). Liga puntuada por victorias.
+  - Hecho en v128 con reglas puras (`lib/groupCompetition.ts`), rivales simulados (`lib/demo/groupRivals.ts`) y guardado en el dispositivo; con saldo ficticio hasta la fase 4. Cuando haya servidor e identidad, el mismo módulo corre allí y el servidor emite las semillas.
 - [x] **Ruleta (1 de noviembre):** el salto actual no es realista porque la bola se asienta demasiado rápido; debe dar más botes y tardar más en quedarse en el número (núcleo nuevo).
 - [x] **Formato de juegos externos (1 de noviembre):** núcleo en WebAssembly sin importaciones + interfaz web en marco aislado. Confirmado por el propietario.
 - [x] **Plataforma para desarrolladores externos (1 de noviembre):**

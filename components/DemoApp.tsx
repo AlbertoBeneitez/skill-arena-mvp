@@ -18,7 +18,9 @@ import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
 import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore } from "@/lib/games";
-import { competitionProgressLabel, createDemoClosedGroup, joinDemoClosedGroup, groupPot, groupTargetScore, payoutLabel, type ClosedGroup, type GroupCompetitionConfig } from "@/lib/groupPlay";
+import { createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
+import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
+import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
 import type { GameResult } from "@/lib/types";
 import SoundMenu from "./SoundMenu";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
@@ -61,6 +63,7 @@ type PersistedState = {
   losses: number;
   streak: number;
   group: ClosedGroup | null;
+  groupComp?: GroupCompetition | null;
   leagues?: LeagueState;
   bestScores?: Record<string, number>;
 };
@@ -102,36 +105,6 @@ function movementLabel(movement: Movement) {
   if (!movement.key) return movement.label.replace(/\bdemo\b/gi, "ficticio");
   const game = movement.gameId ? GAMES.find((item) => item.id === movement.gameId) : undefined;
   return t(movement.key, { ...movement.vars, ...(game ? { game: gameName(game) } : {}) });
-}
-
-function totalCompetitionStages(
-  config: GroupCompetitionConfig,
-  memberCount: number
-) {
-  if (config.type === "league") return config.rounds;
-  if (config.type === "tournament") {
-    return Math.max(
-      1,
-      Math.ceil(
-        (Math.max(2, memberCount) - 1) /
-          Math.max(1, config.eliminatedPerRound)
-      )
-    );
-  }
-  return 1;
-}
-
-function payoutShare(
-  config: GroupCompetitionConfig,
-  placement: 1 | 2 | 3
-) {
-  if (config.distribution === "top2-70-30") {
-    return placement === 1 ? 0.7 : placement === 2 ? 0.3 : 0;
-  }
-  if (config.distribution === "top3-60-30-10") {
-    return placement === 1 ? 0.6 : placement === 2 ? 0.3 : 0.1;
-  }
-  return placement === 1 ? 1 : 0;
 }
 
 const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "soporte", "support"]);
@@ -377,9 +350,9 @@ export default function DemoApp() {
   const [matchTargetScore, setMatchTargetScore] = useState(GAMES[0].rivalScore);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
-  const [groupCompetition, setGroupCompetition] = useState<GroupCompetitionConfig | null>(null);
-  const [groupStage, setGroupStage] = useState(1);
-  const [groupCompetitionWins, setGroupCompetitionWins] = useState(0);
+  /** v128: the group competition in progress (pure rules in lib/groupCompetition.ts), saved so it survives a restart. */
+  const [groupComp, setGroupComp] = useState<GroupCompetition | null>(null);
+  const [groupMatch, setGroupMatch] = useState(-1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [pendingJoinCode, setPendingJoinCode] = useState("");
   const freshOnboardingRef = useRef(false);
@@ -459,6 +432,7 @@ export default function DemoApp() {
       setLosses(0);
       setStreak(0);
       setGroup(null);
+      setGroupComp(null);
       setScreen("welcome");
       setIsLoaded(true);
       return;
@@ -480,6 +454,7 @@ export default function DemoApp() {
 
 
       setGroup(null);
+      setGroupComp(null);
       setIsLoaded(true);
       return;
     }
@@ -539,6 +514,7 @@ export default function DemoApp() {
         if (data.group && typeof data.group === "object") {
           setGroup(data.group as ClosedGroup);
         }
+        if (isGroupCompetition(data.groupComp)) setGroupComp(data.groupComp);
         if (isLeagueState(data.leagues)) setLeagues(data.leagues);
         if (data.bestScores && typeof data.bestScores === "object") {
           setBestScores(Object.fromEntries(Object.entries(data.bestScores).filter(([, v]) => typeof v === "number" && Number.isFinite(v))));
@@ -593,6 +569,7 @@ export default function DemoApp() {
       losses,
       streak,
       group,
+      groupComp,
       leagues,
       bestScores,
     };
@@ -601,7 +578,7 @@ export default function DemoApp() {
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group, leagues, bestScores]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group, groupComp, leagues, bestScores]);
 
   function toggleSound() {
     const enabled = !musicOn;
@@ -756,11 +733,9 @@ export default function DemoApp() {
   }
 
   function leaveGameNow() {
-    const entryWasCharged =
-      matchScope !== "group" ||
-      !groupCompetition ||
-      groupCompetition.type === "quick" ||
-      groupStage === 1;
+    // A group entry is paid once for the whole competition; leaving a match that has started counts as a loss.
+    const entryWasCharged = matchScope !== "group";
+    if (matchScope === "group" && activeGame && !result) settleGroupScore(groupForfeit());
 
     if (selectedStake > 0 && !result && entryWasCharged && !activeGame) {
       setBalance((value) => Number((value + selectedStake).toFixed(2)));
@@ -803,19 +778,6 @@ export default function DemoApp() {
   const nameAvailable = isDemoNameAvailable(playerName);
   const matchesPlayed = wins + losses;
   const winRate = matchesPlayed ? Math.round((wins / matchesPlayed) * 100) : 0;
-  const groupStageTotal =
-    group && groupCompetition
-      ? totalCompetitionStages(groupCompetition, group.members.length)
-      : 1;
-  const groupCanAdvance =
-    matchScope === "group" &&
-    groupCompetition !== null &&
-    group !== null &&
-    groupCompetition.type !== "quick" &&
-    groupStage < groupStageTotal &&
-    result?.verified !== false &&
-    (groupCompetition.type !== "tournament" || result?.won === true);
-
   const chartPoints = useMemo(() => {
     if (earnings.length < 2) return "0,50 100,50";
     const extent = Math.max(1, ...earnings.map((point) => Math.abs(point.value)));
@@ -1006,10 +968,10 @@ export default function DemoApp() {
     const beatTarget = lowerScoreWins(selectedGame) ? scoreBeats(selectedGame, gameResult.score, matchTargetScore) : gameResult.won || gameResult.score >= matchTargetScore;
     const didWin = gameResult.serverMatch
       ? gameResult.serverMatch.winnerSlot === gameResult.serverMatch.slot
-      : selectedStake === 0
-        ? leagueDuel ? beatLeagueRival : gameResult.won
-        : matchScope === "group"
-          ? beatTarget
+      : matchScope === "group"
+        ? (lowerScoreWins(selectedGame) ? gameResult.score < matchTargetScore : gameResult.score > matchTargetScore) // a tie is no victory, as in the standings
+        : selectedStake === 0
+          ? leagueDuel ? beatLeagueRival : gameResult.won
           : replyAttempt
             ? beatTarget
             : false;
@@ -1029,14 +991,6 @@ export default function DemoApp() {
     if (didWin && selectedGame.resultMetric !== "fictitious-balance") setShowWinAnimation(true);
     setResult(resolvedResult);
 
-    const inGroupCompetition =
-      matchScope === "group" && group !== null && groupCompetition !== null;
-
-    const winsAfter = groupCompetitionWins + (didWin ? 1 : 0);
-    if (inGroupCompetition && didWin) {
-      setGroupCompetitionWins(winsAfter);
-    }
-
     if (didWin) {
       setWins((value) => value + 1);
       setStreak((value) => value + 1);
@@ -1049,70 +1003,11 @@ export default function DemoApp() {
       haptic(35);
     }
 
-    if (selectedStake === 0) return;
-
-    if (inGroupCompetition && group && groupCompetition) {
-      const totalStages = totalCompetitionStages(
-        groupCompetition,
-        group.members.length
-      );
-      const eliminated =
-        groupCompetition.type === "tournament" && !didWin;
-      const competitionFinished =
-        groupCompetition.type === "quick" ||
-        groupStage >= totalStages ||
-        eliminated;
-
-      if (!competitionFinished) return;
-
-      let placement: 1 | 2 | 3 = 1;
-
-      if (groupCompetition.type === "league") {
-        const ratio = winsAfter / Math.max(1, totalStages);
-        placement = ratio >= 0.67 ? 1 : ratio >= 0.34 ? 2 : 3;
-      } else if (groupCompetition.type === "tournament") {
-        placement =
-          didWin && groupStage >= totalStages
-            ? 1
-            : groupStage >= totalStages
-              ? 2
-              : 3;
-      } else {
-        placement = didWin ? 1 : 3;
-      }
-
-      const pot = groupPot(group, groupCompetition.stake);
-      const prize =
-        groupCompetition.type === "quick" && !didWin
-          ? 0
-          : Number(
-              (pot * payoutShare(groupCompetition, placement)).toFixed(2)
-            );
-      const delta = Number(
-        (prize - groupCompetition.stake).toFixed(2)
-      );
-
-      if (prize > 0) {
-        setBalance((value) => Number((value + prize).toFixed(2)));
-        setMovements((items) => [
-          {
-            label: `${group.name} · premio ${payoutLabel(groupCompetition.distribution)}`,
-            amount: prize,
-            key: "move.groupPrize" as const,
-            vars: { group: group.name, split: payoutLabel(groupCompetition.distribution) },
-          },
-          ...items,
-        ].slice(0, 20));
-      }
-
-      const nextValue = Number((netEarnings + delta).toFixed(2));
-      setNetEarnings(nextValue);
-      setEarnings((points) => [
-        ...points,
-        { label: `P${points.length}`, value: nextValue },
-      ].slice(-20));
+    if (matchScope === "group" && groupComp) {
+      settleGroupScore(gameResult.verified === false || gameResult.forfeited || !Number.isFinite(gameResult.score) ? groupForfeit() : gameResult.score);
       return;
     }
+    if (selectedStake === 0) return;
 
     const prize = prizeForStake(selectedStake);
     const delta = didWin ? prize - selectedStake : -selectedStake;
@@ -1161,62 +1056,83 @@ export default function DemoApp() {
     haptic(8);
   }
 
-  function setClosedGroupStake(stake: number) {
-    setGroup((current) => current ? { ...current, stake } : current);
-    haptic(4);
+
+  const GROUP_YOU = "you";
+  const groupLook = {
+    base: (gameId: string) => GAMES.find((g) => g.id === gameId)?.rivalScore ?? 1000,
+    strength: (id: string) => group?.members.find((m) => m.id === id)?.scoreFactor ?? 1,
+  };
+  const lowerWinsIn = (c: GroupCompetition, gameId: string) => c.config.lowerWinsGameIds.includes(gameId);
+  /** The worst possible result: an abandoned or unverified group match. */
+  function groupForfeit() {
+    const m = groupComp?.matches[groupMatch];
+    return groupComp && m && lowerWinsIn(groupComp, m.gameId) ? Number.MAX_SAFE_INTEGER : 0;
+  }
+  /** Pays the group prize (fictitious) when the competition has just ended. */
+  function payGroup(c: GroupCompetition) {
+    if (!group) return;
+    const prize = (c.payouts?.[GROUP_YOU] ?? 0) / 100, entry = c.config.entryMinor / 100;
+    const split = t(c.config.split === "winner" ? "group.splitWinner" : "group.split7030");
+    if (prize > 0) {
+      setBalance((value) => Number((value + prize).toFixed(2)));
+      setMovements((items) => [{ label: `${group.name} · ${split}`, amount: prize, key: "move.groupPrize" as const, vars: { group: group.name, split } }, ...items].slice(0, 20));
+    }
+    const nextValue = Number((netEarnings + prize - entry).toFixed(2));
+    setNetEarnings(nextValue);
+    setEarnings((points) => [...points, { label: `P${points.length}`, value: nextValue }].slice(-20));
+  }
+  function updateGroup(next: GroupCompetition) {
+    const ended = groupComp !== null && !groupComp.finished && next.finished;
+    setGroupComp(next);
+    if (ended) payGroup(next);
+  }
+  function settleGroupScore(score: number) {
+    if (!groupComp || groupMatch < 0) return;
+    updateGroup(playSimulatedMembers(recordGroupScore(groupComp, groupMatch, GROUP_YOU, score), GROUP_YOU, groupLook));
+    setGroupMatch(-1);
+  }
+  function voteGroup() {
+    if (groupComp) updateGroup(voteWithSimulatedMembers(groupComp, GROUP_YOU));
   }
 
-  function startGroupCompetition(
-    game: GameMeta,
-    config: GroupCompetitionConfig,
-    options?: { chargeEntry?: boolean; nextStage?: number }
-  ) {
-    const chargeEntry = options?.chargeEntry ?? true;
-    if (
-      !group ||
-      matchStartLockRef.current ||
-      (chargeEntry && config.stake > balance)
-    ) {
-      return;
-    }
+  /** Pays the single entry fee and starts the competition with its first match. */
+  function startGroupComp(config: GroupConfig) {
+    if (!group || matchStartLockRef.current || config.entryMinor / 100 > balance) return;
     if(persistentTraining!==false){setMatchStartError(t("home.groupsUnavailable"));return;}
     setMatchStartError("");
-    const nextStage = options?.nextStage ?? 1;
+    const players = group.members.map((m) => ({ id: m.isYou ? GROUP_YOU : m.id, name: m.name, avatar: m.avatar, simulated: !m.isYou }));
+    const comp = playSimulatedMembers(createGroupCompetition(`${group.code}-${Date.now().toString(36)}`, config, players), GROUP_YOU, groupLook);
+    const entry = config.entryMinor / 100;
+    if (entry > 0) {
+      setBalance((value) => Number((value - entry).toFixed(2)));
+      const key = (config.format === "single" ? "move.groupQuick" : config.format === "tournament" ? "move.groupTournament" : "move.groupLeague") as MessageKey;
+      setMovements((items) => [{ label: t(key, { group: group.name }), amount: -entry, key, vars: { group: group.name } }, ...items].slice(0, 20));
+    }
+    setGroupComp(comp);
+    playGroupMatch(comp);
+  }
 
+  /** Opens the player's next match of the group competition (target: the best simulated score in that match). */
+  function playGroupMatch(comp: GroupCompetition | null = groupComp) {
+    if (!group || !comp || matchStartLockRef.current) return;
+    const index = nextGroupMatch(comp, GROUP_YOU), m = comp.matches[index];
+    const game = m && GAMES.find((g) => g.id === m.gameId);
+    if (!m || !game) { navigate("group"); return; }
+    const rivals = m.players.filter((id) => id !== GROUP_YOU).map((id) => m.scores[id]).filter((v): v is number => v !== undefined);
+    const lower = lowerWinsIn(comp, m.gameId);
     matchStartLockRef.current = true;
+    setGroupMatch(index);
     setStartingGameId(game.id);
     setSelectedGame(game);
-    setSelectedStake(config.stake);
+    setSelectedStake(0);
     setSelectedMode("create");
     setGhostEnabled(false);
     setMatchScope("group");
     setLeagueMatch(null);
     setLeagueOutcome(null);
-    setMatchTargetScore(groupTargetScore(group, game));
+    setMatchTargetScore(rivals.length ? (lower ? Math.min(...rivals) : Math.max(...rivals)) : game.rivalScore);
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
-    setGroupCompetition(config);
-    setGroupStage(nextStage);
-    if (chargeEntry) setGroupCompetitionWins(0);
-
-    if (chargeEntry && config.stake > 0) {
-      setBalance((value) => Number((value - config.stake).toFixed(2)));
-      setMovements((items) => [
-        {
-          label:
-            config.type === "quick"
-              ? `${group.name} · partida rápida`
-              : config.type === "league"
-                ? `${group.name} · entrada liga`
-                : `${group.name} · entrada torneo`,
-          amount: -config.stake,
-          key: (config.type === "quick" ? "move.groupQuick" : config.type === "league" ? "move.groupLeague" : "move.groupTournament") as MessageKey,
-          vars: { group: group.name },
-        },
-        ...items,
-      ].slice(0, 20));
-    }
-
     setResult(null);
     setAttemptSummary(null);
     setActiveGame(false);
@@ -1225,31 +1141,6 @@ export default function DemoApp() {
     gameTone("countdown");
     haptic(12);
     navigate("game");
-  }
-
-  function repeatOrContinueGroupCompetition() {
-    if (!group || !groupCompetition) return;
-
-    if (groupCompetition.type === "quick") {
-      startGroupCompetition(selectedGame, groupCompetition, {
-        chargeEntry: true,
-        nextStage: 1,
-      });
-      return;
-    }
-
-    const nextStage = groupStage + 1;
-    const nextGameId =
-      groupCompetition.gameIds[nextStage - 1] ??
-      groupCompetition.gameIds[0];
-    const nextGame =
-      GAMES.find((game) => game.id === nextGameId) ??
-      selectedGame;
-
-    startGroupCompetition(nextGame, groupCompetition, {
-      chargeEntry: false,
-      nextStage,
-    });
   }
 
   function editProfile() {
@@ -1305,6 +1196,7 @@ export default function DemoApp() {
     setLosses(0);
     setStreak(0);
     setGroup(null);
+      setGroupComp(null);
     setCountdown(null);
     navigate("welcome", true);
   }
@@ -1553,8 +1445,11 @@ export default function DemoApp() {
             initialJoinCode={pendingJoinCode}
             onCreateGroup={createClosedGroup}
             onJoinGroup={joinClosedGroup}
-            onSetStake={setClosedGroupStake}
-            onStartCompetition={startGroupCompetition}
+            competition={groupComp}
+            onCreateCompetition={startGroupComp}
+            onPlay={() => playGroupMatch()}
+            onVote={voteGroup}
+            onClearCompetition={() => setGroupComp(null)}
           />
         )}
 
@@ -1571,8 +1466,8 @@ export default function DemoApp() {
               <div>
                 <strong>{gameName(selectedGame)}</strong>
                 <small>
-                  {matchScope === "group" && groupCompetition && group
-                    ? competitionProgressLabel(groupCompetition, groupStage, group.members.length)
+                  {matchScope === "group" && groupComp
+                    ? t(groupComp.config.format === "tournament" ? "group.roundN" : "group.matchdayN", { n: groupComp.matches.reduce((r, m) => Math.max(r, m.round), 1) })
                     : selectedStake === 0
                       ? t("game.training")
                       : t("game.duel", { n: selectedStake })}
@@ -1697,42 +1592,15 @@ export default function DemoApp() {
                   </>
                 )}
                 <fieldset className="resultActions" disabled={!resultActionsReady} aria-label={t("game.resultActions")}>
-                  {matchScope === "group" && groupCompetition ? (
+                  {matchScope === "group" && groupComp ? (
                     <>
-                      {groupCompetition.type === "quick" ? (
-                        <button
-                          className="rematchAction"
-                          disabled={groupCompetition.stake > balance}
-                          onClick={repeatOrContinueGroupCompetition}
-                        >
-                          {t("game.repeat")}
-                        </button>
-                      ) : groupCanAdvance ? (
-                        <button
-                          className="rematchAction"
-                          onClick={repeatOrContinueGroupCompetition}
-                        >
-                          {groupCompetition.type === "league"
-                            ? t("game.nextMatchday")
-                            : t("game.nextRound")}
-                        </button>
-                      ) : (
-                        <button
-                          className="rematchAction"
-                          onClick={() => navigate("group")}
-                        >
-                          {t("game.backToGroup")}
+                      {!groupComp.finished && nextGroupMatch(groupComp, GROUP_YOU) >= 0 && (
+                        <button className="rematchAction" onClick={() => playGroupMatch()}>
+                          {groupComp.config.format === "tournament" ? t("game.nextRound") : t("game.nextMatchday")}
                         </button>
                       )}
-                      <button
-                        className="mainAction"
-                        onClick={() => navigate("group")}
-                      >
-                        {groupCompetition.type === "quick"
-                          ? t("game.backToGroup")
-                          : groupCanAdvance
-                            ? t("game.leaveToGroup")
-                            : t("game.newCompetition")}
+                      <button className="mainAction" onClick={() => navigate("group")}>
+                        {t("game.backToGroup")}
                       </button>
                     </>
                   ) : (
