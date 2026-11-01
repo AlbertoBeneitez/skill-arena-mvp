@@ -2,13 +2,13 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V13,
-  ROULETTE_RULES_V13,
+  ROULETTE_CORE_V14,
+  ROULETTE_RULES_V14,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV13 as RouletteStateV2,
-  rouletteSurfaceV13,
-} from "@/lib/verified/galacticRouletteCore.v13";
+  type RouletteStateV14 as RouletteStateV2,
+  rouletteSurfaceV14,
+} from "@/lib/verified/galacticRouletteCore.v14";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -28,7 +28,7 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V13.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V14.ballRadius / 1000;
 // Presentation radii (the authoritative ball physics live in the core).
 const NUMBER_OUTER = 121,
   NUMBER_INNER = 104,
@@ -220,7 +220,7 @@ function render(
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
   const radius = Math.hypot(x - cx, y - cy);
-  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV13(radius * 1000).z / 1000 : 0;
+  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV14(radius * 1000).z / 1000 : 0;
   const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - BALL_R);
   // Launcher: an orbital "magnetic cradle" outside the wheel — a hexagonal pad, three clamp prongs and counter-rotating
   // coil rings that hold the ball in the air; dragging charges the coils (faster, warmer, sparks between the prongs).
@@ -352,11 +352,11 @@ function render(
   ctx.textAlign = "center";
   ctx.fillText(s.lastNumber === null ? "" : String(s.lastNumber), cx, 270);
   ctx.restore();
-  // History of the last results above the wheel (screen space, clear of the rim), newest on the right.
-  const shown = s.history.slice(-ROULETTE_RULES_V13.historyLength);
-  const slot = 24, left = cx - (ROULETTE_RULES_V13.historyLength * slot) / 2;
-  for (let i = 0; i < ROULETTE_RULES_V13.historyLength; i++) {
-    const n = shown[i - (ROULETTE_RULES_V13.historyLength - shown.length)];
+  // History of the last six results, top right (v127: the chips / spins pill owns the top left), newest at the edge.
+  const SHOWN = 6, shown = s.history.slice(-SHOWN);
+  const slot = 22, left = 382 - SHOWN * slot;
+  for (let i = 0; i < SHOWN; i++) {
+    const n = shown[i - (SHOWN - shown.length)];
     const hx = left + i * slot + slot / 2;
     if (n === undefined) {
       ctx.strokeStyle = "rgba(168,198,213,.28)";
@@ -366,7 +366,7 @@ function render(
       ctx.stroke();
       continue;
     }
-    const latest = i === ROULETTE_RULES_V13.historyLength - 1;
+    const latest = i === SHOWN - 1;
     ctx.fillStyle = n === 0 ? "#f1f5ee" : ROULETTE_RED.includes(n as (typeof ROULETTE_RED)[number]) ? "#17956f" : "#2160b0";
     ctx.beginPath();
     ctx.arc(hx, 22, latest ? 11 : 9, 0, Math.PI * 2);
@@ -507,7 +507,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V13}
+        core={ROULETTE_CORE_V14}
         name="Roulette"
         instruction=""
         render={canvasRender}
@@ -519,7 +519,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V13.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V14.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

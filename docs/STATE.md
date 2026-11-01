@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v126-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v127-saturn.
 
 ## Catálogo
 
@@ -13,7 +13,7 @@ resultado aún no verificado de extremo a extremo.
 
 | id interno | Nombre visible | Versión | Estado |
 | --- | --- | --- | --- |
-| galactic-roulette | Roulette | 13.0.0 | VERIFIED |
+| galactic-roulette | Roulette | 14.0.0 | VERIFIED |
 | galactic-slot | Slot | 3.0.0 | VERIFIED |
 | darts | Dardos | 3.0.0 | VERIFIED |
 | billiards | Billar | 7.0.0 | VERIFIED |
@@ -63,12 +63,12 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - mientras no termine se pueden seguir jugando partidas aunque se cierre la app (el estado vive en el servidor).
   - Pendiente de diseño técnico (v128) y siempre con saldo ficticio hasta la fase 4.
 - [x] **Ruleta (1 de noviembre):** el salto actual no es realista porque la bola se asienta demasiado rápido; debe dar más botes y tardar más en quedarse en el número (núcleo nuevo).
+- [x] **Formato de juegos externos (1 de noviembre):** núcleo en WebAssembly sin importaciones + interfaz web en marco aislado. Confirmado por el propietario.
 - [x] **Plataforma para desarrolladores externos (1 de noviembre):**
   - el creador recibe el 50 % de la comisión neta (comisión de las partidas de su juego menos costes de pago e impuestos) y conserva sus derechos;
   - mercado: España primero (licencia DGOJ) y después expansión;
   - formato recomendado: núcleo en WebAssembly sin importaciones y una interfaz web en un marco aislado; admisión automática en una máquina virtual desechable y aprobación final del propietario;
   - el juego nunca recibe datos personales ni accede a bases de datos;
-  - el formato de entrega está pendiente de confirmación por el propietario.
 
 ## Revisión de código
 

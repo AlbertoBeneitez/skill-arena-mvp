@@ -723,3 +723,15 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - grupos (individual, liga y torneo) con inscripción y partidas que se pueden retomar;
   - portadas de juego.
 - **Plataforma para desarrolladores externos:** en diseño (ver la propuesta del 1 de noviembre); 50 % de la comisión neta para el creador; España primero.
+
+## v127-saturn · Ruleta 14 (asentado realista), historial separado del marcador, botones físicos del Slot (1-nov-2026)
+
+- **Ruleta 14** (`galactic-roulette@14.0.0`; V1–V13 intactos):
+  - la bola ya no se queda quieta de golpe: tras caer de la pista rueda y bota por las casillas una media de 3,2 s (antes 2,2 s) y cruza ~5 casillas (antes 4);
+  - el reparto de números sigue siendo justo (χ² 40, 36 g.l.).
+- **Historial de la ruleta:** los últimos 6 números arriba a la derecha, sin chocar con la pastilla de fichas y tiradas.
+- **Slot:** pulsadores iluminados con bisel cromado y recorrido al pulsar (ámbar −, verde +, rojo para girar).
+- **Pendiente:**
+  - imagen inicial antes del inicio de sesión y portadas con diseño propio (a concretar con el propietario);
+  - grupos (v128);
+  - especificación de la plataforma de juegos externos.
