@@ -27,7 +27,7 @@ export const DOC_BLOCKS: Record<DocId, readonly Block[]> = {
   privacy: [
     ["h", "privacy.h1"], ["p", "privacy.p1"], ["p", "privacy.p2"], ["p", "privacy.p3"],
     ["h", "privacy.h2"], ["p", "privacy.p4"], ["h", "privacy.h3"], ["p", "privacy.p5"],
-    ["h", "privacy.h4"], ["p", "privacy.p6"],
+    ["h", "privacy.h4"], ["p", "privacy.p6"], ["h", "privacy.h5"], ["p", "privacy.p7"],
   ],
   cookies: [["p", "cookies.p1"], ["p", "cookies.p2"], ["p", "cookies.p4"], ["p", "cookies.p3"]],
   rules: [["p", "rules.p1"], ["p", "rules.p2"], ["p", "rules.p3"], ["p", "rules.p4"], ["p", "rules.p5"]],

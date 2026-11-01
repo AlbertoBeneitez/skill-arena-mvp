@@ -818,3 +818,14 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - anillos en diagonal, con la sombra del planeta suavizada por penumbra;
   - sin órbita ni lunas de juego.
 - **Icono:** fondo negro, planeta arena en creciente, G más grande y anillo que sale por los bordes.
+
+## v135-saturn · «Proponer un juego» y bandeja del propietario (1-nov-2026)
+
+- **Botón y formulario:**
+  - botón al final de Juegos;
+  - formulario con estudio, contacto, juego, categoría (no Populares ni Nuevos), descripción y enlace https;
+  - condiciones de la plataforma y consentimiento versionado;
+  - borrador en el dispositivo.
+- **Servidor:** `/api/studio/proposals` (enviar, leer y borrar) y tabla `studio_game_proposals` (migración 004).
+- **Bandeja:** solo para la cuenta de `STUDIO_OWNER_ACCOUNTS`.
+- **Pendiente:** PostgreSQL alojado, para que la recepción se abra.

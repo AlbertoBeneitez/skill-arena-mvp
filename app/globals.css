@@ -8570,3 +8570,37 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   position: static !important; inset: auto !important; transform: none !important; flex: none;
   margin: 0 !important; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
 }
+
+/* v135 · "Proponer un juego": an opaque sheet over the app (a dialog opened on purpose), form and owner inbox. */
+.studioSheet {
+  position: fixed; inset: 0; z-index: 90; overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+  background: var(--st-abyss); color: var(--st-ink); font-family: var(--gx-ui);
+}
+.studioHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.studioHead h2 { margin: 0; font-family: var(--gx-display); font-size: 20px; }
+.studioClose { width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--st-hair); background: var(--st-deep); color: var(--st-ink); font-size: 16px; }
+.studioTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.studioTabs button { min-height: 42px; border-radius: 12px; border: 1px solid var(--st-hair); background: var(--st-deep); color: var(--st-mute); font-weight: 700; }
+.studioTabs button[aria-selected="true"] { border-color: var(--st-ion); color: var(--st-ink); background: rgba(127, 227, 238, .1); }
+.studioForm { display: grid; gap: 12px; max-width: 560px; margin: 0 auto; }
+.studioTerms { margin: 0; padding: 12px 14px 12px 30px; border-radius: 12px; background: var(--st-panel); border: 1px solid var(--st-hair); color: var(--st-mute); font-size: 13px; line-height: 1.45; display: grid; gap: 6px; }
+.studioField { display: grid; gap: 6px; font-size: 13px; color: var(--st-mute); }
+.studioField input, .studioField select, .studioField textarea {
+  width: 100%; min-height: 46px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--st-hair);
+  background: var(--st-deep); color: var(--st-ink); font: inherit; font-size: 15px;
+}
+.studioField textarea { resize: vertical; min-height: 84px; }
+.studioField :is(input, select, textarea):focus-visible { outline: 2px solid var(--st-ion); outline-offset: 1px; }
+.studioField [aria-invalid="true"], .studioCheck input[aria-invalid="true"] { border-color: #ff4f5e; outline-color: #ff4f5e; }
+.studioCheck { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; font-size: 13.5px; line-height: 1.4; }
+.studioCheck input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--st-ion); }
+.studioStatus { min-height: 1.4em; margin: 0; font-size: 13.5px; color: var(--st-gold); }
+.studioSend { width: 100%; }
+.studioInbox { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 10px; max-width: 560px; }
+.studioInbox li { display: grid; gap: 6px; padding: 12px 14px; border-radius: 12px; background: rgba(9, 9, 11, .5); border: 1px solid var(--st-hair); font-size: 13.5px; overflow-wrap: anywhere; }
+.studioInbox li span { color: var(--st-mute); }
+.studioInbox li p { margin: 0; }
+.studioInbox li a { color: var(--st-ion); }
+.studioInbox li button { justify-self: start; min-height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(255, 79, 94, .55); background: transparent; color: #ff8a94; font-weight: 700; }
+.studioInbox .studioEmpty { color: var(--st-mute); text-align: center; }

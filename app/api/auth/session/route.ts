@@ -4,12 +4,13 @@ import { SESSION_COOKIE, authSecret, cookieHeader, decodeSession, readCookie } f
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Which providers are live, and who is signed in on this device (provider + display name only). */
+/** Which providers are live, and who is signed in on this device: provider, display name and, for that same person
+ * only, the account key (used to name the owner in STUDIO_OWNER_ACCOUNTS). */
 export async function GET(req: Request) {
   const secret = authSecret();
   const s = secret ? decodeSession(readCookie(req, SESSION_COOKIE), secret) : null;
   return Response.json(
-    { providers: configuredProviders(), session: s ? { provider: s.p, name: s.n } : null },
+    { providers: configuredProviders(), session: s ? { provider: s.p, name: s.n, account: `${s.p}:${s.sub}` } : null },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

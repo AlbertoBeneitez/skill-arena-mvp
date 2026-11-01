@@ -1,12 +1,15 @@
 "use client";
 import UiIcon from "./UiIcon";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { LeagueBadge } from "./LeagueResult";
 import { emptyLeague, type LeagueState } from "@/lib/leagues";
 import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, isNewGame, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
 import { t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
+// v135: the proposal form loads only when a studio opens it.
+const GameProposal = dynamic(() => import("./GameProposal"), { ssr: false });
 export const CATEGORY_ACCENTS: Record<string, string> = {
   PRECISIÓN: "#5fd6ff", TIMING: "#ffd04a", REACCIÓN: "#ff7a6b", MEMORIA: "#b88cff", PUZZLE: "#6ff0b0", CARTAS: "#ff8fb8", LÓGICA: "#9bf05b", CONTROL: "#ffa85c",
 };
@@ -32,6 +35,7 @@ function prefetchGame(game: GameMeta) {
 }
 /** Presentation and discovery only. The common registry remains the sole catalogue. */
 export default function CatalogBrowser(props: Props) {
+  const [proposing, setProposing] = useState(false);
   useI18n();
   // While the player browses, download every game's code in the background, one at a time on idle.
   useEffect(() => {
@@ -113,6 +117,11 @@ export default function CatalogBrowser(props: Props) {
           </div>
         </section>
       ))}
+      <section className={styles.studio} aria-labelledby="studio-cta">
+        <h2 id="studio-cta" className={styles.rowTitle}>{t("studio.cta")}</h2>
+        <button type="button" className={styles.studioOpen} onClick={() => setProposing(true)}>{t("studio.open")}</button>
+      </section>
+      {proposing && <GameProposal onClose={() => setProposing(false)} />}
     </section>
   );
 }

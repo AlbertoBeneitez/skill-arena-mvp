@@ -89,3 +89,14 @@
 .play:focus-visible { outline: 2px solid #7fe3ee; outline-offset: 2px; }
 .play:disabled { opacity: .5; }
 @media (prefers-reduced-motion: reduce) { .play { transition: none; } .play:active:not(:disabled) { translate: none; } }
+
+/* v135 · Studios: the way into the external-game process, closing the catalogue. */
+.studio { margin-top: 8px; padding: 16px; border: 1px solid var(--st-hair, rgba(232,240,251,.12)); border-radius: 16px; background: var(--st-panel); display: grid; gap: 10px; }
+.studio .rowTitle { margin: 0; }
+.studioOpen {
+  min-height: 46px; border: 1px solid rgba(127, 227, 238, .55); border-radius: 12px;
+  background: linear-gradient(180deg, rgba(26,26,29,.92), rgba(11,11,13,.96)); color: #e8f0fb;
+  font-family: var(--gx-ui); font-size: 13px; font-weight: 700; letter-spacing: .06em;
+}
+.studioOpen:active { background: rgba(127, 227, 238, .14); translate: 0 1px; }
+.studioOpen:focus-visible { outline: 2px solid var(--st-ion, #7fe3ee); outline-offset: 2px; }

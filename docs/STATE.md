@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v134-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v135-saturn.
 
 ## Catálogo
 
@@ -39,7 +39,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 | Vistas previas | Cada push a `mobile-test` y `vNN-saturn`; protegidas por inicio de sesión de Vercel |
 | Node | 24 (`.nvmrc`, Vercel). La CI repite el determinismo en Node 22 |
 | Variables en Vercel | `MATCH_SIGNING_SECRET` y `ALLOW_LEGACY_STATELESS_TRAINING` en producción y preview. Sin `DATABASE_URL` |
-| PostgreSQL alojado | No existe. Migraciones `db/migrations/001`–`003` listas, se aplican a mano |
+| PostgreSQL alojado | No existe. Migraciones `db/migrations/001`–`004` listas, se aplican a mano (004: propuestas de juegos) |
 | Identidad | Cookie anónima y perfil local. Inicio de sesión con Google, Apple, X, Discord y Microsoft activado en el código (v122); cada proveedor se enciende al poner sus credenciales en Vercel (`docs/AUTH_PROVIDERS.md`). Hoy no hay ninguna |
 | Saldo y premios | Ficticios, calculados en el navegador (`localStorage`) |
 | CI | `build-v4.yml` (typecheck, determinismo, PostgreSQL, build, smoke móvil), CodeQL, Dependabot. Dependabot y el CodeQL semanal leen `main`, que aún no tiene `.github/`, así que no se ejecutan. El flujo antiguo «Sync Mobile Test» (forzaba `mobile-test`) se desactivó el 29 de octubre |
@@ -79,8 +79,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - fila «Nuevos» tras Populares, con los juegos de los últimos 30 días;
   - ninguna imagen entre pulsar un juego y verlo;
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
-- [ ] **Pendiente del lote del 1 de noviembre:**
-  - botón para que un estudio proponga su juego (v135).
+- [x] **Proponer un juego (1 de noviembre, v135):** botón en Juegos, formulario con condiciones y consentimiento, bandeja solo para el propietario (`STUDIO_OWNER_ACCOUNTS`).
+  - Para recibir propuestas faltan PostgreSQL (`DATABASE_URL`) y la migración 004; hasta entonces el formulario avisa de que la recepción no está abierta.
 - [x] **Arte (1 de noviembre, v131):** se desarrollan Saturno y sus anillos (bienvenida) y el icono de la app; se retira la G plana `app/icon.svg`.
 - [ ] **Pagos y obligaciones de información:** investigación en `docs/PAYMENTS_AND_LEGAL.md`. Newly y RevenueCat no sirven para cuotas con premio (Apple y Stripe lo prohíben); en la fase 4, una pasarela especializada en juego con licencia DGOJ. Pendiente de revisión por un abogado.
 - [x] **Formato de juegos externos (1 de noviembre):** núcleo en WebAssembly sin importaciones + interfaz web en marco aislado. Confirmado por el propietario.

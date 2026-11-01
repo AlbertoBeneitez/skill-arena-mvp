@@ -48,6 +48,7 @@
     "scripts/verify-roulette-v14.ts",
     "scripts/gen-roulette-v14-fixture.ts",
     "scripts/verify-roulette-v15.ts",
+    "scripts/verify-studio-proposal.ts",
     "scripts/gen-roulette-v15-fixture.ts",
     "scripts/gen-roulette-v13-fixture.ts",
     "scripts/gen-roulette-v12-fixture.ts",
