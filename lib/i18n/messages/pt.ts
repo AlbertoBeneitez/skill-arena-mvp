@@ -764,6 +764,17 @@ const messages: Messages = {
   "studio.inboxEmpty": "Não há propostas.",
   "studio.delete": "Apagar",
   "studio.propose": "Propor",
+  "pinball.lockLit": "BLOQUEIO ACESO",
+  "pinball.lock": "BOLA BLOQUEADA!",
+  "pinball.multiball": "MULTIBOLA!",
+  "pinball.superLit": "SUPER ACESO",
+  "pinball.super": "SUPER JACKPOT!",
+  "pinball.mbEnd": "FIM DA MULTIBOLA",
+  "pinball.rush": "RUSH!",
+  "pinball.mode0": "TEMPESTADE",
+  "pinball.mode1": "FEBRE GIRO",
+  "pinball.mode2": "RAMPA RUSH",
+  "pinball.modeEnd": "FIM DO MODO",
 };
 
 export default messages;

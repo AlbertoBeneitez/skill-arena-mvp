@@ -764,6 +764,17 @@ const messages: Messages = {
   "studio.inboxEmpty": "Предложений нет.",
   "studio.delete": "Удалить",
   "studio.propose": "Предложить",
+  "pinball.lockLit": "ЗАХВАТ ГОРИТ",
+  "pinball.lock": "ШАР ЗАХВАЧЕН!",
+  "pinball.multiball": "МУЛЬТИБОЛ!",
+  "pinball.superLit": "СУПЕР ГОРИТ",
+  "pinball.super": "СУПЕР ДЖЕКПОТ!",
+  "pinball.mbEnd": "МУЛЬТИБОЛ ОКОНЧЕН",
+  "pinball.rush": "РАШ!",
+  "pinball.mode0": "ШТОРМ",
+  "pinball.mode1": "ЛИХОРАДКА",
+  "pinball.mode2": "РАМПА РАШ",
+  "pinball.modeEnd": "РЕЖИМ ОКОНЧЕН",
 };
 
 export default messages;

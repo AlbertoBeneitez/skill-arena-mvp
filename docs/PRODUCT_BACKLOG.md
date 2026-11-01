@@ -838,3 +838,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - rombos más pequeños en el estátor;
   - V1–V15 se conservan.
 - **Tarjetas:** un color de borde por categoría.
+
+## v137-saturn · Pinball V9: multibola, jackpots y modos (1-nov-2026)
+
+- **Multibola:** las dianas de la derecha encienden el bloqueo; dos bloqueos en el plato y el tercero lanza una multibola de tres bolas con bola salvada.
+- **Jackpots:** en rampa y órbita, cada vez mayores; súper jackpot en el agujero de gusano.
+- **Modos de 20 s tras cada misión:** Tormenta, Fiebre Giro y Rampa Rush.
+- La mesa y la física son las de V8; V1–V8 se conservan.

@@ -802,6 +802,17 @@ const es = {
   "studio.inboxEmpty": "No hay propuestas.",
   "studio.delete": "Borrar",
   "studio.propose": "Proponer",
+  "pinball.lockLit": "BLOQUEO ENCENDIDO",
+  "pinball.lock": "¡BOLA BLOQUEADA!",
+  "pinball.multiball": "¡MULTIBOLA!",
+  "pinball.superLit": "SÚPER ENCENDIDO",
+  "pinball.super": "¡SÚPER JACKPOT!",
+  "pinball.mbEnd": "FIN DE MULTIBOLA",
+  "pinball.rush": "¡RUSH!",
+  "pinball.mode0": "TORMENTA",
+  "pinball.mode1": "FIEBRE GIRO",
+  "pinball.mode2": "RAMPA RUSH",
+  "pinball.modeEnd": "FIN DEL MODO",
 } as const;
 
 export type MessageKey = keyof typeof es;

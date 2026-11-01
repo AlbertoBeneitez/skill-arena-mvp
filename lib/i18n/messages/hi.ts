@@ -764,6 +764,17 @@ const messages: Messages = {
   "studio.inboxEmpty": "कोई प्रस्ताव नहीं।",
   "studio.delete": "हटाएँ",
   "studio.propose": "प्रस्तावित करें",
+  "pinball.lockLit": "लॉक जला",
+  "pinball.lock": "गेंद लॉक!",
+  "pinball.multiball": "मल्टीबॉल!",
+  "pinball.superLit": "सुपर जला",
+  "pinball.super": "सुपर जैकपॉट!",
+  "pinball.mbEnd": "मल्टीबॉल समाप्त",
+  "pinball.rush": "रश!",
+  "pinball.mode0": "बम्पर तूफ़ान",
+  "pinball.mode1": "स्पिनर बुखार",
+  "pinball.mode2": "रैम्प रश",
+  "pinball.modeEnd": "मोड समाप्त",
 };
 
 export default messages;

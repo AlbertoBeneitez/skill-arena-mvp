@@ -764,6 +764,17 @@ const messages: Messages = {
   "studio.inboxEmpty": "暂无提案。",
   "studio.delete": "删除",
   "studio.propose": "提交",
+  "pinball.lockLit": "锁球已亮",
+  "pinball.lock": "锁球！",
+  "pinball.multiball": "多球！",
+  "pinball.superLit": "超级已亮",
+  "pinball.super": "超级大奖！",
+  "pinball.mbEnd": "多球结束",
+  "pinball.rush": "冲刺！",
+  "pinball.mode0": "弹柱风暴",
+  "pinball.mode1": "旋转狂热",
+  "pinball.mode2": "坡道冲刺",
+  "pinball.modeEnd": "模式结束",
 };
 
 export default messages;

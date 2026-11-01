@@ -764,6 +764,17 @@ const messages: Messages = {
   "studio.inboxEmpty": "لا توجد اقتراحات.",
   "studio.delete": "حذف",
   "studio.propose": "اقترح",
+  "pinball.lockLit": "القفل مضاء",
+  "pinball.lock": "كرة مقفلة!",
+  "pinball.multiball": "كرات متعددة!",
+  "pinball.superLit": "السوبر مضاء",
+  "pinball.super": "سوبر جاكبوت!",
+  "pinball.mbEnd": "انتهت الكرات المتعددة",
+  "pinball.rush": "اندفاع!",
+  "pinball.mode0": "عاصفة",
+  "pinball.mode1": "حمّى الدوّار",
+  "pinball.mode2": "اندفاع المنحدر",
+  "pinball.modeEnd": "انتهى النمط",
 };
 
 export default messages;
