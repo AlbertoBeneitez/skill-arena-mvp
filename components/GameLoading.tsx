@@ -11,7 +11,7 @@ export default function GameLoading() {
     <div className="gameLoading gxBoot" role="status" aria-live="polite">
       <div className="gxBootEmblem" aria-hidden="true">
         <span className="gxBootOrbit"><i /></span>
-        <img src="/art/saturn-hero.webp?v=123" alt="" width={210} height={151} decoding="async" />
+        <img src="/art/saturn-hero.webp?v=131" alt="" width={210} height={151} decoding="async" />
         <span className="gxBootOrbit front"><i /></span>
       </div>
       <div className="gxBootMark" aria-hidden="true"><b>GALACTIC</b><span>GAMES</span></div>

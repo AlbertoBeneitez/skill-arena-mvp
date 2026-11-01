@@ -67,7 +67,7 @@ const MOON_DART = orbitPoint(ORBIT.rx, ORBIT.ry, 138);
 
 export default function OrbitalScene({ variant }: { variant: OrbitalVariant }) {
   const id = useId().replace(/:/g, "");
-  preload("/art/saturn-hero.webp?v=123", { as: "image", fetchPriority: "high" });
+  preload("/art/saturn-hero.webp?v=131", { as: "image", fetchPriority: "high" });
   preload("/art/stage-nebula.webp?v=123", { as: "image" });
   const u = (name: string) => `url(#${id}${name})`;
   return (
@@ -107,7 +107,7 @@ export default function OrbitalScene({ variant }: { variant: OrbitalVariant }) {
         </g>
 
         {/* Planet and rings: a physically lit render (scripts/render-saturn-hero.py) covering x −20…400, y 150…452 */}
-        <image href="/art/saturn-hero.webp?v=123" x="-20" y="150" width="420" height="302" preserveAspectRatio="none" />
+        <image href="/art/saturn-hero.webp?v=131" x="-20" y="150" width="420" height="302" preserveAspectRatio="none" />
 
         {/* Game moons riding the orbit */}
         <g className="orbitalMoons">

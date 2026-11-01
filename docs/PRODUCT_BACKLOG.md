@@ -777,3 +777,15 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - **Botón de jugar:** cristal oscuro con borde cian que se ilumina al tocar; sustituye al degradado amarillo-naranja-rosa.
 - **Insignia de liga** compacta en las tarjetas: medalla y puntos.
 - **«CONTINUAR»** vuelve al botón del alta (se descarta «DESPEGAR»).
+
+## v131-saturn · Saturno e icono de la app desarrollados (1-nov-2026)
+
+- **Saturno:**
+  - bandas suaves con bordes ondulados y remolinos;
+  - luz de los anillos en el lado nocturno;
+  - anillos con una segunda capa más fina (supermuestreo 2 × 2) y un tono por anillo.
+- **Icono:**
+  - G en relieve de metal cian con contorno y sombra, legible a 48 px;
+  - planeta azul noche y anillo arena;
+  - se retira `app/icon.svg`, que algunos lanzadores mostraban en el arranque en lugar del PNG.
+- **Pagos y legal:** investigación en `docs/PAYMENTS_AND_LEGAL.md` (no hay cambio de producto).

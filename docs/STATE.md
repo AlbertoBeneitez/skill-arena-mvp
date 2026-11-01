@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v130-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v131-saturn.
 
 ## Catálogo
 
@@ -72,6 +72,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - los juegos externos eligen categoría, salvo Populares.
   - Botón de jugar: cristal oscuro con borde cian.
 - [x] **Sistema de diseño (1 de noviembre):** `DESIGN.md` en la raíz recoge los tokens reales; tipografías Unbounded / Chakra Petch / JetBrains Mono. «DESPEGAR» se descartó: el botón del alta vuelve a «CONTINUAR».
+- [x] **Arte (1 de noviembre, v131):** se desarrollan Saturno y sus anillos (bienvenida) y el icono de la app; se retira la G plana `app/icon.svg`.
+- [ ] **Pagos y obligaciones de información:** investigación en `docs/PAYMENTS_AND_LEGAL.md`. Newly y RevenueCat no sirven para cuotas con premio (Apple y Stripe lo prohíben); en la fase 4, una pasarela especializada en juego con licencia DGOJ. Pendiente de revisión por un abogado.
 - [x] **Formato de juegos externos (1 de noviembre):** núcleo en WebAssembly sin importaciones + interfaz web en marco aislado. Confirmado por el propietario.
 - [x] **Plataforma para desarrolladores externos (1 de noviembre):**
   - el creador recibe el 50 % de la comisión neta (comisión de las partidas de su juego menos costes de pago e impuestos) y conserva sus derechos;

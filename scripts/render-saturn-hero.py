@@ -1,9 +1,10 @@
-"""Hero planet for the GALACTIC GAMES stage (v123): a physically lit ringed gas giant, rendered procedurally with numpy.
+"""Hero planet for the GALACTIC GAMES stage (v123, developed in v131): a physically lit ringed gas giant, rendered procedurally with numpy.
 
 Output: public/art/saturn-hero.webp (RGBA). It covers world units x ∈ [X0, X1], y ∈ [Y0, Y1] of the 390-wide stage
 (components/OrbitalScene.tsx draws it at exactly that rectangle). Everything is original: banded atmosphere with fBm
 turbulence and a storm, Lambert light with limb darkening and an atmospheric rim, the rings' shadow on the clouds, the
-planet's shadow on the rings, and ~40 ringlets with a Cassini-like division.  Usage: python3 scripts/render-saturn-hero.py
+planet's shadow on the rings, and ~40 ringlets with a Cassini-like division. v131: softer belts with rippled edges, ring-shine on the night side,
+a finer ringlet layer (supersampled 2 × 2) and a tint per ring.  Usage: python3 scripts/render-saturn-hero.py
 """
 import math, os, sys
 import numpy as np
@@ -84,10 +85,19 @@ _bz = np.random.default_rng(5).random(LAT.size)
 _kk = np.exp(-np.linspace(-3, 3, 31) ** 2); _kk /= _kk.sum()
 prof = np.convolve(_bz, _kk, mode="same")
 prof = (prof - prof.min()) / (prof.max() - prof.min())
-prof = 0.6 * prof + 0.4 * (0.5 + 0.5 * np.cos(LAT * 6.0))
+# v131: broad zones carry the contrast, the fine random layers only texture them (no more wood grain).
+_kc = np.exp(-np.linspace(-3, 3, 151) ** 2); _kc /= _kc.sum()
+coarse = np.convolve(np.random.default_rng(11).random(LAT.size), _kc, mode="same")
+coarse = (coarse - coarse.min()) / (coarse.max() - coarse.min())
+prof = 0.40 * prof + 0.30 * coarse + 0.30 * (0.5 + 0.5 * np.cos(LAT * 6.0))
 prof = (prof - prof.min()) / (prof.max() - prof.min())
-prof = prof ** 1.25
+prof = prof ** 1.45
 prof -= 0.32 * np.exp(-((LAT - 0.30) / 0.05) ** 2) + 0.28 * np.exp(-((LAT + 0.26) / 0.05) ** 2)
+# Belt edges ripple along longitude (shear waves and festoons), strongest where the profile changes fastest.
+_edge = np.abs(np.gradient(np.convolve(prof, _kk, mode="same")))
+edge_w = np.interp(lat, LAT, _edge / _edge.max())
+eddy = fbm(lu * 6.0, lv * 20.0, 3.0, 4, 33) - 0.5
+lat2 = lat2 + edge_w * (0.0065 * np.sin(lon * 16 + 2.5 * eddy) + 0.0025 * np.sin(lon * 43 + 2.3)) + 0.005 * eddy
 b = np.clip(np.interp(lat2, LAT, prof), 0, 1)
 palette = np.array([
     [0.42, 0.28, 0.18], [0.60, 0.42, 0.27], [0.76, 0.59, 0.39], [0.86, 0.72, 0.50], [0.93, 0.83, 0.63], [0.97, 0.91, 0.76],
@@ -140,11 +150,25 @@ def ring_density(rw):
     d += band(258, 263, 0.18, 0.8)     # F-like ringlet
     d += band(268, 271, 0.10, 0.8)
     fine = np.interp(rw, RING_R, RING_FINE)
-    return np.clip(d * (0.62 + 0.62 * fine), 0, 0.97)
+    finer = np.interp(rw, RING_R2, RING_FINER)
+    return np.clip(d * (0.50 + 0.52 * fine + 0.34 * (finer - 0.5)), 0, 0.97)
+
+
+# v131: a second, finer ringlet layer (the rings are supersampled 2 × 2, so it does not alias), and a tint per ring:
+# the C ring grey and translucent, the B ring the brightest cream, the A ring a cooler sand, the narrow ringlets pale.
+RING_R2 = np.arange(150, 290, 0.14)
+_k2 = np.exp(-np.linspace(-3, 3, 7) ** 2); _k2 /= _k2.sum()
+RING_FINER = np.convolve(np.random.default_rng(17).random(RING_R2.size), _k2, mode="same")
+RING_FINER = (RING_FINER - RING_FINER.min()) / (RING_FINER.max() - RING_FINER.min())
+TINT_R = [166, 182, 186, 198, 207, 225, 250, 258, 272]
+TINT = np.array([[0.60, 0.58, 0.56], [0.70, 0.64, 0.56], [0.96, 0.84, 0.62], [1.00, 0.90, 0.70], [0.86, 0.76, 0.58],
+                 [0.92, 0.82, 0.64], [0.82, 0.74, 0.60], [0.88, 0.85, 0.80], [0.80, 0.80, 0.80]])
 
 ringshadow = np.where(tt > 0, ring_density(rho), 0)
 light = (diffuse * (1 - 0.85 * ringshadow) + soft) * limb + 0.025
-planet = col * light[..., None]
+# Ring-shine: the sunlit rings light the night side faintly, most near the equator that faces them (v131).
+ringshine = np.clip(0.12 - ndl, 0, 1) ** 0.6 * np.clip(1 - np.abs(n @ N) * 1.5, 0, 1) * 0.085
+planet = col * light[..., None] + col * ringshine[..., None] * np.array([1.0, 0.88, 0.70])
 # Atmospheric rim on the lit limb (thin teal-white scattering).
 rim = np.clip(1 - nz, 0, 1) ** 4 * np.clip(ndl + 0.15, 0, 1) ** 1.3
 planet = planet + rim[..., None] * np.array([0.55, 0.85, 0.95]) * 0.55
@@ -163,33 +187,33 @@ rgb = np.where((dist >= 1)[..., None], np.array([0.5, 0.86, 0.95]), rgb)
 alpha = np.where(dist >= 1, halo_a, alpha)
 
 # ---------------- rings ----------------
-# Ray along z through the pixel meets the ring plane at depth zr.
-zr = -((X - PX) * N[0] + (Y - PY) * N[1]) / N[2]
-Q = np.stack([X - PX, Y - PY, zr], axis=-1)
-rho_r = np.linalg.norm(Q, axis=-1)
-dens = ring_density(rho_r)
-# Ring colour by radius: warm inner, pale outer, with fine variation.
-rc = np.stack([
-    0.78 + 0.12 * np.sin(rho_r * 0.11) + 0.05 * np.sin(rho_r * 1.7),
-    0.66 + 0.10 * np.sin(rho_r * 0.11 + 0.4) + 0.05 * np.sin(rho_r * 1.7 + 0.3),
-    0.50 + 0.08 * np.sin(rho_r * 0.11 + 0.9),
-], axis=-1)
-rc = np.clip(rc, 0, 1)
-# Sunlit side of the rings vs the planet's shadow on them.
-Qn = Q / PR
-bq = Qn @ L
-cq = (Qn * Qn).sum(-1) - 1
-disc = bq * bq - cq
-shadowed = (disc > 0) & ((-bq + np.sqrt(np.maximum(disc, 0))) > 0) & ((-bq - np.sqrt(np.maximum(disc, 0))) > -50)
-# Only rays heading towards the light from behind the planet are blocked: the ring point must be on the far side.
-shadowed &= (bq < 0)
-ring_light = np.where(shadowed, 0.12, 1.0) * (0.55 + 0.45 * abs(L @ N))
-ring_rgb = rc * ring_light[..., None]
-ring_a = dens * 0.95
-# Occlusion with the planet: the ring is hidden where the planet surface is closer to the viewer.
-planet_z = np.where(inside, nz * PR, -1e9)
-front = zr > planet_z
-ring_vis = np.where(inside & ~front, 0.0, ring_a)
+def ring_layer(Xs, Ys):
+    """Premultiplied ring colour and coverage at world points (Xs, Ys): ray along z meets the ring plane at zr."""
+    zr = -((Xs - PX) * N[0] + (Ys - PY) * N[1]) / N[2]
+    Q = np.stack([Xs - PX, Ys - PY, zr], axis=-1)
+    rho_r = np.linalg.norm(Q, axis=-1)
+    dens = ring_density(rho_r)
+    rc = np.stack([np.interp(rho_r, TINT_R, TINT[:, k]) for k in range(3)], axis=-1)
+    rc *= (0.86 + 0.22 * dens)[..., None]                       # denser ringlets look brighter (more ice)
+    # Planet's shadow on the rings: the ray towards the light hits the sphere (in planet radii).
+    Qn = Q / PR
+    bq = Qn @ L
+    disc = bq * bq - ((Qn * Qn).sum(-1) - 1)
+    shadowed = (disc > 0) & (bq < 0)
+    ring_light = np.where(shadowed, 0.10, 1.0) * (0.55 + 0.45 * abs(L @ N))
+    # Occlusion with the planet: the ring is hidden where the planet surface is closer to the viewer.
+    pr2 = ((Xs - PX) / PR) ** 2 + ((Ys - PY) / PR) ** 2
+    hidden = (pr2 < 1) & (zr < np.sqrt(np.clip(1 - pr2, 0, 1)) * PR)
+    a = np.where(hidden, 0.0, dens * 0.95)
+    return rc * ring_light[..., None] * a[..., None], a
+
+
+acc_rgb, acc_a = np.zeros((H, W, 3)), np.zeros((H, W))
+for ox, oy in ((-0.25, -0.25), (0.25, -0.25), (-0.25, 0.25), (0.25, 0.25)):
+    pr_, pa_ = ring_layer(X + ox / S, Y + oy / S)
+    acc_rgb += pr_ / 4; acc_a += pa_ / 4
+ring_vis = acc_a
+ring_rgb = acc_rgb / np.maximum(acc_a, 1e-6)[..., None]
 # Composite ring over whatever is already there.
 a_out = ring_vis + alpha * (1 - ring_vis)
 rgb = (ring_rgb * ring_vis[..., None] + rgb * (alpha * (1 - ring_vis))[..., None]) / np.maximum(a_out, 1e-6)[..., None]
