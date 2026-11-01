@@ -810,3 +810,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - el rotor gira en contra y la arrastra, y los trastes la hacen saltar;
   - descansa en una casilla.
 - Unos 12–16 s por tirada; V1–V14 se conservan.
+
+## v134-saturn · Imágenes iniciales nuevas: Saturno en primer plano e icono a juego (1-nov-2026)
+
+- **Bienvenida:**
+  - Saturno 2,3 veces más grande, retroiluminado: media luna y halo cálido sobre negro, lado nocturno con luz de los anillos;
+  - anillos en diagonal, con la sombra del planeta suavizada por penumbra;
+  - sin órbita ni lunas de juego.
+- **Icono:** fondo negro, planeta arena en creciente, G más grande y anillo que sale por los bordes.

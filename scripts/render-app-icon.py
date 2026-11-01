@@ -30,40 +30,41 @@ def render(scale: float) -> np.ndarray:
     # --- backdrop: deep navy, a soft nebula and stars
     r0 = np.sqrt(u * u + v * v)
     img = np.zeros((N, N, 3))
-    img[:] = np.array([0.020, 0.040, 0.100])
-    img += np.clip(1 - r0 / 1.5, 0, 1)[..., None] ** 2 * np.array([0.04, 0.09, 0.17])
-    neb1 = np.exp(-(((u + 0.55) / 0.55) ** 2 + ((v + 0.45) / 0.35) ** 2))
-    neb2 = np.exp(-(((u - 0.6) / 0.5) ** 2 + ((v - 0.62) / 0.3) ** 2))
-    img += neb1[..., None] * np.array([0.20, 0.10, 0.32]) * 0.55 + neb2[..., None] * np.array([0.05, 0.22, 0.26]) * 0.5
+    # v134: black, like the app (no navy or violet nebula); a faint warm glow where the sun hides behind the planet.
+    img[:] = np.array([0.020, 0.020, 0.024])
+    img += np.exp(-(((u + 0.62) / 0.45) ** 2 + ((v + 0.38) / 0.45) ** 2))[..., None] * np.array([0.16, 0.12, 0.07])
     stars = rng.random((N, N))
     sm = (stars > 0.99945) * rng.random((N, N)) ** 2
     sb = ndimage.gaussian_filter(sm, 1.3) * 14
     img += np.clip(sb, 0, 1)[..., None] * np.array([0.9, 0.95, 1.0])
 
-    # --- planet: a deep night-blue giant (v131), so the G in front of it reads at any size
-    PX, PY, PR = 0.0, 0.04, 0.56
+    # --- planet (v134): the sand giant of the welcome screen, lit from behind on the left: a bright crescent and a
+    # dark night side that the rings light faintly, so the G in front of it reads at any size
+    PX, PY, PR = 0.0, 0.02, 0.66
     dx, dy = (u - PX) / PR, (v - PY) / PR
     rr = dx * dx + dy * dy
     inside = rr < 1
     nz = np.sqrt(np.clip(1 - rr, 0, 1))
-    L = np.array([-0.58, -0.62, 0.53]); L /= np.linalg.norm(L)
+    L = np.array([-0.62, -0.30, -0.72]); L /= np.linalg.norm(L)
     lam = np.clip(dx * L[0] + dy * L[1] + nz * L[2], 0, 1)
     tilt = math.radians(-20)
     by = -dx * math.sin(tilt) + dy * math.cos(tilt)
     turb = ndimage.gaussian_filter(rng.random((N, N)), 14) - 0.5
     band = 0.5 + 0.5 * np.sin(by * 11 + turb * 6 + np.sin(by * 4) * 1.5)
-    deep = np.array([0.03, 0.07, 0.18]); mid = np.array([0.09, 0.22, 0.42]); light = np.array([0.30, 0.55, 0.72])
+    deep = np.array([0.30, 0.20, 0.12]); mid = np.array([0.62, 0.48, 0.30]); light = np.array([0.92, 0.82, 0.62])
     pc = deep + (mid - deep) * band[..., None]
     pc = pc + (light - pc) * np.clip((band - 0.82) * 3.0, 0, 1)[..., None]
-    pc = pc * ((0.12 + 1.0 * lam ** 0.9) * (0.55 + 0.45 * nz))[..., None]
-    rim = np.exp(-((1 - np.sqrt(np.clip(rr, 0, 1))) / 0.05) ** 2) * (0.35 + 0.65 * np.clip(dx * L[0] + dy * L[1] + 0.4, 0, 1))
-    pc += rim[..., None] * np.array([0.45, 0.95, 1.0]) * 0.55
+    pc = pc * ((0.07 + 1.6 * lam ** 0.9) * (0.55 + 0.45 * nz))[..., None]
+    rim = np.exp(-((1 - np.sqrt(np.clip(rr, 0, 1))) / 0.04) ** 2) * np.clip(dx * L[0] + dy * L[1] + 0.2, 0, 1)
+    pc += rim[..., None] * np.array([1.0, 0.86, 0.64]) * 0.9
+    halo = np.exp(-np.clip(np.sqrt(rr) - 1, 0, None) / 0.035) * (rr >= 1) * np.clip(dx * L[0] + dy * L[1] + 0.2, 0, 1)
+    img += halo[..., None] * np.array([1.0, 0.85, 0.62]) * 0.6
 
     # --- ring in the tilted plane: warm sand ringlets with a division, like the welcome planet
     ca, sa = math.cos(tilt), math.sin(tilt)
     ru = ((u - PX) * ca + (v - PY) * sa)
     rv = (-(u - PX) * sa + (v - PY) * ca)
-    A, B = 0.98, 0.24
+    A, B = 1.16, 0.29
     er = np.sqrt((ru / A) ** 2 + (rv / B) ** 2)
     lines = 0.55 + 0.45 * np.sin(er * 95) * np.sin(er * 37 + 1)
     gap = np.exp(-((er - 0.84) / 0.012) ** 2)
@@ -110,24 +111,6 @@ def render(scale: float) -> np.ndarray:
     img = img * (1 - gmask[..., None]) + gcol * gmask[..., None]
     img += ndimage.gaussian_filter(gmask, 22 * px)[..., None] * np.array([0.05, 0.35, 0.45]) * 0.5 * (1 - gmask[..., None])
 
-    # --- gold moon on the near ring (front right) with its glow
-    ma = math.radians(28)
-    mx = PX + (A * 0.85 * math.cos(ma)) * ca - (B * 0.85 * math.sin(ma)) * sa
-    my = PY + (A * 0.85 * math.cos(ma)) * sa + (B * 0.85 * math.sin(ma)) * ca
-    MR = 0.085
-    mdx, mdy = (u - mx) / MR, (v - my) / MR
-    mrr = mdx * mdx + mdy * mdy
-    mz = np.sqrt(np.clip(1 - mrr, 0, 1))
-    mlam = np.clip(mdx * L[0] + mdy * L[1] + mz * L[2], 0, 1)
-    mcol = np.array([1.0, 0.80, 0.40]) * (0.25 + 1.5 * mlam)[..., None] + np.exp(-((mdx + 0.35) ** 2 + (mdy + 0.4) ** 2) / 0.05)[..., None] * 0.35
-    mglow = np.exp(-mrr / 6) * 0.35
-    img += mglow[..., None] * np.array([1.0, 0.8, 0.45])
-    img = np.where((mrr < 1)[..., None], mcol, img)
-    # A lens sparkle on the brightest star (upper right).
-    sx, sy = 0.66, -0.7
-    d = np.sqrt((u - sx) ** 2 + (v - sy) ** 2)
-    spark = np.exp(-d / 0.02) * 0.9 + (np.exp(-np.abs(u - sx) / 0.006) * np.exp(-np.abs(v - sy) / 0.13) + np.exp(-np.abs(v - sy) / 0.006) * np.exp(-np.abs(u - sx) / 0.13)) * 0.6
-    img += spark[..., None] * np.array([0.9, 0.97, 1.0])
     # Gentle vignette and tone map.
     img *= (1 - 0.25 * np.clip(r0 / 1.4, 0, 1) ** 2)[..., None]
     img = 1 - np.exp(-img * 1.35)

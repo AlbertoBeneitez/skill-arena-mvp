@@ -5,7 +5,7 @@ The design system of the app, as built (v132). Code is the source of truth: toke
 
 ## 1. Visual theme
 
-A night watch on a Saturn orbit: one black sky, one ringed gas giant lit from the upper left, and the app's
+A night watch on a Saturn orbit: one black sky, one ringed gas giant seen close and lit from behind (a crescent, v134), and the app's
 panels floating in front of it like instruments on a console. Premium arcade, not neon chaos. The sky is black with smoky,
 nearly neutral dust (v132 replaced the navy), the light is warm (the sun and the rings), the interface signals are cold (ion cyan). Each
 game keeps its own art inside its frame; the chrome around it stays the same everywhere.

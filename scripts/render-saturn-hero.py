@@ -11,10 +11,13 @@ import numpy as np
 from PIL import Image
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public", "art", "saturn-hero.webp")
-PX, PY, PR = 282.0, 300.0, 128.0          # planet centre and radius (world units, as in OrbitalScene)
-TILT = math.radians(-17.0)                 # ring major axis on screen
-SQUASH = 0.235                             # ring minor/major ratio
-X0, X1, Y0, Y1 = -20.0, 400.0, 150.0, 452.0
+# v134 close-up: a planet 2.3 × larger above and to the right, lit from behind on the left, so only a bright crescent
+# and its atmosphere stand out against the black while the night side shows faintly in the light of the rings.
+PX, PY, PR = 410.0, 150.0, 300.0          # planet centre and radius (world units, as in OrbitalScene)
+TILT = math.radians(-22.0)                 # ring major axis on screen
+SQUASH = 0.26                              # ring minor/major ratio
+X0, X1, Y0, Y1 = -20.0, 400.0, 0.0, 520.0
+K = 128.0 / PR                             # ring radii below are given for a planet of radius 128
 S = 3.0                                    # pixels per world unit
 W, H = int((X1 - X0) * S), int((Y1 - Y0) * S)
 
@@ -28,7 +31,7 @@ c = math.sqrt(1 - SQUASH ** 2)
 e1 = u
 e2 = SQUASH * w + c * z
 N = -c * w + SQUASH * z
-L = np.array([-0.62, -0.55, 0.56]); L /= np.linalg.norm(L)     # key light: upper left, a little in front
+L = np.array([-0.62, -0.30, -0.72]); L /= np.linalg.norm(L)    # key light: from the left and well behind (a crescent)
 
 ys, xs = np.mgrid[0:H, 0:W].astype(np.float64)
 X = X0 + (xs + 0.5) / S
@@ -164,14 +167,14 @@ TINT_R = [166, 182, 186, 198, 207, 225, 250, 258, 272]
 TINT = np.array([[0.60, 0.58, 0.56], [0.70, 0.64, 0.56], [0.96, 0.84, 0.62], [1.00, 0.90, 0.70], [0.86, 0.76, 0.58],
                  [0.92, 0.82, 0.64], [0.82, 0.74, 0.60], [0.88, 0.85, 0.80], [0.80, 0.80, 0.80]])
 
-ringshadow = np.where(tt > 0, ring_density(rho), 0)
+ringshadow = np.where(tt > 0, ring_density(rho * K), 0)
 light = (diffuse * (1 - 0.85 * ringshadow) + soft) * limb + 0.025
 # Ring-shine: the sunlit rings light the night side faintly, most near the equator that faces them (v131).
-ringshine = np.clip(0.12 - ndl, 0, 1) ** 0.6 * np.clip(1 - np.abs(n @ N) * 1.5, 0, 1) * 0.085
+ringshine = np.clip(0.12 - ndl, 0, 1) ** 0.6 * np.clip(1 - np.abs(n @ N) * 1.5, 0, 1) * 0.11
 planet = col * light[..., None] + col * ringshine[..., None] * np.array([1.0, 0.88, 0.70])
 # Atmospheric rim on the lit limb (thin teal-white scattering).
 rim = np.clip(1 - nz, 0, 1) ** 4 * np.clip(ndl + 0.15, 0, 1) ** 1.3
-planet = planet + rim[..., None] * np.array([0.55, 0.85, 0.95]) * 0.55
+planet = planet + rim[..., None] * np.array([0.95, 0.85, 0.66]) * 0.9
 rgb = np.where(inside[..., None], planet, rgb)
 alpha = np.where(inside, 1.0, alpha)
 # Anti-aliased edge.
@@ -180,10 +183,10 @@ alpha = np.where(inside, edge, alpha)
 
 # Atmospheric halo just outside the disc (lit side brighter).
 dist = np.sqrt(rr)
-halo = np.clip(1 - (dist - 1) / 0.07, 0, 1) * (dist >= 1)
-hdir = np.clip((-(dx * L[0] + dy * L[1]) / np.maximum(dist, 1e-6)) * 0.7 + 0.35, 0, 1) ** 1.6
-halo_a = halo ** 2.2 * 0.42 * hdir
-rgb = np.where((dist >= 1)[..., None], np.array([0.5, 0.86, 0.95]), rgb)
+halo = np.clip(1 - (dist - 1) / 0.035, 0, 1) * (dist >= 1)
+hdir = np.clip(((dx * L[0] + dy * L[1]) / np.maximum(dist, 1e-6)) * 0.8 + 0.2, 0, 1) ** 1.6   # brightest towards the light
+halo_a = halo ** 2.2 * 0.85 * hdir
+rgb = np.where((dist >= 1)[..., None], np.array([1.0, 0.88, 0.70]), rgb)
 alpha = np.where(dist >= 1, halo_a, alpha)
 
 # ---------------- rings ----------------
@@ -192,15 +195,16 @@ def ring_layer(Xs, Ys):
     zr = -((Xs - PX) * N[0] + (Ys - PY) * N[1]) / N[2]
     Q = np.stack([Xs - PX, Ys - PY, zr], axis=-1)
     rho_r = np.linalg.norm(Q, axis=-1)
-    dens = ring_density(rho_r)
-    rc = np.stack([np.interp(rho_r, TINT_R, TINT[:, k]) for k in range(3)], axis=-1)
+    dens = ring_density(rho_r * K)
+    rc = np.stack([np.interp(rho_r * K, TINT_R, TINT[:, k]) for k in range(3)], axis=-1)
     rc *= (0.86 + 0.22 * dens)[..., None]                       # denser ringlets look brighter (more ice)
     # Planet's shadow on the rings: the ray towards the light hits the sphere (in planet radii).
     Qn = Q / PR
     bq = Qn @ L
     disc = bq * bq - ((Qn * Qn).sum(-1) - 1)
-    shadowed = (disc > 0) & (bq < 0)
-    ring_light = np.where(shadowed, 0.10, 1.0) * (0.55 + 0.45 * abs(L @ N))
+    # v134: a soft penumbra (the sun is not a point), so the shadow's edge does not read as a cut.
+    umbra = np.where(bq < 0, np.clip(disc / 0.09 + 0.5, 0, 1), 0.0)
+    ring_light = (1 - 0.88 * umbra) * (0.55 + 0.45 * abs(L @ N))
     # Occlusion with the planet: the ring is hidden where the planet surface is closer to the viewer.
     pr2 = ((Xs - PX) / PR) ** 2 + ((Ys - PY) / PR) ** 2
     hidden = (pr2 < 1) & (zr < np.sqrt(np.clip(1 - pr2, 0, 1)) * PR)
@@ -220,7 +224,7 @@ rgb = (ring_rgb * ring_vis[..., None] + rgb * (alpha * (1 - ring_vis))[..., None
 alpha = a_out
 
 # A small icy moon in the upper left of the frame, lit by the same sun (drawn behind everything else).
-MX, MY, MR = 96.0, 214.0, 11.0
+MX, MY, MR = 58.0, 96.0, 8.0
 mdx, mdy = (X - MX) / MR, (Y - MY) / MR
 mrr = mdx * mdx + mdy * mdy
 min_ = (mrr < 1.0) & (alpha < 0.02)
