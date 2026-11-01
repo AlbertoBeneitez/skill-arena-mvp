@@ -799,3 +799,14 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - botones de Pinball y Orb Burst bajo el tablero;
   - la ficha de la ruleta ya no se monta sobre la fila de apuestas;
   - `scripts/qa-overlap.cjs` como comprobación.
+
+## v133-saturn · Ruleta V15: física de la bola nueva desde cero (1-nov-2026)
+
+- Modelo continuo en polares a 480 Hz con enteros y gravedad escalada al tamaño de la rueda.
+- Comportamiento de la bola:
+  - aprieta contra la pared, con rozamiento proporcional a la fuerza;
+  - se suelta sola y baja en espiral conservando el momento angular;
+  - los rombos la desvían;
+  - el rotor gira en contra y la arrastra, y los trastes la hacen saltar;
+  - descansa en una casilla.
+- Unos 12–16 s por tirada; V1–V14 se conservan.

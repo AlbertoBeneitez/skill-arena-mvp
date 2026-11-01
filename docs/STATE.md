@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v132-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v133-saturn.
 
 ## Catálogo
 
@@ -13,7 +13,7 @@ resultado aún no verificado de extremo a extremo.
 
 | id interno | Nombre visible | Versión | Estado |
 | --- | --- | --- | --- |
-| galactic-roulette | Roulette | 14.0.0 | VERIFIED |
+| galactic-roulette | Roulette | 15.0.0 | VERIFIED |
 | galactic-slot | Slot | 3.0.0 | VERIFIED |
 | darts | Dardos | 3.0.0 | VERIFIED |
 | billiards | Billar | 7.0.0 | VERIFIED |
@@ -72,13 +72,13 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - los juegos externos eligen categoría, salvo Populares.
   - Botón de jugar: cristal oscuro con borde cian.
 - [x] **Sistema de diseño (1 de noviembre):** `DESIGN.md` en la raíz recoge los tokens reales; tipografías Unbounded / Chakra Petch / JetBrains Mono. «DESPEGAR» se descartó: el botón del alta vuelve a «CONTINUAR».
+- [x] **Ruleta realista (1 de noviembre, v133):** física de la bola nueva desde cero (`galacticRouletteCore.v15`): pared con rozamiento, se suelta sola, baja en espiral, rombos, rotor en contra y trastes, reposo en la casilla; 12–16 s por tirada.
 - [x] **Estética y orden (1 de noviembre, v132):**
   - fondo negro en lugar del azul marino;
   - fila «Nuevos» tras Populares, con los juegos de los últimos 30 días;
   - ninguna imagen entre pulsar un juego y verlo;
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [ ] **Pendiente del lote del 1 de noviembre:**
-  - ruleta con física de la bola nueva desde cero (v133);
   - las dos imágenes iniciales nuevas en primer plano dramático (v134);
   - botón para que un estudio proponga su juego (v135).
 - [x] **Arte (1 de noviembre, v131):** se desarrollan Saturno y sus anillos (bienvenida) y el icono de la app; se retira la G plana `app/icon.svg`.

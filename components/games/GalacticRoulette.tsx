@@ -2,13 +2,12 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V14,
-  ROULETTE_RULES_V14,
+  ROULETTE_CORE_V15,
+  ROULETTE_RULES_V15,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV14 as RouletteStateV2,
-  rouletteSurfaceV14,
-} from "@/lib/verified/galacticRouletteCore.v14";
+  type RouletteStateV15 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v15";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -28,7 +27,7 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V14.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V15.ballRadius / 1000;
 // Presentation radii (the authoritative ball physics live in the core).
 const NUMBER_OUTER = 121,
   NUMBER_INNER = 104,
@@ -173,7 +172,8 @@ function render(
     const a = (i * Math.PI) / 4;
     const dx0 = cx + Math.cos(a) * 130, dy0 = cy + Math.sin(a) * 130;
     // V12: the diamonds are real deflectors; the one the ball is striking lights up.
-    const struck = s.landingTick !== -1 && s.inBowl && Math.hypot(s.ballX / 1000 - dx0, s.ballY / 1000 - dy0) < 13;
+    // V15 diamond k sits at k × 45° clockwise from 12 o'clock, i.e. this drawing's i + 2.
+    const struck = s.landingTick !== -1 && s.lastDiamond === (i + 2) % 8 && s.tick - s.lastDiamondTick < 14;
     ctx.save();
     ctx.translate(dx0, dy0);
     ctx.rotate(a);
@@ -196,12 +196,12 @@ function render(
   const settled = idle && s.lastNumber !== null && !s.lastMiss;
   const pocketAngle = rotation + ROULETTE_WHEEL.findIndex(n => n === s.lastNumber) * Math.PI * 2 / 37;
   // The ball waits on the launcher outside the wheel; a swipe only aims it.
-  // V13: the ball rests exactly where physics stopped it and simply turns with the wheel (no scripted glide).
-  const rotationAtSettle = ((((s.wheelPhase - s.wheelSpeed * (s.tick - s.lastLandingTick)) % 65536) + 65536) % 65536 / 65536) * Math.PI * 2 - Math.PI / 2;
-  const restAngle = Math.atan2(s.ballY / 1000 - cy, s.ballX / 1000 - cx) + (rotation - rotationAtSettle);
-  const restR = Math.hypot(s.ballX / 1000 - cx, s.ballY / 1000 - cy);
-  const x = settled ? cx + Math.cos(restAngle) * restR : idle ? ROULETTE_BALL_DOCK.x : s.ballX / 1000;
-  const y = settled ? cy + Math.sin(restAngle) * restR : idle ? ROULETTE_BALL_DOCK.y : s.ballY / 1000;
+  // V15: the ball is polar (1e-7 rad clockwise from 12 o'clock, nm). At rest it keeps its angle on the rotor and turns
+  // with it; on the way from the launcher it follows the core's straight flight with a small drawn hop.
+  const flying = s.ballPhase === 0, ballA = s.ballTheta / 1e7 - Math.PI / 2, ballR = s.ballR / 1e6;
+  const restAngle = rotation + s.restOffset / 1e7;
+  const x = settled ? cx + Math.cos(restAngle) * ballR : idle ? ROULETTE_BALL_DOCK.x : flying ? s.ballX / 1000 : cx + Math.cos(ballA) * ballR;
+  const y = settled ? cy + Math.sin(restAngle) * ballR : idle ? ROULETTE_BALL_DOCK.y : flying ? s.ballY / 1000 : cy + Math.sin(ballA) * ballR;
   const settleT = settled ? Math.min(1, Math.max(0, (s.tick - s.lastLandingTick) / 40)) : 1;
   if (settled && settleT >= 1) {
     const half = Math.PI / 37;
@@ -219,9 +219,8 @@ function render(
   }
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
-  const radius = Math.hypot(x - cx, y - cy);
-  const surface = s.inBowl && radius <= 151 ? rouletteSurfaceV14(radius * 1000).z / 1000 : 0;
-  const height = idle ? 0 : Math.max(0, s.ballZ / 1000 - surface - BALL_R);
+  const launchT = Math.min(1, (s.tick - s.flightStart) / ROULETTE_RULES_V15.launchTicks);
+  const height = idle ? 0 : flying ? Math.sin(Math.PI * launchT) * 14 : s.ballZ / 1e6;
   // Launcher: an orbital "magnetic cradle" outside the wheel — a hexagonal pad, three clamp prongs and counter-rotating
   // coil rings that hold the ball in the air; dragging charges the coils (faster, warmer, sparks between the prongs).
   if (idle || s.tick - s.flightStart < 40) {
@@ -507,7 +506,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V14}
+        core={ROULETTE_CORE_V15}
         name="Roulette"
         instruction=""
         render={canvasRender}
@@ -519,7 +518,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V14.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V15.canApply(s, "TOSS_D00_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;
