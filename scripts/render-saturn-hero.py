@@ -262,16 +262,16 @@ q1 = fbm2(nx_, ny_, 2.0, 5, 31); q2 = fbm2(nx_ + 3.1, ny_ + 1.7, 2.0, 5, 41)
 warped = fbm2(nx_ + 1.6 * q1, ny_ + 1.6 * q2, 1.8, 6, 51)
 dust = fbm2(nx_ * 2 + q2, ny_ * 2 + q1, 3.0, 5, 61)
 sky = np.zeros((SH, SW, 3))
-top = np.array([0.043, 0.086, 0.188]); bot = np.array([0.020, 0.039, 0.102])
+top = np.array([0.036, 0.036, 0.040]); bot = np.array([0.026, 0.026, 0.029])   # v132: black, not navy
 grad = (yy / SH)[..., None]
 sky += top * (1 - grad) + bot * grad
 # Clouds: violet body, teal edges, a warm glow near the planet; dark dust lanes cut through them.
 cloud = np.clip((warped - 0.42) / 0.38, 0, 1) ** 1.6
 edge = np.clip(1 - np.abs(warped - 0.55) / 0.12, 0, 1) ** 2
-violet = np.array([0.55, 0.48, 1.0]); teal = np.array([0.21, 0.78, 0.84]); warm = np.array([0.91, 0.76, 0.48])
+violet = np.array([0.50, 0.47, 0.58]); teal = np.array([0.30, 0.42, 0.44]); warm = np.array([0.91, 0.76, 0.48])  # v132: smoky, nearly neutral
 region = np.exp(-((yy - 560) / 420) ** 2) * 0.9 + np.exp(-((yy - 1250) / 380) ** 2) * 0.8 + np.exp(-((yy - 180) / 260) ** 2) * 0.45
-sky += violet * (cloud * 0.30 * region)[..., None]
-sky += teal * (edge * 0.10 * region)[..., None]
+sky += violet * (cloud * 0.16 * region)[..., None]
+sky += teal * (edge * 0.05 * region)[..., None]
 pd = np.sqrt((xx - PX) ** 2 + (yy - PY) ** 2)
 sky += warm * (np.exp(-(pd / 300) ** 2) * 0.10)[..., None]
 lanes = np.clip((dust - 0.55) / 0.2, 0, 1)

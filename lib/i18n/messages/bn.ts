@@ -729,6 +729,7 @@ const messages: Messages = {
   "group.voted": "আপনি শেষ করার ভোট দিয়েছেন · {n}/{total}",
   "group.resume": "অ্যাপ বন্ধ করলেও চলতে থাকে",
   "catalog.shelf.popular": "জনপ্রিয়",
+  "catalog.shelf.new": "নতুন",
   "catalog.shelf.casino": "ক্যাসিনো",
   "catalog.shelf.bar": "বার",
   "catalog.shelf.mythic": "কিংবদন্তি",

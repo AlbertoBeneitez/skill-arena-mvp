@@ -68,26 +68,26 @@ const MOON_DART = orbitPoint(ORBIT.rx, ORBIT.ry, 138);
 export default function OrbitalScene({ variant }: { variant: OrbitalVariant }) {
   const id = useId().replace(/:/g, "");
   preload("/art/saturn-hero.webp?v=131", { as: "image", fetchPriority: "high" });
-  preload("/art/stage-nebula.webp?v=123", { as: "image" });
+  preload("/art/stage-nebula.webp?v=132", { as: "image" });
   const u = (name: string) => `url(#${id}${name})`;
   return (
     <div className={`orbitalScene orbital-${variant}`} aria-hidden="true">
       <svg className="orbitalWorld" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMin slice" focusable="false">
         <defs>
           <linearGradient id={`${id}sky`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#0b1630" />
-            <stop offset=".45" stopColor="#081128" />
-            <stop offset="1" stopColor="#050a1a" />
+            <stop offset="0" stopColor="#131315" />
+            <stop offset=".45" stopColor="#0f0f11" />
+            <stop offset="1" stopColor="#09090b" />
           </linearGradient>
           <radialGradient id={`${id}sun`}><stop offset="0" stopColor="#fffaf0" /><stop offset=".08" stopColor="#ffe9bf" stopOpacity=".9" /><stop offset=".3" stopColor="#e9c27a" stopOpacity=".22" /><stop offset="1" stopColor="#e9c27a" stopOpacity="0" /></radialGradient>
-          <radialGradient id={`${id}ball`} cx=".35" cy=".3" r=".8"><stop offset="0" stopColor="#5b6680" /><stop offset=".5" stopColor="#151b2a" /><stop offset="1" stopColor="#03050b" /></radialGradient>
+          <radialGradient id={`${id}ball`} cx=".35" cy=".3" r=".8"><stop offset="0" stopColor="#5b6680" /><stop offset=".5" stopColor="#171719" /><stop offset="1" stopColor="#050506" /></radialGradient>
           <radialGradient id={`${id}chip`} cx=".35" cy=".3" r=".8"><stop offset="0" stopColor="#ffe7b0" /><stop offset=".6" stopColor="#e9c27a" /><stop offset="1" stopColor="#9b7136" /></radialGradient>
           <radialGradient id={`${id}moonGlow`}><stop offset="0" stopColor="#7fe3ee" stopOpacity=".45" /><stop offset="1" stopColor="#7fe3ee" stopOpacity="0" /></radialGradient>
         </defs>
 
         {/* Sky: a pre-rendered nebula (scripts/render-saturn-hero.py), with the sun's core on top */}
         <rect width={W} height={H} fill={u("sky")} />
-        <image href="/art/stage-nebula.webp?v=123" x="0" y="0" width={W} height={H} preserveAspectRatio="none" />
+        <image href="/art/stage-nebula.webp?v=132" x="0" y="0" width={W} height={H} preserveAspectRatio="none" />
         <circle cx="26" cy="44" r="38" fill={u("sun")} />
 
         <g className="orbitalStars">
@@ -115,7 +115,7 @@ export default function OrbitalScene({ variant }: { variant: OrbitalVariant }) {
             <circle r="18" fill={u("moonGlow")} />
             <circle r="8.5" fill={u("ball")} stroke="#9fb4d4" strokeOpacity=".35" strokeWidth=".6" />
             <circle cx="-1.6" cy="-1.8" r="3.6" fill="#f4f7fb" />
-            <text x="-1.6" y="-0.4" textAnchor="middle" fontSize="4.4" fontWeight="800" fill="#0b0f1a" fontFamily="system-ui, sans-serif">8</text>
+            <text x="-1.6" y="-0.4" textAnchor="middle" fontSize="4.4" fontWeight="800" fill="#0d0d0f" fontFamily="system-ui, sans-serif">8</text>
           </g>
           <g transform={`translate(${MOON_CHIP.x.toFixed(1)} ${MOON_CHIP.y.toFixed(1)}) rotate(-12)`}>
             <circle r="16" fill={u("moonGlow")} opacity=".8" />

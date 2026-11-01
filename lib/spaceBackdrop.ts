@@ -56,7 +56,7 @@ function paintCanvasSpace(
 ): boolean {
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
-  ctx.fillStyle = "#050d21";
+  ctx.fillStyle = "#0b0b0d";
   ctx.fillRect(0, 0, width, height);
   const image = readySpaceImage();
   if (!image) return false;
@@ -87,9 +87,9 @@ function paintCanvasSpace(
     0,
     (coverHeight - viewport.top) * pixelY,
   );
-  wash.addColorStop(0, "rgba(3,9,21,.66)");
-  wash.addColorStop(0.45, "rgba(3,9,21,.48)");
-  wash.addColorStop(1, "rgba(3,9,21,.72)");
+  wash.addColorStop(0, "rgba(8,8,10,.66)");
+  wash.addColorStop(0.45, "rgba(8,8,10,.48)");
+  wash.addColorStop(1, "rgba(8,8,10,.72)");
   ctx.fillStyle = wash;
   ctx.fillRect(0, 0, width, height);
   return true;
@@ -147,9 +147,9 @@ function drawProceduralSpaceBackdrop(
 ) {
   ctx.save();
   const sky = ctx.createLinearGradient(0, 0, width * 0.7, height);
-  sky.addColorStop(0, "#050d21");
-  sky.addColorStop(0.55, "#182443");
-  sky.addColorStop(1, "#071827");
+  sky.addColorStop(0, "#0b0b0d");
+  sky.addColorStop(0.55, "#1e1e21");
+  sky.addColorStop(1, "#131315");
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, width, height);
   const nebula = ctx.createRadialGradient(width * 0.2, height * 0.35, 0, width * 0.2, height * 0.35, width * 0.8);
@@ -185,8 +185,8 @@ function drawProceduralSpaceBackdrop(
   ctx.fillStyle = halo;
   ctx.fillRect(x - radius * 2.3, y - radius * 2.3, radius * 4.6, radius * 4.6);
   const moon = ctx.createRadialGradient(width * .117, height * .135, 0, width * .14, height * .16, width * .05);
-  moon.addColorStop(0, "#46536b");
-  moon.addColorStop(1, "#0a1529");
+  moon.addColorStop(0, "#444449");
+  moon.addColorStop(1, "#111114");
   ctx.fillStyle = moon;
   ctx.beginPath();
   ctx.arc(width * .13, height * .15, width * .029, 0, Math.PI * 2);
@@ -212,13 +212,13 @@ export function drawSaturn(ctx: CanvasRenderingContext2D, x: number, y: number, 
   const planet = ctx.createRadialGradient(x - radius * .4, y - radius * .4, 0, x + radius * .35, y + radius * .2, radius * 1.65);
   planet.addColorStop(0, "#a69b7e");
   planet.addColorStop(.45, "#706957");
-  planet.addColorStop(1, "#12233c");
+  planet.addColorStop(1, "#1c1c1f");
   ctx.fillStyle = planet;
   ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
   ctx.save(); ctx.clip();
   ctx.translate(x, y); ctx.rotate(-.16);
   for (let i = -3; i <= 3; i++) {
-    ctx.fillStyle = i % 2 ? "rgba(207,185,139,.09)" : "rgba(18,32,48,.13)";
+    ctx.fillStyle = i % 2 ? "rgba(207,185,139,.09)" : "rgba(26,26,28,.13)";
     ctx.fillRect(-radius, i * radius * .23, radius * 2, radius * .1);
   }
   ctx.restore();

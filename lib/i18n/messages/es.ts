@@ -767,6 +767,7 @@ const es = {
   "group.voted": "Has votado terminar · {n}/{total}",
   "group.resume": "Sigue aunque cierres la app",
   "catalog.shelf.popular": "POPULARES",
+  "catalog.shelf.new": "NUEVOS",
   "catalog.shelf.casino": "CASINO",
   "catalog.shelf.bar": "BAR",
   "catalog.shelf.mythic": "MÍTICOS",

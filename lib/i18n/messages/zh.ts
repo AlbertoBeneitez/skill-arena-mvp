@@ -729,6 +729,7 @@ const messages: Messages = {
   "group.voted": "你已投票结束 · {n}/{total}",
   "group.resume": "关闭应用后仍会继续",
   "catalog.shelf.popular": "热门",
+  "catalog.shelf.new": "新上架",
   "catalog.shelf.casino": "赌场",
   "catalog.shelf.bar": "酒吧",
   "catalog.shelf.mythic": "经典",

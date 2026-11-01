@@ -729,6 +729,7 @@ const messages: Messages = {
   "group.voted": "आपने समाप्त करने का वोट दिया · {n}/{total}",
   "group.resume": "ऐप बंद करने पर भी जारी रहती है",
   "catalog.shelf.popular": "लोकप्रिय",
+  "catalog.shelf.new": "नए",
   "catalog.shelf.casino": "कैसीनो",
   "catalog.shelf.bar": "बार",
   "catalog.shelf.mythic": "प्रसिद्ध",

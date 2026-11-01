@@ -1,12 +1,12 @@
 /* Scoped product chrome; game simulation, onboarding and individual views stay independent. */
 .shell:global(.appShell) {
   /* v121: the illustrated stage is the fixed <OrbitalScene>; no fixed background repaint on scroll */
-  background-color: #050a1a;
+  background-color: #09090b;
   color: #e8f0fb;
 }
 .shell :global(.appHeader) {
-  background: #0b1526;
-  border-bottom: 1px solid #293d54;
+  background: #111114;
+  border-bottom: 1px solid #313135;
   box-shadow: none;
   min-height: 64px;
   height: auto;
@@ -23,9 +23,9 @@
 .shell :global(.balanceChip) {
   min-height: 44px;
   padding: 8px 10px;
-  border: 1px solid #35526b;
+  border: 1px solid #414146;
   border-radius: 12px;
-  background: #172a3e;
+  background: #212124;
   box-shadow: none;
   color: #bdddeb;
   font-size: 11px;
@@ -33,12 +33,12 @@
 .shell :global(.soundToggle) {
   min-height: 44px;
   min-width: 44px;
-  background: #14243a;
-  border: 1px solid #30455d;
+  background: #1d1d20;
+  border: 1px solid #37373c;
 }
 .shell :global(.bottomNav) {
-  background: #0d182a;
-  border-top: 1px solid #30425a;
+  background: #141416;
+  border-top: 1px solid #35353a;
   box-shadow: none;
 }
 .shell :global(.bottomNav) button {
@@ -49,7 +49,7 @@
 }
 .shell :global(.bottomNav) button:global(.active) {
   color: #a5eff2;
-  background: #182c41;
+  background: #232326;
 }
 .shell :global(.bottomNav) img {
   width: 24px;
@@ -83,9 +83,9 @@
   min-height: 44px;
   padding: 8px 10px;
   box-shadow: none;
-  border: 1px solid #375069;
+  border: 1px solid #404045;
   border-radius: 12px;
-  background: #142a3e;
+  background: #212124;
   color: #d9f3fc;
   font-size: 11px;
 }
@@ -97,8 +97,8 @@
 }
 .shell :global(.quickStakeBar) {
   position: static;
-  border: 1px solid #33475e;
-  background: #101e31;
+  border: 1px solid #39393e;
+  background: #18181b;
   box-shadow: none;
   backdrop-filter: none;
   padding: 6px;
@@ -106,16 +106,16 @@
 }
 .shell :global(.quickStakeBar) button {
   min-height: 44px;
-  border: 1px solid #3a4d65;
+  border: 1px solid #3e3e43;
   border-radius: 9px;
-  background: #17273c;
+  background: #1f1f22;
   color: #b7cbe0;
   box-shadow: none;
 }
 .shell :global(.quickStakeBar) button:global(.selected) {
   background: #a5e8ec;
   border-color: #a5e8ec;
-  color: #112b37;
+  color: #202023;
   box-shadow: none;
 }
 .shell :global(.quickStakeBar) button:focus-visible {
@@ -173,8 +173,8 @@
 .accountView :global(.settingsList),
 .accountView :global(.accountWalletCard),
 .legalView :global(.legalCopy) {
-  background: #111e31;
-  border: 1px solid #30465f;
+  background: #18181b;
+  border: 1px solid #38383c;
   color: #e7eff9;
   box-shadow: none;
   border-radius: 16px;
@@ -217,7 +217,7 @@
   margin: 0;
 }
 .accountView :global(.walletActions) button {
-  background: #19384b;
+  background: #2b2b2e;
   border: 1px solid #507188;
   color: #d9f3fc;
   border-radius: 10px;
@@ -234,7 +234,7 @@
   font-size: 12px;
 }
 .accountView :global(.miniMovementList) > div {
-  border-color: #30465f;
+  border-color: #38383c;
   font-size: 12px;
 }
 .accountView :global(.negative) {
@@ -252,7 +252,7 @@
 .accountView :global(.settingsList) button {
   background: transparent;
   color: #e7eff9;
-  border-color: #30465f;
+  border-color: #38383c;
   min-height: 52px;
   font-size: 13px !important;
 }
@@ -271,9 +271,9 @@
   margin-bottom: 8px;
 }
 .legalView :global(.legalTabs) button {
-  background: #14273d;
+  background: #1f1f22;
   color: #c6d8eb;
-  border: 1px solid #3b5570;
+  border: 1px solid #444449;
   border-radius: 10px;
   min-height: 48px;
   font-size: 13px !important;
@@ -281,7 +281,7 @@
 .legalView :global(.legalTabs) button:global(.active) {
   background: #a5e8ec;
   border-color: #a5e8ec;
-  color: #112b37;
+  color: #202023;
 }
 .legalView :global(.legalCopy) p {
   color: #c6d8eb;

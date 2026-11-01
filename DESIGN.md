@@ -1,26 +1,26 @@
 # DESIGN.md — GALACTIC GAMES
 
-The design system of the app, as built (v129). Code is the source of truth: tokens live in `app/globals.css`
+The design system of the app, as built (v132). Code is the source of truth: tokens live in `app/globals.css`
 (`--st-*` Saturn stage, `--gx-*` type and glass). Change a token here and there in the same pull request.
 
 ## 1. Visual theme
 
-A night watch on a Saturn orbit: one deep navy sky, one ringed gas giant lit from the upper left, and the app's
-panels floating in front of it like instruments on a console. Premium arcade, not neon chaos. The sky is dark and
-blue (never pure black), the light is warm (the sun and the rings), the interface signals are cold (ion cyan). Each
+A night watch on a Saturn orbit: one black sky, one ringed gas giant lit from the upper left, and the app's
+panels floating in front of it like instruments on a console. Premium arcade, not neon chaos. The sky is black with smoky,
+nearly neutral dust (v132 replaced the navy), the light is warm (the sun and the rings), the interface signals are cold (ion cyan). Each
 game keeps its own art inside its frame; the chrome around it stays the same everywhere.
 
 ## 2. Colour
 
 | Token | Value | Role |
 | --- | --- | --- |
-| `--st-abyss` | `#050a1a` | Page and stage background; header and tab bar surfaces |
-| `--st-deep` | `#0b1630` | Raised panels, sheets |
-| `--st-panel` | `linear-gradient(180deg, #13223f, #0c1731)` | Cards, forms, standings |
+| `--st-abyss` | `#09090b` | Page and stage background; header and tab bar surfaces |
+| `--st-deep` | `#131315` | Raised panels, sheets |
+| `--st-panel` | `linear-gradient(180deg, #1c1c1f, #131316)` | Cards, forms, standings |
 | `--st-ion` | `#7fe3ee` | The one interactive accent: selection, focus ring, active tab, primary action |
 | `--st-gold` | `#e9c27a` | Money and rank: fictitious balance, pot, prizes, places |
-| `--st-ink` | `#e8f0fb` | Primary text |
-| `--st-mute` | `#8ea3c0` | Secondary text, labels |
+| `--st-ink` | `#eceef2` | Primary text |
+| `--st-mute` | `#9c9ea6` | Secondary text, labels |
 | `--st-edge` | `rgba(127,227,238,.2)` | Panel borders |
 | `--st-hair` | `rgba(232,240,251,.12)` | Hairlines, quiet borders |
 | `--st-nebula` | `#8c7bff` | Decoration only (orbit trace); never a control colour |
@@ -28,7 +28,7 @@ game keeps its own art inside its frame; the chrome around it stays the same eve
 | Alert | `#ff4f5e` | Losses, errors, destructive actions |
 
 Rules: ion means "you can touch this" or "this is selected"; gold means "money or rank"; nothing else uses them.
-No generic Tailwind purples, indigos or neutral greys in the chrome. Games may use their own palettes inside the
+No navy, generic purples or indigos in the chrome: surfaces are black and graphite (v132 converted every dark blue chrome colour to a neutral black of the same lightness). Games may use their own palettes inside the
 canvas (a roulette is green and gold, a slot is a lit cabinet).
 
 ## 3. Typography
@@ -60,9 +60,16 @@ Seven-segment readouts (`SegmentDigits`) are the scoreboard voice of games and r
 ## 5. Layout
 
 Phone portrait first (390 × 844 reference), 16 px gutters, safe areas respected, no horizontal page scroll. A screen
-is a header, one column of panels, the tab bar. The catalogue is a stack of rows (Populares, Casino, Bar, Míticos,
+is a header, one column of panels, the tab bar. The catalogue is a stack of rows (Populares, Nuevos, Casino, Bar, Míticos,
 Dinámicos, Alternativos): each row scrolls sideways, snaps per card and shows two cards and a half, ordered by
 popularity left to right. Game screens take the full height under a 60 px header; the art runs under the gesture bar.
+
+**Nothing overlaps (v132, owner rule):** no control, panel or label may sit on top of another or on the game canvas,
+at any moment. Games with buttons get a control band under the canvas, and the canvas fits the space above it.
+Allowed exceptions: dialogs opened on purpose, cards fanned in one Solitaire pile, and content scrolling under the
+opaque fixed header or tab bar. `scripts/qa-overlap.cjs` checks every tab and game at 390 × 844.
+Between tapping a game and seeing it there is only the black stage and a thin progress line: no emblem, cover or
+other picture.
 
 ## 6. Depth
 
@@ -74,7 +81,7 @@ is an opaque tint instead.
 
 ## 7. Motion and feedback
 
-- One orchestrated moment per screen (the welcome camera move, the loading comet, the result reveal).
+- One orchestrated moment per screen (the welcome camera move, the result reveal).
 - Every chrome button answers the finger: 1 px travel, 1.5 % shrink and a little light on press (`translate` and
   `scale`, so positioning transforms are never overridden), brighter on hover where hover exists, an ion focus
   ring for keyboards.

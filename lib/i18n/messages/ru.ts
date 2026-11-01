@@ -729,6 +729,7 @@ const messages: Messages = {
   "group.voted": "Вы проголосовали за завершение · {n}/{total}",
   "group.resume": "Продолжается, даже если закрыть приложение",
   "catalog.shelf.popular": "ПОПУЛЯРНЫЕ",
+  "catalog.shelf.new": "НОВЫЕ",
   "catalog.shelf.casino": "КАЗИНО",
   "catalog.shelf.bar": "БАР",
   "catalog.shelf.mythic": "ЛЕГЕНДАРНЫЕ",

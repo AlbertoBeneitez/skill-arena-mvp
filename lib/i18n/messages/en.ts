@@ -729,6 +729,7 @@ const messages: Messages = {
   "group.voted": "You voted to end · {n}/{total}",
   "group.resume": "It carries on if you close the app",
   "catalog.shelf.popular": "POPULAR",
+  "catalog.shelf.new": "NEW",
   "catalog.shelf.casino": "CASINO",
   "catalog.shelf.bar": "BAR",
   "catalog.shelf.mythic": "ICONIC",

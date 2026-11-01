@@ -729,6 +729,7 @@ const messages: Messages = {
   "group.voted": "صوّتَّ للإنهاء · {n}/{total}",
   "group.resume": "تستمر حتى إن أغلقت التطبيق",
   "catalog.shelf.popular": "الأكثر شعبية",
+  "catalog.shelf.new": "جديد",
   "catalog.shelf.casino": "الكازينو",
   "catalog.shelf.bar": "البار",
   "catalog.shelf.mythic": "الأسطورية",

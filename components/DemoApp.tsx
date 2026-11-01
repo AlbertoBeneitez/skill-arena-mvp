@@ -1510,9 +1510,6 @@ export default function DemoApp() {
                   aria-live="polite"
                   style={{ ["--accent" as string]: CATEGORY_ACCENTS[selectedGame.category] ?? "#7fe3ee" }}
                 >
-                  <div className="gxIntroStage" aria-hidden="true">
-                    <div className="gxIntroArt"><img src={selectedGame.cover} alt="" /></div>
-                  </div>
                   {leagueMatch && leagueMatch.gameId === selectedGame.id && (
                     <div className={`gxIntroRival gxRivalBoard ${leagueMatch.rival.balanceGoal ? "chips" : "points"}`} style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
                       <img src={leagueMatch.rival.avatar} alt="" width={44} height={44} />

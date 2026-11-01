@@ -789,3 +789,13 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - planeta azul noche y anillo arena;
   - se retira `app/icon.svg`, que algunos lanzadores mostraban en el arranque en lugar del PNG.
 - **Pagos y legal:** investigación en `docs/PAYMENTS_AND_LEGAL.md` (no hay cambio de producto).
+
+## v132-saturn · Fondo negro, fila Nuevos, sin imágenes al abrir un juego y nada solapado (1-nov-2026)
+
+- **Fondo negro:** la gama azul marino pasa a negro y grafito; el cian y el oro no cambian.
+- **Nuevos:** fila tras Populares con los juegos de los últimos 30 días (`isNewGame`).
+- **Sin imagen al abrir un juego:** la carga es negra con una línea de progreso, y la cuenta atrás no muestra la portada.
+- **Nada solapado:**
+  - botones de Pinball y Orb Burst bajo el tablero;
+  - la ficha de la ruleta ya no se monta sobre la fila de apuestas;
+  - `scripts/qa-overlap.cjs` como comprobación.

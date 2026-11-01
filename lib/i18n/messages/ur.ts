@@ -729,6 +729,7 @@ const messages: Messages = {
   "group.voted": "آپ نے ختم کرنے کا ووٹ دیا · {n}/{total}",
   "group.resume": "ایپ بند کرنے پر بھی جاری رہتا ہے",
   "catalog.shelf.popular": "مقبول",
+  "catalog.shelf.new": "نئے",
   "catalog.shelf.casino": "کیسینو",
   "catalog.shelf.bar": "بار",
   "catalog.shelf.mythic": "افسانوی",

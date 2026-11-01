@@ -3,7 +3,7 @@ import UiIcon from "./UiIcon";
 import { useEffect } from "react";
 import { LeagueBadge } from "./LeagueResult";
 import { emptyLeague, type LeagueState } from "@/lib/leagues";
-import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
+import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, isNewGame, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
 import { t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
@@ -51,8 +51,10 @@ export default function CatalogBrowser(props: Props) {
     };
   }, []);
   // v130: rows by kind of game, each ordered by popularity (GAMES order), "Populares" first; rows scroll sideways.
-  const rows: { key: "popular" | (typeof CATALOG_SHELVES)[number]; games: GameMeta[] }[] = [
+  // v132: "Nuevos" (recently added) follows "Populares".
+  const rows: { key: "popular" | "new" | (typeof CATALOG_SHELVES)[number]; games: GameMeta[] }[] = [
     { key: "popular" as const, games: GAMES.slice(0, POPULAR_COUNT) },
+    { key: "new" as const, games: GAMES.filter((game) => isNewGame(game, Date.now())) },
     ...CATALOG_SHELVES.map((key) => ({ key, games: GAMES.filter((game) => gameShelf(game) === key) })),
   ].filter((r) => r.games.length > 0);
   const renderCard = (row: string, game: GameMeta, index: number) => (

@@ -396,6 +396,14 @@ const GAME_SHELF: Partial<Record<GameId, CatalogShelf>> = {
   "corner-sudoku": "alternative", "reaction-test": "alternative",
 };
 export const gameShelf = (game: Pick<GameMeta, "id">): CatalogShelf => GAME_SHELF[game.id as GameId] ?? "alternative";
+/** Day each game joined the catalogue; games without a date predate the 29 September 2026 launch. "Nuevos" lists the
+ * games added in the last NEW_GAME_DAYS days (external games will bring their own date). */
+const GAME_ADDED: Partial<Record<GameId, string>> = { pinball: "2026-10-23", bowling: "2026-10-25", "corner-sudoku": "2026-10-25" };
+export const NEW_GAME_DAYS = 30;
+export const isNewGame = (game: Pick<GameMeta, "id">, now: number) => {
+  const added = GAME_ADDED[game.id as GameId];
+  return !!added && now - Date.parse(added) < NEW_GAME_DAYS * 86_400_000;
+};
 
 export const GAMES: GameMeta[] = CATALOG_ORDER.map(
   (id) => GAME_REGISTRY[id]
