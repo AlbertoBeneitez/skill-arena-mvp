@@ -100,23 +100,13 @@ function bulbs(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
   });
 }
 
-function render(ctx: CanvasRenderingContext2D, s: SlotState) {
-  drawSpaceBackdrop(ctx, 390, 620, 2, s.tick);
+function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: number; height: number }) {
+  // v126: the canvas takes the full height; the reel window grows down to use it.
+  const H = Math.max(620, view?.height ?? 620);
+  drawSpaceBackdrop(ctx, 390, H, 2, s.tick);
   const since = s.tick - s.lastSettledTick, win = since < 150 && s.lastPayout > 0, spinning = s.settlingAt !== -1;
   const big = win && s.lastPayout >= 8 * SLOT_RULES.costMinor;
-  // Marquee title.
-  ctx.save();
-  const mq = ctx.createLinearGradient(0, 6, 0, 52);
-  mq.addColorStop(0, "#3a0d4f"); mq.addColorStop(1, "#14062a");
-  ctx.fillStyle = mq; ctx.beginPath(); ctx.roundRect(30, 6, 330, 44, 22); ctx.fill();
-  ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.stroke();
-  bulbs(ctx, 48, 6, 294, 44, 21, s.tick, win);
-  ctx.font = "900 22px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  const tg = ctx.createLinearGradient(0, 18, 0, 40);
-  tg.addColorStop(0, "#fff6c2"); tg.addColorStop(0.5, "#ffd23f"); tg.addColorStop(1, "#ff7a3d");
-  ctx.shadowColor = "#ff3d9a"; ctx.shadowBlur = win ? 18 : 10;
-  ctx.fillStyle = tg; ctx.fillText("GALACTIC SLOT", 195, 29);
-  ctx.restore();
+  // No marquee: the screen header already names the game and the HUD pill sits in that band.
   // The three reel tables (seeded per match). The highlighted row is where each reel sits right now.
   ctx.fillStyle = "rgba(10,8,34,.86)";
   ctx.beginPath(); ctx.roundRect(20, 58, 350, 130, 14); ctx.fill();
@@ -152,7 +142,8 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
     ctx.fillStyle = GOLD; ctx.font = "800 10px system-ui"; ctx.fillText(amount, x + 36, 255);
   }
   // Cabinet with chrome-gold frame and a ring of bulbs.
-  const top = 270, height = 176, center = top + height / 2, pitch = 74, size = 60;
+  const top = 270, height = Math.max(176, H - top - 72), center = top + height / 2, pitch = 74, size = 60;
+  const reach = Math.ceil(height / 2 / pitch) + 1;
   const frame = ctx.createLinearGradient(0, top - 12, 0, top + height + 12);
   frame.addColorStop(0, "#fff0b8"); frame.addColorStop(0.25, "#c9902e"); frame.addColorStop(0.5, "#ffe08a"); frame.addColorStop(0.8, "#8a5a14"); frame.addColorStop(1, "#e8b85a");
   ctx.fillStyle = frame; ctx.beginPath(); ctx.roundRect(12, top - 12, 366, height + 24, 26); ctx.fill();
@@ -168,7 +159,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
     ctx.fillStyle = drum; ctx.fillRect(rx, ry, rw, rh);
     const p = slotReelPosition(s, i), index = Math.floor(p), fraction = p - index;
     const moving = spinning && Math.abs(p - Math.round(p)) > 0.02;
-    for (let k = -1; k <= 2; k++) {
+    for (let k = -reach; k <= reach + 1; k++) {
       const yy = center + (k - fraction) * pitch, id = s.strips[i][(((index + k) % 8) + 8) % 8];
       const onLine = Math.abs(yy - center) < 6 && !spinning;
       ctx.save();
@@ -206,7 +197,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState) {
     for (let i = 0; i < n; i++) {
       const a = -Math.PI / 2 + (hash01(i + s.spins * 7) - 0.5) * 2.4, sp = 2.4 + hash01(i * 3 + 1) * 3.2;
       const cx = 195 + Math.cos(a) * sp * since, cy = center + Math.sin(a) * sp * since + 0.05 * since * since;
-      if (cy > 640) continue;
+      if (cy > H + 20) continue;
       const spin = Math.abs(Math.cos(since * 0.2 + i));
       ctx.fillStyle = "#ffd23f"; ctx.strokeStyle = "#a8680a"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.ellipse(cx, cy, 6 * spin + 1, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -236,9 +227,10 @@ export default function GalacticSlot(props: GameRuntimeProps) {
       <CoreCanvasGame
         {...props}
         core={SLOT_CORE_V3}
-        name="Galactic Slot"
+        name="Slot"
         instruction=""
         render={render}
+        expandVerticalViewport
         hideHudScore
         hudLabel={hudLabel}
         feedbackScore={feedbackScore}

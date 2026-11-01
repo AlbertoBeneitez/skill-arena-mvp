@@ -705,3 +705,21 @@ Detalle: [releases/v124-saturn.md](releases/v124-saturn.md).
   - credenciales de los proveedores de inicio de sesión.
 
 Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
+
+## v126-saturn · Slot a toda altura, avatares sin número, acceso más limpio (1-nov-2026)
+
+- **Slot** (antes «Galactic Slot»; el id interno `galactic-slot` no cambia):
+  - la ventana de rodillos llega hasta los botones y muestra más símbolos;
+  - sin rótulo duplicado bajo el marcador.
+- **Avatares:**
+  - las tarjetas ya no llevan número;
+  - el retrato del hongo encuadra mejor la cara.
+- **Acceso:** se quita el texto «Otras cuentas»; los botones de X, Discord y Microsoft siguen.
+- **Pendiente para v127:**
+  - salto realista de la ruleta (núcleo nuevo);
+  - separar el historial de números del marcador de fichas y tiradas;
+  - botones físicos del Slot;
+  - imagen de bienvenida;
+  - grupos (individual, liga y torneo) con inscripción y partidas que se pueden retomar;
+  - portadas de juego.
+- **Plataforma para desarrolladores externos:** en diseño (ver la propuesta del 1 de noviembre); 50 % de la comisión neta para el creador; España primero.

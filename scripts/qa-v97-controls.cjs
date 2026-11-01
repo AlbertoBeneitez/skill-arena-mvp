@@ -33,7 +33,7 @@ register(pathToFileURL(path.join(__dirname,'determinism-loader.mjs')));
   const start=async(name,version)=>{const response=page.waitForResponse(r=>r.url().includes('/verified-match/start'));await page.getByRole('button',{name:`Jugar a ${name}`,exact:true}).tap();const issued=await(await response).json();assert.equal(issued.manifest.game_version,version);await page.locator('.countdownOverlay').waitFor({state:'hidden'});await page.locator('.verificationOverlay').waitFor({state:'hidden'});return issued;};
   const exit=async()=>{const r=page.waitForResponse(r=>r.url().includes('/verified-match/verify'));await page.getByRole('button',{name:'Volver',exact:true}).tap();const reply=await r;assert.equal((await reply.json()).received,true);return reply.request().postDataJSON();};
   console.log(JSON.stringify({game:'avatar',viewport,directUpload:true,croppedPhoto:true,original16:'not-available'}));
-  await start('Galactic Slot','2.0.0');
+  await start('Slot','2.0.0');
   for(let reel=1;reel<=3;reel++){await page.getByRole('button',{name:`Reducir avance de ruleta ${reel}`,exact:true}).tap();await page.waitForTimeout(80);}
   await page.waitForFunction(()=>document.querySelector('.coreHud')?.textContent.includes('000 NO PERMITIDO'));
   await page.getByRole('button',{name:'Girar ruletas por 5 euros ficticios',exact:true}).tap();await page.waitForTimeout(200);

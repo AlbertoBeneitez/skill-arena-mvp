@@ -58,7 +58,7 @@ const assert = require("node:assert/strict");
         r.url().includes("/verified-match/start"),
       );
       await page
-        .getByRole("button", { name: "Jugar a Galactic Slot", exact: true })
+        .getByRole("button", { name: "Jugar a Slot", exact: true })
         .tap();
       const issued = await (await start).json();
       assert.equal(issued.manifest.game_version, "1.0.0");

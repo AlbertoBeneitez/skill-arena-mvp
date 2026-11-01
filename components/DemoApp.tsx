@@ -77,7 +77,7 @@ const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String
  * zoom in around the face, so every tile shows the character's face instead of its chest.
  */
 const AVATAR_FACES: readonly (readonly [number, number])[] = [
-  [55, 34], [60, 15], [48, 21], [54, 9], [56, 20], [55, 18], [55, 13], [50, 15],
+  [57, 24], [60, 15], [48, 21], [54, 9], [56, 20], [55, 18], [55, 13], [50, 15],
   [62, 36], [56, 11], [50, 12], [50, 12], [52, 15], [44, 13], [40, 18], [40, 13],
 ];
 function avatarFaceStyle(index: number) {
@@ -1329,7 +1329,6 @@ export default function DemoApp() {
               ))}
             </div>
             <div className="gxProviderMore">
-              <span className="gxProviderMoreLabel">{t("welcome.otherAccounts")}</span>
               <div className="gxProviderIcons">
                 {AUTH_PROVIDERS.filter((p) => p.placement === "secondary").map((p) => (
                   <button key={p.id} type="button" className={`gxProviderIcon gxProvider-${p.id}`} aria-label={t("welcome.continueWith", { provider: p.name })}
@@ -1418,7 +1417,6 @@ export default function DemoApp() {
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
                         <img src={src} alt="" width={256} height={256} decoding="async" style={avatarFaceStyle(index)} />
-                        <span className="gxAvatarTileNo" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
                       </button>
                     );

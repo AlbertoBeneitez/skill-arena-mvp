@@ -107,7 +107,7 @@ const GAME_DEFINITIONS = [
     id: "galactic-slot", version: "3.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SLOT_ACTIONS },
-    resultMetric: "fictitious-balance", name: "Galactic Slot", cover: "/covers/galactic-slot.webp", enabled: true,
+    resultMetric: "fictitious-balance", name: "Slot", cover: "/covers/galactic-slot.webp", enabled: true,
     waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
     rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances de −4 a +4 posiciones, sin jugada 000. Servidor reproduce inputs y saldo; sin dinero real.",
   },
