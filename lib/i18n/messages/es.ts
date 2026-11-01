@@ -8,7 +8,7 @@ const es = {
   "common.cancel": "Cancelar",
   "common.confirm": "Confirmar",
   "common.close": "Cerrar",
-  "common.continue": "CONTINUAR",
+  "common.continue": "DESPEGAR",
   "common.loading": "Cargando…",
   "common.retry": "Reintentar",
   "common.reload": "Volver a cargar",

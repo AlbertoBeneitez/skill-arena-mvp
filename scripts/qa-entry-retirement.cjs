@@ -44,7 +44,7 @@ const assert = require("node:assert/strict");
       await page
         .getByLabel("Nombre de avatar", { exact: true })
         .fill("QA_Identidad");
-      await page.getByRole("button", { name: "CONTINUAR", exact: true }).tap();
+      await page.getByRole("button", { name: "DESPEGAR", exact: true }).tap();
       await page.getByRole("region", { name: "Catálogo de juegos" }).waitFor();
       assert.equal(
         await page

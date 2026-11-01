@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "বাতিল",
   "common.confirm": "নিশ্চিত করুন",
   "common.close": "বন্ধ করুন",
-  "common.continue": "চালিয়ে যান",
+  "common.continue": "উড়ান দিন",
   "common.loading": "লোড হচ্ছে…",
   "common.retry": "আবার চেষ্টা করুন",
   "common.reload": "আবার লোড করুন",

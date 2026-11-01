@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "取消",
   "common.confirm": "确认",
   "common.close": "关闭",
-  "common.continue": "继续",
+  "common.continue": "起飞",
   "common.loading": "加载中…",
   "common.retry": "重试",
   "common.reload": "重新加载",

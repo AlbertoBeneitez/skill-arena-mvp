@@ -271,6 +271,20 @@ Uses the project's existing synthesized audio and shared orbital background.
 - Licencia: SIL Open Font License 1.1 — texto en `docs/licenses/unbounded-OFL.txt`.
 - Se sirve desde el propio dominio (compatible con la CSP `font-src 'self'`).
 
+## Chakra Petch (tipografía de interfaz, v129)
+
+- Archivos: `public/fonts/chakra-petch-latin-{400,600,700}-normal.woff2` y `public/fonts/chakra-petch-latin-ext-{400,600,700}-normal.woff2`
+- Origen: paquete npm `@fontsource/chakra-petch` 5.3.0 (Cadson Demak; Google Fonts).
+- Licencia: SIL Open Font License 1.1 — texto en `docs/licenses/chakra-petch-OFL.txt`.
+- Se sirve desde el propio dominio (CSP `font-src 'self'`).
+
+## JetBrains Mono (tipografía de cifras, v129)
+
+- Archivos: `public/fonts/jetbrains-mono-latin-wght-normal.woff2`, `public/fonts/jetbrains-mono-latin-ext-wght-normal.woff2`
+- Origen: paquete npm `@fontsource-variable/jetbrains-mono` 5.3.0 (JetBrains).
+- Licencia: SIL Open Font License 1.1 — texto en `docs/licenses/jetbrains-mono-OFL.txt`.
+- Se sirve desde el propio dominio (CSP `font-src 'self'`).
+
 ## qrcode-generator 1.4.4 (código QR del aviso "solo móvil", v116)
 
 - Uso: `components/MobileOnlyGate.tsx` genera el QR de la dirección actual (dibujado como SVG propio).

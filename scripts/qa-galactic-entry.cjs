@@ -14,7 +14,7 @@ assert.equal(/Skill Arena/i.test(await page.locator('body').innerText()),false);
 assert.equal(await page.locator('body').evaluate(e=>e.scrollWidth>window.innerWidth),false);
 if(process.env.QA_ARTIFACT_DIR)await page.screenshot({path:path.join(process.env.QA_ARTIFACT_DIR,`galactic-entry-${process.env.QA_LANDSCAPE?'landscape':'portrait'}.png`),fullPage:true});
 await page.getByRole('button',{name:'Iniciar sesión local',exact:true}).tap();
-const enter=page.getByRole('button',{name:'CONTINUAR',exact:true});assert.equal(await enter.isDisabled(),true);
+const enter=page.getByRole('button',{name:'DESPEGAR',exact:true});assert.equal(await enter.isDisabled(),true);
 await page.getByRole('button',{name:'Avatar 4',exact:true}).tap();assert.equal(await page.getByRole('button',{name:'Avatar 4',exact:true}).getAttribute('aria-pressed'),'true');
 await page.getByLabel('Nombre de avatar',{exact:true}).fill('Galactic QA');await enter.tap();
 await page.getByRole('button',{name:'Jugar a Stack',exact:true}).waitFor();

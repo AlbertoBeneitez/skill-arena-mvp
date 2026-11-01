@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "إلغاء",
   "common.confirm": "تأكيد",
   "common.close": "إغلاق",
-  "common.continue": "متابعة",
+  "common.continue": "انطلق",
   "common.loading": "جارٍ التحميل…",
   "common.retry": "أعد المحاولة",
   "common.reload": "إعادة التحميل",

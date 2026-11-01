@@ -750,3 +750,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - **Pendiente:**
   - grupos con jugadores reales en servidor (fase 3);
   - especificación de la plataforma de juegos externos (WebAssembly).
+
+## v129-saturn · Pasada de diseño: DESIGN.md, tipografía propia, feedback táctil (1-nov-2026)
+
+- **`DESIGN.md` en la raíz** con los tokens reales: paleta Saturno, papeles de color, tipografía, componentes, composición, profundidad, movimiento, textos, qué hacer y qué no, y guía para agentes.
+- **Tipografía:**
+  - el texto pedía «Inter» sin cargarla, así que salía la fuente del sistema;
+  - ahora usa Chakra Petch para interfaz y textos, y JetBrains Mono con dígitos de ancho fijo para saldos, puntuaciones, códigos y clasificaciones;
+  - Unbounded sigue en la marca y los títulos;
+  - todas se sirven desde la propia app, con licencia OFL.
+- **Feedback:** todos los botones de la interfaz responden al dedo (recorrido, escala y brillo) y muestran un anillo de foco; los controles de los juegos no se tocan.
+- **Texto:** «CONTINUAR» del alta pasa a «DESPEGAR» en los 10 idiomas.
+- **No aplicado, a propósito:**
+  - la paleta ya es temática (sin morados ni grises genéricos);
+  - el desenfoque en directo se retiró en v121 por los tirones al desplazar;
+  - los textos de dinero y reglas se quedan claros y literales.

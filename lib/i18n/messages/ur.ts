@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "منسوخ کریں",
   "common.confirm": "تصدیق کریں",
   "common.close": "بند کریں",
-  "common.continue": "جاری رکھیں",
+  "common.continue": "پرواز کریں",
   "common.loading": "لوڈ ہو رہا ہے…",
   "common.retry": "دوبارہ کوشش کریں",
   "common.reload": "دوبارہ لوڈ کریں",

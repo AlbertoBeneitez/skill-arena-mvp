@@ -188,7 +188,7 @@ img { max-width: 100%; }
 }
 
 html, body { background: var(--bg); color: var(--text); }
-body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+body { font-family: var(--gx-ui); }
 .wordmark, .screenCode, .sectionTitle, .stakesLabel, .bottomNav, .tutorialProgress, .miniGameTitle {
   font-family: "Courier New", ui-monospace, monospace;
 }
@@ -6538,6 +6538,16 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
   src: url("/fonts/unbounded-latin-ext-wght.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
+/* v129 · Interface and data type (see DESIGN.md): Chakra Petch for every label, button and line of copy; JetBrains Mono
+   with tabular figures for balances, scores, codes and times. Self-hosted, OFL (THIRD_PARTY_NOTICES.md). */
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-display: swap; font-weight: 400; src: url("/fonts/chakra-petch-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-display: swap; font-weight: 400; src: url("/fonts/chakra-petch-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-display: swap; font-weight: 600; src: url("/fonts/chakra-petch-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-display: swap; font-weight: 600; src: url("/fonts/chakra-petch-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-display: swap; font-weight: 700; src: url("/fonts/chakra-petch-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-display: swap; font-weight: 700; src: url("/fonts/chakra-petch-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-display: swap; font-weight: 100 800; src: url("/fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-display: swap; font-weight: 100 800; src: url("/fonts/jetbrains-mono-latin-ext-wght-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
 :root {
   --gx-void: #050b1a;
   --gx-glass: rgba(14, 28, 52, .62);
@@ -6548,7 +6558,9 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
   --gx-gold: #f3c55a;
   --gx-ink: #eaf4ff;
   --gx-mute: #93a9c2;
-  --gx-display: "Unbounded", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --gx-display: "Unbounded", "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --gx-ui: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --gx-data: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --gx-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 50px rgba(0,4,16,.45);
 }
 
@@ -7767,7 +7779,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   border: 1px solid rgba(232, 240, 251, .16);
   background: rgba(9, 16, 34, .9);
   color: #eef3fb;
-  font: 600 15px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  font: 600 15px/1.2 var(--gx-ui);
   letter-spacing: .005em;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 8px 20px rgba(0, 4, 16, .35);
   cursor: pointer;
@@ -7823,7 +7835,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   letter-spacing: .02em !important;
 }
 .gxWelcome .gxLocalEntry span { font-size: 16px; font-weight: 700; }
-.gxWelcome .gxLocalEntry small { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: .01em; opacity: .72; }
+.gxWelcome .gxLocalEntry small { font-family: var(--gx-ui); font-size: 11.5px; font-weight: 600; letter-spacing: .01em; opacity: .72; }
 .gxWelcome .welcomeLegal { margin-top: auto; padding-top: 16px; }
 @media (max-height: 720px) {
   .orbital-welcome { --orbital-ty: calc(21dvh - 300 * 100vw / 390); }
@@ -7903,7 +7915,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   border: 1px solid rgba(232, 240, 251, .16);
   background: rgba(9, 16, 34, .88);
   color: var(--st-ink);
-  font: 600 14px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  font: 600 14px/1.2 var(--gx-ui);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 8px 18px rgba(0, 4, 16, .35);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -8014,7 +8026,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   border: 1px solid rgba(233, 194, 122, .4);
   background: rgba(9, 16, 34, .85);
   color: #ffe6b0;
-  font: 600 12.5px/1 Inter, ui-sans-serif, system-ui, sans-serif;
+  font: 600 12.5px/1 var(--gx-ui);
   box-shadow: none;
 }
 .gxRankingPill .uiIcon { color: var(--st-gold); }
@@ -8053,7 +8065,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   background: none !important;
   box-shadow: none !important;
   color: var(--st-mute) !important;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+  font-family: var(--gx-ui) !important;
   letter-spacing: 0 !important;
   transition: color .2s ease;
 }
@@ -8137,7 +8149,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--tier);
-  font: 700 11px/1.1 Inter, ui-sans-serif, system-ui, sans-serif;
+  font: 700 11px/1.1 var(--gx-ui);
   letter-spacing: .02em;
 }
 .gxRivalBoard .gxRivalWho b {
@@ -8165,7 +8177,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
 }
 .gxRivalBoard.chips .gxRivalTarget { --seg: #ffc94d; }
 .gxRivalTarget .segDigits { font-size: 28px; color: var(--seg) !important; filter: drop-shadow(0 0 4px var(--seg)); }
-.gxRivalTarget small { font: 700 9.5px/1 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: .14em; color: color-mix(in srgb, var(--seg) 70%, #8ea3c0); text-transform: uppercase; }
+.gxRivalTarget small { font: 700 9.5px/1 var(--gx-ui); letter-spacing: .14em; color: color-mix(in srgb, var(--seg) 70%, #8ea3c0); text-transform: uppercase; }
 
 /* In-game score: LED panel at the top right of the HUD */
 .coreHud strong.hudSeg {
@@ -8197,7 +8209,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
   white-space: nowrap;
 }
 .coreHud > span.hudLed .segDigits { font-size: 15px; filter: drop-shadow(0 0 3px rgba(127, 244, 255, .8)); }
-.coreHud > span.hudLed small { font: 700 9.5px/1 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: .1em; color: #9fc4d6; text-transform: uppercase; }
+.coreHud > span.hudLed small { font: 700 9.5px/1 var(--gx-ui); letter-spacing: .1em; color: #9fc4d6; text-transform: uppercase; }
 
 /* =====================================================================
    v123
@@ -8650,3 +8662,17 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   min-height: 46px; border-radius: 14px; border: 1px solid rgba(233,194,122,.5); background: rgba(233,194,122,.1); color: var(--st-gold); font-weight: 900; letter-spacing: .04em;
 }
 .groupScreen .groupVoteAction:disabled { opacity: .7; }
+
+/* v129 · Design pass (DESIGN.md). Figures that change in place never jump: one data face, tabular digits. */
+:is(.balanceChip b, .groupStandings em, .groupCodeBadge, .gameRankingScore, .rankingTable td, .profileStats strong, .groupStepperRow output) {
+  font-family: var(--gx-data); font-variant-numeric: tabular-nums; letter-spacing: 0;
+}
+/* Sentences that carry amounts keep the interface face, with fixed-width digits only. */
+.groupCompPot { font-variant-numeric: tabular-nums; }
+/* Every control in the app chrome answers the finger: a short press travel, a lit focus ring for keyboards.
+   Game surfaces keep their own controls (they are tuned per game). */
+:where(a, button, select, input, textarea, [role="tab"]):focus-visible { outline: 2px solid var(--st-ion); outline-offset: 2px; }
+.appShell :where(button):not(:disabled):not(.gameScreen button) { transition: scale .12s ease-out, translate .12s ease-out, filter .12s ease-out; }
+.appShell :where(button):not(:disabled):not(.gameScreen button):active { translate: 0 1px; scale: .985; filter: brightness(1.12); }
+@media (hover: hover) { .appShell :where(button):not(:disabled):not(.gameScreen button):hover { filter: brightness(1.08); } }
+@media (prefers-reduced-motion: reduce) { .appShell :where(button) { transition: none !important; } .appShell :where(button):active { translate: none !important; scale: none !important; } }

@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "Cancel",
   "common.confirm": "Confirm",
   "common.close": "Close",
-  "common.continue": "CONTINUE",
+  "common.continue": "LIFT OFF",
   "common.loading": "Loading…",
   "common.retry": "Retry",
   "common.reload": "Reload",

@@ -156,7 +156,7 @@ const assert = require("node:assert/strict");
     await page.getByPlaceholder("Nombre de avatar").fill("QA_Perfil");
     await page.getByRole("button", { name: "Avatar 3", exact: true }).tap();
     await page
-      .getByRole("button", { name: "CONTINUAR", exact: true })
+      .getByRole("button", { name: "DESPEGAR", exact: true })
       .tap();
     await page.locator(".bottomNav button").last().tap();
     assert.equal(
