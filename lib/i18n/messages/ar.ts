@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "إلغاء",
   "common.confirm": "تأكيد",
   "common.close": "إغلاق",
-  "common.continue": "انطلق",
+  "common.continue": "متابعة",
   "common.loading": "جارٍ التحميل…",
   "common.retry": "أعد المحاولة",
   "common.reload": "إعادة التحميل",
@@ -728,6 +728,12 @@ const messages: Messages = {
   "group.voteEnd": "اقترح الإنهاء",
   "group.voted": "صوّتَّ للإنهاء · {n}/{total}",
   "group.resume": "تستمر حتى إن أغلقت التطبيق",
+  "catalog.shelf.popular": "الأكثر شعبية",
+  "catalog.shelf.casino": "الكازينو",
+  "catalog.shelf.bar": "البار",
+  "catalog.shelf.mythic": "الأسطورية",
+  "catalog.shelf.dynamic": "الديناميكية",
+  "catalog.shelf.alternative": "البديلة",
 };
 
 export default messages;

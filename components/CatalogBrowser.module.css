@@ -1,11 +1,21 @@
 .browser {
   min-width: 0;
 }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+/* v130 · One row per kind of game; each row scrolls sideways and shows two cards and a half, so the half card says
+   "there is more". Snap per card; the page itself never scrolls sideways. */
+.row { margin: 0 0 18px; min-width: 0; }
+.rowTitle {
+  margin: 0 0 9px; padding-inline: 2px;
+  font-family: var(--gx-display); font-size: 13px; font-weight: 700; letter-spacing: .14em; color: var(--st-ink, #e8f0fb);
 }
+.track {
+  --gap: 12px;
+  display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 2 * var(--gap)) / 2.5); gap: var(--gap);
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
+  padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+}
+.track::-webkit-scrollbar { display: none; }
+.track > .card { scroll-snap-align: start; }
 .card {
   min-width: 0;
   display: flex;
@@ -45,114 +55,37 @@
   border-color: #91dbe7;
   background: #244559;
 }
-.copy {
-  flex: 1;
-  padding: 13px 12px 6px;
-}
-.copy h2 {
-  margin: 0 0 7px;
-  font-size: 16px;
-  line-height: 1.25;
-  color: #f0f6ff;
-  font-weight: 700;
-}
-.copy p {
-  margin: 0;
-  color: #b4c7da;
-  font-size: 12px;
-  line-height: 1.5;
-}
-.play {
-  margin: 12px;
-  padding: 9px 6px;
-  min-height: 48px;
-  border: 1px solid #9ce6e8;
-  border-radius: 10px;
-  background: #9ce6e8;
-  color: #102936;
-  font-size: 12px;
-  font-weight: 800;
-  touch-action: manipulation;
-}
-.play:disabled {
-  opacity: 0.45;
-}
-.play:active:not(:disabled) {
-  transform: translateY(1px);
-  background: #7cd2dc;
-}
-.play:focus-visible,
 .ghost:focus-visible {
-  outline: 3px solid #e5b5ff;
+  outline: 3px solid #7fe3ee;
   outline-offset: 3px;
-}
-@media (min-width: 680px) {
-  .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .play:active:not(:disabled) {
-    transform: none;
-  }
 }
 
 /* v105 · category accent, glow and animated gradient edge */
 .card { position: relative; border-color: color-mix(in srgb, var(--accent, #9ce6e8) 45%, #2c4059); box-shadow: 0 0 0 0 transparent; transition: transform .2s, box-shadow .25s; }
 .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; z-index: 2; background: linear-gradient(90deg, transparent, var(--accent, #9ce6e8), transparent); } /* v121: static edge (the sweep repainted every card on every frame) */
 .card:hover, .card:focus-within { transform: translateY(-2px); box-shadow: 0 8px 26px color-mix(in srgb, var(--accent, #9ce6e8) 30%, transparent); }
-.play { background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #9ce6e8) 70%, #fff), var(--accent, #9ce6e8)); border-color: var(--accent, #9ce6e8); }
-@keyframes cardSweep { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .card::before { animation: none; } .card:hover { transform: none; } }
 
-/* v109 · Arcade launch button: hot gold→orange→magenta, 3D bevel, play glyph and a periodic shine. */
+/* v130 · Play button: dark glass with an ion edge — the cover art is the colour; the button lights up when touched. */
 .play {
   position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 50px;
-  border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #ffe066 0%, #ff9a1f 42%, #ff2e7e 100%);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: .03em;
-  text-shadow: 0 1px 0 rgba(120, 20, 40, .55), 0 0 10px rgba(255, 80, 60, .35);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, .7) inset,
-    0 -3px 0 rgba(120, 10, 60, .35) inset,
-    0 4px 0 #a3134f,
-    0 8px 22px rgba(255, 70, 120, .45);
+  display: flex; align-items: center; justify-content: center;
+  min-height: 44px; margin: 9px; padding: 8px 6px;
+  border: 1px solid rgba(127, 227, 238, .55); border-radius: 12px;
+  background: linear-gradient(180deg, rgba(16, 32, 58, .92), rgba(6, 13, 28, .96));
+  color: #e8f0fb; font-family: var(--gx-ui); font-size: 12.5px; font-weight: 700; letter-spacing: .03em; line-height: 1.15;
+  text-align: center; text-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 0 0 0 rgba(127, 227, 238, 0);
+  transition: background .12s ease-out, box-shadow .12s ease-out, border-color .12s ease-out, translate .12s ease-out;
 }
-/* v116: no play glyph before the game name. */
-.play::after {
-  content: "";
-  position: absolute;
-  inset: -20% auto -20% 0;
-  width: 34%;
-  z-index: -1;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
-  transform: translate3d(-140%, 0, 0) skewX(-18deg);
-  will-change: transform;
-  /* v121: compositor-only shine (transform), no per-frame repaint while scrolling */
-  animation: playShine 3.2s ease-in-out infinite;
-}
+.play::after { content: none; }
 .play:active:not(:disabled) {
-  transform: translateY(3px);
-  background: linear-gradient(135deg, #ffd23f 0%, #ff8a00 42%, #f0186c 100%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 1px 0 #a3134f, 0 3px 10px rgba(255, 70, 120, .4);
+  translate: 0 1px; transform: none;
+  border-color: #7fe3ee;
+  background: linear-gradient(180deg, rgba(127, 227, 238, .26), rgba(127, 227, 238, .1));
+  box-shadow: inset 0 0 12px rgba(127, 227, 238, .3), 0 0 18px rgba(127, 227, 238, .45);
 }
-.play:disabled { opacity: .5; animation: none; filter: saturate(.5); }
-.play:disabled::after { display: none; }
-@keyframes playGlow {
-  0%, 100% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 22px rgba(255,70,120,.4); }
-  50% { box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 -3px 0 rgba(120,10,60,.35) inset, 0 4px 0 #a3134f, 0 8px 30px rgba(255,140,40,.7); }
-}
-@keyframes playShine { 0%, 55% { transform: translate3d(-140%, 0, 0) skewX(-18deg); } 85%, 100% { transform: translate3d(380%, 0, 0) skewX(-18deg); } }
-@media (prefers-reduced-motion: reduce) { .play, .play::after { animation: none; } }
-:global(html[data-reduce-motion="1"]) .play, :global(html[data-reduce-motion="1"]) .play::after { animation: none; }
+@media (hover: hover) { .play:hover:not(:disabled) { border-color: #a8f1f7; box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 0 12px rgba(127, 227, 238, .25); } }
+.play:focus-visible { outline: 2px solid #7fe3ee; outline-offset: 2px; }
+.play:disabled { opacity: .5; }
+@media (prefers-reduced-motion: reduce) { .play { transition: none; } .play:active:not(:disabled) { translate: none; } }

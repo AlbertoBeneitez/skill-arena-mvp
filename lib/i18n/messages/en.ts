@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "Cancel",
   "common.confirm": "Confirm",
   "common.close": "Close",
-  "common.continue": "LIFT OFF",
+  "common.continue": "CONTINUE",
   "common.loading": "Loading…",
   "common.retry": "Retry",
   "common.reload": "Reload",
@@ -728,6 +728,12 @@ const messages: Messages = {
   "group.voteEnd": "PROPOSE TO END",
   "group.voted": "You voted to end · {n}/{total}",
   "group.resume": "It carries on if you close the app",
+  "catalog.shelf.popular": "POPULAR",
+  "catalog.shelf.casino": "CASINO",
+  "catalog.shelf.bar": "BAR",
+  "catalog.shelf.mythic": "ICONIC",
+  "catalog.shelf.dynamic": "DYNAMIC",
+  "catalog.shelf.alternative": "ALTERNATIVE",
 };
 
 export default messages;

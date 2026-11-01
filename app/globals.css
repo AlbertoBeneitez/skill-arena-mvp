@@ -6789,12 +6789,7 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
   pointer-events: none;
   background: radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(4,10,24,.55));
 }
-.homePlayMerged article[aria-label] > button:last-child {
-  border-radius: 14px;
-  font-weight: 800;
-  letter-spacing: .01em;
-  box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 6px 16px color-mix(in srgb, var(--accent, #9ce6e8) 28%, transparent);
-}
+
 
 /* ---------- Group ---------- */
 .groupScreen .groupHero h1 { font-family: var(--gx-display); font-weight: 700; letter-spacing: -.01em; }
@@ -8676,3 +8671,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell :where(button):not(:disabled):not(.gameScreen button):active { translate: 0 1px; scale: .985; filter: brightness(1.12); }
 @media (hover: hover) { .appShell :where(button):not(:disabled):not(.gameScreen button):hover { filter: brightness(1.08); } }
 @media (prefers-reduced-motion: reduce) { .appShell :where(button) { transition: none !important; } .appShell :where(button):active { translate: none !important; scale: none !important; } }
+/* v130 · Catalogue rows: the league chip shrinks to its medal and its five dots (the tier name stays in aria-label). */
+.homePlayMerged [role="list"] .leagueBadge { top: 6px; inset-inline-start: 6px; gap: 4px; padding: 3px 6px 3px 5px; }
+.homePlayMerged [role="list"] .leagueBadge > span:not(.leagueDots) { display: none; }
+.homePlayMerged [role="list"] .leagueBadge b { font-size: 11px; }

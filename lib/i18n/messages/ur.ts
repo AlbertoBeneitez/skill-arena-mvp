@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "منسوخ کریں",
   "common.confirm": "تصدیق کریں",
   "common.close": "بند کریں",
-  "common.continue": "پرواز کریں",
+  "common.continue": "جاری رکھیں",
   "common.loading": "لوڈ ہو رہا ہے…",
   "common.retry": "دوبارہ کوشش کریں",
   "common.reload": "دوبارہ لوڈ کریں",
@@ -728,6 +728,12 @@ const messages: Messages = {
   "group.voteEnd": "ختم کرنے کی تجویز",
   "group.voted": "آپ نے ختم کرنے کا ووٹ دیا · {n}/{total}",
   "group.resume": "ایپ بند کرنے پر بھی جاری رہتا ہے",
+  "catalog.shelf.popular": "مقبول",
+  "catalog.shelf.casino": "کیسینو",
+  "catalog.shelf.bar": "بار",
+  "catalog.shelf.mythic": "افسانوی",
+  "catalog.shelf.dynamic": "متحرک",
+  "catalog.shelf.alternative": "متبادل",
 };
 
 export default messages;

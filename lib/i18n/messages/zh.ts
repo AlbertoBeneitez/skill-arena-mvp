@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "取消",
   "common.confirm": "确认",
   "common.close": "关闭",
-  "common.continue": "起飞",
+  "common.continue": "继续",
   "common.loading": "加载中…",
   "common.retry": "重试",
   "common.reload": "重新加载",
@@ -728,6 +728,12 @@ const messages: Messages = {
   "group.voteEnd": "提议结束",
   "group.voted": "你已投票结束 · {n}/{total}",
   "group.resume": "关闭应用后仍会继续",
+  "catalog.shelf.popular": "热门",
+  "catalog.shelf.casino": "赌场",
+  "catalog.shelf.bar": "酒吧",
+  "catalog.shelf.mythic": "经典",
+  "catalog.shelf.dynamic": "动感",
+  "catalog.shelf.alternative": "另类",
 };
 
 export default messages;

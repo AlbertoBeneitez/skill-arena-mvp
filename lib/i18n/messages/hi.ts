@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "रद्द करें",
   "common.confirm": "पुष्टि करें",
   "common.close": "बंद करें",
-  "common.continue": "उड़ान भरें",
+  "common.continue": "जारी रखें",
   "common.loading": "लोड हो रहा है…",
   "common.retry": "फिर से कोशिश करें",
   "common.reload": "फिर से लोड करें",
@@ -728,6 +728,12 @@ const messages: Messages = {
   "group.voteEnd": "समाप्त करने का प्रस्ताव",
   "group.voted": "आपने समाप्त करने का वोट दिया · {n}/{total}",
   "group.resume": "ऐप बंद करने पर भी जारी रहती है",
+  "catalog.shelf.popular": "लोकप्रिय",
+  "catalog.shelf.casino": "कैसीनो",
+  "catalog.shelf.bar": "बार",
+  "catalog.shelf.mythic": "प्रसिद्ध",
+  "catalog.shelf.dynamic": "गतिशील",
+  "catalog.shelf.alternative": "वैकल्पिक",
 };
 
 export default messages;

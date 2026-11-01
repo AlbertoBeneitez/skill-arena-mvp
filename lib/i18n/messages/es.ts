@@ -8,7 +8,7 @@ const es = {
   "common.cancel": "Cancelar",
   "common.confirm": "Confirmar",
   "common.close": "Cerrar",
-  "common.continue": "DESPEGAR",
+  "common.continue": "CONTINUAR",
   "common.loading": "Cargando…",
   "common.retry": "Reintentar",
   "common.reload": "Volver a cargar",
@@ -766,6 +766,12 @@ const es = {
   "group.voteEnd": "PROPONER TERMINAR",
   "group.voted": "Has votado terminar · {n}/{total}",
   "group.resume": "Sigue aunque cierres la app",
+  "catalog.shelf.popular": "POPULARES",
+  "catalog.shelf.casino": "CASINO",
+  "catalog.shelf.bar": "BAR",
+  "catalog.shelf.mythic": "MÍTICOS",
+  "catalog.shelf.dynamic": "DINÁMICOS",
+  "catalog.shelf.alternative": "ALTERNATIVOS",
 } as const;
 
 export type MessageKey = keyof typeof es;

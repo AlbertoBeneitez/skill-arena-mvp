@@ -363,22 +363,39 @@ export const GAME_REGISTRY = Object.fromEntries(
 ) as unknown as Record<GameId, GameMeta>;
 
 // SATURN: the 12 archived games were removed from the code (full history in branch archive/pre-saturn).
+/**
+ * v130 · Popularity: matches played, most first. It orders the catalogue (the "Populares" row and every row,
+ * left to right). Fixed and editable here until the server reports real play counts; GAMES keeps this order.
+ */
 const CATALOG_ORDER: GameId[] = [
   "galactic-roulette",
   "galactic-slot",
-  "darts",
   "billiards",
+  "darts",
+  "bowling",
   "precision-stack",
   "tower-drop",
-  "orb-burst",
-  "reaction-test",
+  "pinball",
   "solitaire-sprint",
   "mine-grid",
-  "stack-shift",
-  "pinball",
+  "orb-burst",
   "corner-sudoku",
-  "bowling",
+  "reaction-test",
+  "stack-shift",
 ];
+
+/** v130 · Catalogue rows. A developer picks one of these for a new game; "Populares" is never picked, it is earned. */
+export type CatalogShelf = "casino" | "bar" | "mythic" | "dynamic" | "alternative";
+export const CATALOG_SHELVES: readonly CatalogShelf[] = ["casino", "bar", "mythic", "dynamic", "alternative"];
+export const POPULAR_COUNT = 8;
+const GAME_SHELF: Partial<Record<GameId, CatalogShelf>> = {
+  "galactic-roulette": "casino", "galactic-slot": "casino",
+  darts: "bar", billiards: "bar", bowling: "bar",
+  "orb-burst": "mythic", "solitaire-sprint": "mythic", "mine-grid": "mythic", "stack-shift": "mythic", pinball: "mythic",
+  "precision-stack": "dynamic", "tower-drop": "dynamic",
+  "corner-sudoku": "alternative", "reaction-test": "alternative",
+};
+export const gameShelf = (game: Pick<GameMeta, "id">): CatalogShelf => GAME_SHELF[game.id as GameId] ?? "alternative";
 
 export const GAMES: GameMeta[] = CATALOG_ORDER.map(
   (id) => GAME_REGISTRY[id]

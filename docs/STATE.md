@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v129-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v130-saturn.
 
 ## Catálogo
 
@@ -65,7 +65,13 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - Hecho en v128 con reglas puras (`lib/groupCompetition.ts`), rivales simulados (`lib/demo/groupRivals.ts`) y guardado en el dispositivo; con saldo ficticio hasta la fase 4. Cuando haya servidor e identidad, el mismo módulo corre allí y el servidor emite las semillas.
 - [x] **Ruleta (1 de noviembre):** el salto actual no es realista porque la bola se asienta demasiado rápido; debe dar más botes y tardar más en quedarse en el número (núcleo nuevo).
 - [x] **Especificación de la plataforma de juegos externos (1 de noviembre):** documento editable en https://claude.ai/artifact/UVovKYHAQV3f4C722uNzsh (paquete, funciones del núcleo, SDK, admisión, producción, versiones, datos, reparto, contrato, fases y decisiones abiertas).
-- [x] **Sistema de diseño (1 de noviembre):** `DESIGN.md` en la raíz recoge los tokens reales; tipografías Unbounded / Chakra Petch / JetBrains Mono.
+- [x] **Catálogo por filas (1 de noviembre):**
+  - orden: Populares (los 8 con más partidas), Casino, Bar, Míticos, Dinámicos y Alternativos;
+  - cada fila se desliza y muestra 2 tarjetas y media, ordenadas por popularidad;
+  - la popularidad es un orden fijo editable (`CATALOG_ORDER` en `lib/games.ts`) hasta que el servidor dé partidas reales;
+  - los juegos externos eligen categoría, salvo Populares.
+  - Botón de jugar: cristal oscuro con borde cian.
+- [x] **Sistema de diseño (1 de noviembre):** `DESIGN.md` en la raíz recoge los tokens reales; tipografías Unbounded / Chakra Petch / JetBrains Mono. «DESPEGAR» se descartó: el botón del alta vuelve a «CONTINUAR».
 - [x] **Formato de juegos externos (1 de noviembre):** núcleo en WebAssembly sin importaciones + interfaz web en marco aislado. Confirmado por el propietario.
 - [x] **Plataforma para desarrolladores externos (1 de noviembre):**
   - el creador recibe el 50 % de la comisión neta (comisión de las partidas de su juego menos costes de pago e impuestos) y conserva sus derechos;

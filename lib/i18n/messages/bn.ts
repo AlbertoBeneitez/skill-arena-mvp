@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "বাতিল",
   "common.confirm": "নিশ্চিত করুন",
   "common.close": "বন্ধ করুন",
-  "common.continue": "উড়ান দিন",
+  "common.continue": "চালিয়ে যান",
   "common.loading": "লোড হচ্ছে…",
   "common.retry": "আবার চেষ্টা করুন",
   "common.reload": "আবার লোড করুন",
@@ -728,6 +728,12 @@ const messages: Messages = {
   "group.voteEnd": "শেষ করার প্রস্তাব",
   "group.voted": "আপনি শেষ করার ভোট দিয়েছেন · {n}/{total}",
   "group.resume": "অ্যাপ বন্ধ করলেও চলতে থাকে",
+  "catalog.shelf.popular": "জনপ্রিয়",
+  "catalog.shelf.casino": "ক্যাসিনো",
+  "catalog.shelf.bar": "বার",
+  "catalog.shelf.mythic": "কিংবদন্তি",
+  "catalog.shelf.dynamic": "গতিশীল",
+  "catalog.shelf.alternative": "বিকল্প",
 };
 
 export default messages;

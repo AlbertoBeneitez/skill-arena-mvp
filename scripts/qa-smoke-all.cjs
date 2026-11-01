@@ -27,7 +27,7 @@ async function check(browser, name) {
     await page.goto(BASE + "/?reset=1", { waitUntil: "networkidle" });
     await page.getByText("INICIAR SESIÓN").first().click();
     await page.locator("#avatar-name").fill("Smoke");
-    await page.getByText("DESPEGAR").click();
+    await page.getByText("CONTINUAR").click();
     await page.waitForTimeout(700);
     await page.getByText(name, { exact: true }).first().click({ timeout: 15000 });
     // An age confirmation, when present, is accepted; the current catalogue opens games directly.
@@ -73,7 +73,7 @@ async function checkStorage(browser) {
     await blocked.goto(BASE + "/", { waitUntil: "networkidle" });
     await blocked.getByText("INICIAR SESIÓN").first().click({ timeout: 10000 });
     await blocked.locator("#avatar-name").fill("Sin");
-    await blocked.getByText("DESPEGAR").click();
+    await blocked.getByText("CONTINUAR").click();
     await blocked.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
   } catch (e) {
     problems.push("blocked storage: " + String(e.message).split("\n")[0].slice(0, 120));
@@ -85,7 +85,7 @@ async function checkStorage(browser) {
     await page.goto(BASE + "/?reset=1", { waitUntil: "networkidle" });
     await page.getByText("INICIAR SESIÓN").first().click();
     await page.locator("#avatar-name").fill("Persiste");
-    await page.getByText("DESPEGAR").click();
+    await page.getByText("CONTINUAR").click();
     await page.getByText("Dardos", { exact: true }).first().waitFor({ timeout: 10000 });
     await page.waitForTimeout(500);
     const y = await page.evaluate(() => window.scrollY);
@@ -115,7 +115,7 @@ async function checkVerifiedFlow(browser) {
     await page.goto(BASE + "/?reset=1", { waitUntil: "networkidle" });
     await page.getByText("INICIAR SESIÓN").first().click();
     await page.locator("#avatar-name").fill("E2E");
-    await page.getByText("DESPEGAR").click();
+    await page.getByText("CONTINUAR").click();
     await page.getByText("Tower Drop", { exact: true }).first().click({ timeout: 15000 });
     await page.waitForTimeout(2500);
     const r = await page.$eval("canvas", (e) => { const b = e.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; });

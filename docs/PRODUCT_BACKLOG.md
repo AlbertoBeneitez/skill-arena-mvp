@@ -765,3 +765,15 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - la paleta ya es temática (sin morados ni grises genéricos);
   - el desenfoque en directo se retiró en v121 por los tirones al desplazar;
   - los textos de dinero y reglas se quedan claros y literales.
+
+## v130-saturn · Catálogo por filas de categoría y botón de jugar en cristal (1-nov-2026)
+
+- **Pestaña Juegos por filas:**
+  - orden: Populares (8), Casino (Roulette, Slot), Bar (Billar, Dardos, Bowling), Míticos (Pinball, Solitaire Sprint, Mine Grid, Orb Burst, Stack Shift), Dinámicos (Stack, Tower Drop) y Alternativos (Galoku, Shot Gallery);
+  - cada fila se desliza en horizontal, encaja por tarjeta y deja ver 2 tarjetas y media;
+  - de izquierda a derecha, de más a menos popular.
+- **Popularidad:** un orden fijo y editable (`CATALOG_ORDER`) hasta que haya recuento real de partidas en servidor.
+- **Registro:** la categoría de cada juego vive en `lib/games.ts` (`gameShelf`). En la especificación de juegos externos, el estudio la elige salvo Populares.
+- **Botón de jugar:** cristal oscuro con borde cian que se ilumina al tocar; sustituye al degradado amarillo-naranja-rosa.
+- **Insignia de liga** compacta en las tarjetas: medalla y puntos.
+- **«CONTINUAR»** vuelve al botón del alta (se descarta «DESPEGAR»).

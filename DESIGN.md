@@ -26,9 +26,8 @@ game keeps its own art inside its frame; the chrome around it stays the same eve
 | `--st-nebula` | `#8c7bff` | Decoration only (orbit trace); never a control colour |
 | Success | `linear-gradient(180deg, #67dc94, #3faf68)` | Confirmations, the "pay and start" action |
 | Alert | `#ff4f5e` | Losses, errors, destructive actions |
-| Launch | `linear-gradient(135deg, #ffe066, #ff9a1f 42%, #ff2e7e)` | The arcade "play" button of each catalogue card only |
 
-Rules: ion means "you can touch this" or "this is selected"; gold means "money or rank"; the launch gradient means "start this game". Nothing else uses them.
+Rules: ion means "you can touch this" or "this is selected"; gold means "money or rank"; nothing else uses them.
 No generic Tailwind purples, indigos or neutral greys in the chrome. Games may use their own palettes inside the
 canvas (a roulette is green and gold, a slot is a lit cabinet).
 
@@ -50,6 +49,7 @@ Seven-segment readouts (`SegmentDigits`) are the scoreboard voice of games and r
 
 - **Primary action:** 48–56 px tall, radius 16, display face, a lit gradient with a 4 px base shadow (it looks
   pressable); disabled = 40 % opacity, no shadow. One primary per screen.
+- **Play (catalogue):** dark glass `linear-gradient(180deg, rgba(16,32,58,.92), rgba(6,13,28,.96))` with a 1 px ion edge at 55 %; on touch it lights ion (wash + glow). The cover art carries the colour of each game (v130; it replaced the v109 gold-to-magenta gradient).
 - **Choice tiles:** dark glass, hairline border; selected = ion border + ion wash, `aria-pressed`.
 - **Icon buttons:** 42 × 42, radius 12–13, LED dot for on/off state.
 - **Chips:** balance chip in gold glass; group code badge in the data face.
@@ -59,9 +59,10 @@ Seven-segment readouts (`SegmentDigits`) are the scoreboard voice of games and r
 
 ## 5. Layout
 
-Phone portrait first (390 × 844 reference), 16 px gutters, safe areas respected, no horizontal scroll. A screen is
-a header, one column of panels, the tab bar. The catalogue breaks the grid on purpose: cards of two sizes and the
-planet behind them. Game screens take the full height under a 60 px header; the art runs under the gesture bar.
+Phone portrait first (390 × 844 reference), 16 px gutters, safe areas respected, no horizontal page scroll. A screen
+is a header, one column of panels, the tab bar. The catalogue is a stack of rows (Populares, Casino, Bar, Míticos,
+Dinámicos, Alternativos): each row scrolls sideways, snaps per card and shows two cards and a half, ordered by
+popularity left to right. Game screens take the full height under a 60 px header; the art runs under the gesture bar.
 
 ## 6. Depth
 

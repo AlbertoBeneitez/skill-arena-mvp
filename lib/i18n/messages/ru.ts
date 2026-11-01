@@ -5,7 +5,7 @@ const messages: Messages = {
   "common.cancel": "Отмена",
   "common.confirm": "Подтвердить",
   "common.close": "Закрыть",
-  "common.continue": "ВЗЛЁТ",
+  "common.continue": "ПРОДОЛЖИТЬ",
   "common.loading": "Загрузка…",
   "common.retry": "Повторить",
   "common.reload": "Обновить",
@@ -728,6 +728,12 @@ const messages: Messages = {
   "group.voteEnd": "ПРЕДЛОЖИТЬ ЗАВЕРШИТЬ",
   "group.voted": "Вы проголосовали за завершение · {n}/{total}",
   "group.resume": "Продолжается, даже если закрыть приложение",
+  "catalog.shelf.popular": "ПОПУЛЯРНЫЕ",
+  "catalog.shelf.casino": "КАЗИНО",
+  "catalog.shelf.bar": "БАР",
+  "catalog.shelf.mythic": "ЛЕГЕНДАРНЫЕ",
+  "catalog.shelf.dynamic": "ДИНАМИЧНЫЕ",
+  "catalog.shelf.alternative": "АЛЬТЕРНАТИВНЫЕ",
 };
 
 export default messages;

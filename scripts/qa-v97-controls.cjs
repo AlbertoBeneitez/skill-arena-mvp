@@ -24,7 +24,7 @@ register(pathToFileURL(path.join(__dirname,'determinism-loader.mjs')));
   await page.getByRole('button',{name:'USAR FOTO',exact:true}).tap();
   await page.waitForFunction(()=>document.querySelector('.avatarPortrait img')?.src.startsWith('data:image/'));
   await page.getByLabel('Nombre de avatar',{exact:true}).fill(`QA_${viewport.width}`);
-  await page.getByRole('button',{name:'DESPEGAR',exact:true}).tap();
+  await page.getByRole('button',{name:'CONTINUAR',exact:true}).tap();
   await page.getByRole('button',{name:'Entrenamiento gratis',exact:true}).tap();
   const cdp=await context.newCDPSession(page);
   const touch=async(type,p)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'||type==='touchCancel'?[]:[{x:p.x,y:p.y,id:1}]});

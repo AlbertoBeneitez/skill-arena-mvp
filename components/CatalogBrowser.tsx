@@ -3,7 +3,7 @@ import UiIcon from "./UiIcon";
 import { useEffect } from "react";
 import { LeagueBadge } from "./LeagueResult";
 import { emptyLeague, type LeagueState } from "@/lib/leagues";
-import { GAMES, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
+import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
 import { t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
@@ -50,56 +50,67 @@ export default function CatalogBrowser(props: Props) {
       else window.clearTimeout(handle);
     };
   }, []);
+  // v130: rows by kind of game, each ordered by popularity (GAMES order), "Populares" first; rows scroll sideways.
+  const rows: { key: "popular" | (typeof CATALOG_SHELVES)[number]; games: GameMeta[] }[] = [
+    { key: "popular" as const, games: GAMES.slice(0, POPULAR_COUNT) },
+    ...CATALOG_SHELVES.map((key) => ({ key, games: GAMES.filter((game) => gameShelf(game) === key) })),
+  ].filter((r) => r.games.length > 0);
+  const renderCard = (row: string, game: GameMeta, index: number) => (
+    <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: CATEGORY_ACCENTS[game.category] ?? "#9ce6e8" }}>
+      <div className={styles.cover}>
+        <img
+          src={game.cover}
+          alt=""
+          width={480}
+          height={330}
+          // Light raster covers (~22 KB each): load them all up front so scrolling never waits.
+          loading="eager"
+          decoding="async"
+          fetchPriority={row === "popular" && index < 3 ? "high" : "low"}
+        />
+        {props.leagues && <LeagueBadge record={props.leagues[game.id] ?? emptyLeague()} />}
+        {!props.serverOnly && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) ===
+          "existing" && (
+          <button
+            type="button"
+            className={styles.ghost}
+            onClick={props.onToggleGhost}
+            aria-pressed={props.ghostEnabled}
+            aria-label={t("catalog.ghost")}
+          >
+            <UiIcon name="ghost" size={20} />
+          </button>
+        )}
+      </div>
+      <button
+        className={styles.play}
+        type="button"
+        disabled={
+          props.stake > props.balance || props.startingGameId !== null || (props.serverOnly === true && props.stake > 0 && game.competition.verification !== "server-replay")
+        }
+        aria-label={t("catalog.play", { game: gameName(game) })}
+        aria-busy={props.startingGameId === game.id}
+        onPointerDown={() => prefetchGame(game)}
+        onClick={() => props.onPlay(game)}
+      >
+        {props.startingGameId === game.id
+          ? t("catalog.entering")
+          : props.stake === 0
+            ? gameName(game)
+            : t("catalog.playStake", { game: gameName(game), n: props.stake })}
+      </button>
+    </article>
+  );
   return (
     <section className={styles.browser} aria-label={t("catalog.aria")}>
-      <div className={styles.grid}>
-        {GAMES.map((game, index) => (
-          <article key={game.id} className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: CATEGORY_ACCENTS[game.category] ?? "#9ce6e8" }}>
-            <div className={styles.cover}>
-              <img
-                src={game.cover}
-                alt=""
-                width={480}
-                height={330}
-                // Light raster covers (~22 KB each): load them all up front so scrolling never waits.
-                loading="eager"
-                decoding="async"
-                fetchPriority={index < 4 ? "high" : "low"}
-              />
-              {props.leagues && <LeagueBadge record={props.leagues[game.id] ?? emptyLeague()} />}
-              {!props.serverOnly && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) ===
-                "existing" && (
-                <button
-                  type="button"
-                  className={styles.ghost}
-                  onClick={props.onToggleGhost}
-                  aria-pressed={props.ghostEnabled}
-                  aria-label={t("catalog.ghost")}
-                >
-                  <UiIcon name="ghost" size={20} />
-                </button>
-              )}
-            </div>
-            <button
-              className={styles.play}
-              type="button"
-              disabled={
-                props.stake > props.balance || props.startingGameId !== null || (props.serverOnly === true && props.stake > 0 && game.competition.verification !== "server-replay")
-              }
-              aria-label={t("catalog.play", { game: gameName(game) })}
-              aria-busy={props.startingGameId === game.id}
-              onPointerDown={() => prefetchGame(game)}
-              onClick={() => props.onPlay(game)}
-            >
-              {props.startingGameId === game.id
-                ? t("catalog.entering")
-                : props.stake === 0
-                  ? gameName(game)
-                  : t("catalog.playStake", { game: gameName(game), n: props.stake })}
-            </button>
-          </article>
-        ))}
-      </div>
+      {rows.map((r) => (
+        <section key={r.key} className={styles.row} aria-labelledby={`shelf-${r.key}`}>
+          <h2 id={`shelf-${r.key}`} className={styles.rowTitle}>{t(`catalog.shelf.${r.key}`)}</h2>
+          <div className={styles.track} role="list">
+            {r.games.map((game, index) => renderCard(r.key, game, index))}
+          </div>
+        </section>
+      ))}
     </section>
   );
 }
