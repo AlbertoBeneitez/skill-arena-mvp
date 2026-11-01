@@ -2,12 +2,14 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V15,
-  ROULETTE_RULES_V15,
+  ROULETTE_CORE_V16,
+  ROULETTE_RULES_V16,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  type RouletteStateV15 as RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v15";
+  rouletteAimReachesV16,
+  rouletteFlightProgressV16,
+  type RouletteStateV16 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v16";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -27,7 +29,7 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V15.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V16.ballRadius / 1000;
 // Presentation radii (the authoritative ball physics live in the core).
 const NUMBER_OUTER = 121,
   NUMBER_INNER = 104,
@@ -219,7 +221,7 @@ function render(
   }
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
-  const launchT = Math.min(1, (s.tick - s.flightStart) / ROULETTE_RULES_V15.launchTicks);
+  const launchT = rouletteFlightProgressV16(s);
   const height = idle ? 0 : flying ? Math.sin(Math.PI * launchT) * 14 : s.ballZ / 1e6;
   // Launcher: an orbital "magnetic cradle" outside the wheel — a hexagonal pad, three clamp prongs and counter-rotating
   // coil rings that hold the ball in the air; dragging charges the coils (faster, warmer, sparks between the prongs).
@@ -274,12 +276,15 @@ function render(
       length = Math.hypot(dx, dy);
     if (length >= 28) {
       const power = Math.max(0, Math.min(15, Math.round((length - 24) / 12)));
+      // V16: only aims that reach the wheel are throws; the others show the guide in red and throw nothing.
+      const aim = Math.round((((Math.atan2(dy, dx) + Math.PI * 2) % (Math.PI * 2)) * 32) / (Math.PI * 2)) % 32;
+      const guide = rouletteAimReachesV16(aim) ? "rgba(255,233,164,.85)" : "rgba(255,92,104,.85)";
       const ux = dx / length,
         uy = dy / length,
         reach = 40 + power * 9;
       ctx.save();
-      ctx.strokeStyle = "rgba(255,233,164,.85)";
-      ctx.fillStyle = "rgba(255,233,164,.85)";
+      ctx.strokeStyle = guide;
+      ctx.fillStyle = guide;
       ctx.lineWidth = 3;
       ctx.setLineDash([7, 6]);
       ctx.beginPath();
@@ -506,7 +511,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V15}
+        core={ROULETTE_CORE_V16}
         name="Roulette"
         instruction=""
         render={canvasRender}
@@ -518,7 +523,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V15.canApply(s, "TOSS_D00_P00") &&
+              ROULETTE_CORE_V16.canApply(s, "TOSS_D20_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

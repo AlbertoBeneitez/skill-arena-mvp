@@ -10,9 +10,12 @@ import { t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 // v135: the proposal form loads only when a studio opens it.
 const GameProposal = dynamic(() => import("./GameProposal"), { ssr: false });
-export const CATEGORY_ACCENTS: Record<string, string> = {
-  PRECISIÓN: "#5fd6ff", TIMING: "#ffd04a", REACCIÓN: "#ff7a6b", MEMORIA: "#b88cff", PUZZLE: "#6ff0b0", CARTAS: "#ff8fb8", LÓGICA: "#9bf05b", CONTROL: "#ffa85c",
+/** v136: one edge colour per catalogue row, so every game of the same kind carries the same colour (also in
+ * Populares and Nuevos). Not ion (interactive) or gold (money). */
+export const SHELF_ACCENTS: Record<string, string> = {
+  casino: "#ff6b7a", bar: "#ffa85c", mythic: "#b88cff", dynamic: "#5fd6ff", alternative: "#6ff0b0",
 };
+export const gameAccent = (game: GameMeta) => SHELF_ACCENTS[gameShelf(game)] ?? "#9ce6e8";
 type Props = {
   stake: Stake;
   serverOnly?: boolean;
@@ -62,7 +65,7 @@ export default function CatalogBrowser(props: Props) {
     ...CATALOG_SHELVES.map((key) => ({ key, games: GAMES.filter((game) => gameShelf(game) === key) })),
   ].filter((r) => r.games.length > 0);
   const renderCard = (row: string, game: GameMeta, index: number) => (
-    <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: CATEGORY_ACCENTS[game.category] ?? "#9ce6e8" }}>
+    <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: gameAccent(game) }}>
       <div className={styles.cover}>
         <img
           src={game.cover}

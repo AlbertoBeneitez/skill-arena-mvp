@@ -3,7 +3,7 @@ import GameResultSummary from "./GameResultSummary";
 import RivalScoreboard, { type RivalResult } from "./RivalScoreboard";
 import { safeStorage } from "@/lib/safeStorage";
 import GameActionButton from "./GameActionButton";
-import CatalogBrowser, { CATEGORY_ACCENTS } from "./CatalogBrowser";
+import CatalogBrowser, { gameAccent } from "./CatalogBrowser";
 import shellStyles from "./ProductShell.module.css";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -1508,7 +1508,7 @@ export default function DemoApp() {
                   className={`countdownOverlay gxIntro ${countdown === 0 ? "go" : ""}`}
                   role="status"
                   aria-live="polite"
-                  style={{ ["--accent" as string]: CATEGORY_ACCENTS[selectedGame.category] ?? "#7fe3ee" }}
+                  style={{ ["--accent" as string]: gameAccent(selectedGame) }}
                 >
                   {leagueMatch && leagueMatch.gameId === selectedGame.id && (
                     <div className={`gxIntroRival gxRivalBoard ${leagueMatch.rival.balanceGoal ? "chips" : "points"}`} style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>

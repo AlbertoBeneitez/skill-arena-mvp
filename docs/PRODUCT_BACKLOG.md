@@ -829,3 +829,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - **Servidor:** `/api/studio/proposals` (enviar, leer y borrar) y tabla `studio_game_proposals` (migración 004).
 - **Bandeja:** solo para la cuenta de `STUDIO_OWNER_ACCOUNTS`.
 - **Pendiente:** PostgreSQL alojado, para que la recepción se abra.
+
+## v136-saturn · Ruleta V16 (lanzamiento real) y bordes por categoría (1-nov-2026)
+
+- **Ruleta:**
+  - la bola sale del lanzador en línea recta y entra con su velocidad: la pared curva la trayectoria y la física de V15 la lleva al reposo;
+  - solo cuentan los gestos que llegan a la rueda, y la guía se pinta en roja cuando no;
+  - rombos más pequeños en el estátor;
+  - V1–V15 se conservan.
+- **Tarjetas:** un color de borde por categoría.

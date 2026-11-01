@@ -83,6 +83,9 @@ export const ROULETTE_RULES_V15 = {
   entryUy: 726,
 } as const;
 const R = ROULETTE_RULES_V15;
+type Widen<T> = { [K in keyof T]: T[K] extends number ? number : Widen<T[K]> };
+/** The in-wheel physics' parameters, so a later version can reuse the same model with other values (V16). */
+export type RouletteRulesV15 = Widen<typeof ROULETTE_RULES_V15>;
 
 export type RouletteStateV15 = CoreState & {
   wheelPhase: number;
@@ -132,25 +135,26 @@ const mod = (a: number, m: number) => ((a % m) + m) % m;
 /** Signed angle in (−TAU/2, TAU/2]. */
 const wrap = (a: number) => { const x = mod(a, TAU); return x > TAU / 2 ? x - TAU : x; };
 /** Rotor angle (1e-7 rad) at substep `k` (0…SUB) of the current tick. */
-const rotorAngle = (s: RouletteStateV15, k: number) =>
+export const rotorAngle = (s: RouletteStateV15, k: number) =>
   roundDiv(mod((s.wheelPhase - s.wheelSpeed) * SUB + k * s.wheelSpeed, 65536 * SUB) * TAU, 65536 * SUB);
 /** Rotor surface speed (nm per substep) at radius r. */
 const rotorSpeed = (s: RouletteStateV15, r: number) => roundDiv(roundDiv(s.wheelSpeed * TAU, 65536 * SUB) * r, 10_000_000);
 /** Radial slope (milli, height rising outwards) under the ball. The pocket floor is gently dished, so a ball riding
  * in a pocket finds a resting radius instead of chattering against the lip. */
-export const rouletteSlopeV15 = (r: number) =>
+const slopeAt = (R: RouletteRulesV15, r: number) =>
   r >= R.trackInner ? R.slopeTrack : r >= R.rotorEdge ? R.slopeStator : r >= R.lipTop ? R.slopeRotor
     : r >= R.floorOut ? R.slopeLip : r >= R.floorIn ? roundDiv((r - (R.floorIn + R.floorOut) / 2) * 800, R.floorOut - R.floorIn) : R.slopeCone;
+export const rouletteSlopeV15 = (r: number) => slopeAt(R, r);
 /** Index (0–36, in ROULETTE_WHEEL order) of the pocket at relative angle φ = ball − rotor. */
 export const roulettePocketAt = (phi: number) => mod(roundDiv(mod(phi, TAU) * 37, TAU), 37);
 
-function finish(s: RouletteStateV15) {
+export function rouletteFinishV15(s: RouletteStateV15) {
   s.score = s.balanceMinor;
   s.height = s.balanceMinor;
   s.status = s.balanceMinor === 0 ? "failed" : "won";
   s.failure = s.balanceMinor === 0 ? "EMPTY_BALANCE" : null;
 }
-function settle(s: RouletteStateV15, phi: number) {
+export function rouletteSettleV15(s: RouletteStateV15, phi: number) {
   const landed = ROULETTE_WHEEL[roulettePocketAt(phi)];
   s.lastMiss = false;
   s.lastNumber = landed;
@@ -163,24 +167,25 @@ function settle(s: RouletteStateV15, phi: number) {
   s.lastLandingTick = s.tick;
   s.landingTick = -1;
   s.ballPhase = -1;
-  if (s.balanceMinor === 0) finish(s);
+  if (s.balanceMinor === 0) rouletteFinishV15(s);
 }
 
 /** Moves the ball by its radial velocity, keeping its angular momentum (r × v_t). */
-function moveRadially(s: RouletteStateV15, r: number) {
+function moveRadially(s: RouletteStateV15, r: number, R: RouletteRulesV15) {
   const next = Math.max(R.fretInner, Math.min(R.wallR, r + s.ballVr));
   if (next !== r) s.ballVt = roundDiv(s.ballVt * r, next);
   s.ballR = next;
 }
 
-function substep(s: RouletteStateV15, k: number) {
+/** One 480 Hz substep of the ball in the wheel (exported for V16, which keeps this physics and changes the throw). */
+export function rouletteSubstepV15(s: RouletteStateV15, k: number, R: RouletteRulesV15 = ROULETTE_RULES_V15) {
   const g = R.gravity;
   let r = s.ballR;
   const rotor = r < R.rotorEdge, pocket = r < R.lipTop && r >= R.floorIn;
   const grounded = s.ballZ === 0 && s.ballVz <= 0;
   const centripetal = roundDiv(s.ballVt * s.ballVt, r);
   // Radial: centripetal push out against the slope's pull in (a rolling ball feels 5/7 of it); nothing while airborne.
-  const slopePull = grounded ? roundDiv(g * rouletteSlopeV15(r) * 5, 7000) : 0;
+  const slopePull = grounded ? roundDiv(g * slopeAt(R, r) * 5, 7000) : 0;
   s.ballVr += centripetal - slopePull;
   // Tangential losses: air drag always; on the ground, wall friction (∝ the force on the wall) or rolling/grip.
   const drag = roundDiv(s.ballVt * s.ballVt, R.airDen);
@@ -192,7 +197,7 @@ function substep(s: RouletteStateV15, k: number) {
     } else if (Math.abs(s.ballVt) > R.rollStator) s.ballVt -= Math.sign(s.ballVt) * R.rollStator;
     s.ballVr -= roundDiv(s.ballVr * (pocket ? R.pocketGripPpm : R.radialDampPpm), 1_000_000);
   }
-  moveRadially(s, r);
+  moveRadially(s, r, R);
   r = s.ballR;
   // Outer wall: the ball rebounds; while pressed on it, friction grows with the pressing force.
   if (r >= R.wallR && s.ballVr >= 0) {
@@ -266,7 +271,7 @@ function substep(s: RouletteStateV15, k: number) {
   const still = s.ballZ === 0 && s.ballVz === 0 && r <= R.floorOut + MM && r >= R.floorIn - MM
     && Math.abs(s.ballVt - rotorSpeed(s, r)) <= R.stillSpeed && Math.abs(s.ballVr) <= R.stillSpeed;
   s.stillSubs = still ? s.stillSubs + 1 : 0;
-  if (s.stillSubs >= R.stillSubsteps) settle(s, s.ballTheta - rotorAngle(s, k + 1));
+  if (s.stillSubs >= R.stillSubsteps) rouletteSettleV15(s, s.ballTheta - rotorAngle(s, k + 1));
 }
 
 function throwBall(s: RouletteStateV15) {
@@ -296,8 +301,8 @@ function stepBall(s: RouletteStateV15) {
     if (k >= n) throwBall(s);
     return;
   }
-  for (let k = 0; k < SUB && s.ballPhase === 1; k++) substep(s, k);
-  if (s.ballPhase === 1 && s.tick >= s.landingTick) settle(s, s.ballTheta - rotorAngle(s, SUB));
+  for (let k = 0; k < SUB && s.ballPhase === 1; k++) rouletteSubstepV15(s, k);
+  if (s.ballPhase === 1 && s.tick >= s.landingTick) rouletteSettleV15(s, s.ballTheta - rotorAngle(s, SUB));
 }
 
 export const ROULETTE_CORE_V15: GameCore<RouletteStateV15> = {
@@ -346,7 +351,7 @@ export const ROULETTE_CORE_V15: GameCore<RouletteStateV15> = {
   },
   apply(s, a) {
     s.lastInputTick = s.tick;
-    if (a === "CASH_OUT") { finish(s); return; }
+    if (a === "CASH_OUT") { rouletteFinishV15(s); return; }
     if (a.startsWith("CHIP_")) { s.denomination = Number(a.slice(5)); return; }
     if (a.startsWith("BET_")) { s.chips.push(a.slice(4)); s.chipValues.push(s.denomination); s.chipTicks.push(s.tick); return; }
     if (a === "BETS_UNDO") { s.chips.pop(); s.chipValues.pop(); s.chipTicks.pop(); return; }
@@ -375,6 +380,6 @@ export const ROULETTE_CORE_V15: GameCore<RouletteStateV15> = {
     s.tick++;
     s.wheelPhase = (s.wheelPhase + s.wheelSpeed) % 65536;
     if (s.landingTick !== -1) stepBall(s);
-    if (s.tick === R.maxFinalTick && s.status === "running") finish(s);
+    if (s.tick === R.maxFinalTick && s.status === "running") rouletteFinishV15(s);
   },
 };

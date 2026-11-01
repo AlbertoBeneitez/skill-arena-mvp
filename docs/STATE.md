@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v135-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v136-saturn.
 
 ## Catálogo
 
@@ -13,7 +13,7 @@ resultado aún no verificado de extremo a extremo.
 
 | id interno | Nombre visible | Versión | Estado |
 | --- | --- | --- | --- |
-| galactic-roulette | Roulette | 15.0.0 | VERIFIED |
+| galactic-roulette | Roulette | 16.0.0 | VERIFIED |
 | galactic-slot | Slot | 3.0.0 | VERIFIED |
 | darts | Dardos | 3.0.0 | VERIFIED |
 | billiards | Billar | 7.0.0 | VERIFIED |
@@ -79,6 +79,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - fila «Nuevos» tras Populares, con los juegos de los últimos 30 días;
   - ninguna imagen entre pulsar un juego y verlo;
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
+- [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
+- [ ] **Pendiente del lote del 1 de noviembre (noche):** Pinball más desarrollado (v137) y mejora de las 14 portadas.
 - [x] **Proponer un juego (1 de noviembre, v135):** botón en Juegos, formulario con condiciones y consentimiento, bandeja solo para el propietario (`STUDIO_OWNER_ACCOUNTS`).
   - Para recibir propuestas faltan PostgreSQL (`DATABASE_URL`) y la migración 004; hasta entonces el formulario avisa de que la recepción no está abierta.
 - [x] **Arte (1 de noviembre, v131):** se desarrollan Saturno y sus anillos (bienvenida) y el icono de la app; se retira la G plana `app/icon.svg`.
