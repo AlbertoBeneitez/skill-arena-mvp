@@ -56,6 +56,19 @@ para replay). Fuente de verdad: `lib/games.ts`.
 - [ ] Mantener `mobile-test` o probar solo desde la vista previa de cada pull request.
 - [ ] Tolerar cortes breves de conexión durante la partida (C3: cambia cuándo se pierde por abandono).
 - [ ] Dejar de borrar los datos locales al abrir una pestaña nueva (C6).
+- [x] **Grupos (1 de noviembre):**
+  - al crear un grupo se elige el formato: liga de partidas individuales (cada uno juega cuando quiere y suma sus resultados) o liga de enfrentamientos 1 contra 1 (misma semilla para los dos); además, el torneo;
+  - una sola cuota de entrada da derecho a todas las partidas hasta el final; va al bote menos la comisión;
+  - antes de empezar se fija el final: N partidas por jugador, o cuando la mayoría vote cerrarlo;
+  - mientras no termine se pueden seguir jugando partidas aunque se cierre la app (el estado vive en el servidor).
+  - Pendiente de diseño técnico (v128) y siempre con saldo ficticio hasta la fase 4.
+- [x] **Ruleta (1 de noviembre):** el salto actual no es realista porque la bola se asienta demasiado rápido; debe dar más botes y tardar más en quedarse en el número (núcleo nuevo).
+- [x] **Plataforma para desarrolladores externos (1 de noviembre):**
+  - el creador recibe el 50 % de la comisión neta (comisión de las partidas de su juego menos costes de pago e impuestos) y conserva sus derechos;
+  - mercado: España primero (licencia DGOJ) y después expansión;
+  - formato recomendado: núcleo en WebAssembly sin importaciones y una interfaz web en un marco aislado; admisión automática en una máquina virtual desechable y aprobación final del propietario;
+  - el juego nunca recibe datos personales ni accede a bases de datos;
+  - el formato de entrega está pendiente de confirmación por el propietario.
 
 ## Revisión de código
 
@@ -70,6 +83,7 @@ La del 29 de octubre está en `docs/reviews/2026-10-29/` (servidor, cliente, est
 | 2 · Modularización | Un juego por carpeta, límites de capas en ESLint, partir `DemoApp.tsx` y `globals.css` | Pendiente |
 | 3 · Plataforma | PostgreSQL gestionado, identidad, ledger en servidor, límite de peticiones, captura de errores | Pendiente de cuentas |
 | 4 · Dinero real | Pagos regulados, KYC/AML, antibot, revisión jurídica | Sin fecha |
+| 5 · Juegos externos | SDK y formato WASM, admisión automática en VM, panel del desarrollador, reparto del 50 % de la comisión neta | En diseño |
 
 ## Cómo comprobar este documento
 
