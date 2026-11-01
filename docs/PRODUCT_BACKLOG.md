@@ -845,3 +845,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - **Jackpots:** en rampa y órbita, cada vez mayores; súper jackpot en el agujero de gusano.
 - **Modos de 20 s tras cada misión:** Tormenta, Fiebre Giro y Rampa Rush.
 - La mesa y la física son las de V8; V1–V8 se conservan.
+
+## v138-saturn · Portadas mejoradas (1-nov-2026)
+
+- Se quita la línea horizontal de destello.
+- Fondos en negro en lugar de azul marino.
+- Pinball con multibola y Roulette con la bola rodando por la pista.
+- Shot Gallery vuelve a renderizarse y Bowling se conserva.

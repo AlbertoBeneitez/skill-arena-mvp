@@ -1,5 +1,9 @@
 """Catalogue covers v3 (original art): full-bleed 16:11 close-ups that fill the card (640×440 SVG source).
 
+v138: no anamorphic lens streak (the thin horizontal flare read as a cut across the card), backgrounds and shadows
+in the app's black instead of navy (the same lightness, no blue cast; violet and warm game colours stay), the
+Pinball cover shows a multiball (V9) and the Roulette ball is mid-throw on the track (V16).
+
 The SVGs are only a source: scripts/rasterize-covers.cjs renders them to 800×550 WebP for the app (blur filters are
 too expensive for phones to paint live). Usage:
     python3 scripts/generate-covers.py && node scripts/rasterize-covers.cjs
@@ -81,7 +85,7 @@ def shape(kind, x, y, s):
     return '<polygon points="' + " ".join(f"{f(x + s * (1.1 if k % 2 == 0 else .45) * math.cos(-math.pi / 2 + k * math.pi / 5))},{f(y + s * (1.1 if k % 2 == 0 else .45) * math.sin(-math.pi / 2 + k * math.pi / 5))}" for k in range(10)) + '"/>'
 
 
-def cine(fx, fy, key="#ffd9a0", flare="#9fefff", beam=None, strength=.82, flare_w=300, streak=True, bloom=True):
+def cine(fx, fy, key="#ffd9a0", flare="#9fefff", beam=None, strength=.82, flare_w=300, streak=False, bloom=True):
     """v121 film grade, layered over a cover: focus vignette that pulls the eye to (fx, fy), a soft key-light bloom,
     an anamorphic streak through the focal point and (optionally) a volumetric light shaft from `beam` = (x, y, spread)."""
     uid = f"{int(fx)}x{int(fy)}"
@@ -152,11 +156,11 @@ def roulette():
         ex, ey = cx + 90 * math.cos(a), cy - 58 + 36 * math.sin(a)
         p.append(f'<line x1="{cx}" y1="{cy - 58}" x2="{f(ex)}" y2="{f(ey)}" stroke="url(#chrome)" stroke-width="10" stroke-linecap="round"/><circle cx="{f(ex)}" cy="{f(ey)}" r="9" fill="url(#chrome)"/>')
     p.append(f'<circle cx="{cx}" cy="{cy - 94}" r="17" fill="url(#chrome)"/>')
-    # ball settled in a pocket at the front-left, with the bounce trail
-    a = 2 * math.pi * 6.5 / 37 + 1.2
-    bx, by = cx + (R2 + R3) / 2 * math.cos(a), cy + (R2 + R3) / 2 * math.sin(a) * k - 8
-    arc = [(bx + 160 - t * 16, by - 60 + (t - 6) ** 2 * 1.6) for t in range(11)]
-    p.append(trail(arc, "#ffffff", 14, .5))
+    # v138: the ball riding the track against the rim, a long curved trail behind it (a real throw)
+    a = -1.15
+    bx, by = cx + (rx - 44) * math.cos(a), cy + (rx - 44) * math.sin(a) * k - 6
+    arc = [(cx + (rx - 44) * math.cos(a + t * .045), cy + (rx - 44) * math.sin(a + t * .045) * k - 6) for t in range(14)]
+    p.append(trail(arc, "#ffffff", 14, .55))
     p.append(sphere(bx, by, 14, "#f1f6fb", "rb"))
     p.append(f'<circle cx="{f(bx)}" cy="{f(by)}" r="26" fill="#fff" opacity=".2" filter="url(#glow)"/>')
     p.append('<rect width="640" height="440" fill="url(#spot)"/>')
@@ -810,6 +814,11 @@ def pinball():
     p.append('<g filter="url(#shadow)"><path d="M-30,352 L250,420 Q268,428 252,440 L-30,440 Z" fill="url(#flip)" stroke="#e12d3f" stroke-width="7"/>'
              '<path d="M670,352 L470,404 Q452,410 462,428 L670,440 Z" fill="url(#flip)" stroke="#e12d3f" stroke-width="7"/></g>')
     p.append('<path d="M-10,300 L120,352" stroke="#d6dde6" stroke-width="6" stroke-linecap="round"/><path d="M650,300 L560,340" stroke="#d6dde6" stroke-width="6" stroke-linecap="round"/>')
+    # v138 multiball: two more balls in play further up the table, out of focus
+    for (mx, my, mr) in [(262, 236, 22), (512, 214, 18)]:
+        p.append(f'<g filter="url(#dof)"><circle cx="{mx}" cy="{my}" r="{mr + 14}" fill="#ff6fd8" opacity=".28" filter="url(#bigglow)"/>'
+                 f'<circle cx="{mx}" cy="{my}" r="{mr}" fill="url(#chromeBall)"/>'
+                 f'<ellipse cx="{mx - mr * .3:.1f}" cy="{my - mr * .4:.1f}" rx="{mr * .3:.1f}" ry="{mr * .16:.1f}" fill="#fff" opacity=".8"/></g>')
     # hero: the chrome ball, sharp, with a speed trail up the table and neon reflections
     bx, by, br = 392, 286, 46
     pts = [(bx + 80 - t * 10, by + 120 - t * 15) for t in range(9)]
@@ -909,6 +918,14 @@ covers["corner-sudoku"] = galoku()
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    import re
+    def black(m):
+        h = m.group(1); r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        # Dark navy or teal (blue above red, green not below red): same lightness in neutral black.
+        if max(r, g, b) > 130 or b < r + 6 or g < r - 2 or max(r, g, b) - min(r, g, b) < 8:
+            return m.group(0)
+        y = round((0.2126 * r + 0.7152 * g + 0.0722 * b) * 0.82 + 1)
+        return "#%02x%02x%02x" % (y, y, min(255, round(y * 1.06 + 1)))
     for name, body in covers.items():
-        open(os.path.join(OUT, f"{name}.svg"), "w").write(body)
+        open(os.path.join(OUT, f"{name}.svg"), "w").write(re.sub(r"#([0-9a-fA-F]{6})\b", black, body))
     print("wrote", len(covers), "covers to", OUT)

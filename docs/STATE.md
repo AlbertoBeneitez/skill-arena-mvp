@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v137-saturn.
+Actualizado: 1 de noviembre de 2026 · base `mobile-test` en v138-saturn.
 
 ## Catálogo
 
@@ -81,7 +81,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
-- [ ] **Pendiente del lote del 1 de noviembre (noche):** mejora de las 14 portadas.
+- [x] **Portadas (1 de noviembre, v138):** sin destello horizontal, fondos en negro, Pinball con multibola y Roulette con la bola en la pista.
 - [x] **Proponer un juego (1 de noviembre, v135):** botón en Juegos, formulario con condiciones y consentimiento, bandeja solo para el propietario (`STUDIO_OWNER_ACCOUNTS`).
   - Para recibir propuestas faltan PostgreSQL (`DATABASE_URL`) y la migración 004; hasta entonces el formulario avisa de que la recepción no está abierta.
 - [x] **Arte (1 de noviembre, v131):** se desarrollan Saturno y sus anillos (bienvenida) y el icono de la app; se retira la G plana `app/icon.svg`.
