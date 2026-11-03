@@ -859,3 +859,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - **Grupo:**
   - una sola línea de indicaciones y modalidades descritas en pocas palabras;
   - tarjeta de entrada en grafito con Saturno, halo cálido y corrillo de avatares.
+
+## v140-saturn · Portadas con más impacto (3-nov-2026)
+
+- Carteles del momento culminante, con cámara baja, contraluz, destellos y chispas:
+  - Bowling: el pleno, con los bolos saltando;
+  - Shot Gallery: el impacto láser en la diana alienígena;
+  - Tower Drop: la torre vista desde abajo al atardecer y el contenedor colgando de la grúa;
+  - Solitaire Sprint: la cascada de victoria sobre el tapete verde;
+  - Pinball: la descarga eléctrica del bumper en plena multibola;
+  - Mine Grid: la mina estallando con onda expansiva y baldosas por el aire;
+  - Slot: rodillos curvos con tres símbolos, sietes más bajos, marco cromado y bombillas;
+  - Dardos: diana iluminada por un foco, rojos y verdes vivos y un dardo en el centro.
+- Galoku con el cuadrado del vértice grande en el centro.
+- Roulette con la sala casi negra.
+- Todas las portadas a 1600 × 1100.
