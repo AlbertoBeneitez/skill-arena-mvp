@@ -881,3 +881,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Pinball, Solitaire Sprint y Mine Grid: vuelven a la escena de v138, ahora en plena jugada.
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
+
+## v142-saturn · Envío de juegos por archivo y admisión automática (3-nov-2026)
+
+- **Envío:** un solo .zip con manifiesto, interfaz HTML, núcleo WebAssembly sin importaciones y portada.
+- **Kit:** descargable desde la app, con el formato y un juego de ejemplo que ya es un paquete válido.
+- **Comprobación automática al subirlo:** ocho controles, entre ellos repetición determinista, que la semilla cuente y velocidad, en un hilo con límite de tiempo. El informe llega al momento.
+- **Bandeja del propietario:**
+  - Probar, en un marco aislado; la puntuación de la interfaz se contrasta con la repetición del núcleo;
+  - Descargar, Aprobar, Rechazar y Borrar.
+- **Condiciones `studio-terms-2026-11-03`:** el estudio conserva la propiedad y recibe el 50 % de la comisión neta. Incluyen garantías, contenido, retirada y revisión.
+- **Migración `005-studio-packages.sql`.**
+- **Pendiente, fase 2:**
+  - publicar los juegos aprobados en el catálogo (primero en entrenamiento);
+  - paquetes de más de 4 MB mediante un almacén de archivos;
+  - el acuerdo completo, revisado por un abogado.

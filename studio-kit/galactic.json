@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "id": "pulse",
+  "name": "Pulse",
+  "version": "1.0.0",
+  "shelf": "alternative",
+  "description": "Stop the marker inside the lit window. Ten rounds, each one a little faster.",
+  "developer": "Galactic Games (kit example)",
+  "actions": ["TAP"],
+  "tickRate": 60,
+  "maxTicks": 3600,
+  "thirdParty": []
+}

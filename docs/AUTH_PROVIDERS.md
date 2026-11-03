@@ -38,14 +38,14 @@ URL de retorno que hay que registrar en cada proveedor: `{AUTH_URL}/api/auth/{pr
 
 Después de guardar las variables, hay que volver a desplegar (Redeploy) para que entren en vigor.
 
-## Bandeja de propuestas de juegos (v135)
+## Bandeja de juegos enviados (v135, paquetes desde v142)
 
-La bandeja de «Proponer un juego» solo la ve el propietario. Para activarla:
+La bandeja de «Enviar juego» solo la ve el propietario. Para activarla:
 
 1. Inicia sesión en la app con tu cuenta (por ejemplo, Google).
 2. Abre `{AUTH_URL}/api/auth/session` en el mismo navegador y copia el valor `account`. Tiene la forma `google:1234567890`.
 3. En Vercel, crea `STUDIO_OWNER_ACCOUNTS` con ese valor. Para varias cuentas, sepáralas con comas.
-4. Las propuestas se guardan en PostgreSQL. Necesitas `DATABASE_URL` y la migración `db/migrations/004-studio-proposals.sql` aplicada a mano.
+4. Las propuestas se guardan en PostgreSQL. Necesitas `DATABASE_URL` y las migraciones `db/migrations/004-studio-proposals.sql` y `005-studio-packages.sql` aplicadas a mano, en ese orden.
 5. Mientras falte la base de datos, el formulario avisa de que la recepción aún no está abierta y no guarda nada en el servidor.
 
-Después, vuelve a desplegar. En Juegos → «¿Tienes un juego?» → PROPONER UN JUEGO aparecerá la pestaña «Bandeja».
+Después, vuelve a desplegar. En Juegos → ENVIAR JUEGO aparecerá la pestaña «Bandeja», con Probar, Descargar, Aprobar, Rechazar y Borrar (proceso completo en `docs/STUDIO_SUBMISSIONS.md`).

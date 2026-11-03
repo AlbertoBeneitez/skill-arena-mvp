@@ -7,7 +7,8 @@ const isProduction = process.env.NODE_ENV === "production";
  */
 const contentPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"}`,
+  // 'wasm-unsafe-eval' lets WebAssembly compile (v142: studio game cores), without allowing eval of strings.
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isProduction ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "media-src 'self' data: blob:",

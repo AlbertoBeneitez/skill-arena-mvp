@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 3 de noviembre de 2026 · base `mobile-test` en v141-saturn.
+Actualizado: 3 de noviembre de 2026 · base `mobile-test` en v142-saturn.
 
 ## Catálogo
 
@@ -84,6 +84,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 - [x] **Grupo y envío de juegos (3 de noviembre, v139):** botón «ENVIAR JUEGO»; pestaña Grupo con una sola línea de indicaciones y tarjeta grafito con Saturno y avatares.
 - [x] **Portadas con más impacto (3 de noviembre, v140):** carteles del momento culminante de Shot Gallery, Bowling, Tower Drop, Solitaire Sprint, Pinball, Mine Grid, Slot y Dardos; Galoku con el cuadrado del vértice grande y centrado; Roulette con fondo oscuro; todas a 1600 × 1100.
 - [x] **Portadas en acción y botones (3 de noviembre, v141):** Tower Drop más cerca con el bloque bajando; Pinball, Solitaire Sprint y Mine Grid vuelven a su escena anterior captada en plena jugada; detalles de Orb Burst y Stack Shift; botones de jugar con borde mecanizado y un barrido de luz sutil.
+- [x] **Envío de juegos por archivo (3 de noviembre, v142):** un .zip con `galactic.json`, `game.html`, `core.wasm` sin importaciones y portada; comprobación automática al subirlo; bandeja del propietario con prueba en marco aislado y repetición del núcleo; condiciones `studio-terms-2026-11-03` (propiedad del estudio, 50 % de la comisión neta). Falta la fase 2: publicar en el catálogo (`docs/STUDIO_SUBMISSIONS.md`).
 - [x] **Portadas (1 de noviembre, v138):** sin destello horizontal, fondos en negro, Pinball con multibola y Roulette con la bola en la pista.
 - [x] **Proponer un juego (1 de noviembre, v135):** botón en Juegos, formulario con condiciones y consentimiento, bandeja solo para el propietario (`STUDIO_OWNER_ACCOUNTS`).
   - Para recibir propuestas faltan PostgreSQL (`DATABASE_URL`) y la migración 004; hasta entonces el formulario avisa de que la recepción no está abierta.

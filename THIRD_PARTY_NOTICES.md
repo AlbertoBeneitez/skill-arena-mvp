@@ -303,3 +303,17 @@ Uses the project's existing synthesized audio and shared orbital background.
 - Uso: `lib/server/authProviders.ts` para el inicio de sesión con Google, Apple, X, Discord y Microsoft (solo en el servidor).
 - Origen: paquete npm `arctic` 3.7.0 (pilcrowonpaper), con sus dependencias `@oslojs/*`.
 - Licencia: MIT.
+
+## fflate (v142)
+
+- **Package:** `fflate` 0.8.3 — https://github.com/101arrowz/fflate
+- **Copyright:** Copyright (c) 2023 Arjun Barrett
+- **License:** MIT
+- **Use:** reading studio game packages (.zip) on the server and in the owner's review screen; unmodified dependency.
+
+## AssemblyScript (v142, build tool only)
+
+- **Package:** `assemblyscript` 0.28.20 — https://github.com/AssemblyScript/assemblyscript
+- **License:** Apache-2.0
+- **Use:** compiles the studio kit's example core (`studio-kit/core/index.ts` → `studio-kit/core.wasm`). It is not a
+  project dependency and nothing of it ships in the app except that compiled example module (stub runtime).

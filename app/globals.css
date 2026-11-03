@@ -8584,7 +8584,9 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .studioTabs button { min-height: 42px; border-radius: 12px; border: 1px solid var(--st-hair); background: var(--st-deep); color: var(--st-mute); font-weight: 700; }
 .studioTabs button[aria-selected="true"] { border-color: var(--st-ion); color: var(--st-ink); background: rgba(127, 227, 238, .1); }
 .studioForm { display: grid; gap: 12px; max-width: 560px; margin: 0 auto; }
-.studioTerms { margin: 0; padding: 12px 14px 12px 30px; border-radius: 12px; background: var(--st-panel); border: 1px solid var(--st-hair); color: var(--st-mute); font-size: 13px; line-height: 1.45; display: grid; gap: 6px; }
+.studioTerms { margin: 0; padding: 0; border-radius: 12px; background: var(--st-panel); border: 1px solid var(--st-hair); color: var(--st-mute); font-size: 13px; line-height: 1.45; }
+.studioTerms summary { min-height: 44px; display: flex; align-items: center; padding: 0 14px; color: var(--st-ion); font-weight: 700; cursor: pointer; }
+.studioTerms ul { margin: 0; padding: 0 14px 12px 30px; display: grid; gap: 6px; }
 .studioField { display: grid; gap: 6px; font-size: 13px; color: var(--st-mute); }
 .studioField input, .studioField select, .studioField textarea {
   width: 100%; min-height: 46px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--st-hair);
@@ -8602,7 +8604,39 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .studioInbox li span { color: var(--st-mute); }
 .studioInbox li p { margin: 0; }
 .studioInbox li a { color: var(--st-ion); }
-.studioInbox li button { justify-self: start; min-height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(255, 79, 94, .55); background: transparent; color: #ff8a94; font-weight: 700; }
+/* v142 · package submissions: kit link, file, check report, review actions and the isolated test frame */
+.studioLead { margin: 0; color: var(--st-mute); font-size: 14px; line-height: 1.45; }
+.studioKit { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(127, 227, 238, .45); color: var(--st-ion); font-weight: 700; font-size: 13.5px; text-decoration: none; }
+.studioFile input { padding: 10px 12px; }
+.studioFile input::file-selector-button { margin-right: 10px; min-height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--st-hair); background: var(--st-deep); color: var(--st-ink); font: inherit; font-weight: 700; }
+.studioReport { list-style: none; margin: 0; padding: 10px 12px; display: grid; gap: 6px; border-radius: 12px; background: rgba(9, 9, 11, .55); border: 1px solid var(--st-hair); font-size: 13px; }
+.studioReport li { display: grid; grid-template-columns: 18px 1fr; column-gap: 8px; align-items: baseline; }
+.studioReport li > span { font-weight: 900; text-align: center; }
+.studioReport li[data-state="ok"] > span { color: #6ff0b0; }
+.studioReport li[data-state="fail"] > span { color: #ff6b7a; }
+.studioReport li[data-state="skipped"] { color: var(--st-mute); }
+.studioReport b { font-weight: 600; }
+.studioInbox .studioReport li { padding: 0; border: 0; border-radius: 0; background: none; gap: 0 8px; }
+.studioInbox .studioReport li > span { color: inherit; }
+.studioInbox .studioReport li[data-state="ok"] > span { color: #6ff0b0; }
+.studioInbox .studioReport li[data-state="fail"] > span { color: #ff6b7a; }
+.studioReport code { grid-column: 2; color: #ff9aa4; font-size: 12px; overflow-wrap: anywhere; }
+.studioItemHead { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.studioItemHead em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--st-mute); }
+.studioInbox li[data-status="approved"] .studioItemHead em { color: #6ff0b0; }
+.studioInbox li[data-status="rejected"] .studioItemHead em { color: #ff8a94; }
+.studioItemActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.studioItemActions :is(button, a) { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--st-hair); background: var(--st-deep); color: var(--st-ink); font-weight: 700; font-size: 13px; text-decoration: none; }
+.studioItemActions .studioTry { border-color: rgba(127, 227, 238, .6); color: var(--st-ion); }
+.studioItemActions .studioDelete { border-color: rgba(255, 79, 94, .55); background: transparent; color: #ff8a94; }
+.studioPreview { position: fixed; inset: 0; z-index: 95; display: grid; grid-template-rows: auto 1fr auto auto; gap: 10px; padding: calc(14px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); background: var(--st-abyss); color: var(--st-ink); }
+.studioPreview h2 { margin: 0; font-family: var(--gx-display); font-size: 18px; }
+.studioFrame { min-height: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--st-hair); background: #000; display: grid; place-items: center; }
+.studioFrame iframe { width: 100%; height: 100%; border: 0; display: block; }
+.studioVerdict { margin: 0; min-height: 2.6em; font-size: 14px; line-height: 1.35; color: var(--st-mute); }
+.studioVerdict[data-state="ok"] { color: #6ff0b0; }
+.studioVerdict[data-state="fail"] { color: #ff8a94; }
+.studioReplay { min-height: 46px; border-radius: 12px; border: 1px solid rgba(127, 227, 238, .55); background: var(--st-deep); color: var(--st-ink); font-weight: 700; }
 .studioInbox .studioEmpty { color: var(--st-mute); text-align: center; }
 
 /* v139 · Group hero: graphite with the backlit Saturn and a warm limb glow, and the crew of avatars (no navy). */

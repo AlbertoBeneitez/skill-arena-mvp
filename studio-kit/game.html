@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pulse</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #09090b; color: #eceef2; font-family: system-ui, sans-serif; overflow: hidden; touch-action: none; user-select: none; }
+  canvas { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Pulse"></canvas>
+<script>
+/*
+ * Galactic Games kit example — the interface of "Pulse".
+ * The interface never decides the result: it runs the very same core.wasm (embedded below) tick by tick, sends every
+ * input to the host with the tick it was applied at, and reports the end. The host replays those inputs on core.wasm
+ * and keeps its own result. Protocol (window.postMessage, host = window.parent):
+ *   game → host  {type:"gg:ready", abi:1}
+ *   host → game  {type:"gg:start", seed, seedLo, seedHi}
+ *   game → host  {type:"gg:input", tick, action}      action = index in galactic.json "actions"
+ *   game → host  {type:"gg:end", score, ticks}
+ * Opened on its own (no host), the game starts with a local seed so you can play it while you build it.
+ */
+const CORE_BASE64 = "__CORE_WASM_BASE64__";
+const TICK_RATE = 60;
+const host = window.parent !== window ? window.parent : null;
+const send = (m) => host && host.postMessage(m, "*");
+const bytes = Uint8Array.from(atob(CORE_BASE64), (ch) => ch.charCodeAt(0));
+const core = new WebAssembly.Instance(new WebAssembly.Module(bytes), {}).exports;
+
+const canvas = document.getElementById("c"), ctx = canvas.getContext("2d");
+let running = false, tick = 0, queue = [], acc = 0, last = 0, flash = 0;
+
+function start(seedLo, seedHi) {
+  core.gg_init(seedLo | 0, seedHi | 0);
+  tick = 0; queue = []; acc = 0; last = performance.now(); running = true; flash = 0;
+}
+window.addEventListener("message", (e) => {
+  if (e.source !== host || !e.data || e.data.type !== "gg:start") return;
+  start(e.data.seedLo, e.data.seedHi);
+});
+const tap = (e) => { e.preventDefault(); if (running) queue.push(0); };
+canvas.addEventListener("pointerdown", tap);
+window.addEventListener("keydown", (e) => { if (e.code === "Space" || e.code === "Enter") tap(e); });
+
+function simulate(now) {
+  // Fixed steps: the result never depends on the frame rate or the device.
+  acc += Math.min(250, now - last); last = now;
+  while (running && acc >= 1000 / TICK_RATE) {
+    acc -= 1000 / TICK_RATE;
+    for (const action of queue) { send({ type: "gg:input", tick, action }); if (core.gg_input(action) === 1) flash = 18; }
+    queue = [];
+    core.gg_step(); tick++;
+    if (flash > 0) flash--;
+    if (core.gg_status() === 1) { running = false; send({ type: "gg:end", score: core.gg_score(), ticks: tick }); }
+  }
+}
+
+function draw() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== Math.round(w * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const barW = Math.min(w - 48, 520), x0 = (w - barW) / 2, y = h * .5;
+  const X = (v) => x0 + (v / 1000) * barW;
+  ctx.fillStyle = "#1c1c1f"; ctx.beginPath(); ctx.roundRect(x0, y - 18, barW, 36, 18); ctx.fill();
+  const t = core.view_target(), hw = core.view_half();
+  ctx.fillStyle = flash ? "#e9c27a" : "rgba(127,227,238,.35)";
+  ctx.beginPath(); ctx.roundRect(X(t - hw), y - 18, X(t + hw) - X(t - hw), 36, 18); ctx.fill();
+  if (core.view_pause() === 0 && core.gg_status() === 0) {
+    ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#7fe3ee"; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.arc(X(core.view_pos()), y, 13, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+  }
+  ctx.textAlign = "center"; ctx.fillStyle = "#eceef2"; ctx.font = "800 40px system-ui";
+  ctx.fillText(String(core.gg_score()), w / 2, y - 70);
+  ctx.font = "600 15px system-ui"; ctx.fillStyle = "#9c9ea6";
+  ctx.fillText(`${Math.min(10, core.view_round() + 1)} / 10`, w / 2, y + 66);
+  if (core.view_last() >= 0 && core.view_pause() > 0) { ctx.fillStyle = "#e9c27a"; ctx.fillText(`+${core.view_last()}`, w / 2, y - 34); }
+}
+
+function frame(now) { simulate(now); draw(); requestAnimationFrame(frame); }
+if (host) send({ type: "gg:ready", abi: 1 }); else start(12345, 678);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
