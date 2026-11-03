@@ -65,7 +65,7 @@ export default function CatalogBrowser(props: Props) {
     ...CATALOG_SHELVES.map((key) => ({ key, games: GAMES.filter((game) => gameShelf(game) === key) })),
   ].filter((r) => r.games.length > 0);
   const renderCard = (row: string, game: GameMeta, index: number) => (
-    <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: gameAccent(game) }}>
+    <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: gameAccent(game), ["--i" as string]: index }}>
       <div className={styles.cover}>
         <img
           src={game.cover}

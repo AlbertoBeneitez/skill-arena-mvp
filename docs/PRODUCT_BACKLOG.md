@@ -874,3 +874,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Galoku con el cuadrado del vértice grande en el centro.
 - Roulette con la sala casi negra.
 - Todas las portadas a 1600 × 1100.
+
+## v141-saturn · Portadas en acción y botones de jugar (3-nov-2026)
+
+- Tower Drop: más cerca, con el contenedor bajando sobre la torre.
+- Pinball, Solitaire Sprint y Mine Grid: vuelven a la escena de v138, ahora en plena jugada.
+- Orb Burst y Stack Shift: más detalle.
+- Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.

@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 3 de noviembre de 2026 · base `mobile-test` en v140-saturn.
+Actualizado: 3 de noviembre de 2026 · base `mobile-test` en v141-saturn.
 
 ## Catálogo
 
@@ -83,6 +83,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
 - [x] **Grupo y envío de juegos (3 de noviembre, v139):** botón «ENVIAR JUEGO»; pestaña Grupo con una sola línea de indicaciones y tarjeta grafito con Saturno y avatares.
 - [x] **Portadas con más impacto (3 de noviembre, v140):** carteles del momento culminante de Shot Gallery, Bowling, Tower Drop, Solitaire Sprint, Pinball, Mine Grid, Slot y Dardos; Galoku con el cuadrado del vértice grande y centrado; Roulette con fondo oscuro; todas a 1600 × 1100.
+- [x] **Portadas en acción y botones (3 de noviembre, v141):** Tower Drop más cerca con el bloque bajando; Pinball, Solitaire Sprint y Mine Grid vuelven a su escena anterior captada en plena jugada; detalles de Orb Burst y Stack Shift; botones de jugar con borde mecanizado y un barrido de luz sutil.
 - [x] **Portadas (1 de noviembre, v138):** sin destello horizontal, fondos en negro, Pinball con multibola y Roulette con la bola en la pista.
 - [x] **Proponer un juego (1 de noviembre, v135):** botón en Juegos, formulario con condiciones y consentimiento, bandeja solo para el propietario (`STUDIO_OWNER_ACCOUNTS`).
   - Para recibir propuestas faltan PostgreSQL (`DATABASE_URL`) y la migración 004; hasta entonces el formulario avisa de que la recepción no está abierta.
