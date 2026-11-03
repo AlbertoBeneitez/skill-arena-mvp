@@ -8604,3 +8604,25 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .studioInbox li a { color: var(--st-ion); }
 .studioInbox li button { justify-self: start; min-height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(255, 79, 94, .55); background: transparent; color: #ff8a94; font-weight: 700; }
 .studioInbox .studioEmpty { color: var(--st-mute); text-align: center; }
+
+/* v139 · Group hero: graphite with the backlit Saturn and a warm limb glow, and the crew of avatars (no navy). */
+.groupScreen .groupHero {
+  position: relative; overflow: hidden; isolation: isolate;
+  padding: 18px 16px 16px; min-height: 168px;
+  border: 1px solid rgba(233, 194, 122, .3);
+  background:
+    radial-gradient(70% 90% at 108% -10%, rgba(233, 194, 122, .26), transparent 60%),
+    url("/art/saturn-hero.webp?v=134") right -150px top -110px / 330px auto no-repeat,
+    linear-gradient(160deg, #1e1e22, #0e0e11 70%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 10px 24px rgba(0, 0, 0, .35);
+}
+.groupScreen .groupHero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(14, 14, 17, .92) 35%, rgba(14, 14, 17, .2)); }
+.groupScreen .groupHero > span { color: var(--st-gold); }
+.groupScreen .groupHero h1 { color: var(--st-ink); font-size: 26px; }
+.groupScreen .groupHeroLead { max-width: 260px; color: var(--st-mute); font-size: 13.5px; line-height: 1.45; }
+.groupHeroCrew { display: flex; margin-bottom: 12px; }
+.groupHeroCrew img {
+  width: 46px; height: 46px; border-radius: 50%; object-fit: cover; margin-left: -10px;
+  border: 2px solid #0e0e11; box-shadow: 0 0 0 1.5px rgba(233, 194, 122, .55), 0 6px 14px rgba(0, 0, 0, .5);
+}
+.groupHeroCrew img:first-child { margin-left: 0; box-shadow: 0 0 0 2px var(--st-ion), 0 6px 14px rgba(0, 0, 0, .5); }

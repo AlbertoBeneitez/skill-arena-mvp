@@ -101,14 +101,13 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     return (
       <section className="groupScreen">
         <div className="groupHero">
+          {/* v139: the crew (you and three simulated rivals) instead of three numbered steps; one line says it all. */}
+          <div className="groupHeroCrew" aria-hidden="true">
+            {[avatarSrc, "/avatars/portrait-02-s.webp", "/avatars/portrait-05-s.webp", "/avatars/portrait-09-s.webp"].map((src, i) => <img key={i} src={src} alt="" width={46} height={46} />)}
+          </div>
           <span>{t("group.heroTag")}</span>
           <h1>{t("group.heroTitle")}</h1>
           <p className="groupHeroLead">{t("group.heroLead")}</p>
-          <ol className="groupHowTo">
-            <li><b>1</b><span>{t("group.step1")}</span></li>
-            <li><b>2</b><span>{t("group.step2")}</span></li>
-            <li><b>3</b><span>{t("group.step3")}</span></li>
-          </ol>
         </div>
 
         <div className="groupEntryCards" role="tablist" aria-label={t("group.entryTabs")}>
@@ -144,7 +143,6 @@ export default function GroupHub({ group, competition, balance, playerName, avat
             >
               {t("group.createButton")}
             </button>
-            <p className="groupNextHint">{t("group.createHint")}</p>
           </div>
         ) : (
           <div className="groupSetupCard groupJoinCard">

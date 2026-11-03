@@ -852,3 +852,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Fondos en negro en lugar de azul marino.
 - Pinball con multibola y Roulette con la bola rodando por la pista.
 - Shot Gallery vuelve a renderizarse y Bowling se conserva.
+
+## v139-saturn · «ENVIAR JUEGO» y pestaña Grupo resumida y sin azul (3-nov-2026)
+
+- Botón «ENVIAR JUEGO» al final del catálogo.
+- **Grupo:**
+  - una sola línea de indicaciones y modalidades descritas en pocas palabras;
+  - tarjeta de entrada en grafito con Saturno, halo cálido y corrillo de avatares.

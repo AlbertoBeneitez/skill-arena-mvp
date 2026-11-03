@@ -120,8 +120,7 @@ export default function CatalogBrowser(props: Props) {
           </div>
         </section>
       ))}
-      <section className={styles.studio} aria-labelledby="studio-cta">
-        <h2 id="studio-cta" className={styles.rowTitle}>{t("studio.cta")}</h2>
+      <section className={styles.studio} aria-label={t("studio.title")}>
         <button type="button" className={styles.studioOpen} onClick={() => setProposing(true)}>{t("studio.open")}</button>
       </section>
       {proposing && <GameProposal onClose={() => setProposing(false)} />}
