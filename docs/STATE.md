@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 4 de noviembre de 2026 · base `mobile-test` en v144-saturn.
+Actualizado: 4 de noviembre de 2026 · base `mobile-test` en v145-saturn.
 
 ## Catálogo
 
@@ -22,7 +22,7 @@ resultado aún no verificado de extremo a extremo.
 | orb-burst | Orb Burst | 7.0.0 | VERIFIED |
 | precision-stack | Stack | 4.0.0 | VERIFIED |
 | reaction-test | Shot Gallery | 12.0.0 | VERIFIED |
-| pinball | Pinball | 9.0.0 | VERIFIED |
+| pinball | Pinball | 10.0.0 | VERIFIED |
 | bowling | Bowling | 3.0.0 | VERIFIED |
 | corner-sudoku | Galoku | 4.0.0 | VERIFIED |
 | solitaire-sprint | Solitaire Sprint | 0.2.0 | INTEGRATED |

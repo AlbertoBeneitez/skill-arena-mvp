@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v145-saturn · Tablas del Slot más grandes y Pinball V10 con más rebotes (4-nov-2026)
+
+- **Slot:** rodillos de la máquina como en v143; tablas de rodillos de arriba más grandes.
+- **Pinball V10:** quinto bumper, tres postes de goma (50), dos separadores en los carriles (10) y tirachinas más fuertes (50). Núcleo nuevo; V9 conservada.
+- **Pendiente:** fase 2 del envío de juegos.
+
 ## v144-saturn · Ruleta cenital con bola en 3D y rodillos del Slot más grandes (4-nov-2026)
 
 - **Roulette:** vista cenital restaurada; la bola se dibuja con altura (tamaño y sombra), arco de vuelo según la fuerza y botes de llegada. Posición siempre la del núcleo.
