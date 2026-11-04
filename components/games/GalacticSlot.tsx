@@ -111,7 +111,8 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   const compact = H < 600;
   // No marquee: the screen header already names the game and the HUD pill sits in that band.
   // The three reel tables (seeded per match). The highlighted row is where each reel sits right now.
-  const tableTop = 58, rowPitch = compact ? 10.5 : 13.5, tableH = 24 + 8 * rowPitch;
+  // v144: the reel tables stay compact on every screen, so the reels (where prizes land) get the room.
+  const tableTop = 58, rowPitch = compact ? 9.5 : 10.5, tableH = 22 + 8 * rowPitch;
   ctx.fillStyle = "rgba(10,8,34,.86)";
   ctx.beginPath(); ctx.roundRect(20, tableTop, 350, tableH, 14); ctx.fill();
   ctx.strokeStyle = "rgba(164,166,250,.35)"; ctx.lineWidth = 1; ctx.stroke();
@@ -119,21 +120,21 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   for (let i = 0; i < 3; i++) {
     const x = 85 + i * 110;
     ctx.fillStyle = "#b9a8ff"; ctx.font = "800 9px system-ui";
-    ctx.fillText(t("slot.reel", { n: i + 1 }), x, tableTop + 10);
+    ctx.fillText(t("slot.reel", { n: i + 1 }), x, tableTop + 9.5);
     for (let j = 0; j < 8; j++) {
-      const y = tableTop + 22 + j * rowPitch + rowPitch / 2 - 4.5;
+      const y = tableTop + 20 + j * rowPitch + rowPitch / 2 - 3.5;
       if (s.positions[i] === j) {
         ctx.fillStyle = "rgba(255,211,106,.22)"; ctx.strokeStyle = "rgba(255,211,106,.8)"; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.roundRect(x - 40, y - rowPitch / 2, 80, rowPitch, rowPitch / 2); ctx.fill(); ctx.stroke();
       }
-      symbol(ctx, s.strips[i][j], x, y, compact ? 11 : 14);
+      symbol(ctx, s.strips[i][j], x, y, compact ? 10 : 11.5);
     }
   }
   // Pay table: eight triple chips, then a row of two for the pair and the seven without a pair (v143: chips like the
   // others instead of a loose line that the cabinet frame covered).
-  const payTop = tableTop + tableH + 6;
+  const payTop = tableTop + tableH + 5;
   for (let id = 0; id < 8; id++) {
-    const x = 20 + (id % 4) * 88, y = payTop + Math.floor(id / 4) * 26;
+    const x = 20 + (id % 4) * 88, y = payTop + Math.floor(id / 4) * 25;
     ctx.fillStyle = "rgba(10,8,34,.78)"; ctx.beginPath(); ctx.roundRect(x, y, 84, 22, 11); ctx.fill();
     ctx.strokeStyle = id === 7 ? "rgba(255,74,95,.6)" : "rgba(255,211,106,.25)"; ctx.lineWidth = 1; ctx.stroke();
     symbol(ctx, id, x + 15, y + 11, 18);
@@ -143,7 +144,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
     ctx.fillText(String(SLOT_RULES.tripleMultipliers[id] * 5), x + 76, y + 11.5);
   }
   for (const [k, label, amount, seven] of [[0, t("slot.pair"), "10", false], [1, t("slot.sevenNoPair"), "5", true]] as const) {
-    const x = 20 + k * 176, y = payTop + 52, w = 172;
+    const x = 20 + k * 176, y = payTop + 50, w = 172;
     ctx.fillStyle = "rgba(10,8,34,.78)"; ctx.beginPath(); ctx.roundRect(x, y, w, 22, 11); ctx.fill();
     ctx.strokeStyle = seven ? "rgba(255,74,95,.6)" : "rgba(255,211,106,.25)"; ctx.lineWidth = 1; ctx.stroke();
     if (seven) symbol(ctx, 7, x + 15, y + 11, 18);
@@ -159,8 +160,9 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   ctx.textAlign = "center";
   // Cabinet with chrome-gold frame and a ring of bulbs.
   // Below the cabinet: the step counters (26 high) and a margin, all above the buttons (the canvas ends where they start).
-  const top = payTop + 78 + 14, height = Math.max(150, H - top - 12 - 42), center = top + height / 2;
-  const pitch = Math.min(74, Math.max(56, height * 0.4)), size = pitch * 0.81;
+  const top = payTop + 72 + 16, height = Math.max(160, H - top - 12 - 42), center = top + height / 2;
+  // v144: bigger reels — wider drums and larger symbols (up to 92 px apart, 84 % of that tall).
+  const pitch = Math.min(92, Math.max(62, height * 0.4)), size = pitch * 0.84;
   const reach = Math.ceil(height / 2 / pitch) + 1;
   const frame = ctx.createLinearGradient(0, top - 12, 0, top + height + 12);
   frame.addColorStop(0, "#fff0b8"); frame.addColorStop(0.25, "#c9902e"); frame.addColorStop(0.5, "#ffe08a"); frame.addColorStop(0.8, "#8a5a14"); frame.addColorStop(1, "#e8b85a");
@@ -168,7 +170,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   ctx.fillStyle = "#2a0f3e"; ctx.beginPath(); ctx.roundRect(20, top - 4, 350, height + 8, 20); ctx.fill();
   bulbs(ctx, 28, top + 2, 334, height - 4, 23, s.tick + 3, win);
   for (let i = 0; i < 3; i++) {
-    const x = 85 + i * 110, rx = x - 46, ry = top + 14, rw = 92, rh = height - 28;
+    const x = 85 + i * 110, rx = x - 52, ry = top + 10, rw = 104, rh = height - 20;
     ctx.save();
     ctx.beginPath(); ctx.roundRect(rx, ry, rw, rh, 12); ctx.clip();
     // Drum: bright in the middle, dark at the top and bottom edges.

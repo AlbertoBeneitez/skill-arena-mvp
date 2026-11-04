@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 4 de noviembre de 2026 · base `mobile-test` en v143-saturn.
+Actualizado: 4 de noviembre de 2026 · base `mobile-test` en v144-saturn.
 
 ## Catálogo
 

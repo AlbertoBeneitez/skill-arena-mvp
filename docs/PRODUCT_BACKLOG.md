@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v144-saturn · Ruleta cenital con bola en 3D y rodillos del Slot más grandes (4-nov-2026)
+
+- **Roulette:** vista cenital restaurada; la bola se dibuja con altura (tamaño y sombra), arco de vuelo según la fuerza y botes de llegada. Posición siempre la del núcleo.
+- **Slot:** rodillos más anchos y símbolos más grandes.
+- **Pendiente:** fase 2 del envío de juegos.
+
 ## v143-saturn · Acabado visual, ruleta en 3D y Slot sin solapes (4-nov-2026)
 
 - **Catálogo:** títulos de fila con marca y línea del color de su tipo; tarjetas de cristal con borde iluminado; botones de jugar con color sutil del juego; cabecera y barra inferior con línea iluminada.
