@@ -213,6 +213,82 @@ function drawSpecies(g: CanvasRenderingContext2D, species: number, p: Pal) {
   }
 }
 
+/**
+ * v143: the finer layer of each creature, painted over its base shape — what makes it read as a character rather
+ * than a token at a glance: gloss and pores on the kraken's dome, eyelid and gills; seams, rivets and a scratched
+ * chrome band on the drone; serrated scythes, banded abdomen and lit feelers on the mantis; bubbles, a lit core and
+ * drips in the slime; cloak folds, a ring of runes and embers round the wraith; lit facet edges, moss and a glowing
+ * chest crack on the golem; a visor reflection, harness and mission patch on the astronaut.
+ */
+function detailSpecies(g: CanvasRenderingContext2D, species: number, p: Pal) {
+  const line = (pts: number[][], c: string, w: number) => { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); pts.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke(); };
+  const dot = (x: number, y: number, r: number, c: string) => { g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); };
+  if (species === 0) {
+    g.strokeStyle = "rgba(255,255,255,.4)"; g.lineWidth = 3; g.beginPath(); g.arc(-4, -22, 26, Math.PI * 1.08, Math.PI * 1.42); g.stroke();
+    for (const [x, y, r] of [[-17, -36, 4], [-8, -46, 3], [14, -40, 3.5], [21, -26, 2.5], [-22, -20, 2.5]]) { g.strokeStyle = mix(p.dark, p.body, 0.3, 0.7); g.lineWidth = 0.8; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.stroke(); }
+    // upper eyelid and lashes of light
+    g.fillStyle = mix(p.body, p.dark, 0.35); g.beginPath(); g.ellipse(0, -10, 16, 13, 0, Math.PI * 1.05, Math.PI * 1.95); g.closePath(); g.fill();
+    g.strokeStyle = mix(p.body, "#ffffff", 0.4, 0.8); g.lineWidth = 1.2; g.beginPath(); g.ellipse(0, -10, 16, 13, 0, Math.PI * 1.08, Math.PI * 1.92); g.stroke();
+    g.strokeStyle = "rgba(120,70,0,.45)"; g.lineWidth = 0.7;
+    for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; g.beginPath(); g.moveTo(Math.cos(a) * 3.5, -10 + Math.sin(a) * 3.5); g.lineTo(Math.cos(a) * 8.5, -10 + Math.sin(a) * 8.5); g.stroke(); }
+    for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) { g.strokeStyle = mix(p.dark, "#000000", 0.2, 0.75); g.lineWidth = 1.4; g.beginPath(); g.arc(sx * 27, -8 + k * 6, 5, sx < 0 ? -0.6 : Math.PI - 0.6, sx < 0 ? 0.6 : Math.PI + 0.6); g.stroke(); }
+  } else if (species === 1) {
+    g.strokeStyle = "rgba(10,14,20,.45)"; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(0, -6, 10, 31, 0, Math.PI * 0.55, Math.PI * 1.45); g.stroke();
+    g.beginPath(); g.ellipse(0, -6, 10, 31, 0, -Math.PI * 0.45, Math.PI * 0.45); g.stroke();
+    for (const [x, y] of [[-26, -14], [26, -14], [-29, 2], [29, 2], [-8, 20], [8, 20]]) { dot(x, y, 1.2, "rgba(255,255,255,.75)"); dot(x + 0.5, y + 0.6, 0.6, "rgba(0,0,0,.4)"); }
+    const band = g.createLinearGradient(-30, -30, 10, 10);
+    band.addColorStop(0, "rgba(255,255,255,0)"); band.addColorStop(0.5, "rgba(255,255,255,.4)"); band.addColorStop(1, "rgba(255,255,255,0)");
+    g.strokeStyle = band; g.lineWidth = 5; g.beginPath(); g.arc(0, -6, 25, Math.PI * 1.1, Math.PI * 1.45); g.stroke();
+    line([[12, 4], [20, 0]], "rgba(255,255,255,.35)", 0.7); line([[14, 8], [21, 5]], "rgba(255,255,255,.25)", 0.6);
+    g.fillStyle = "#e8b020"; g.fillRect(-10, 14, 20, 4); g.fillStyle = "#1a1a1a"; for (let k = 0; k < 4; k++) g.fillRect(-9 + k * 5, 14, 2.4, 4);
+  } else if (species === 2) {
+    g.fillStyle = mix(p.accent, "#ffffff", 0.3, 0.85);
+    for (const sx of [-1, 1]) for (let k = 0; k < 5; k++) { const y = -32 + k * 7, x = sx * (39 - k * 1.3); g.beginPath(); g.moveTo(x, y); g.lineTo(x - sx * 5, y + 2); g.lineTo(x - sx * 0.5, y + 4.5); g.closePath(); g.fill(); }
+    for (let k = 0; k < 4; k++) line([[-12, 12 + k * 8], [0, 9 + k * 8], [12, 12 + k * 8]], mix(p.accent, "#ffffff", 0.2, 0.4), 1.2);
+    for (const sx of [-1, 1]) { glowDot(g, sx * 26, -64, 2.2, p.accent); dot(sx * 15 - 4, -37, 2.6, "rgba(255,255,255,.85)"); }
+    line([[-28, -40], [0, -50], [28, -40]], mix(p.body, "#ffffff", 0.5, 0.7), 1.4);
+  } else if (species === 3) {
+    const core = g.createRadialGradient(4, 8, 1, 4, 8, 20);
+    core.addColorStop(0, mix(p.accent, "#ffffff", 0.5, 0.55)); core.addColorStop(1, mix(p.accent, p.accent, 0, 0));
+    g.fillStyle = core; g.beginPath(); g.arc(4, 8, 20, 0, Math.PI * 2); g.fill();
+    for (const [x, y, r] of [[-26, 2, 3], [24, 2, 2.4], [-6, 30, 2.6], [16, 32, 1.8]]) { g.strokeStyle = "rgba(255,245,220,.55)"; g.lineWidth = 0.8; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.stroke(); dot(x - r * 0.3, y - r * 0.3, r * 0.3, "rgba(255,255,255,.6)"); }
+    for (const [x, l] of [[-30, 9], [12, 12], [30, 7]]) { g.fillStyle = mix(p.body, p.dark, 0.3); g.beginPath(); g.moveTo(x - 3.5, 40); g.quadraticCurveTo(x, 40 + l * 2, x + 3.5, 40); g.fill(); dot(x - 1, 41 + l, 1, "rgba(255,255,255,.6)"); }
+    g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 2; g.beginPath(); g.arc(0, -4, 34, Math.PI * 1.18, Math.PI * 1.36); g.stroke();
+  } else if (species === 4) {
+    for (const x of [-26, -12, 4, 20, 34]) {
+      line([[x, -6 + Math.abs(x) * 0.3], [x + 3, 24], [x - 2, 56]], "rgba(0,0,0,.32)", 2.6);
+      line([[x + 3, -4 + Math.abs(x) * 0.3], [x + 6, 24], [x + 1, 54]], mix(p.body, "#ffffff", 0.35, 0.22), 1.2);
+    }
+    g.save(); g.shadowColor = p.accent; g.shadowBlur = 6; g.strokeStyle = mix(p.accent, "#ffffff", 0.2, 0.8); g.lineWidth = 1.2;
+    for (let k = 0; k < 10; k++) {
+      const a = (k / 10) * Math.PI * 2, x = Math.cos(a) * 50, y = -18 + Math.sin(a) * 12;
+      if (Math.sin(a) > 0.2 && Math.abs(x) < 40) continue; // behind the cloak front
+      g.beginPath(); g.moveTo(x - 2, y - 3); g.lineTo(x + 2, y - 3); g.moveTo(x, y - 3); g.lineTo(x, y + 3); g.moveTo(x - 2, y + 1); g.lineTo(x + 2, y + 3); g.stroke();
+    }
+    g.restore();
+    for (let k = 0; k < 8; k++) glowDot(g, -40 + noise(k + 3) * 80, -70 + noise(k + 11) * 70, 0.7 + noise(k) * 0.6, p.accent);
+  } else if (species === 5) {
+    line([[-34, -38], [-10, -56], [22, -50]], "rgba(255,240,220,.45)", 1.6);
+    line([[-10, -56], [-2, -30], [-40, -10]], "rgba(0,0,0,.25)", 1.2);
+    line([[22, -50], [-2, -30], [32, 22]], "rgba(0,0,0,.22)", 1.2);
+    for (let k = 0; k < 9; k++) dot(-22 + noise(k + 40) * 40, -54 + noise(k + 50) * 8, 1.6 + noise(k) * 1.6, `rgba(${90 + noise(k + 2) * 40},${150 + noise(k + 4) * 40},70,.75)`);
+    g.save(); g.shadowColor = p.accent; g.shadowBlur = 10;
+    const chest = g.createRadialGradient(0, 8, 1, 0, 8, 9);
+    chest.addColorStop(0, "#fff1c4"); chest.addColorStop(0.5, p.accent); chest.addColorStop(1, mix(p.accent, p.accent, 0, 0));
+    g.fillStyle = chest; g.beginPath(); g.arc(0, 8, 9, 0, Math.PI * 2); g.fill(); g.restore();
+  } else {
+    // astronaut: visor reflection, harness straps, mission patch, glove cuffs
+    g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, -25, 12, 9, 0, Math.PI * 1.1, Math.PI * 1.6); g.stroke();
+    g.fillStyle = "rgba(20,30,50,.35)"; g.beginPath(); g.ellipse(4, -21, 9, 4, 0.2, 0, Math.PI * 2); g.fill();
+    line([[-16, -6], [-6, 22]], mix(p.dark, "#000000", 0.2, 0.7), 3); line([[16, -6], [6, 22]], mix(p.dark, "#000000", 0.2, 0.7), 3);
+    dot(-14, 2, 5, p.accent); g.fillStyle = "#ffffff"; g.beginPath();
+    for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + (k * Math.PI) / 5, r = k % 2 ? 1.4 : 3.4; k ? g.lineTo(-14 + Math.cos(a) * r, 2 + Math.sin(a) * r) : g.moveTo(-14 + Math.cos(a) * r, 2 + Math.sin(a) * r); }
+    g.closePath(); g.fill();
+    for (const sx of [-1, 1]) line([[sx * 34 - 7, -38], [sx * 34 + 7, -38]], mix(p.dark, "#000000", 0.1, 0.8), 2.4);
+  }
+}
+
 const SPR = 3, BOX_W = 120, BOX_H = 132, ORX = 60, ORY = 68;
 const spriteCache = new Map<string, HTMLCanvasElement | null>();
 /** Atmospheric haze per row (far rows sit deeper in the hangar's blue air). */
@@ -227,6 +303,7 @@ function sprite(species: number, tint: number, holo: boolean, haze = 0) {
   if (!g) { spriteCache.set(key, null); return null; }
   g.scale(SPR, SPR); g.translate(ORX, ORY);
   drawSpecies(g, species, PAL[tint] ?? PAL[species]);
+  detailSpecies(g, species, PAL[tint] ?? PAL[species]);
   g.setTransform(1, 0, 0, 1, 0, 0);
   // Volume: warm top, cool dark toward the cover line.
   g.globalCompositeOperation = "source-atop";

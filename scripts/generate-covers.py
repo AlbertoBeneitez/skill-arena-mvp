@@ -12,6 +12,10 @@ v141: Tower Drop closer with the container lowered onto the tower; Pinball, Soli
 v138 scenes, now caught mid-action (flipper shot, the ace flying to its pile, the shockwave); finer Orb Burst and
 Stack Shift details (rim light, bevels, falling streaks, shards).
 
+v143: Stack built of textured, machined modules (brushed sides, woven top plates, bevels, grooves and rivets); the
+Solitaire cover is a tableau staircase alternating red and black with the 6♦ landing on it; Shot Gallery in Hangar 7
+with the game's crew drawn in detail (mantis struck by the laser, kraken, wraith, drone, golem, slime).
+
 The SVGs are only a source: scripts/rasterize-covers.cjs renders them to 800×550 WebP for the app (blur filters are
 too expensive for phones to paint live). Usage:
     python3 scripts/generate-covers.py && node scripts/rasterize-covers.cjs
@@ -1048,6 +1052,367 @@ def stackshift():
     p.append(cine(X0 + 4 * CS, ly, key="#d2fff5", flare="#bff6f0", strength=.62, flare_w=220))
     return svg("".join(p), extra_defs=d)
 covers["stack-shift"] = stackshift()
+
+
+# ---------- v143 ----------
+import colorsys
+
+
+def hsl(h, s, l):
+    r, g, b = colorsys.hls_to_rgb((h % 360) / 360, max(0, min(1, l)), max(0, min(1, s)))
+    return "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
+
+
+V143_DEFS = (
+    # Material grain laid over a shape (soft-light grey noise, clipped to the shape itself).
+    '<filter id="grainmat" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="5" result="n"/>'
+    '<feColorMatrix in="n" type="saturate" values="0" result="g"/><feBlend in="g" in2="SourceGraphic" mode="soft-light" result="b"/><feComposite in="b" in2="SourceGraphic" operator="in"/></filter>'
+    # Brushed metal: noise stretched along one axis.
+    '<filter id="brushmat" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012 .7" numOctaves="2" seed="11" result="n"/>'
+    '<feColorMatrix in="n" type="matrix" values=".33 0 0 0 .33  .33 0 0 0 .33  .33 0 0 0 .33  0 0 0 0 1" result="g"/><feBlend in="g" in2="SourceGraphic" mode="soft-light" result="b"/><feComposite in="b" in2="SourceGraphic" operator="in"/></filter>'
+)
+
+
+# ---------- Stack: the same tower, now built of machined modules — brushed sides, a woven top plate, bevels ----------
+def iso_tex(cx, cy, w, dd, h, hue, idn, lit=.6, sat=.72):
+    t = [(cx, cy - dd), (cx + w, cy), (cx, cy + dd), (cx - w, cy)]
+    lf = [(cx - w, cy), (cx, cy + dd), (cx, cy + dd + h), (cx - w, cy + h)]
+    rt = [(cx, cy + dd), (cx + w, cy), (cx + w, cy + h), (cx, cy + dd + h)]
+    F = lambda pts: " ".join(f"{f(x)},{f(y)}" for x, y in pts)
+    n = 7  # top plate tiles per side
+    d = (f'<linearGradient id="tt{idn}" gradientUnits="userSpaceOnUse" x1="{f(t[0][0])}" y1="{f(t[0][1])}" x2="{f(t[2][0])}" y2="{f(t[2][1])}">'
+         f'<stop offset="0" stop-color="{hsl(hue, sat + .1, lit + .14)}"/><stop offset=".45" stop-color="{hsl(hue, sat, lit)}"/><stop offset="1" stop-color="{hsl(hue + 8, sat - .04, lit - .12)}"/></linearGradient>'
+         f'<linearGradient id="tl{idn}" gradientUnits="userSpaceOnUse" x1="0" y1="{f(cy)}" x2="0" y2="{f(cy + dd + h)}">'
+         f'<stop offset="0" stop-color="{hsl(hue, sat - .08, lit - .2)}"/><stop offset="1" stop-color="{hsl(hue + 10, sat, lit - .38)}"/></linearGradient>'
+         f'<linearGradient id="tr{idn}" gradientUnits="userSpaceOnUse" x1="0" y1="{f(cy)}" x2="0" y2="{f(cy + dd + h)}">'
+         f'<stop offset="0" stop-color="{hsl(hue, sat, lit - .06)}"/><stop offset="1" stop-color="{hsl(hue + 10, sat, lit - .27)}"/></linearGradient>'
+         # Top plate tiles: one light and one dark line per tile, laid along the plate's own axes.
+         f'<pattern id="tw{idn}" width="1" height="1" patternUnits="userSpaceOnUse" patternTransform="matrix({w / n:.3f} {dd / n:.3f} {-w / n:.3f} {dd / n:.3f} {f(t[0][0])} {f(t[0][1])})">'
+         f'<path d="M0,.02 H1 M.02,0 V1" stroke="#fff" stroke-opacity=".22" stroke-width=".04" fill="none"/><path d="M0,.98 H1 M.98,0 V1" stroke="#000" stroke-opacity=".2" stroke-width=".04" fill="none"/>'
+         f'<circle cx=".5" cy=".5" r=".05" fill="#fff" fill-opacity=".18"/></pattern>')
+    out = [f'<defs>{d}</defs>']
+    out.append(f'<polygon points="{F(lf)}" fill="url(#tl{idn})" filter="url(#brushmat)"/><polygon points="{F(rt)}" fill="url(#tr{idn})" filter="url(#brushmat)"/>')
+    # groove with rivets round the sides, a third of the way down
+    gy = h * .36
+    for a, b, lo in ((lf[0], lf[1], .2), (rt[0], rt[1], .32)):
+        out.append(f'<line x1="{f(a[0])}" y1="{f(a[1] + gy)}" x2="{f(b[0])}" y2="{f(b[1] + gy)}" stroke="#000" stroke-opacity=".38" stroke-width="2.2"/>'
+                   f'<line x1="{f(a[0])}" y1="{f(a[1] + gy + 1.8)}" x2="{f(b[0])}" y2="{f(b[1] + gy + 1.8)}" stroke="#fff" stroke-opacity="{lo}" stroke-width="1.1"/>')
+        for k in range(1, 6):
+            q = k / 6
+            out.append(f'<circle cx="{f(a[0] + (b[0] - a[0]) * q)}" cy="{f(a[1] + (b[1] - a[1]) * q + h * .68)}" r="1.8" fill="#fff" fill-opacity="{lo + .15:.2f}"/>')
+    out.append(f'<polygon points="{F(t)}" fill="url(#tt{idn})" filter="url(#grainmat)"/><polygon points="{F(t)}" fill="url(#tw{idn})"/>')
+    # engraved inset panel on the top plate
+    k = .16
+    it = [(cx, cy - dd * (1 - k)), (cx + w * (1 - k), cy), (cx, cy + dd * (1 - k)), (cx - w * (1 - k), cy)]
+    out.append(f'<polygon points="{F(it)}" fill="none" stroke="#000" stroke-opacity=".22" stroke-width="2"/>'
+               f'<polyline points="{F([(x, y + 1.6) for x, y in (it[3], it[2], it[1])])}" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="1.2"/>')
+    # bevels: bright back edges, a softer front corner, dark seams at the bottom
+    out.append(f'<polyline points="{F([t[3], t[0], t[1]])}" fill="none" stroke="{hsl(hue, .9, .93)}" stroke-width="2.4" stroke-linecap="round"/>'
+               f'<polyline points="{F([t[3], t[2], t[1]])}" fill="none" stroke="{hsl(hue, .9, .86)}" stroke-opacity=".6" stroke-width="1.6"/>'
+               f'<line x1="{f(t[2][0])}" y1="{f(t[2][1])}" x2="{f(t[2][0])}" y2="{f(t[2][1] + h)}" stroke="#fff" stroke-opacity=".35" stroke-width="1.4"/>'
+               f'<polyline points="{F([lf[3], lf[2], rt[2]])}" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="1.6"/>')
+    return "".join(out)
+
+
+def stack_v143():
+    d = ('<radialGradient id="sbg" cx="50%" cy="36%" r="85%"><stop offset="0" stop-color="#262a4a"/><stop offset=".6" stop-color="#0e0f1c"/><stop offset="1" stop-color="#050509"/></radialGradient>'
+         '<radialGradient id="sring" cx="50%" cy="50%" r="50%"><stop offset=".7" stop-color="#fff3b0" stop-opacity="0"/><stop offset=".92" stop-color="#fff3b0" stop-opacity=".5"/><stop offset="1" stop-color="#fff3b0" stop-opacity="0"/></radialGradient>' + V143_DEFS)
+    p = ['<rect width="640" height="440" fill="url(#sbg)"/>', stars(31, 80, 300), bokeh(15, ["#7fe3ee", "#b996ff", "#ff9ad8", "#ffd36a"], 12, 440, 20, 55, (.06, .2))]
+    hues = [186, 222, 262, 318, 152, 200, 284, 340, 170]
+    g = ['<g transform="translate(0 128)">']
+    for i in range(9):
+        g.append(iso_tex(320 + (i % 2) * 6 - 3, 470 - i * 46, 230 - i * 6, 116 - i * 3, 38, hues[i], f"s{i}", lit=.56 - (8 - i) * .012))
+    # landing ring and light column under the falling block
+    g.append('<ellipse cx="320" cy="84" rx="206" ry="100" fill="url(#sring)"/>')
+    g.append('<ellipse cx="320" cy="84" rx="200" ry="98" fill="none" stroke="#fff3b0" stroke-width="4" opacity=".7" filter="url(#glow)"/>')
+    g.append('<polygon points="270,-140 572,-140 570,40 272,30" fill="#fff3b0" opacity=".07" filter="url(#soft)"/>')
+    g.append(iso_tex(420, 30, 150, 76, 34, 46, "gold", lit=.6, sat=.9))
+    for q in range(1, 5):
+        g.append(f'<rect x="{410 + q * 3}" y="{-60 - q * 14}" width="{4 + q}" height="{28 - q * 3}" rx="2" fill="#ffe066" opacity="{.6 - q * .12:.2f}"/>')
+    g.append('</g>')
+    p += g
+    # the sliced overhang tumbling off with chips of the cut
+    p.append(f'<g transform="rotate(26 570 250)">{iso_tex(570, 250, 46, 24, 30, 46, "chip", lit=.58, sat=.9)}</g>')
+    rr = random.Random(43)
+    for _ in range(9):
+        x, y, s = rr.uniform(520, 625), rr.uniform(170, 330), rr.uniform(3, 7)
+        p.append(f'<rect x="{f(x)}" y="{f(y)}" width="{f(s)}" height="{f(s * .7)}" fill="{rr.choice(["#ffe066", "#fff3b0", "#c99a1c"])}" transform="rotate({rr.randint(0, 90)} {f(x)} {f(y)})" opacity=".9"/>')
+    p.append(speed_lines((570, 250, .25, 1), 8, 5, "#fff3b0", 26, 20, 60, (.15, .45)))
+    p.append(sparkle(150, 200, 14, "#fff3b0") + sparkle(540, 140, 10) + sparkle(432, 160, 8, "#fff3b0"))
+    p.append(cine(400, 180, key="#fff1c8", strength=.6, flare_w=0, bloom=True))
+    return svg("".join(p), extra_defs=d)
+
+
+covers["precision-stack"] = stack_v143()
+covers["stack-3d"] = covers["precision-stack"]
+
+
+# ---------- Solitaire Sprint: a tableau staircase, red and black alternating down the felt; the 6♦ lands on it ----------
+def card_v143(x, y, rank, suit, red, rot, s, idn):
+    col = "#d11f3a" if red else "#131a2a"
+    w, h = 150 * s, 212 * s
+    face = {"K": "♚", "Q": "♛", "J": "♞"}.get(rank)
+    big = (f'<text x="{f(x + w / 2)}" y="{f(y + h * .66)}" font-family="DejaVu Sans, Arial, sans-serif" font-size="{f(92 * s)}" fill="{col}" text-anchor="middle">{face}</text>'
+           f'<text x="{f(x + w / 2)}" y="{f(y + h * .86)}" font-family="Arial, sans-serif" font-size="{f(34 * s)}" fill="{col}" text-anchor="middle">{suit}</text>') if face else \
+        f'<text x="{f(x + w / 2)}" y="{f(y + h * .7)}" font-family="Arial, sans-serif" font-size="{f(96 * s)}" fill="{col}" text-anchor="middle">{suit}</text>'
+    glow = "#ff4a62" if red else "#7fb4ff"
+    return (f'<defs><linearGradient id="cf{idn}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf7"/><stop offset=".7" stop-color="#f6f1e4"/><stop offset="1" stop-color="#e9e1cc"/></linearGradient></defs>'
+            f'<g transform="rotate({rot} {f(x + w / 2)} {f(y + h / 2)})">'
+            f'<rect x="{f(x - 3)}" y="{f(y - 3)}" width="{f(w + 6)}" height="{f(h + 6)}" rx="{f(16 * s)}" fill="{glow}" opacity=".32" filter="url(#glow)"/>'
+            f'<rect x="{f(x)}" y="{f(y)}" width="{f(w)}" height="{f(h)}" rx="{f(14 * s)}" fill="url(#cf{idn})" stroke="#c9cfd8" filter="url(#shadow)"/>'
+            f'<rect x="{f(x + 7 * s)}" y="{f(y + 7 * s)}" width="{f(w - 14 * s)}" height="{f(h - 14 * s)}" rx="{f(10 * s)}" fill="none" stroke="#d8b86a" stroke-opacity=".7" stroke-width="{f(1.4 * s)}"/>'
+            f'<text x="{f(x + 15 * s)}" y="{f(y + 40 * s)}" font-family="Georgia, serif" font-size="{f(36 * s)}" font-weight="700" fill="{col}">{rank}</text>'
+            f'<text x="{f(x + 17 * s)}" y="{f(y + 70 * s)}" font-family="Arial, sans-serif" font-size="{f(27 * s)}" fill="{col}">{suit}</text>'
+            f'<text x="{f(x + w - 16 * s)}" y="{f(y + 36 * s)}" font-family="Arial, sans-serif" font-size="{f(24 * s)}" fill="{col}" text-anchor="end">{suit}</text>'
+            f'{big}</g>')
+
+
+def solitaire_v143():
+    d = ('<radialGradient id="felt" cx="46%" cy="40%" r="82%"><stop offset="0" stop-color="#1fb07c"/><stop offset=".42" stop-color="#0c6446"/><stop offset="1" stop-color="#021510"/></radialGradient>'
+         '<radialGradient id="lamp" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#fff4d6" stop-opacity=".45"/><stop offset="1" stop-color="#fff4d6" stop-opacity="0"/></radialGradient>'
+         '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2a14"/><stop offset=".5" stop-color="#8a5a30"/><stop offset="1" stop-color="#2a160a"/></linearGradient>'
+         '<linearGradient id="arcstreak" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd0d8" stop-opacity="0"/><stop offset=".75" stop-color="#ffd0d8" stop-opacity=".45"/><stop offset="1" stop-color="#ffffff" stop-opacity=".9"/></linearGradient>')
+    p = ['<rect width="640" height="440" fill="url(#felt)"/>']
+    r = random.Random(2)
+    for _ in range(1100):
+        p.append(f'<circle cx="{f(r.uniform(0, 640))}" cy="{f(r.uniform(0, 440))}" r=".8" fill="#000" opacity=".13"/>')
+    # neighbouring tableau columns, far and soft, so the staircase reads as part of a game in progress
+    for k, (x0, y0) in enumerate([(-40, 150), (560, 20)]):
+        for i in range(4):
+            p.append(f'<g filter="url(#dof2)" opacity=".55"><rect x="{x0 + i * 4}" y="{y0 + i * 30}" width="100" height="140" rx="10" fill="{"#7a1a2e" if i < 3 else "#f2ecdc"}" stroke="#ffd0a0" stroke-opacity=".35"/></g>')
+    p.append('<g filter="url(#dof2)"><path d="M-20,410 Q320,372 660,410 L660,460 L-20,460 Z" fill="url(#rim)"/><path d="M-20,410 Q320,372 660,410" fill="none" stroke="#e8b87a" stroke-opacity=".5" stroke-width="4"/></g>')
+    p.append('<ellipse cx="300" cy="120" rx="320" ry="210" fill="url(#lamp)" style="mix-blend-mode:screen"/>')
+    # the staircase: K♠ Q♥ J♣ 10♦ 9♠ 8♥ 7♣, each overlapping the last, swinging gently into a curve
+    seq = [("K", "♠", False), ("Q", "♥", True), ("J", "♣", False), ("10", "♦", True), ("9", "♠", False), ("8", "♥", True), ("7", "♣", False)]
+    s = .7
+    pos = []
+    for i, (rk, su, red) in enumerate(seq):
+        x = 46 + i * 58 + 6 * math.sin(i * .9)
+        y = 66 + i * 33 - 4 * i * (i - 6) * .35
+        rot = -9 + i * 2.6
+        pos.append((x, y))
+        p.append(card_v143(x, y, rk, su, red, rot, s, f"st{i}"))
+    # the 6♦ arriving from the upper right, about to land on the 7♣: ghosts, streak, speed lines
+    lx, ly = pos[-1][0] + 58, pos[-1][1] + 33
+    fx, fy = lx + 56, ly - 92
+    six = lambda x, y: card_v143(x, y, "6", "♦", True, 21, s, f"g{int(x)}")
+    p.append(motion_ghosts(six, [(fx + 120, fy - 96), (fx + 80, fy - 64), (fx + 40, fy - 32)], (.06, .26)))
+    w6, h6 = 150 * s, 212 * s
+    p.append(f'<path d="M{f(fx + 160 + w6 / 2)},{f(fy - 130 + h6 / 2)} Q{f(fx + 70 + w6 / 2)},{f(fy - 70 + h6 / 2)} {f(fx + w6 / 2)},{f(fy + h6 / 2)}" fill="none" stroke="url(#arcstreak)" stroke-width="18" stroke-linecap="round" filter="url(#glow)" opacity=".6"/>')
+    p.append(six(fx, fy))
+    p.append(speed_lines((fx + w6 / 2, fy + h6 / 2, -1, .8), 12, 8, "#ffe3e8", 56, 26, 70, (.16, .45)))
+    # sparkles along the stair
+    p.append(sparkle(pos[0][0] + 98, pos[0][1] + 8, 11, "#fff3b0") + sparkle(lx + 40, ly - 10, 14, "#fff3b0") + sparkle(600, 120, 9, "#ffffff"))
+    p.append(cine(330, 220, key="#fff1c8", flare="#ffe7a8", beam=(300, -60, 180), strength=.66, flare_w=0))
+    return svg("".join(p), extra_defs=d)
+
+
+covers["solitaire-sprint"] = solitaire_v143()
+
+
+# ---------- Shot Gallery: Hangar 7 — the crew of creatures pops up behind the cover; a mantis takes the laser hit ----------
+def _rg(idn, stops, cx="35%", cy="30%", r="75%"):
+    return f'<radialGradient id="{idn}" cx="{cx}" cy="{cy}" r="{r}">' + "".join(f'<stop offset="{o}" stop-color="{c}"/>' for o, c in stops) + '</radialGradient>'
+
+
+def _lg(idn, stops, x1=0, y1=0, x2=0, y2=1):
+    return f'<linearGradient id="{idn}" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}">' + "".join(f'<stop offset="{o}" stop-color="{c}"/>' for o, c in stops) + '</linearGradient>'
+
+
+def g_mantis(x, y, s, idn, hit=False):
+    """Raised serrated scythes, a segmented thorax, a wedge head with faceted compound eyes and glowing feelers."""
+    d = (_lg(f"{idn}a", [(0, "#c8ff7a"), (.45, "#62c23a"), (1, "#14400c")], 0, 0, 1, 1) + _rg(f"{idn}b", [(0, "#e9ff9a"), (.35, "#7bd64a"), (1, "#1a4a10")]) +
+         _rg(f"{idn}e", [(0, "#fff6c8"), (.35, "#ffb02a"), (.8, "#a54a06"), (1, "#3a1402")], "40%", "35%", "70%"))
+    o = [f'<defs>{d}</defs><g transform="translate({f(x)} {f(y)}) scale({s})">']
+    for sx in (-1, 1):
+        # scythe: upper arm and blade with serrations along the inner edge
+        o.append(f'<path d="M{sx * 14},6 Q{sx * 44},-2 {sx * 52},-46 Q{sx * 60},-76 {sx * 40},-96 Q{sx * 52},-64 {sx * 38},-40 Q{sx * 34},-14 {sx * 20},16 Z" fill="url(#{idn}a)" stroke="#0b2a06" stroke-width="2.2"/>')
+        o.append("".join(f'<path d="M{f(sx * (40 - k * 1.4))},{f(-88 + k * 9)} l{f(sx * -7)},{f(3)} l{f(sx * 6)},{f(4)}Z" fill="#e9ffb0" opacity=".85"/>' for k in range(6)))
+        o.append(f'<path d="M{sx * 50},-46 Q{sx * 58},-74 {sx * 41},-94" fill="none" stroke="#f4ffc8" stroke-width="2" opacity=".8"/>')
+    # abdomen and thorax, segmented
+    for k in range(5):
+        o.append(f'<ellipse cx="0" cy="{f(30 + k * 11)}" rx="{f(22 - k * 1.5)}" ry="9" fill="url(#{idn}b)" stroke="#123a0a" stroke-width="1.6"/>'
+                 f'<path d="M{f(-16 + k)},{f(27 + k * 11)} Q0,{f(22 + k * 11)} {f(16 - k)},{f(27 + k * 11)}" fill="none" stroke="#e2ff9a" stroke-opacity=".45" stroke-width="1.4"/>')
+    o.append(f'<ellipse cx="0" cy="10" rx="17" ry="20" fill="url(#{idn}b)" stroke="#123a0a" stroke-width="2"/>')
+    # feelers with lit tips
+    for sx in (-1, 1):
+        o.append(f'<path d="M{sx * 6},-40 Q{sx * 14},-74 {sx * 36},-82" fill="none" stroke="#2a5a14" stroke-width="2.4" stroke-linecap="round"/>'
+                 f'<circle cx="{sx * 37}" cy="-83" r="4" fill="#e2ff7a" filter="url(#glow)"/>')
+    # wedge head
+    o.append(f'<path d="M-36,-40 Q0,-58 36,-40 Q18,-12 0,2 Q-18,-12 -36,-40 Z" fill="url(#{idn}a)" stroke="#0b2a06" stroke-width="2.4"/>')
+    o.append('<path d="M-30,-40 Q0,-54 30,-40" fill="none" stroke="#f4ffc8" stroke-width="1.8" opacity=".7"/>')
+    for sx in (-1, 1):
+        o.append(f'<ellipse cx="{sx * 17}" cy="-36" rx="13" ry="10.5" fill="url(#{idn}e)" stroke="#2a1002" stroke-width="1.6" transform="rotate({sx * 22} {sx * 17} -36)"/>')
+        o.append("".join(f'<circle cx="{f(sx * 17 + (i % 4 - 1.5) * 5.2)}" cy="{f(-36 + (i // 4 - 1) * 5)}" r="1.3" fill="#000" opacity=".22"/>' for i in range(12)))
+        o.append(f'<ellipse cx="{sx * 17 - 4}" cy="-40" rx="4" ry="2.4" fill="#fff" opacity=".85" transform="rotate({sx * 22} {sx * 17} -36)"/>')
+        o.append(f'<path d="M{sx * 4},-8 Q{sx * 11},-2 {sx * 6},6" fill="none" stroke="#0b2a06" stroke-width="3" stroke-linecap="round"/>')
+    if hit:
+        o.append('<path d="M-36,-40 Q0,-58 36,-40 Q18,-12 0,2 Q-18,-12 -36,-40 Z" fill="#ffffff" opacity=".45"/>')
+    o.append('</g>')
+    return "".join(o)
+
+
+def g_kraken(x, y, s, idn):
+    """One huge lidded eye in a speckled dome, curling tentacles with rows of suckers."""
+    d = _rg(f"{idn}a", [(0, "#e7c8ff"), (.3, "#9b5cff"), (1, "#2a0a5e")]) + _rg(f"{idn}i", [(0, "#fffbd0"), (.5, "#ffe14a"), (1, "#8a5a00")], "45%", "40%", "60%")
+    o = [f'<defs>{d}</defs><g transform="translate({f(x)} {f(y)}) scale({s})">']
+    for (x0, y0, cx_, cy_, x1, y1, w0) in [(-24, 16, -70, 0, -58, -52, 16), (24, 16, 72, 4, 62, -46, 16), (-16, 26, -30, 60, -46, 84, 15), (16, 26, 34, 58, 48, 84, 15)]:
+        o.append(f'<path d="M{x0},{y0} Q{cx_},{cy_} {x1},{y1}" fill="none" stroke="#2a0a5e" stroke-width="{w0 + 4}" stroke-linecap="round"/>'
+                 f'<path d="M{x0},{y0} Q{cx_},{cy_} {x1},{y1}" fill="none" stroke="url(#{idn}a)" stroke-width="{w0}" stroke-linecap="round"/>')
+        for k in range(1, 7):
+            t = k / 7; u = 1 - t
+            px, py = u * u * x0 + 2 * u * t * cx_ + t * t * x1, u * u * y0 + 2 * u * t * cy_ + t * t * y1
+            o.append(f'<circle cx="{f(px + 3)}" cy="{f(py + 3)}" r="{f(3.4 - t * 1.8)}" fill="#ffb3ec" stroke="#6a2a8a" stroke-width=".8"/>')
+        o.append(f'<circle cx="{x1}" cy="{y1}" r="6" fill="url(#{idn}a)" stroke="#2a0a5e" stroke-width="2"/>')
+    o.append(f'<ellipse cx="0" cy="-14" rx="40" ry="46" fill="url(#{idn}a)" stroke="#1a0640" stroke-width="3"/>')
+    rr = random.Random(len(idn))
+    o.append("".join(f'<circle cx="{f(rr.uniform(-30, 30))}" cy="{f(rr.uniform(-54, -30))}" r="{f(rr.uniform(1.5, 4))}" fill="#ff7ad9" opacity=".5"/>' for _ in range(10)))
+    o.append('<path d="M-34,-36 Q-12,-60 18,-56" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>')
+    o.append('<ellipse cx="0" cy="-8" rx="21" ry="17" fill="#f6f2ff" stroke="#1a0640" stroke-width="2.4"/>'
+             f'<circle cx="2" cy="-7" r="12" fill="url(#{idn}i)"/><ellipse cx="2" cy="-7" rx="3.2" ry="10" fill="#090410"/>'
+             '<circle cx="-4" cy="-13" r="3.2" fill="#fff"/><path d="M-22,-10 Q0,-30 22,-10" fill="#7a3ad8" stroke="#1a0640" stroke-width="2.4"/>')
+    o.append('</g>')
+    return "".join(o)
+
+
+def g_wraith(x, y, s, idn):
+    """Tattered hooded cloak with folds, a void face with two burning eyes, a ring of runes and drifting embers."""
+    d = _lg(f"{idn}c", [(0, "#6a7aa8"), (.45, "#2e3a5e"), (1, "#070912")]) + _rg(f"{idn}g", [(0, "#5ef0ff"), (1, "#5ef0ff00")], "50%", "50%", "50%")
+    o = [f'<defs>{d}</defs><g transform="translate({f(x)} {f(y)}) scale({s})">']
+    o.append(f'<circle cx="0" cy="-20" r="74" fill="url(#{idn}g)" opacity=".35"/>')
+    o.append('<g fill="none" stroke="#5ef0ff" stroke-opacity=".55" stroke-width="1.6" filter="url(#glow)"><ellipse cx="0" cy="-22" rx="62" ry="16"/></g>')
+    o.append("".join(f'<text x="{f(62 * math.cos(a))}" y="{f(-22 + 16 * math.sin(a) + 3)}" font-family="DejaVu Sans, sans-serif" font-size="8" fill="#a6fdff" text-anchor="middle" opacity=".8">{ch}</text>'
+                     for a, ch in zip([i * math.pi / 4 for i in range(8)], "ᚠᚢᚦᚨᚱᚲᚷᚹ")))
+    o.append(f'<path d="M0,-70 Q34,-58 36,-22 Q54,0 52,64 L40,54 L30,66 L18,54 L6,68 L-6,54 L-18,66 L-30,54 L-40,66 L-52,64 Q-54,0 -36,-22 Q-34,-58 0,-70 Z" fill="url(#{idn}c)" stroke="#05060c" stroke-width="2.4"/>')
+    for k, xx in enumerate([-30, -14, 2, 20, 36]):
+        o.append(f'<path d="M{xx},{-8 + abs(xx) * .3} Q{xx + 4},24 {xx - 2},58" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="3"/>'
+                 f'<path d="M{xx + 3},{-6 + abs(xx) * .3} Q{xx + 7},24 {xx + 1},56" fill="none" stroke="#9fb0e0" stroke-opacity=".18" stroke-width="1.6"/>')
+    o.append('<path d="M0,-70 Q32,-58 34,-24" fill="none" stroke="#a6fdff" stroke-opacity=".5" stroke-width="2"/>')
+    o.append('<ellipse cx="0" cy="-30" rx="19" ry="24" fill="#010204"/>')
+    for sx in (-1, 1):
+        o.append(f'<ellipse cx="{sx * 8}" cy="-32" rx="5.5" ry="2" fill="#a6fdff" transform="rotate({-sx * 16} {sx * 8} -32)" filter="url(#glow)"/>')
+    # claws
+    o.append("".join(f'<path d="M{sx * 34},6 Q{sx * (46 + k * 3)},{-4 - k * 4} {sx * (50 + k * 2)},{-16 - k * 6}" fill="none" stroke="#dfe6f4" stroke-width="2.4" stroke-linecap="round"/>' for sx in (-1, 1) for k in range(3)))
+    rr = random.Random(5)
+    o.append("".join(f'<circle cx="{f(rr.uniform(-50, 50))}" cy="{f(rr.uniform(-80, 30))}" r="{f(rr.uniform(.8, 2))}" fill="#a6fdff" opacity="{rr.uniform(.4, .9):.2f}" filter="url(#glow)"/>' for _ in range(10)))
+    o.append('</g>')
+    return "".join(o)
+
+
+def g_drone(x, y, s, idn):
+    """Chrome sphere with panel seams and rivets, a glowing visor slit, side blasters, antenna and thruster."""
+    d = _rg(f"{idn}m", [(0, "#ffffff"), (.25, "#c9d3e2"), (.7, "#5a6678"), (1, "#1a2030")])
+    o = [f'<defs>{d}</defs><g transform="translate({f(x)} {f(y)}) scale({s})">']
+    o.append(flash(0, 44, 22, "#ff5a3a", .7).replace("mix-blend-mode:screen", "mix-blend-mode:screen"))
+    for sx in (-1, 1):
+        o.append(f'<rect x="{-54 if sx < 0 else 30}" y="-14" width="24" height="18" rx="5" fill="#2c3442" stroke="#0b0f16" stroke-width="2"/>'
+                 f'<rect x="{-52 if sx < 0 else 32}" y="-12" width="20" height="4" rx="2" fill="#cfd8e6" opacity=".7"/>'
+                 f'<circle cx="{sx * 50}" cy="2" r="5" fill="#0b0f16"/><circle cx="{sx * 50}" cy="2" r="2.2" fill="#ff5a3a" filter="url(#glow)"/>')
+    o.append('<path d="M10,-34 L22,-62" stroke="#5a6678" stroke-width="2.6"/><circle cx="23" cy="-64" r="3.4" fill="#ff3b3b" filter="url(#glow)"/>')
+    o.append(f'<circle cx="0" cy="-6" r="34" fill="url(#{idn}m)" stroke="#0b0f16" stroke-width="2.6"/>')
+    o.append('<path d="M-34,-4 Q0,10 34,-4" fill="none" stroke="#0b0f16" stroke-opacity=".6" stroke-width="2"/><path d="M0,-40 Q8,-6 0,28" fill="none" stroke="#0b0f16" stroke-opacity=".35" stroke-width="1.6"/>')
+    o.append("".join(f'<circle cx="{f(c)}" cy="{f(v)}" r="1.4" fill="#eef4ff" opacity=".8"/>' for c, v in [(-24, 8), (-14, 16), (14, 16), (24, 8), (-28, -18), (28, -18)]))
+    o.append('<rect x="-26" y="-24" width="52" height="16" rx="8" fill="#07090e" stroke="#2c3442" stroke-width="1.6"/>'
+             '<rect x="-21" y="-18" width="42" height="4" rx="2" fill="#ff3b3b" filter="url(#glow)"/><circle cx="6" cy="-16" r="3.6" fill="#ffd0c8" filter="url(#glow)"/>')
+    o.append('<ellipse cx="-12" cy="-30" rx="12" ry="5" fill="#fff" opacity=".55" transform="rotate(-24 -12 -30)"/>')
+    o.append('</g>')
+    return "".join(o)
+
+
+def g_slime(x, y, s, idn):
+    """Translucent orange blob with a lit core, bubbles inside, three eyes, a toothy grin and drips."""
+    d = _rg(f"{idn}s", [(0, "#ffe6c4"), (.3, "#ff9a3a"), (.85, "#a83a06"), (1, "#5a1a02")], "38%", "30%", "75%") + _rg(f"{idn}k", [(0, "#fff3b0"), (1, "#ffd36a00")], "50%", "50%", "50%")
+    o = [f'<defs>{d}</defs><g transform="translate({f(x)} {f(y)}) scale({s})">']
+    pts = []
+    for k in range(64):
+        a = k / 64 * 2 * math.pi; r = 40 + 4 * math.sin(a * 3 + 1) + 2.5 * math.sin(a * 5 + 2)
+        pts.append(f"{f(math.cos(a) * r * 1.06)},{f(-4 + math.sin(a) * r * (1.22 if math.sin(a) > 0 else 1))}")
+    o.append(f'<polygon points="{" ".join(pts)}" fill="url(#{idn}s)" stroke="#4a1402" stroke-width="2.4" opacity=".96"/>')
+    o.append(f'<circle cx="4" cy="12" r="20" fill="url(#{idn}k)" opacity=".5"/>')
+    for (bx, by, br) in [(20, 14, 5), (-24, 18, 3.6), (8, 30, 3), (26, -8, 2.6), (-8, 22, 2.2)]:
+        o.append(f'<circle cx="{bx}" cy="{by}" r="{br}" fill="#fff3d0" fill-opacity=".25" stroke="#fff3d0" stroke-opacity=".5" stroke-width=".8"/>')
+    for (dx, dl) in [(-30, 14), (14, 18), (32, 10)]:
+        o.append(f'<path d="M{dx - 4},40 Q{dx},{40 + dl} {dx + 4},40" fill="#d95a10" stroke="#4a1402" stroke-width="1.4"/>')
+    o.append('<ellipse cx="-17" cy="-30" rx="11" ry="5" fill="#fff" opacity=".6" transform="rotate(-28 -17 -30)"/>')
+    for (ex, ey, er) in [(-14, -15, 9.5), (12, -22, 7.5), (5, -4, 5.2)]:
+        o.append(f'<circle cx="{ex}" cy="{ey}" r="{er}" fill="#fff" stroke="#4a1402" stroke-width="1.4"/><circle cx="{f(ex + er * .2)}" cy="{f(ey + er * .15)}" r="{f(er * .5)}" fill="#1a0a02"/>'
+                 f'<circle cx="{f(ex - er * .15)}" cy="{f(ey - er * .25)}" r="{f(er * .18)}" fill="#fff"/>')
+    o.append('<path d="M-22,8 Q0,32 24,6 Q0,18 -22,8 Z" fill="#2a0d02"/>' + "".join(f'<path d="M{f(-16 + k * 6.6)},10 l3,6 l3,-6Z" fill="#fff6e6"/>' for k in range(6)))
+    o.append('</g>')
+    return "".join(o)
+
+
+def g_golem(x, y, s, idn):
+    """Faceted boulder body, stone fists, magma cracks and ember eyes."""
+    o = [f'<g transform="translate({f(x)} {f(y)}) scale({s})">']
+    facets = [([(-36, -40), (-10, -58), (4, -30)], "#b8a48e"), ([(-10, -58), (24, -52), (4, -30)], "#a08c76"), ([(24, -52), (40, -18), (4, -30)], "#7a6856"),
+              ([(-36, -40), (4, -30), (-40, -8)], "#94826f"), ([(4, -30), (40, -18), (34, 22)], "#5e4e40"), ([(-40, -8), (4, -30), (0, 30), (-32, 22)], "#806e5c"), ([(4, -30), (34, 22), (0, 30)], "#4a3e33")]
+    for sx in (-1, 1):
+        o.append(f'<polygon points="{sx * 60},-30 {sx * 46},-48 {sx * 30},-42 {sx * 28},-16 {sx * 42},-4 {sx * 58},-12" fill="#8a7864" stroke="#2f2721" stroke-width="2"/>'
+                 f'<path d="M{sx * 50},-40 L{sx * 40},-24" stroke="#ff6a1f" stroke-width="2" filter="url(#glow)"/>')
+    for pts, col in facets:
+        o.append(f'<polygon points="{" ".join(f"{a},{b}" for a, b in pts)}" fill="{col}" stroke="#2f2721" stroke-width="1.6" stroke-linejoin="round"/>')
+    o.append('<path d="M-24,-30 L-12,-20 L-16,-6 L-4,6 M18,-38 L10,-24 L20,-10" fill="none" stroke="#ff6a1f" stroke-width="2.4" filter="url(#glow)"/>')
+    o.append('<rect x="-20" y="-28" width="40" height="11" rx="4" fill="#1a1410"/>' + "".join(f'<circle cx="{sx * 9}" cy="-22.5" r="3" fill="#ffc04a" filter="url(#glow)"/>' for sx in (-1, 1)))
+    o.append('<path d="M-34,-40 L-10,-57 L22,-51" fill="none" stroke="#e8dccb" stroke-opacity=".5" stroke-width="1.6"/>')
+    o.append('</g>')
+    return "".join(o)
+
+
+def gallery_v143():
+    d = (_lg("hw", [(0, "#0d1018"), (.55, "#141823"), (1, "#07080c")]) + _lg("win", [(0, "#060814"), (1, "#1a1030")]) +
+         _rg("planet", [(0, "#ffe2a8"), (.4, "#d8782a"), (.85, "#5a2410"), (1, "#2a0e06")], "35%", "35%", "70%") +
+         _lg("steel", [(0, "#4a5262"), (.5, "#2a303c"), (1, "#151820")]) + _lg("crate", [(0, "#5a6a3a"), (1, "#2a3418")]) +
+         '<linearGradient id="laser" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7fe3ee" stop-opacity="0"/><stop offset=".6" stop-color="#7fe3ee"/><stop offset="1" stop-color="#ffffff"/></linearGradient>'
+         '<pattern id="haz" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="22" height="22" fill="#1a1a1a"/><rect width="11" height="22" fill="#e8b020"/></pattern>')
+    p = ['<rect width="640" height="440" fill="url(#hw)"/>']
+    # the hangar's big viewport onto space with a planet, framed by struts
+    p.append('<rect x="-10" y="18" width="660" height="196" fill="url(#win)"/>' + stars(77, 90, 210))
+    p.append('<g opacity=".7"><circle cx="560" cy="60" r="120" fill="url(#planet)"/><ellipse cx="560" cy="60" rx="190" ry="22" fill="none" stroke="#ffd9a0" stroke-opacity=".25" stroke-width="4" transform="rotate(-10 560 60)"/></g>')
+    for x in range(-20, 680, 160):
+        p.append(f'<polygon points="{x},18 {x + 26},18 {x + 40},214 {x + 14},214" fill="url(#steel)"/>')
+    p.append('<rect x="-10" y="10" width="660" height="14" fill="url(#steel)"/><rect x="-10" y="210" width="660" height="10" fill="url(#steel)"/>')
+    p.append("".join(f'<circle cx="{x}" cy="232" r="3" fill="#ff3b3b" opacity=".8" filter="url(#glow)"/>' for x in range(40, 640, 120)))
+    # back row (soft): drone, golem and slime behind the far railing
+    back = [g_drone(110, 190, .95, "bd"), g_golem(330, 206, .9, "bg"), g_slime(548, 206, .9, "bs")]
+    p.append(f'<g filter="url(#dof)" opacity=".92">{"".join(back)}</g>')
+    p.append('<g filter="url(#dof)"><rect x="-10" y="242" width="660" height="10" fill="#3a4252"/><rect x="-10" y="242" width="660" height="2" fill="#aab6c8" opacity=".6"/>'
+             + "".join(f'<rect x="{x}" y="252" width="6" height="34" fill="#2a303c"/>' for x in range(10, 640, 44)) + '<rect x="-10" y="284" width="660" height="20" fill="#1c212b"/></g>')
+    # middle row: kraken behind a crate on the left, wraith behind the barricade on the right
+    p.append(g_kraken(118, 300, 1.05, "mk"))
+    p.append(g_wraith(566, 292, 1.05, "mw"))
+    for (x, w) in [(40, 160)]:
+        p.append(f'<rect x="{x}" y="328" width="{w}" height="86" rx="4" fill="url(#crate)" stroke="#121a08" stroke-width="3"/><rect x="{x + 10}" y="338" width="{w - 20}" height="66" fill="none" stroke="#8a9a5a" stroke-opacity=".4" stroke-width="2"/>'
+                 f'<line x1="{x + 10}" y1="338" x2="{x + w - 10}" y2="404" stroke="#8a9a5a" stroke-opacity=".3" stroke-width="2"/><rect x="{x + w / 2 - 22}" y="362" width="44" height="12" fill="#1a2210"/>')
+    p.append('<rect x="476" y="326" width="180" height="88" fill="url(#steel)" stroke="#0b0d12" stroke-width="3"/><rect x="476" y="326" width="180" height="16" fill="url(#haz)" opacity=".9"/>')
+    # the hero: the mantis in the middle, struck under the crosshair
+    hx, hy = 242, 126
+    p.append(f'<polygon points="700,470 724,430 {hx + 6},{hy - 4} {hx - 4},{hy + 6}" fill="url(#laser)" opacity=".85" filter="url(#glow)"/>')
+    p.append(f'<line x1="712" y1="452" x2="{hx}" y2="{hy}" stroke="#ffffff" stroke-width="3" opacity=".9"/>')
+    p.append(f'<g filter="url(#shadow)" transform="rotate(-6 300 330)">{g_mantis(300, 272, 1.6, "hm")}</g>')
+    p.append(flash(hx, hy, 64, "#7fe3ee", .8))
+    p.append(burst(hx, hy, 20, 14, 92, "#e9feff", seed=4, w=2.2))
+    p.append(sparks(hx, hy, 34, 9, ["#ffffff", "#7fe3ee", "#e2ff7a", "#ffd36a"], 150))
+    # chips of the struck scythe
+    rr = random.Random(12)
+    p.append("".join(f'<polygon points="{f(hx + a)},{f(hy + b)} {f(hx + a + 7)},{f(hy + b + 3)} {f(hx + a + 2)},{f(hy + b + 8)}" fill="#c8ff7a" stroke="#14400c" stroke-width="1" transform="rotate({rr.randint(0, 180)} {f(hx + a)} {f(hy + b)})"/>'
+                     for a, b in [(rr.uniform(-70, 70), rr.uniform(-60, 40)) for _ in range(9)]))
+    p.append(f'<g stroke="#ff2d55" stroke-width="3" fill="none" filter="url(#glow)"><circle cx="{hx}" cy="{hy}" r="42"/><circle cx="{hx}" cy="{hy}" r="7"/>'
+             f'<line x1="{hx - 64}" y1="{hy}" x2="{hx - 50}" y2="{hy}"/><line x1="{hx + 50}" y1="{hy}" x2="{hx + 64}" y2="{hy}"/>'
+             f'<line x1="{hx}" y1="{hy - 64}" x2="{hx}" y2="{hy - 50}"/><line x1="{hx}" y1="{hy + 50}" x2="{hx}" y2="{hy + 64}"/></g>')
+    # floor edge and the two blasters at the bottom corners, the right one firing
+    p.append('<rect x="-10" y="412" width="660" height="40" fill="#0b0d12"/><rect x="-10" y="412" width="660" height="8" fill="url(#haz)" opacity=".85"/>')
+    for (bx, rot, firing) in [(70, 24, False), (612, -26, True)]:
+        p.append(f'<g transform="rotate({rot} {bx} 470)"><rect x="{bx - 16}" y="350" width="32" height="130" rx="10" fill="url(#steel)" stroke="#05060a" stroke-width="3"/>'
+                 f'<rect x="{bx - 10}" y="356" width="20" height="10" rx="3" fill="#7fe3ee" opacity="{.9 if firing else .5}" filter="url(#glow)"/><rect x="{bx - 12}" y="380" width="24" height="6" fill="#0b0d12"/>'
+                 f'<rect x="{bx - 12}" y="392" width="24" height="6" fill="#0b0d12"/></g>')
+    p.append(flash(600, 360, 40, "#bff6ff", .9))
+    p.append(cine(330, 230, key="#bff6ff", strength=.62, flare_w=0))
+    return svg("".join(p), extra_defs=d)
+
+
+covers["shot-gallery"] = gallery_v143()
+covers["reaction-test"] = covers["shot-gallery"]
 
 
 if __name__ == "__main__":

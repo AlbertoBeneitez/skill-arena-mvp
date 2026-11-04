@@ -1,4 +1,7 @@
 // Actual renderer (V15): the ball is drawn exactly at the core's polar position; no tween, no own physics.
+// v143: the wheel is drawn in 3D (tilted orthographic view). The ball sphere is checked at project(plane x, plane y,
+// height): in the wheel the height is the core's (surface under the ball + ballZ + radius); on the short flight from
+// the cradle the plane position is the core's and the height is the drawn arc.
 const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path");
@@ -18,7 +21,7 @@ module.exports = (async () => {
     source = fs.readFileSync(file, "utf8");
   await req("next/dist/build/swc").loadBindings();
   const compiled = await req("next/dist/build/swc").transform(
-    source + "\nexport {render as renderUnderTest};",
+    source + "\nexport {render as renderUnderTest, project as projectUnderTest, surfaceH as surfaceUnderTest, flightArc as arcUnderTest, crossAt as crossUnderTest, BALL_RADIUS as ballRadiusUnderTest, S as scaleUnderTest};",
     {
       filename: file,
       jsc: {
@@ -43,6 +46,11 @@ module.exports = (async () => {
     (id) => deps[id] || req(id),
     exports,
   );
+  const gradient = () => ({ stops: [], addColorStop(o, c) { this.stops.push(c); } });
+  // The ball sphere (drawSphere) is the one gradient with this stop; faded smear copies are not the ball.
+  const isBall = (o) => o.fillStyle && Array.isArray(o.fillStyle.stops) && o.fillStyle.stops.includes("#eef3f8") && o.globalAlpha === 1;
+  const P = exports.projectUnderTest, H = exports.surfaceUnderTest, BR = exports.ballRadiusUnderTest, SC = exports.scaleUnderTest;
+  const flight = await load("lib/verified/galacticRouletteCore.v16.js");
   let frames = 0;
   for (let seed = 0; seed < 16; seed++)
     for (const impulse of [0, 7, 15]) {
@@ -61,20 +69,19 @@ module.exports = (async () => {
             balls = [];
           let arc = null;
           const ctx = new Proxy(
-            { fillStyle: "" },
+            { fillStyle: "", globalAlpha: 1 },
             {
               get(o, k) {
                 if (k in o) return o[k];
-                if (k === "createRadialGradient") return () => ({addColorStop() {}});
+                if (k === "createRadialGradient" || k === "createLinearGradient") return () => gradient();
                 return (...a) => {
-                  if (k === "save") stack.push(o.fillStyle);
+                  if (k === "save") stack.push([o.fillStyle, o.globalAlpha]);
                   if (k === "restore") {
                     assert.ok(stack.length);
-                    o.fillStyle = stack.pop();
+                    [o.fillStyle, o.globalAlpha] = stack.pop();
                   }
                   if (k === "arc") arc = a;
-                  if (k === "fill" && o.fillStyle === "#f0f7ff")
-                    balls.push(arc);
+                  if (k === "fill" && isBall(o)) balls.push(arc);
                 };
               },
             },
@@ -83,12 +90,16 @@ module.exports = (async () => {
           assert.equal(JSON.stringify(s), before);
           assert.equal(stack.length, 0);
           assert.equal(balls.length, 1);
-          // Launcher flight: the core's straight path; in the wheel: the polar position (θ clockwise from 12 o'clock).
+          // Launcher flight: the core's straight path (with the drawn arc); in the wheel: the polar position (θ clockwise
+          // from 12 o'clock) at the core's height.
           const a = s.ballTheta / 1e7 - Math.PI / 2, r = s.ballR / 1e6;
-          const ex = s.ballPhase === 0 ? s.ballX / 1000 : 195 + Math.cos(a) * r, ey = s.ballPhase === 0 ? s.ballY / 1000 : 195 + Math.sin(a) * r;
-          assert.ok(Math.abs(balls[0][0] - ex) < 1e-9 && Math.abs(balls[0][1] - ey) < 1e-9, "ball drawn where the core has it");
-          const BR = coreModule.ROULETTE_RULES_V16.ballRadius / 1000;
-          if (s.ballPhase === 1) assert.ok(Math.abs(balls[0][2] - (BR + Math.min(130, s.ballZ / 1e6) * 0.07)) < 1e-9, "size follows the hop");
+          const px = s.ballPhase === 0 ? s.ballX / 1000 : 195 + Math.cos(a) * r, py = s.ballPhase === 0 ? s.ballY / 1000 : 195 + Math.sin(a) * r;
+          const h = s.ballPhase === 0
+            ? exports.arcUnderTest(flight.rouletteFlightProgressV16(s), s.launchImpulse, exports.crossUnderTest(s.launchDirection))
+            : H(r) + s.ballZ / 1e6 + BR;
+          const e = P(px, py, h);
+          assert.ok(Math.abs(balls[0][0] - e.x) < 1e-9 && Math.abs(balls[0][1] - e.y) < 1e-9, "ball drawn where the core has it");
+          assert.ok(balls[0][2] >= BR * SC - 1e-9, "never smaller than the ball");
           frames++;
         }
         runtime.stepCore(coreModule.ROULETTE_CORE_V16, s, 1e9);
@@ -105,14 +116,14 @@ module.exports = (async () => {
   for (let age = 0; age < 200; age++) {
     const balls = [], stack = [];
     let arc;
-    const ctx = new Proxy({fillStyle:""}, {get(o,k) {
+    const ctx = new Proxy({fillStyle:"", globalAlpha: 1}, {get(o,k) {
       if (k in o) return o[k];
-      if (k === "createRadialGradient") return () => ({addColorStop(){}});
+      if (k === "createRadialGradient" || k === "createLinearGradient") return () => gradient();
       return (...args) => {
-        if(k === "save") stack.push(o.fillStyle);
-        if(k === "restore") o.fillStyle = stack.pop();
+        if(k === "save") stack.push([o.fillStyle, o.globalAlpha]);
+        if(k === "restore") [o.fillStyle, o.globalAlpha] = stack.pop();
         if(k === "arc") arc = args;
-        if(k === "fill" && o.fillStyle === "#f0f7ff") balls.push(arc);
+        if(k === "fill" && isBall(o)) balls.push(arc);
       };
     }});
     const before = JSON.stringify(s);
@@ -122,7 +133,8 @@ module.exports = (async () => {
     assert.equal(balls.length,2); // pocketed ball stays + next ball waits on the launcher
     // No scripted glide — at every frame the ball is where physics left it, turned with the wheel.
     const POCKET_REST = 93.5;
-    const miss = Math.hypot(balls[0][0] - (195 + Math.cos(angle) * POCKET_REST), balls[0][1] - (195 + Math.sin(angle) * POCKET_REST));
+    const rest = P(195 + Math.cos(angle) * POCKET_REST, 195 + Math.sin(angle) * POCKET_REST, H(POCKET_REST) + BR);
+    const miss = Math.hypot(balls[0][0] - rest.x, balls[0][1] - rest.y);
     assert.ok(miss < 0.01, `resting ball rides with its pocket (age ${age}, off by ${miss})`);
     runtime.stepCore(coreModule.ROULETTE_CORE_V16,s,1e9);
   }
@@ -131,7 +143,7 @@ module.exports = (async () => {
       variant: "RouletteV16 thrown ball",
       frames,
       polarBall: true,
-      zenithalBounce: true, persistentAwardedPocket: true,
+      view3d: true, persistentAwardedPocket: true,
       rendererPure: true,
     }),
   );

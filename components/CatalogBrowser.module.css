@@ -114,3 +114,54 @@
 }
 .studioOpen:active { background: rgba(127, 227, 238, .14); translate: 0 1px; }
 .studioOpen:focus-visible { outline: 2px solid var(--st-ion, #7fe3ee); outline-offset: 2px; }
+
+/* v143 · One finish for the whole catalogue. Each row title carries its kind's colour as a short lit tick and a
+   hairline that fades out; every card is a dark glass panel whose edge is lit from the top in that colour, the cover
+   melts into the panel, and the play button takes the same colour — a tinted machined edge, a faint glow rising from
+   its lower lip and a tinted sheen — while the label stays near-white for legibility. Static paint only (the sheen is
+   the one transform animation, as in v141). */
+.row { --accent: #9ce6e8; }
+.rowTitle { display: flex; align-items: center; gap: 9px; }
+.rowTitle::before {
+  content: ""; flex: none; width: 3px; height: 14px; border-radius: 2px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.rowTitle::after {
+  content: ""; flex: 1 1 auto; height: 1px; min-width: 24px; margin-inline-start: 4px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 55%, transparent), transparent 85%);
+}
+.card {
+  border: 1px solid transparent;
+  background:
+    radial-gradient(120% 60% at 50% 100%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%) padding-box,
+    linear-gradient(180deg, #1b1b1f, #111114 70%) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #fff 6%), color-mix(in srgb, var(--accent) 26%, #2a2a2f) 42%, color-mix(in srgb, var(--accent) 38%, #2a2a2f)) border-box;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 10px 24px rgba(0,0,0,.42), 0 2px 10px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.card::before { height: 2px; opacity: .9; background: linear-gradient(90deg, transparent 6%, color-mix(in srgb, var(--accent) 75%, #fff), transparent 94%); }
+.cover::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 34%; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(17,17,20,.55) 70%, rgba(17,17,20,.86));
+}
+.play {
+  color: #f3f6fa;
+  text-shadow: 0 1px 0 rgba(0,0,0,.6), 0 0 12px color-mix(in srgb, var(--accent) 38%, transparent);
+  background:
+    radial-gradient(90% 85% at 50% 118%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 72%) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, #1d1d21), #0c0c0e 92%) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 72%, #fff), color-mix(in srgb, var(--accent) 30%, #1c1c20) 52%, color-mix(in srgb, var(--accent) 62%, #1c1c20)) border-box;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.5), 0 3px 10px rgba(0,0,0,.45), 0 0 14px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.play::before {
+  background: linear-gradient(105deg, transparent 34%, color-mix(in srgb, var(--accent) 16%, transparent) 45%, rgba(255,255,255,.2) 50%, color-mix(in srgb, var(--accent) 16%, transparent) 55%, transparent 66%);
+}
+.play:active:not(:disabled) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 30%, #141417), color-mix(in srgb, var(--accent) 12%, #0c0c0e)) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #fff), var(--accent)) border-box;
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--accent) 34%, transparent), 0 0 18px color-mix(in srgb, var(--accent) 46%, transparent);
+}
+@media (hover: hover) { .play:hover:not(:disabled) { box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.5), 0 0 16px color-mix(in srgb, var(--accent) 34%, transparent); } }
+.play:focus-visible { outline-color: color-mix(in srgb, var(--accent) 70%, #fff); }
+.studio { background: radial-gradient(120% 90% at 50% 120%, rgba(127,227,238,.1), transparent 70%), var(--st-panel); }

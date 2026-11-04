@@ -16,6 +16,8 @@ export const SHELF_ACCENTS: Record<string, string> = {
   casino: "#ff6b7a", bar: "#ffa85c", mythic: "#b88cff", dynamic: "#5fd6ff", alternative: "#6ff0b0",
 };
 export const gameAccent = (game: GameMeta) => SHELF_ACCENTS[gameShelf(game)] ?? "#9ce6e8";
+/** v143: the colour of each row's title tick (the two curated rows have their own: ion for Populares, pink for Nuevos). */
+const rowAccent = (key: string) => SHELF_ACCENTS[key] ?? (key === "new" ? "#ff9ad8" : "#9ce6e8");
 type Props = {
   stake: Stake;
   serverOnly?: boolean;
@@ -113,7 +115,7 @@ export default function CatalogBrowser(props: Props) {
   return (
     <section className={styles.browser} aria-label={t("catalog.aria")}>
       {rows.map((r) => (
-        <section key={r.key} className={styles.row} aria-labelledby={`shelf-${r.key}`}>
+        <section key={r.key} className={styles.row} aria-labelledby={`shelf-${r.key}`} style={{ ["--accent" as string]: rowAccent(r.key) }}>
           <h2 id={`shelf-${r.key}`} className={styles.rowTitle}>{t(`catalog.shelf.${r.key}`)}</h2>
           <div className={styles.track} role="list">
             {r.games.map((game, index) => renderCard(r.key, game, index))}

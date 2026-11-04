@@ -882,6 +882,16 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v143-saturn · Acabado visual, ruleta en 3D y Slot sin solapes (4-nov-2026)
+
+- **Catálogo:** títulos de fila con marca y línea del color de su tipo; tarjetas de cristal con borde iluminado; botones de jugar con color sutil del juego; cabecera y barra inferior con línea iluminada.
+- **Roulette:** rueda vista en 3D, cada superficie a la altura del núcleo, bola en su posición y altura reales con sombra; apuntado con arco, entrada y potencia. Sin cambio de núcleo.
+- **Slot:** composición según la altura real (nada debajo de los botones ni del marco), «Pareja» y «7 sin pareja» como fichas, botones más oscuros.
+- **Stack:** módulos con textura (metal cepillado, trama, biseles) en el juego y en la portada.
+- **Shot Gallery:** criaturas con capa de detalle y portada nueva en el hangar 7.
+- **Solitaire Sprint:** portada con escalera alterna rojo/negro.
+- **Pendiente:** fase 2 del envío de juegos (publicar aprobados en entrenamiento; paquetes grandes).
+
 ## v142-saturn · Envío de juegos por archivo y admisión automática (3-nov-2026)
 
 - **Envío:** un solo .zip con manifiesto, interfaz HTML, núcleo WebAssembly sin importaciones y portada.

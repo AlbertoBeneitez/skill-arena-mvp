@@ -102,32 +102,38 @@ function bulbs(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
 
 function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: number; height: number }) {
   // v126: the canvas takes the full height; the reel window grows down to use it.
-  const H = Math.max(620, view?.height ?? 620);
+  // v143: the layout follows the real logical height (520 at least, the core's): before, it assumed 620 and on short
+  // phones the cabinet's lower edge, the step counters and the pair line were drawn under the buttons or the frame.
+  const H = Math.max(520, view?.height ?? 620);
   drawSpaceBackdrop(ctx, 390, H, 2, s.tick);
   const since = s.tick - s.lastSettledTick, win = since < 150 && s.lastPayout > 0, spinning = s.settlingAt !== -1;
   const big = win && s.lastPayout >= 8 * SLOT_RULES.costMinor;
+  const compact = H < 600;
   // No marquee: the screen header already names the game and the HUD pill sits in that band.
   // The three reel tables (seeded per match). The highlighted row is where each reel sits right now.
+  const tableTop = 58, rowPitch = compact ? 10.5 : 13.5, tableH = 24 + 8 * rowPitch;
   ctx.fillStyle = "rgba(10,8,34,.86)";
-  ctx.beginPath(); ctx.roundRect(20, 58, 350, 130, 14); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(20, tableTop, 350, tableH, 14); ctx.fill();
   ctx.strokeStyle = "rgba(164,166,250,.35)"; ctx.lineWidth = 1; ctx.stroke();
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (let i = 0; i < 3; i++) {
     const x = 85 + i * 110;
     ctx.fillStyle = "#b9a8ff"; ctx.font = "800 9px system-ui";
-    ctx.fillText(t("slot.reel", { n: i + 1 }), x, 68);
+    ctx.fillText(t("slot.reel", { n: i + 1 }), x, tableTop + 10);
     for (let j = 0; j < 8; j++) {
-      const y = 80 + j * 13.5;
+      const y = tableTop + 22 + j * rowPitch + rowPitch / 2 - 4.5;
       if (s.positions[i] === j) {
         ctx.fillStyle = "rgba(255,211,106,.22)"; ctx.strokeStyle = "rgba(255,211,106,.8)"; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.roundRect(x - 40, y - 6.5, 80, 13, 6); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.roundRect(x - 40, y - rowPitch / 2, 80, rowPitch, rowPitch / 2); ctx.fill(); ctx.stroke();
       }
-      symbol(ctx, s.strips[i][j], x, y, 14);
+      symbol(ctx, s.strips[i][j], x, y, compact ? 11 : 14);
     }
   }
-  // Pay table: eight chips plus the pair / seven lines.
+  // Pay table: eight triple chips, then a row of two for the pair and the seven without a pair (v143: chips like the
+  // others instead of a loose line that the cabinet frame covered).
+  const payTop = tableTop + tableH + 6;
   for (let id = 0; id < 8; id++) {
-    const x = 20 + (id % 4) * 88, y = 194 + Math.floor(id / 4) * 26;
+    const x = 20 + (id % 4) * 88, y = payTop + Math.floor(id / 4) * 26;
     ctx.fillStyle = "rgba(10,8,34,.78)"; ctx.beginPath(); ctx.roundRect(x, y, 84, 22, 11); ctx.fill();
     ctx.strokeStyle = id === 7 ? "rgba(255,74,95,.6)" : "rgba(255,211,106,.25)"; ctx.lineWidth = 1; ctx.stroke();
     symbol(ctx, id, x + 15, y + 11, 18);
@@ -136,13 +142,25 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
     ctx.fillStyle = GOLD; ctx.textAlign = "right";
     ctx.fillText(String(SLOT_RULES.tripleMultipliers[id] * 5), x + 76, y + 11.5);
   }
-  ctx.textAlign = "center";
-  for (const [x, label, amount] of [[107, t("slot.pair"), "10"], [283, t("slot.sevenNoPair"), "5"]] as const) {
-    ctx.fillStyle = "#c9bff0"; ctx.font = "600 10px system-ui"; ctx.fillText(label, x - 12, 255);
-    ctx.fillStyle = GOLD; ctx.font = "800 10px system-ui"; ctx.fillText(amount, x + 36, 255);
+  for (const [k, label, amount, seven] of [[0, t("slot.pair"), "10", false], [1, t("slot.sevenNoPair"), "5", true]] as const) {
+    const x = 20 + k * 176, y = payTop + 52, w = 172;
+    ctx.fillStyle = "rgba(10,8,34,.78)"; ctx.beginPath(); ctx.roundRect(x, y, w, 22, 11); ctx.fill();
+    ctx.strokeStyle = seven ? "rgba(255,74,95,.6)" : "rgba(255,211,106,.25)"; ctx.lineWidth = 1; ctx.stroke();
+    if (seven) symbol(ctx, 7, x + 15, y + 11, 18);
+    else { symbol(ctx, 1, x + 13, y + 11, 15); symbol(ctx, 1, x + 25, y + 11, 15); }
+    ctx.fillStyle = "#e6defa"; ctx.textAlign = "left"; ctx.font = "700 10.5px system-ui";
+    const lx = x + (seven ? 29 : 37), maxW = w - (lx - x) - 30;
+    let text: string = label;
+    while (text.length > 3 && ctx.measureText(text).width > maxW) text = `${text.slice(0, -2)}…`;
+    ctx.fillText(text, lx, y + 11.5);
+    ctx.fillStyle = GOLD; ctx.textAlign = "right"; ctx.font = "800 11px system-ui";
+    ctx.fillText(amount, x + w - 10, y + 11.5);
   }
+  ctx.textAlign = "center";
   // Cabinet with chrome-gold frame and a ring of bulbs.
-  const top = 270, height = Math.max(176, H - top - 72), center = top + height / 2, pitch = 74, size = 60;
+  // Below the cabinet: the step counters (26 high) and a margin, all above the buttons (the canvas ends where they start).
+  const top = payTop + 78 + 14, height = Math.max(150, H - top - 12 - 42), center = top + height / 2;
+  const pitch = Math.min(74, Math.max(56, height * 0.4)), size = pitch * 0.81;
   const reach = Math.ceil(height / 2 / pitch) + 1;
   const frame = ctx.createLinearGradient(0, top - 12, 0, top + height + 12);
   frame.addColorStop(0, "#fff0b8"); frame.addColorStop(0.25, "#c9902e"); frame.addColorStop(0.5, "#ffe08a"); frame.addColorStop(0.8, "#8a5a14"); frame.addColorStop(1, "#e8b85a");
@@ -204,7 +222,8 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
     }
     const pop = since < 20 ? 0.6 + 0.4 * Math.sin((since / 20) * Math.PI * 0.5) + 0.15 * Math.sin((since / 20) * Math.PI) : 1 + 0.03 * Math.sin(since * 0.15);
     ctx.save();
-    ctx.translate(195, top - 32); ctx.scale(pop, pop);
+    // Straddles the cabinet's top frame (decoration only), so no pay chip or symbol is ever covered.
+    ctx.translate(195, top - 6); ctx.scale(pop, pop);
     ctx.font = `900 ${big ? 26 : 22}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     const label = t("slot.won", { n: formatNumber(s.lastPayout / 100) });
     ctx.fillStyle = "rgba(20,6,42,.85)"; const w = ctx.measureText(label).width + 36;
