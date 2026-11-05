@@ -50,6 +50,7 @@
     "scripts/verify-roulette-v15.ts",
     "scripts/verify-studio-proposal.ts",
     "scripts/verify-studio-package.ts",
+    "scripts/verify-studio-published.ts",
     "scripts/verify-roulette-v16.ts",
     "scripts/verify-roulette-v17.ts",
     "scripts/gen-roulette-v17-fixture.ts",

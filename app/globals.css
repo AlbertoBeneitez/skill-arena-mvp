@@ -8694,3 +8694,24 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   content: ""; position: absolute; left: 18px; right: 18px; top: -1px; height: 1px; pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(127,227,238,.42) 30%, rgba(184,140,255,.32) 70%, transparent);
 }
+/* v147 · Published studio game: full screen, the app's game header, the isolated frame and the result card. */
+.extGame { position: fixed; inset: 0; z-index: 90; display: grid; grid-template-rows: auto 1fr; background: #09090b; color: var(--st-ink); padding-bottom: env(safe-area-inset-bottom); }
+.extGameHead { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 10px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; border-bottom: 1px solid var(--st-hair); background: rgba(10,10,12,.97); }
+.extGameBack { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--st-hair); background: #18181b; color: var(--st-ink); }
+.extGameTitle { min-width: 0; text-align: center; }
+.extGameTitle h2 { margin: 0; font-family: var(--gx-display); font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.extGameTitle span { display: block; margin-top: 2px; font-size: 10.5px; letter-spacing: .06em; color: var(--st-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.extGameBadge { padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(127,227,238,.45); font-size: 10.5px; font-weight: 700; color: #c8f8fc; }
+.extGameStage { position: relative; min-height: 0; display: grid; place-items: center; background: #000; }
+.extGameStage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.extGameStatus { margin: 0; padding: 24px; text-align: center; color: var(--st-mute); }
+.extGameResult { position: absolute; left: 16px; right: 16px; bottom: 16px; display: grid; gap: 8px; padding: 18px; border-radius: 18px; border: 1px solid var(--st-hair); background: rgba(14,14,17,.96); box-shadow: 0 18px 40px rgba(0,0,0,.6); }
+.extGameResult strong { font-family: var(--gx-display); font-size: 22px; }
+.extGameResult p { margin: 0; font-size: 14px; line-height: 1.35; }
+.extGameResult[data-state="ok"] p { color: #6ff0b0; }
+.extGameResult[data-state="fail"] p { color: #ff8a94; }
+.extGameResult small { color: var(--st-mute); font-size: 12px; }
+.extGameActions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.extGameActions button { min-height: 46px; }
+.extGameLeave { border-radius: 12px; border: 1px solid var(--st-hair); background: #18181b; color: var(--st-ink); font-weight: 700; }
+.extGameActions button { font-size: 14px; }

@@ -882,6 +882,14 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v147-saturn · Juegos de estudios publicados en el catálogo (5-nov-2026)
+
+- **Fase 2 del envío de juegos:** aprobar publica el juego en su fila y en «Nuevos», en entrenamiento. Se juega a pantalla completa, en un marco aislado, con el paquete comprobado por SHA-256 y la puntuación del núcleo. Rechazar lo retira.
+- **Pendiente:**
+  - competición con juegos de estudios (verificación en el servidor y semillas emitidas por el servidor);
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado.
+
 ## v146-saturn · Ruleta V17 con física realista y Slot más vistoso (5-nov-2026)
 
 - **Roulette V17:** vuelo balístico real desde la cuna; la bola cae en el canal de la pista y corre a lo largo de ella; en el aire su altura sigue el cuenco real; los rombos no la devuelven. Tiradas de 11,9 s de media (V16: unos 3 s). Dibujo fiel a la altura del núcleo.

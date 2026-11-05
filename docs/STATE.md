@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 5 de noviembre de 2026 · base `mobile-test` en v146-saturn.
+Actualizado: 5 de noviembre de 2026 · base `mobile-test` en v147-saturn.
 
 ## Catálogo
 
@@ -39,7 +39,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 | Vistas previas | Cada push a `mobile-test` y `vNN-saturn`; protegidas por inicio de sesión de Vercel |
 | Node | 24 (`.nvmrc`, Vercel). La CI repite el determinismo en Node 22 |
 | Variables en Vercel | `MATCH_SIGNING_SECRET` y `ALLOW_LEGACY_STATELESS_TRAINING` en producción y preview. Sin `DATABASE_URL` |
-| PostgreSQL alojado | No existe. Migraciones `db/migrations/001`–`004` listas, se aplican a mano (004: propuestas de juegos) |
+| PostgreSQL alojado | No existe. Migraciones `db/migrations/001`–`005` listas, se aplican a mano (004 y 005: juegos de estudios; con ellas, los juegos aprobados se publican en entrenamiento) |
 | Identidad | Cookie anónima y perfil local. Inicio de sesión con Google, Apple, X, Discord y Microsoft activado en el código (v122); cada proveedor se enciende al poner sus credenciales en Vercel (`docs/AUTH_PROVIDERS.md`). Hoy no hay ninguna |
 | Saldo y premios | Ficticios, calculados en el navegador (`localStorage`) |
 | CI | `build-v4.yml` (typecheck, determinismo, PostgreSQL, build, smoke móvil), CodeQL, Dependabot. Dependabot y el CodeQL semanal leen `main`, que aún no tiene `.github/`, así que no se ejecutan. El flujo antiguo «Sync Mobile Test» (forzaba `mobile-test`) se desactivó el 29 de octubre |

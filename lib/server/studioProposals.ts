@@ -8,7 +8,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { getProductionPostgresPool } from "./postgresPool";
 import { SESSION_COOKIE, authSecret, decodeSession, readCookie } from "./authSession";
 import type { Submission } from "@/lib/studioProposal";
-import type { Manifest, Report } from "@/lib/studio/package";
+import { unpackPackage, type Manifest, type Report } from "@/lib/studio/package";
+import type { PublishedGame } from "@/lib/studio/published";
 
 export type ReviewStatus = "received" | "approved" | "rejected";
 export type StoredSubmission = {
@@ -60,4 +61,37 @@ export async function setReviewStatus(id: string, status: ReviewStatus) {
 
 export async function deleteProposal(id: string) {
   await getProductionPostgresPool().query("DELETE FROM studio_game_proposals WHERE proposal_id=$1", [id]);
+}
+
+/**
+ * v147 · Published games: the approved submissions, playable by everyone in training (fictitious scope, never ranked
+ * or settled). Only what a player needs: no contact address, no report.
+ */
+export async function listPublished(): Promise<PublishedGame[]> {
+  const { rows } = await getProductionPostgresPool().query(
+    `SELECT proposal_id,game,shelf,summary,studio,manifest,package_sha256,octet_length(package) AS size,COALESCE(reviewed_at,created_at) AS published_at
+       FROM studio_game_proposals WHERE review_status='approved' AND package IS NOT NULL ORDER BY published_at DESC LIMIT 60`,
+  );
+  return rows.map((r) => {
+    const m = r.manifest as Manifest;
+    return {
+      id: r.proposal_id, game: r.game, shelf: r.shelf, summary: r.summary, studio: r.studio, sha256: r.package_sha256, size: Number(r.size),
+      publishedAt: new Date(r.published_at).toISOString(),
+      manifest: { id: m.id, name: m.name, version: m.version, developer: m.developer, tickRate: m.tickRate, maxTicks: m.maxTicks, thirdParty: m.thirdParty ?? [] },
+    };
+  });
+}
+/** The package of a published (approved) game, or null. */
+export async function readPublishedPackage(id: string): Promise<Buffer | null> {
+  const { rows } = await getProductionPostgresPool().query("SELECT package FROM studio_game_proposals WHERE proposal_id=$1 AND review_status='approved' AND package IS NOT NULL", [id]);
+  return rows.length ? (rows[0].package as Buffer) : null;
+}
+/** The cover image inside a published game's package. */
+export async function readPublishedCover(id: string): Promise<{ bytes: Uint8Array; type: string } | null> {
+  const pkg = await readPublishedPackage(id);
+  if (!pkg) return null;
+  const cover = unpackPackage(new Uint8Array(pkg)).unpacked.cover;
+  if (!cover) return null;
+  const ext = cover.name.split(".").pop()?.toLowerCase();
+  return { bytes: cover.bytes, type: ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg" };
 }
