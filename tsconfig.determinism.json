@@ -51,6 +51,8 @@
     "scripts/verify-studio-proposal.ts",
     "scripts/verify-studio-package.ts",
     "scripts/verify-roulette-v16.ts",
+    "scripts/verify-roulette-v17.ts",
+    "scripts/gen-roulette-v17-fixture.ts",
     "scripts/verify-pinball-v9.ts",
     "scripts/verify-pinball-v10.ts",
     "scripts/gen-pinball-v10-fixture.ts",

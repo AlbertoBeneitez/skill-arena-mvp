@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v146-saturn · Ruleta V17 con física realista y Slot más vistoso (5-nov-2026)
+
+- **Roulette V17:** vuelo balístico real desde la cuna; la bola cae en el canal de la pista y corre a lo largo de ella; en el aire su altura sigue el cuenco real; los rombos no la devuelven. Tiradas de 11,9 s de media (V16: unos 3 s). Dibujo fiel a la altura del núcleo.
+- **Slot:** colores más vivos (símbolos, bombillas, máquina, tablas y fichas).
+- **Pendiente:** fase 2 del envío de juegos.
+
 ## v145-saturn · Tablas del Slot más grandes y Pinball V10 con más rebotes (4-nov-2026)
 
 - **Slot:** rodillos de la máquina como en v143; tablas de rodillos de arriba más grandes.

@@ -2,15 +2,13 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V16,
-  ROULETTE_RULES_V16,
-  ROULETTE_THROWS_V16,
+  ROULETTE_CORE_V17,
+  ROULETTE_RULES_V17,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  rouletteAimReachesV16,
-  rouletteFlightProgressV16,
-  type RouletteStateV16 as RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v16";
+  rouletteAimReachesV17,
+  type RouletteStateV17 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v17";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -30,32 +28,22 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V16.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V17.ballRadius / 1000;
 /**
- * v144 · The ball moves like a thrown ball in three dimensions, seen from straight above (the wheel stays zenithal).
- * Its height above the surface (px, presentation) only changes how it is drawn: the closer to the camera, the larger
- * the ball and the further its shadow falls from it (light from the upper left), softer and fainter. Its position on
- * the wheel is always exactly the core's. The flight from the cradle is a ballistic arc whose peak grows with the
- * throw's power (the core flies it straight, at the same speed and timing); in the wheel the height is the core's own
- * ballZ (bounces off the diamonds and frets), magnified ×2.5 so the hops read on a phone, plus two dying landing
- * bounces drawn over the first half second after the ball comes over the rim (presentation: the core lands it on the
- * track with a short drop). A fast ball leaves a faint smear behind it along its path.
+ * v146 · The ball is drawn exactly as the V17 physics move it, seen from straight above: its position is the core's,
+ * and its height above whatever is under it (the rim and the cradle's table on the flight, the bowl's surface in the
+ * wheel; the core's own ballZ, nothing added) only moves its shadow away from it (light from the upper left, the
+ * shadow falls 0.7 px per mm of height, softer and fainter) and grows it slightly (0.8 % per mm). The arc of the
+ * throw, the drop onto the track, the hops off the diamonds and frets and the flight into the rotor are all real.
  */
-export const BALL_GROW = 0.02;
-const flightLift = (t: number, power: number) => 4 * (24 + power * 1.8) * t * (1 - t) + 2 * t;
-/** Drawn landing bounces (px) during the first 60 ticks (0.5 s) after the ball comes over the rim. */
-export function landingBounce(s: Readonly<RouletteStateV2>) {
-  const entry = ROULETTE_THROWS_V16[s.launchDirection];
-  if (s.ballPhase !== 1 || s.landingTick === -1 || !entry) return 0;
-  const step = Math.round(((ROULETTE_RULES_V16.throwSpeedMin + s.launchImpulse * ROULETTE_RULES_V16.throwSpeedStep) * 4) / 1000);
-  const k = s.tick - (s.flightStart + Math.ceil(entry[0] / step)), b1 = 10 + s.launchImpulse * 0.9;
-  if (k < 0 || k >= 60) return 0;
-  return k < 34 ? b1 * Math.sin((Math.PI * k) / 34) : b1 * 0.35 * Math.sin((Math.PI * (k - 34)) / 26);
-}
-export function ballLift(s: Readonly<RouletteStateV2>, charge = 0) {
-  if (s.landingTick === -1) return s.lastNumber !== null && !s.lastMiss ? 0 : 4 + charge * 10;
-  if (s.ballPhase === 0) return flightLift(rouletteFlightProgressV16(s), s.launchImpulse);
-  return (s.ballZ / 1e6) * 2.5 + landingBounce(s);
+export const BALL_GROW = 0.008;
+export const SHADOW_PER_MM = 0.7;
+/** Height (mm) of the ball's bottom above what lies under it: the core's ballZ (on the flight, measured from the track
+ * at the wall, so above the rim it is that minus the rim's height). */
+export function ballLift(s: Readonly<RouletteStateV2>) {
+  if (s.landingTick === -1) return 0;
+  if (s.ballPhase === 0) return Math.max(0, (s.ballZ - ROULETTE_RULES_V17.rimHeight) / 1e6);
+  return s.ballZ / 1e6;
 }
 // Presentation radii (the authoritative ball physics live in the core).
 const NUMBER_OUTER = 121,
@@ -248,8 +236,7 @@ function render(
   }
   // Height changes size and shadow separation in a zenithal view; it never
   // shifts the authoritative horizontal trajectory towards the screen top.
-  const holdCharge = idle && drag ? Math.max(0, Math.min(1, (Math.hypot(drag.x - ROULETTE_BALL_DOCK.x, drag.y - ROULETTE_BALL_DOCK.y) - 24) / 180)) : 0;
-  const height = ballLift(s, holdCharge);
+  const height = ballLift(s);
   // Launcher: an orbital "magnetic cradle" outside the wheel — a hexagonal pad, three clamp prongs and counter-rotating
   // coil rings that hold the ball in the air; dragging charges the coils (faster, warmer, sparks between the prongs).
   if (idle || s.tick - s.flightStart < 40) {
@@ -305,7 +292,7 @@ function render(
       const power = Math.max(0, Math.min(15, Math.round((length - 24) / 12)));
       // V16: only aims that reach the wheel are throws; the others show the guide in red and throw nothing.
       const aim = Math.round((((Math.atan2(dy, dx) + Math.PI * 2) % (Math.PI * 2)) * 32) / (Math.PI * 2)) % 32;
-      const guide = rouletteAimReachesV16(aim) ? "rgba(255,233,164,.85)" : "rgba(255,92,104,.85)";
+      const guide = rouletteAimReachesV17(aim) ? "rgba(255,233,164,.85)" : "rgba(255,92,104,.85)";
       const ux = dx / length,
         uy = dy / length,
         reach = 40 + power * 9;
@@ -330,35 +317,19 @@ function render(
       ctx.restore();
     }
   }
-  const drawBall = (bx: number, by: number, bh: number, smear = false) => {
+  const drawBall = (bx: number, by: number, bh: number) => {
     const r = BALL_R * (1 + bh * BALL_GROW);
-    // Shadow on the surface: offset down-right with height, larger, softer and fainter the higher the ball is.
-    const sx0 = bx + 1.6 + bh * 0.42, sy0 = by + 2.4 + bh * 0.56, sr = BALL_R * (1 + bh * 0.012), sa = Math.max(0.14, 0.5 - bh * 0.008);
-    for (const [k, a] of [[1.45, 0.35], [1, 1]] as const) {
+    // Shadow on what is under the ball: offset down-right with its height, larger, softer and fainter.
+    const off = bh * SHADOW_PER_MM, sx0 = bx + 1.6 + off * 0.6, sy0 = by + 2.4 + off * 0.8, sr = BALL_R * (1 + bh * 0.01), sa = Math.max(0.16, 0.48 - bh * 0.012);
+    for (const [k, a] of [[1.4, 0.35], [1, 1]] as const) {
       ctx.fillStyle = `rgba(0,4,14,${sa * a})`;
       ctx.beginPath(); ctx.ellipse(sx0, sy0, sr * k, sr * 0.8 * k, 0, 0, Math.PI * 2); ctx.fill();
-    }
-    // Smear of a fast ball along its path (the core's velocity), behind the ball.
-    if (smear) {
-      let ux = 0, uy = 0, sp = 0;
-      if (s.ballPhase === 0) {
-        const dx = s.ballX / 1000 - ROULETTE_BALL_DOCK.x, dy = s.ballY / 1000 - ROULETTE_BALL_DOCK.y, l = Math.hypot(dx, dy);
-        if (l > 1) { ux = dx / l; uy = dy / l; sp = 1; }
-      } else if (Math.abs(s.ballVt) > 500_000) {
-        const a = s.ballTheta / 1e7 - Math.PI / 2, dir = Math.sign(s.ballVt);
-        ux = -Math.sin(a) * dir; uy = Math.cos(a) * dir; sp = Math.min(1, Math.abs(s.ballVt) / 3_000_000);
-      }
-      for (let k = 4; k >= 1 && sp > 0; k--) {
-        const d = k * (3 + sp * 4);
-        ctx.fillStyle = `rgba(240,247,255,${(0.05 + 0.05 * (4 - k)) * (0.4 + sp * 0.6)})`;
-        ctx.beginPath(); ctx.arc(bx - ux * d, by - uy * d, r * (1 - k * 0.06), 0, Math.PI * 2); ctx.fill();
-      }
     }
     ctx.fillStyle = "#f0f7ff";
     ctx.beginPath();
     ctx.arc(bx, by, r, 0, Math.PI * 2);
     ctx.fill();
-    // Sphere shading over the ball: lit from the upper left, a cool rim below.
+    // Sphere shading: lit from the upper left, a cool rim below.
     const g = ctx.createRadialGradient(bx - r * 0.38, by - r * 0.42, r * 0.1, bx, by, r);
     g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.65, "rgba(150,170,190,.18)"); g.addColorStop(1, "rgba(60,80,104,.55)");
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
@@ -370,8 +341,8 @@ function render(
   // The previous ball never vanishes: it stays in its pocket while the next one waits on the launcher.
   if (idle && settled) {
     drawBall(x, y, 0);
-    drawBall(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, ballLift({ ...s, lastNumber: null }, holdCharge));
-  } else drawBall(x, y, height, !idle);
+    drawBall(ROULETTE_BALL_DOCK.x, ROULETTE_BALL_DOCK.y, 0);
+  } else drawBall(x, y, height);
   if (idle && s.chips.length === 0) {
     // V12 · no chips on the cloth: the cradle is locked, the ball cannot be picked up until a bet is placed.
     ctx.save();
@@ -561,7 +532,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V16}
+        core={ROULETTE_CORE_V17}
         name="Roulette"
         instruction=""
         render={canvasRender}
@@ -573,7 +544,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V16.canApply(s, "TOSS_D20_P00") &&
+              ROULETTE_CORE_V17.canApply(s, "TOSS_D20_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

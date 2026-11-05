@@ -13,9 +13,11 @@ import { t, formatNumber, useI18n } from "@/lib/i18n";
  * Presentation only: a lit arcade cabinet. Reads the authoritative state (strips, positions, steps, payouts) and
  * never writes it; every animation is a pure function of the tick.
  */
-const colors = ["#f7d75f", "#ff934d", "#fa526e", "#f4cb87", "#ffd84a", "#a4a6fa", "#5ff0ff", "#ff4a5f"];
+// v146: a more vivid palette (lemon, orange, cherry, bell, star, BAR, gem, seven).
+const colors = ["#ffe62e", "#ff8a12", "#ff1f4f", "#ffc94a", "#ffd21a", "#8f7bff", "#2ee8ff", "#ff2440"];
 const marks = ["", "", "", "", "★", "BAR", "◆", "7"];
 const GOLD = "#ffd36a";
+const BULB_COLORS = ["#ffd36a", "#ff4fb8", "#3ff0ff", "#9dff5a"];
 const hash01 = (n: number) => { const q = Math.sin(n * 12.9898) * 43758.5453; return q - Math.floor(q); };
 
 function symbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number, size: number, glow = false) {
@@ -25,7 +27,7 @@ function symbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number,
   if (id < 3) {
     // Fruits: lemon, orange, cherries — shaded with a highlight and a leaf.
     const g = ctx.createRadialGradient(-size * 0.12, -size * 0.12, size * 0.04, 0, 0, size * 0.42);
-    g.addColorStop(0, "#fffbe8"); g.addColorStop(0.35, colors[id]); g.addColorStop(1, id === 2 ? "#8c1028" : id === 1 ? "#b5480f" : "#b38a12");
+    g.addColorStop(0, "#fffef0"); g.addColorStop(0.32, colors[id]); g.addColorStop(1, id === 2 ? "#7a0420" : id === 1 ? "#b03a00" : "#b88a00");
     ctx.fillStyle = g;
     ctx.beginPath();
     if (id === 2) {
@@ -57,7 +59,9 @@ function symbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number,
     ctx.fillStyle = "#8a5a1a"; ctx.beginPath(); ctx.arc(0, size * 0.29, size * 0.08, 0, Math.PI * 2); ctx.fill();
   } else if (id === 5) {
     // BAR plate.
-    ctx.fillStyle = "#1a1440"; ctx.strokeStyle = colors[5]; ctx.lineWidth = Math.max(1, size * 0.05);
+    const plate = ctx.createLinearGradient(0, -size * 0.2, 0, size * 0.2);
+    plate.addColorStop(0, "#5b3cff"); plate.addColorStop(0.5, "#2a0f9e"); plate.addColorStop(1, "#14064f");
+    ctx.fillStyle = plate; ctx.strokeStyle = "#ffd36a"; ctx.lineWidth = Math.max(1, size * 0.05);
     ctx.beginPath(); ctx.roundRect(-size * 0.42, -size * 0.2, size * 0.84, size * 0.4, size * 0.08); ctx.fill(); ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#e8e9ff"; ctx.font = `900 ${size * 0.3}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -93,8 +97,9 @@ function bulbs(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
   const chase = Math.floor(tick / 6);
   pts.forEach(([px, py], i) => {
     const on = win ? Math.floor(tick / 8) % 2 === i % 2 : (i + chase) % 4 === 0;
-    ctx.fillStyle = on ? (win ? "#fff3b0" : GOLD) : "rgba(255,211,106,.22)";
-    if (on) { ctx.shadowColor = GOLD; ctx.shadowBlur = 8; }
+    const hue = BULB_COLORS[i % BULB_COLORS.length];
+    ctx.fillStyle = on ? (win ? "#fff3b0" : hue) : "rgba(255,211,106,.22)";
+    if (on) { ctx.shadowColor = win ? GOLD : hue; ctx.shadowBlur = 9; }
     ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fill();
     ctx.shadowBlur = 0;
   });
@@ -113,13 +118,20 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   // The three reel tables (seeded per match). The highlighted row is where each reel sits right now.
   // v145: bigger reel tables (owner request): larger symbols and a taller row for each of the eight positions.
   const tableTop = 58, rowPitch = compact ? 14 : 17.5, tableH = 24 + 8 * rowPitch;
-  ctx.fillStyle = "rgba(10,8,34,.86)";
+  const panel = ctx.createLinearGradient(0, tableTop, 0, tableTop + tableH);
+  panel.addColorStop(0, "rgba(58,16,104,.92)"); panel.addColorStop(1, "rgba(18,6,48,.92)");
+  ctx.fillStyle = panel;
   ctx.beginPath(); ctx.roundRect(20, tableTop, 350, tableH, 14); ctx.fill();
-  ctx.strokeStyle = "rgba(164,166,250,.35)"; ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = "rgba(200,140,255,.6)"; ctx.lineWidth = 1.2; ctx.stroke();
+  // Each reel column on its own lit lane, tinted pink, cyan and gold.
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = ["rgba(255,79,184,.10)", "rgba(63,240,255,.09)", "rgba(255,211,106,.10)"][i];
+    ctx.beginPath(); ctx.roundRect(85 + i * 110 - 50, tableTop + 4, 100, tableH - 8, 10); ctx.fill();
+  }
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (let i = 0; i < 3; i++) {
     const x = 85 + i * 110;
-    ctx.fillStyle = "#c4b6ff"; ctx.font = "800 10px system-ui";
+    ctx.fillStyle = ["#ff8fd6", "#8ff6ff", "#ffe08a"][i]; ctx.font = "800 10px system-ui";
     ctx.fillText(t("slot.reel", { n: i + 1 }), x, tableTop + 11);
     for (let j = 0; j < 8; j++) {
       const y = tableTop + 22 + j * rowPitch + rowPitch / 2;
@@ -135,8 +147,10 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   const payTop = tableTop + tableH + 5;
   for (let id = 0; id < 8; id++) {
     const x = 20 + (id % 4) * 88, y = payTop + Math.floor(id / 4) * 25;
-    ctx.fillStyle = "rgba(10,8,34,.78)"; ctx.beginPath(); ctx.roundRect(x, y, 84, 22, 11); ctx.fill();
-    ctx.strokeStyle = id === 7 ? "rgba(255,74,95,.6)" : "rgba(255,211,106,.25)"; ctx.lineWidth = 1; ctx.stroke();
+    const chip = ctx.createLinearGradient(x, y, x + 84, y);
+    chip.addColorStop(0, `${colors[id]}40`); chip.addColorStop(0.5, "rgba(22,8,52,.9)"); chip.addColorStop(1, "rgba(22,8,52,.9)");
+    ctx.fillStyle = chip; ctx.beginPath(); ctx.roundRect(x, y, 84, 22, 11); ctx.fill();
+    ctx.strokeStyle = `${colors[id]}b0`; ctx.lineWidth = 1.2; ctx.stroke();
     symbol(ctx, id, x + 15, y + 11, 18);
     ctx.fillStyle = "#f5ecff"; ctx.textAlign = "left"; ctx.font = "800 11px system-ui";
     ctx.fillText(`×3`, x + 29, y + 11.5);
@@ -145,8 +159,10 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   }
   for (const [k, label, amount, seven] of [[0, t("slot.pair"), "10", false], [1, t("slot.sevenNoPair"), "5", true]] as const) {
     const x = 20 + k * 176, y = payTop + 50, w = 172;
-    ctx.fillStyle = "rgba(10,8,34,.78)"; ctx.beginPath(); ctx.roundRect(x, y, w, 22, 11); ctx.fill();
-    ctx.strokeStyle = seven ? "rgba(255,74,95,.6)" : "rgba(255,211,106,.25)"; ctx.lineWidth = 1; ctx.stroke();
+    const chip = ctx.createLinearGradient(x, y, x + w, y);
+    chip.addColorStop(0, seven ? "rgba(255,36,64,.3)" : "rgba(255,138,18,.3)"); chip.addColorStop(0.45, "rgba(22,8,52,.9)"); chip.addColorStop(1, "rgba(22,8,52,.9)");
+    ctx.fillStyle = chip; ctx.beginPath(); ctx.roundRect(x, y, w, 22, 11); ctx.fill();
+    ctx.strokeStyle = seven ? "rgba(255,36,64,.75)" : "rgba(255,138,18,.7)"; ctx.lineWidth = 1.2; ctx.stroke();
     if (seven) symbol(ctx, 7, x + 15, y + 11, 18);
     else { symbol(ctx, 1, x + 13, y + 11, 15); symbol(ctx, 1, x + 25, y + 11, 15); }
     ctx.fillStyle = "#e6defa"; ctx.textAlign = "left"; ctx.font = "700 10.5px system-ui";
@@ -164,9 +180,11 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   const pitch = Math.min(74, Math.max(56, height * 0.4)), size = pitch * 0.81;
   const reach = Math.ceil(height / 2 / pitch) + 1;
   const frame = ctx.createLinearGradient(0, top - 12, 0, top + height + 12);
-  frame.addColorStop(0, "#fff0b8"); frame.addColorStop(0.25, "#c9902e"); frame.addColorStop(0.5, "#ffe08a"); frame.addColorStop(0.8, "#8a5a14"); frame.addColorStop(1, "#e8b85a");
+  frame.addColorStop(0, "#fff6c8"); frame.addColorStop(0.22, "#ffb42a"); frame.addColorStop(0.5, "#ffe77a"); frame.addColorStop(0.78, "#c25a10"); frame.addColorStop(1, "#ffcf5a");
   ctx.fillStyle = frame; ctx.beginPath(); ctx.roundRect(12, top - 12, 366, height + 24, 26); ctx.fill();
-  ctx.fillStyle = "#2a0f3e"; ctx.beginPath(); ctx.roundRect(20, top - 4, 350, height + 8, 20); ctx.fill();
+  const inner = ctx.createLinearGradient(0, top - 4, 0, top + height + 4);
+  inner.addColorStop(0, "#5a0f7a"); inner.addColorStop(0.5, "#2c0a52"); inner.addColorStop(1, "#5a0f5e");
+  ctx.fillStyle = inner; ctx.beginPath(); ctx.roundRect(20, top - 4, 350, height + 8, 20); ctx.fill();
   bulbs(ctx, 28, top + 2, 334, height - 4, 23, s.tick + 3, win);
   for (let i = 0; i < 3; i++) {
     const x = 85 + i * 110, rx = x - 46, ry = top + 14, rw = 92, rh = height - 28;
@@ -174,7 +192,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
     ctx.beginPath(); ctx.roundRect(rx, ry, rw, rh, 12); ctx.clip();
     // Drum: bright in the middle, dark at the top and bottom edges.
     const drum = ctx.createLinearGradient(0, ry, 0, ry + rh);
-    drum.addColorStop(0, "#5a5f7a"); drum.addColorStop(0.22, "#e9ecf7"); drum.addColorStop(0.5, "#ffffff"); drum.addColorStop(0.78, "#e9ecf7"); drum.addColorStop(1, "#5a5f7a");
+    drum.addColorStop(0, "#5a3f7a"); drum.addColorStop(0.22, "#f1e9fb"); drum.addColorStop(0.5, "#ffffff"); drum.addColorStop(0.78, "#f1e9fb"); drum.addColorStop(1, "#5a3f7a");
     ctx.fillStyle = drum; ctx.fillRect(rx, ry, rw, rh);
     const p = slotReelPosition(s, i), index = Math.floor(p), fraction = p - index;
     const moving = spinning && Math.abs(p - Math.round(p)) > 0.02;
