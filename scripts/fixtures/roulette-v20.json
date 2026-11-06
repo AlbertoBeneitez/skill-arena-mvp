@@ -1,0 +1,155 @@
+{
+ "seed": "roulette20-golden",
+ "inputs": [
+  {
+   "seq": 0,
+   "tick": 0,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 1,
+   "tick": 1,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 2,
+   "tick": 2,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 3,
+   "tick": 3,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 4,
+   "tick": 4,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 5,
+   "tick": 5,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 6,
+   "tick": 6,
+   "action": "TOSS_D16_P06"
+  },
+  {
+   "seq": 7,
+   "tick": 847,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 8,
+   "tick": 848,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 9,
+   "tick": 849,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 10,
+   "tick": 850,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 11,
+   "tick": 851,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 12,
+   "tick": 852,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 13,
+   "tick": 853,
+   "action": "TOSS_D20_P09"
+  },
+  {
+   "seq": 14,
+   "tick": 1543,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 15,
+   "tick": 1544,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 16,
+   "tick": 1545,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 17,
+   "tick": 1546,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 18,
+   "tick": 1547,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 19,
+   "tick": 1548,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 20,
+   "tick": 1549,
+   "action": "TOSS_D24_P12"
+  },
+  {
+   "seq": 21,
+   "tick": 2358,
+   "action": "CHIP_5"
+  },
+  {
+   "seq": 22,
+   "tick": 2359,
+   "action": "BET_RED"
+  },
+  {
+   "seq": 23,
+   "tick": 2360,
+   "action": "CHIP_1"
+  },
+  {
+   "seq": 24,
+   "tick": 2361,
+   "action": "BET_NUMBER_17"
+  },
+  {
+   "seq": 25,
+   "tick": 2362,
+   "action": "CHIP_25"
+  },
+  {
+   "seq": 26,
+   "tick": 2363,
+   "action": "BET_DOZEN_2"
+  },
+  {
+   "seq": 27,
+   "tick": 2364,
+   "action": "TOSS_D18_P15"
+  },
+  {
+   "seq": 28,
+   "tick": 2965,
+   "action": "CASH_OUT"
+  }
+ ],
+ "score": 14600,
+ "finalTick": 2965,
+ "status": "won",
+ "failure": null,
+ "hash": "sha256:e3ddb520ff254d186ede3d6f70a1f24705fba2306173ef75cdb885d642e1430c"
+}

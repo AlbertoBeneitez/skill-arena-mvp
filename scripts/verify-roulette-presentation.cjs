@@ -10,7 +10,7 @@ const root = path.resolve(__dirname, ".."),
 register(pathToFileURL(path.join(root, "scripts/determinism-loader.mjs")));
 module.exports = (async () => {
   const load = (p) => import(pathToFileURL(path.join(root, ".det-test", p)));
-  const coreModule = await load("lib/verified/galacticRouletteCore.v19.js"),
+  const coreModule = await load("lib/verified/galacticRouletteCore.v20.js"),
     protocol = await load("lib/verified/galacticRouletteProtocol.v3.js"),
     protocol8 = await load("lib/verified/galacticRouletteProtocol.v8.js"),
     gesture = await load("lib/rouletteLaunchGesture.js"),
@@ -32,7 +32,7 @@ module.exports = (async () => {
   );
   const exports = {},
     deps = {
-      "@/lib/verified/galacticRouletteCore.v19": coreModule,
+      "@/lib/verified/galacticRouletteCore.v20": coreModule,
       "@/lib/verified/galacticRouletteProtocol.v3": protocol,
       "@/lib/verified/galacticRouletteProtocol.v8": protocol8,
       "@/lib/rouletteLaunchGesture": gesture,
@@ -47,10 +47,10 @@ module.exports = (async () => {
   let frames = 0;
   for (let seed = 0; seed < 16; seed++)
     for (const impulse of [0, 7, 15]) {
-      const s = coreModule.ROULETTE_CORE_V19.create("roulette2-render-" + seed);
-      runtime.applyCoreInput(coreModule.ROULETTE_CORE_V19, s, "BET_RED", 1e9);
+      const s = coreModule.ROULETTE_CORE_V20.create("roulette2-render-" + seed);
+      runtime.applyCoreInput(coreModule.ROULETTE_CORE_V20, s, "BET_RED", 1e9);
       runtime.applyCoreInput(
-        coreModule.ROULETTE_CORE_V19,
+        coreModule.ROULETTE_CORE_V20,
         s,
         protocol.rouletteTossAction(16 + (seed % 9), impulse),
         1e9,
@@ -88,17 +88,17 @@ module.exports = (async () => {
           const a = s.ballTheta / 1e7 - Math.PI / 2, r = s.ballR / 1e6;
           const ex = s.ballPhase === 0 ? s.ballX / 1000 : 195 + Math.cos(a) * r, ey = s.ballPhase === 0 ? s.ballY / 1000 : 195 + Math.sin(a) * r;
           assert.ok(Math.abs(balls[0][0] - ex) < 1e-9 && Math.abs(balls[0][1] - ey) < 1e-9, "ball drawn where the core has it");
-          const BR = coreModule.ROULETTE_RULES_V19.ballRadius / 1000;
+          const BR = coreModule.ROULETTE_RULES_V20.ballRadius / 1000;
           // v144: the ball grows with its height (towards the camera); in the wheel that height is the core's ballZ.
           assert.ok(Math.abs(balls[0][2] - BR * (1 + exports.ballLift(s) * exports.BALL_GROW)) < 1e-9, "size follows the height");
           if (s.ballPhase === 1) assert.ok(Math.abs(exports.ballLift(s) - s.ballZ / 1e6) < 1e-9, "height is the core's ballZ, nothing added");
           frames++;
         }
-        runtime.stepCore(coreModule.ROULETTE_CORE_V19, s, 1e9);
+        runtime.stepCore(coreModule.ROULETTE_CORE_V20, s, 1e9);
       }
     }
   // A landed ball remains in the awarded rotating pocket, never back at dock.
-  const s = coreModule.ROULETTE_CORE_V19.create("settled-zenithal");
+  const s = coreModule.ROULETTE_CORE_V20.create("settled-zenithal");
   s.lastNumber = 32;
   s.lastLandingTick = 240;
   s.tick = 240;
@@ -127,7 +127,7 @@ module.exports = (async () => {
     const POCKET_REST = 93.5;
     const miss = Math.hypot(balls[0][0] - (195 + Math.cos(angle) * POCKET_REST), balls[0][1] - (195 + Math.sin(angle) * POCKET_REST));
     assert.ok(miss < 0.01, `resting ball rides with its pocket (age ${age}, off by ${miss})`);
-    runtime.stepCore(coreModule.ROULETTE_CORE_V19,s,1e9);
+    runtime.stepCore(coreModule.ROULETTE_CORE_V20,s,1e9);
   }
   console.log(
     JSON.stringify({

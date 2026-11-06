@@ -2,15 +2,15 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V19,
-  ROULETTE_RULES_V19,
+  ROULETTE_CORE_V20,
+  ROULETTE_RULES_V20,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  rouletteAimReachesV19,
-  rouletteLobV19,
-  rouletteSurfaceV19,
-  type RouletteStateV19 as RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v19";
+  rouletteAimReachesV20,
+  rouletteLobV20,
+  rouletteSurfaceV20,
+  type RouletteStateV20 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v20";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -30,9 +30,9 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V19.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V20.ballRadius / 1000;
 /**
- * v148 · The ball is drawn exactly as the V18 physics (V19 since v149) move it, seen from straight above: its position is the core's,
+ * v148 · The ball is drawn exactly as the V18 physics (V19 since v149, V20 since v150) move it, seen from straight above: its position is the core's,
  * and its height above whatever is under it (the bowl's surface, or the rim level outside the wheel; the core's own
  * height, nothing added) only moves its shadow away from it (light from the upper left, 0.5 px per mm of height,
  * softer and fainter) and grows it a little (0.6 % per mm). The lob's parabola, every bounce and the final roll are
@@ -45,8 +45,8 @@ export const SHADOW_PER_MM = 0.5;
 export function ballLift(s: Readonly<RouletteStateV2>) {
   if (s.landingTick === -1) return 0;
   if (s.ballPhase === 0) {
-    const R = ROULETTE_RULES_V19, dx = (s.ballX - R.centerX) * 1000, dy = (s.ballY - R.centerY) * 1000, r = Math.hypot(dx, dy);
-    return Math.max(0, (s.ballZ - (r <= R.wallR ? rouletteSurfaceV19(r) : R.rimTop)) / 1e6);
+    const R = ROULETTE_RULES_V20, dx = (s.ballX - R.centerX) * 1000, dy = (s.ballY - R.centerY) * 1000, r = Math.hypot(dx, dy);
+    return Math.max(0, (s.ballZ - (r <= R.wallR ? rouletteSurfaceV20(r) : R.rimTop)) / 1e6);
   }
   return s.ballZ / 1e6;
 }
@@ -298,7 +298,7 @@ function render(
       // Only aims that cross the wheel are throws; the others show a short red guide and throw nothing. A throw shows
       // its line to the exact point where the lob comes down (V18), with a target ring there.
       const aim = Math.round((((Math.atan2(dy, dx) + Math.PI * 2) % (Math.PI * 2)) * 32) / (Math.PI * 2)) % 32;
-      const lob = rouletteAimReachesV19(aim) ? rouletteLobV19(aim, power) : null;
+      const lob = rouletteAimReachesV20(aim) ? rouletteLobV20(aim, power) : null;
       const guide = lob ? "rgba(255,233,164,.85)" : "rgba(255,92,104,.85)";
       const ux = dx / length, uy = dy / length;
       const ex = lob ? lob.x / 1000 : ROULETTE_BALL_DOCK.x + ux * (40 + power * 9), ey = lob ? lob.y / 1000 : ROULETTE_BALL_DOCK.y + uy * (40 + power * 9);
@@ -536,7 +536,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V19}
+        core={ROULETTE_CORE_V20}
         name="Roulette"
         instruction=""
         render={canvasRender}
@@ -548,7 +548,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V19.canApply(s, "TOSS_D20_P00") &&
+              ROULETTE_CORE_V20.canApply(s, "TOSS_D20_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;

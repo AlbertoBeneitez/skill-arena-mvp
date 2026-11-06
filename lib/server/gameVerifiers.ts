@@ -13,6 +13,7 @@ import { ROULETTE_CORE_V16 } from "../verified/galacticRouletteCore.v16";
 import { ROULETTE_CORE_V17 } from "../verified/galacticRouletteCore.v17";
 import { ROULETTE_CORE_V18 } from "../verified/galacticRouletteCore.v18";
 import { ROULETTE_CORE_V19 } from "../verified/galacticRouletteCore.v19";
+import { ROULETTE_CORE_V20 } from "../verified/galacticRouletteCore.v20";
 import { ROULETTE_CORE_V4 } from "../verified/galacticRouletteCore.v4";
 import { ROULETTE_CORE_V3 } from "../verified/galacticRouletteCore.v3";
 import { SLOT_CORE_V2 } from "../verified/galacticSlotCore.v2";
@@ -289,6 +290,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ROULETTE_CORE_V17.gameId,ROULETTE_CORE_V17.gameVersion)]: coreAdapter(ROULETTE_CORE_V17),
   [adapterKey(ROULETTE_CORE_V18.gameId,ROULETTE_CORE_V18.gameVersion)]: coreAdapter(ROULETTE_CORE_V18),
   [adapterKey(ROULETTE_CORE_V19.gameId,ROULETTE_CORE_V19.gameVersion)]: coreAdapter(ROULETTE_CORE_V19),
+  [adapterKey(ROULETTE_CORE_V20.gameId,ROULETTE_CORE_V20.gameVersion)]: coreAdapter(ROULETTE_CORE_V20),
   [adapterKey(ROULETTE_CORE_V13.gameId,ROULETTE_CORE_V13.gameVersion)]: coreAdapter(ROULETTE_CORE_V13),
   [adapterKey(ROULETTE_CORE_V3.gameId,ROULETTE_CORE_V3.gameVersion)]: coreAdapter(ROULETTE_CORE_V3),
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
