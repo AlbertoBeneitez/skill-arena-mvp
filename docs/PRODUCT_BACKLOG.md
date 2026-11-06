@@ -882,6 +882,14 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v148-saturn · Ruleta V18: lanzamiento en parábola con rebotes (6-nov-2026)
+
+- **Roulette V18:** la bola se lanza en parábola real hasta el punto al que apuntas, bota unas 4 veces en el cuenco según la pendiente de cada superficie y rueda hasta una casilla (unos 3,3 s), sin vueltas por la pista. Guía con diana en el punto de caída.
+- **Pendiente:**
+  - competición con juegos de estudios;
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado.
+
 ## v147-saturn · Juegos de estudios publicados en el catálogo (5-nov-2026)
 
 - **Fase 2 del envío de juegos:** aprobar publica el juego en su fila y en «Nuevos», en entrenamiento. Se juega a pantalla completa, en un marco aislado, con el paquete comprobado por SHA-256 y la puntuación del núcleo. Rechazar lo retira.

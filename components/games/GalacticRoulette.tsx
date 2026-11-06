@@ -2,13 +2,15 @@
 import { useRef, useCallback, useEffect } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import {
-  ROULETTE_CORE_V17,
-  ROULETTE_RULES_V17,
+  ROULETTE_CORE_V18,
+  ROULETTE_RULES_V18,
   ROULETTE_WHEEL,
   ROULETTE_RED,
-  rouletteAimReachesV17,
-  type RouletteStateV17 as RouletteStateV2,
-} from "@/lib/verified/galacticRouletteCore.v17";
+  rouletteAimReachesV18,
+  rouletteLobV18,
+  rouletteSurfaceV17,
+  type RouletteStateV18 as RouletteStateV2,
+} from "@/lib/verified/galacticRouletteCore.v18";
 import { ROULETTE_BETS } from "@/lib/verified/galacticRouletteProtocol.v3";
 import { ROULETTE_DENOMINATIONS } from "@/lib/verified/galacticRouletteProtocol.v8";
 import {
@@ -28,21 +30,24 @@ const cx = 195,
  */
 const WHEEL_SCALE = 1.08, WHEEL_DY = 34;
 export const toWheel = (p: CorePoint): CorePoint => ({ x: cx + (p.x - cx) / WHEEL_SCALE, y: cy + (p.y - cy - WHEEL_DY) / WHEEL_SCALE });
-const BALL_R = ROULETTE_RULES_V17.ballRadius / 1000;
+const BALL_R = ROULETTE_RULES_V18.ballRadius / 1000;
 /**
- * v146 · The ball is drawn exactly as the V17 physics move it, seen from straight above: its position is the core's,
- * and its height above whatever is under it (the rim and the cradle's table on the flight, the bowl's surface in the
- * wheel; the core's own ballZ, nothing added) only moves its shadow away from it (light from the upper left, the
- * shadow falls 0.7 px per mm of height, softer and fainter) and grows it slightly (0.8 % per mm). The arc of the
- * throw, the drop onto the track, the hops off the diamonds and frets and the flight into the rotor are all real.
+ * v148 · The ball is drawn exactly as the V18 physics move it, seen from straight above: its position is the core's,
+ * and its height above whatever is under it (the bowl's surface, or the rim level outside the wheel; the core's own
+ * height, nothing added) only moves its shadow away from it (light from the upper left, 0.5 px per mm of height,
+ * softer and fainter) and grows it a little (0.6 % per mm). The lob's parabola, every bounce and the final roll are
+ * the simulation's.
  */
-export const BALL_GROW = 0.008;
-export const SHADOW_PER_MM = 0.7;
-/** Height (mm) of the ball's bottom above what lies under it: the core's ballZ (on the flight, measured from the track
- * at the wall, so above the rim it is that minus the rim's height). */
+export const BALL_GROW = 0.006;
+export const SHADOW_PER_MM = 0.5;
+/** Height (mm) of the ball's bottom above what lies under it. During the lob the core keeps an absolute height (above
+ * the pocket floor), so the surface under the ball is taken off; once it rolls, ballZ is already above the surface. */
 export function ballLift(s: Readonly<RouletteStateV2>) {
   if (s.landingTick === -1) return 0;
-  if (s.ballPhase === 0) return Math.max(0, (s.ballZ - ROULETTE_RULES_V17.rimHeight) / 1e6);
+  if (s.ballPhase === 0) {
+    const R = ROULETTE_RULES_V18, dx = (s.ballX - R.centerX) * 1000, dy = (s.ballY - R.centerY) * 1000, r = Math.hypot(dx, dy);
+    return Math.max(0, (s.ballZ - (r <= R.wallR ? rouletteSurfaceV17(r) : R.rimTop)) / 1e6);
+  }
   return s.ballZ / 1e6;
 }
 // Presentation radii (the authoritative ball physics live in the core).
@@ -290,12 +295,13 @@ function render(
       length = Math.hypot(dx, dy);
     if (length >= 28) {
       const power = Math.max(0, Math.min(15, Math.round((length - 24) / 12)));
-      // V16: only aims that reach the wheel are throws; the others show the guide in red and throw nothing.
+      // Only aims that cross the wheel are throws; the others show a short red guide and throw nothing. A throw shows
+      // its line to the exact point where the lob comes down (V18), with a target ring there.
       const aim = Math.round((((Math.atan2(dy, dx) + Math.PI * 2) % (Math.PI * 2)) * 32) / (Math.PI * 2)) % 32;
-      const guide = rouletteAimReachesV17(aim) ? "rgba(255,233,164,.85)" : "rgba(255,92,104,.85)";
-      const ux = dx / length,
-        uy = dy / length,
-        reach = 40 + power * 9;
+      const lob = rouletteAimReachesV18(aim) ? rouletteLobV18(aim, power) : null;
+      const guide = lob ? "rgba(255,233,164,.85)" : "rgba(255,92,104,.85)";
+      const ux = dx / length, uy = dy / length;
+      const ex = lob ? lob.x / 1000 : ROULETTE_BALL_DOCK.x + ux * (40 + power * 9), ey = lob ? lob.y / 1000 : ROULETTE_BALL_DOCK.y + uy * (40 + power * 9);
       ctx.save();
       ctx.strokeStyle = guide;
       ctx.fillStyle = guide;
@@ -303,17 +309,15 @@ function render(
       ctx.setLineDash([7, 6]);
       ctx.beginPath();
       ctx.moveTo(ROULETTE_BALL_DOCK.x + ux * 14, ROULETTE_BALL_DOCK.y + uy * 14);
-      ctx.lineTo(ROULETTE_BALL_DOCK.x + ux * reach, ROULETTE_BALL_DOCK.y + uy * reach);
+      ctx.lineTo(ex, ey);
       ctx.stroke();
       ctx.setLineDash([]);
-      const tx = ROULETTE_BALL_DOCK.x + ux * (reach + 8),
-        ty = ROULETTE_BALL_DOCK.y + uy * (reach + 8);
-      ctx.beginPath();
-      ctx.moveTo(tx, ty);
-      ctx.lineTo(tx - ux * 12 - uy * 7, ty - uy * 12 + ux * 7);
-      ctx.lineTo(tx - ux * 12 + uy * 7, ty - uy * 12 - ux * 7);
-      ctx.closePath();
-      ctx.fill();
+      if (lob) {
+        const pulse = 1 + 0.12 * Math.sin(s.tick * 0.2);
+        ctx.lineWidth = 2;
+        for (const rr of [6, 12]) { ctx.beginPath(); ctx.arc(ex, ey, rr * pulse, 0, Math.PI * 2); ctx.stroke(); }
+        ctx.beginPath(); ctx.arc(ex, ey, 2, 0, Math.PI * 2); ctx.fill();
+      }
       ctx.restore();
     }
   }
@@ -532,7 +536,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
     >
       <CoreCanvasGame
         {...props}
-        core={ROULETTE_CORE_V17}
+        core={ROULETTE_CORE_V18}
         name="Roulette"
         instruction=""
         render={canvasRender}
@@ -544,7 +548,7 @@ export default function GalacticRoulette(props: GameRuntimeProps) {
           const p = toWheel(screen);
           if (phase === "down") {
             origin.current =
-              ROULETTE_CORE_V17.canApply(s, "TOSS_D20_P00") &&
+              ROULETTE_CORE_V18.canApply(s, "TOSS_D20_P00") &&
               rouletteLauncherCanGrab(p)
                 ? p
                 : null;
