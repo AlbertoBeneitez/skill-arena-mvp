@@ -54,6 +54,8 @@
     "scripts/verify-roulette-v16.ts",
     "scripts/verify-roulette-v17.ts",
     "scripts/verify-roulette-v18.ts",
+    "scripts/verify-roulette-v19.ts",
+    "scripts/gen-roulette-v19-fixture.ts",
     "scripts/gen-roulette-v18-fixture.ts",
     "scripts/gen-roulette-v17-fixture.ts",
     "scripts/verify-pinball-v9.ts",
