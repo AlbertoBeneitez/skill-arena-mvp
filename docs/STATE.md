@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 6 de noviembre de 2026 · base `mobile-test` en v150-saturn.
+Actualizado: 6 de noviembre de 2026 · base `mobile-test` en v151-saturn.
 
 ## Catálogo
 
@@ -13,7 +13,7 @@ resultado aún no verificado de extremo a extremo.
 
 | id interno | Nombre visible | Versión | Estado |
 | --- | --- | --- | --- |
-| galactic-roulette | Roulette | 20.0.0 | VERIFIED |
+| galactic-roulette | Roulette | 21.0.0 | VERIFIED |
 | galactic-slot | Slot | 3.0.0 | VERIFIED |
 | darts | Dardos | 3.0.0 | VERIFIED |
 | billiards | Billar | 7.0.0 | VERIFIED |

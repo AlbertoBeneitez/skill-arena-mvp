@@ -882,6 +882,14 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v151-saturn · Ruleta V21: rebote aún más lento (6-nov-2026)
+
+- **Roulette V21:** V20 otra vez a cámara lenta (k = 1,5): lanzamientos de 0,85 a 1,32 s, botes igual de altos y más pausados, y unos 9,9 s por tirada.
+- **Pendiente:**
+  - competición con juegos de estudios;
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado.
+
 ## v150-saturn · Ruleta V20: el mismo movimiento, más lento (6-nov-2026)
 
 - **Roulette V20:** V19 a cámara lenta (k = 1,29, rotor incluido): lanzamientos de 0,56 a 0,88 s, los mismos botes y unos 6,4 s por tirada, con reparto uniforme.

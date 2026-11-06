@@ -56,6 +56,8 @@
     "scripts/verify-roulette-v18.ts",
     "scripts/verify-roulette-v19.ts",
     "scripts/verify-roulette-v20.ts",
+    "scripts/verify-roulette-v21.ts",
+    "scripts/gen-roulette-v21-fixture.ts",
     "scripts/gen-roulette-v20-fixture.ts",
     "scripts/gen-roulette-v19-fixture.ts",
     "scripts/gen-roulette-v18-fixture.ts",
