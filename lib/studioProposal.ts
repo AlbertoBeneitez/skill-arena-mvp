@@ -7,7 +7,7 @@
 export const STUDIO_TERMS_VERSION = "studio-terms-2026-11-03";
 export const PROPOSAL_CONSENT_VERSION = "studio-proposal-2026-11-03";
 /** Rows a studio can choose in galactic.json (lib/games.ts CATALOG_SHELVES); "Populares" and "Nuevos" are earned. */
-export const PROPOSAL_SHELVES = ["casino", "bar", "mythic", "dynamic", "alternative"] as const;
+export const PROPOSAL_SHELVES = ["bar", "mythic", "dynamic", "alternative"] as const;
 export type ProposalShelf = (typeof PROPOSAL_SHELVES)[number];
 export type Submission = { studio: string; contact: string; terms: string; consent: string };
 export type SubmissionField = keyof Submission | "file";

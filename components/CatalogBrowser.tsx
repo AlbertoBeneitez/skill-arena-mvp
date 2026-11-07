@@ -16,7 +16,7 @@ const ExternalGamePlayer = dynamic(() => import("./ExternalGamePlayer"), { ssr: 
 /** v136: one edge colour per catalogue row, so every game of the same kind carries the same colour (also in
  * Populares and Nuevos). Not ion (interactive) or gold (money). */
 export const SHELF_ACCENTS: Record<string, string> = {
-  casino: "#ff6b7a", bar: "#ffa85c", mythic: "#b88cff", dynamic: "#5fd6ff", alternative: "#6ff0b0",
+  bar: "#ffa85c", mythic: "#b88cff", dynamic: "#5fd6ff", alternative: "#6ff0b0",
 };
 export const gameAccent = (game: GameMeta) => SHELF_ACCENTS[gameShelf(game)] ?? "#9ce6e8";
 /** v143: the colour of each row's title tick (the two curated rows have their own: ion for Populares, pink for Nuevos). */

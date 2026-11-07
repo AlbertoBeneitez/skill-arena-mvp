@@ -17,7 +17,7 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
-import { GAMES, STAKES, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore } from "@/lib/games";
+import { GAMES, STAKES, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore } from "@/lib/games";
 import { createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
 import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
@@ -103,7 +103,8 @@ function euro(value: number) {
 
 function movementLabel(movement: Movement) {
   if (!movement.key) return movement.label.replace(/\bdemo\b/gi, "ficticio");
-  const game = movement.gameId ? GAMES.find((item) => item.id === movement.gameId) : undefined;
+  // v152: by id over the whole registry, so the history still names games that are no longer listed (Roulette).
+  const game = movement.gameId ? getGameDefinition(movement.gameId) : undefined;
   return t(movement.key, { ...movement.vars, ...(game ? { game: gameName(game) } : {}) });
 }
 
@@ -1059,7 +1060,7 @@ export default function DemoApp() {
 
   const GROUP_YOU = "you";
   const groupLook = {
-    base: (gameId: string) => GAMES.find((g) => g.id === gameId)?.rivalScore ?? 1000,
+    base: (gameId: string) => getGameDefinition(gameId)?.rivalScore ?? 1000,
     strength: (id: string) => group?.members.find((m) => m.id === id)?.scoreFactor ?? 1,
   };
   const lowerWinsIn = (c: GroupCompetition, gameId: string) => c.config.lowerWinsGameIds.includes(gameId);
@@ -1116,7 +1117,7 @@ export default function DemoApp() {
   function playGroupMatch(comp: GroupCompetition | null = groupComp) {
     if (!group || !comp || matchStartLockRef.current) return;
     const index = nextGroupMatch(comp, GROUP_YOU), m = comp.matches[index];
-    const game = m && GAMES.find((g) => g.id === m.gameId);
+    const game = m && GAMES.find((g) => g.id === m.gameId); // listed games only: a hidden one (Roulette) is not opened
     if (!m || !game) { navigate("group"); return; }
     const rivals = m.players.filter((id) => id !== GROUP_YOU).map((id) => m.scores[id]).filter((v): v is number => v !== undefined);
     const lower = lowerWinsIn(comp, m.gameId);

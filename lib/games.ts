@@ -102,7 +102,7 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:true,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. V18: la bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota en el cuenco real según la inclinación de cada superficie y, cuando dejan de botar, rueda hasta una casilla; sin vueltas a lo largo de la pista. V19: a cámara lenta (gravedad a la mitad), con unos 8 botes y casillas que la retienen menos. V20: el mismo movimiento 1,29 veces más lento, rotor incluido. V21: otra vez 1,5 veces más lento (botes de la misma altura, más pausados)." },
+  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:false,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. V18: la bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota en el cuenco real según la inclinación de cada superficie y, cuando dejan de botar, rueda hasta una casilla; sin vueltas a lo largo de la pista. V19: a cámara lenta (gravedad a la mitad), con unos 8 botes y casillas que la retienen menos. V20: el mismo movimiento 1,29 veces más lento, rotor incluido. V21: otra vez 1,5 veces más lento (botes de la misma altura, más pausados)." },
   {
     id: "galactic-slot", version: "3.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
@@ -367,8 +367,13 @@ export const GAME_REGISTRY = Object.fromEntries(
  * v130 · Popularity: matches played, most first. It orders the catalogue (the "Populares" row and every row,
  * left to right). Fixed and editable here until the server reports real play counts; GAMES keeps this order.
  */
+/**
+ * v152 · Roulette is hidden from players (owner request, 7 Nov 2026): it is out of this list and `enabled: false`, so
+ * it is in no row, ranking or group, and the server starts no new match of it. Its registry entry, cores (V1–V21),
+ * renderer, verifier adapters, fixtures and covers all stay, so its archived matches still verify. To bring it back:
+ * set `enabled: true` on its entry and put "galactic-roulette" back at the head of this list (and a shelf below).
+ */
 const CATALOG_ORDER: GameId[] = [
-  "galactic-roulette",
   "galactic-slot",
   "billiards",
   "darts",
@@ -385,15 +390,15 @@ const CATALOG_ORDER: GameId[] = [
 ];
 
 /** v130 · Catalogue rows. A developer picks one of these for a new game; "Populares" is never picked, it is earned. */
-export type CatalogShelf = "casino" | "bar" | "mythic" | "dynamic" | "alternative";
-export const CATALOG_SHELVES: readonly CatalogShelf[] = ["casino", "bar", "mythic", "dynamic", "alternative"];
+// v152: no "casino" row any more (Roulette hidden, Slot moved to "alternative").
+export type CatalogShelf = "bar" | "mythic" | "dynamic" | "alternative";
+export const CATALOG_SHELVES: readonly CatalogShelf[] = ["bar", "mythic", "dynamic", "alternative"];
 export const POPULAR_COUNT = 8;
 const GAME_SHELF: Partial<Record<GameId, CatalogShelf>> = {
-  "galactic-roulette": "casino", "galactic-slot": "casino",
   darts: "bar", billiards: "bar", bowling: "bar",
   "orb-burst": "mythic", "solitaire-sprint": "mythic", "mine-grid": "mythic", "stack-shift": "mythic", pinball: "mythic",
   "precision-stack": "dynamic", "tower-drop": "dynamic",
-  "corner-sudoku": "alternative", "reaction-test": "alternative",
+  "corner-sudoku": "alternative", "reaction-test": "alternative", "galactic-slot": "alternative",
 };
 export const gameShelf = (game: Pick<GameMeta, "id">): CatalogShelf => GAME_SHELF[game.id as GameId] ?? "alternative";
 /** Day each game joined the catalogue; games without a date predate the 29 September 2026 launch. "Nuevos" lists the

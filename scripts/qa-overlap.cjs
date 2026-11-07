@@ -10,7 +10,7 @@
 const { chromium } = require("playwright");
 const BASE = process.env.BASE_URL || "http://127.0.0.1:3111";
 const GAMES = [
-  "Roulette", "Slot", "Dardos", "Billar", "Stack", "Tower Drop", "Orb Burst",
+  "Slot", "Dardos", "Billar", "Stack", "Tower Drop", "Orb Burst",
   "Shot Gallery", "Solitaire Sprint", "Mine Grid", "Stack Shift", "Pinball", "Galoku", "Bowling",
 ];
 

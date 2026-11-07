@@ -882,6 +882,16 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v152-saturn · Roulette oculta, Slot en Alternativos y sin fila Casino (7-nov-2026)
+
+- **Roulette:** oculta para el jugador. Se conservan su registro, sus núcleos, sus verificadores y su portada; cómo volver a mostrarla está en `docs/STATE.md`.
+- **Slot:** pasa a Alternativos.
+- **Casino:** fila eliminada, también para los estudios.
+- **Pendiente:**
+  - competición con juegos de estudios;
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado.
+
 ## v151-saturn · Ruleta V21: rebote aún más lento (6-nov-2026)
 
 - **Roulette V21:** V20 otra vez a cámara lenta (k = 1,5): lanzamientos de 0,85 a 1,32 s, botes igual de altos y más pausados, y unos 9,9 s por tirada.

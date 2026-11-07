@@ -4,16 +4,21 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 6 de noviembre de 2026 · base `mobile-test` en v151-saturn.
+Actualizado: 7 de noviembre de 2026 · base `mobile-test` en v152-saturn.
 
 ## Catálogo
 
-14 juegos activos: 12 verificados por replay en servidor y 2 integrados con
-resultado aún no verificado de extremo a extremo.
+**Volver a mostrar Roulette:** en `lib/games.ts`, `enabled: true` en su entrada y `"galactic-roulette"` de nuevo al
+principio de `CATALOG_ORDER` con una fila en `GAME_SHELF` (y, si se quiere, la fila `casino` en `CatalogShelf`,
+`CATALOG_SHELVES`, `SHELF_ACCENTS` y `PROPOSAL_SHELVES`). Todo lo demás sigue en su sitio.
+
+13 juegos visibles: 11 verificados por replay en servidor y 2 integrados con
+resultado aún no verificado de extremo a extremo. Roulette está oculta desde v152
+(registro, núcleos, verificadores y portada se conservan; ver abajo).
 
 | id interno | Nombre visible | Versión | Estado |
 | --- | --- | --- | --- |
-| galactic-roulette | Roulette | 21.0.0 | VERIFIED |
+| galactic-roulette | Roulette (oculta, v152) | 21.0.0 | VERIFIED |
 | galactic-slot | Slot | 3.0.0 | VERIFIED |
 | darts | Dardos | 3.0.0 | VERIFIED |
 | billiards | Billar | 7.0.0 | VERIFIED |
@@ -66,7 +71,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 - [x] **Ruleta (1 de noviembre):** el salto actual no es realista porque la bola se asienta demasiado rápido; debe dar más botes y tardar más en quedarse en el número (núcleo nuevo).
 - [x] **Especificación de la plataforma de juegos externos (1 de noviembre):** documento editable en https://claude.ai/artifact/UVovKYHAQV3f4C722uNzsh (paquete, funciones del núcleo, SDK, admisión, producción, versiones, datos, reparto, contrato, fases y decisiones abiertas).
 - [x] **Catálogo por filas (1 de noviembre):**
-  - orden: Populares (los 8 con más partidas), Casino, Bar, Míticos, Dinámicos y Alternativos;
+  - orden: Populares (los 8 con más partidas), Nuevos, Bar, Míticos, Dinámicos y Alternativos (Casino se quitó en v152; el Slot está en Alternativos);
   - cada fila se desliza y muestra 2 tarjetas y media, ordenadas por popularidad;
   - la popularidad es un orden fijo editable (`CATALOG_ORDER` en `lib/games.ts`) hasta que el servidor dé partidas reales;
   - los juegos externos eligen categoría, salvo Populares.

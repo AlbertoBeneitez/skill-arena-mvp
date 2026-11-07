@@ -14,5 +14,5 @@ assert.equal(bad({ consent: "studio-proposal-2026-11-01" }), "consent", "only th
 assert.equal(bad({ studio: "Ok\u0000\u0007 Studio" }), null, "control characters are stripped");
 assert.equal(checkSubmission(null).ok, false);
 // The same rows as CATALOG_SHELVES in lib/games.ts (which the determinism build cannot import: it loads components).
-assert.deepEqual([...PROPOSAL_SHELVES], ["casino", "bar", "mythic", "dynamic", "alternative"]);
+assert.deepEqual([...PROPOSAL_SHELVES], ["bar", "mythic", "dynamic", "alternative"]);
 console.log("Studio submissions OK · studio, e-mail, conditions and consent versions");

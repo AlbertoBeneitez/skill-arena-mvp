@@ -8,7 +8,7 @@ zip it and send it to see the whole process.
 
 | File | What it is |
 | --- | --- |
-| `galactic.json` | Manifest: `format` (1), `id` (lowercase-dashes), `name`, `version` (x.y.z), `shelf` (`casino`, `bar`, `mythic`, `dynamic`, `alternative`), `description` (10–280 chars), `developer`, `actions` (1–64 names in CAPS, the inputs your game accepts), `tickRate` (30, 60 or 120), `maxTicks` (hard length of a match, up to 108 000), `thirdParty` (every asset or library you did not make: `{ "name", "license" }`). |
+| `galactic.json` | Manifest: `format` (1), `id` (lowercase-dashes), `name`, `version` (x.y.z), `shelf` (`bar`, `mythic`, `dynamic`, `alternative`), `description` (10–280 chars), `developer`, `actions` (1–64 names in CAPS, the inputs your game accepts), `tickRate` (30, 60 or 120), `maxTicks` (hard length of a match, up to 108 000), `thirdParty` (every asset or library you did not make: `{ "name", "license" }`). |
 | `game.html` | The interface, in **one self-contained file** (inline scripts, styles, images as data: URLs). It runs in an isolated frame with **no network**: anything loaded from outside is refused at upload. |
 | `core.wasm` | The **rules**, as WebAssembly with **no imports**. Matches are replayed and verified on it, so it decides the result, not the interface. |
 | `cover.webp` / `.png` / `.jpg` | Catalogue image, 16:11, at least 800 × 550 (1600 × 1100 is best), max 1.5 MB. |
