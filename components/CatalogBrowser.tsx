@@ -9,8 +9,6 @@ import styles from "./CatalogBrowser.module.css";
 import { t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { PUBLISHED_API, isNewPublished, parsePublished, publishedCoverUrl, type PublishedGame } from "@/lib/studio/published";
-// v135: the proposal form loads only when a studio opens it.
-const GameProposal = dynamic(() => import("./GameProposal"), { ssr: false });
 // v147: published studio games (training) and their player.
 const ExternalGamePlayer = dynamic(() => import("./ExternalGamePlayer"), { ssr: false });
 /** v136: one edge colour per catalogue row, so every game of the same kind carries the same colour (also in
@@ -43,7 +41,6 @@ function prefetchGame(game: GameMeta) {
 }
 /** Presentation and discovery only. The common registry remains the sole catalogue. */
 export default function CatalogBrowser(props: Props) {
-  const [proposing, setProposing] = useState(false);
   const [external, setExternal] = useState<PublishedGame[]>([]);
   const [playing, setPlaying] = useState<PublishedGame | null>(null);
   useI18n();
@@ -146,10 +143,6 @@ export default function CatalogBrowser(props: Props) {
           </div>
         </section>
       ))}
-      <section className={styles.studio} aria-label={t("studio.title")}>
-        <button type="button" className={styles.studioOpen} onClick={() => setProposing(true)}>{t("studio.open")}</button>
-      </section>
-      {proposing && <GameProposal onClose={() => setProposing(false)} />}
       {playing && <ExternalGamePlayer game={playing} onClose={() => setPlaying(null)} />}
     </section>
   );

@@ -73,10 +73,13 @@ export type GameDefinition<TId extends string = string> = {
   /**
    * How the score reads. Default: points (higher wins). "fictitious-balance": closing chips.
    * "reaction-time-ms": accumulated milliseconds, LOWER wins (the core also publishes reach = base − ms).
+   * "orbs-eliminated": orbs popped or dropped (higher wins).
    */
   resultMetric?: ResultMetric;
 };
-export type ResultMetric = "fictitious-balance" | "reaction-time-ms";
+export type ResultMetric = "fictitious-balance" | "reaction-time-ms" | "orbs-eliminated";
+/** Local best-score slot: a game whose score unit changed keeps its new bests apart from the old ones. */
+export const bestScoreKey = (game: Pick<GameMeta, "id" | "resultMetric">) => (game.resultMetric === "orbs-eliminated" ? `${game.id}@orbs` : game.id);
 
 /** True when a smaller score is the better one. */
 export const lowerScoreWins = (game: Pick<GameMeta, "resultMetric">) => game.resultMetric === "reaction-time-ms";
@@ -102,14 +105,14 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:false,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. V18: la bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota en el cuenco real según la inclinación de cada superficie y, cuando dejan de botar, rueda hasta una casilla; sin vueltas a lo largo de la pista. V19: a cámara lenta (gravedad a la mitad), con unos 8 botes y casillas que la retienen menos. V20: el mismo movimiento 1,29 veces más lento, rotor incluido. V21: otra vez 1,5 veces más lento (botes de la misma altura, más pausados)." },
+  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:false,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. La bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota a cámara lenta en el cuenco según la inclinación de cada superficie (unos 8 botes) y, cuando deja de botar, rueda hasta una casilla." },
   {
-    id: "galactic-slot", version: "3.0.0", status: "VERIFIED",
+    id: "galactic-slot", version: "4.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
-    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SLOT_ACTIONS },
-    resultMetric: "fictitious-balance", name: "Slot", cover: "/covers/galactic-slot.webp?v=140", enabled: true,
+    competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 4, allowedActions: SLOT_ACTIONS },
+    resultMetric: "fictitious-balance", name: "Slot", cover: "/covers/galactic-slot.webp?v=153", enabled: true,
     waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
-    rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100€ iniciales, 5€ por tirada, máximo tres minutos. Orden fijo y avances de −4 a +4 posiciones, sin jugada 000. Servidor reproduce inputs y saldo; sin dinero real.",
+    rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100 fichas iniciales, 5 por tirada, máximo tres minutos. Siete símbolos en orden fijo y avances de −3 a +3 posiciones, sin jugada 000. Trío: 20 a 120 fichas según el símbolo (tres sietes, 200); pareja: 5 a 30 (dos sietes, 40); sin pareja no hay premio. Servidor reproduce inputs y saldo; sin dinero real.",
   },
 
   {
@@ -145,7 +148,7 @@ const GAME_DEFINITIONS = [
       allowedActions: ["DROP"],
     },
     name: "Tower Drop",
-    cover: "/covers/tower-drop.webp?v=141",
+    cover: "/covers/tower-drop.webp?v=153",
     enabled: true,
     waitingStakes: [1, 5],
     category: "TIMING",
@@ -225,23 +228,24 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "orb-burst",
-    version: "7.0.0",
+    version: "8.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/OrbBurstVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 6, allowedActions: ORB_ACTIONS },
+    resultMetric: "orbs-eliminated",
     name: "Orb Burst",
-    cover: "/covers/orb-burst.webp?v=141",
+    cover: "/covers/orb-burst.webp?v=153",
     enabled: true,
     waitingStakes: [5, 50],
     category: "PUZZLE",
     tagline: "Un campo continuo, decisiones encadenadas.",
     difficulty: "MEDIA",
     skillLabel: "ÁNGULO + PLANIFICACIÓN",
-    rivalScore: 10000,
+    rivalScore: 110,
     rivalName: "ORB",
     rivalAvatar: "/avatars/avatar-5.svg",
     instruction: "",
-    scoring: "Bubble shooter clásico: seis colores y siete filas. Grupos de 3 o más del mismo color explotan (10 por orbe) y los que quedan colgando caen con bonus que se duplica por cada orbe. Cada fallo cuenta: tras 5 fallos (luego 4, 3 y 2) baja una fila nueva. Si un orbe cruza la línea, fin. Limpiar el tablero da 2000 y lo rellena. Replay de servidor.",
+    scoring: "Bubble shooter clásico: seis colores y ocho filas. Grupos de 3 o más del mismo color explotan y los que quedan colgando caen con ellos. La puntuación es el número de burbujas eliminadas (explotadas más caídas). Tras 4 fallos (luego 3, 2 y 1) baja una fila nueva, y el techo también baja con el reloj. Si un orbe cruza la línea, fin. Limpiar el tablero lo rellena. Replay de servidor.",
 
   },
   {
@@ -256,7 +260,7 @@ const GAME_DEFINITIONS = [
       allowedActions: ["DROP"],
     },
     name: "Stack",
-    cover: "/covers/stack-3d.webp?v=143",
+    cover: "/covers/stack-3d.webp?v=153",
     enabled: true,
     waitingStakes: [1, 10],
     category: "PRECISIÓN",
@@ -278,7 +282,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 3, allowedActions: SHOT_GALLERY_ACTIONS },
     name: "Shot Gallery",
-    cover: "/covers/shot-gallery.webp?v=143",
+    cover: "/covers/shot-gallery.webp?v=153",
     enabled: true,
     waitingStakes: [1, 50],
     category: "REACCIÓN",
@@ -310,7 +314,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Pasadizos: la rampa y la órbita suben a raíles que cruzan la mesa por arriba y dejan la bola en el carril contrario; el agujero de gusano la lleva por un túnel hasta arriba a la izquierda; cada pasadizo hace siempre el mismo recorrido. Si la bola se queda atrapada en un lado, sale siempre igual: desde el mismo punto y con el mismo empujón hacia la pala de ese lado. Una bola y 100 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 130 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Replay de servidor. V10: cinco bumpers, tres postes de goma en el centro y los lados que despiden la bola (50), dos separadores entre los carriles A, B y C (10) y tirachinas más vivos (50).",
+    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Pasadizos: la rampa y la órbita suben a raíles que cruzan la mesa por arriba y dejan la bola en el carril contrario; el agujero de gusano la lleva por un túnel hasta arriba a la izquierda; cada pasadizo hace siempre el mismo recorrido. Si la bola se queda atrapada en un lado, sale siempre igual: desde el mismo punto y con el mismo empujón hacia la pala de ese lado. Una bola y 100 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 130 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Cinco bumpers, tres postes de goma en el centro y los lados que despiden la bola (50), dos separadores entre los carriles A, B y C (10) y tirachinas vivos (50). Replay de servidor.",
   },
   {
     id: "bowling",

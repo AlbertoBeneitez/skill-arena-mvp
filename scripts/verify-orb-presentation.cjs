@@ -228,6 +228,7 @@ module.exports = (async () => {
     "./orbBurstProtocol.v1": protocol,
     "./orbBurstProtocol.v6": protocol6,
   });
+  const v8 = await load(path.join(root, "lib/verified/orbBurstCore.v8.ts"), { "./orbBurstCore.v7": v2 });
   const ui = await load(
     uiSource,
     {
@@ -236,6 +237,7 @@ module.exports = (async () => {
       "@/lib/i18n": require("./i18n-test-stub.cjs"),
       "@/lib/verified/orbBurstCore.v1": v1,
       "@/lib/verified/orbBurstCore.v7": v2,
+      "@/lib/verified/orbBurstCore.v8": v8,
       "@/lib/verified/orbBurstProtocol.v1": protocol,
       "@/lib/orbPresentation": camera,
       "./CoreCanvasGame": { default() {} },
@@ -546,16 +548,17 @@ module.exports = (async () => {
     assert.equal(ctx.stack.length, 0);
   }
   assert.equal(adapter.failureFinale.durationMs, 300);
-  assert.ok(ui.hudLabel({ ...state, points: 1270 }).includes("1270") || ui.hudLabel({ ...state, points: 1270 }).includes("1.270"));
+  // V8: the HUD and the feedback score count orbs eliminated (popped + dropped), not bonus points.
+  assert.ok(ui.hudLabel({ ...state, popped: 1200, dropped: 70, points: 99999 }).includes("1270") || ui.hudLabel({ ...state, popped: 1200, dropped: 70 }).includes("1.270"));
   assert.equal(ui.feedbackScore(state), 0);
-  assert.equal(ui.feedbackScore({ ...state, points: 340 }), 340);
+  assert.equal(ui.feedbackScore({ ...state, popped: 30, dropped: 4, points: 340 }), 34);
   const surface = ui.default({
     active: true,
     stake: 0,
     targetScore: 108,
     onFinish() {},
   }).props.children.props;
-  assert.equal(surface.core, v2.ORB_BURST_CORE_V7);
+  assert.equal(surface.core, v8.ORB_BURST_CORE_V8);
   assert.equal(surface.hideHudScore, true);
   assert.equal(surface.instruction, "");
   assert.equal(surface.expandHorizontalViewport, true);
@@ -571,7 +574,7 @@ module.exports = (async () => {
   );
   console.log(
     JSON.stringify({
-      variant: "Orb V7 classic bubble shooter presentation",
+      variant: "Orb V8 classic bubble shooter presentation (orbs eliminated)",
       inputCases,
       viewports: dimensions.length,
       dprCases: 3,

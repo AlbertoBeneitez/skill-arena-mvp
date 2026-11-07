@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "صاف کریں",
   "roulette.cashOut": "میچ ختم کریں",
 
-  "slot.reel": "ریل {n}",
-  "slot.pair": "جوڑا",
-  "slot.sevenNoPair": "بغیر جوڑے کا 7",
   "slot.won": "+{n} چپس",
   "slot.hud": "{chips} چپس · {secs}سیکنڈ",
   "slot.hudNoZero": "000 کی اجازت نہیں",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "دوبارہ کھیلیں",
   "studio.ext.back": "واپس",
   "studio.ext.scope": "مشق: آپ کا بیلنس اور رینکنگ نہیں بدلتے۔",
+  "orb.eliminated": "{n} بلبلے",
+  "common.orbs": "{n} بلبلے",
+  "game.unitOrbs": "بلبلے",
+  "result.orbs": "ہٹائے گئے بلبلے",
 };
 
 export default messages;

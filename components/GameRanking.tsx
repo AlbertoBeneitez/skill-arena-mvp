@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { GAMES, compareScores, type GameMeta } from "@/lib/games";
+import { GAMES, bestScoreKey, compareScores, type GameMeta } from "@/lib/games";
 import { formatNumber, t, useI18n, type MessageKey } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { createRng } from "@/lib/deterministic/seeded";
@@ -31,6 +31,7 @@ function sampleRows(game: GameMeta): Row[] {
 function scoreText(game: GameMeta, score: number) {
   if (game.resultMetric === "fictitious-balance") return t("common.chips", { n: formatNumber(score / 100) });
   if (game.resultMetric === "reaction-time-ms") return t("common.ms", { n: formatNumber(score) });
+  if (game.resultMetric === "orbs-eliminated") return t("common.orbs", { n: formatNumber(score) });
   return formatNumber(score);
 }
 
@@ -101,7 +102,7 @@ export default function RankingHub({ bestScores, leagues, playerName, avatarSrc,
               {GAMES.map((g) => <option key={g.id} value={g.id}>{gameName(g)}</option>)}
             </select>
           </label>
-          <GameRanking game={game} best={bestScores[game.id]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
+          <GameRanking game={game} best={bestScores[bestScoreKey(game)]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
           <p className="rankingNote">{t("ranking.gameNote")}</p>
         </>
       )}

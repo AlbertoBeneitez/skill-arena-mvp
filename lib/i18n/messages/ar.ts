@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "مسح",
   "roulette.cashOut": "إنهاء المباراة",
 
-  "slot.reel": "البكرة {n}",
-  "slot.pair": "زوج",
-  "slot.sevenNoPair": "7 بلا زوج",
   "slot.won": "+{n} رقائق",
   "slot.hud": "{chips} رقائق · {secs}ث",
   "slot.hudNoZero": "000 غير مسموح",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "العب مرة أخرى",
   "studio.ext.back": "رجوع",
   "studio.ext.scope": "تدريب: لا يتغير رصيدك ولا الترتيب.",
+  "orb.eliminated": "{n} فقاعة",
+  "common.orbs": "{n} فقاعة",
+  "game.unitOrbs": "فقاعة",
+  "result.orbs": "الفقاعات المُزالة",
 };
 
 export default messages;

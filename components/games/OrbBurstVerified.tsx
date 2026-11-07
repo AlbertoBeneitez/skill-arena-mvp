@@ -5,12 +5,12 @@ import type { LogicalCanvasViewport } from "@/lib/gameCanvas";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { ORB_RULES, orbDirection } from "@/lib/verified/orbBurstCore.v1";
 import {
-  ORB_BURST_CORE_V7,
   orbCenterV7,
   orbMissLimitV7,
   orbRowTimerV7,
   type OrbV7State,
 } from "@/lib/verified/orbBurstCore.v7";
+import { ORB_BURST_CORE_V8, orbEliminatedV8 } from "@/lib/verified/orbBurstCore.v8";
 import { orbAimAction } from "@/lib/verified/orbBurstProtocol.v1";
 import {
   applyOrbCamera,
@@ -97,15 +97,69 @@ function drawAimGuide(
   ctx.setLineDash([3, 7]);
   ctx.beginPath();
   ctx.moveTo(
-    195 + (direction.x / direction.length) * 24,
-    574 + (direction.y / direction.length) * 24,
+    195 + (direction.x / direction.length) * 54,
+    574 + (direction.y / direction.length) * 54,
   );
   ctx.lineTo(
-    195 + (direction.x / direction.length) * 84,
-    574 + (direction.y / direction.length) * 84,
+    195 + (direction.x / direction.length) * 114,
+    574 + (direction.y / direction.length) * 114,
   );
   ctx.stroke();
   ctx.restore();
+}
+/**
+ * v153 · The launcher: a bolted turret ring, a tapered barrel that follows the aim (cooling fins, muzzle ring lit in
+ * the loaded colour) and the loaded orb seated in the breech. Presentation only.
+ */
+function drawCannon(ctx: CanvasRenderingContext2D, state: Readonly<OrbV7State>) {
+  const cx = 195, cy = 574, d = orbDirection(state.aimIndex), ux = d.x / d.length, uy = d.y / d.length;
+  const loaded = colors[state.currentColor];
+  ctx.save();
+  // Base plate: a wide bevelled ellipse with a rim highlight and bolts.
+  const plate = ctx.createLinearGradient(0, cy - 4, 0, cy + 30);
+  plate.addColorStop(0, "#3a5f7d"); plate.addColorStop(0.45, "#173149"); plate.addColorStop(1, "#08131f");
+  ctx.fillStyle = plate;
+  ctx.beginPath(); ctx.ellipse(cx, cy + 9, 50, 21, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(150,226,246,.75)"; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(cx, cy + 7, 44, 16, 0, Math.PI * 1.08, Math.PI * 1.92); ctx.stroke();
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + 0.2, bx = cx + Math.cos(a) * 42, by = cy + 9 + Math.sin(a) * 16;
+    ctx.fillStyle = "#9fc4d6"; ctx.beginPath(); ctx.arc(bx, by, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,.45)"; ctx.beginPath(); ctx.arc(bx + 0.5, by + 0.6, 0.9, 0, Math.PI * 2); ctx.fill();
+  }
+  // Glow ring in the loaded colour.
+  ctx.shadowColor = loaded; ctx.shadowBlur = 12;
+  ctx.strokeStyle = loaded; ctx.globalAlpha = 0.8; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(cx, cy + 6, 30, 11, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+  // Barrel: tapered tube along the aim, shaded across its width.
+  ctx.translate(cx, cy);
+  ctx.rotate(Math.atan2(uy, ux));
+  const tube = ctx.createLinearGradient(0, -11, 0, 11);
+  tube.addColorStop(0, "#d8f4ff"); tube.addColorStop(0.28, "#6fb4cf"); tube.addColorStop(0.62, "#1f4a66"); tube.addColorStop(1, "#0b1c2b");
+  ctx.fillStyle = tube; ctx.strokeStyle = "#071320"; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(8, -12); ctx.lineTo(44, -8.5); ctx.lineTo(44, 8.5); ctx.lineTo(8, 12); ctx.closePath(); ctx.fill(); ctx.stroke();
+  // Cooling fins.
+  ctx.strokeStyle = "rgba(7,19,32,.75)"; ctx.lineWidth = 1.4;
+  for (const fx of [20, 25, 30]) { const h = 12 - (fx - 8) * 0.1; ctx.beginPath(); ctx.moveTo(fx, -h + 1); ctx.lineTo(fx, h - 1); ctx.stroke(); }
+  // Muzzle ring lit in the loaded colour.
+  const ring = ctx.createLinearGradient(0, -11, 0, 11);
+  ring.addColorStop(0, "#ffffff"); ring.addColorStop(0.35, loaded); ring.addColorStop(1, "#0b1c2b");
+  ctx.fillStyle = ring; ctx.beginPath(); ctx.roundRect(42, -10.5, 7, 21, 2.5); ctx.fill();
+  ctx.strokeStyle = "#071320"; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.fillRect(12, -9.5, 30, 2);
+  ctx.restore();
+  // Breech housing (drawn over the barrel root) and the loaded orb.
+  ctx.save();
+  const dome = ctx.createRadialGradient(cx - 7, cy - 8, 2, cx, cy, 23);
+  dome.addColorStop(0, "#9fd8ee"); dome.addColorStop(0.5, "#24506d"); dome.addColorStop(1, "#091827");
+  ctx.fillStyle = dome; ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(170,232,250,.85)"; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.strokeStyle = "rgba(7,19,32,.9)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, cy, 18.5, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+  if (!state.shot) orb(ctx, cx, cy, state.currentColor);
 }
 function renderField(
   ctx: CanvasRenderingContext2D,
@@ -184,42 +238,20 @@ function renderField(
         }
       }
       ctx.globalAlpha = 1;
-      if (ticks < 70 && state.burst.points > 0) {
+      const cleared = state.burst.popped + state.burst.dropped;
+      if (ticks < 70 && cleared > 0) {
         const last = state.burst.bubbles[0];
         ctx.fillStyle = state.burst.dropped ? "#ffd23f" : "#e9fbff";
         ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 12;
         ctx.font = `900 ${state.burst.dropped >= 4 ? 24 : 18}px system-ui`;
         ctx.textAlign = "center";
-        ctx.fillText(`+${formatNumber(state.burst.points)}`, last.xMilli / 1000, last.yMilli / 1000 - 10 - ticks * 0.4);
+        ctx.fillText(`+${formatNumber(cleared)}`, last.xMilli / 1000, last.yMilli / 1000 - 10 - ticks * 0.4);
         ctx.shadowBlur = 0;
       }
       ctx.restore();
     }
   }
-  ctx.fillStyle = "#112c43";
-  ctx.strokeStyle = "#66c7de";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.ellipse(195, 581, 43, 20, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  const direction = orbDirection(state.aimIndex);
-  ctx.strokeStyle = "#78cbdf";
-  ctx.lineWidth = 8;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(
-    195 + (direction.x / direction.length) * 21,
-    574 + (direction.y / direction.length) * 21,
-  );
-  ctx.lineTo(
-    195 + (direction.x / direction.length) * 34,
-    574 + (direction.y / direction.length) * 34,
-  );
-  ctx.stroke();
-  if (!state.shot) {
-    orb(ctx, 195, 574, state.currentColor);
-  }
+  drawCannon(ctx, state);
   ctx.strokeStyle = "rgba(160,225,240,.55)";
   ctx.lineWidth = 1.5;
   ctx.setLineDash([3, 4]);
@@ -331,8 +363,8 @@ const keys = {
   Enter: "SHOOT",
 };
 const hudLabel = (state: Readonly<OrbV7State>) =>
-  `${tx("play.pts", { n: formatNumber(state.points) })}${state.combo > 1 ? ` · ${tx("play.combo", { n: state.combo })}` : ""}`;
-const feedbackScore = (state: Readonly<OrbV7State>) => state.points;
+  `${tx("orb.eliminated", { n: formatNumber(orbEliminatedV8(state)) })}${state.combo > 1 ? ` · ${tx("play.combo", { n: state.combo })}` : ""}`;
+const feedbackScore = (state: Readonly<OrbV7State>) => orbEliminatedV8(state);
 export default function OrbBurstVerified(props: GameRuntimeProps) {
   useI18n();
   const presentation = useMemo(createPresentation, []);
@@ -340,7 +372,7 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
     <div className="orbVerified">
       <CoreCanvasGame
         {...props}
-        core={ORB_BURST_CORE_V7}
+        core={ORB_BURST_CORE_V8}
         name="Orb Burst"
         render={presentation.render}
         pointAction={presentation.pointAction}

@@ -1415,6 +1415,244 @@ covers["shot-gallery"] = gallery_v143()
 covers["reaction-test"] = covers["shot-gallery"]
 
 
+
+# ---------- v153 ----------
+# Orb Burst: the falling orbs lose their drop-shaped trails; the launcher becomes a real cannon (bolted turret plate,
+# a tapered barrel with cooling fins and a lit muzzle aimed at the burst, the shot seated in the breech).
+def orb_v153():
+    src = orb()
+    # drop the trail paths of the three falling orbs (they read as drops behind the orbs)
+    for (x, y, c) in [(240, 300, "#b98cff"), (520, 316, "#5cffb0"), (468, 372, "#4fa8ff")]:
+        src = src.replace(trail([(x, y - 90 + t * 9) for t in range(10)], c, 30, .28), "")
+    # remove the old launcher (ring base, lit segments, pink halo and the loaded shot) and redraw it as a cannon
+    old = ['<ellipse cx="320" cy="456" rx="150" ry="46" fill="url(#launcher)" stroke="#7fe3ee" stroke-width="3"/>',
+           '<circle cx="320" cy="404" r="48" fill="#ff6f91" opacity=".25" filter="url(#bigglow)"/>',
+           sphere(320, 404, 36, "#ff6f91", "shot", shadow=False, gloss=.8)]
+    for k in range(14):
+        a = math.pi + k * math.pi / 13
+        old.append(f'<circle cx="{f(320 + 132 * math.cos(a))}" cy="{f(456 + 38 * math.sin(a))}" r="3" fill="{"#7fe3ee" if k % 2 else "#2a5560"}" filter="url(#glow)"/>')
+    for o in old:
+        assert o in src, o[:60]
+        src = src.replace(o, "")
+    cx, cy = 320, 404
+    tx, ty = 370, 230  # aim: the gap under the burst
+    ang = math.degrees(math.atan2(ty - cy, tx - cx))
+    d = ('<linearGradient id="cnPlate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f7a98"/><stop offset=".45" stop-color="#1d3a54"/><stop offset="1" stop-color="#08121d"/></linearGradient>'
+         '<linearGradient id="cnTube" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4f7ff"/><stop offset=".28" stop-color="#7cc0da"/><stop offset=".62" stop-color="#22506e"/><stop offset="1" stop-color="#0a1a29"/></linearGradient>'
+         '<linearGradient id="cnMuzzle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#ff6f91"/><stop offset="1" stop-color="#3a0a18"/></linearGradient>'
+         '<radialGradient id="cnDome" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#b4e6f6"/><stop offset=".5" stop-color="#2a5878"/><stop offset="1" stop-color="#081626"/></radialGradient>')
+    c = [f'<defs>{d}</defs>']
+    # turret plate with a bevel, a lit inner ring and bolts
+    c.append(f'<ellipse cx="{cx}" cy="{cy + 52}" rx="168" ry="50" fill="#000" opacity=".45" filter="url(#soft)"/>')
+    c.append(f'<ellipse cx="{cx}" cy="{cy + 40}" rx="150" ry="44" fill="url(#cnPlate)" stroke="#9fe3f6" stroke-width="3"/>')
+    c.append(f'<path d="M{cx - 132},{cy + 34} A132,34 0 0 1 {cx + 132},{cy + 34}" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="2"/>')
+    c.append(f'<ellipse cx="{cx}" cy="{cy + 34}" rx="96" ry="26" fill="none" stroke="#ff6f91" stroke-width="3" opacity=".85" filter="url(#glow)"/>')
+    for k in range(12):
+        a = k * 2 * math.pi / 12 + .26
+        bx, by = cx + 128 * math.cos(a), cy + 40 + 36 * math.sin(a)
+        c.append(f'<circle cx="{f(bx)}" cy="{f(by)}" r="4.2" fill="#a9cede" stroke="#0a1622" stroke-width="1.4"/><circle cx="{f(bx - 1)}" cy="{f(by - 1.2)}" r="1.4" fill="#fff" opacity=".7"/>')
+    # barrel: tapered, shaded across its width, fins, muzzle ring lit pink
+    c.append(f'<g transform="translate({cx} {cy}) rotate({ang:.2f})" filter="url(#shadow)">'
+             '<polygon points="20,-30 118,-21 118,21 20,30" fill="url(#cnTube)" stroke="#06111c" stroke-width="3"/>'
+             + "".join(f'<line x1="{x0}" y1="{-28 + (x0 - 20) * .09:.1f}" x2="{x0}" y2="{28 - (x0 - 20) * .09:.1f}" stroke="#06111c" stroke-opacity=".75" stroke-width="3.2"/>' for x0 in (52, 64, 76))
+             + '<rect x="28" y="-25" width="84" height="5" rx="2.5" fill="#ffffff" opacity=".55"/>'
+             '<rect x="112" y="-26" width="18" height="52" rx="6" fill="url(#cnMuzzle)" stroke="#06111c" stroke-width="2.6"/>'
+             '<rect x="114" y="-24" width="4" height="48" rx="2" fill="#fff" opacity=".5"/>'
+             '<ellipse cx="131" cy="0" rx="5" ry="20" fill="#ff6f91" opacity=".55" filter="url(#glow)"/></g>')
+    # breech housing and the loaded shot
+    c.append(f'<circle cx="{cx}" cy="{cy}" r="54" fill="url(#cnDome)" stroke="#bdf0ff" stroke-width="3"/>')
+    c.append(f'<circle cx="{cx}" cy="{cy}" r="45" fill="none" stroke="#06111c" stroke-width="4"/>')
+    c.append(f'<path d="M{cx - 44},{cy - 18} A48,48 0 0 1 {cx + 10},{cy - 47}" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>')
+    c.append(f'<circle cx="{cx}" cy="{cy}" r="46" fill="#ff6f91" opacity=".22" filter="url(#bigglow)"/>')
+    c.append(sphere(cx, cy, 36, "#ff6f91", "shot", shadow=False, gloss=.8))
+    # aim dots now start at the muzzle: drop the first three that sat on the barrel
+    sx, sy, bx, by = 320, 404, 400, 160
+    for q in range(1, 5):
+        t = q / 13
+        x, y = sx + (bx - 30 - sx) * t, sy + (by + 70 - sy) * t
+        dot = f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(4.6 - t * 2.4)}" fill="#e9fbff" opacity="{.95 - t * .55:.2f}" filter="url(#glow)"/>'
+        src = src.replace(dot, "")
+    # the next orb waits beside the plate (drawn after the cannon so it stays visible)
+    nxt = f'<g opacity=".8">{sphere(420, 428, 18, "#5cffb0", "nextshot", shadow=False)}</g>'
+    src = src.replace(nxt, "")
+    i = src.index(sparkle(400, 160, 24, "#fff8e0"))
+    return src[:i] + "".join(c) + f'<g opacity=".9">{sphere(470, 430, 20, "#5cffb0", "nextshot", shadow=False)}</g>' + src[i:]
+
+
+covers["orb-burst"] = orb_v153()
+
+
+# ---------- Stack: the gold block sits lower, just above the tower; no sliced chunk falling off the right ----------
+def stack_v153():
+    src = stack_v143()
+    old_gold = iso_tex(420, 30, 150, 76, 34, 46, "gold", lit=.6, sat=.9)
+    assert old_gold in src
+    src = src.replace(old_gold, iso_tex(408, 66, 150, 76, 34, 46, "gold", lit=.6, sat=.9))
+    for q in range(1, 5):
+        a = f'<rect x="{410 + q * 3}" y="{-60 - q * 14}" width="{4 + q}" height="{28 - q * 3}" rx="2" fill="#ffe066" opacity="{.6 - q * .12:.2f}"/>'
+        assert a in src
+        src = src.replace(a, f'<rect x="{398 + q * 3}" y="{-24 - q * 14}" width="{4 + q}" height="{28 - q * 3}" rx="2" fill="#ffe066" opacity="{.6 - q * .12:.2f}"/>')
+    chunk = f'<g transform="rotate(26 570 250)">{iso_tex(570, 250, 46, 24, 30, 46, "chip", lit=.58, sat=.9)}</g>'
+    assert chunk in src
+    src = src.replace(chunk, "")
+    rr = random.Random(43)
+    for _ in range(9):
+        x, y, sz = rr.uniform(520, 625), rr.uniform(170, 330), rr.uniform(3, 7)
+        col = rr.choice(["#ffe066", "#fff3b0", "#c99a1c"])
+        chip = f'<rect x="{f(x)}" y="{f(y)}" width="{f(sz)}" height="{f(sz * .7)}" fill="{col}" transform="rotate({rr.randint(0, 90)} {f(x)} {f(y)})" opacity=".9"/>'
+        assert chip in src
+        src = src.replace(chip, "")
+    lines = speed_lines((570, 250, .25, 1), 8, 5, "#fff3b0", 26, 20, 60, (.15, .45))
+    assert lines in src
+    src = src.replace(lines, "")
+    return src
+
+
+covers["precision-stack"] = stack_v153()
+covers["stack-3d"] = covers["precision-stack"]
+
+
+# ---------- Tower Drop: the next container comes down lower, right onto the tower ----------
+def tower_v153():
+    src = tower()
+    # shift the hanging container (and its swing ghosts, hook and rope end) 22 units down, toward the landing frame
+    i = src.index('<line x1="452" y1="-60"')
+    j = src.index('<ellipse cx="', i)
+    seg = src[i:j]
+    return src[:i] + f'<g transform="translate(0 22)">{seg}</g>' + src[j:]
+
+
+covers["tower-drop"] = tower_v153()
+
+
+# ---------- Shot Gallery: the targets worked up — rim light from the laser side, shading, texture, more anatomy ----------
+def _at(x, y, s, inner):
+    return f'<g transform="translate({f(x)} {f(y)}) scale({s})">{inner}</g>'
+
+
+def mantis_detail(idn):
+    """Veined wing membranes behind the body, spiked forelegs, mandibles, hex facets and a cyan rim light."""
+    d = _lg(f"{idn}w", [(0, "#e8ffd0"), (1, "#7ad65a")], 0, 0, 1, 1)
+    o = [f'<defs>{d}</defs>']
+    back, front = [], []
+    for sx in (-1, 1):
+        back.append(f'<path d="M{sx * 8},4 Q{sx * 70},-30 {sx * 84},30 Q{sx * 50},40 {sx * 10},26 Z" fill="url(#{idn}w)" fill-opacity=".28" stroke="#d9ffb0" stroke-opacity=".55" stroke-width="1.4"/>')
+        back.append("".join(f'<path d="M{sx * 10},{14 + k * 3} Q{sx * (40 + k * 6)},{-6 + k * 10} {sx * (70 + k * 4)},{18 + k * 6}" fill="none" stroke="#e8ffd0" stroke-opacity=".35" stroke-width="1"/>' for k in range(4)))
+        # spikes along the scythe's outer edge and a rim light (laser from the lower right)
+        front.append("".join(f'<path d="M{f(sx * (48 + k * .8))},{f(-30 - k * 10)} l{f(sx * 8)},{f(-3)} l{f(sx * -6)},{f(-5)}Z" fill="#0b2a06"/>' for k in range(5)))
+        front.append(f'<path d="M{sx * 20},16 Q{sx * 34},-14 {sx * 38},-40" fill="none" stroke="#bff6ff" stroke-opacity="{.75 if sx > 0 else .2}" stroke-width="2.2"/>')
+        # mandibles
+        front.append(f'<path d="M{sx * 3},-2 Q{sx * 12},4 {sx * 8},12 Q{sx * 5},6 {sx * 1},4 Z" fill="#c8ff7a" stroke="#0b2a06" stroke-width="1.4"/>')
+    # hex facets on the eyes
+    for sx in (-1, 1):
+        for i in range(9):
+            hx, hy = sx * 17 + (i % 3 - 1) * 6, -36 + (i // 3 - 1) * 5.4
+            pts = " ".join(f"{f(hx + 2.6 * math.cos(a * math.pi / 3))},{f(hy + 2.6 * math.sin(a * math.pi / 3))}" for a in range(6))
+            front.append(f'<polygon points="{pts}" fill="none" stroke="#fff3c8" stroke-opacity=".35" stroke-width=".7"/>')
+    # thorax plates with a highlight and pores
+    front.append('<path d="M-12,-2 Q0,-8 12,-2" fill="none" stroke="#e9ff9a" stroke-opacity=".6" stroke-width="1.6"/>')
+    front.append("".join(f'<circle cx="{f(a)}" cy="{f(b)}" r="1" fill="#0b2a06" opacity=".5"/>' for a, b in [(-6, 8), (5, 12), (-2, 18), (8, 22), (-9, 26)]))
+    front.append('<path d="M18,30 Q24,46 14,76" fill="none" stroke="#bff6ff" stroke-opacity=".55" stroke-width="2"/>')
+    o_back = "".join(back)
+    return o_back, "".join(o) + "".join(front)
+
+
+def kraken_detail(idn):
+    """Gradient skin spots, a ringed iris with veins in the white, tentacle rim lights and a dripping underside."""
+    o = []
+    rr = random.Random(9)
+    for _ in range(14):
+        x, y, r = rr.uniform(-34, 34), rr.uniform(-56, 18), rr.uniform(2, 5)
+        if x * x / 1600 + (y + 14) ** 2 / 2116 > .85: continue
+        o.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r)}" fill="#4a1a8a" opacity=".45"/><circle cx="{f(x - r * .3)}" cy="{f(y - r * .3)}" r="{f(r * .35)}" fill="#f0d8ff" opacity=".35"/>')
+    for a in [-2.6, -2.1, -1.0, -0.4, 2.9]:
+        o.append(f'<path d="M{f(2 + 20 * math.cos(a))},{f(-8 + 16 * math.sin(a))} Q{f(2 + 15 * math.cos(a + .2))},{f(-8 + 12 * math.sin(a + .2))} {f(2 + 12 * math.cos(a))},{f(-8 + 9 * math.sin(a))}" fill="none" stroke="#ff5a7a" stroke-opacity=".6" stroke-width=".8"/>')
+    o.append('<circle cx="2" cy="-7" r="12" fill="none" stroke="#8a5a00" stroke-width="1.4"/><circle cx="2" cy="-7" r="8" fill="none" stroke="#fff3a0" stroke-opacity=".6" stroke-width="1"/>')
+    o.append("".join(f'<line x1="{f(2 + 4 * math.cos(a))}" y1="{f(-7 + 9 * math.sin(a))}" x2="{f(2 + 11 * math.cos(a))}" y2="{f(-7 + 11 * math.sin(a))}" stroke="#a87000" stroke-opacity=".55" stroke-width=".8"/>' for a in [i * math.pi / 8 for i in range(16)]))
+    o.append('<path d="M-22,-10 Q0,-30 22,-10" fill="none" stroke="#c9a0ff" stroke-width="1.4"/>' + "".join(f'<path d="M{x},{-16 - abs(x) * .1:.1f} l{x * .06:.1f},-6" stroke="#1a0640" stroke-width="1.6"/>' for x in (-16, -8, 0, 8, 16)))
+    o.append('<path d="M30,-40 Q42,-14 30,18" fill="none" stroke="#bff6ff" stroke-opacity=".6" stroke-width="2.4"/>')
+    o.append('<path d="M-30,22 Q0,36 30,22" fill="none" stroke="#1a0640" stroke-opacity=".6" stroke-width="2"/>' + "".join(f'<path d="M{x - 3},{26 + abs(x) * -.2:.1f} q3,{8 + (x % 3)} 6,0" fill="#b77aff" stroke="#2a0a5e" stroke-width="1"/>' for x in (-18, -4, 12)))
+    return "".join(o)
+
+
+def wraith_detail(idn):
+    """Smoky tattered hem, a hood seam with stitching, a glowing rune amulet on a chain, and eye flare streaks."""
+    d = _lg(f"{idn}sm", [(0, "#5ef0ff"), (1, "#5ef0ff00")])
+    o = [f'<defs>{d}</defs>']
+    rr = random.Random(21)
+    for k in range(9):
+        x = -46 + k * 11.5
+        o.append(f'<path d="M{f(x)},{f(60 + rr.uniform(-4, 4))} q{f(rr.uniform(-6, 6))},{f(14 + rr.uniform(0, 10))} {f(rr.uniform(-4, 4))},{f(24 + rr.uniform(0, 12))}" fill="none" stroke="#2e3a5e" stroke-width="{f(rr.uniform(3, 6))}" stroke-linecap="round" opacity=".7"/>')
+    o.append(f'<ellipse cx="0" cy="74" rx="56" ry="10" fill="url(#{idn}sm)" opacity=".25" filter="url(#soft)"/>')
+    o.append('<path d="M-30,-40 Q0,-74 30,-40" fill="none" stroke="#9fb0e0" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="3 3"/>')
+    o.append('<path d="M-16,-4 Q0,10 16,-4" fill="none" stroke="#8a95b8" stroke-width="1.6"/>' + "".join(f'<circle cx="{f(-16 + k * 4)}" cy="{f(-4 + 7 * math.sin(k / 8 * math.pi))}" r="1.3" fill="none" stroke="#c8d2ec" stroke-width=".9"/>' for k in range(9)))
+    o.append('<g filter="url(#glow)"><polygon points="0,6 7,14 0,22 -7,14" fill="#0b1a26" stroke="#5ef0ff" stroke-width="1.6"/><text x="0" y="17" font-family="DejaVu Sans, sans-serif" font-size="8" fill="#a6fdff" text-anchor="middle">ᛟ</text></g>')
+    for sx in (-1, 1):
+        o.append(f'<line x1="{sx * 4}" y1="-32" x2="{sx * 20}" y2="-34" stroke="#a6fdff" stroke-width="1" opacity=".7" filter="url(#glow)"/>')
+    o.append('<path d="M34,-24 Q52,2 50,62" fill="none" stroke="#bff6ff" stroke-opacity=".5" stroke-width="2"/>')
+    return "".join(o)
+
+
+def drone_detail(idn):
+    """An orbiting light ring, panel bands, a scanning beam from the visor and a thruster plume."""
+    d = _lg(f"{idn}pl", [(0, "#ffd0a0"), (.4, "#ff6a2a"), (1, "#ff6a2a00")])
+    o = [f'<defs>{d}</defs>']
+    o.append(f'<path d="M-10,26 Q0,80 10,26 Z" fill="url(#{idn}pl)" opacity=".8" filter="url(#glow)"/>')
+    o.append('<ellipse cx="0" cy="-2" rx="48" ry="11" fill="none" stroke="#2c3442" stroke-width="5"/><ellipse cx="0" cy="-2" rx="48" ry="11" fill="none" stroke="#9fefff" stroke-width="1.4" stroke-dasharray="4 7" filter="url(#glow)"/>')
+    o.append('<path d="M-32,6 Q0,22 32,6" fill="none" stroke="#0b0f16" stroke-opacity=".45" stroke-width="1.4"/><path d="M-30,-26 Q0,-36 30,-26" fill="none" stroke="#0b0f16" stroke-opacity=".35" stroke-width="1.2"/>')
+    o.append('<polygon points="-21,-16 -60,40 60,40 21,-16" fill="#ff3b3b" opacity=".08"/>')
+    return "".join(o)
+
+
+def slime_detail(idn):
+    """Specular rim, floating debris inside (a coin and a bolt), extra drips and a puddle."""
+    o = ['<path d="M-36,-20 Q-40,6 -26,30" fill="none" stroke="#fff3d0" stroke-opacity=".45" stroke-width="2.4" stroke-linecap="round"/>']
+    o.append('<g opacity=".55"><circle cx="-18" cy="26" r="5" fill="#ffd36a" stroke="#8a5a00" stroke-width="1"/><rect x="18" y="20" width="9" height="4" rx="1" fill="#c9d3e2" transform="rotate(30 22 22)"/></g>')
+    o.append('<ellipse cx="0" cy="48" rx="46" ry="6" fill="#d95a10" opacity=".55"/><ellipse cx="-8" cy="47" rx="16" ry="2" fill="#ffe6c4" opacity=".4"/>')
+    o.append('<path d="M38,-6 Q46,14 36,34" fill="none" stroke="#bff6ff" stroke-opacity=".4" stroke-width="2"/>')
+    return "".join(o)
+
+
+def golem_detail(idn):
+    """Moss patches, a crystal growth on the shoulder and a glowing rune on the chest."""
+    o = []
+    for (x, y, r) in [(-20, -48, 7), (12, -54, 5), (-34, -34, 4)]:
+        o.append(f'<ellipse cx="{x}" cy="{y}" rx="{r * 1.4}" ry="{r * .6}" fill="#5a8a3a" opacity=".85"/><ellipse cx="{x - 2}" cy="{y - 1}" rx="{r * .6}" ry="{r * .25}" fill="#a8d870" opacity=".7"/>')
+    o.append('<g filter="url(#glow)"><polygon points="30,-44 36,-64 42,-44" fill="#9fefff" stroke="#2a6a7a" stroke-width="1"/><polygon points="38,-42 46,-58 48,-40" fill="#5ef0ff" stroke="#2a6a7a" stroke-width="1"/></g>')
+    o.append('<path d="M-4,4 L4,4 L0,12 Z" fill="none" stroke="#ff9a3a" stroke-width="1.6" filter="url(#glow)"/>')
+    return "".join(o)
+
+
+def gallery_v153():
+    src = gallery_v143()
+    # each target gets its detail layer, drawn in the same place and scale (wing/leg layers go under the mantis)
+    def add(fn_call, x, y, s, idn, after=True, extra=""):
+        nonlocal src
+        orig = fn_call
+        assert orig in src, idn
+        src = src.replace(orig, orig + _at(x, y, s, extra) if after else _at(x, y, s, extra) + orig, 1)
+    mb, mf = mantis_detail("hm")
+    add(g_mantis(300, 272, 1.6, "hm"), 300, 272, 1.6, "hm", after=False, extra=mb)
+    add(g_mantis(300, 272, 1.6, "hm"), 300, 272, 1.6, "hm", extra=mf)
+    add(g_kraken(118, 300, 1.05, "mk"), 118, 300, 1.05, "mk", extra=kraken_detail("mk"))
+    add(g_wraith(566, 292, 1.05, "mw"), 566, 292, 1.05, "mw", extra=wraith_detail("mw"))
+    add(g_drone(110, 190, .95, "bd"), 110, 190, .95, "bd", extra=drone_detail("bd"))
+    add(g_golem(330, 206, .9, "bg"), 330, 206, .9, "bg", extra=golem_detail("bg"))
+    add(g_slime(548, 206, .9, "bs"), 548, 206, .9, "bs", extra=slime_detail("bs"))
+    # the back row in focus, so its detail reads; depth comes from a thin cold haze instead of blur
+    i = src.index('<g filter="url(#dof)" opacity=".92">')
+    tail = g_slime(548, 206, .9, "bs") + _at(548, 206, .9, slime_detail("bs"))
+    j = src.index(tail, i) + len(tail)
+    assert src.startswith("</g>", j)
+    j += 4
+    back = src[i:j].replace('<g filter="url(#dof)" opacity=".92">', '<g opacity=".96">', 1)
+    src = src[:i] + back + '<rect x="-10" y="120" width="660" height="130" fill="#0a1424" opacity=".16"/>' + src[j:]
+    return src
+
+
+covers["shot-gallery"] = gallery_v153()
+covers["reaction-test"] = covers["shot-gallery"]
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     import re

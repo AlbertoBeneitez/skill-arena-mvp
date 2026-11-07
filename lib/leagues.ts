@@ -36,7 +36,7 @@ const REFERENCE: Record<string, number> = {
   "solitaire-sprint": 22500,
   "mine-grid": 6000,
   "stack-shift": 16000,
-  "orb-burst": 10000,
+  "orb-burst": 110, // orbs eliminated (V8)
   "precision-stack": 600000,
   "reaction-test": 15000, // accumulated ms (lower is better)
   pinball: 65000,

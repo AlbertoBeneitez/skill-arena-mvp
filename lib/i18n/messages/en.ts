@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "CLEAR",
   "roulette.cashOut": "END MATCH",
 
-  "slot.reel": "REEL {n}",
-  "slot.pair": "Pair",
-  "slot.sevenNoPair": "7 without pair",
   "slot.won": "+{n} chips",
   "slot.hud": "{chips} CHIPS · {secs}s",
   "slot.hudNoZero": "000 NOT ALLOWED",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "Play again",
   "studio.ext.back": "Back",
   "studio.ext.scope": "Training: your balance and the ranking do not change.",
+  "orb.eliminated": "{n} BUBBLES",
+  "common.orbs": "{n} bubbles",
+  "game.unitOrbs": "bubbles",
+  "result.orbs": "Bubbles cleared",
 };
 
 export default messages;

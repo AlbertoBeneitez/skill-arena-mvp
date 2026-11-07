@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "ОЧИСТИТЬ",
   "roulette.cashOut": "ЗАВЕРШИТЬ МАТЧ",
 
-  "slot.reel": "БАРАБАН {n}",
-  "slot.pair": "Пара",
-  "slot.sevenNoPair": "7 без пары",
   "slot.won": "+{n} фишек",
   "slot.hud": "ФИШКИ {chips} · {secs}с",
   "slot.hudNoZero": "000 НЕЛЬЗЯ",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "Сыграть ещё",
   "studio.ext.back": "Назад",
   "studio.ext.scope": "Тренировка: баланс и рейтинг не меняются.",
+  "orb.eliminated": "{n} ШАРОВ",
+  "common.orbs": "{n} шаров",
+  "game.unitOrbs": "шаров",
+  "result.orbs": "Сбито шаров",
 };
 
 export default messages;

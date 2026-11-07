@@ -2,8 +2,11 @@
 export const PRODUCT_NAME = 'GALACTIC GAMES';
 export const PRODUCT_DESCRIPTION = 'Arcade espacial móvil. Aprende en segundos, mejora con cada partida.';
 
-/** Visible app version (Settings › Acerca de). */
-export const APP_VERSION = "1.08 (v108-saturn)";
+/**
+ * Visible app version (Settings › Acerca de): the current release number only — no internal branch names. Bump it
+ * with every release (v153 → 1.53).
+ */
+export const APP_VERSION = "1.53";
 
 /**
  * Public support/privacy contact. Leave empty until the owner publishes one:

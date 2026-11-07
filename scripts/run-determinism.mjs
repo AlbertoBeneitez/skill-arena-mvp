@@ -47,6 +47,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-leagues.js");
   await import("../.det-test/scripts/verify-orb-v6.js");
   await import("../.det-test/scripts/verify-orb-v7.js");
+  await import("../.det-test/scripts/verify-orb-v8.js");
   await import("../.det-test/scripts/verify-darts-gesture-v3.js");
   await import("../.det-test/scripts/verify-darts-gesture-v4.js");
   await import("../.det-test/scripts/verify-bowling-v1.js");
@@ -68,6 +69,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-orb-v2.js");
   await import("../.det-test/scripts/verify-orb-v3.js");
   await import("../.det-test/scripts/verify-slot-v3.js");
+  await import("../.det-test/scripts/verify-slot-v4.js");
   await import("../.det-test/scripts/verify-orb-v4.js");
   await import("../.det-test/scripts/verify-orb-v5.js");
   await import("../.det-test/scripts/verify-roulette-v6.js");

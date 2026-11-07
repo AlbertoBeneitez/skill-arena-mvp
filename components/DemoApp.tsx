@@ -17,7 +17,7 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
-import { GAMES, STAKES, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore } from "@/lib/games";
+import { GAMES, STAKES, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
 import { createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
 import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
@@ -36,6 +36,9 @@ import LanguagePicker from "./LanguagePicker";
 import LeagueResult from "./LeagueResult";
 import RankingHub from "./GameRanking";
 import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
+import dynamic from "next/dynamic";
+// v153: the studio proposal form loads only when the catalogue tab opens it.
+const GameProposal = dynamic(() => import("./GameProposal"), { ssr: false });
 
 type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking" | "settings";
 type Provider = AuthProviderId | null;
@@ -341,6 +344,8 @@ export default function DemoApp() {
   const [wins, setWins] = useState(0);
   const [leagues, setLeagues] = useState<LeagueState>({});
   const [bestScores, setBestScores] = useState<Record<string, number>>({});
+  // v153: the studio proposal opens from a small tab at the top left of the catalogue.
+  const [proposing, setProposing] = useState(false);
   /** Simulated rival for the match in progress (demo leagues); null outside league duels. */
   const [leagueMatch, setLeagueMatch] = useState<{ gameId: string; rival: LeagueRival; tier: LeagueTier } | null>(null);
   const [leagueOutcome, setLeagueOutcome] = useState<{ won: boolean; record: LeagueRecord; rival: LeagueRival; score: number } | null>(null);
@@ -978,7 +983,7 @@ export default function DemoApp() {
             : false;
     const resolvedResult = { ...gameResult, won: didWin };
     if (gameResult.verified !== false && !gameResult.forfeited && Number.isFinite(gameResult.score)) {
-      setBestScores((best) => (isBetterScore(selectedGame, gameResult.score, best[selectedGame.id]) ? { ...best, [selectedGame.id]: gameResult.score } : best));
+      setBestScores((best) => (isBetterScore(selectedGame, gameResult.score, best[bestScoreKey(selectedGame)]) ? { ...best, [bestScoreKey(selectedGame)]: gameResult.score } : best));
     }
     const leagueResolved = leagueDuel && (selectedStake === 0 || replyAttempt);
     if (leagueResolved && gameResult.serverMatch?.reason !== "exact-tie") settleLeague(didWin, gameResult.score);
@@ -1427,11 +1432,13 @@ export default function DemoApp() {
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <h1 className="visuallyHidden">{t("home.title")}</h1>
             <div className="homePlayHeading gxHomeBar">
+              <button type="button" className="gxStudioTab" onClick={() => setProposing(true)}><UiIcon name="upload" size={15} /><span>{t("studio.title")}</span></button>
               <button type="button" className="globalRankingShortcut gxRankingPill" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={17} /><span>{t("home.ranking")}</span></button>
             </div>
 
 
             {matchStartError && <p role="status">{matchStartError}</p>}
+            {proposing && <GameProposal onClose={() => setProposing(false)} />}
             <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} leagues={persistentTraining ? undefined : leagues} />
           </section>
         )}
@@ -1525,7 +1532,7 @@ export default function DemoApp() {
                         return (
                           <span className="gxRivalTarget">
                             <SegmentDigits value={groupDigits(n)} label={label} />
-                            <small aria-hidden="true">{t(chips ? "game.unitChips" : ms ? "game.unitMs" : "game.unitPoints")}</small>
+                            <small aria-hidden="true">{t(chips ? "game.unitChips" : ms ? "game.unitMs" : selectedGame.resultMetric === "orbs-eliminated" ? "game.unitOrbs" : "game.unitPoints")}</small>
                           </span>
                         );
                       })()}

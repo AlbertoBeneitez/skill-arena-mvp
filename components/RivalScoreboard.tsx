@@ -13,6 +13,7 @@ export type RivalResult = {
 function format(score: number, metric?: ResultMetric) {
   if (metric === "fictitious-balance") return t("common.chips", { n: formatNumber(score / 100, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) });
   if (metric === "reaction-time-ms") return t("common.ms", { n: formatNumber(score) });
+  if (metric === "orbs-eliminated") return t("common.orbs", { n: formatNumber(score) });
   return formatNumber(score);
 }
 

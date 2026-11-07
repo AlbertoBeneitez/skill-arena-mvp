@@ -76,6 +76,8 @@ import { ORB_BURST_CORE_V4 } from "../verified/orbBurstCore.v4";
 import { ORB_BURST_CORE_V5 } from "../verified/orbBurstCore.v5";
 import { ORB_BURST_CORE_V6 } from "../verified/orbBurstCore.v6";
 import { ORB_BURST_CORE_V7 } from "../verified/orbBurstCore.v7";
+import { ORB_BURST_CORE_V8 } from "../verified/orbBurstCore.v8";
+import { SLOT_CORE_V4 } from "../verified/galacticSlotCore.v4";
 import { getGameDefinition, type GameId } from "@/lib/games";
 import { coreAdapter } from "./coreAdapter";
 import { TOWER_DROP_CORE_V3 } from "../verified/towerDropCore.v3";
@@ -298,6 +300,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ROULETTE_CORE_V2.gameId, ROULETTE_CORE_V2.gameVersion)]: coreAdapter(ROULETTE_CORE_V2),
   [adapterKey(SLOT_CORE_V2.gameId,SLOT_CORE_V2.gameVersion)]: coreAdapter(SLOT_CORE_V2),
   [adapterKey(SLOT_CORE_V3.gameId,SLOT_CORE_V3.gameVersion)]: coreAdapter(SLOT_CORE_V3),
+  [adapterKey(SLOT_CORE_V4.gameId,SLOT_CORE_V4.gameVersion)]: coreAdapter(SLOT_CORE_V4),
   [adapterKey(SLOT_CORE.gameId, SLOT_CORE.gameVersion)]: coreAdapter(SLOT_CORE),
   [adapterKey(MEMORY_CORE.gameId, MEMORY_CORE.gameVersion)]: coreAdapter(MEMORY_CORE),
   [adapterKey(MEMORY_CORE_V2.gameId, MEMORY_CORE_V2.gameVersion)]: coreAdapter(MEMORY_CORE_V2),
@@ -353,6 +356,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(ORB_BURST_CORE_V5.gameId,ORB_BURST_CORE_V5.gameVersion)]: coreAdapter(ORB_BURST_CORE_V5),
   [adapterKey(ORB_BURST_CORE_V6.gameId,ORB_BURST_CORE_V6.gameVersion)]: coreAdapter(ORB_BURST_CORE_V6),
   [adapterKey(ORB_BURST_CORE_V7.gameId,ORB_BURST_CORE_V7.gameVersion)]: coreAdapter(ORB_BURST_CORE_V7),
+  [adapterKey(ORB_BURST_CORE_V8.gameId,ORB_BURST_CORE_V8.gameVersion)]: coreAdapter(ORB_BURST_CORE_V8),
   [adapterKey(TOWER_DROP_CORE_V3.gameId,TOWER_DROP_CORE_V3.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V3),
   [adapterKey(TOWER_DROP_CORE_V4.gameId,TOWER_DROP_CORE_V4.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V4),
   [adapterKey(TOWER_DROP_CORE_V5.gameId,TOWER_DROP_CORE_V5.gameVersion)]: coreAdapter(TOWER_DROP_CORE_V5),

@@ -8715,3 +8715,49 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .extGameActions button { min-height: 46px; }
 .extGameLeave { border-radius: 12px; border: 1px solid var(--st-hair); background: #18181b; color: var(--st-ink); font-weight: 700; }
 .extGameActions button { font-size: 14px; }
+
+/* =====================================================================
+   v153
+   ===================================================================== */
+/* Slot: the cabinet buttons lit up — saturated acrylic domes with a glossy cap, a coloured neon bezel and a glowing
+   glyph (amber −, green +, red spin with a gold ring). Still deep at the edges so the screen stays the brightest. */
+.slotVerified .coreControls button {
+  font-weight: 900; font-size: 30px; color: #fff7e6;
+  --lit: #f08a12; --deep: #3e1500; --rim: #ffb347; --glow: rgba(255,150,40,.42);
+  text-shadow: 0 0 10px var(--glow), 0 2px 0 rgba(0,0,0,.6);
+  background:
+    radial-gradient(70% 42% at 50% 16%, rgba(255,255,255,.62), rgba(255,255,255,.08) 70%, rgba(255,255,255,0) 72%),
+    radial-gradient(95% 85% at 50% 72%, color-mix(in srgb, var(--lit) 55%, #fff3d6) 0%, var(--lit) 36%, var(--deep) 100%);
+  box-shadow: 0 0 0 2px #0b0c12, 0 0 0 3.5px var(--rim), 0 0 0 5px #15161d, inset 0 -6px 10px rgba(0,0,0,.45),
+    inset 0 2px 0 rgba(255,255,255,.35), 0 5px 0 #07080d, 0 0 18px var(--glow);
+}
+.slotVerified .coreControls button:nth-child(even):not(:last-child) {
+  --lit: #1fc762; --deep: #02331a; --rim: #6dffb0; --glow: rgba(60,230,130,.4); color: #f2fff7;
+}
+.slotVerified .coreControls button:last-child {
+  font-size: 22px; letter-spacing: .04em; color: #fff4cf;
+  --lit: #ec1f3c; --deep: #3a0008; --rim: #ffd36a; --glow: rgba(255,60,80,.5);
+  text-shadow: 0 0 12px rgba(255,211,106,.55), 0 2px 0 rgba(60,0,8,.8);
+  animation: slotSpinGlow153 1.8s ease-in-out infinite;
+}
+.slotVerified .coreControls button:active {
+  box-shadow: 0 0 0 2px #0b0c12, 0 0 0 3.5px var(--rim), 0 0 0 5px #15161d, inset 0 -2px 6px rgba(0,0,0,.3),
+    inset 0 2px 0 rgba(255,255,255,.3), 0 1px 0 #07080d, 0 0 26px var(--glow);
+}
+.slotVerified .coreControls button:disabled { filter: grayscale(.75) brightness(.55); animation: none; }
+@keyframes slotSpinGlow153 {
+  50% { box-shadow: 0 0 0 2px #0b0c12, 0 0 0 3.5px #fff0b8, 0 0 0 5px #15161d, inset 0 -6px 10px rgba(0,0,0,.45),
+    inset 0 2px 0 rgba(255,255,255,.35), 0 5px 0 #07080d, 0 0 30px var(--glow); }
+}
+@media (prefers-reduced-motion: reduce) { .slotVerified .coreControls button:last-child { animation: none; } }
+/* Catalogue: "Enviar juego" as a small tab at the top left, opposite the rankings pill. */
+.appShell .homePlayHeading.gxHomeBar { justify-content: space-between; align-items: center; }
+.appShell .gxStudioTab {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px 0 10px;
+  border-radius: 999px; border: 1px solid rgba(127, 227, 238, .38); background: rgba(14, 14, 16, .85);
+  color: #cfeff6; font: 600 11.5px/1 var(--gx-ui); letter-spacing: .01em; box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.appShell .gxStudioTab .uiIcon { color: var(--st-ion, #7fe3ee); }
+.appShell .gxStudioTab:active { background: rgba(127, 227, 238, .12); translate: 0 1px; }
+.appShell .gxStudioTab:focus-visible { outline: 2px solid var(--st-ion, #7fe3ee); outline-offset: 2px; }

@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "LIMPAR",
   "roulette.cashOut": "ENCERRAR PARTIDA",
 
-  "slot.reel": "ROLO {n}",
-  "slot.pair": "Par",
-  "slot.sevenNoPair": "7 sem par",
   "slot.won": "+{n} fichas",
   "slot.hud": "{chips} FICHAS · {secs}s",
   "slot.hudNoZero": "000 NÃO PERMITIDO",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "Jogar outra vez",
   "studio.ext.back": "Voltar",
   "studio.ext.scope": "Treino: o teu saldo e o ranking não mudam.",
+  "orb.eliminated": "{n} BOLHAS",
+  "common.orbs": "{n} bolhas",
+  "game.unitOrbs": "bolhas",
+  "result.orbs": "Bolhas eliminadas",
 };
 
 export default messages;

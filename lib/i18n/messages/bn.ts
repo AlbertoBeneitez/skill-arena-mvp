@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "খালি করুন",
   "roulette.cashOut": "ম্যাচ শেষ করুন",
 
-  "slot.reel": "রিল {n}",
-  "slot.pair": "জোড়া",
-  "slot.sevenNoPair": "জোড়াহীন ৭",
   "slot.won": "+{n}টি চিপ",
   "slot.hud": "{chips}টি চিপ · {secs}সে.",
   "slot.hudNoZero": "000 অনুমোদিত নয়",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "আবার খেলুন",
   "studio.ext.back": "ফিরে যান",
   "studio.ext.scope": "অনুশীলন: আপনার ব্যালেন্স ও র‍্যাঙ্কিং বদলায় না।",
+  "orb.eliminated": "{n} বুদবুদ",
+  "common.orbs": "{n} বুদবুদ",
+  "game.unitOrbs": "বুদবুদ",
+  "result.orbs": "সরানো বুদবুদ",
 };
 
 export default messages;

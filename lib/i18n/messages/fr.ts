@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "EFFACER",
   "roulette.cashOut": "TERMINER LA PARTIE",
 
-  "slot.reel": "ROULEAU {n}",
-  "slot.pair": "Paire",
-  "slot.sevenNoPair": "7 sans paire",
   "slot.won": "+{n} jetons",
   "slot.hud": "{chips} JETONS · {secs}s",
   "slot.hudNoZero": "000 INTERDIT",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "Rejouer",
   "studio.ext.back": "Retour",
   "studio.ext.scope": "Entraînement : ni ton solde ni le classement ne changent.",
+  "orb.eliminated": "{n} BULLES",
+  "common.orbs": "{n} bulles",
+  "game.unitOrbs": "bulles",
+  "result.orbs": "Bulles éliminées",
 };
 
 export default messages;

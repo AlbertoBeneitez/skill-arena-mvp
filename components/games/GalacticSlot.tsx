@@ -1,10 +1,7 @@
 "use client";
 import type { GameRuntimeProps } from "@/lib/games";
-import {
-  SLOT_RULES,
-  type SlotState,
-} from "@/lib/verified/galacticSlotCore.v1";
-import { SLOT_CORE_V3 } from "@/lib/verified/galacticSlotCore.v3";
+import type { SlotState } from "@/lib/verified/galacticSlotCore.v1";
+import { SLOT_CORE_V4, SLOT_RULES_V4, SLOT_SYMBOLS_V4 } from "@/lib/verified/galacticSlotCore.v4";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { slotVisibleSteps, slotReelPosition } from "@/lib/slotPresentation.v2";
 import CoreCanvasGame from "./CoreCanvasGame";
@@ -13,76 +10,147 @@ import { t, formatNumber, useI18n } from "@/lib/i18n";
  * Presentation only: a lit arcade cabinet. Reads the authoritative state (strips, positions, steps, payouts) and
  * never writes it; every animation is a pure function of the tick.
  */
-// v146: a more vivid palette (lemon, orange, cherry, bell, star, BAR, gem, seven).
+// v153: seven symbols (lemon, cherry, bell, star, BAR, gem, seven; id 1, the orange, is retired in V4).
 const colors = ["#ffe62e", "#ff8a12", "#ff1f4f", "#ffc94a", "#ffd21a", "#8f7bff", "#2ee8ff", "#ff2440"];
-const marks = ["", "", "", "", "★", "BAR", "◆", "7"];
 const GOLD = "#ffd36a";
 const BULB_COLORS = ["#ffd36a", "#ff4fb8", "#3ff0ff", "#9dff5a"];
 const hash01 = (n: number) => { const q = Math.sin(n * 12.9898) * 43758.5453; return q - Math.floor(q); };
 
+/** A leaf with a centre vein, pointing along `angle`. */
+function leaf(ctx: CanvasRenderingContext2D, x: number, y: number, len: number, angle: number) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+  const g = ctx.createLinearGradient(0, -len * 0.3, 0, len * 0.3);
+  g.addColorStop(0, "#9df08a"); g.addColorStop(1, "#1f7a34");
+  ctx.fillStyle = g; ctx.strokeStyle = "#0d3a18"; ctx.lineWidth = Math.max(0.8, len * 0.07);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(len * 0.5, -len * 0.42, len, 0); ctx.quadraticCurveTo(len * 0.5, len * 0.42, 0, 0); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = "rgba(13,58,24,.7)"; ctx.lineWidth = Math.max(0.6, len * 0.05);
+  ctx.beginPath(); ctx.moveTo(len * 0.1, 0); ctx.lineTo(len * 0.85, 0); ctx.stroke();
+  ctx.restore();
+}
+/** Soft white gloss spot. */
+function gloss(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, rot = -0.5, alpha = 0.7) {
+  ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+  ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); ctx.fill();
+}
+
 function symbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number, size: number, glow = false) {
+  const u = size, line = Math.max(1, u * 0.045);
   ctx.save();
   ctx.translate(x, y);
-  if (glow) { ctx.shadowColor = colors[id]; ctx.shadowBlur = size * 0.45; }
-  if (id < 3) {
-    // Fruits: lemon, orange, cherries — shaded with a highlight and a leaf.
-    const g = ctx.createRadialGradient(-size * 0.12, -size * 0.12, size * 0.04, 0, 0, size * 0.42);
-    g.addColorStop(0, "#fffef0"); g.addColorStop(0.32, colors[id]); g.addColorStop(1, id === 2 ? "#7a0420" : id === 1 ? "#b03a00" : "#b88a00");
-    ctx.fillStyle = g;
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  const lit = () => { if (glow) { ctx.shadowColor = colors[id]; ctx.shadowBlur = u * 0.5; } };
+  const unlit = () => { ctx.shadowBlur = 0; };
+  if (id === 0 || id === 1) {
+    // Lemon: pointed ends, peel dimples, a gloss and a leaf.
+    ctx.save(); ctx.rotate(-0.38);
+    const g = ctx.createRadialGradient(-u * 0.12, -u * 0.1, u * 0.03, 0, 0, u * 0.4);
+    g.addColorStop(0, "#fffbd6"); g.addColorStop(0.4, "#ffe62e"); g.addColorStop(1, "#c08a00");
+    ctx.fillStyle = g; ctx.strokeStyle = "#5c3f00"; ctx.lineWidth = line;
+    lit();
     ctx.beginPath();
-    if (id === 2) {
-      ctx.arc(-size * 0.2, size * 0.08, size * 0.21, 0, Math.PI * 2);
-      ctx.moveTo(size * 0.42, size * 0.12);
-      ctx.arc(size * 0.21, size * 0.12, size * 0.21, 0, Math.PI * 2);
-    } else ctx.ellipse(0, 0, size * 0.34, size * (id === 0 ? 0.25 : 0.34), id === 0 ? -0.4 : 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "#3f8a4a"; ctx.lineWidth = Math.max(1, size * 0.05);
-    ctx.beginPath();
-    if (id === 2) { ctx.moveTo(-size * 0.2, -size * 0.1); ctx.quadraticCurveTo(-size * 0.05, -size * 0.5, size * 0.08, -size * 0.42); ctx.moveTo(size * 0.21, -size * 0.06); ctx.quadraticCurveTo(size * 0.15, -size * 0.36, size * 0.08, -size * 0.42); }
-    else { ctx.moveTo(0, -size * 0.3); ctx.lineTo(size * 0.02, -size * 0.42); }
-    ctx.stroke();
-    ctx.fillStyle = "#6fd27f";
-    ctx.beginPath(); ctx.ellipse(size * 0.14, -size * 0.42, size * 0.13, size * 0.06, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.moveTo(-u * 0.42, 0);
+    ctx.bezierCurveTo(-u * 0.36, -u * 0.32, u * 0.36, -u * 0.32, u * 0.42, 0);
+    ctx.bezierCurveTo(u * 0.36, u * 0.32, -u * 0.36, u * 0.32, -u * 0.42, 0);
+    ctx.closePath(); ctx.fill(); unlit(); ctx.stroke();
+    ctx.fillStyle = "rgba(150,100,0,.35)";
+    for (let k = 0; k < 7; k++) { ctx.beginPath(); ctx.arc((hash01(k + 3) - 0.5) * u * 0.5, (hash01(k + 11) - 0.5) * u * 0.3, u * 0.018, 0, Math.PI * 2); ctx.fill(); }
+    gloss(ctx, -u * 0.13, -u * 0.1, u * 0.13, u * 0.055, -0.2, 0.75);
+    ctx.restore();
+    leaf(ctx, u * 0.16, -u * 0.2, u * 0.3, -0.9);
+  } else if (id === 2) {
+    // Cherries: two glossy drupes on stems joined under a leaf.
+    ctx.strokeStyle = "#2f6a2a"; ctx.lineWidth = Math.max(1, u * 0.055);
+    ctx.beginPath(); ctx.moveTo(-u * 0.19, u * 0.0); ctx.quadraticCurveTo(-u * 0.12, -u * 0.3, u * 0.06, -u * 0.4);
+    ctx.moveTo(u * 0.2, u * 0.04); ctx.quadraticCurveTo(u * 0.2, -u * 0.22, u * 0.06, -u * 0.4); ctx.stroke();
+    leaf(ctx, u * 0.06, -u * 0.4, u * 0.28, -0.25);
+    for (const [cx, cy] of [[-u * 0.19, u * 0.14], [u * 0.2, u * 0.18]] as const) {
+      const g = ctx.createRadialGradient(cx - u * 0.07, cy - u * 0.07, u * 0.02, cx, cy, u * 0.22);
+      g.addColorStop(0, "#ffd8de"); g.addColorStop(0.35, "#ff1f4f"); g.addColorStop(1, "#6a0018");
+      ctx.fillStyle = g; ctx.strokeStyle = "#3a000c"; ctx.lineWidth = line;
+      lit(); ctx.beginPath(); ctx.arc(cx, cy, u * 0.2, 0, Math.PI * 2); ctx.fill(); unlit(); ctx.stroke();
+      gloss(ctx, cx - u * 0.07, cy - u * 0.07, u * 0.06, u * 0.035, -0.7, 0.85);
+    }
   } else if (id === 3) {
-    // Bell.
-    const g = ctx.createLinearGradient(-size * 0.3, 0, size * 0.3, 0);
-    g.addColorStop(0, "#b98a3a"); g.addColorStop(0.45, "#ffe9b0"); g.addColorStop(1, "#a0702a");
-    ctx.fillStyle = g;
+    // Bell: polished gold with a rim band, a knob and a clapper.
+    const g = ctx.createLinearGradient(-u * 0.34, 0, u * 0.34, 0);
+    g.addColorStop(0, "#9a6a1c"); g.addColorStop(0.3, "#ffe6a0"); g.addColorStop(0.55, "#ffc94a"); g.addColorStop(1, "#7d5210");
+    ctx.fillStyle = "#c08a2a"; ctx.strokeStyle = "#4a2c00"; ctx.lineWidth = line;
+    ctx.beginPath(); ctx.arc(0, -u * 0.36, u * 0.06, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = g; lit();
     ctx.beginPath();
-    ctx.moveTo(-size * 0.34, size * 0.22);
-    ctx.quadraticCurveTo(-size * 0.24, size * 0.1, -size * 0.22, -size * 0.14);
-    ctx.quadraticCurveTo(0, -size * 0.52, size * 0.22, -size * 0.14);
-    ctx.quadraticCurveTo(size * 0.24, size * 0.1, size * 0.34, size * 0.22);
-    ctx.closePath(); ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#8a5a1a"; ctx.beginPath(); ctx.arc(0, size * 0.29, size * 0.08, 0, Math.PI * 2); ctx.fill();
+    ctx.moveTo(-u * 0.38, u * 0.2);
+    ctx.quadraticCurveTo(-u * 0.26, u * 0.1, -u * 0.24, -u * 0.1);
+    ctx.quadraticCurveTo(-u * 0.22, -u * 0.34, 0, -u * 0.34);
+    ctx.quadraticCurveTo(u * 0.22, -u * 0.34, u * 0.24, -u * 0.1);
+    ctx.quadraticCurveTo(u * 0.26, u * 0.1, u * 0.38, u * 0.2);
+    ctx.closePath(); ctx.fill(); unlit(); ctx.stroke();
+    const band = ctx.createLinearGradient(-u * 0.4, 0, u * 0.4, 0);
+    band.addColorStop(0, "#7d5210"); band.addColorStop(0.35, "#ffe9b0"); band.addColorStop(1, "#6a420a");
+    ctx.fillStyle = band; ctx.beginPath(); ctx.roundRect(-u * 0.41, u * 0.17, u * 0.82, u * 0.1, u * 0.05); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#6a420a"; ctx.beginPath(); ctx.arc(0, u * 0.34, u * 0.07, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,.65)"; ctx.lineWidth = Math.max(1, u * 0.05);
+    ctx.beginPath(); ctx.moveTo(-u * 0.13, -u * 0.22); ctx.quadraticCurveTo(-u * 0.17, -u * 0.02, -u * 0.2, u * 0.1); ctx.stroke();
+  } else if (id === 4) {
+    // Star: five bevelled points (a light and a dark facet each).
+    const R1 = u * 0.44, R2 = u * 0.19, pts: [number, number][] = [];
+    for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + (k * Math.PI) / 5, r = k % 2 ? R2 : R1; pts.push([Math.cos(a) * r, Math.sin(a) * r + u * 0.03]); }
+    ctx.fillStyle = "#ffd21a"; ctx.strokeStyle = "#6b3d00"; ctx.lineWidth = line * 1.2;
+    lit(); ctx.beginPath(); pts.forEach(([px, py], k) => (k ? ctx.lineTo(px, py) : ctx.moveTo(px, py))); ctx.closePath(); ctx.fill(); unlit();
+    for (let k = 0; k < 10; k += 2) {
+      const tip = pts[k], prev = pts[(k + 9) % 10], next = pts[k + 1];
+      ctx.fillStyle = "#fff3b0"; ctx.beginPath(); ctx.moveTo(0, u * 0.03); ctx.lineTo(prev[0], prev[1]); ctx.lineTo(tip[0], tip[1]); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#e09a00"; ctx.beginPath(); ctx.moveTo(0, u * 0.03); ctx.lineTo(tip[0], tip[1]); ctx.lineTo(next[0], next[1]); ctx.closePath(); ctx.fill();
+    }
+    ctx.beginPath(); pts.forEach(([px, py], k) => (k ? ctx.lineTo(px, py) : ctx.moveTo(px, py))); ctx.closePath(); ctx.stroke();
+    gloss(ctx, -u * 0.05, -u * 0.08, u * 0.05, u * 0.03, 0, 0.8);
   } else if (id === 5) {
-    // BAR plate.
-    const plate = ctx.createLinearGradient(0, -size * 0.2, 0, size * 0.2);
-    plate.addColorStop(0, "#5b3cff"); plate.addColorStop(0.5, "#2a0f9e"); plate.addColorStop(1, "#14064f");
-    ctx.fillStyle = plate; ctx.strokeStyle = "#ffd36a"; ctx.lineWidth = Math.max(1, size * 0.05);
-    ctx.beginPath(); ctx.roundRect(-size * 0.42, -size * 0.2, size * 0.84, size * 0.4, size * 0.08); ctx.fill(); ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#e8e9ff"; ctx.font = `900 ${size * 0.3}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText("BAR", 0, size * 0.02);
+    // BAR: an enamelled plate with a double gold border, rivets and embossed letters.
+    const plate = ctx.createLinearGradient(0, -u * 0.22, 0, u * 0.22);
+    plate.addColorStop(0, "#7a5cff"); plate.addColorStop(0.5, "#2a0f9e"); plate.addColorStop(1, "#12054a");
+    ctx.fillStyle = plate; ctx.strokeStyle = "#ffd36a"; ctx.lineWidth = Math.max(1.2, u * 0.06);
+    lit(); ctx.beginPath(); ctx.roundRect(-u * 0.45, -u * 0.22, u * 0.9, u * 0.44, u * 0.09); ctx.fill(); unlit(); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,211,106,.55)"; ctx.lineWidth = Math.max(0.7, u * 0.025);
+    ctx.beginPath(); ctx.roundRect(-u * 0.38, -u * 0.155, u * 0.76, u * 0.31, u * 0.06); ctx.stroke();
+    ctx.fillStyle = "#ffd36a";
+    for (const [rx, ry] of [[-0.41, -0.18], [0.41, -0.18], [-0.41, 0.18], [0.41, 0.18]]) { ctx.beginPath(); ctx.arc(rx * u, ry * u, u * 0.022, 0, Math.PI * 2); ctx.fill(); }
+    ctx.font = `900 ${u * 0.27}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.lineWidth = Math.max(1, u * 0.05); ctx.strokeStyle = "#0c0336"; ctx.strokeText("BAR", 0, u * 0.015);
+    const tg = ctx.createLinearGradient(0, -u * 0.12, 0, u * 0.12); tg.addColorStop(0, "#ffffff"); tg.addColorStop(1, "#c9c2ff");
+    ctx.fillStyle = tg; ctx.fillText("BAR", 0, u * 0.015);
+    ctx.fillStyle = "rgba(255,255,255,.22)"; ctx.beginPath(); ctx.roundRect(-u * 0.4, -u * 0.19, u * 0.8, u * 0.08, u * 0.04); ctx.fill();
   } else if (id === 6) {
-    // Faceted gem.
-    const r = size * 0.36;
-    ctx.fillStyle = "#1fb6d6";
-    ctx.beginPath(); ctx.moveTo(-r, -r * 0.3); ctx.lineTo(-r * 0.5, -r * 0.75); ctx.lineTo(r * 0.5, -r * 0.75); ctx.lineTo(r, -r * 0.3); ctx.lineTo(0, r); ctx.closePath(); ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#a8f7ff"; ctx.beginPath(); ctx.moveTo(-r * 0.5, -r * 0.75); ctx.lineTo(0, -r * 0.3); ctx.lineTo(r * 0.5, -r * 0.75); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#5fe3f7"; ctx.beginPath(); ctx.moveTo(-r, -r * 0.3); ctx.lineTo(0, -r * 0.3); ctx.lineTo(0, r); ctx.closePath(); ctx.fill();
+    // Gem: a brilliant cut with a table, crown and pavilion facets, and a sparkle.
+    const r = u * 0.4, top = -r * 0.62, girdle = -r * 0.18, tip = r * 0.95;
+    const crown: [number, number][] = [[-r, girdle], [-r * 0.55, top], [r * 0.55, top], [r, girdle]];
+    ctx.fillStyle = "#1fb6d6"; ctx.strokeStyle = "#063a48"; ctx.lineWidth = line;
+    lit(); ctx.beginPath(); ctx.moveTo(-r, girdle); ctx.lineTo(-r * 0.55, top); ctx.lineTo(r * 0.55, top); ctx.lineTo(r, girdle); ctx.lineTo(0, tip); ctx.closePath(); ctx.fill(); unlit();
+    const facet = (c: string, p: [number, number][]) => { ctx.fillStyle = c; ctx.beginPath(); p.forEach(([px, py], k) => (k ? ctx.lineTo(px, py) : ctx.moveTo(px, py))); ctx.closePath(); ctx.fill(); };
+    facet("#b8faff", [[-r * 0.55, top], [r * 0.55, top], [r * 0.3, girdle], [-r * 0.3, girdle]]);
+    facet("#5fe3f7", [crown[0], crown[1], [-r * 0.3, girdle]]);
+    facet("#0f8eb0", [crown[3], crown[2], [r * 0.3, girdle]]);
+    facet("#7cecff", [[-r, girdle], [-r * 0.3, girdle], [0, tip]]);
+    facet("#2ac4e0", [[-r * 0.3, girdle], [r * 0.3, girdle], [0, tip]]);
+    facet("#0a6f8c", [[r * 0.3, girdle], [r, girdle], [0, tip]]);
+    ctx.beginPath(); ctx.moveTo(-r, girdle); ctx.lineTo(-r * 0.55, top); ctx.lineTo(r * 0.55, top); ctx.lineTo(r, girdle); ctx.lineTo(0, tip); ctx.closePath(); ctx.stroke();
+    ctx.strokeStyle = "rgba(6,58,72,.55)"; ctx.lineWidth = Math.max(0.6, u * 0.02);
+    ctx.beginPath(); ctx.moveTo(-r, girdle); ctx.lineTo(r, girdle); ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    const sx = -r * 0.42, sy = top + r * 0.05, k = u * 0.1;
+    ctx.beginPath(); ctx.moveTo(sx, sy - k); ctx.lineTo(sx + k * 0.22, sy - k * 0.22); ctx.lineTo(sx + k, sy); ctx.lineTo(sx + k * 0.22, sy + k * 0.22); ctx.lineTo(sx, sy + k); ctx.lineTo(sx - k * 0.22, sy + k * 0.22); ctx.lineTo(sx - k, sy); ctx.lineTo(sx - k * 0.22, sy - k * 0.22); ctx.closePath(); ctx.fill();
   } else {
-    // Star and 7: big glyphs with a gradient and a dark outline.
-    ctx.font = `900 ${id === 7 ? size * 0.8 : size * 0.74}px system-ui`;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    const g = ctx.createLinearGradient(0, -size * 0.35, 0, size * 0.35);
-    if (id === 7) { g.addColorStop(0, "#ffd0d6"); g.addColorStop(0.45, "#ff3b52"); g.addColorStop(1, "#8c0a1e"); }
-    else { g.addColorStop(0, "#fff6c2"); g.addColorStop(0.5, "#ffd23f"); g.addColorStop(1, "#d48a0a"); }
-    ctx.lineWidth = Math.max(1.5, size * 0.07); ctx.strokeStyle = "#2a0a12"; ctx.strokeText(marks[id], 0, size * 0.03);
-    ctx.fillStyle = g; ctx.fillText(marks[id], 0, size * 0.03);
+    // Lucky seven: a drawn 7 (no font dependency) in red with a dark outline, a gold inline and a gloss.
+    const seven = () => {
+      ctx.beginPath();
+      ctx.moveTo(-u * 0.3, -u * 0.4); ctx.lineTo(u * 0.32, -u * 0.4); ctx.lineTo(u * 0.32, -u * 0.27);
+      ctx.quadraticCurveTo(u * 0.04, u * 0.02, u * 0.0, u * 0.42); ctx.lineTo(-u * 0.19, u * 0.42);
+      ctx.quadraticCurveTo(-u * 0.14, u * 0.02, u * 0.11, -u * 0.24); ctx.lineTo(-u * 0.3, -u * 0.24); ctx.closePath();
+    };
+    seven(); ctx.strokeStyle = "#2a0008"; ctx.lineWidth = Math.max(2, u * 0.13); ctx.stroke();
+    seven(); ctx.strokeStyle = "#ffd36a"; ctx.lineWidth = Math.max(1, u * 0.055); ctx.stroke();
+    const g = ctx.createLinearGradient(0, -u * 0.4, 0, u * 0.42);
+    g.addColorStop(0, "#ffb0bb"); g.addColorStop(0.35, "#ff2440"); g.addColorStop(1, "#7a0014");
+    seven(); ctx.fillStyle = g; lit(); ctx.fill(); unlit();
+    ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.beginPath(); ctx.roundRect(-u * 0.25, -u * 0.37, u * 0.5, u * 0.045, u * 0.02); ctx.fill();
   }
   ctx.restore();
 }
@@ -112,12 +180,13 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   const H = Math.max(520, view?.height ?? 620);
   drawSpaceBackdrop(ctx, 390, H, 2, s.tick);
   const since = s.tick - s.lastSettledTick, win = since < 150 && s.lastPayout > 0, spinning = s.settlingAt !== -1;
-  const big = win && s.lastPayout >= 8 * SLOT_RULES.costMinor;
+  const big = win && s.lastPayout >= 8 * SLOT_RULES_V4.costMinor;
   const compact = H < 600;
   // No marquee: the screen header already names the game and the HUD pill sits in that band.
-  // The three reel tables (seeded per match). The highlighted row is where each reel sits right now.
-  // v145: bigger reel tables (owner request): larger symbols and a taller row for each of the eight positions.
-  const tableTop = 58, rowPitch = compact ? 14 : 17.5, tableH = 24 + 8 * rowPitch;
+  // The three reel tables (seeded per match): seven stops each, no captions. The highlighted row is where each reel
+  // sits right now. v153: taller rows and bigger symbols (the reel captions are gone).
+  const stops = s.strips[0].length;
+  const tableTop = 56, rowPitch = compact ? 17 : 22, tableH = 10 + stops * rowPitch;
   const panel = ctx.createLinearGradient(0, tableTop, 0, tableTop + tableH);
   panel.addColorStop(0, "rgba(58,16,104,.92)"); panel.addColorStop(1, "rgba(18,6,48,.92)");
   ctx.fillStyle = panel;
@@ -126,57 +195,40 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
   // Each reel column on its own lit lane, tinted pink, cyan and gold.
   for (let i = 0; i < 3; i++) {
     ctx.fillStyle = ["rgba(255,79,184,.10)", "rgba(63,240,255,.09)", "rgba(255,211,106,.10)"][i];
-    ctx.beginPath(); ctx.roundRect(85 + i * 110 - 50, tableTop + 4, 100, tableH - 8, 10); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(85 + i * 110 - 52, tableTop + 4, 104, tableH - 8, 10); ctx.fill();
   }
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (let i = 0; i < 3; i++) {
     const x = 85 + i * 110;
-    ctx.fillStyle = ["#ff8fd6", "#8ff6ff", "#ffe08a"][i]; ctx.font = "800 10px system-ui";
-    ctx.fillText(t("slot.reel", { n: i + 1 }), x, tableTop + 11);
-    for (let j = 0; j < 8; j++) {
-      const y = tableTop + 22 + j * rowPitch + rowPitch / 2;
+    for (let j = 0; j < stops; j++) {
+      const y = tableTop + 5 + j * rowPitch + rowPitch / 2;
       if (s.positions[i] === j) {
-        ctx.fillStyle = "rgba(255,211,106,.22)"; ctx.strokeStyle = "rgba(255,211,106,.8)"; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.roundRect(x - 46, y - rowPitch / 2 + 0.5, 92, rowPitch - 1, (rowPitch - 1) / 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "rgba(255,211,106,.24)"; ctx.strokeStyle = "rgba(255,211,106,.85)"; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(x - 48, y - rowPitch / 2 + 1, 96, rowPitch - 2, (rowPitch - 2) / 2); ctx.fill(); ctx.stroke();
       }
-      symbol(ctx, s.strips[i][j], x, y, compact ? 15.5 : 19.5);
+      symbol(ctx, s.strips[i][j], x, y, compact ? 19 : 25);
     }
   }
-  // Pay table: eight triple chips, then a row of two for the pair and the seven without a pair (v143: chips like the
-  // others instead of a loose line that the cabinet frame covered).
-  const payTop = tableTop + tableH + 5;
-  for (let id = 0; id < 8; id++) {
-    const x = 20 + (id % 4) * 88, y = payTop + Math.floor(id / 4) * 25;
-    const chip = ctx.createLinearGradient(x, y, x + 84, y);
-    chip.addColorStop(0, `${colors[id]}40`); chip.addColorStop(0.5, "rgba(22,8,52,.9)"); chip.addColorStop(1, "rgba(22,8,52,.9)");
-    ctx.fillStyle = chip; ctx.beginPath(); ctx.roundRect(x, y, 84, 22, 11); ctx.fill();
-    ctx.strokeStyle = `${colors[id]}b0`; ctx.lineWidth = 1.2; ctx.stroke();
-    symbol(ctx, id, x + 15, y + 11, 18);
-    ctx.fillStyle = "#f5ecff"; ctx.textAlign = "left"; ctx.font = "800 11px system-ui";
-    ctx.fillText(`×3`, x + 29, y + 11.5);
-    ctx.fillStyle = GOLD; ctx.textAlign = "right";
-    ctx.fillText(String(SLOT_RULES.tripleMultipliers[id] * 5), x + 76, y + 11.5);
-  }
-  for (const [k, label, amount, seven] of [[0, t("slot.pair"), "10", false], [1, t("slot.sevenNoPair"), "5", true]] as const) {
-    const x = 20 + k * 176, y = payTop + 50, w = 172;
-    const chip = ctx.createLinearGradient(x, y, x + w, y);
-    chip.addColorStop(0, seven ? "rgba(255,36,64,.3)" : "rgba(255,138,18,.3)"); chip.addColorStop(0.45, "rgba(22,8,52,.9)"); chip.addColorStop(1, "rgba(22,8,52,.9)");
-    ctx.fillStyle = chip; ctx.beginPath(); ctx.roundRect(x, y, w, 22, 11); ctx.fill();
-    ctx.strokeStyle = seven ? "rgba(255,36,64,.75)" : "rgba(255,138,18,.7)"; ctx.lineWidth = 1.2; ctx.stroke();
-    if (seven) symbol(ctx, 7, x + 15, y + 11, 18);
-    else { symbol(ctx, 1, x + 13, y + 11, 15); symbol(ctx, 1, x + 25, y + 11, 15); }
-    ctx.fillStyle = "#e6defa"; ctx.textAlign = "left"; ctx.font = "700 10.5px system-ui";
-    const lx = x + (seven ? 29 : 37), maxW = w - (lx - x) - 30;
-    let text: string = label;
-    while (text.length > 3 && ctx.measureText(text).width > maxW) text = `${text.slice(0, -2)}…`;
-    ctx.fillText(text, lx, y + 11.5);
-    ctx.fillStyle = GOLD; ctx.textAlign = "right"; ctx.font = "800 11px system-ui";
-    ctx.fillText(amount, x + w - 10, y + 11.5);
-  }
+  // Pay table: one card per symbol with its triple and its pair (a triple pays four pairs; three sevens, five).
+  const payTop = tableTop + tableH + 6, cardW = 47, cardH = compact ? 56 : 64, gap = 3.5;
+  SLOT_SYMBOLS_V4.forEach((id, k) => {
+    const x = 20 + k * (cardW + gap), y = payTop;
+    const card = ctx.createLinearGradient(0, y, 0, y + cardH);
+    card.addColorStop(0, `${colors[id]}4a`); card.addColorStop(0.42, "rgba(26,8,58,.94)"); card.addColorStop(1, "rgba(14,4,36,.96)");
+    ctx.fillStyle = card; ctx.beginPath(); ctx.roundRect(x, y, cardW, cardH, 10); ctx.fill();
+    ctx.strokeStyle = `${colors[id]}c0`; ctx.lineWidth = 1.2; ctx.stroke();
+    symbol(ctx, id, x + cardW / 2, y + (compact ? 15 : 17), compact ? 24 : 28);
+    ctx.textBaseline = "middle";
+    for (const [row, mult, amount] of [[0, "×3", SLOT_RULES_V4.triple[id] * 5], [1, "×2", SLOT_RULES_V4.pair[id] * 5]] as const) {
+      const ly = y + cardH - (compact ? 19 : 21) + row * (compact ? 11 : 12.5);
+      ctx.font = `700 ${compact ? 8 : 8.5}px system-ui`; ctx.fillStyle = "rgba(230,222,250,.7)"; ctx.textAlign = "left"; ctx.fillText(mult, x + 3.5, ly);
+      ctx.font = `900 ${compact ? 10 : 11}px system-ui`; ctx.fillStyle = row === 0 ? GOLD : "#ffe9c4"; ctx.textAlign = "right"; ctx.fillText(String(amount), x + cardW - 3.5, ly);
+    }
+  });
   ctx.textAlign = "center";
   // Cabinet with chrome-gold frame and a ring of bulbs.
   // Below the cabinet: the step counters (26 high) and a margin, all above the buttons (the canvas ends where they start).
-  const top = payTop + 72 + 16, height = Math.max(150, H - top - 12 - 42), center = top + height / 2;
+  const top = payTop + cardH + 18, height = Math.max(150, H - top - 12 - 42), center = top + height / 2;
   const pitch = Math.min(74, Math.max(56, height * 0.4)), size = pitch * 0.81;
   const reach = Math.ceil(height / 2 / pitch) + 1;
   const frame = ctx.createLinearGradient(0, top - 12, 0, top + height + 12);
@@ -197,7 +249,7 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
     const p = slotReelPosition(s, i), index = Math.floor(p), fraction = p - index;
     const moving = spinning && Math.abs(p - Math.round(p)) > 0.02;
     for (let k = -reach; k <= reach + 1; k++) {
-      const yy = center + (k - fraction) * pitch, id = s.strips[i][(((index + k) % 8) + 8) % 8];
+      const yy = center + (k - fraction) * pitch, id = s.strips[i][(((index + k) % stops) + stops) % stops];
       const onLine = Math.abs(yy - center) < 6 && !spinning;
       ctx.save();
       // Motion blur: squash vertically and ghost while spinning fast.
@@ -264,7 +316,7 @@ export default function GalacticSlot(props: GameRuntimeProps) {
     <div className="slotVerified">
       <CoreCanvasGame
         {...props}
-        core={SLOT_CORE_V3}
+        core={SLOT_CORE_V4}
         name="Slot"
         instruction=""
         render={render}

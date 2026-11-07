@@ -16,6 +16,7 @@ export default function GameResultSummary({
   const balance = resultMetric === "fictitious-balance";
   // Time-scored games show the accumulated milliseconds (their "reach" is only the duel mirror).
   const timed = resultMetric === "reaction-time-ms";
+  const orbs = resultMetric === "orbs-eliminated";
   const reach =
     !timed &&
     result.verified === true &&
@@ -55,6 +56,8 @@ export default function GameResultSummary({
               ? t("result.finalChips")
               : timed
                 ? t("result.reactionTotal")
+                : orbs
+                ? t("result.orbs")
                 : reach !== undefined
                 ? t("result.reach")
                 : t("result.points")}
@@ -65,6 +68,8 @@ export default function GameResultSummary({
                 ? t("result.chipsAria")
                 : timed
                   ? t("result.reactionTotal")
+                  : orbs
+                  ? t("result.orbs")
                   : reach !== undefined
                   ? t("result.reachAria")
                   : t("result.pointsAria")
@@ -74,7 +79,9 @@ export default function GameResultSummary({
               ? t("common.chips", { n: formatNumber((reach ?? result.score) / 100, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) })
               : timed
                 ? t("common.ms", { n: formatNumber(result.score) })
-                : formatNumber(reach ?? result.score)}
+                : orbs
+                  ? formatNumber(result.score)
+                  : formatNumber(reach ?? result.score)}
           </dd>
         </div>
         <div>

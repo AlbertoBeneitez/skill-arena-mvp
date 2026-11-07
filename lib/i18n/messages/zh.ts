@@ -457,9 +457,6 @@ const messages: Messages = {
   "roulette.clear": "清空",
   "roulette.cashOut": "结束对局",
 
-  "slot.reel": "转轴 {n}",
-  "slot.pair": "对子",
-  "slot.sevenNoPair": "单个 7",
   "slot.won": "+{n} 个筹码",
   "slot.hud": "{chips} 个筹码 · {secs}秒",
   "slot.hudNoZero": "不允许 000",
@@ -811,6 +808,10 @@ const messages: Messages = {
   "studio.ext.again": "再玩一次",
   "studio.ext.back": "返回",
   "studio.ext.scope": "训练：余额和排行榜不会变化。",
+  "orb.eliminated": "{n} 个泡泡",
+  "common.orbs": "{n} 个泡泡",
+  "game.unitOrbs": "泡泡",
+  "result.orbs": "消除的泡泡",
 };
 
 export default messages;

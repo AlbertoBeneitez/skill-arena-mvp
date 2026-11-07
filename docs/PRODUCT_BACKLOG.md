@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v153-saturn · Slot V4, Orb Burst V8, portadas y pestaña «Enviar juego» (7-nov-2026)
+
+- **Slot V4:** sin naranjas; parejas por símbolo (5 a 40 fichas) y tríos que pagan cuatro parejas (tres sietes, 200); sin «7 sin pareja». Tablas sin «Rodillo», símbolos más grandes y trabajados, botones más vistosos.
+- **Orb Burst V8:** la puntuación es el número de burbujas eliminadas; cañón nuevo.
+- **Portadas:** Orb Burst (sin estela de gota, cañón), Shot Gallery (blancos con más detalle), Stack (bloque más abajo, sin bloque cayendo) y Tower Drop (bloque más abajo).
+- **Catálogo:** «Enviar juego» como pestaña pequeña arriba a la izquierda.
+- **Versiones:** fuera las etiquetas de versiones anteriores (Ajustes muestra 1.53).
+- **Pendiente:**
+  - competición con juegos de estudios;
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado.
+
 ## v152-saturn · Roulette oculta, Slot en Alternativos y sin fila Casino (7-nov-2026)
 
 - **Roulette:** oculta para el jugador. Se conservan su registro, sus núcleos, sus verificadores y su portada; cómo volver a mostrarla está en `docs/STATE.md`.

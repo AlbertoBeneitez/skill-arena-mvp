@@ -485,9 +485,6 @@ const es = {
   "roulette.cashOut": "TERMINAR PARTIDA",
 
   // ---------- slot ----------
-  "slot.reel": "RODILLO {n}",
-  "slot.pair": "Pareja",
-  "slot.sevenNoPair": "7 sin pareja",
   "slot.won": "+{n} fichas",
   "slot.hud": "{chips} FICHAS · {secs}s",
   "slot.hudNoZero": "000 NO PERMITIDO",
@@ -849,6 +846,10 @@ const es = {
   "studio.ext.again": "Jugar otra vez",
   "studio.ext.back": "Volver",
   "studio.ext.scope": "Entrenamiento: no cambia tu saldo ni el ranking.",
+  "orb.eliminated": "{n} BURBUJAS",
+  "common.orbs": "{n} burbujas",
+  "game.unitOrbs": "burbujas",
+  "result.orbs": "Burbujas eliminadas",
 } as const;
 
 export type MessageKey = keyof typeof es;
