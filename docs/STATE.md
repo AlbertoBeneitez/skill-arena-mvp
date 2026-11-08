@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 7 de noviembre de 2026 · base `mobile-test` en v153-saturn.
+Actualizado: 8 de noviembre de 2026 · base `mobile-test` en v154-saturn.
 
 ## Catálogo
 
@@ -27,7 +27,7 @@ resultado aún no verificado de extremo a extremo. Roulette está oculta desde v
 | orb-burst | Orb Burst (puntúa burbujas eliminadas) | 8.0.0 | VERIFIED |
 | precision-stack | Stack | 4.0.0 | VERIFIED |
 | reaction-test | Shot Gallery | 12.0.0 | VERIFIED |
-| pinball | Pinball | 10.0.0 | VERIFIED |
+| pinball | Pinball | 11.0.0 | VERIFIED |
 | bowling | Bowling | 3.0.0 | VERIFIED |
 | corner-sudoku | Galoku | 4.0.0 | VERIFIED |
 | solitaire-sprint | Solitaire Sprint | 0.2.0 | INTEGRATED |

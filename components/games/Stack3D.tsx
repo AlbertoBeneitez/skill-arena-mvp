@@ -3,6 +3,8 @@ import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { STACK_3D_CORE, type Stack3DState, type StackSolid } from "@/lib/verified/precisionStackCore.v4";
 import CoreCanvasGame from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 
 import { t as tx, useI18n } from "@/lib/i18n";
 /** Material grain tiles (made once per page): brushed metal for the sides and a fine weave for the tops. Drawn as
@@ -164,8 +166,12 @@ function fallFinale(ctx: CanvasRenderingContext2D, state: Stack3DState, elapsedM
 }
 const finale = { durationMs: FALL_MS, render: fallFinale };
 const hudLabel = (state: Stack3DState) => tx("stack.hud", { h: state.height, s: Math.floor(state.surfaceMilli2 / 1e8) });
+const scoreCells = (state: Readonly<Stack3DState>): ScoreCell[] => [
+  { label: tx("hud.height"), value: String(state.height), main: true },
+  { label: tx("hud.surface"), value: String(Math.floor(state.surfaceMilli2 / 1e8)) },
+];
 const keys = { " ": "DROP", Enter: "DROP" } as const;
 export default function Stack3D(props: GameRuntimeProps) {
   useI18n();
-  return <CoreCanvasGame {...props} core={STACK_3D_CORE} name="Stack" render={render} failureFinale={finale} hideHudScore hudLabel={hudLabel} primaryAction="DROP" keys={keys} instruction={tx("stack.instruction")} />;
+  return <CoreCanvasGame {...props} core={STACK_3D_CORE} name="Stack" render={render} failureFinale={finale} hideHudScore hudLabel={hudLabel} scoreCells={scoreCells} primaryAction="DROP" keys={keys} instruction={tx("stack.instruction")} />;
 }

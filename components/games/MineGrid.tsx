@@ -11,6 +11,7 @@ import { gameTone, haptic } from "@/lib/gameFeedback";
 
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 import SegmentDigits, { SegmentGlowFilter } from "../SegmentDigits";
+import GameScoreboard from "../GameScoreboard";
 type Props = {
   active: boolean;
   targetScore: number;
@@ -343,21 +344,11 @@ export default function MineGrid({
         const level = challenge.deductionRounds <= 9 ? tx("mine.easy") : challenge.deductionRounds <= 12 ? tx("mine.medium") : tx("mine.hard");
         const left = Math.max(0, MINES - flagged.size), fieldNo = challenge.id.replace(/\D+/g, "") || "0";
         return (
-          <div className="mineConsole" aria-hidden="false">
-            <div className="mineConsoleCell">
-              <small className="dotMatrix">{tx("mine.fieldLabel")}</small>
-              <SegmentDigits value={fieldNo.padStart(2, "0")} label={challenge.id} />
-              <small className="dotMatrix mineLevel">{level}</small>
-            </div>
-            <div className="mineConsoleCell mineConsoleTime">
-              <small className="dotMatrix">{tx("mine.timeLabel")}</small>
-              <SegmentDigits value={`${mm}:${ss}`} label={`${mm}:${ss}`} />
-            </div>
-            <div className="mineConsoleCell mineConsoleMines">
-              <small className="dotMatrix">{tx("mine.minesLabel")}</small>
-              <SegmentDigits value={String(left).padStart(2, "0")} label={tx("mine.minesLeft", { n: left })} />
-            </div>
-          </div>
+          <GameScoreboard className="mineScoreboard" cells={[
+            { label: tx("hud.time"), value: `${mm}:${ss}`, main: true },
+            { label: tx("hud.field"), value: `${fieldNo} · ${level}` },
+            { label: tx("hud.mines"), value: String(left) },
+          ]} />
         );
       })()}
       <svg className="mineSegDefs" width="0" height="0" aria-hidden="true" focusable="false"><defs><SegmentGlowFilter id="mineSegGlow" /></defs></svg>

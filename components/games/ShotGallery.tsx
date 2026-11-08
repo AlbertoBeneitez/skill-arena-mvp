@@ -10,6 +10,8 @@ import {
   type GalleryTargetV12,
 } from "@/lib/verified/shotGalleryCore.v12";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t as tx, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
 
 /*
@@ -566,6 +568,10 @@ function drawBriefing(ctx: CanvasRenderingContext2D, s: GalleryStateV12) {
 
 const hudLabel = (s: Readonly<GalleryStateV12>) => `${tx("gallery.timeHud", { n: formatNumber(s.totalMs), trial: Math.min(12, s.trial + 1) })}`;
 const feedbackScore = (s: Readonly<GalleryStateV12>) => s.totalMs;
+const scoreCells = (s: Readonly<GalleryStateV12>): ScoreCell[] => [
+  { label: tx("hud.reaction"), value: `${formatNumber(s.totalMs)} ms`, main: true },
+  { label: tx("hud.target"), value: `${Math.min(12, s.trial + 1)}/12` },
+];
 
 /** Reaction times are kept on this device (last 30 runs): presentation/storage only. */
 let savedSeed = "";
@@ -738,7 +744,7 @@ export default function ShotGallery(props: GameRuntimeProps) {
   const pick = useCallback(pickGallery, []);
   return (
     <div className="shotGalleryVerified">
-      <CoreCanvasGame {...props} core={core} name="Shot Gallery" instruction="" render={render} pointAction={pick} multiTouch expandVerticalViewport hideHudScore hudLabel={hudLabel} feedbackScore={feedbackScore} />
+      <CoreCanvasGame {...props} core={core} name="Shot Gallery" instruction="" render={render} pointAction={pick} multiTouch expandVerticalViewport hideHudScore hudLabel={hudLabel} scoreCells={scoreCells} feedbackScore={feedbackScore} />
     </div>
   );
 }

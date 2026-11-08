@@ -7,6 +7,8 @@ import {
   type TowerDropV5State as TowerDropV3State,
 } from "@/lib/verified/towerDropCore.v5";
 import CoreCanvasGame from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t, formatNumber, useI18n } from "@/lib/i18n";
 // Presentation-only smoothing. Never read by the core; a new run (tick going
 // backwards) resets it, so replays and previews stay deterministic.
@@ -314,24 +316,12 @@ function render(ctx: CanvasRenderingContext2D, state: TowerDropV3State, view?: {
   if (state.combo > 1) ctx.fillText(t("play.perfect", { n: state.combo }), 195, 112);
   ctx.textAlign = "left";
   ctx.restore();
-  // Lives: three hearts, the lost ones dim; a red pulse right after a loss.
-  const sinceLoss = state.lastLossTick >= 0 ? state.tick - state.lastLossTick : Infinity;
-  for (let n = 0; n < 3; n++) {
-    const cx = 330 + n * 20,
-      cy = 26,
-      alive = n < state.lives,
-      pulse = !alive && sinceLoss < 90 ? 1 - sinceLoss / 90 : 0;
-    ctx.fillStyle = alive ? "#ff6f8e" : `rgba(120,140,160,${0.28 + pulse * 0.5})`;
-    ctx.beginPath();
-    ctx.arc(cx - 3.2, cy - 1.5, 4.2, 0, Math.PI * 2);
-    ctx.arc(cx + 3.2, cy - 1.5, 4.2, 0, Math.PI * 2);
-    ctx.moveTo(cx - 7.2, cy - 0.2);
-    ctx.lineTo(cx, cy + 8);
-    ctx.lineTo(cx + 7.2, cy - 0.2);
-    ctx.closePath();
-    ctx.fill();
-  }
+  // v154: lives are shown in the shared scoreboard.
 }
+const scoreCells = (state: Readonly<{ height?: number; lives?: number }>): ScoreCell[] => [
+  { label: t("hud.height"), value: String(state.height ?? 0), main: true },
+  { label: t("hud.lives"), value: "♥".repeat(Math.max(0, state.lives ?? 0)) || "0", alert: (state.lives ?? 0) <= 1 },
+];
 const keys = { " ": "DROP", Enter: "DROP" } as const;
 export default function TowerDropV3(props: GameRuntimeProps) {
   useI18n();
@@ -341,6 +331,7 @@ export default function TowerDropV3(props: GameRuntimeProps) {
       core={TOWER_DROP_CORE_V5}
       name="Tower Drop"
       hideHudScore
+      scoreCells={scoreCells}
       render={render}
       expandVerticalViewport
       primaryAction="DROP"

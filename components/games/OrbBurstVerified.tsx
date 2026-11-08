@@ -19,6 +19,8 @@ import {
   type OrbCamera,
 } from "@/lib/orbPresentation";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 /** Six classic bubble colours (each also has its own glyph for colour-blind players). */
 const colors = ["#3fa9ff", "#ff4f6d", "#ffd23f", "#4fdc7a", "#b07bff", "#ff9a3c"];
@@ -365,6 +367,10 @@ const keys = {
 const hudLabel = (state: Readonly<OrbV7State>) =>
   `${tx("orb.eliminated", { n: formatNumber(orbEliminatedV8(state)) })}${state.combo > 1 ? ` · ${tx("play.combo", { n: state.combo })}` : ""}`;
 const feedbackScore = (state: Readonly<OrbV7State>) => orbEliminatedV8(state);
+const scoreCells = (state: Readonly<OrbV7State>): ScoreCell[] => [
+  { label: tx("hud.bubbles"), value: formatNumber(orbEliminatedV8(state)), main: true },
+  { label: tx("hud.combo"), value: state.combo > 1 ? `×${state.combo}` : "—" },
+];
 export default function OrbBurstVerified(props: GameRuntimeProps) {
   useI18n();
   const presentation = useMemo(createPresentation, []);
@@ -378,6 +384,7 @@ export default function OrbBurstVerified(props: GameRuntimeProps) {
         pointAction={presentation.pointAction}
         expandHorizontalViewport
         hudLabel={hudLabel}
+        scoreCells={scoreCells}
         hideHudScore
         feedbackScore={feedbackScore}
         failureFinale={presentation.failureFinale}

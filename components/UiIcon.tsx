@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 
 export type UiIconName =
   | "sound" | "soundOff" | "gear" | "back" | "close" | "upload" | "grid" | "ghost"
-  | "games" | "group" | "trophy" | "check" | "chevronDown" | "logout" | "trash";
+  | "games" | "group" | "trophy" | "check" | "chevronDown" | "logout" | "trash" | "user";
 
 /** Eight-tooth gear, computed once (pure math, identical on server and client). */
 const GEAR_PATH = (() => {
@@ -44,6 +44,10 @@ const PATHS: Record<UiIconName, ReactNode> = {
     <path d="M11 5.6 4.6 12l6.4 6.4" />
   </>),
   close: <path d="m6.4 6.4 11.2 11.2M17.6 6.4 6.4 17.6" />,
+  user: (<>
+    <circle cx="12" cy="8.6" r="3.9" />
+    <path d="M4.6 20a7.4 7.4 0 0 1 14.8 0" />
+  </>),
   upload: (<>
     <path d="M20 13.6v4.6a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 18.2V5.8A1.8 1.8 0 0 1 5.8 4h5" />
     <path d="m4.4 17 4.4-4.4 3.4 3.4 2.1-2.1L19.6 19" />

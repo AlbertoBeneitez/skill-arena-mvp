@@ -8,6 +8,7 @@ import { solitaireChallengeFor } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
+import GameScoreboard from "../GameScoreboard";
 type Props = {
   active: boolean;
   targetScore: number;
@@ -493,9 +494,10 @@ export default function SolitaireSprint({
   const suggested = (type: SolitaireDestination["type"], index: number) => destinations.some(d => d.type === type && d.index === index);
   return (
     <div ref={surfaceRef} className="detGameSurface solitaireSprint" onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag}>
-      <div className="solitaireTimer" aria-label={tx("solitaire.time")}>
-        {formatTimer(elapsedMs)}
-      </div>
+      <GameScoreboard className="inFlow" cells={[
+        { label: tx("hud.time"), value: formatTimer(elapsedMs), main: true },
+        { label: tx("hud.foundation"), value: `${foundations.reduce((n, pile) => n + pile.length, 0)}/52` },
+      ]} />
 
       <div className="solitaireTopRow">
         <button

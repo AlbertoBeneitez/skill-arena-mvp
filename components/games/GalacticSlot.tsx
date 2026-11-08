@@ -5,6 +5,8 @@ import { SLOT_CORE_V4, SLOT_RULES_V4, SLOT_SYMBOLS_V4 } from "@/lib/verified/gal
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import { slotVisibleSteps, slotReelPosition } from "@/lib/slotPresentation.v2";
 import CoreCanvasGame from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t, formatNumber, useI18n } from "@/lib/i18n";
 /*
  * Presentation only: a lit arcade cabinet. Reads the authoritative state (strips, positions, steps, payouts) and
@@ -310,6 +312,11 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
 const hudLabel = (s: Readonly<SlotState>) =>
   `${t("slot.hud", { chips: formatNumber(s.balanceMinor / 100, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), secs: formatNumber(Math.max(0, 21600 - s.tick) / 120, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}${s.steps.every(step => step === 0) ? ` · ${t("slot.hudNoZero")}` : ""}`;
 const feedbackScore = (s: Readonly<SlotState>) => s.balanceMinor;
+const scoreCells = (s: Readonly<SlotState>): ScoreCell[] => [
+  { label: t("hud.chips"), value: formatNumber(s.balanceMinor / 100, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), main: true },
+  { label: t("hud.time"), value: `${formatNumber(Math.max(0, 21600 - s.tick) / 120, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} s` },
+  s.steps.every((step) => step === 0) ? { label: t("hud.shots"), value: t("slot.hudNoZero"), alert: true } : { label: t("hud.shots"), value: formatNumber(s.spins) },
+];
 export default function GalacticSlot(props: GameRuntimeProps) {
   useI18n();
   return (
@@ -323,6 +330,7 @@ export default function GalacticSlot(props: GameRuntimeProps) {
         expandVerticalViewport
         hideHudScore
         hudLabel={hudLabel}
+        scoreCells={scoreCells}
         feedbackScore={feedbackScore}
         keys={{ " ": "SPIN" }}
         controls={[

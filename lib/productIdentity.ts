@@ -4,9 +4,9 @@ export const PRODUCT_DESCRIPTION = 'Arcade espacial móvil. Aprende en segundos,
 
 /**
  * Visible app version (Settings › Acerca de): the current release number only — no internal branch names. Bump it
- * with every release (v153 → 1.53).
+ * with every release (v154 → 1.54).
  */
-export const APP_VERSION = "1.53";
+export const APP_VERSION = "1.54";
 
 /**
  * Public support/privacy contact. Leave empty until the owner publishes one:

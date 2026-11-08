@@ -3,6 +3,7 @@
 import SegmentDigits, { groupDigits } from "../SegmentDigits";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import GameActionButton from "../GameActionButton";
+import GameScoreboard, { type ScoreCell } from "../GameScoreboard";
 import DirectionalJoystick from "./DirectionalJoystick";
 import type { GameRuntimeProps } from "@/lib/games";
 import { configureLogicalCanvas, beginLogicalCanvasFrame, type CanvasViewportMetrics, type LogicalCanvasViewport } from "@/lib/gameCanvas";
@@ -45,6 +46,8 @@ type Props<S extends CoreState> = GameRuntimeProps & {
   /** Presentation text refreshed with the common HUD cadence, never authoritative state. */
   hudLabel?(state: Readonly<S>): string;
   hideHudScore?: boolean;
+  /** v154: the shared scoreboard cells (same design in every game). When given, it replaces the label/score read-out. */
+  scoreCells?(state: Readonly<S>): readonly ScoreCell[];
   /** Presentation only: logical rows reserved above the play area (y < 0), e.g. for a score display. */
   topInset?: number;
   failureFinale?: { durationMs: number; render(ctx: CanvasRenderingContext2D, state: S, elapsedMs: number): void };
@@ -99,7 +102,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     const id = window.setTimeout(() => setSlowBusy(true), 1600);
     return () => window.clearTimeout(id);
   }, [busyNow]);
-  const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined, label: undefined as string | undefined });
+  const [hud, setHud] = useState({ tick: 0, score: 0, height: undefined as number | undefined, lives: undefined as number | undefined, label: undefined as string | undefined, cells: undefined as readonly ScoreCell[] | undefined });
   // Player-experience overlay: a floating "+N" and sparks whenever the score rises (presentation only).
   const prevScoreRef = useRef(0);
   const [pop, setPop] = useState<{ id: number; gain: number } | null>(null);
@@ -277,7 +280,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
     finishedRef.current = false;
     runningRef.current = true;
     attempt.recordCheckpoint(stateRef.current.tick, stateRef.current.status, attemptId);
-    setHud({tick:0,score:stateRef.current.score,height:stateRef.current.height,lives:stateRef.current.lives,label:props.hudLabel?.(stateRef.current)});
+    setHud({tick:0,score:stateRef.current.score,height:stateRef.current.height,lives:stateRef.current.lives,label:props.hudLabel?.(stateRef.current),cells:props.scoreCells?.(stateRef.current)});
     terminalStartedRef.current = null;
     terminalElapsedRef.current = 0;
     setPresentingFinale(false);
@@ -303,7 +306,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (terminalStartedRef.current !== null) terminalElapsedRef.current = now - terminalStartedRef.current;
       draw();
       if (state.tick !== lastHudTick && (state.tick - lastHudTick >= core.tickRate / 8 || state.status !== "running")) {
-        setHud({ tick: state.tick, score: state.score, height: state.height, lives: state.lives, label: props.hudLabel?.(state) });
+        setHud({ tick: state.tick, score: state.score, height: state.height, lives: state.lives, label: props.hudLabel?.(state), cells: props.scoreCells?.(state) });
         lastHudTick = state.tick;
       }
       if (state.status !== "running") {
@@ -348,7 +351,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [active, core, attemptId, attemptMatchId, attempt.verifyAttempt, sync, draw, props.hudLabel]);
+  }, [active, core, attemptId, attemptMatchId, attempt.verifyAttempt, sync, draw, props.hudLabel, props.scoreCells]);
 
   useEffect(() => {
     if (active && attempt.state.status === "rejected" && !finishedRef.current) {
@@ -413,7 +416,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       }}
     />
     {pop && <div className="scorePop" key={pop.id} aria-hidden="true"><b>+{formatNumber(pop.gain)}</b>{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} style={{ ["--a" as string]: `${i * 60 + 20}deg` }} />)}</div>}
-    <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span className="hudLed" aria-label={hud.label ?? t("game.height", { n: hud.height ?? 0 })}>{ledParts(hud.label ?? t("game.height", { n: hud.height ?? 0 }))}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop hudSeg"><SegmentDigits value={groupDigits(hud.score)} label={formatNumber(hud.score)} /></strong>}{hud.lives !== undefined && <span>{t("game.lives", { n: hud.lives })}</span>}</div>
+    {hud.cells ? <GameScoreboard cells={hud.cells} /> : <div className="coreHud" aria-live="off">{!props.hideHudLabel && (hud.label || hud.height !== undefined) && <span className="hudLed" aria-label={hud.label ?? t("game.height", { n: hud.height ?? 0 })}>{ledParts(hud.label ?? t("game.height", { n: hud.height ?? 0 }))}</span>}{!props.hideHudScore && <strong key={hud.score} className="hudPop hudSeg"><SegmentDigits value={groupDigits(hud.score)} label={formatNumber(hud.score)} /></strong>}{hud.lives !== undefined && <span>{t("game.lives", { n: hud.lives })}</span>}</div>}
     {props.directionalJoystick && <DirectionalJoystick enabled={active && attempt.state.status === "ready" && !presentingFinale} send={sendStick} />}
     {props.choiceControl && (props.choiceControl.presentation === "table" ? <div ref={choicePanelRef} className="coreChoice coreChoicePanel coreChoiceTable">
       {/* Always visible: one tap places the chip, no panel to open or close. */}

@@ -298,7 +298,7 @@ const GAME_DEFINITIONS = [
 
   {
     id: "pinball",
-    version: "10.0.0",
+    version: "11.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },
@@ -314,7 +314,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Pasadizos: la rampa y la órbita suben a raíles que cruzan la mesa por arriba y dejan la bola en el carril contrario; el agujero de gusano la lleva por un túnel hasta arriba a la izquierda; cada pasadizo hace siempre el mismo recorrido. Si la bola se queda atrapada en un lado, sale siempre igual: desde el mismo punto y con el mismo empujón hacia la pala de ese lado. Una bola y 100 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 130 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Cinco bumpers, tres postes de goma en el centro y los lados que despiden la bola (50), dos separadores entre los carriles A, B y C (10) y tirachinas vivos (50). Replay de servidor.",
+    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Pasadizos: la rampa y la órbita suben a raíles que cruzan la mesa por arriba y dejan la bola en el carril contrario; el agujero de gusano la lleva por un túnel hasta arriba a la izquierda; cada pasadizo hace siempre el mismo recorrido. Si la bola se queda atrapada en un lado, sale siempre igual: desde el mismo punto y con el mismo empujón hacia la pala de ese lado. Una bola y 100 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 130 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Seis bumpers con valor propio (100, 200, 250, 300, 400 y 500; en la tormenta de bumpers, cuatro veces más), ocho postes de goma de 15 a 70 y tirachinas de 35 y 55: cada círculo puntúa distinto. Pala superior a la derecha (va con el botón derecho), segundo spinner a la entrada del raíl izquierdo (75 por vuelta) y dos pasillos sobre las guías: encender los dos da 2500 y otra bola salvada. Replay de servidor.",
   },
   {
     id: "bowling",

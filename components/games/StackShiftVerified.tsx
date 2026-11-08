@@ -9,6 +9,8 @@ import {
 } from "@/lib/verified/stackShiftCore.v4";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 const colors = [
   "#5fd4e8",
@@ -114,6 +116,10 @@ function render(ctx: CanvasRenderingContext2D, s: StackShiftState) {
   }
 }
 const hudLabel = (s: Readonly<StackShiftState>) => tx("shift.hud", { n: s.lines });
+const scoreCells = (s: Readonly<StackShiftState>): ScoreCell[] => [
+  { label: tx("hud.points"), value: formatNumber(s.score), main: true },
+  { label: tx("hud.lines"), value: `${s.lines}/18` },
+];
 const keys = {
   ArrowLeft: "LEFT",
   ArrowRight: "RIGHT",
@@ -136,6 +142,7 @@ export default function StackShiftVerified(props: GameRuntimeProps) {
         core={STACK_SHIFT_CORE_V4}
         name="Stack Shift"
         hudLabel={hudLabel}
+        scoreCells={scoreCells}
         render={render}
         keys={keys}
         controls={controls}

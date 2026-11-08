@@ -13,6 +13,8 @@ import {
   type CornerSudokuStateV4,
 } from "@/lib/verified/cornerSudokuCore.v4";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 
 /*
@@ -51,6 +53,14 @@ const BOX_ORIGIN = BOXES.map(([r0, c0]) => [c0, r0] as const);
 /** armed: 1–9 = digit ready to stamp on cells, -1 = eraser ready, 0 = nothing. */
 type Ui = { selected: number; armed: number };
 
+function scoreCells(s: Readonly<CornerSudokuStateV4>): ScoreCell[] {
+  const secs = Math.max(0, Math.ceil((R.maxFinalTick - s.tick) / R.tickRate));
+  return [
+    { label: tx("hud.points"), value: formatNumber(s.score), main: true },
+    { label: tx("hud.board"), value: `${Math.min(R.puzzles, s.solved + (s.status === "running" ? 1 : 0))}/${R.puzzles}` },
+    { label: tx("hud.time"), value: `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`, alert: secs <= 30 },
+  ];
+}
 function hudLabel(s: Readonly<CornerSudokuStateV4>) {
   return tx("sudoku.progress", { n: Math.min(R.puzzles, s.solved + (s.status === "running" ? 1 : 0)), total: R.puzzles });
 }
@@ -70,24 +80,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
     const conflicts = cornerSudokuConflictsV4(s.board);
     drawSpaceBackdrop(ctx, 390, 620, 0, s.tick);
 
-    // HUD: one lamp per puzzle, mistakes, clock.
-    for (let i = 0; i < R.puzzles; i++) {
-      const x = 195 + (i - (R.puzzles - 1) / 2) * 30, done = i < s.solved, now = i === s.current && s.status === "running";
-      ctx.fillStyle = done ? "#5cffb0" : now ? "#f3c55a" : "rgba(255,255,255,.14)";
-      if (done || now) { ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 12; }
-      ctx.beginPath(); ctx.roundRect(x - 11, 22, 22, 22, 5); ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = done || now ? "#0b1626" : "rgba(255,255,255,.45)";
-      ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(String(i + 1), x, 33.5);
-    }
-    const secs = Math.max(0, Math.ceil((R.maxFinalTick - s.tick) / R.tickRate));
-    ctx.fillStyle = secs <= 30 && Math.floor(s.tick / 30) % 2 === 0 ? "#ff5a6a" : "#dbe8ff";
-    ctx.font = "800 14px ui-monospace, Menlo, monospace"; ctx.textAlign = "right";
-    ctx.fillText(`${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`, 360, 33);
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#f9ecd2"; ctx.font = "900 22px system-ui";
-    ctx.fillText(formatNumber(s.score), 195, 72);
+    // v154: puzzle count, clock and score live in the shared scoreboard.
 
     // Board: arrive from above on a new puzzle, glow and lift on clear.
     const age = s.tick - s.phaseTick;
@@ -246,7 +239,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
 
   return (
     <div className="cornerSudokuVerified">
-      <CoreCanvasGame {...props} core={core} name={tx("gameMeta.corner-sudoku.name")} instruction="" render={render} pointAction={pick} hideHudScore hideHudLabel hudLabel={hudLabel} />
+      <CoreCanvasGame {...props} core={core} name={tx("gameMeta.corner-sudoku.name")} instruction="" render={render} pointAction={pick} hideHudScore hideHudLabel hudLabel={hudLabel} scoreCells={scoreCells} />
     </div>
   );
 }

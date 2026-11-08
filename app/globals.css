@@ -8761,3 +8761,97 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .gxStudioTab .uiIcon { color: var(--st-ion, #7fe3ee); }
 .appShell .gxStudioTab:active { background: rgba(127, 227, 238, .12); translate: 0 1px; }
 .appShell .gxStudioTab:focus-visible { outline: 2px solid var(--st-ion, #7fe3ee); outline-offset: 2px; }
+
+/* =====================================================================
+   v154
+   ===================================================================== */
+/* Avatar setup: an empty portrait (no pre-filled face) until the player picks or uploads one. */
+.galacticAvatarSetup .gxAvatarEmpty {
+  display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%;
+  background: radial-gradient(circle at 50% 34%, rgba(127,227,238,.16), rgba(127,227,238,.02) 62%), linear-gradient(180deg, #17191d, #0b0c0e);
+  box-shadow: inset 0 0 0 1px rgba(127,227,238,.18), inset 0 10px 30px rgba(0,0,0,.45);
+  color: rgba(191,241,246,.55);
+}
+/* One scoreboard for every game (GameScoreboard): a smoked-glass bar across the top of the play area, equal cells
+   divided by hairlines, a small label over each value set in the app's type (no seven-segment digits). The score cell
+   is gold with a short underline; the rest stay ice-white. Same size and place in every game. */
+.gxScoreboard {
+  position: absolute; z-index: 6; top: 6px; left: 12px; right: 12px; height: 42px;
+  display: flex; align-items: stretch; padding: 0; margin: 0; pointer-events: none;
+  border-radius: 13px; overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 46%),
+    linear-gradient(180deg, rgba(22,24,28,.9), rgba(9,10,12,.92));
+  border: 1px solid rgba(127,227,238,.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 22px rgba(0,0,0,.38);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  font: inherit; letter-spacing: 0; color: #e8f0fb;
+}
+.gxScoreCell {
+  position: relative; flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 12px;
+}
+.gxScoreCell + .gxScoreCell::before {
+  content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 1px; background: rgba(191,241,246,.12);
+}
+.gxScoreCell small {
+  font: 600 9.5px/1 var(--gx-ui); letter-spacing: .05em; color: rgba(191,241,246,.58);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gxScoreCell b {
+  font: 700 16.5px/1 var(--gx-ui); font-variant-numeric: tabular-nums; letter-spacing: .01em; color: #eef6ff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gxScoreCell.main { flex-grow: 1.35; }
+.gxScoreCell.main b { color: #f4dcaa; font-size: 18px; text-shadow: 0 0 14px rgba(233,194,122,.28); }
+.gxScoreCell.main::after {
+  content: ""; position: absolute; left: 12px; bottom: 5px; width: 22px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, #e9c27a, rgba(233,194,122,0));
+}
+.gxScoreCell.alert b { color: #ff8a8a; }
+@media (max-width: 360px) { .gxScoreCell { padding: 0 9px; } .gxScoreCell b { font-size: 15px; } .gxScoreCell.main b { font-size: 16.5px; } }
+/* The same scoreboard inside games laid out in the page flow (Mine Grid, Solitaire Sprint). */
+.gxScoreboard.inFlow { position: relative; top: auto; left: auto; right: auto; flex: 0 0 auto; margin: 6px 12px 8px; }
+/* Rival target in the intro: same type treatment as the scoreboard (no seven-segment digits). */
+.gxRivalTarget b { font: 700 26px/1 var(--gx-ui); font-variant-numeric: tabular-nums; color: var(--seg, #f4dcaa); text-shadow: 0 0 14px color-mix(in srgb, var(--seg, #e9c27a) 35%, transparent); }
+/* Pinball cabinet buttons in the app's language: dark glass with a machined ion edge (the catalogue's play button),
+   a soft ion glow from below; the plunger keeps a warm gold edge. Pressed: the edge and the glass light up. */
+.pinballVerified .coreControls button {
+  --edge: #7fe3ee;
+  border: 1px solid transparent !important; border-radius: 18px !important;
+  color: #e8f6fb !important; font-family: var(--gx-ui); font-weight: 700; letter-spacing: .04em;
+  text-shadow: 0 1px 0 rgba(0,0,0,.6), 0 0 14px color-mix(in srgb, var(--edge) 45%, transparent);
+  background:
+    radial-gradient(90% 80% at 50% 120%, color-mix(in srgb, var(--edge) 30%, transparent), transparent 72%) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--edge) 8%, #1e1f23), #0b0b0d 92%) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--edge) 78%, #fff), color-mix(in srgb, var(--edge) 28%, #1c1c20) 52%, color-mix(in srgb, var(--edge) 64%, #1c1c20)) border-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.5), 0 0 16px color-mix(in srgb, var(--edge) 16%, transparent) !important;
+  transition: background .08s ease-out, box-shadow .08s ease-out, translate .08s ease-out;
+}
+.pinballVerified .coreControls button:nth-child(2) {
+  --edge: #e9c27a; color: #f7e7c4 !important; font-size: 14px; letter-spacing: .12em;
+  text-shadow: 0 1px 0 rgba(0,0,0,.6), 0 0 14px rgba(233,194,122,.45);
+  background:
+    radial-gradient(90% 80% at 50% 120%, rgba(233,194,122,.3), transparent 72%) padding-box,
+    linear-gradient(180deg, #24211c, #0b0b0d 92%) padding-box,
+    linear-gradient(180deg, #f6e3bb, rgba(233,194,122,.32) 52%, rgba(233,194,122,.66)) border-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.5), 0 0 16px rgba(233,194,122,.16) !important;
+}
+.pinballVerified .coreControls button:nth-child(2):active,
+.pinballVerified .coreControls button:nth-child(2)[aria-pressed="true"] {
+  background:
+    linear-gradient(180deg, #3a3122, #15130f) padding-box,
+    linear-gradient(180deg, #fbefd2, #e9c27a) border-box !important;
+  box-shadow: inset 0 0 14px rgba(233,194,122,.36), 0 0 22px rgba(233,194,122,.5) !important;
+}
+.pinballVerified .coreControls button:active,
+.pinballVerified .coreControls button[aria-pressed="true"] {
+  transform: none; translate: 0 1px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--edge) 32%, #141417), color-mix(in srgb, var(--edge) 12%, #0c0c0e)) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--edge) 60%, #fff), var(--edge)) border-box !important;
+  box-shadow: inset 0 0 14px color-mix(in srgb, var(--edge) 36%, transparent), 0 0 22px color-mix(in srgb, var(--edge) 50%, transparent) !important;
+}
+@media (prefers-reduced-motion: reduce) { .pinballVerified .coreControls button { transition: none; } }
+/* Mine Grid: the shared scoreboard sits at the top like in every other game (it replaces the v124 LED console). */
+.mineGridGame.mineGridDigital { padding-top: 58px !important; }

@@ -882,6 +882,16 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v154-saturn · Un marcador para todos los juegos, Pinball V11 y alta sin retrato (8-nov-2026)
+
+- **Alta:** la pantalla de avatar empieza con el retrato vacío; ya no aparece una cara al azar.
+- **Marcador común:** la misma barra con celdas etiquetadas en los 13 juegos, sin dígitos de siete segmentos.
+- **Pinball V11:** cada círculo puntúa distinto (seis bumpers de 100 a 500, ocho postes de 15 a 70, tirachinas de 35 y 55), pala superior derecha, segundo spinner, pasillos con bola salvada, flechas de tiro y botones de cristal con borde de ion.
+- **Pendiente:**
+  - competición con juegos de estudios;
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado.
+
 ## v153-saturn · Slot V4, Orb Burst V8, portadas y pestaña «Enviar juego» (7-nov-2026)
 
 - **Slot V4:** sin naranjas; parejas por símbolo (5 a 40 fichas) y tríos que pagan cuatro parejas (tres sietes, 200); sin «7 sin pareja». Tablas sin «Rodillo», símbolos más grandes y trabajados, botones más vistosos.

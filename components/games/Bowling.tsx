@@ -13,6 +13,8 @@ import { BOWLING_V2_ANGLE_CENTRE, bowlingActionV2 as bowlingAction } from "@/lib
 import { drawCartoon } from "./bowlingShow";
 import { strokeOf, swipePower, throwFromStroke } from "@/lib/bowlingGesture.v3";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t as tx, useI18n } from "@/lib/i18n";
 
 /*
@@ -65,7 +67,7 @@ function sheetMarks(frames: number[][]) {
 
 function drawSheet(ctx: CanvasRenderingContext2D, s: BowlingStateV3) {
   const marks = sheetMarks(s.frames), totals = bowlingScore(s.rolls).frames;
-  const x0 = 8, y0 = 6, h = 46, w9 = 34, w10 = 68;
+  const x0 = 8, y0 = 54, h = 46, w9 = 34, w10 = 68; // v154: under the shared scoreboard
   ctx.fillStyle = "rgba(6,12,28,.92)";
   ctx.beginPath(); ctx.roundRect(x0 - 2, y0 - 2, 9 * w9 + w10 + 4, h + 4, 10); ctx.fill();
   for (let i = 0; i < 10; i++) {
@@ -444,6 +446,11 @@ function drawSwipe(ctx: CanvasRenderingContext2D, g: Gesture | null) {
 }
 
 const hudLabel = (s: Readonly<BowlingStateV3>) => tx("bowling.hud", { frame: Math.min(10, s.frame + 1), roll: s.rollInFrame + 1 });
+const scoreCells = (s: Readonly<BowlingStateV3>): ScoreCell[] => [
+  { label: tx("hud.points"), value: String(bowlingScore(s.rolls).total), main: true },
+  { label: tx("hud.frame"), value: `${Math.min(10, s.frame + 1)}/10` },
+  { label: tx("hud.roll"), value: String(s.rollInFrame + 1) },
+];
 
 /** One frame of the game (pure presentation of the state; exported for the offline render checks). */
 export function renderBowling(ctx: CanvasRenderingContext2D, s: BowlingStateV3, view: { width: number; height: number }, g: Gesture | null = null) {
@@ -515,7 +522,7 @@ export default function Bowling(props: GameRuntimeProps) {
   return (
     <div className="bowlingVerified">
       <CoreCanvasGame {...props} core={core} name="Bowling" instruction="" render={render} pointAction={pick}
-        expandVerticalViewport hideHudScore hideHudLabel hudLabel={hudLabel} keys={{ Enter: "ROLL", " ": "SKIP" }} />
+        expandVerticalViewport hideHudScore hideHudLabel hudLabel={hudLabel} scoreCells={scoreCells} keys={{ Enter: "ROLL", " ": "SKIP" }} />
     </div>
   );
 }

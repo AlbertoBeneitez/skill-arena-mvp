@@ -17,6 +17,8 @@ import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
 import { dartsFlickAimV4, type DartsGestureSample } from "@/lib/verified/dartsGesture.v4";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 import { t, formatNumber, useI18n } from "@/lib/i18n";
 const cx = 195,
   cy = 285;
@@ -251,8 +253,8 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
   ctx.fillStyle = "#b4d3df";
   ctx.textAlign = "center";
   ctx.font = "bold 13px system-ui";
+  // v154: the darts left are in the shared scoreboard (and the row of darts at the bottom).
   const left = Math.max(0, 20 - s.impacts.length);
-  ctx.fillText(t("darts.left", { n: left }), cx, 61);
   // Fila de dardos restantes (themed counter) at the bottom of the screen.
   const rowY = viewH - 26;
   for (let i = 0; i < 20; i++) {
@@ -306,6 +308,10 @@ const tones = { THROW: "tap" } as const,
   keys = { " ": "THROW", Enter: "THROW" };
 const feedbackScore = (s: Readonly<DartsStateV3>) => s.total;
 const hudLabel = (s: Readonly<DartsStateV3>) => t("play.points", { n: formatNumber(s.total) });
+const scoreCells = (s: Readonly<DartsStateV3>): ScoreCell[] => [
+  { label: t("hud.points"), value: formatNumber(s.total), main: true },
+  { label: t("hud.darts"), value: String(Math.max(0, 20 - s.impacts.length)) },
+];
 export default function Darts(props: GameRuntimeProps) {
   useI18n();
   // Grab-and-throw: touching anywhere picks the dart up (it follows the finger); the flick itself — direction and
@@ -363,6 +369,7 @@ export default function Darts(props: GameRuntimeProps) {
         hideHudScore
         expandVerticalViewport
         hudLabel={hudLabel}
+        scoreCells={scoreCells}
         feedbackScore={feedbackScore}
         instruction=""
       />

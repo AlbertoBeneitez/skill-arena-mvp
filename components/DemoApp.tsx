@@ -10,7 +10,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePublicMatchAvailability, usePendingMatchResolution } from "@/lib/usePublicMatchState";
 import OrbitalScene from "./OrbitalScene";
 import UiIcon from "./UiIcon";
-import SegmentDigits, { groupDigits } from "./SegmentDigits";
 import ProviderLogo from "./ProviderLogo";
 import { AUTH_PROVIDERS, type AuthProviderId, type AuthProviderInfo } from "@/lib/authProviders";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
@@ -243,6 +242,8 @@ export default function DemoApp() {
   const [playerName, setPlayerName] = useState("");
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
+  // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
+  const [avatarUnpicked, setAvatarUnpicked] = useState(false);
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
@@ -802,6 +803,7 @@ export default function DemoApp() {
     const firstAvatar = Math.floor(Math.random() * AVATARS.length);
     setAvatarId(firstAvatar);
     setAvatarSrc(AVATARS[firstAvatar]);
+    setAvatarUnpicked(true);
     setAvatarEditorOpen(false);
     setAvatarError("");
     navigate("avatar-setup");
@@ -838,6 +840,7 @@ export default function DemoApp() {
     );
 
     setAvatarSrc(cropped);
+    setAvatarUnpicked(false);
     setCropSource(null);
   }
 
@@ -1267,7 +1270,7 @@ export default function DemoApp() {
                 aria-hidden="true"
                 onClick={() => setAvatarMenuOpen(true)}
               >
-                <img src={avatarSrc} alt="" />
+                {avatarUnpicked ? <span className="gxAvatarEmpty"><UiIcon name="user" size={46} /></span> : <img src={avatarSrc} alt="" />}
               </button>
             </div>
             <input
@@ -1312,7 +1315,7 @@ export default function DemoApp() {
                         className={current ? "current" : undefined}
                         aria-pressed={current}
                         aria-label={t("identity.avatarN", { n: index + 1 })}
-                        onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
+                        onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarUnpicked(false); setAvatarMenuOpen(false); }}
                       >
                         <img src={src} alt="" width={256} height={256} decoding="async" style={avatarFaceStyle(index)} />
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
@@ -1531,7 +1534,7 @@ export default function DemoApp() {
                         const label = chips ? t("league.goalChips", { n: formatNumber(n) }) : ms ? t("common.ms", { n: formatNumber(n) }) : formatNumber(n);
                         return (
                           <span className="gxRivalTarget">
-                            <SegmentDigits value={groupDigits(n)} label={label} />
+                            <b aria-label={label}>{formatNumber(n)}</b>
                             <small aria-hidden="true">{t(chips ? "game.unitChips" : ms ? "game.unitMs" : selectedGame.resultMetric === "orbs-eliminated" ? "game.unitOrbs" : "game.unitPoints")}</small>
                           </span>
                         );

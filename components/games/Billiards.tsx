@@ -24,6 +24,8 @@ import {
 } from "@/lib/verified/billiardsCore.v7";
 import { pullBilliardsSling } from "@/lib/billiardsSling";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
+import type { ScoreCell } from "../GameScoreboard";
+
 
 import { t, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
 /** Pool colours: 1/9 yellow, 2/10 blue, 3/11 red, 4/12 purple, 5/13 orange, 6/14 green, 7/15 maroon, 8 black. */
@@ -458,6 +460,15 @@ const hudLabel = (s: Readonly<BilliardsV5State>) => {
   const base = t("billiards.hudLevel", { n: s.level, left, shots: s.levelShotsLeft });
   return `${base}${s.scratch ? ` · ${t("billiards.scratch")}` : ""}`;
 };
+const scoreCells = (s: Readonly<BilliardsV5State>): ScoreCell[] => {
+  const left = s.balls.filter((b) => !b.potted && (isTarget(b.id) || b.id === 8)).length;
+  return [
+    { label: t("hud.points"), value: formatNumber(s.score), main: true },
+    { label: t("hud.level"), value: `${s.level}/5` },
+    s.scratch ? { label: t("hud.balls"), value: t("billiards.scratch"), alert: true } : { label: t("hud.balls"), value: String(left) },
+    { label: t("hud.shots"), value: String(s.levelShotsLeft) },
+  ];
+};
 export default function Billiards(props: GameRuntimeProps) {
   useI18n();
   const presentation = useMemo(createPresentation, []);
@@ -481,6 +492,7 @@ export default function Billiards(props: GameRuntimeProps) {
         keys={keys}
         inputTones={tones}
         hudLabel={hudLabel}
+        scoreCells={scoreCells}
         hideHudScore
         instruction=""
       />
