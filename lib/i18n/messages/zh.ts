@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "球",
   "hud.foundation": "基础堆",
   "pinball.inlanes": "内道 · 保球",
+  "gallery.eliminate": "消灭",
+  "gallery.byAura": "按光环",
+  "gallery.byForm": "按形态",
+  "gallery.aura.0": "绿色光环",
+  "gallery.aura.1": "蓝色光环",
+  "gallery.aura.2": "红色光环",
+  "gallery.aura.3": "紫色光环",
+  "gallery.form.0": "猎手",
+  "gallery.form.1": "角兽",
+  "gallery.form.2": "蛇妖",
+  "gallery.notTarget": "不是目标",
 };
 
 export default messages;

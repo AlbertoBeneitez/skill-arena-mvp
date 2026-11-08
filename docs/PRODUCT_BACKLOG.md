@@ -882,6 +882,19 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v155-saturn · Shot Gallery V13 «Jungla de Xeno» y portadas más abajo (8-nov-2026)
+
+- **Shot Gallery V13:**
+  - jungla espacial nocturna en capas;
+  - tres formas de ser monstruoso (cazadores, cornudos y sierpes) con aura interna verde, azul, roja o morada y acabado de avatar;
+  - asoman de 4 a 7 desde diez escondites, sin filas;
+  - órdenes por aura o por forma (6 + 6), con señuelos parecidos desde la cuarta.
+- **Portadas:** Stack, Bowling, Galoku, Tower Drop y Pinball, más abajo y centradas bajo la insignia de nivel.
+- **Pendiente:**
+  - competición con juegos de estudios;
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado.
+
 ## v154-saturn · Un marcador para todos los juegos, Pinball V11 y alta sin retrato (8-nov-2026)
 
 - **Alta:** la pantalla de avatar empieza con el retrato vacío; ya no aparece una cara al azar.

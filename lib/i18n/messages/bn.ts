@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "বল",
   "hud.foundation": "ভিত্তি",
   "pinball.inlanes": "ইনলেন · বল সেভ",
+  "gallery.eliminate": "নির্মূল করো",
+  "gallery.byAura": "আভা দেখে",
+  "gallery.byForm": "আকার দেখে",
+  "gallery.aura.0": "সবুজ আভা",
+  "gallery.aura.1": "নীল আভা",
+  "gallery.aura.2": "লাল আভা",
+  "gallery.aura.3": "বেগুনি আভা",
+  "gallery.form.0": "শিকারি",
+  "gallery.form.1": "শিংওয়ালা",
+  "gallery.form.2": "সর্প",
+  "gallery.notTarget": "লক্ষ্য নয়",
 };
 
 export default messages;

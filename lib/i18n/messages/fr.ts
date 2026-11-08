@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "Bille",
   "hud.foundation": "Fondation",
   "pinball.inlanes": "COULOIRS · BILLE SAUVÉE",
+  "gallery.eliminate": "ÉLIMINE",
+  "gallery.byAura": "par leur aura",
+  "gallery.byForm": "par leur forme",
+  "gallery.aura.0": "Aura verte",
+  "gallery.aura.1": "Aura bleue",
+  "gallery.aura.2": "Aura rouge",
+  "gallery.aura.3": "Aura violette",
+  "gallery.form.0": "Chasseurs",
+  "gallery.form.1": "Cornus",
+  "gallery.form.2": "Serpents",
+  "gallery.notTarget": "PAS UNE CIBLE",
 };
 
 export default messages;

@@ -63,6 +63,7 @@ import { SHOT_GALLERY_CORE_V9 } from "../verified/shotGalleryCore.v9";
 import { SHOT_GALLERY_CORE_V10 } from "../verified/shotGalleryCore.v10";
 import { SHOT_GALLERY_CORE_V11 } from "../verified/shotGalleryCore.v11";
 import { SHOT_GALLERY_CORE_V12 } from "../verified/shotGalleryCore.v12";
+import { SHOT_GALLERY_CORE_V13 } from "../verified/shotGalleryCore.v13";
 import { DARTS_CORE_V3 } from "../verified/dartsCore.v3";
 import { DARTS_CORE_V2 } from "../verified/dartsCore.v2";
 import { DARTS_CORE } from "../verified/dartsCore.v1";
@@ -339,6 +340,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(SHOT_GALLERY_CORE_V10.gameId,SHOT_GALLERY_CORE_V10.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V10),
   [adapterKey(SHOT_GALLERY_CORE_V11.gameId,SHOT_GALLERY_CORE_V11.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V11),
   [adapterKey(SHOT_GALLERY_CORE_V12.gameId,SHOT_GALLERY_CORE_V12.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V12),
+  [adapterKey(SHOT_GALLERY_CORE_V13.gameId,SHOT_GALLERY_CORE_V13.gameVersion)]: coreAdapter(SHOT_GALLERY_CORE_V13),
   [adapterKey(DARTS_CORE.gameId,DARTS_CORE.gameVersion)]: coreAdapter(DARTS_CORE),
   [adapterKey(DARTS_CORE_V2.gameId,DARTS_CORE_V2.gameVersion)]: coreAdapter(DARTS_CORE_V2),
   [adapterKey(DARTS_CORE_V3.gameId,DARTS_CORE_V3.gameVersion)]: coreAdapter(DARTS_CORE_V3),

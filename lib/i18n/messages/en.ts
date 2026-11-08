@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "Ball",
   "hud.foundation": "Foundation",
   "pinball.inlanes": "INLANES · BALL SAVE",
+  "gallery.eliminate": "TAKE DOWN",
+  "gallery.byAura": "by their aura",
+  "gallery.byForm": "by their form",
+  "gallery.aura.0": "Green aura",
+  "gallery.aura.1": "Blue aura",
+  "gallery.aura.2": "Red aura",
+  "gallery.aura.3": "Purple aura",
+  "gallery.form.0": "Hunters",
+  "gallery.form.1": "Horned",
+  "gallery.form.2": "Serpents",
+  "gallery.notTarget": "NOT A TARGET",
 };
 
 export default messages;

@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "الكرة",
   "hud.foundation": "الأساس",
   "pinball.inlanes": "الممرات · حفظ الكرة",
+  "gallery.eliminate": "اقضِ على",
+  "gallery.byAura": "حسب الهالة",
+  "gallery.byForm": "حسب الشكل",
+  "gallery.aura.0": "هالة خضراء",
+  "gallery.aura.1": "هالة زرقاء",
+  "gallery.aura.2": "هالة حمراء",
+  "gallery.aura.3": "هالة بنفسجية",
+  "gallery.form.0": "الصيادون",
+  "gallery.form.1": "ذوو القرون",
+  "gallery.form.2": "الأفاعي",
+  "gallery.notTarget": "ليس هدفًا",
 };
 
 export default messages;

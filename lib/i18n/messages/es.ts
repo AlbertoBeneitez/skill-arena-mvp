@@ -875,6 +875,17 @@ const es = {
   "hud.ball": "Bola",
   "hud.foundation": "Fundación",
   "pinball.inlanes": "PASILLOS · BOLA SALVADA",
+  "gallery.eliminate": "ELIMINA",
+  "gallery.byAura": "por su aura",
+  "gallery.byForm": "por su forma",
+  "gallery.aura.0": "Aura verde",
+  "gallery.aura.1": "Aura azul",
+  "gallery.aura.2": "Aura roja",
+  "gallery.aura.3": "Aura morada",
+  "gallery.form.0": "Cazadores",
+  "gallery.form.1": "Cornudos",
+  "gallery.form.2": "Sierpes",
+  "gallery.notTarget": "NO ES OBJETIVO",
 } as const;
 
 export type MessageKey = keyof typeof es;

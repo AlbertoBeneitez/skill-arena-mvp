@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "گیند",
   "hud.foundation": "بنیاد",
   "pinball.inlanes": "اِن لینز · بال سیو",
+  "gallery.eliminate": "ختم کرو",
+  "gallery.byAura": "ہالے سے",
+  "gallery.byForm": "شکل سے",
+  "gallery.aura.0": "سبز ہالہ",
+  "gallery.aura.1": "نیلا ہالہ",
+  "gallery.aura.2": "سرخ ہالہ",
+  "gallery.aura.3": "جامنی ہالہ",
+  "gallery.form.0": "شکاری",
+  "gallery.form.1": "سینگ والے",
+  "gallery.form.2": "ناگ",
+  "gallery.notTarget": "ہدف نہیں",
 };
 
 export default messages;

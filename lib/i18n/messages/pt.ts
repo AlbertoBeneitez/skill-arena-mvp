@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "Bola",
   "hud.foundation": "Fundação",
   "pinball.inlanes": "CORREDORES · BOLA SALVA",
+  "gallery.eliminate": "ELIMINA",
+  "gallery.byAura": "pela aura",
+  "gallery.byForm": "pela forma",
+  "gallery.aura.0": "Aura verde",
+  "gallery.aura.1": "Aura azul",
+  "gallery.aura.2": "Aura vermelha",
+  "gallery.aura.3": "Aura roxa",
+  "gallery.form.0": "Caçadores",
+  "gallery.form.1": "Chifrudos",
+  "gallery.form.2": "Serpentes",
+  "gallery.notTarget": "NÃO É ALVO",
 };
 
 export default messages;

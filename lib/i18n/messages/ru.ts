@@ -837,6 +837,17 @@ const messages: Messages = {
   "hud.ball": "Шар",
   "hud.foundation": "База",
   "pinball.inlanes": "ДОРОЖКИ · ШАР СПАСЁН",
+  "gallery.eliminate": "УНИЧТОЖЬ",
+  "gallery.byAura": "по ауре",
+  "gallery.byForm": "по облику",
+  "gallery.aura.0": "Зелёная аура",
+  "gallery.aura.1": "Синяя аура",
+  "gallery.aura.2": "Красная аура",
+  "gallery.aura.3": "Фиолетовая аура",
+  "gallery.form.0": "Охотники",
+  "gallery.form.1": "Рогачи",
+  "gallery.form.2": "Змеи",
+  "gallery.notTarget": "НЕ ЦЕЛЬ",
 };
 
 export default messages;

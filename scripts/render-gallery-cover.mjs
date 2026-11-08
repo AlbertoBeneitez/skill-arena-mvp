@@ -1,4 +1,4 @@
-// Shot Gallery catalogue cover (v124): rendered by the game's own renderer from a seeded moment, then graded.
+// Shot Gallery catalogue cover (v155, V13 jungle): rendered by the game's own renderer from a seeded moment, then graded.
 // Usage: node scripts/render-gallery-cover.mjs   (needs network for `npx esbuild`, Playwright and Python Pillow/numpy)
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -22,7 +22,7 @@ await page.route("http://cover.local/**", async (route) => {
 });
 await page.goto("http://cover.local/");
 await page.evaluate(() => document.fonts.load("800 16px Unbounded"));
-const url = await page.evaluate(() => window.renderCover({ seed: "cover-10", trial: 11, at: 16, picks: [8, 5], misses: [[240, 186], [300, 300], [130, 410]], y0: 184 }));
+const url = await page.evaluate(() => window.renderCover({ seed: "c1", trial: 7, at: 24, picks: [], misses: [], y0: 222 }));
 await browser.close();
 const raw = path.join(tmp, "raw.png");
 fs.writeFileSync(raw, Buffer.from(url.split(",")[1], "base64"));
