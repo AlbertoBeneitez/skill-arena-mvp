@@ -298,12 +298,12 @@ const GAME_DEFINITIONS = [
 
   {
     id: "pinball",
-    version: "12.0.0",
+    version: "13.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },
     name: "Pinball",
-    cover: "/covers/pinball.webp?v=160",
+    cover: "/covers/pinball.webp?v=161",
     enabled: true,
     waitingStakes: [5, 10],
     category: "CONTROL",
@@ -314,7 +314,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Mesa fija de 100 segundos (hasta 130 con tiempo extra). Recorridos: dos rampas con la boca en el centro de la mesa (la izquierda vuelve por su raíl al pasillo izquierdo y la derecha al derecho); cada rampa vale 500 más que la anterior (de 1500 a 6000; vuelve a 1500 al perder la bola). Dos órbitas por las paredes dan la vuelta por arriba y sueltan la bola entre los bumpers del otro lado (1500). El agujero de gusano del centro está bajo un tejadillo y tras un bloque de tres dianas abatibles: tumba una y apunta al hueco (3000). Cinco bumpers (100 a 500), siete postes (10 a 70) y dos tirachinas (35 y 55) puntúan cada uno lo suyo. Carriles A-B-C, dianas, bloque, plato con bloqueo y multibola de tres bolas, jackpots, súper jackpot, modos de 20 s, hurry-up, combos entre tiros distintos, multiplicador hasta ×5 y bonus final. Mismo muelle, misma bola: mismo resultado; el servidor repite la partida.",
+    scoring: "Mesa fija de 100 segundos (hasta 130 con tiempo extra). Recorridos con curvas suaves: dos rampas con la boca en el centro de la mesa (la izquierda vuelve por su raíl al pasillo izquierdo y la derecha al derecho); cada rampa vale 500 más que la anterior (de 1500 a 6000; vuelve a 1500 al perder la bola). Dos divisores de goma en el centro (40 y 60) separan el carril central de los de las rampas, y por el carril central hay tres estrellas (100 cada una; las tres, 2000). Dos órbitas por las paredes dan la vuelta por arriba y sueltan la bola entre los bumpers del otro lado (1500). El agujero de gusano del centro está bajo un tejadillo y tras un bloque de tres dianas abatibles: tumba una y apunta al hueco (3000). Cinco bumpers (100 a 500), siete postes (10 a 70) y dos tirachinas (35 y 55) puntúan cada uno lo suyo. Carriles A-B-C, dianas, bloque, plato con bloqueo y multibola de tres bolas, jackpots, súper jackpot, modos de 20 s, hurry-up, combos entre tiros distintos, multiplicador hasta ×5 y bonus final. Mismo muelle, misma bola: mismo resultado; el servidor repite la partida.",
   },
   {
     id: "bowling",

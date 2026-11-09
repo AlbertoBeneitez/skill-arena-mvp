@@ -882,6 +882,14 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v161-saturn · Pinball V13: curvas suaves, divisores en el centro y más contraste (9-nov-2026)
+
+- Rampas, órbitas y agujero con curvas suaves, tanto para la bola como para el dibujo.
+- Dos divisores de goma en el centro (40 y 60) y tres estrellas en el carril central.
+- Neón saturado sobre suelo casi negro.
+- Bumpers de color por valor.
+- Carriles curvos, arena pintada, cometas y escaleras de progreso.
+
 ## v160-saturn · Pinball V12: mesa nueva con recorridos claros (9-nov-2026)
 
 - **Estructura de la referencia:**

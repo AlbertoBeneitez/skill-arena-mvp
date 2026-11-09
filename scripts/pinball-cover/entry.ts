@@ -1,7 +1,7 @@
-// Browser entry for scripts/render-pinball-cover.mjs (v160): the V12 table drawn by the game's own renderer at a lively
+// Browser entry for scripts/render-pinball-cover.mjs (v160): the V13 table drawn by the game's own renderer at a lively
 // moment (ball leaving a bumper, a ramp lit, the scoop open), cropped to the 1600 × 1100 catalogue cover.
 import { renderPinball } from "@/components/games/PinballVerified";
-import { PINBALL_CORE_V12 as core, pinballBumpersV12 } from "@/lib/verified/pinballCore.v12";
+import { PINBALL_CORE_V13 as core, pinballBumpersV13 } from "@/lib/verified/pinballCore.v13";
 import { stepCore } from "@/lib/verified/coreRuntime.v1";
 
 type Cover = { cropX: number; cropY: number; cropW: number; bumper: number; age: number };
@@ -11,7 +11,7 @@ type Cover = { cropX: number; cropY: number; cropW: number; bumper: number; age:
   s.ball = { x: 200000, y: 420000, vx: 0, vy: 0, xr: 0, yr: 0 };
   for (let i = 0; i < 40; i++) stepCore(core, s, 1e9);
   // A ball just kicked off a bumper, a ramp shot a moment ago, one drop down, multiplier ×3.
-  const b = pinballBumpersV12(0)[bumper];
+  const b = pinballBumpersV13(0)[bumper];
   s.ball = { x: b.x + 26000, y: b.y + 22000, vx: 300000, vy: 260000, xr: 0, yr: 0 };
   s.bumperFlash[bumper] = s.tick - age;
   s.rampTicks[1] = s.tick - 20; s.drops = [0, 1, 0]; s.multiplier = 3; s.rampValue = 3000; s.lanes = [1, 0, 1];
