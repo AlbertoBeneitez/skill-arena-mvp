@@ -1,4 +1,5 @@
 import { validRankingAvatar } from "@/lib/ranking";
+import { portraitSrc } from "@/lib/avatars";
 export default function RankingAvatar({
   name,
   avatarKey,
@@ -16,7 +17,7 @@ export default function RankingAvatar({
   return (
     <span className="rankingAvatar" aria-hidden="true">
       {validRankingAvatar(avatarKey) ? (
-        <img src={`/avatars/${avatarKey}${avatarKey.startsWith("portrait-") ? "-s.webp" : ".svg"}`} alt="" loading="lazy" />
+        <img src={avatarKey.startsWith("portrait-") ? portraitSrc(Number(avatarKey.slice(9)), "-s") : `/avatars/${avatarKey}.svg`} alt="" loading="lazy" />
       ) : (
         <span>{initials || "GG"}</span>
       )}

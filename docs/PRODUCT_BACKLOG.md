@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v159-saturn · Los retratos nuevos llegan a todos los móviles (9-nov-2026)
+
+- Las URL de los retratos llevan versión: los móviles ya no muestran el retrato antiguo desde la caché.
+- La hoja de 16 vuelve a ser horizontal.
+
 ## v158-saturn · Avatar elegido = avatar final, «Enviar juego» con premio y Shot Gallery con objetivo visual (9-nov-2026)
 
 - Cada casilla de la hoja de avatares muestra el mismo círculo que se elige.

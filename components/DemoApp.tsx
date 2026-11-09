@@ -34,6 +34,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import LanguagePicker from "./LanguagePicker";
 import LeagueResult from "./LeagueResult";
 import RankingHub from "./GameRanking";
+import { PORTRAIT_COUNT, portraitCrop, portraitSrc } from "@/lib/avatars";
 import PlayerProgress from "./PlayerProgress";
 import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import dynamic from "next/dynamic";
@@ -77,17 +78,15 @@ function isScreen(value: unknown): value is Screen {
   return typeof value === "string" && VALID_SCREENS.includes(value as Screen);
 }
 
-const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String(i + 1).padStart(2, "0")}.webp`);
+const AVATARS = Array.from({ length: PORTRAIT_COUNT }, (_, i) => portraitSrc(i + 1));
 /**
  * v124 · Where each portrait's face is (percent of the square image). The 2:1 picker tiles crop to that band and
  * zoom in around the face, so every tile shows the character's face instead of its chest.
  */
-/** v157: each portrait ships three crops centred on the face — the 512 px square (big circle), its 192 px copy
- * (nav, profile) and a 2:1 tile. v158: the picker shows the very circle the player will get (the square crop),
- * centred in its tile, over the 2:1 crop blurred. */
-const avatarTile = (src: string) => src.replace(".webp", "-t.webp");
+/** The picker sheet shows each portrait's horizontal (2:1) crop, centred on the same face as its circle. */
+const avatarTile = (src: string) => portraitCrop(src, "-t");
 /** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
-const smallAvatar = (src: string) => (/^\/avatars\/portrait-\d\d\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
+const smallAvatar = (src: string) => portraitCrop(src, "-s");
 const START_BALANCE = 25;
 const STUDIO_WELCOME_KEY = "gx-studio-welcome-v1";
 const APP_ITERATION = "v12";
@@ -492,7 +491,8 @@ export default function DemoApp() {
           setAvatarSrc(AVATARS[nextAvatarId]);
         }
         if (typeof data.avatarSrc === "string" && data.avatarSrc) {
-          setAvatarSrc(data.avatarSrc);
+          // v159: a saved built-in portrait is brought to the current image version (no stale cached face).
+          setAvatarSrc(portraitCrop(data.avatarSrc, ""));
           if (data.avatarSrc.startsWith("data:image/")) {
             void compactAvatarSource(data.avatarSrc).then(setAvatarSrc);
           }
@@ -1322,7 +1322,7 @@ export default function DemoApp() {
                         aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
-                        <img className="gxTileBack" src={avatarTile(src)} alt="" width={512} height={256} decoding="async" /><img className="gxTileFace" src={src} alt="" width={512} height={512} decoding="async" />
+                        <img src={avatarTile(src)} alt="" width={512} height={256} decoding="async" />
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
                       </button>
                     );

@@ -8913,20 +8913,5 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 .gxStudioWelcomeGo:active { translate: 0 1px; }
 .gxStudioWelcomeGo:focus-visible { outline: 2px solid #ffd36a; outline-offset: 2px; }
-/* Avatar picker (v158): each tile shows the exact circle the player gets — the same square crop as the big circle —
-   centred over the 2:1 crop blurred, so what you pick is what you see afterwards. */
-.galacticAvatarSetup .gxAvatarGrid button img.gxTileBack {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 0;
-  filter: blur(9px) saturate(1.1) brightness(.55); transform: scale(1.18); transition: none;
-}
-.galacticAvatarSetup .gxAvatarGrid button img.gxTileFace {
-  position: absolute; top: 50%; left: 50%; width: auto; height: calc(100% - 10px); aspect-ratio: 1; object-fit: cover;
-  border-radius: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%;
-  box-shadow: 0 0 0 2px rgba(233,194,122,.55), 0 6px 18px rgba(0,0,0,.55);
-  transition: transform .3s cubic-bezier(.2, .7, .2, 1), box-shadow .3s;
-}
-.galacticAvatarSetup .gxAvatarGrid button:is(:hover, :focus-visible) img.gxTileFace { transform: translate(-50%, -50%) scale(1.05); }
-.galacticAvatarSetup .gxAvatarGrid button[aria-pressed="true"] img.gxTileFace {
-  transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 0 3px #7fe3ee, 0 0 22px rgba(127,227,238,.45);
-}
-.galacticAvatarSetup .gxAvatarGrid button:is(:hover, :focus-visible, [aria-pressed="true"]) img.gxTileBack { transform: scale(1.18); }
+/* Avatar picker (v159): the horizontal crop fills the tile; the chosen one gets a cyan ring. */
+.galacticAvatarSetup .gxAvatarGrid button[aria-pressed="true"] { box-shadow: 0 0 0 2px #7fe3ee, 0 0 18px rgba(127,227,238,.35); border-color: #7fe3ee; }

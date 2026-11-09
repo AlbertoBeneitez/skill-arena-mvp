@@ -11,6 +11,7 @@ import { createRng } from "@/lib/deterministic/seeded";
 import { GAMES, type GameMeta } from "@/lib/games";
 import { formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
+import { portraitSrc } from "@/lib/avatars";
 
 type Props = {
   group: ClosedGroup | null;
@@ -103,7 +104,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
         <div className="groupHero">
           {/* v139: the crew (you and three simulated rivals) instead of three numbered steps; one line says it all. */}
           <div className="groupHeroCrew" aria-hidden="true">
-            {[avatarSrc, "/avatars/portrait-02-s.webp", "/avatars/portrait-05-s.webp", "/avatars/portrait-09-s.webp"].map((src, i) => <img key={i} src={src} alt="" width={46} height={46} />)}
+            {[avatarSrc, portraitSrc(2, "-s"), portraitSrc(5, "-s"), portraitSrc(9, "-s")].map((src, i) => <img key={i} src={src} alt="" width={46} height={46} />)}
           </div>
           <span>{t("group.heroTag")}</span>
           <h1>{t("group.heroTitle")}</h1>

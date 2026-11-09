@@ -6,6 +6,7 @@ import { gameName } from "@/lib/i18n/games";
 import { createRng } from "@/lib/deterministic/seeded";
 import { emptyLeague, leagueRival, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import GlobalRanking from "./GlobalRanking";
+import { portraitSrc } from "@/lib/avatars";
 
 type Row = { id: string; name: string; avatar: string; score: number; tier: LeagueTier; you?: boolean };
 
@@ -24,7 +25,7 @@ function sampleRows(game: GameMeta): Row[] {
     const spread = (1.12 - (i % 6) * 0.035) * (0.97 + rng.nextInt(7) / 100);
     // Time-scored games: a stronger player has a SMALLER time.
     const score = Math.round(game.resultMetric === "reaction-time-ms" ? base / spread : base * spread);
-    return { id: `sample-${i}`, name, avatar: `/avatars/portrait-${String(1 + ((i * 7) % 16)).padStart(2, "0")}-s.webp`, score, tier };
+    return { id: `sample-${i}`, name, avatar: portraitSrc(1 + ((i * 7) % 16), "-s"), score, tier };
   }).sort((a, b) => compareScores(game)(a.score, b.score));
 }
 

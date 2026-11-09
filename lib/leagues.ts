@@ -6,6 +6,7 @@
  */
 import type { GameMeta } from "./games";
 import { createRng } from "./deterministic/seeded";
+import { portraitSrc } from "@/lib/avatars";
 
 export const LEAGUE_TIERS = ["bronze", "silver", "gold", "platinum", "diamond"] as const;
 export type LeagueTier = 0 | 1 | 2 | 3 | 4;
@@ -65,7 +66,7 @@ export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
   const rng = createRng(`league:${game.id}:${record.tier}:${record.series}:${match}`);
   const pool = RIVALS[record.tier];
   const name = pool[rng.nextInt(pool.length)];
-  const avatar = `/avatars/portrait-${String(1 + rng.nextInt(16)).padStart(2, "0")}-s.webp`;
+  const avatar = portraitSrc(1 + rng.nextInt(16), "-s");
   if (game.resultMetric === "fictitious-balance") {
     return { name, avatar, target: BALANCE_GOALS[record.tier], balanceGoal: true };
   }
