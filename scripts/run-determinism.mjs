@@ -93,6 +93,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-pinball-v11.js");
   await import("../.det-test/scripts/verify-pinball-v12.js");
   await import("../.det-test/scripts/verify-pinball-v13.js");
+  await import("../.det-test/scripts/verify-pinball-v14.js");
   await import("../.det-test/scripts/verify-studio-proposal.js");
   await import("../.det-test/scripts/verify-studio-package.js");
   await import("../.det-test/scripts/verify-studio-published.js");

@@ -589,6 +589,10 @@ def darts():
          '<linearGradient id="fl1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9ff6ff"/><stop offset="1" stop-color="#2f5bff"/></linearGradient>'
          '<linearGradient id="fl2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff2a2a"/></linearGradient>'
          '<linearGradient id="barrel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5468"/><stop offset=".4" stop-color="#f0f4fa"/><stop offset="1" stop-color="#2a3040"/></linearGradient>'
+         '<linearGradient id="dPoint" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b626e"/><stop offset=".45" stop-color="#ffffff"/><stop offset="1" stop-color="#4b5260"/></linearGradient>'
+         '<linearGradient id="dBarrel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2127"/><stop offset=".3" stop-color="#9aa3b0"/><stop offset=".45" stop-color="#f6f8fb"/><stop offset=".62" stop-color="#7d8592"/><stop offset="1" stop-color="#15181d"/></linearGradient>'
+         '<linearGradient id="dShaft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4350"/><stop offset=".35" stop-color="#e9eef5"/><stop offset="1" stop-color="#2b313b"/></linearGradient>'
+         '<filter id="sisal" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="5"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.05"/></filter>'
          '<radialGradient id="boardLight" cx="45%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></radialGradient>')
     p = ['<rect width="640" height="440" fill="url(#pubbg)"/>', bokeh(19, ["#ff3a2a", "#ffcf7a", "#13914c"], 14, 440, 14, 50, (.12, .3))]
     # the spotlight cone from above onto the board, with dust in it
@@ -614,19 +618,33 @@ def darts():
     for i, n in enumerate(order):
         a = math.radians(-90 + i * 18)
         b.append(f'<text x="{f(cx + (R + 24) * math.cos(a))}" y="{f(cy + (R + 24) * math.sin(a) + 8)}" font-family="Arial Black, sans-serif" font-size="22" fill="#f2f4f8" text-anchor="middle">{n}</text>')
+    # v162: pressed-sisal grain, the radial wires of the spider (shadow + lit edge) and the wire number ring
+    b.append(f'<circle cx="{cx}" cy="{cy}" r="{R}" fill="#000" filter="url(#sisal)" opacity=".55"/>')
+    for i in range(20):
+        a0 = math.radians(-99 + i * 18)
+        for (dx, dy2, col, wdt) in ((1.2, 1.6, "#000", 2.4), (0, 0, "#c9d2dc", 1.5), (-.5, -.6, "#ffffff", .6)):
+            b.append(f'<line x1="{f(cx + dx + R * .14 * math.cos(a0))}" y1="{f(cy + dy2 + R * .14 * math.sin(a0))}" x2="{f(cx + dx + R * math.cos(a0))}" y2="{f(cy + dy2 + R * math.sin(a0))}" stroke="{col}" stroke-width="{wdt}" opacity="{.45 if col == "#000" else .9}"/>')
+    b.append(f'<circle cx="{cx}" cy="{cy}" r="{R + 7}" fill="none" stroke="#c9d2dc" stroke-width="1.4" opacity=".8"/>')
     b.append(f'<circle cx="{cx}" cy="{cy}" r="{R + 44}" fill="url(#boardLight)"/>')
     p.append(f'<g transform="translate({cx} {cy}) rotate(-10) scale(.86 1) skewY(-6) translate({-cx} {-cy})" filter="url(#shadow)">{"".join(b)}</g>')
 
     def dart(tx, ty, ang, fl, s, blur=False):
-        c, sn = math.cos(ang), math.sin(ang)
-        P = lambda dd, w=0: (tx + c * dd - sn * w, ty + sn * dd + c * w)
-        tip, b0, b1, sh0, sh1, f0 = P(0), P(30 * s), P(110 * s), P(110 * s), P(190 * s), P(170 * s)
-        fa, fb, fc = P(260 * s, 52 * s), P(260 * s, -52 * s), P(225 * s)
-        g = f'<g filter="url({"#dof2" if blur else "#shadow"})">'
-        g += f'<line x1="{f(tip[0])}" y1="{f(tip[1])}" x2="{f(b0[0])}" y2="{f(b0[1])}" stroke="#c9d2dc" stroke-width="{f(4 * s)}" stroke-linecap="round"/>'
-        g += f'<line x1="{f(b0[0])}" y1="{f(b0[1])}" x2="{f(b1[0])}" y2="{f(b1[1])}" stroke="url(#barrel)" stroke-width="{f(16 * s)}" stroke-linecap="round"/>'
-        g += f'<line x1="{f(sh0[0])}" y1="{f(sh0[1])}" x2="{f(sh1[0])}" y2="{f(sh1[1])}" stroke="#1d2433" stroke-width="{f(8 * s)}" stroke-linecap="round"/>'
-        g += f'<polygon points="{f(f0[0])},{f(f0[1])} {f(fa[0])},{f(fa[1])} {f(fc[0])},{f(fc[1])}" fill="url(#{fl})"/><polygon points="{f(f0[0])},{f(f0[1])} {f(fb[0])},{f(fb[1])} {f(fc[0])},{f(fc[1])}" fill="url(#{fl})" opacity=".75"/></g>'
+        # v162: a real steel-tip dart: needle point, knurled tungsten barrel, ringed shaft, two flights with a stripe
+        k = f"{int(tx)}_{int(ty)}"
+        g = f'<g filter="url({"#dof2" if blur else "#shadow"})" transform="translate({f(tx)} {f(ty)}) rotate({math.degrees(ang):.1f}) scale({s})">'
+        g += '<polygon points="0,0 34,-2.6 34,2.6" fill="url(#dPoint)"/>'
+        g += '<path d="M34,-4 C44,-9 52,-9.5 60,-9.5 L104,-8.6 C109,-8.4 112,-6 112,-4 L112,4 C112,6 109,8.4 104,8.6 L60,9.5 C52,9.5 44,9 34,4 Z" fill="url(#dBarrel)"/>'
+        g += "".join(f'<line x1="{x0}" y1="-9.4" x2="{x0}" y2="9.4" stroke="#0a0c10" stroke-width="1.6" opacity=".7"/><line x1="{x0 + 1.6}" y1="-9" x2="{x0 + 1.6}" y2="9" stroke="#ffffff" stroke-width=".8" opacity=".35"/>' for x0 in range(62, 102, 5))
+        g += f'<rect x="54" y="-9.6" width="4" height="19.2" fill="url(#{fl})"/>'
+        g += '<rect x="112" y="-3.8" width="62" height="7.6" rx="2" fill="url(#dShaft)"/>'
+        g += "".join(f'<rect x="{x0}" y="-3.8" width="2" height="7.6" fill="#0d1118" opacity=".6"/>' for x0 in (124, 138, 152, 166))
+        wing = "M170,-2 L206,-30 Q246,-60 268,-50 L264,-3 Z"
+        g += f'<clipPath id="wc{k}"><path d="{wing}"/></clipPath><clipPath id="wd{k}"><path d="{wing}" transform="scale(1 -1)"/></clipPath>'
+        for (clip, tr, op) in ((f"wc{k}", "", 1), (f"wd{k}", ' transform="scale(1 -1)"', .78)):
+            g += (f'<g opacity="{op}"><path d="{wing}"{tr} fill="url(#{fl})" stroke="#06080e" stroke-width="1.6"/>'
+                  f'<g clip-path="url(#{clip})"><polygon points="190,{"-70" if not tr else "70"} 214,{"-70" if not tr else "70"} 200,0 176,0" fill="#ffffff" opacity=".85"/>'
+                  f'<polygon points="226,{"-70" if not tr else "70"} 240,{"-70" if not tr else "70"} 226,0 212,0" fill="#0b0f18" opacity=".55"/></g></g>')
+        g += '<rect x="168" y="-1.4" width="98" height="2.8" fill="#0b0f18" opacity=".85"/></g>'
         return g
     # the hero dart driving into the bull, with an impact ring and sparks
     p.append(flash(cx, cy, 80, "#ff6a3a", .55))
@@ -1482,6 +1500,186 @@ def orb_v153():
 covers["orb-burst"] = orb_v153()
 
 
+# ---------- v162: Solitaire Sprint, finer cards ----------
+# Real pip layouts on the number cards (the lower pips turned round, as printed), framed court portraits on K, Q and
+# J, a woven felt and the game's blue striped backs on the columns around.
+_card_v143 = card_v143
+PIPS = {"6": [(.3, .2), (.7, .2), (.3, .5), (.7, .5), (.3, .8), (.7, .8)],
+        "7": [(.3, .2), (.7, .2), (.5, .35), (.3, .5), (.7, .5), (.3, .8), (.7, .8)],
+        "8": [(.3, .2), (.7, .2), (.5, .35), (.3, .5), (.7, .5), (.5, .65), (.3, .8), (.7, .8)],
+        "9": [(.3, .2), (.7, .2), (.3, .4), (.7, .4), (.5, .5), (.3, .6), (.7, .6), (.3, .8), (.7, .8)],
+        "10": [(.3, .2), (.7, .2), (.5, .3), (.3, .4), (.7, .4), (.3, .6), (.7, .6), (.5, .7), (.3, .8), (.7, .8)]}
+
+
+def card_v162(x, y, rank, suit, red, rot, s, idn):
+    col = "#d11f3a" if red else "#131a2a"
+    w, h = 150 * s, 212 * s
+    base = _card_v143(x, y, rank, suit, red, rot, s, idn)
+    # strip the single big centre symbol of the v143 card and draw the real centre instead
+    face = {"K": "♚", "Q": "♛", "J": "♞"}.get(rank)
+    if face:
+        big = (f'<text x="{f(x + w / 2)}" y="{f(y + h * .66)}" font-family="DejaVu Sans, Arial, sans-serif" font-size="{f(92 * s)}" fill="{col}" text-anchor="middle">{face}</text>'
+               f'<text x="{f(x + w / 2)}" y="{f(y + h * .86)}" font-family="Arial, sans-serif" font-size="{f(34 * s)}" fill="{col}" text-anchor="middle">{suit}</text>')
+    else:
+        big = f'<text x="{f(x + w / 2)}" y="{f(y + h * .7)}" font-family="Arial, sans-serif" font-size="{f(96 * s)}" fill="{col}" text-anchor="middle">{suit}</text>'
+    assert big in base, rank
+    if face:
+        fx0, fy0, fw, fh = x + w * .24, y + h * .2, w * .52, h * .6
+        band = "#2d5bd1" if not red else "#c8232f"
+        centre = (f'<rect x="{f(fx0)}" y="{f(fy0)}" width="{f(fw)}" height="{f(fh)}" rx="{f(4 * s)}" fill="#f4e7c4" stroke="{band}" stroke-width="{f(2.4 * s)}"/>'
+                  f'<rect x="{f(fx0 + 4 * s)}" y="{f(fy0 + 4 * s)}" width="{f(fw - 8 * s)}" height="{f(fh - 8 * s)}" rx="{f(3 * s)}" fill="none" stroke="#d8b86a" stroke-width="{f(1.2 * s)}"/>'
+                  f'<line x1="{f(fx0)}" y1="{f(fy0 + fh / 2)}" x2="{f(fx0 + fw)}" y2="{f(fy0 + fh / 2)}" stroke="{band}" stroke-width="{f(1.2 * s)}" opacity=".6"/>'
+                  f'<text x="{f(x + w / 2)}" y="{f(fy0 + fh * .47)}" font-family="DejaVu Sans, Arial, sans-serif" font-size="{f(52 * s)}" fill="{col}" text-anchor="middle">{face}</text>'
+                  f'<g transform="rotate(180 {f(x + w / 2)} {f(fy0 + fh * .75)})"><text x="{f(x + w / 2)}" y="{f(fy0 + fh * .97)}" font-family="DejaVu Sans, Arial, sans-serif" font-size="{f(52 * s)}" fill="{col}" text-anchor="middle" opacity=".9">{face}</text></g>'
+                  f'<text x="{f(fx0 + 9 * s)}" y="{f(fy0 + 20 * s)}" font-family="Arial, sans-serif" font-size="{f(16 * s)}" fill="{col}">{suit}</text>')
+    elif rank in PIPS:
+        centre = ""
+        for (u, v) in PIPS[rank]:
+            px, py = x + w * (.5 + (u - .5) * .78), y + h * (.25 + v * .6)
+            flip = f' transform="rotate(180 {f(px)} {f(py - 26 * s * .36)})"' if v > .5 else ""
+            centre += f'<text x="{f(px)}" y="{f(py)}" font-family="Arial, sans-serif" font-size="{f(26 * s)}" fill="{col}" text-anchor="middle"{flip}>{suit}</text>'
+    else:
+        centre = big
+    return base.replace(big, centre)
+
+
+def solitaire_v162():
+    global card_v143
+    card_v143 = card_v162
+    try:
+        src = solitaire_v143()
+    finally:
+        card_v143 = _card_v143
+    # woven felt over the flat dots, and the game's striped blue backs on the soft side columns
+    src = src.replace('<rect width="640" height="440" fill="url(#felt)"/>',
+                      '<rect width="640" height="440" fill="url(#felt)"/><rect width="640" height="440" fill="#000" filter="url(#weave)" opacity=".22"/>', 1)
+    src = src.replace('</defs>', '<filter id="weave" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9 .35" numOctaves="2" seed="9"/>'
+                      '<feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1"/></filter>'
+                      '<pattern id="backStripes" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="#2856b8"/><rect width="5" height="10" fill="#3a6fd6"/></pattern></defs>', 1)
+    src = src.replace('fill="#7a1a2e" stroke="#ffd0a0" stroke-opacity=".35"', 'fill="url(#backStripes)" stroke="#bcd0ff" stroke-opacity=".45"')
+    return src
+
+
+covers["solitaire-sprint"] = solitaire_v162()
+
+# ---------- v162: Orb Burst without the loose orbs on the right ----------
+# The two orbs falling on the right and the next orb beside the cannon read as orbs crossing the line (a lost game):
+# they go. The burst gets gold glass shards flying out of it instead.
+def orb_v162():
+    src = orb_v153()
+    def orb_at(x, y, rad, c, idn):
+        return (f'<circle cx="{f(x + 2)}" cy="{f(y + 5)}" r="{f(rad)}" fill="#000" opacity=".35" filter="url(#dof)"/>'
+                + sphere(x, y, rad, c, idn, shadow=False, gloss=.75)
+                + f'<path d="M{f(x + rad * .2)},{f(y + rad * .96)} A{f(rad)},{f(rad)} 0 0 0 {f(x + rad * .96)},{f(y + rad * .2)}" fill="none" stroke="{c}" stroke-width="2.2" opacity=".9" filter="url(#glow)"/>')
+    for (x, y, c) in [(520, 316, "#5cffb0"), (468, 372, "#4fa8ff")]:
+        o = orb_at(x, y, 26, c, f"dr{x}")
+        assert o in src, x
+        src = src.replace(o, "")
+    nxt = f'<g opacity=".9">{sphere(470, 430, 20, "#5cffb0", "nextshot", shadow=False)}</g>'
+    assert nxt in src
+    src = src.replace(nxt, "")
+    bx, by = 400, 160
+    rr = random.Random(162)
+    shards = []
+    for q in range(16):
+        a = q * 2 * math.pi / 16 + rr.uniform(-.2, .2); dd = rr.uniform(58, 128); sz = rr.uniform(5, 11)
+        x, y = bx + math.cos(a) * dd, by + math.sin(a) * dd
+        rot = math.degrees(a) + rr.uniform(-40, 40)
+        shards.append(f'<g transform="translate({f(x)} {f(y)}) rotate({rot:.0f})"><polygon points="{f(-sz)},{f(-sz * .4)} {f(sz)},0 {f(-sz * .6)},{f(sz * .55)}" fill="#ffd23f" opacity=".9"/>'
+                      f'<polygon points="{f(-sz)},{f(-sz * .4)} {f(sz)},0 {f(-sz * .2)},{f(-sz * .1)}" fill="#fff8d8" opacity=".85"/></g>')
+    i = src.index(sparkle(400, 160, 24, "#fff8e0"))
+    return src[:i] + f'<g filter="url(#glow)">{"".join(shards)}</g>' + src[i:]
+
+
+covers["orb-burst"] = orb_v162()
+
+# ---------- v162: Mine Grid that reads as the game ----------
+# A real minesweeper position: the gold start cell has just been tapped and the field opens around it; every number
+# counts the mines around it, and the flags stand exactly on mines that those numbers prove. Graphite tiles and neon
+# digits as in the game, under a Saturn-lit sky.
+def mine_v162():
+    COLS, ROWS = 12, 10
+    mines = {(1, 1), (4, 0), (8, 1), (10, 2), (0, 4), (3, 3), (9, 4), (2, 6), (7, 7), (10, 7), (4, 8), (11, 9), (1, 9), (6, 0)}
+    start = (6, 5)
+    def around(c, r):
+        return [(c + dc, r + dr) for dc in (-1, 0, 1) for dr in (-1, 0, 1) if (dc or dr) and 0 <= c + dc < COLS and 0 <= r + dr < ROWS]
+    count = {(c, r): sum((q in mines) for q in around(c, r)) for c in range(COLS) for r in range(ROWS)}
+    opened, todo = set(), [start]
+    while todo:
+        q = todo.pop()
+        if q in opened or q in mines: continue
+        opened.add(q)
+        if count[q] == 0: todo += around(*q)
+    flags = {m for m in mines if any(n in opened for n in around(*m))}
+    # perspective: far rows smaller and higher
+    HZ, FOOT, CW = -330.0, 560.0, 66.0
+    def P(u, v):  # u along columns, v along rows (0 far … ROWS near)
+        sc = 1 / (1 + (ROWS - v) * .085)
+        return 320 + (u - COLS / 2) * CW * sc, HZ + (FOOT - HZ) * sc, sc
+    d = ('<linearGradient id="mgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#04050b"/><stop offset=".55" stop-color="#0d1022"/><stop offset="1" stop-color="#241a2c"/></linearGradient>'
+         '<linearGradient id="mgTile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5163"/><stop offset=".5" stop-color="#2a2f3b"/><stop offset="1" stop-color="#171a22"/></linearGradient>'
+         '<linearGradient id="mgOpen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#090c16"/><stop offset="1" stop-color="#121829"/></linearGradient>'
+         '<linearGradient id="mgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a0"/><stop offset=".5" stop-color="#e9b443"/><stop offset="1" stop-color="#9a6a12"/></linearGradient>'
+         '<radialGradient id="mgPlanet" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f3d8a8"/><stop offset=".6" stop-color="#b9875a"/><stop offset="1" stop-color="#3a2416"/></radialGradient>'
+         '<radialGradient id="mgPulse" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe7a0" stop-opacity=".9"/><stop offset=".5" stop-color="#7fe3ee" stop-opacity=".35"/><stop offset="1" stop-color="#7fe3ee" stop-opacity="0"/></radialGradient>'
+         '<linearGradient id="mgFlag" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff5a6a"/><stop offset="1" stop-color="#b3122a"/></linearGradient>')
+    p = ['<rect width="640" height="440" fill="url(#mgSky)"/>', stars(31, 70, 150)]
+    # Saturn on the horizon, its rings tilted behind the field
+    p.append('<g transform="rotate(-14 540 64)"><path d="M436,64 A104,20 0 0 1 644,64" fill="none" stroke="#d9b98a" stroke-width="6" opacity=".45"/>'
+             '<circle cx="540" cy="64" r="40" fill="url(#mgPlanet)"/>'
+             '<path d="M436,64 A104,20 0 0 0 644,64" fill="none" stroke="#f0d6a6" stroke-width="6" opacity=".75"/></g>')
+    p.append(bokeh(23, ["#7fe3ee", "#ffd36a", "#b48cff"], 10, 200, 10, 34, (.06, .16)))
+    num_col = {1: "#7fe3ee", 2: "#5cffb0", 3: "#ffd23f", 4: "#ff6fd8"}
+    items, flag_items = [], []
+    for r in range(ROWS):
+        for c in range(COLS):
+            g = .06  # gap
+            a, b2, c2, d2 = P(c + g, r + g), P(c + 1 - g, r + g), P(c + 1 - g, r + 1 - g), P(c + g, r + 1 - g)
+            poly = " ".join(f"{f(x)},{f(y)}" for (x, y, _) in (a, b2, c2, d2))
+            sc = (a[2] + c2[2]) / 2
+            cxm, cym = (a[0] + c2[0]) / 2, (a[1] + c2[1]) / 2
+            out = []
+            if (c, r) in opened:
+                out.append(f'<polygon points="{poly}" fill="url(#mgOpen)" stroke="#2a3550" stroke-width="{f(1.2 * sc)}"/>')
+                n = count[(c, r)]
+                if n:
+                    col = num_col.get(n, "#ffffff")
+                    out.append(f'<text x="{f(cxm)}" y="{f(cym + 13 * sc)}" font-family="Arial Black, sans-serif" font-size="{f(38 * sc)}" fill="{col}" text-anchor="middle" filter="url(#glow)" transform="translate({f(cxm)} {f(cym)}) scale(1 .8) translate({f(-cxm)} {f(-cym)})">{n}</text>')
+            else:
+                lift = 7 * sc
+                top = " ".join(f"{f(x)},{f(y - lift)}" for (x, y, _) in (a, b2, c2, d2))
+                side = f"{f(d2[0])},{f(d2[1] - lift)} {f(c2[0])},{f(c2[1] - lift)} {f(c2[0])},{f(c2[1])} {f(d2[0])},{f(d2[1])}"
+                out.append(f'<polygon points="{side}" fill="#0b0d12"/>')
+                out.append(f'<polygon points="{top}" fill="url(#mgTile)" stroke="#6d7790" stroke-opacity=".55" stroke-width="{f(1.1 * sc)}"/>')
+                out.append(f'<line x1="{f(a[0] + 3 * sc)}" y1="{f(a[1] - lift + 1.5 * sc)}" x2="{f(b2[0] - 3 * sc)}" y2="{f(b2[1] - lift + 1.5 * sc)}" stroke="#ffffff" stroke-opacity=".28" stroke-width="{f(1.4 * sc)}"/>')
+                if (c, r) in flags:
+                    px, py = cxm - 6 * sc, cym - lift
+                    hgt = 36 * sc
+                    fl = []
+                    fl.append(f'<ellipse cx="{f(px)}" cy="{f(py)}" rx="{f(6 * sc)}" ry="{f(2.4 * sc)}" fill="#000" opacity=".5"/>')
+                    fl.append(f'<line x1="{f(px)}" y1="{f(py)}" x2="{f(px)}" y2="{f(py - hgt)}" stroke="#d9dee8" stroke-width="{f(2.6 * sc)}" stroke-linecap="round"/>')
+                    fl.append(f'<path d="M{f(px)},{f(py - hgt)} Q{f(px + 16 * sc)},{f(py - hgt - 4 * sc)} {f(px + 28 * sc)},{f(py - hgt + 8 * sc)} Q{f(px + 16 * sc)},{f(py - hgt + 14 * sc)} {f(px)},{f(py - hgt + 20 * sc)} Z" fill="url(#mgFlag)" filter="url(#glow)"/>')
+                    flag_items.append((r, "".join(fl)))
+            items.append((r, "".join(out)))
+    p += [x for (_, x) in sorted(items, key=lambda t: t[0])]
+    # the tapped gold start cell, glowing, with the reveal wave rippling out over the opened field
+    c, r = start
+    a, c2 = P(c + .06, r + .06), P(c + .94, r + .94)
+    cxm, cym, sc = (a[0] + c2[0]) / 2, (a[1] + c2[1]) / 2, (a[2] + c2[2]) / 2
+    pts = " ".join(f"{f(x)},{f(y)}" for (x, y, _) in (P(c + .06, r + .06), P(c + .94, r + .06), P(c + .94, r + .94), P(c + .06, r + .94)))
+    p.append(f'<polygon points="{pts}" fill="url(#mgGold)" opacity=".92" filter="url(#glow)"/>')
+    p.append(f'<ellipse cx="{f(cxm)}" cy="{f(cym)}" rx="{f(170 * sc)}" ry="{f(90 * sc)}" fill="url(#mgPulse)" style="mix-blend-mode:screen"/>')
+    for k, rr in enumerate((70, 130, 200)):
+        p.append(f'<ellipse cx="{f(cxm)}" cy="{f(cym)}" rx="{f(rr * sc)}" ry="{f(rr * sc * .5)}" fill="none" stroke="#ffe7a0" stroke-width="{3 - k * .8:.1f}" opacity="{.75 - k * .2:.2f}" filter="url(#glow)"/>')
+    p.append(sparkle(cxm + 18, cym - 30, 16, "#fff6d8"))
+    p += [x for (_, x) in sorted(flag_items, key=lambda t: t[0])]
+    p.append(cine(cxm, cym - 40, key="#ffe7b8", strength=.6, flare_w=0))
+    return svg("".join(p), extra_defs=d)
+
+
+covers["mine-grid"] = mine_v162()
+
+
 # ---------- Stack: the gold block sits lower, just above the tower; no sliced chunk falling off the right ----------
 def stack_v153():
     src = stack_v143()
@@ -1674,9 +1872,26 @@ def lowered(src, s, ax=320, ay=440, feather=26, dy=0):
     return src[:body_start] + inner + src[body_end:]
 
 
+def shifted(src, dy, feather=22):
+    """v162: move the whole composition down by dy at full size (it keeps the card's full width); only the band it
+    uncovers at the top fades into the blurred picture behind it."""
+    head_end = src.index("</defs>") + len("</defs>")
+    bg_start = src.index("<rect", head_end)
+    body_start = src.index("/>", bg_start) + 2
+    body_end = src.rindex('<rect width="640" height="440" fill="url(#vig)"/>')
+    body = src[body_start:body_end]
+    m = (f'<filter id="shblur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="{feather * .6:.1f}"/></filter>'
+         f'<mask id="shmask" maskUnits="userSpaceOnUse" x="-100" y="-100" width="840" height="640">'
+         f'<rect x="-100" y="{f(dy + feather)}" width="840" height="640" fill="#fff" filter="url(#shblur)"/></mask>'
+         '<filter id="shamb" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="30"/></filter>')
+    amb = f'<g filter="url(#shamb)" opacity=".55">{body}</g>'
+    inner = f'<defs>{m}</defs>{amb}<g mask="url(#shmask)"><g transform="translate(0 {f(dy)})">{body}</g></g>'
+    return src[:body_start] + inner + src[body_end:]
+
+
 covers["precision-stack"] = lowered(covers["precision-stack"], .8, 320, 470)
 covers["stack-3d"] = covers["precision-stack"]
-covers["bowling"] = lowered(covers["bowling"], .82, dy=26)  # v156: a little lower again
+covers["bowling"] = shifted(covers["bowling"], 46)  # v162: full width (the card's whole square), still lower
 covers["corner-sudoku"] = lowered(covers["corner-sudoku"], .8)
 covers["tower-drop"] = lowered(covers["tower-drop"], .76, 330, 480)
 covers["pinball"] = lowered(covers["pinball"], .82, dy=26)  # v156: a little lower again

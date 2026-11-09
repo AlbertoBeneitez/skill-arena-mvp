@@ -834,7 +834,7 @@ const messages: Messages = {
   "hud.field": "Campo",
   "hud.mines": "Minas",
   "hud.moves": "Jogadas",
-  "hud.mult": "Multiplicador",
+  "hud.mult": "Mult.",
   "hud.board": "Tabuleiro",
   "hud.ball": "Bola",
   "hud.foundation": "Fundação",

@@ -2,41 +2,42 @@
 import type { GameRuntimeProps } from "@/lib/games";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
 import {
-  PINBALL_CORE_V13,
-  PINBALL_DIVIDERS_V13,
-  PINBALL_DROPS_V13,
-  PINBALL_INLANES_V13,
-  PINBALL_LANES_V13,
-  PINBALL_LSPINNER_V13,
-  PINBALL_MOUTHS_V13,
-  PINBALL_ORBIT_ZONES_V13,
-  PINBALL_POSTS_V13,
-  PINBALL_RTARGETS_V13,
-  PINBALL_RULES_V13,
-  PINBALL_SAUCER_V13,
-  PINBALL_SCOOP_ROOF_V13,
-  PINBALL_SLINGS_V13,
-  PINBALL_SPINNER_V13,
-  PINBALL_STARS_V13,
-  PINBALL_TARGETS_V13,
-  PINBALL_TUBES_V13,
-  PINBALL_WALLS_V13,
-  PINBALL_WORMHOLE_V13,
-  pinballBumpersV13,
-  pinballChargeLevelV13,
-  pinballFlipperTipV13,
-  pinballFrenzyV13,
-  pinballTubeLengthV13,
-  pinballTubePointV13,
-  pinballUpperTipV13,
-  type PinballStateV13,
-} from "@/lib/verified/pinballCore.v13";
+  PINBALL_CORE_V14,
+  PINBALL_DIVIDERS_V14,
+  PINBALL_DROPS_V14,
+  PINBALL_INLANES_V14,
+  PINBALL_LANES_V14,
+  PINBALL_LSPINNER_V14,
+  PINBALL_MOUTHS_V14,
+  PINBALL_ORBIT_ZONES_V14,
+  PINBALL_POSTS_V14,
+  PINBALL_RTARGETS_V14,
+  PINBALL_RULES_V14,
+  PINBALL_SAUCER_V14,
+  PINBALL_SCOOP_ROOF_V14,
+  PINBALL_SLINGS_V14,
+  PINBALL_SPINNER_V14,
+  PINBALL_STARS_V14,
+  PINBALL_TARGETS_V14,
+  PINBALL_TUBES_V14,
+  PINBALL_WALLS_V14,
+  PINBALL_WORMHOLE_V14,
+  pinballBumpersV14,
+  pinballChargeLevelV14,
+  pinballFlipperTipV14,
+  pinballFrenzyV14,
+  pinballTubeLengthV14,
+  pinballTubePointV14,
+  pinballUpperTipV14,
+  pinballStretchPxV14 as Y,
+  type PinballStateV14,
+} from "@/lib/verified/pinballCore.v14";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import type { ScoreCell } from "../GameScoreboard";
 import { t as tx, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
 
 /*
- * Presentation only (V13 table). Everything here reads the authoritative state and never changes it.
+ * Presentation only (V14 table). Everything here reads the authoritative state and never changes it.
  * Art direction (owner, 9-nov-2026): first the routes the ball can take, each in one steady colour — left orbit cyan,
  * right orbit green, left ramp violet, right ramp magenta, centre scoop gold — then the decoration. Ramps are clear
  * plastic going up and chrome wire coming down; lamps breathe slowly instead of cycling colours. Static art is
@@ -45,9 +46,9 @@ import { t as tx, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
 
 const W = 390, H = 620;
 const k = (v: number) => v / 1000;
-const R = PINBALL_RULES_V13;
+const R = PINBALL_RULES_V14;
 type RGB = readonly [number, number, number];
-// V13: saturated neon per route on an almost black floor (more contrast).
+// V14: saturated neon per route on an almost black floor (more contrast).
 const ROUTE = {
   lOrbit: [0, 229, 255] as RGB,
   rOrbit: [57, 255, 136] as RGB,
@@ -71,7 +72,7 @@ const TUBE_ROUTE = [ROUTE.lOrbit, ROUTE.rOrbit, ROUTE.scoop, ROUTE.lRamp, ROUTE.
 
 // ---------- geometry helpers ----------
 type Pt = { x: number; y: number };
-const pathOf = (tube: number): Pt[] => PINBALL_TUBES_V13[tube].path.map((p) => ({ x: k(p.x), y: k(p.y) }));
+const pathOf = (tube: number): Pt[] => PINBALL_TUBES_V14[tube].path.map((p) => ({ x: k(p.x), y: k(p.y) }));
 /** Smooth polyline through the points (quadratic midpoints). */
 function smooth(ctx: CanvasRenderingContext2D, pts: readonly Pt[], dx = 0, dy = 0) {
   ctx.beginPath();
@@ -103,8 +104,8 @@ function chevron(ctx: CanvasRenderingContext2D, x: number, y: number, ang: numbe
 }
 function tableOutline(ctx: CanvasRenderingContext2D) {
   ctx.beginPath();
-  ctx.moveTo(18, 640); ctx.lineTo(18, 140); ctx.lineTo(46, 70); ctx.lineTo(110, 42); ctx.lineTo(290, 42);
-  ctx.lineTo(372, 124); ctx.lineTo(372, 640);
+  ctx.moveTo(18, 640); ctx.lineTo(18, Y(140)); ctx.lineTo(46, Y(70)); ctx.lineTo(110, Y(42)); ctx.lineTo(290, Y(42));
+  ctx.lineTo(372, Y(124)); ctx.lineTo(372, 640);
   ctx.closePath();
 }
 function chromeLine(ctx: CanvasRenderingContext2D, ax: number, ay: number, bx: number, by: number, width = 6) {
@@ -122,8 +123,8 @@ const SHOT_LANES = [
   { from: [226, 444], via: [160, 410], to: [126, 334], color: ROUTE.lRamp }, // right flipper → left ramp
   { from: [164, 444], via: [230, 410], to: [264, 334], color: ROUTE.rRamp }, // left flipper → right ramp
   { from: [195, 424], via: [195, 380], to: [195, 336], color: ROUTE.scoop }, // centre → scoop (through a dropped target)
-  { from: [72, 424], via: [40, 340], to: [44, 236], color: ROUTE.lOrbit }, // left orbit
-  { from: [318, 424], via: [328, 340], to: [322, 236], color: ROUTE.rOrbit }, // right orbit
+  { from: [72, 424], via: [40, 340], to: [44, Y(236)], color: ROUTE.lOrbit }, // left orbit
+  { from: [318, 424], via: [328, 340], to: [322, Y(236)], color: ROUTE.rOrbit }, // right orbit
 ] as const;
 /** Point and heading at f (0…1) along a curved shot lane (quadratic). */
 function laneAt(l: (typeof SHOT_LANES)[number], f: number) {
@@ -131,6 +132,81 @@ function laneAt(l: (typeof SHOT_LANES)[number], f: number) {
   const x = u * u * ax + 2 * u * f * cx + f * f * bx, y = u * u * ay + 2 * u * f * cy + f * f * by;
   const dx = 2 * u * (cx - ax) + 2 * f * (bx - cx), dy = 2 * u * (cy - ay) + 2 * f * (by - cy);
   return { x, y, ang: Math.atan2(dy, dx) };
+}
+
+/** Saturn porthole between the slings (static part; cached with the rest of the art). */
+function drawSaturnEmblem(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  const R0 = 46;
+  ctx.save();
+  // Outer glow and the chrome bezel with bolts.
+  const halo = ctx.createRadialGradient(cx, cy, R0 - 4, cx, cy, R0 + 22);
+  halo.addColorStop(0, "rgba(255,190,110,.35)"); halo.addColorStop(1, "rgba(255,190,110,0)");
+  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, R0 + 22, 0, Math.PI * 2); ctx.fill();
+  const bezel = ctx.createLinearGradient(cx - R0, cy - R0, cx + R0, cy + R0);
+  bezel.addColorStop(0, "#f4f7fb"); bezel.addColorStop(0.3, "#7d8798"); bezel.addColorStop(0.55, "#dfe6ee"); bezel.addColorStop(1, "#2b313d");
+  ctx.fillStyle = bezel; ctx.beginPath(); ctx.arc(cx, cy, R0 + 5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#0b0e18"; ctx.beginPath(); ctx.arc(cx, cy, R0 + 0.5, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2 + 0.26, bx = cx + Math.cos(a) * (R0 + 2.6), by = cy + Math.sin(a) * (R0 + 2.6);
+    ctx.fillStyle = "#3a4250"; ctx.beginPath(); ctx.arc(bx, by, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.beginPath(); ctx.arc(bx - 0.4, by - 0.5, 0.6, 0, Math.PI * 2); ctx.fill();
+  }
+  // The window: deep space with a nebula and stars.
+  ctx.beginPath(); ctx.arc(cx, cy, R0 - 1, 0, Math.PI * 2); ctx.clip();
+  const space = ctx.createRadialGradient(cx - 10, cy - 14, 4, cx, cy, R0);
+  space.addColorStop(0, "#2a1a5c"); space.addColorStop(0.55, "#120c34"); space.addColorStop(1, "#05040f");
+  ctx.fillStyle = space; ctx.fillRect(cx - R0, cy - R0, R0 * 2, R0 * 2);
+  for (const [nx, ny, nr, c] of [[-22, -20, 30, "255,80,170"], [24, 18, 26, "0,190,255"], [10, -28, 20, "255,190,80"]] as const) {
+    const g = ctx.createRadialGradient(cx + nx, cy + ny, 0, cx + nx, cy + ny, nr);
+    g.addColorStop(0, `rgba(${c},.28)`); g.addColorStop(1, `rgba(${c},0)`);
+    ctx.fillStyle = g; ctx.fillRect(cx - R0, cy - R0, R0 * 2, R0 * 2);
+  }
+  for (let i = 0; i < 26; i++) {
+    const sx = cx - R0 + ((i * 53) % (R0 * 2)), sy = cy - R0 + ((i * 97) % (R0 * 2));
+    ctx.fillStyle = `rgba(230,240,255,${0.35 + (i % 4) * 0.15})`; ctx.fillRect(sx, sy, i % 6 ? 0.8 : 1.4, i % 6 ? 0.8 : 1.4);
+  }
+  // Rings: several bands with the dark gap; the back half first.
+  const tilt = -0.36, rx = 40, ry = 10.5;
+  const rings = (from: number, to: number) => {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(tilt);
+    for (const [k2, w, c] of [[1, 3.2, "rgba(232,205,160,.9)"], [0.86, 2.2, "rgba(196,150,96,.85)"], [0.77, 0.9, "rgba(20,12,30,.9)"], [0.7, 2.6, "rgba(250,226,186,.95)"], [0.6, 1.4, "rgba(170,120,80,.7)"]] as const) {
+      ctx.strokeStyle = c; ctx.lineWidth = w;
+      ctx.beginPath(); ctx.ellipse(0, 0, rx * k2, ry * k2, 0, from, to); ctx.stroke();
+    }
+    ctx.restore();
+  };
+  rings(Math.PI, Math.PI * 2);
+  // The planet: cloud bands clipped to the disc, a terminator, rim light.
+  const pr = 20;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, pr, 0, Math.PI * 2); ctx.clip();
+  const body = ctx.createLinearGradient(cx, cy - pr, cx, cy + pr);
+  body.addColorStop(0, "#f6d9a2"); body.addColorStop(0.5, "#e2a560"); body.addColorStop(1, "#a35f2c");
+  ctx.fillStyle = body; ctx.fillRect(cx - pr, cy - pr, pr * 2, pr * 2);
+  ctx.translate(cx, cy); ctx.rotate(tilt);
+  for (const [y, h, c] of [[-14, 3, "rgba(255,240,210,.45)"], [-8, 2.4, "rgba(150,82,36,.45)"], [-3, 4, "rgba(255,226,180,.35)"], [3, 2.2, "rgba(140,70,30,.5)"], [8, 3.2, "rgba(250,214,160,.35)"], [13, 2.6, "rgba(120,60,26,.5)"]] as const) {
+    ctx.fillStyle = c; ctx.fillRect(-pr * 1.3, y, pr * 2.6, h);
+  }
+  ctx.restore();
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, pr, 0, Math.PI * 2); ctx.clip();
+  const night = ctx.createRadialGradient(cx - 8, cy - 8, pr * 0.5, cx - 3, cy - 3, pr * 1.45);
+  night.addColorStop(0, "rgba(0,0,0,0)"); night.addColorStop(0.72, "rgba(10,4,20,.1)"); night.addColorStop(1, "rgba(10,4,20,.6)");
+  ctx.fillStyle = night; ctx.fillRect(cx - pr, cy - pr, pr * 2, pr * 2);
+  // Shadow of the rings across the planet.
+  ctx.translate(cx, cy); ctx.rotate(tilt);
+  ctx.fillStyle = "rgba(40,18,10,.35)"; ctx.beginPath(); ctx.ellipse(0, 3.5, rx * 0.9, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = "rgba(255,236,200,.85)"; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(cx, cy, pr - 0.6, Math.PI * 0.95, Math.PI * 1.6); ctx.stroke();
+  // Front half of the rings over the planet.
+  rings(0, Math.PI);
+  // Glass: a soft reflection across the window.
+  const glass = ctx.createLinearGradient(cx - R0, cy - R0, cx + R0 * 0.2, cy + R0 * 0.2);
+  glass.addColorStop(0, "rgba(255,255,255,.22)"); glass.addColorStop(0.45, "rgba(255,255,255,.04)"); glass.addColorStop(0.5, "rgba(255,255,255,0)");
+  ctx.fillStyle = glass; ctx.beginPath(); ctx.arc(cx, cy, R0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = rgba(GOLD, 0.6); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, R0 + 7.5, 0, Math.PI * 2); ctx.stroke();
 }
 
 // ---------- static art (cached) ----------
@@ -146,8 +222,8 @@ function drawStaticArt(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = floor; ctx.fillRect(0, 0, W, H);
   // Nebula clouds (soft, few colours).
   for (const [x, y, r, c, a] of [
-    [196, 190, 140, [130, 40, 255], 0.42], [70, 330, 120, [0, 160, 255], 0.3], [320, 330, 120, [255, 30, 150], 0.28],
-    [195, 476, 110, [255, 170, 40], 0.16], [196, 60, 120, [0, 220, 200], 0.14],
+    [196, Y(190), 140, [130, 40, 255], 0.42], [70, 330, 120, [0, 160, 255], 0.3], [320, 330, 120, [255, 30, 150], 0.28],
+    [195, 476, 110, [255, 170, 40], 0.16], [196, Y(60), 120, [0, 220, 200], 0.14],
   ] as const) {
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
     g.addColorStop(0, rgba(c, a)); g.addColorStop(1, rgba(c, 0));
@@ -155,7 +231,7 @@ function drawStaticArt(ctx: CanvasRenderingContext2D) {
   }
   // Spiral galaxy behind the bumper nest.
   ctx.save();
-  ctx.translate(197, 190); ctx.rotate(-0.3); ctx.scale(1, 0.62);
+  ctx.translate(197, Y(190)); ctx.rotate(-0.3); ctx.scale(1, 0.62);
   for (let arm = 0; arm < 2; arm++) {
     for (let i = 0; i < 70; i++) {
       const a = i * 0.11 + arm * Math.PI, rr = 6 + i * 1.6;
@@ -169,7 +245,7 @@ function drawStaticArt(ctx: CanvasRenderingContext2D) {
   ctx.restore();
   // Printed stars (fixed pattern, no RNG).
   for (let i = 0; i < 110; i++) {
-    const x = 20 + ((i * 137) % 350), y = 46 + ((i * 251) % 590);
+    const x = 20 + ((i * 137) % 350), y = 16 + ((i * 251) % 620);
     ctx.globalAlpha = 0.18 + (i % 5) * 0.1;
     ctx.fillStyle = i % 7 === 0 ? "#ffe9a6" : "#cfe6ff";
     ctx.fillRect(x, y, i % 9 === 0 ? 2 : 1, i % 9 === 0 ? 2 : 1);
@@ -179,7 +255,7 @@ function drawStaticArt(ctx: CanvasRenderingContext2D) {
   // ROUTES FIRST — orbit tracks along the walls and round the top arch (painted bands with a dashed centre line).
   for (const tube of [0, 1]) {
     const pts = pathOf(tube), c = TUBE_ROUTE[tube];
-    const z = PINBALL_ORBIT_ZONES_V13[tube];
+    const z = PINBALL_ORBIT_ZONES_V14[tube];
     const start = { x: k(z.x0 + z.x1) / 2, y: 430 };
     const track = [start, ...pts];
     ctx.lineCap = "round"; ctx.lineJoin = "round";
@@ -208,7 +284,7 @@ function drawStaticArt(ctx: CanvasRenderingContext2D) {
   }
   // Painted bumper arena: a gold-rimmed triangle under the nest with starburst rays.
   {
-    const bs = pinballBumpersV13(0);
+    const bs = pinballBumpersV14(0);
     ctx.save();
     ctx.beginPath(); ctx.moveTo(k(bs[0].x) - 34, k(bs[0].y) - 22); ctx.lineTo(k(bs[1].x) + 34, k(bs[1].y) - 22); ctx.lineTo(k(bs[2].x), k(bs[2].y) + 40); ctx.closePath();
     ctx.fillStyle = "rgba(40,10,90,.45)"; ctx.fill();
@@ -228,37 +304,14 @@ function drawStaticArt(ctx: CanvasRenderingContext2D) {
     ctx.beginPath(); ctx.moveTo(x, y - 6); ctx.quadraticCurveTo(x + dir * 30, y + 6, x + dir * 66, y + 52); ctx.quadraticCurveTo(x + dir * 20, y + 18, x, y + 6); ctx.closePath(); ctx.fill();
     ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(x, y, 3.2, 0, Math.PI * 2); ctx.fill();
   }
-  // Centre emblem: a ringed planet badge between the slings (our own art).
-  {
-    const cx = 195, cy = EMBLEM_Y;
-    const disc = ctx.createRadialGradient(cx, cy, 10, cx, cy, 46);
-    disc.addColorStop(0, "rgba(28,22,64,.95)"); disc.addColorStop(1, "rgba(10,10,30,.95)");
-    ctx.fillStyle = disc; ctx.beginPath(); ctx.arc(cx, cy, 44, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = rgba(GOLD, 0.75); ctx.lineWidth = 2.2; ctx.stroke();
-    ctx.strokeStyle = rgba(GOLD, 0.25); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, 39, 0, Math.PI * 2); ctx.stroke();
-    for (let i = 0; i < 24; i++) {
-      const a = (i / 24) * Math.PI * 2;
-      ctx.strokeStyle = rgba(GOLD, i % 2 ? 0.25 : 0.5); ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 44, cy + Math.sin(a) * 44); ctx.lineTo(cx + Math.cos(a) * 49, cy + Math.sin(a) * 49); ctx.stroke();
-    }
-    const planet = ctx.createRadialGradient(cx - 8, cy - 10, 2, cx, cy, 22);
-    planet.addColorStop(0, "#ffe7b8"); planet.addColorStop(0.55, "#e09a4e"); planet.addColorStop(1, "#7a3b1c");
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.38);
-    ctx.strokeStyle = "rgba(255,226,170,.55)"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.ellipse(0, 0, 36, 9, 0, Math.PI, Math.PI * 2); ctx.stroke();
-    ctx.restore();
-    ctx.fillStyle = planet; ctx.beginPath(); ctx.arc(cx, cy, 19, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.38);
-    ctx.strokeStyle = "rgba(255,226,170,.85)"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.ellipse(0, 0, 36, 9, 0, 0, Math.PI); ctx.stroke();
-    ctx.strokeStyle = "rgba(122,59,28,.6)"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.ellipse(0, 0, 31, 7, 0, 0, Math.PI); ctx.stroke();
-    ctx.restore();
-  }
+  // Centre emblem (v162): Saturn in a chrome porthole — a deep-space window with a nebula and stars, the planet with
+  // its cloud bands and a terminator, multi-band rings (with their gap) passing behind and in front of it, the
+  // planet's shadow on the rings and a warm rim light. Our own art; the live glints are drawn per frame.
+  drawSaturnEmblem(ctx, 195, EMBLEM_Y);
   // Shooter lane floor.
   const lane = ctx.createLinearGradient(346, 0, 372, 0);
   lane.addColorStop(0, "#060a1c"); lane.addColorStop(0.5, "#101a3c"); lane.addColorStop(1, "#060a1c");
-  ctx.fillStyle = lane; ctx.fillRect(346, 150, 26, 470);
+  ctx.fillStyle = lane; ctx.fillRect(346, Y(150), 26, 620 - Y(150));
   // Apron plates below the guides.
   const apron = ctx.createLinearGradient(0, 470, 0, 640);
   apron.addColorStop(0, "#232c45"); apron.addColorStop(1, "#11172a");
@@ -272,26 +325,26 @@ function drawStaticArt(ctx: CanvasRenderingContext2D) {
   ctx.restore();
 
   // Chrome rails along every outer wall and guide.
-  const outer = PINBALL_WALLS_V13.length - PINBALL_MOUTHS_V13.length * 3 - PINBALL_SCOOP_ROOF_V13.length;
-  for (const w of PINBALL_WALLS_V13.slice(0, outer)) chromeLine(ctx, k(w.ax), k(w.ay), k(w.bx), k(w.by), 6);
+  const outer = PINBALL_WALLS_V14.length - PINBALL_MOUTHS_V14.length * 3 - PINBALL_SCOOP_ROOF_V14.length;
+  for (const w of PINBALL_WALLS_V14.slice(0, outer)) chromeLine(ctx, k(w.ax), k(w.ay), k(w.bx), k(w.by), 6);
   // Cabinet side rails.
   for (const x of [8, 382]) {
     const rail = ctx.createLinearGradient(x - 8, 0, x + 8, 0);
     rail.addColorStop(0, "#161d2b"); rail.addColorStop(0.5, "#8996aa"); rail.addColorStop(1, "#161d2b");
-    ctx.fillStyle = rail; ctx.fillRect(x - 6, 120, 12, 500);
+    ctx.fillStyle = rail; ctx.fillRect(x - 6, Y(120), 12, 620 - Y(120));
   }
   // Shadows under the round things.
-  for (const p of [...PINBALL_SLINGS_V13, ...PINBALL_POSTS_V13]) {
+  for (const p of [...PINBALL_SLINGS_V14, ...PINBALL_POSTS_V14]) {
     ctx.fillStyle = "rgba(0,0,0,.45)";
     ctx.beginPath(); ctx.arc(k(p.x) + 1.5, k(p.y) + 2.5, k(p.r) + 3, 0, Math.PI * 2); ctx.fill();
   }
-  for (const p of pinballBumpersV13(0)) {
+  for (const p of pinballBumpersV14(0)) {
     ctx.fillStyle = "rgba(0,0,0,.5)";
     ctx.beginPath(); ctx.arc(k(p.x) + 3, k(p.y) + 5, k(p.r) + 5, 0, Math.PI * 2); ctx.fill();
   }
   // Post values.
   ctx.font = "800 7.5px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  for (const p of PINBALL_POSTS_V13) {
+  for (const p of PINBALL_POSTS_V14) {
     const top = k(p.y) < 120, x = k(p.x), y = k(p.y) + (top ? -11 : k(p.r) + 9);
     ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.beginPath(); ctx.roundRect(x - 9, y - 5.5, 18, 11, 5.5); ctx.fill();
     ctx.fillStyle = rgba(GOLD, 0.95); ctx.fillText(String(p.points), x, y + 0.5);
@@ -322,10 +375,10 @@ function lamp(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, co
   ctx.shadowBlur = 0;
 }
 
-function flipper(ctx: CanvasRenderingContext2D, s: PinballStateV13, side: "left" | "right" | "upper") {
+function flipper(ctx: CanvasRenderingContext2D, s: PinballStateV14, side: "left" | "right" | "upper") {
   const angle = side === "left" ? s.left : s.right,
     held = side === "left" ? s.leftHeld : s.rightHeld,
-    tip = side === "upper" ? pinballUpperTipV13(angle) : pinballFlipperTipV13(side, angle);
+    tip = side === "upper" ? pinballUpperTipV14(angle) : pinballFlipperTipV14(side, angle);
   const thick = side === "upper" ? 7.5 : 9;
   const px = k(tip.pivot.x), py = k(tip.pivot.y), tx2 = k(tip.x), ty = k(tip.y);
   const len = Math.hypot(tx2 - px, ty - py) || 1, nx = -(ty - py) / len, ny = (tx2 - px) / len;
@@ -397,16 +450,16 @@ const CALLOUTS = new Proxy({} as Record<string, [string, string] | undefined>, {
 });
 const BIG = new Set(["SKILL", "JACKPOT", "DROPS", "BONUS", "DRAIN", "MISSION", "EXTRATIME", "HURRYGO", "SAVED", "FRENZY", "WORMHOLE", "MULTIBALL", "SUPER", "LOCK", "MODE0", "MODE1", "MODE2", "INLANES"]);
 /** Rows reserved above the table for the shared scoreboard (presentation only). */
-const SCORE_INSET = 54;
+const SCORE_INSET = 30; // v162: the taller V14 table sits right under the scoreboard
 
 /** Points every `step` px along a passage, with the normal (cached per tube). */
 const railSamples = new Map<number, { x: number; y: number; nx: number; ny: number; tx: number; ty: number; d: number }[]>();
 function samplesFor(tube: number, step = 5) {
   const hit = railSamples.get(tube);
   if (hit) return hit;
-  const total = pinballTubeLengthV13(tube), out: { x: number; y: number; nx: number; ny: number; tx: number; ty: number; d: number }[] = [];
+  const total = pinballTubeLengthV14(tube), out: { x: number; y: number; nx: number; ny: number; tx: number; ty: number; d: number }[] = [];
   for (let d = 0; d <= total; d += step * 1000) {
-    const a = pinballTubePointV13(tube, Math.max(0, d - 3000)), b = pinballTubePointV13(tube, Math.min(total, d + 3000)), p = pinballTubePointV13(tube, d);
+    const a = pinballTubePointV14(tube, Math.max(0, d - 3000)), b = pinballTubePointV14(tube, Math.min(total, d + 3000)), p = pinballTubePointV14(tube, d);
     const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
     out.push({ x: k(p.x), y: k(p.y), tx: dx / len, ty: dy / len, nx: -dy / len, ny: dx / len, d: d / total });
   }
@@ -418,19 +471,19 @@ const apexCache = new Map<number, number>();
 const apexD = (tube: number) => {
   const hit = apexCache.get(tube);
   if (hit !== undefined) return hit;
-  const path = PINBALL_TUBES_V13[tube].path;
+  const path = PINBALL_TUBES_V14[tube].path;
   let top = 0;
   path.forEach((p, i) => { if (p.y < path[top].y) top = i; });
   let d = 0;
   for (let i = 1; i <= top; i++) d += Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y);
-  const f = d / pinballTubeLengthV13(tube);
+  const f = d / pinballTubeLengthV14(tube);
   apexCache.set(tube, f);
   return f;
 };
 
 /** Ramp mouth on the floor: chrome U-guides and a lit entry flap in the ramp's colour. */
 function mouthArt(ctx: CanvasRenderingContext2D, side: number, t: number, lit: number) {
-  const m = PINBALL_MOUTHS_V13[side], c = side ? ROUTE.rRamp : ROUTE.lRamp;
+  const m = PINBALL_MOUTHS_V14[side], c = side ? ROUTE.rRamp : ROUTE.lRamp;
   const cx = k(m.x), cy = k(m.y), ux = m.ux / 1000, uy = m.uy / 1000, nx = -uy, ny = ux, hw = k(m.hw), dp = k(m.depth);
   // Floor of the mouth (dark, glowing into the ramp).
   const g = ctx.createLinearGradient(cx, cy, cx + ux * dp, cy + uy * dp);
@@ -538,8 +591,8 @@ function drawRamp(ctx: CanvasRenderingContext2D, tube: number, lit: number, kind
 }
 
 /** Centre scoop (the wormhole) under its roof: a gold vortex, brighter when it is open or the super jackpot is lit. */
-function scoopArt(ctx: CanvasRenderingContext2D, s: PinballStateV13, t: number) {
-  const x = k(PINBALL_WORMHOLE_V13.x), y = k(PINBALL_WORMHOLE_V13.y), r = k(PINBALL_WORMHOLE_V13.r) + 4;
+function scoopArt(ctx: CanvasRenderingContext2D, s: PinballStateV14, t: number) {
+  const x = k(PINBALL_WORMHOLE_V14.x), y = k(PINBALL_WORMHOLE_V14.y), r = k(PINBALL_WORMHOLE_V14.r) + 4;
   const open = s.drops.some(Boolean), hot = s.superLit > 0 || s.tube === 2;
   const g = ctx.createRadialGradient(x, y, 1, x, y, r + 8);
   g.addColorStop(0, "#000"); g.addColorStop(0.6, "#2b1a05"); g.addColorStop(1, rgba(ROUTE.scoop, 0));
@@ -554,12 +607,12 @@ function scoopArt(ctx: CanvasRenderingContext2D, s: PinballStateV13, t: number) 
   }
   ctx.restore();
   // The roof: a chrome chevron over the scoop.
-  for (const w of PINBALL_SCOOP_ROOF_V13) chromeLine(ctx, k(w.ax), k(w.ay), k(w.bx), k(w.by), 5);
+  for (const w of PINBALL_SCOOP_ROOF_V14) chromeLine(ctx, k(w.ax), k(w.ay), k(w.bx), k(w.by), 5);
   lamp(ctx, 195, 279, 3.2, rgba(ROUTE.scoop, 1), hot || (open && breathe(t) > 0.5), 10);
 }
 
 /** Lit level of each route (0…1) this frame: just used, feature lit, or an open combo. */
-function routeLight(s: PinballStateV13, t: number) {
+function routeLight(s: PinballStateV14, t: number) {
   const comboOpen = s.combo > 0 && t - s.lastShotTick < R.comboWindowTicks;
   const recent = (tick: number) => Math.max(0, 1 - (t - tick) / 90);
   const feature = s.hurry > 0 || s.multiball > 0 || s.mode === 2;
@@ -573,7 +626,7 @@ function routeLight(s: PinballStateV13, t: number) {
   };
 }
 
-export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13) {
+export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV14) {
   drawSpaceBackdrop(ctx, W, H, s.tick * 0.02, s.tick);
   ctx.drawImage(staticArt(ctx), 0, 0, W, H);
   const t = s.tick, idle = s.phase !== "play";
@@ -594,7 +647,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   for (const tube of [0, 1]) {
     const on = tube ? light.rOrbit : light.lOrbit;
     if (on < 0.2) continue;
-    const z = PINBALL_ORBIT_ZONES_V13[tube];
+    const z = PINBALL_ORBIT_ZONES_V14[tube];
     const track = [{ x: k(z.x0 + z.x1) / 2, y: 430 }, ...pathOf(tube)];
     ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
     smooth(ctx, track); ctx.strokeStyle = rgba(TUBE_ROUTE[tube], 0.16 * on); ctx.lineWidth = 26; ctx.stroke();
@@ -605,13 +658,13 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   {
     const left = Math.max(0, (s.endTick - t) / s.endTick);
     ctx.strokeStyle = "rgba(255,255,255,.08)"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(112, 47); ctx.lineTo(288, 47); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(112, Y(47)); ctx.lineTo(288, Y(47)); ctx.stroke();
     ctx.strokeStyle = left > 0.25 ? "#5ad8b8" : "#ff6a7a";
-    ctx.beginPath(); ctx.moveTo(112, 47); ctx.lineTo(112 + 176 * left, 47); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(112, Y(47)); ctx.lineTo(112 + 176 * left, Y(47)); ctx.stroke();
   }
   // Rollover lanes A-B-C (the skill-shot lane breathes gold).
   const skillOpen = s.launchTick >= 0 && !s.skillDone && t - s.launchTick <= R.skillWindowTicks;
-  PINBALL_LANES_V13.forEach((l, i) => {
+  PINBALL_LANES_V14.forEach((l, i) => {
     const nextSkill = s.phase === "lane" && !s.skillDone && s.launches % 3 === i;
     const skill = (skillOpen && s.skillLane === i) || nextSkill;
     const on = s.lanes[i] > 0 || (skill && breathe(t) > 0.4);
@@ -623,7 +676,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   });
   // Top spinner.
   {
-    const sp = PINBALL_SPINNER_V13, cx = k(sp.x0 + sp.x1) / 2, cy = k(sp.y0 + sp.y1) / 2, a = s.spins * 1.1;
+    const sp = PINBALL_SPINNER_V14, cx = k(sp.x0 + sp.x1) / 2, cy = k(sp.y0 + sp.y1) / 2, a = s.spins * 1.1;
     ctx.strokeStyle = "rgba(200,220,255,.35)"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(cx - 24, cy - 9); ctx.lineTo(cx + 24, cy - 9); ctx.stroke();
     const w = 22 * Math.abs(Math.cos(a)), hgt = 5 + 5 * Math.abs(Math.sin(a));
@@ -634,7 +687,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   }
   // Left spinner at the mouth of the left orbit.
   {
-    const sp = PINBALL_LSPINNER_V13, cx = k(sp.x0 + sp.x1) / 2, cy = k(sp.y0 + sp.y1) / 2, a = s.lSpins * 1.1;
+    const sp = PINBALL_LSPINNER_V14, cx = k(sp.x0 + sp.x1) / 2, cy = k(sp.y0 + sp.y1) / 2, a = s.lSpins * 1.1;
     const w = 14 * Math.abs(Math.cos(a)), hgt = 4 + 4 * Math.abs(Math.sin(a));
     const g = ctx.createLinearGradient(cx - w, 0, cx + w, 0);
     g.addColorStop(0, "#5f7387"); g.addColorStop(0.5, "#f2f7fc"); g.addColorStop(1, "#5f7387");
@@ -642,7 +695,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     ctx.fillStyle = rgba(ROUTE.lOrbit, 0.9); if (w > 5) ctx.fillRect(cx - w * 0.6, cy - 1, w * 1.2, 2);
   }
   // Inlane rollovers.
-  PINBALL_INLANES_V13.forEach((l, i) => {
+  PINBALL_INLANES_V14.forEach((l, i) => {
     const x = k(l.x), y = k(l.y), on = s.inlanes[i] > 0, flash = t - s.inlaneFlash[i] < 16;
     ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.beginPath(); ctx.roundRect(x - 9, y - 5, 18, 10, 5); ctx.fill();
     ctx.fillStyle = on || flash ? "#5cf0d8" : "rgba(255,255,255,.12)";
@@ -651,7 +704,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   });
   // Saucer (lock / jackpot) with its ring lamps and the two lock lamps.
   {
-    const c = PINBALL_SAUCER_V13, cx = k(c.x), cy = k(c.y), hot = s.saucerLit > 0 || s.lockLit > 0;
+    const c = PINBALL_SAUCER_V14, cx = k(c.x), cy = k(c.y), hot = s.saucerLit > 0 || s.lockLit > 0;
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
       lamp(ctx, cx + Math.cos(a) * 21, cy + Math.sin(a) * 21, 2.4, s.lockLit ? "#7cffd8" : "#ffd36a", hot && breathe(t, i * 0.4) > 0.35, 6);
@@ -663,13 +716,13 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     for (let i = 0; i < 2; i++) lamp(ctx, cx - 7 + i * 14, cy - 27, 3.2, "#7cffd8", s.locks > i, 8);
   }
   // Stand-up targets.
-  PINBALL_TARGETS_V13.forEach((tg, i) => {
+  PINBALL_TARGETS_V14.forEach((tg, i) => {
     const hit = s.targets[i] > 0, ax = k(tg.ax), ay = k(tg.ay), by = k(tg.by);
     ctx.fillStyle = hit ? "#ffd36a" : "#d23b55"; ctx.fillRect(ax - 1, ay, 7, by - ay);
     ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.fillRect(ax + 4, ay + 2, 1.5, by - ay - 4);
     lamp(ctx, ax + 18, (ay + by) / 2, 3.6, "#ffd36a", hit);
   });
-  PINBALL_RTARGETS_V13.forEach((tg, i) => {
+  PINBALL_RTARGETS_V14.forEach((tg, i) => {
     const hit = s.rTargets[i] > 0, ax = k(tg.ax), ay = k(tg.ay), by = k(tg.by);
     ctx.fillStyle = hit ? "#7cffd8" : "#3f6fe0"; ctx.fillRect(ax - 6, ay, 7, by - ay);
     ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.fillRect(ax - 5, ay + 2, 1.5, by - ay - 4);
@@ -677,7 +730,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   });
   // Centre scoop under its roof, then the drop bank in front of it.
   scoopArt(ctx, s, t);
-  PINBALL_DROPS_V13.forEach((w, i) => {
+  PINBALL_DROPS_V14.forEach((w, i) => {
     const ax = k(w.ax), ay = k(w.ay), bx = k(w.bx), by = k(w.by), age = t - s.dropFlash[i], down = s.drops[i] > 0;
     ctx.lineCap = "butt";
     if (down) {
@@ -697,13 +750,26 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   // Ramp mouths (on the floor) with the next ramp value on a plaque beside each.
   for (const side of [0, 1]) {
     mouthArt(ctx, side, t, side ? light.rRamp : light.lRamp);
-    const m = PINBALL_MOUTHS_V13[side], c = side ? ROUTE.rRamp : ROUTE.lRamp;
+    const m = PINBALL_MOUTHS_V14[side], c = side ? ROUTE.rRamp : ROUTE.lRamp;
     const px = k(m.x) + (side ? -24 : 24), py = k(m.y) + 36;
     ctx.fillStyle = "rgba(6,6,18,.82)"; ctx.beginPath(); ctx.roundRect(px - 18, py - 7, 36, 14, 7); ctx.fill();
     ctx.strokeStyle = rgba(c, 0.7); ctx.lineWidth = 1; ctx.stroke();
     ctx.fillStyle = rgba(c, 1); ctx.font = "900 8.5px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(formatNumber(s.rampValue), px, py + 0.5);
     ctx.textBaseline = "alphabetic";
+  }
+  // Saturn porthole, live (v162): a moon orbiting in front of the rings and a light glint sweeping the chrome bezel.
+  {
+    const cx = 195, cy = EMBLEM_Y, a = t * 0.012, mx = Math.cos(a) * 34, my = Math.sin(a) * 9;
+    if (my > -2) {
+      const x = cx + mx * Math.cos(-0.36) - my * Math.sin(-0.36), y = cy + mx * Math.sin(-0.36) + my * Math.cos(-0.36);
+      const mg = ctx.createRadialGradient(x - 1, y - 1, 0.3, x, y, 3.4);
+      mg.addColorStop(0, "#ffffff"); mg.addColorStop(1, "#8a93a8");
+      ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    const g0 = (t * 0.02) % (Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = 2; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(cx, cy, 49, g0, g0 + 0.35); ctx.stroke();
   }
   // Multiplier lamps ×1…×5 in a row above the emblem.
   for (let m = 1; m <= R.maxMultiplier; m++) {
@@ -731,8 +797,8 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     }
   }
 
-  // V13 middle dividers: a black rubber band round two chrome pins, under a coloured plastic cap; a hit flashes it.
-  PINBALL_DIVIDERS_V13.forEach((dv, i) => {
+  // V14 middle dividers: a black rubber band round two chrome pins, under a coloured plastic cap; a hit flashes it.
+  PINBALL_DIVIDERS_V14.forEach((dv, i) => {
     const ax = k(dv.ax), ay = k(dv.ay), bx = k(dv.bx), by = k(dv.by), r = k(dv.r), age = t - s.dividerFlash[i], hit = age >= 0 && age < 12;
     const c = i ? ROUTE.rRamp : ROUTE.lRamp;
     ctx.save(); ctx.lineCap = "round";
@@ -757,8 +823,8 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     ctx.beginPath(); ctx.roundRect(lx - 8, ly - 5.5, 16, 11, 5.5); ctx.fill();
     ctx.fillStyle = rgba(GOLD, 1); ctx.fillText(String(dv.points), lx, ly + 0.5); ctx.textBaseline = "alphabetic";
   });
-  // V13 star rollovers down the centre lane (lit once passed; three make a set).
-  PINBALL_STARS_V13.forEach((st, i) => {
+  // V14 star rollovers down the centre lane (lit once passed; three make a set).
+  PINBALL_STARS_V14.forEach((st, i) => {
     const x = k(st.x), y = k(st.y), on = s.stars[i] > 0, age = t - s.starFlash[i], flash = age >= 0 && age < 18;
     ctx.save(); ctx.translate(x, y); ctx.rotate(-Math.PI / 2);
     ctx.beginPath();
@@ -770,14 +836,14 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     ctx.strokeStyle = rgba(ROUTE.scoop, on ? 1 : 0.7); ctx.lineWidth = 1.2; ctx.stroke();
     ctx.restore();
   });
-  // V13 progress ladders beside the emblem: the end bonus (left) and lock → multiball → jackpots (right).
+  // V14 progress ladders beside the emblem: the end bonus (left) and lock → multiball → jackpots (right).
   for (let i = 0; i < 6; i++) {
     lamp(ctx, 110 + i * 8, 414 + i * 6, 3.2, rgba(GOLD, 1), s.bonusCount > i * 2, 8);
     const mb = [s.locks > 0, s.locks > 1 || s.multiball > 0, s.multiball > 0, s.jackpots % 3 > 0 || s.superLit > 0, s.jackpots % 3 > 1 || s.superLit > 0, s.superLit > 0][i];
     lamp(ctx, 280 - i * 8, 414 + i * 6, 3.2, i < 2 ? "#39ff88" : i === 2 ? rgba(ROUTE.rRamp, 1) : rgba(ROUTE.scoop, 1), mb, 8);
   }
   // Pop bumpers: one family (indigo body, gold rim, white cap with the value); a hit flashes them.
-  pinballBumpersV13(s.layout).forEach((p, i) => {
+  pinballBumpersV14(s.layout).forEach((p, i) => {
     const x = k(p.x), y = k(p.y), r = k(p.r), age = t - s.bumperFlash[i], hit = age >= 0 && age < 12;
     const storm = s.mode === 0, [hi, lo] = BUMPER_TONES[i % BUMPER_TONES.length];
     ctx.fillStyle = "#05060f"; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.fill();
@@ -801,7 +867,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     }
   });
   // Kickers (slings) and rubber posts.
-  PINBALL_SLINGS_V13.forEach((p, i) => {
+  PINBALL_SLINGS_V14.forEach((p, i) => {
     const x = k(p.x), y = k(p.y), age = t - s.slingFlash[i], hit = age >= 0 && age < 10;
     ctx.fillStyle = "#0b0b0f"; ctx.beginPath(); ctx.arc(x, y, k(p.r) + 2, 0, Math.PI * 2); ctx.fill();
     lamp(ctx, x, y, k(p.r) - 2, "#e9506a", hit, 14);
@@ -810,7 +876,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     ctx.fillText(String(p.points), x, y + 0.5);
     ctx.textBaseline = "alphabetic";
   });
-  PINBALL_POSTS_V13.forEach((p, i) => {
+  PINBALL_POSTS_V14.forEach((p, i) => {
     const x = k(p.x), y = k(p.y), r = k(p.r), age = t - s.postFlash[i], hit = age >= 0 && age < 10;
     ctx.fillStyle = "#0b0b0f"; ctx.beginPath(); ctx.arc(x, y, r + 3, 0, Math.PI * 2); ctx.fill();
     if (hit) { ctx.strokeStyle = rgba(GOLD, 0.95); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 2, 0, Math.PI * 2); ctx.stroke(); }
@@ -846,7 +912,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
     ctx.restore();
   }
   // Frenzy: a slow pulse round the whole table.
-  if (pinballFrenzyV13(s) && s.status === "running") {
+  if (pinballFrenzyV14(s) && s.status === "running") {
     ctx.save(); tableOutline(ctx);
     ctx.strokeStyle = `rgba(255,140,210,${0.35 + 0.4 * breathe(t * 2)})`; ctx.lineWidth = 4; ctx.stroke();
     ctx.restore();
@@ -856,11 +922,11 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   if (s.tube === 2) {
     ctx.save(); ctx.setLineDash([3, 6]); ctx.strokeStyle = rgba(ROUTE.scoop, 0.6); ctx.lineWidth = 2.5;
     smooth(ctx, pathOf(2)); ctx.stroke(); ctx.restore();
-    const blend = R.tubeBlendMilli, total = pinballTubeLengthV13(2);
+    const blend = R.tubeBlendMilli, total = pinballTubeLengthV14(2);
     const inside = Math.min(1, s.tubeD / blend, (total - s.tubeD) / blend);
     if (inside < 1) drawBall(ctx, s.ball, Math.max(0.15, 1 - inside));
     else { ctx.save(); ctx.fillStyle = rgba(ROUTE.scoop, 0.9); ctx.shadowColor = rgba(ROUTE.scoop, 1); ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(k(s.ball.x), k(s.ball.y), 6, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-    const end = PINBALL_TUBES_V13[2].path.at(-1)!;
+    const end = PINBALL_TUBES_V14[2].path.at(-1)!;
     const g = ctx.createRadialGradient(k(end.x), k(end.y), 1, k(end.x), k(end.y), 13);
     g.addColorStop(0, "#fff3d0"); g.addColorStop(1, rgba(ROUTE.scoop, 0));
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(k(end.x), k(end.y), 13, 0, Math.PI * 2); ctx.fill();
@@ -877,7 +943,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   // Ramps over everything on the floor (raised plastic and wires). A ball on the plastic is drawn between the ramp's
   // shadow and its body (inside the tinted plastic); a ball on the wire return is drawn over the wires.
   for (const tube of [3, 4]) {
-    const riding = s.tube === tube, onPlastic = riding && s.tubeD / pinballTubeLengthV13(tube) <= apexD(tube);
+    const riding = s.tube === tube, onPlastic = riding && s.tubeD / pinballTubeLengthV14(tube) <= apexD(tube);
     const lit = Math.max(riding ? 1 : 0, tube === 3 ? light.lRamp : light.rRamp);
     drawRamp(ctx, tube, lit, "shadow");
     if (onPlastic) { ctx.save(); ctx.shadowColor = rgba(TUBE_ROUTE[tube], 1); ctx.shadowBlur = 12; drawBall(ctx, s.ball); ctx.restore(); }
@@ -887,7 +953,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
 
   // Shooter lane: power lamps and the spring plunger.
   {
-    const level = pinballChargeLevelV13(s.charge), charging = s.phase === "lane" && s.chargeHeld;
+    const level = pinballChargeLevelV14(s.charge), charging = s.phase === "lane" && s.chargeHeld;
     for (let i = 0; i < R.maxChargeLevel; i++) {
       const on = charging ? i < level : s.phase === "lane" && i === 0;
       lamp(ctx, 359, 556 - i * 18, 3.2, i >= R.maxChargeLevel - 2 ? "#8ef0c4" : "#ffcf4a", on, 6);
@@ -960,7 +1026,7 @@ export function renderPinball(ctx: CanvasRenderingContext2D, s: PinballStateV13)
   if (s.status === "failed") { ctx.fillStyle = "rgba(216,81,109,.12)"; ctx.fillRect(0, 0, W, H); }
 }
 
-function pointAction(point: CorePoint, phase: "down" | "move" | "up", s: PinballStateV13) {
+function pointAction(point: CorePoint, phase: "down" | "move" | "up", s: PinballStateV14) {
   if (phase === "move" || point.y > 540) return null;
   const left = point.x < 195;
   if (phase === "down") return left ? "FLIP_LEFT_PRESS" : "FLIP_RIGHT_PRESS";
@@ -985,13 +1051,13 @@ const controls = [
   { action: "FLIP_RIGHT_PRESS", releaseAction: "FLIP_RIGHT_RELEASE", get label() { return tx("pinball.rightFlipper"); }, symbol: "▶", style: { width: 104 } },
 ] as const;
 const inputTones = { PLUNGER_RELEASE: "tap", FLIP_LEFT_PRESS: "tap", FLIP_RIGHT_PRESS: "tap" } as const;
-const hudLabel = (s: Readonly<PinballStateV13>) => tx("pinball.hud", { secs: Math.max(0, Math.ceil((s.endTick - s.tick) / R.tickRate)), mult: s.multiplier });
-const scoreCells = (s: Readonly<PinballStateV13>): ScoreCell[] => {
+const hudLabel = (s: Readonly<PinballStateV14>) => tx("pinball.hud", { secs: Math.max(0, Math.ceil((s.endTick - s.tick) / R.tickRate)), mult: s.multiplier });
+const scoreCells = (s: Readonly<PinballStateV14>): ScoreCell[] => {
   const secs = Math.max(0, Math.ceil((s.endTick - s.tick) / R.tickRate));
   return [
     { label: tx("hud.points"), value: formatNumber(s.score), main: true },
     { label: tx("hud.time"), value: `${secs} s`, alert: secs <= 10 },
-    { label: tx("hud.mult"), value: pinballFrenzyV13(s) ? `×${s.multiplier} ×2` : `×${s.multiplier}` },
+    { label: tx("hud.mult"), value: pinballFrenzyV14(s) ? `×${s.multiplier} ×2` : `×${s.multiplier}` },
   ];
 };
 
@@ -1001,7 +1067,7 @@ export default function PinballVerified(props: GameRuntimeProps) {
     <div className="pinballVerified">
       <CoreCanvasGame
         {...props}
-        core={PINBALL_CORE_V13}
+        core={PINBALL_CORE_V14}
         name="Pinball"
         render={renderPinball}
         pointAction={pointAction}

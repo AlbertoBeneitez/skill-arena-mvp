@@ -372,7 +372,7 @@ const hudLabel = (s: Readonly<SlotState>) =>
 const feedbackScore = (s: Readonly<SlotState>) => s.balanceMinor;
 const scoreCells = (s: Readonly<SlotState>): ScoreCell[] => [
   { label: t("hud.chips"), value: formatNumber(s.balanceMinor / 100, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), main: true },
-  { label: t("hud.time"), value: `${formatNumber(Math.max(0, 21600 - s.tick) / 120, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} s` },
+  { label: t("hud.time"), value: `${Math.ceil(Math.max(0, 21600 - s.tick) / 120)} s` },
   s.steps.every((step) => step === 0) ? { label: t("hud.shots"), value: t("slot.hudNoZero"), alert: true } : { label: t("hud.shots"), value: formatNumber(s.spins) },
 ];
 /** The game's own renderer, for the catalogue cover script (scripts/render-slot-cover.mjs). */

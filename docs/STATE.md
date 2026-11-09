@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 9 de noviembre de 2026 · base `mobile-test` en v161-saturn.
+Actualizado: 9 de noviembre de 2026 · base `mobile-test` en v162-saturn.
 
 ## Catálogo
 
@@ -27,7 +27,7 @@ resultado aún no verificado de extremo a extremo. Roulette está oculta desde v
 | orb-burst | Orb Burst (puntúa burbujas eliminadas) | 8.0.0 | VERIFIED |
 | precision-stack | Stack | 4.0.0 | VERIFIED |
 | reaction-test | Shot Gallery | 13.0.0 | VERIFIED |
-| pinball | Pinball | 13.0.0 | VERIFIED |
+| pinball | Pinball | 14.0.0 | VERIFIED |
 | bowling | Bowling | 3.0.0 | VERIFIED |
 | corner-sudoku | Galoku | 4.0.0 | VERIFIED |
 | solitaire-sprint | Solitaire Sprint | 0.2.0 | INTEGRATED |
@@ -60,6 +60,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 - [ ] Hacer privado el repositorio.
 - [ ] Mantener `mobile-test` o probar solo desde la vista previa de cada pull request.
 - [ ] Tolerar cortes breves de conexión durante la partida (C3: cambia cuándo se pierde por abandono).
+- [ ] Bowling: el propietario ve que la partida termina nada más entrar, sin tocar nada (9 de noviembre). No se reproduce en 30 tiradas automáticas en tres tamaños de pantalla ni con la CPU frenada; falta una captura de la pantalla que aparece y el navegador del móvil.
 - [ ] Dejar de borrar los datos locales al abrir una pestaña nueva (C6).
 - [x] **Grupos (1 de noviembre):**
   - al crear un grupo se elige el formato: liga de partidas individuales (cada uno juega cuando quiere y suma sus resultados) o liga de enfrentamientos 1 contra 1 (misma semilla para los dos); además, el torneo;
@@ -86,6 +87,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Pinball V14, marcador común y Dardos (9 de noviembre, v162):** mesa más alta (arco de y 42 a y 12) justo bajo el marcador y Saturno en ojo de buey; marcador con el número a la derecha igual en los 13 juegos; diana y dardos realistas; celebraciones de Bowling más rápidas con final de fuegos artificiales; portadas de Mine Grid, Orb Burst, Solitaire Sprint, Dardos y Bowling; avatares con cabeza y hombros.
 - [x] **Pinball V13 (9 de noviembre, v161):** recorridos con curvas suaves (spline entera), divisores de goma en el centro, estrellas en el carril central; neón de alto contraste y espacio vacío ocupado por carriles, arena, cometas y escaleras de progreso.
 - [x] **Pinball V12 (9 de noviembre, v160):** mesa nueva con la estructura de la referencia (rampas con boca central, órbitas, agujero tras dianas en V y bajo tejadillo, triángulo de bumpers); cada recorrido con un color fijo; luces calmadas; portada generada por el juego.
 - [x] **Retratos con versión (9 de noviembre, v159):** URL versionadas (`lib/avatars.ts`, subir `AVATAR_VERSION` al cambiar las imágenes); hoja de 16 en horizontal.

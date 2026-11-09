@@ -614,6 +614,79 @@ function sceneUfo(ctx: CanvasRenderingContext2D, H: number, t: number, count: nu
 
 /* ------------------------------------------------------------------ entry point */
 
+/** v162 · Opening slam: the score-sheet mark (X or /) crashes in huge with a shockwave, a ring of rays and a shake. */
+function markSlam(ctx: CanvasRenderingContext2D, t: number, H: number, strike: boolean, theme: Theme) {
+  if (t < 0 || t > 110) return;
+  const pal = PALETTE[theme], cy = H * 0.42;
+  const k = clamp01(t / 12), fade = 1 - seg(t, 80, 110);
+  ctx.save();
+  ctx.globalAlpha = fade;
+  // Rays wheel behind the mark.
+  ctx.save(); ctx.translate(195, cy); ctx.rotate(t * 0.02); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 16; i++) {
+    ctx.rotate(Math.PI / 8);
+    ctx.fillStyle = `rgba(${pal.beam},${0.22 * k})`;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-22, -420); ctx.lineTo(22, -420); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  // Shockwave rings.
+  for (let r = 0; r < 3; r++) {
+    const u = t - 10 - r * 8;
+    if (u <= 0 || u > 60) continue;
+    ctx.strokeStyle = `rgba(255,255,255,${0.7 * (1 - u / 60)})`; ctx.lineWidth = 6 * (1 - u / 60) + 1;
+    ctx.beginPath(); ctx.arc(195, cy, 40 + u * 6, 0, Math.PI * 2); ctx.stroke();
+  }
+  const scale = t < 12 ? 3.2 - 2.2 * easeOut(k) : 1 + 0.12 * Math.exp(-(t - 12) / 8) * Math.cos((t - 12) * 0.8);
+  ctx.translate(195, cy); ctx.scale(scale, scale);
+  ctx.font = "900 190px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  const mark = strike ? "X" : "/";
+  for (let d = 10; d > 0; d--) { ctx.fillStyle = d > 7 ? "rgba(0,0,0,.5)" : pal.edge; ctx.fillText(mark, d * 0.5, d * 1.1); }
+  const face = ctx.createLinearGradient(0, -90, 0, 90);
+  pal.face.forEach((c, i) => face.addColorStop(i / (pal.face.length - 1), c));
+  ctx.shadowColor = pal.glow; ctx.shadowBlur = 40; ctx.fillStyle = face; ctx.fillText(mark, 0, 0); ctx.shadowBlur = 0;
+  ctx.restore();
+}
+/** v162 · Finale fireworks: deterministic shells that rise, burst into rings of stars and fall away. */
+function fireworks(ctx: CanvasRenderingContext2D, t: number, H: number, n: number, seed: number, colors: string[]) {
+  if (t <= 0) return;
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (let i = 0; i < n; i++) {
+    const h = (k: number) => hash01((i + 1) * 3.71 + seed * 1.93 + k * 11.7);
+    const at = i * 26 + h(1) * 18, u = t - at;
+    if (u <= 0 || u > 150) continue;
+    const x = 50 + h(2) * 290, top = H * (0.12 + h(3) * 0.28), rise = 36, col = colors[i % colors.length];
+    if (u < rise) {
+      const k = u / rise, y = H - (H - top) * easeOut(k);
+      ctx.strokeStyle = col; ctx.globalAlpha = 0.9; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 26); ctx.stroke();
+      continue;
+    }
+    const v = u - rise, count = 40, fade = Math.max(0, 1 - v / 114);
+    if (v < 8) { ctx.globalAlpha = 1 - v / 8; ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(x, top, 30 - v * 2, 0, Math.PI * 2); ctx.fill(); }
+    for (let q = 0; q < count; q++) {
+      const a = (q / count) * Math.PI * 2 + h(4), sp = 3.6 + (q % 3) * 0.9;
+      const px = x + Math.cos(a) * sp * v * 0.9, py = top + Math.sin(a) * sp * v * 0.9 + 0.012 * v * v;
+      ctx.globalAlpha = fade; ctx.strokeStyle = col; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - Math.cos(a) * 12, py - Math.sin(a) * 12 - 1); ctx.stroke();
+      if ((q + Math.floor(v / 5)) % 3 === 0) { ctx.fillStyle = "#ffffff"; ctx.fillRect(px - 1, py - 1, 2, 2); }
+    }
+  }
+  ctx.restore();
+}
+/** v162 · Finale crowd: a line of pins at the bottom jumping, waving and cheering (a stadium wave). */
+function cheeringPins(ctx: CanvasRenderingContext2D, t: number, H: number, n: number) {
+  if (t <= 0) return;
+  const enter = easeOut(clamp01(t / 30)), base = H - 160 + 200 * (1 - enter);
+  for (let i = 0; i < n; i++) {
+    const x = 195 + (i - (n - 1) / 2) * (360 / n), ph = t * 0.16 - i * 0.7;
+    const hop = Math.max(0, Math.sin(ph)) * 34, up = Math.max(0, Math.sin(ph));
+    pinChar(ctx, x, base - hop, 84, {
+      tilt: Math.sin(ph * 0.5) * 0.12, squash: hop < 2 ? 0.92 : 1, eyes: up > 0.5 ? "happy" : "wow", mouth: up > 0.3 ? "grin" : "o",
+      armL: Math.PI * (0.55 + 0.4 * up), armR: Math.PI * (0.55 + 0.4 * up), legL: -0.3 * up, legR: 0.3 * up,
+    });
+  }
+}
+
 /** Draws cartoon frame t (0 … CARTOON_TICKS) plus its title, sparks and lower third. */
 export function drawCartoon(ctx: CanvasRenderingContext2D, s: BowlingStateV3, H: number, t: number) {
   const kind = s.lastResult?.kind;
@@ -621,22 +694,37 @@ export function drawCartoon(ctx: CanvasRenderingContext2D, s: BowlingStateV3, H:
   const cartoon = cartoonFor(s), theme = THEME[cartoon], pal = PALETTE[theme];
   const label = kind === "strike" ? tx("bowling.strike") : tx("bowling.spare");
   const tt = Math.max(0, Math.min(CARTOON_TICKS - 1, t));
+  // v162: the story plays 1.7× faster (it used to reach its climax after eight seconds), after an opening slam; the
+  // time it frees is a finale with fireworks and the pins cheering.
+  const SLAM = 70, st = Math.max(0, Math.min(CARTOON_TICKS - 1, (tt - SLAM) * 1.7));
   ctx.save();
-  if (cartoon === "launch") sceneLaunch(ctx, H, tt);
-  else if (cartoon === "disco") sceneDisco(ctx, H, tt);
-  else sceneUfo(ctx, H, tt, s.lastResult?.knocked ?? 2);
+  // A short shake when the mark lands and when the title lands.
+  const titleAt = cartoon === "launch" ? 960 : cartoon === "disco" ? 880 : 860, titleT = SLAM + titleAt / 1.7, u = tt - titleT;
+  const shake = (tt > 10 && tt < 30 ? (30 - tt) / 20 : 0) + (u > 14 && u < 32 ? (32 - u) / 18 : 0);
+  if (shake > 0) ctx.translate(Math.sin(tt * 2.3) * 7 * shake, Math.cos(tt * 3.1) * 5 * shake);
+  if (cartoon === "launch") sceneLaunch(ctx, H, st);
+  else if (cartoon === "disco") sceneDisco(ctx, H, st);
+  else sceneUfo(ctx, H, st, s.lastResult?.knocked ?? 2);
+  if (tt < SLAM + 40) { ctx.fillStyle = `rgba(3,5,14,${0.55 * (1 - seg(tt, SLAM, SLAM + 40))})`; ctx.fillRect(-20, -20, 430, H + 40); }
+  markSlam(ctx, tt, H, kind === "strike", theme);
   // Title act.
-  const titleAt = cartoon === "launch" ? 960 : cartoon === "disco" ? 880 : 860, u = tt - titleAt, cy = H * (cartoon === "disco" ? 0.36 : 0.3);
+  const cy = H * (cartoon === "disco" ? 0.36 : 0.3);
+  const finale = st >= CARTOON_TICKS - 1 ? tt - (SLAM + (CARTOON_TICKS - 1) / 1.7) : -1;
+  if (finale > 0) {
+    fireworks(ctx, finale, H, 12, (s.lastResult?.frame ?? 0) * 5 + s.rolls.length, [...pal.spark, "#5cffb0", "#ff6fd8"]);
+    cheeringPins(ctx, finale - 10, H, kind === "strike" ? 5 : 3);
+  }
   if (u >= 0) {
-    if (u < 10) { ctx.fillStyle = `rgba(255,255,255,${0.6 * (1 - u / 10)})`; ctx.fillRect(0, 0, 390, H); }
+    if (u < 10) { ctx.fillStyle = `rgba(255,255,255,${0.6 * (1 - u / 10)})`; ctx.fillRect(-20, -20, 430, H + 40); }
     sparks(ctx, u - 4, 195, cy, kind === "strike" ? 120 : 70, pal.spark, (s.lastResult?.frame ?? 0) + s.rolls.length, H);
     proTitle(ctx, label, u, cy, kind === "strike" ? 78 : 54, theme);
     lensFlare(ctx, u - 8, cy - 4, pal.beam);
     lowerThird(ctx, s, u - 40, H, theme, label);
   }
-  if (cartoon === "disco") confetti(ctx, tt - 800, H, 90, s.rolls.length);
-  if (cartoon === "launch") confetti(ctx, tt - 1000, H, 60, s.rolls.length);
+  if (cartoon === "disco") confetti(ctx, tt - (SLAM + 800 / 1.7), H, 90, s.rolls.length);
+  if (cartoon === "launch") confetti(ctx, tt - (SLAM + 1000 / 1.7), H, 60, s.rolls.length);
+  if (finale > 0) confetti(ctx, finale, H, 70, s.rolls.length + 3);
   // Opening iris from the replay.
-  if (tt < 18) { ctx.fillStyle = `rgba(255,255,255,${0.8 * (1 - tt / 18)})`; ctx.fillRect(0, 0, 390, H); }
+  if (tt < 18) { ctx.fillStyle = `rgba(255,255,255,${0.8 * (1 - tt / 18)})`; ctx.fillRect(-20, -20, 430, H + 40); }
   ctx.restore();
 }

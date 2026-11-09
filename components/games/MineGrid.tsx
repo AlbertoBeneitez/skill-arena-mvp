@@ -341,12 +341,11 @@ export default function MineGrid({
     >
       {(() => {
         const mm = String(Math.floor(elapsedMs / 60000)).padStart(2, "0"), ss = String(Math.floor(elapsedMs / 1000) % 60).padStart(2, "0");
-        const level = challenge.deductionRounds <= 9 ? tx("mine.easy") : challenge.deductionRounds <= 12 ? tx("mine.medium") : tx("mine.hard");
         const left = Math.max(0, MINES - flagged.size), fieldNo = challenge.id.replace(/\D+/g, "") || "0";
         return (
           <GameScoreboard className="mineScoreboard" cells={[
             { label: tx("hud.time"), value: `${mm}:${ss}`, main: true },
-            { label: tx("hud.field"), value: `${fieldNo} · ${level}` },
+            { label: tx("hud.field"), value: fieldNo },
             { label: tx("hud.mines"), value: String(left) },
           ]} />
         );

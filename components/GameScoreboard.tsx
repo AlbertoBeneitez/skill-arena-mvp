@@ -10,7 +10,7 @@ export default function GameScoreboard({ cells, className = "" }: { cells: reado
   return (
     <div className={`gxScoreboard ${className}`} role="group" aria-live="off">
       {cells.map((cell) => (
-        <span key={cell.label} className={`gxScoreCell${cell.main ? " main" : ""}${cell.alert ? " alert" : ""}`}>
+        <span key={cell.label} className={`gxScoreCell${cell.main ? " main" : ""}${cell.alert ? " alert" : ""}${/\p{L}{4,}/u.test(cell.value) ? " word" : ""}`}>
           <small>{cell.label}</small>
           <b>{cell.value}</b>
         </span>

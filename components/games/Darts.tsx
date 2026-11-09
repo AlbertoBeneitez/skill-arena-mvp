@@ -34,9 +34,15 @@ const held = { active: false, x: 0, y: 0, trail: [] as { x: number; y: number }[
  * glowing on the floor, and a flash + shockwave on every impact (stronger on bull, treble and double).
  * The static board is cached in an offscreen canvas once.
  */
-const BOARD_CLASSIC = { dark: "#16161b", light: "#ece2c6", red: "#c8202f", green: "#14915a" };
+const BOARD_CLASSIC = { dark: "#121216", light: "#e9dcbc", red: "#b8141f", green: "#0d7a47" };
 let boardCache: HTMLCanvasElement | null = null;
-const BOARD_PX = 2, BOARD_R = 160; // cached at 2× around the board centre (logical radius incl. surround)
+const BOARD_PX = 3, BOARD_R = 160; // cached at 3× around the board centre (logical radius incl. surround)
+/**
+ * v162 · A tournament board in detail (presentation only; the V3 scoring radii 10/24/78/88/129/140 are untouched):
+ * a black catch ring with a machined steel bezel, pressed sisal (radial fibre texture, mottled tone per bed and
+ * worn pin holes), lacquered doubles and trebles with their own sheen, a raised silver spider drawn with its
+ * shadow and its lit edge, a wire number ring and embossed white numbers, and a key light from the upper left.
+ */
 function boardSprite() {
   if (boardCache || typeof document === "undefined") return boardCache;
   const c = document.createElement("canvas");
@@ -45,50 +51,108 @@ function boardSprite() {
   if (!g) return null;
   g.scale(BOARD_PX, BOARD_PX);
   g.translate(BOARD_R, BOARD_R);
-  // Surround: black rubber disc with a brushed rim.
-  const sur = g.createRadialGradient(-40, -50, 20, 0, 0, BOARD_R);
-  sur.addColorStop(0, "#2a2a31"); sur.addColorStop(1, "#060609");
-  g.fillStyle = sur; g.beginPath(); g.arc(0, 0, BOARD_R - 1, 0, Math.PI * 2); g.fill();
-  g.strokeStyle = "#8d96a6"; g.lineWidth = 2; g.stroke();
-  g.strokeStyle = "rgba(255,255,255,.18)"; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, BOARD_R - 4, Math.PI * 1.05, Math.PI * 1.7); g.stroke();
-  const seg = (r1: number, r2: number, a: number, b: number, color: string) => {
-    g.fillStyle = color; g.beginPath(); g.arc(0, 0, r2, a, b); g.arc(0, 0, r1, b, a, true); g.closePath(); g.fill();
+  let seed = 12345;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+  const TAU = Math.PI * 2;
+  // Catch ring: black foam with a fine grain, a steel bezel and an inner lip.
+  const sur = g.createRadialGradient(-50, -60, 10, 0, 0, BOARD_R);
+  sur.addColorStop(0, "#2b2c33"); sur.addColorStop(0.7, "#121318"); sur.addColorStop(1, "#050508");
+  g.fillStyle = sur; g.beginPath(); g.arc(0, 0, BOARD_R - 1, 0, TAU); g.fill();
+  for (let k = 0; k < 1400; k++) {
+    const a = rnd() * TAU, r = 141 + rnd() * 18;
+    g.fillStyle = rnd() < 0.5 ? "rgba(255,255,255,.05)" : "rgba(0,0,0,.35)";
+    g.fillRect(Math.cos(a) * r, Math.sin(a) * r, 0.8, 0.8);
+  }
+  const bezel = g.createLinearGradient(-BOARD_R, -BOARD_R, BOARD_R, BOARD_R);
+  bezel.addColorStop(0, "#f2f5f9"); bezel.addColorStop(0.3, "#8d96a6"); bezel.addColorStop(0.55, "#dfe5ec"); bezel.addColorStop(1, "#3f4652");
+  g.strokeStyle = bezel; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, BOARD_R - 2, 0, TAU); g.stroke();
+  g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, BOARD_R - 4, 0, TAU); g.stroke();
+  // Sisal beds and the coloured rings.
+  const seg = (r1: number, r2: number, a: number, b: number, fill: string | CanvasGradient) => {
+    g.fillStyle = fill; g.beginPath(); g.arc(0, 0, r2, a, b); g.arc(0, 0, r1, b, a, true); g.closePath(); g.fill();
+  };
+  const lacquer = (r1: number, r2: number, base: string) => {
+    const q = g.createRadialGradient(0, 0, r1, 0, 0, r2);
+    q.addColorStop(0, base); q.addColorStop(0.45, base); q.addColorStop(1, "rgba(0,0,0,.25)");
+    return q;
   };
   for (let i = 0; i < 20; i++) {
     const a = -Math.PI / 2 + (i * Math.PI) / 10 - Math.PI / 20, b = a + Math.PI / 10, even = i % 2 === 0;
     seg(24, 140, a, b, even ? BOARD_CLASSIC.dark : BOARD_CLASSIC.light);
     seg(78, 88, a, b, even ? BOARD_CLASSIC.red : BOARD_CLASSIC.green);
     seg(129, 140, a, b, even ? BOARD_CLASSIC.red : BOARD_CLASSIC.green);
+    seg(78, 88, a, b, lacquer(78, 88, "rgba(255,255,255,0)"));
+    seg(129, 140, a, b, lacquer(129, 140, "rgba(255,255,255,0)"));
   }
-  g.fillStyle = BOARD_CLASSIC.green; g.beginPath(); g.arc(0, 0, 24, 0, Math.PI * 2); g.fill();
-  g.fillStyle = BOARD_CLASSIC.red; g.beginPath(); g.arc(0, 0, 10, 0, Math.PI * 2); g.fill();
-  // Sisal: fine deterministic fibres.
-  let seed = 12345;
-  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
-  for (let k = 0; k < 2600; k++) {
-    const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 140;
-    g.fillStyle = rnd() < 0.5 ? "rgba(0,0,0,.16)" : "rgba(255,255,255,.07)";
-    g.fillRect(Math.cos(a) * r, Math.sin(a) * r, 0.9, 0.9);
+  g.fillStyle = BOARD_CLASSIC.green; g.beginPath(); g.arc(0, 0, 24, 0, TAU); g.fill();
+  const bull = g.createRadialGradient(-3, -3, 1, 0, 0, 10);
+  bull.addColorStop(0, "#e2333f"); bull.addColorStop(1, "#8e0e18");
+  g.fillStyle = bull; g.beginPath(); g.arc(0, 0, 10, 0, TAU); g.fill();
+  // Pressed sisal: short radial fibres (the board is made of compressed bristles seen end-on), mottled tone.
+  g.save();
+  g.beginPath(); g.arc(0, 0, 140, 0, TAU); g.clip();
+  for (let k = 0; k < 9000; k++) {
+    const a = rnd() * TAU, r = Math.sqrt(rnd()) * 140, len = 0.4 + rnd() * 1.1;
+    const x = Math.cos(a) * r, y = Math.sin(a) * r, d = rnd() * TAU;
+    g.strokeStyle = rnd() < 0.55 ? `rgba(0,0,0,${0.08 + rnd() * 0.12})` : `rgba(255,248,230,${0.04 + rnd() * 0.08})`;
+    g.lineWidth = 0.45;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(d) * len, y + Math.sin(d) * len); g.stroke();
   }
-  // Silver spider: radial wires and ring wires.
-  g.strokeStyle = "rgba(214,222,232,.85)"; g.lineWidth = 0.7;
+  for (let k = 0; k < 70; k++) {
+    const a = rnd() * TAU, r = Math.sqrt(rnd()) * 138, rr = 5 + rnd() * 14;
+    const m = g.createRadialGradient(Math.cos(a) * r, Math.sin(a) * r, 0, Math.cos(a) * r, Math.sin(a) * r, rr);
+    m.addColorStop(0, rnd() < 0.5 ? "rgba(0,0,0,.07)" : "rgba(255,240,210,.05)"); m.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = m; g.beginPath(); g.arc(Math.cos(a) * r, Math.sin(a) * r, rr, 0, TAU); g.fill();
+  }
+  // Worn pin holes, denser around 20, 19 and the bull (where most darts land).
+  const holes = (n: number, ang: number, spread: number, r0: number, r1: number) => {
+    for (let k = 0; k < n; k++) {
+      const a = ang + (rnd() - 0.5) * spread, r = r0 + rnd() * (r1 - r0);
+      g.fillStyle = `rgba(0,0,0,${0.35 + rnd() * 0.3})`;
+      g.beginPath(); g.arc(Math.cos(a) * r, Math.sin(a) * r, 0.35 + rnd() * 0.3, 0, TAU); g.fill();
+    }
+  };
+  holes(160, -Math.PI / 2, 0.5, 30, 140);
+  holes(90, Math.PI / 2, 0.5, 30, 140);
+  holes(70, 0, TAU, 0, 30);
+  holes(120, 0, TAU, 24, 140);
+  // Soft inner shadow under the spider's outer ring.
+  const rim = g.createRadialGradient(0, 0, 120, 0, 0, 141);
+  rim.addColorStop(0, "rgba(0,0,0,0)"); rim.addColorStop(1, "rgba(0,0,0,.35)");
+  g.fillStyle = rim; g.beginPath(); g.arc(0, 0, 141, 0, TAU); g.fill();
+  g.restore();
+  // Raised silver spider: shadow, body, lit edge.
+  const wires = (stroke: string, width: number, dx: number, dy: number) => {
+    g.strokeStyle = stroke; g.lineWidth = width;
+    for (let i = 0; i < 20; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 10 - Math.PI / 20;
+      g.beginPath(); g.moveTo(Math.cos(a) * 24 + dx, Math.sin(a) * 24 + dy); g.lineTo(Math.cos(a) * 140 + dx, Math.sin(a) * 140 + dy); g.stroke();
+    }
+    for (const r of [10, 24, 78, 88, 129, 140]) { g.beginPath(); g.arc(dx, dy, r, 0, TAU); g.stroke(); }
+  };
+  wires("rgba(0,0,0,.55)", 1.1, 0.7, 0.9);
+  wires("#aeb7c4", 0.85, 0, 0);
+  wires("rgba(255,255,255,.75)", 0.35, -0.25, -0.3);
+  // Number ring: a round wire with embossed white numbers.
+  g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 1.4; g.beginPath(); g.arc(0.6, 0.8, 147, 0, TAU); g.stroke();
+  g.strokeStyle = "#c9d1dc"; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, 147, 0, TAU); g.stroke();
+  g.textAlign = "center"; g.textBaseline = "middle"; g.font = "800 12.5px system-ui, sans-serif";
   for (let i = 0; i < 20; i++) {
-    const a = -Math.PI / 2 + (i * Math.PI) / 10 - Math.PI / 20;
-    g.beginPath(); g.moveTo(Math.cos(a) * 24, Math.sin(a) * 24); g.lineTo(Math.cos(a) * 140, Math.sin(a) * 140); g.stroke();
+    const angle = -Math.PI / 2 + (i * Math.PI) / 10, x = Math.cos(angle) * 151.5, y = Math.sin(angle) * 151.5;
+    g.save(); g.translate(x, y);
+    g.fillStyle = "rgba(0,0,0,.7)"; g.fillText(String(DARTS_SECTORS[i]), 0.6, 1.2);
+    const chrome = g.createLinearGradient(0, -7, 0, 7);
+    chrome.addColorStop(0, "#ffffff"); chrome.addColorStop(0.55, "#e6ebf1"); chrome.addColorStop(1, "#a7b0bd");
+    g.fillStyle = chrome; g.fillText(String(DARTS_SECTORS[i]), 0, 0.5);
+    g.restore();
   }
-  for (const r of [10, 24, 78, 88, 129, 140]) { g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.stroke(); }
-  // Chrome number ring.
-  g.textAlign = "center"; g.textBaseline = "middle"; g.font = "900 12px system-ui, sans-serif";
-  for (let i = 0; i < 20; i++) {
-    const angle = -Math.PI / 2 + (i * Math.PI) / 10, x = Math.cos(angle) * 150, y = Math.sin(angle) * 150;
-    const chrome = g.createLinearGradient(x, y - 7, x, y + 7);
-    chrome.addColorStop(0, "#ffffff"); chrome.addColorStop(0.5, "#c9d1dc"); chrome.addColorStop(1, "#8a94a3");
-    g.fillStyle = chrome; g.fillText(String(DARTS_SECTORS[i]), x, y + 0.5);
-  }
-  // Key light from the upper left, falloff to the lower right.
+  // Key light from the upper left, falloff to the lower right, and a faint spec on the lacquer.
   const light = g.createRadialGradient(-60, -70, 10, 0, 0, 175);
-  light.addColorStop(0, "rgba(255,246,226,.16)"); light.addColorStop(0.55, "rgba(0,0,0,0)"); light.addColorStop(1, "rgba(0,0,0,.42)");
-  g.fillStyle = light; g.beginPath(); g.arc(0, 0, BOARD_R, 0, Math.PI * 2); g.fill();
+  light.addColorStop(0, "rgba(255,246,226,.18)"); light.addColorStop(0.55, "rgba(0,0,0,0)"); light.addColorStop(1, "rgba(0,0,0,.42)");
+  g.fillStyle = light; g.beginPath(); g.arc(0, 0, BOARD_R, 0, TAU); g.fill();
+  g.strokeStyle = "rgba(255,255,255,.16)"; g.lineWidth = 2;
+  g.beginPath(); g.arc(0, 0, 134.5, Math.PI * 1.05, Math.PI * 1.45); g.stroke();
+  g.beginPath(); g.arc(0, 0, 83, Math.PI * 1.08, Math.PI * 1.42); g.stroke();
   boardCache = c;
   return c;
 }
@@ -260,7 +324,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
     const flying = i === s.impacts.length - 1 && s.phase === "flight";
     if (hit.timeout || (flying && s.phaseTicks < DARTS_RULES_V3.impactTicks)) continue;
     const pose = dartPerspectiveFlight(cx + hit.x / 1000, cy + hit.y / 1000, DARTS_RULES_V3.impactTicks);
-    drawDart(ctx, { ...pose, scale: 0.52 }, i % 2 ? "#dfb885" : "#6bdde2");
+    drawDart(ctx, { ...pose, scale: 0.62 }, i % 2 ? "#dfb885" : "#6bdde2");
   }
   const pose = (s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks) || (s.phase === "aim" && held.active)
     ? null : dartPerspectivePose(s);

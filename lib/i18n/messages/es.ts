@@ -872,7 +872,7 @@ const es = {
   "hud.field": "Campo",
   "hud.mines": "Minas",
   "hud.moves": "Movimientos",
-  "hud.mult": "Multiplicador",
+  "hud.mult": "Mult.",
   "hud.board": "Tablero",
   "hud.ball": "Bola",
   "hud.foundation": "Fundación",

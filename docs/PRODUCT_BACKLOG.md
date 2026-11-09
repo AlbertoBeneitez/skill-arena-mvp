@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v162-saturn · Marcador común, Dardos realistas, Pinball V14, Bowling y portadas (9-nov-2026)
+
+- **Marcador:** etiqueta a la izquierda y número a la derecha, más grande; misma caja en los 13 juegos.
+- **Dardos:** diana de torneo (sisal, araña en relieve, números en alambre) y dardos de acero con barril moleteado y aletas.
+- **Pinball V14:** la mitad superior sube y se separa (arco de y 42 a y 12); la mesa empieza justo bajo el marcador; Saturno nuevo en un ojo de buey cromado.
+- **Bowling:**
+  - portada a todo el ancho;
+  - pleno y semipleno con golpe inicial, historia más rápida y final de fuegos artificiales;
+  - el fin de partida sin tocar nada no se ha reproducido (pendiente de captura).
+- **Portadas:** Mine Grid con una posición real de buscaminas; Orb Burst sin bolas a la derecha; Solitaire Sprint con pips reales; Dardos con dardos de acero.
+- **Avatares:** el círculo elegido enseña cabeza y hombros.
+
 ## v161-saturn · Pinball V13: curvas suaves, divisores en el centro y más contraste (9-nov-2026)
 
 - Rampas, órbitas y agujero con curvas suaves, tanto para la bola como para el dibujo.
