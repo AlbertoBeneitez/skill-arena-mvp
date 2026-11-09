@@ -25,8 +25,6 @@ const noise = (n: number) => { const v = Math.sin(n * 12.9898) * 43758.5453; ret
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const easeOutBack = (t: number) => { const c = 1.5; return 1 + (c + 1) * (t - 1) ** 3 + c * (t - 1) ** 2; };
 const FONT = '"Unbounded", "Inter", system-ui, sans-serif';
-const auraName = (i: number) => tx(`gallery.aura.${i}` as MessageKey);
-const formName = (i: number) => tx(`gallery.form.${i}` as MessageKey);
 
 /* ---------------------------------------------------------------- cached jungle layers and their hit masks */
 const PX = 2;
@@ -142,7 +140,8 @@ function pose(s: GalleryStateV13, i: number, t: GalleryBeingV13) {
   const age = hitTick >= 0 ? s.tick - hitTick : -1;
   const knock = hitTick >= 0 ? clamp01((age - 3) / 14) : 0;
   const wrongAge = s.lastPick === i && hitAt < 0 && s.lastTapTick >= s.readyTick ? s.tick - s.lastTapTick : -1;
-  const rise = Math.max(0, up * (1 - down) - knock * knock * 1.1);
+  // v158: a hit being explodes where it stands (see drawBeingAt), it no longer sinks back into cover.
+  const rise = Math.max(0, up * (1 - down));
   const breathe = Math.sin((s.tick + t.spot * 23) * 0.05) * 1.2 * sc;
   let x = t.x, y = t.y + gridDy + breathe, tilt = 0;
   if (t.dir === "UP") y += (1 - rise) * 128 * sc;
@@ -157,34 +156,80 @@ function clipFor(ctx: CanvasRenderingContext2D, t: GalleryBeingV13, H: number) {
   ctx.clip();
 }
 
+/** v158: a hit being bursts from the exact point the player tapped: a white flash, then the body shatters into
+ * pieces thrown away from the shot, with a fireball and a shock ring in its aura colour. */
+const EXPLODE = 34, SHARDS_X = 4, SHARDS_Y = 5;
+function drawExplosion(ctx: CanvasRenderingContext2D, s: GalleryStateV13, i: number, t: GalleryBeingV13, p: ReturnType<typeof pose>, H: number) {
+  const a = AURAS[t.aura] ?? AURAS[0], age = p.age;
+  const m = [...marks].reverse().find((q) => q.target === i && q.trial === s.trial);
+  const hx = m ? m.x : p.x, hy = (m ? m.y : t.y - 34 * p.sc) + gridDy;
+  const spr = sprite(t.form, t.aura, t.layer);
+  const k = clamp01(age / EXPLODE);
+  // Shards: the sprite cut into a grid, each piece pushed away from the shot point, spinning and falling.
+  if (spr && age >= 3 && !posterMode) {
+    const cw = BOX_W / SHARDS_X, chh = BOX_H / SHARDS_Y, e = age - 3;
+    ctx.save();
+    ctx.globalAlpha = clamp01(1 - e / (EXPLODE - 6));
+    for (let gy = 0; gy < SHARDS_Y; gy++) for (let gx = 0; gx < SHARDS_X; gx++) {
+      const lx = -ORX + (gx + 0.5) * cw, ly = -ORY + (gy + 0.5) * chh;
+      const wx = p.x + lx * p.sc, wy = p.y + ly * p.sc;
+      const n = noise(i * 37 + gy * 5 + gx), dx = wx - hx, dy = wy - hy, d = Math.hypot(dx, dy) || 1;
+      const sp = (2.2 + n * 3.2) * p.sc * 2;
+      const ox = (dx / d) * sp * e, oy = (dy / d) * sp * e - 1.4 * e + 0.09 * e * e;
+      ctx.save();
+      ctx.translate(wx + ox, wy + oy); ctx.rotate((n - 0.5) * 0.22 * e);
+      ctx.drawImage(spr, (ORX + lx - cw / 2) * SPR, (ORY + ly - chh / 2) * SPR, cw * SPR, chh * SPR, (-cw / 2) * p.sc, (-chh / 2) * p.sc, cw * p.sc, chh * p.sc);
+      ctx.restore();
+    }
+    ctx.restore();
+  } else if (spr && age < 3) {
+    ctx.save();
+    clipFor(ctx, t, H);
+    ctx.translate(p.x, p.y); if (p.tilt) ctx.rotate(p.tilt); ctx.scale(p.sc, p.sc);
+    ctx.drawImage(spr, -ORX, -ORY, BOX_W, BOX_H);
+    const fl = flashOf(spr);
+    if (fl && !posterMode) ctx.drawImage(fl, -ORX, -ORY, BOX_W, BOX_H);
+    ctx.restore();
+  }
+  if (posterMode) return;
+  // Fireball and shock ring from the shot point.
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  const fr = (26 + 96 * Math.sqrt(k)) * p.sc, fa = clamp01(1 - k * 1.05);
+  const fb = ctx.createRadialGradient(hx, hy, 0, hx, hy, fr);
+  fb.addColorStop(0, `rgba(255,255,255,${0.95 * fa})`); fb.addColorStop(0.25, rgba(a.core, 0.9 * fa)); fb.addColorStop(0.6, rgba(a.glow, 0.55 * fa)); fb.addColorStop(1, rgba(a.deep, 0));
+  ctx.fillStyle = fb; ctx.beginPath(); ctx.arc(hx, hy, fr, 0, Math.PI * 2); ctx.fill();
+  if (age < 22) {
+    const rr = (20 + 140 * (age / 22)) * p.sc;
+    ctx.strokeStyle = rgba(a.glow, 0.9 * (1 - age / 22)); ctx.lineWidth = 6 * (1 - age / 22) + 1;
+    ctx.beginPath(); ctx.arc(hx, hy, rr, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawBeingAt(ctx: CanvasRenderingContext2D, s: GalleryStateV13, i: number, t: GalleryBeingV13, H: number) {
   const p = pose(s, i, t);
   if (p.rise <= 0.001) return;
+  if (p.age >= 0) { if (p.age < EXPLODE) drawExplosion(ctx, s, i, t, p, H); return; }
   const a = AURAS[t.aura] ?? AURAS[0];
   ctx.save();
   clipFor(ctx, t, H);
   const dim = s.phase === "feedback" && !s.trials[s.trial].answers.includes(i) ? 0.45 : 1;
-  const fade = p.knock > 0 ? 1 - p.knock * 0.6 : 1;
   // outer aura: a slow pulse behind the body, brighter for the near ones
   const pulse = 0.75 + 0.25 * Math.sin((s.tick + t.spot * 31) * 0.09);
   ctx.globalCompositeOperation = "lighter";
   const cy = p.y - 34 * p.sc, rr = 74 * p.sc;
   const halo = ctx.createRadialGradient(p.x, cy, 4 * p.sc, p.x, cy, rr);
-  halo.addColorStop(0, rgba(a.glow, 0.42 * pulse * dim * fade)); halo.addColorStop(0.5, rgba(a.mid, 0.16 * pulse * dim * fade)); halo.addColorStop(1, rgba(a.deep, 0));
+  halo.addColorStop(0, rgba(a.glow, 0.42 * pulse * dim)); halo.addColorStop(0.5, rgba(a.mid, 0.16 * pulse * dim)); halo.addColorStop(1, rgba(a.deep, 0));
   ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(p.x, cy, rr, 0, Math.PI * 2); ctx.fill();
   ctx.globalCompositeOperation = "source-over";
-  ctx.globalAlpha = dim * fade;
+  ctx.globalAlpha = dim;
   ctx.translate(p.x, p.y);
   if (p.tilt) ctx.rotate(p.tilt);
-  if (p.knock > 0) ctx.rotate((t.x < 195 ? -1 : 1) * p.knock * 0.4);
   ctx.scale(p.sc, p.sc);
   const spr = sprite(t.form, t.aura, t.layer);
   if (spr) ctx.drawImage(spr, -ORX, -ORY, BOX_W, BOX_H);
   else { ctx.fillStyle = a.mid; ctx.beginPath(); ctx.ellipse(0, -20, 34, 50, 0, 0, Math.PI * 2); ctx.fill(); }
-  if (p.age >= 0 && p.age < 9 && spr && !posterMode) {
-    const fl = flashOf(spr);
-    if (fl) { ctx.globalAlpha = dim * (p.age < 3 ? 0.95 : 0.95 * (1 - (p.age - 3) / 6)); ctx.drawImage(fl, -ORX, -ORY, BOX_W, BOX_H); }
-  }
   ctx.globalAlpha = 1;
   if (p.wrongAge >= 0 && p.wrongAge < 24) {
     ctx.strokeStyle = `rgba(255,70,80,${1 - p.wrongAge / 24})`; ctx.lineWidth = 3 / p.sc;
@@ -214,52 +259,56 @@ function drawMark(ctx: CanvasRenderingContext2D, x: number, y: number, age: numb
   }
 }
 
-/** Two blasters at the bottom corners; the side that fired recoils and flashes. */
-function drawGuns(ctx: CanvasRenderingContext2D, H: number, s: GalleryStateV13) {
-  for (const side of [-1, 1]) {
-    let last: Mark | undefined;
-    for (let k = marks.length - 1; k >= 0; k--) if (side < 0 ? marks[k].x < 195 : marks[k].x >= 195) { last = marks[k]; break; }
-    const age = last ? s.tick - last.tick : 999, kick = age >= 0 && age < 8 ? (8 - age) * 1.3 : 0;
-    const charge = clamp01((age - 6) / 30);
-    ctx.save();
-    ctx.translate(side < 0 ? 62 : 328, H + 10 + kick);
-    ctx.rotate(side * -0.3);
-    const metalG = ctx.createLinearGradient(-22, 0, 22, 0);
-    metalG.addColorStop(0, "#0b0f12"); metalG.addColorStop(0.35, "#3d4a4a"); metalG.addColorStop(0.6, "#232c2c"); metalG.addColorStop(1, "#090c0e");
-    ctx.fillStyle = metalG; ctx.beginPath(); ctx.roundRect(-21, -64, 42, 82, 10); ctx.fill();
-    ctx.fillStyle = "#141b1b"; ctx.beginPath(); ctx.roundRect(-15, -60, 30, 20, 5); ctx.fill();
-    const cell = ctx.createLinearGradient(0, -58, 0, -42);
-    cell.addColorStop(0, `rgba(127,246,230,${0.35 + 0.6 * charge})`); cell.addColorStop(1, `rgba(40,160,150,${0.3 + 0.4 * charge})`);
-    ctx.fillStyle = cell; ctx.beginPath(); ctx.roundRect(-11, -57, 22 * (0.25 + 0.75 * charge), 14, 3); ctx.fill();
-    const sh = ctx.createLinearGradient(-12, 0, 12, 0);
-    sh.addColorStop(0, "#0f1515"); sh.addColorStop(0.5, "#4a5a58"); sh.addColorStop(1, "#0f1515");
-    ctx.fillStyle = sh; ctx.beginPath(); ctx.moveTo(-14, -64); ctx.lineTo(-10, -112); ctx.lineTo(10, -112); ctx.lineTo(14, -64); ctx.closePath(); ctx.fill();
-    for (const y of [-74, -86, -98]) { ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(-11, y, 22, 3); }
-    ctx.fillStyle = "#050807"; ctx.beginPath(); ctx.ellipse(0, -113, 9, 3.6, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = `rgba(127,246,230,${0.5 + 0.5 * charge})`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(0, -113, 9, 3.6, 0, 0, Math.PI * 2); ctx.stroke();
-    if (age >= 0 && age < 6) {
-      ctx.globalCompositeOperation = "lighter";
-      const fl = ctx.createRadialGradient(0, -118, 0, 0, -118, 34);
-      fl.addColorStop(0, `rgba(255,255,255,${1 - age / 6})`); fl.addColorStop(0.3, `rgba(120,250,230,${0.85 * (1 - age / 6)})`); fl.addColorStop(1, "rgba(120,250,230,0)");
-      ctx.fillStyle = fl; ctx.beginPath(); ctx.arc(0, -118, 34, 0, Math.PI * 2); ctx.fill();
-      ctx.globalCompositeOperation = "source-over";
-    }
-    ctx.restore();
-  }
-}
-
-/** The order: one aura colour or one form, with its swatch or silhouette, and the round tally. */
-const iconCache = new Map<number, HTMLCanvasElement | null>();
-function formIcon(form: number) {
-  if (iconCache.has(form)) return iconCache.get(form) ?? null;
+/** The order (v158): the word "Objetivo" and, beside it, the thing to destroy — a nebula with rays in that aura's
+ * colour, or that form as a colourless figure. No names: the picture is the order. */
+const greyCache = new Map<number, HTMLCanvasElement | null>();
+function greyForm(form: number) {
+  if (greyCache.has(form)) return greyCache.get(form) ?? null;
   if (typeof document === "undefined") return null;
   const c = document.createElement("canvas");
   c.width = BOX_W * 2; c.height = BOX_H * 2;
   const g = c.getContext("2d");
-  if (!g) { iconCache.set(form, null); return null; }
+  if (!g) { greyCache.set(form, null); return null; }
   g.scale(2, 2); g.translate(ORX, ORY); drawFormIcon(g, form);
-  iconCache.set(form, c);
+  try {
+    const img = g.getImageData(0, 0, c.width, c.height), d = img.data;
+    for (let q = 0; q < d.length; q += 4) {
+      const l = Math.min(255, (0.3 * d[q] + 0.59 * d[q + 1] + 0.11 * d[q + 2]) * 1.12 + 10);
+      d[q] = d[q + 1] = d[q + 2] = l;
+    }
+    g.putImageData(img, 0, 0);
+  } catch { /* a tainted canvas cannot happen here; keep the drawing as is */ }
+  greyCache.set(form, c);
   return c;
+}
+function drawNebula(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, aura: number, tick: number) {
+  const a = AURAS[aura] ?? AURAS[0];
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  // Rays: thin wedges turning slowly, alternating long and short.
+  const spin = tick * 0.006;
+  for (let q = 0; q < 14; q++) {
+    const ang = spin + (q / 14) * Math.PI * 2, len = r * (q % 2 ? 0.95 : 1.3) * (0.9 + 0.1 * Math.sin(tick * 0.05 + q)), w = 0.11;
+    const rg = ctx.createLinearGradient(x, y, x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+    rg.addColorStop(0, rgba(a.core, 0.75)); rg.addColorStop(0.5, rgba(a.glow, 0.35)); rg.addColorStop(1, rgba(a.glow, 0));
+    ctx.fillStyle = rg;
+    ctx.beginPath(); ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(ang - w) * len, y + Math.sin(ang - w) * len);
+    ctx.lineTo(x + Math.cos(ang + w) * len, y + Math.sin(ang + w) * len);
+    ctx.closePath(); ctx.fill();
+  }
+  // Cloud: three drifting lobes and a bright heart.
+  for (let q = 0; q < 3; q++) {
+    const ang = tick * 0.01 + q * 2.1, cx = x + Math.cos(ang) * r * 0.28, cy = y + Math.sin(ang) * r * 0.2;
+    const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.75);
+    cg.addColorStop(0, rgba(a.glow, 0.6)); cg.addColorStop(0.55, rgba(a.mid, 0.34)); cg.addColorStop(1, rgba(a.deep, 0));
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2); ctx.fill();
+  }
+  const pulse = 0.85 + 0.15 * Math.sin(tick * 0.12);
+  const hg = ctx.createRadialGradient(x, y, 0, x, y, r * 0.42 * pulse);
+  hg.addColorStop(0, "rgba(255,255,255,.95)"); hg.addColorStop(0.35, rgba(a.core, 0.9)); hg.addColorStop(1, rgba(a.glow, 0));
+  ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(x, y, r * 0.42 * pulse, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
 }
 function drawBriefing(ctx: CanvasRenderingContext2D, s: GalleryStateV13) {
   const x = 8, y = 50, w = 374, h = 94;
@@ -267,35 +316,29 @@ function drawBriefing(ctx: CanvasRenderingContext2D, s: GalleryStateV13) {
   bg.addColorStop(0, "rgba(6,20,18,.94)"); bg.addColorStop(1, "rgba(2,8,8,.95)");
   ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x, y, w, h, 14); ctx.fill();
   ctx.strokeStyle = "rgba(120,240,210,.32)"; ctx.lineWidth = 1; ctx.stroke();
-  const order = s.trials[Math.min(s.trial, 11)].order;
-  const tone = order.kind === "AURA" ? AURAS[order.value].glow : "#e2b453";
+  const order = s.trials[Math.min(s.trial, 11)].order, cyMid = y + h / 2;
   ctx.textBaseline = "middle"; ctx.textAlign = "left";
-  ctx.font = `700 9px ${FONT}`; ctx.fillStyle = "rgba(170,240,220,.85)";
-  ctx.fillText(tx("gallery.eliminate"), x + 16, y + 17);
+  ctx.font = `800 21px ${FONT}`; ctx.fillStyle = "#f2fbf7";
+  const label = tx("gallery.objective"), lw = ctx.measureText(label).width;
+  ctx.fillText(label, x + 18, cyMid + 1);
+  // The picture of what to destroy, beside the word.
+  const vx = x + 18 + lw + 66, vy = cyMid;
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(x + 1, y + 1, w - 2, h - 2, 13); ctx.clip();
+  if (order.kind === "AURA") drawNebula(ctx, vx, vy, 46, order.value, s.tick);
+  else {
+    // Head and chest of the figure fill the panel's height (the legs fall below its edge).
+    const ic = greyForm(order.value), ih = 150, iw = ih * (BOX_W / BOX_H);
+    if (ic) ctx.drawImage(ic, vx - iw / 2, y + 2, iw, ih);
+  }
+  ctx.restore();
+  // The twelve orders: two rows of six on the right (done green, missed red, current blinking).
   for (let i = 0; i < 12; i++) {
-    const r = s.results[i], cx = x + w - 18 - (11 - i) * 13, cy = y + 17, cur = i === s.trial && s.status === "running";
+    const r = s.results[i], col = i % 6, row = Math.floor(i / 6);
+    const cx = x + w - 18 - (5 - col) * 13, cy = cyMid - 8 + row * 16, cur = i === s.trial && s.status === "running";
     ctx.fillStyle = r ? (r.type === "CORRECT" ? "#5ff0c0" : "#ff4a5a") : cur ? `rgba(255,255,255,${0.55 + 0.45 * Math.sin(s.tick * 0.15)})` : "rgba(140,200,190,.18)";
     ctx.beginPath(); ctx.roundRect(cx - 4.5, cy - 2.5, 9, 5, 2); ctx.fill();
   }
-  const px = x + 52, py = y + 58;
-  ctx.save();
-  ctx.beginPath(); ctx.arc(px, py, 27, 0, Math.PI * 2); ctx.clip();
-  ctx.fillStyle = "#041010"; ctx.fillRect(px - 28, py - 28, 56, 56);
-  if (order.kind === "AURA") {
-    const a = AURAS[order.value], pulse = 0.8 + 0.2 * Math.sin(s.tick * 0.12);
-    const g = ctx.createRadialGradient(px, py, 0, px, py, 27);
-    g.addColorStop(0, a.core); g.addColorStop(0.3 * pulse, a.glow); g.addColorStop(0.75, a.mid); g.addColorStop(1, a.deep);
-    ctx.fillStyle = g; ctx.fillRect(px - 28, py - 28, 56, 56);
-  } else {
-    const ic = formIcon(order.value);
-    if (ic) ctx.drawImage(ic, px - 33, py - 50, 66, 66 * (BOX_H / BOX_W));
-  }
-  ctx.restore();
-  ctx.strokeStyle = tone; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px, py, 27, 0, Math.PI * 2); ctx.stroke();
-  ctx.font = `800 20px ${FONT}`; ctx.fillStyle = "#f2fbf7";
-  ctx.fillText(order.kind === "AURA" ? auraName(order.value) : formName(order.value), px + 40, py - 7);
-  ctx.font = `600 11px ${FONT}`; ctx.fillStyle = order.kind === "AURA" ? rgba(tone, 0.95) : "rgba(226,180,83,.95)";
-  ctx.fillText(tx(order.kind === "AURA" ? "gallery.byAura" : "gallery.byForm"), px + 40, py + 15);
 }
 
 const hudLabel = (s: Readonly<GalleryStateV13>) => `${tx("gallery.timeHud", { n: formatNumber(s.totalMs), trial: Math.min(12, s.trial + 1) })}`;
@@ -419,19 +462,7 @@ export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV13,
     ctx.strokeStyle = `rgba(255,70,80,${0.6 + 0.4 * Math.sin(s.tick * 0.3)})`; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.arc(p.x, p.y - 34 * p.sc, 58 * p.sc, 0, Math.PI * 2); ctx.stroke();
   });
-  // tracers from the guns to every fresh mark
-  ctx.globalCompositeOperation = "lighter";
-  for (const m of marks) {
-    const age = s.tick - m.tick;
-    if (age < 0 || age > 5) continue;
-    const gx = m.x < 195 ? 102 : 288, gy = H - 98, k = 1 - age / 6;
-    ctx.strokeStyle = `rgba(120,250,230,${0.55 * k})`; ctx.lineWidth = 7 * k;
-    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(m.x, m.y + gridDy); ctx.stroke();
-    ctx.strokeStyle = `rgba(255,255,255,${0.95 * k})`; ctx.lineWidth = 2 * k;
-    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(m.x, m.y + gridDy); ctx.stroke();
-  }
-  ctx.globalCompositeOperation = "source-over";
-  drawGuns(ctx, H, s);
+  // v158: no blasters and no tracers — the shot lands exactly where the finger touched (the mark and its flash).
   ctx.restore();
   if (poster) return;
   drawBriefing(ctx, s);

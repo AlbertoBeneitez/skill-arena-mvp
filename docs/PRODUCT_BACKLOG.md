@@ -882,6 +882,13 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v158-saturn · Avatar elegido = avatar final, «Enviar juego» con premio y Shot Gallery con objetivo visual (9-nov-2026)
+
+- Cada casilla de la hoja de avatares muestra el mismo círculo que se elige.
+- Solo aparece «Nombre ya elegido» (ya no «Nombre disponible»).
+- «Enviar juego»: icono de monedas, recuadro «Crea tu juego y gana dinero» la primera vez y mismo tamaño que «Rankings».
+- Shot Gallery: «Objetivo» con una nebulosa del color o la forma sin color; sin cañones; disparo en el punto pulsado y explosión del ser.
+
 ## v157-saturn · Avatares nuevos encuadrados en la cara (9-nov-2026)
 
 - 16 retratos nuevos del propietario, con los mismos identificadores.

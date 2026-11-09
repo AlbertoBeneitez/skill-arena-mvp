@@ -83,11 +83,13 @@ const AVATARS = Array.from({ length: 16 }, (_, i) => `/avatars/portrait-${String
  * zoom in around the face, so every tile shows the character's face instead of its chest.
  */
 /** v157: each portrait ships three crops centred on the face — the 512 px square (big circle), its 192 px copy
- * (nav, profile) and a 2:1 tile for the picker sheet — so no per-portrait offsets are needed. */
+ * (nav, profile) and a 2:1 tile. v158: the picker shows the very circle the player will get (the square crop),
+ * centred in its tile, over the 2:1 crop blurred. */
 const avatarTile = (src: string) => src.replace(".webp", "-t.webp");
 /** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
 const smallAvatar = (src: string) => (/^\/avatars\/portrait-\d\d\.webp$/.test(src) ? src.replace(".webp", "-s.webp") : src);
 const START_BALANCE = 25;
+const STUDIO_WELCOME_KEY = "gx-studio-welcome-v1";
 const APP_ITERATION = "v12";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
 const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
@@ -104,6 +106,11 @@ function movementLabel(movement: Movement) {
 }
 
 const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "soporte", "support"]);
+
+/** Taken: a reserved (or, later, server-registered) name; the format rule is reported separately. */
+function isDemoNameTaken(value: string) {
+  return BLOCKED_DEMO_NAMES.has(value.trim().toLowerCase());
+}
 
 function isDemoNameAvailable(value: string) {
   const clean = value.trim();
@@ -339,6 +346,8 @@ export default function DemoApp() {
   const [bestScores, setBestScores] = useState<Record<string, number>>({});
   // v153: the studio proposal opens from a small tab at the top left of the catalogue.
   const [proposing, setProposing] = useState(false);
+  /** v158: the first tap on "Enviar juego" shows a one-off welcome box before the submission form. */
+  const [studioWelcome, setStudioWelcome] = useState(false);
   /** Simulated rival for the match in progress (demo leagues); null outside league duels. */
   const [leagueMatch, setLeagueMatch] = useState<{ gameId: string; rival: LeagueRival; tier: LeagueTier } | null>(null);
   const [leagueOutcome, setLeagueOutcome] = useState<{ won: boolean; record: LeagueRecord; rival: LeagueRival; score: number } | null>(null);
@@ -788,6 +797,12 @@ export default function DemoApp() {
       })
       .join(" ");
   }, [earnings]);
+
+  function openStudio() {
+    let seen = false;
+    try { seen = localStorage.getItem(STUDIO_WELCOME_KEY) === "1"; localStorage.setItem(STUDIO_WELCOME_KEY, "1"); } catch { /* shown again next time */ }
+    if (seen) setProposing(true); else setStudioWelcome(true);
+  }
 
   function continueWithoutProvider() {
     if (provider) void fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
@@ -1307,7 +1322,7 @@ export default function DemoApp() {
                         aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
-                        <img src={avatarTile(src)} alt="" width={512} height={256} decoding="async" />
+                        <img className="gxTileBack" src={avatarTile(src)} alt="" width={512} height={256} decoding="async" /><img className="gxTileFace" src={src} alt="" width={512} height={512} decoding="async" />
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
                       </button>
                     );
@@ -1326,8 +1341,9 @@ export default function DemoApp() {
             placeholder={t("identity.namePlaceholder")}
             aria-label={t("identity.nameAria")}
           />
-          <div className={`nameAvailability ${nameAvailable ? "available" : "unavailable"}`}>
-            {playerName.trim().length === 0 ? "" : nameAvailable ? t("identity.nameAvailable") : t("identity.nameUnavailable")}
+          {/* v158: nothing while the name is fine; "already taken" for a taken name, the format rule otherwise. */}
+          <div className={`nameAvailability ${nameAvailable ? "available" : "unavailable"}`} aria-live="polite">
+            {playerName.trim().length === 0 || nameAvailable ? "" : isDemoNameTaken(playerName) ? t("identity.nameTaken") : t("identity.nameUnavailable")}
           </div>
 
           {avatarError && <div className="avatarError" role="alert">{avatarError}</div>}
@@ -1425,12 +1441,21 @@ export default function DemoApp() {
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <h1 className="visuallyHidden">{t("home.title")}</h1>
             <div className="homePlayHeading gxHomeBar">
-              <button type="button" className="gxStudioTab" onClick={() => setProposing(true)}><UiIcon name="upload" size={18} /><span>{t("studio.title")}</span></button>
-              <button type="button" className="globalRankingShortcut gxRankingPill" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={17} /><span>{t("home.ranking")}</span></button>
+              <button type="button" className="gxStudioTab" onClick={openStudio}><UiIcon name="upload" size={18} /><span>{t("studio.title")}</span><UiIcon name="coins" size={18} className="gxStudioCoin" /></button>
+              <button type="button" className="globalRankingShortcut gxRankingPill" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={18} /><span>{t("home.ranking")}</span></button>
             </div>
 
 
             {matchStartError && <p role="status">{matchStartError}</p>}
+            {studioWelcome && (
+              <div className="gxStudioWelcome" role="dialog" aria-modal="true" aria-labelledby="studio-welcome-title" onClick={() => setStudioWelcome(false)}>
+                <div className="gxStudioWelcomeCard" onClick={(e) => e.stopPropagation()}>
+                  <span className="gxStudioWelcomeCoin" aria-hidden="true"><UiIcon name="coins" size={40} /></span>
+                  <h2 id="studio-welcome-title">{t("studio.welcome")}</h2>
+                  <button type="button" className="gxStudioWelcomeGo" autoFocus onClick={() => { setStudioWelcome(false); setProposing(true); }}>{t("common.continue")}</button>
+                </div>
+              </div>
+            )}
             {proposing && <GameProposal onClose={() => setProposing(false)} />}
             <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} leagues={persistentTraining ? undefined : leagues} />
           </section>

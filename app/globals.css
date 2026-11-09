@@ -8877,3 +8877,56 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .playerProgress .progressMark { display: grid; justify-items: end; gap: 3px; text-align: end; }
 .playerProgress .progressMark small { font-size: 10px; color: var(--gx-mute); white-space: nowrap; }
 .playerProgress .progressMark b { font: 700 14px/1 var(--gx-display); color: #f4dcaa; white-space: nowrap; }
+
+/* =====================================================================
+   v158
+   ===================================================================== */
+/* Home bar: "Enviar juego" and "Rankings" share one size (height, type and icon). */
+.appShell .gxHomeBar .gxStudioTab,
+.appShell .gxHomeBar .globalRankingShortcut.gxRankingPill.gxRankingPill {
+  min-height: 42px; gap: 8px; padding: 0 16px 0 13px; font: 700 14px/1 var(--gx-ui); letter-spacing: .01em;
+}
+.appShell .gxStudioTab .uiIcon.gxStudioCoin { color: var(--st-gold, #e9c27a); margin-inline-start: 1px; }
+/* First tap on "Enviar juego": a one-off welcome box before the form. */
+.gxStudioWelcome {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 24px;
+  background: rgba(4,4,6,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  animation: gxFadeIn .22s ease-out both;
+}
+@keyframes gxFadeIn { from { opacity: 0; } }
+.gxStudioWelcomeCard {
+  width: min(340px, 100%); display: grid; justify-items: center; gap: 16px; padding: 28px 22px 22px; text-align: center;
+  border-radius: 24px; border: 1px solid rgba(233,194,122,.45);
+  background: radial-gradient(120% 80% at 50% 0%, rgba(233,194,122,.18), transparent 60%), linear-gradient(170deg, #1b1b1f, #0d0d10);
+  box-shadow: 0 24px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+  animation: gxSheetUp .3s cubic-bezier(.2,.8,.2,1) both;
+}
+.gxStudioWelcomeCoin {
+  display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; color: #ffd36a;
+  background: radial-gradient(circle at 40% 35%, rgba(255,211,106,.28), rgba(255,211,106,.06) 70%);
+  box-shadow: 0 0 0 1px rgba(255,211,106,.4), 0 0 30px rgba(255,190,80,.25);
+}
+.gxStudioWelcomeCard h2 { margin: 0; font: 800 22px/1.2 var(--gx-display); color: #fff3d6; letter-spacing: .01em; text-wrap: balance; }
+.gxStudioWelcomeGo {
+  min-height: 48px; width: 100%; border-radius: 14px; border: 1px solid rgba(233,194,122,.6);
+  background: linear-gradient(180deg, #2a2418, #16130d); color: #ffe6b0; font: 700 15px/1 var(--gx-ui); letter-spacing: .06em;
+}
+.gxStudioWelcomeGo:active { translate: 0 1px; }
+.gxStudioWelcomeGo:focus-visible { outline: 2px solid #ffd36a; outline-offset: 2px; }
+/* Avatar picker (v158): each tile shows the exact circle the player gets — the same square crop as the big circle —
+   centred over the 2:1 crop blurred, so what you pick is what you see afterwards. */
+.galacticAvatarSetup .gxAvatarGrid button img.gxTileBack {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 0;
+  filter: blur(9px) saturate(1.1) brightness(.55); transform: scale(1.18); transition: none;
+}
+.galacticAvatarSetup .gxAvatarGrid button img.gxTileFace {
+  position: absolute; top: 50%; left: 50%; width: auto; height: calc(100% - 10px); aspect-ratio: 1; object-fit: cover;
+  border-radius: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%;
+  box-shadow: 0 0 0 2px rgba(233,194,122,.55), 0 6px 18px rgba(0,0,0,.55);
+  transition: transform .3s cubic-bezier(.2, .7, .2, 1), box-shadow .3s;
+}
+.galacticAvatarSetup .gxAvatarGrid button:is(:hover, :focus-visible) img.gxTileFace { transform: translate(-50%, -50%) scale(1.05); }
+.galacticAvatarSetup .gxAvatarGrid button[aria-pressed="true"] img.gxTileFace {
+  transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 0 3px #7fe3ee, 0 0 22px rgba(127,227,238,.45);
+}
+.galacticAvatarSetup .gxAvatarGrid button:is(:hover, :focus-visible, [aria-pressed="true"]) img.gxTileBack { transform: scale(1.18); }
