@@ -298,12 +298,12 @@ const GAME_DEFINITIONS = [
 
   {
     id: "pinball",
-    version: "11.0.0",
+    version: "12.0.0",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },
     name: "Pinball",
-    cover: "/covers/pinball.webp?v=156",
+    cover: "/covers/pinball.webp?v=160",
     enabled: true,
     waitingStakes: [5, 10],
     category: "CONTROL",
@@ -314,7 +314,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLIP",
     rivalAvatar: "/avatars/avatar-2.svg",
     instruction: "",
-    scoring: "Mesa fija: la misma potencia del muelle es siempre el mismo lanzamiento. Pasadizos: la rampa y la órbita suben a raíles que cruzan la mesa por arriba y dejan la bola en el carril contrario; el agujero de gusano la lleva por un túnel hasta arriba a la izquierda; cada pasadizo hace siempre el mismo recorrido. Si la bola se queda atrapada en un lado, sale siempre igual: desde el mismo punto y con el mismo empujón hacia la pala de ese lado. Una bola y 100 s; cada misión (carriles A-B-C + dianas laterales + bloque de abatibles) da 10 000 puntos y +10 s (hasta 130 s). El bloque de abatibles enciende un hurry-up que baja de 12 000 y se cobra por la rampa o la órbita; si la bola cae en los 5 s tras lanzarla se salva; en los últimos 10 s todo puntúa doble. Los laterales están cerrados y solo hay un hueco entre las palas: si la bola cae por ahí vuelve al muelle (el multiplicador y el combo se reinician) y el reloj sigue corriendo. Skill shot, carriles A-B-C, bumpers, spinner, bloque de dianas abatibles, dianas laterales, rampa, órbita, plato con jackpot, combos y bonus final con multiplicador hasta x5. Seis bumpers con valor propio (100, 200, 250, 300, 400 y 500; en la tormenta de bumpers, cuatro veces más), ocho postes de goma de 15 a 70 y tirachinas de 35 y 55: cada círculo puntúa distinto. Pala superior a la derecha (va con el botón derecho), segundo spinner a la entrada del raíl izquierdo (75 por vuelta) y dos pasillos sobre las guías: encender los dos da 2500 y otra bola salvada. Replay de servidor.",
+    scoring: "Mesa fija de 100 segundos (hasta 130 con tiempo extra). Recorridos: dos rampas con la boca en el centro de la mesa (la izquierda vuelve por su raíl al pasillo izquierdo y la derecha al derecho); cada rampa vale 500 más que la anterior (de 1500 a 6000; vuelve a 1500 al perder la bola). Dos órbitas por las paredes dan la vuelta por arriba y sueltan la bola entre los bumpers del otro lado (1500). El agujero de gusano del centro está bajo un tejadillo y tras un bloque de tres dianas abatibles: tumba una y apunta al hueco (3000). Cinco bumpers (100 a 500), siete postes (10 a 70) y dos tirachinas (35 y 55) puntúan cada uno lo suyo. Carriles A-B-C, dianas, bloque, plato con bloqueo y multibola de tres bolas, jackpots, súper jackpot, modos de 20 s, hurry-up, combos entre tiros distintos, multiplicador hasta ×5 y bonus final. Mismo muelle, misma bola: mismo resultado; el servidor repite la partida.",
   },
   {
     id: "bowling",

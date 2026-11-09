@@ -5,8 +5,10 @@ const { chromium } = require("playwright");
 const fs = require("node:fs"), path = require("node:path"), os = require("node:os"), { execFileSync } = require("node:child_process");
 const dir = path.join(__dirname, "..", "public", "covers");
 // Optional names on the command line render only those covers (v143), e.g. `node scripts/rasterize-covers.cjs stack-3d`.
-const all = ["galactic-roulette", "galactic-slot", "darts", "billiards", "tower-drop", "solitaire-sprint", "mine-grid", "stack-shift",
-  "orb-burst", "stack-3d", "pinball", "corner-sudoku", "shot-gallery", "bowling"];
+// v160: Shot Gallery (v155), Slot (v156) and Pinball (v160) covers come from their game renderers
+// (scripts/render-gallery-cover.mjs, render-slot-cover.mjs, render-pinball-cover.mjs), so they are not in this list.
+const all = ["galactic-roulette", "darts", "billiards", "tower-drop", "solitaire-sprint", "mine-grid", "stack-shift",
+  "orb-burst", "stack-3d", "corner-sudoku", "bowling"];
 const names = process.argv.length > 2 ? all.filter((n) => process.argv.slice(2).includes(n)) : all;
 // v140: Shot Gallery and Bowling are posters again (they were renderer captures in v124/v125), and every cover is
 // rendered at 1600×1100 so it stays sharp on 3× phone screens.

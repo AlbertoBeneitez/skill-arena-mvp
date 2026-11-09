@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v160-saturn · Pinball V12: mesa nueva con recorridos claros (9-nov-2026)
+
+- **Estructura de la referencia:**
+  - dos rampas con boca central que vuelven a su pasillo; cada una vale 500 más (de 1500 a 6000);
+  - dos órbitas por el arco superior;
+  - agujero de gusano tras un bloque de dianas en V y bajo un tejadillo;
+  - triángulo de bumpers.
+- **Cada recorrido con su color fijo:** carriles de tiro con flechas, rampas de plástico y alambre.
+- **Decoración:** nebulosa, galaxia y emblema propio.
+- **Luces:** pulsos lentos, sin ciclos de color.
+- **Arreglos:** bucles que puntuaban solos (plato y agujero) y bola apoyada en el pivote de la pala.
+
 ## v159-saturn · Los retratos nuevos llegan a todos los móviles (9-nov-2026)
 
 - Las URL de los retratos llevan versión: los móviles ya no muestran el retrato antiguo desde la caché.

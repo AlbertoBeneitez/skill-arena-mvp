@@ -42,6 +42,7 @@ import { PINBALL_CORE_V8 } from "../verified/pinballCore.v8";
 import { PINBALL_CORE_V9 } from "../verified/pinballCore.v9";
 import { PINBALL_CORE_V10 } from "../verified/pinballCore.v10";
 import { PINBALL_CORE_V11 } from "../verified/pinballCore.v11";
+import { PINBALL_CORE_V12 } from "../verified/pinballCore.v12";
 import { CORNER_SUDOKU_CORE_V1 } from "../verified/cornerSudokuCore.v1";
 import { CORNER_SUDOKU_CORE_V2 } from "../verified/cornerSudokuCore.v2";
 import { CORNER_SUDOKU_CORE_V3 } from "../verified/cornerSudokuCore.v3";
@@ -319,6 +320,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(PINBALL_CORE_V9.gameId,PINBALL_CORE_V9.gameVersion)]: coreAdapter(PINBALL_CORE_V9),
   [adapterKey(PINBALL_CORE_V10.gameId,PINBALL_CORE_V10.gameVersion)]: coreAdapter(PINBALL_CORE_V10),
   [adapterKey(PINBALL_CORE_V11.gameId,PINBALL_CORE_V11.gameVersion)]: coreAdapter(PINBALL_CORE_V11),
+  [adapterKey(PINBALL_CORE_V12.gameId,PINBALL_CORE_V12.gameVersion)]: coreAdapter(PINBALL_CORE_V12),
   [adapterKey(CORNER_SUDOKU_CORE_V1.gameId, CORNER_SUDOKU_CORE_V1.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V1),
   [adapterKey(CORNER_SUDOKU_CORE_V2.gameId, CORNER_SUDOKU_CORE_V2.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V2),
   [adapterKey(CORNER_SUDOKU_CORE_V3.gameId, CORNER_SUDOKU_CORE_V3.gameVersion)]: coreAdapter(CORNER_SUDOKU_CORE_V3),
