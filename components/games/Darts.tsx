@@ -92,64 +92,119 @@ function boardSprite() {
   boardCache = c;
   return c;
 }
-function drawArena(ctx: CanvasRenderingContext2D, viewH: number, tick: number) {
-  drawSpaceBackdrop(ctx, 390, viewH, 0, tick);
-  // Indoor hall over the space backdrop.
-  const hall = ctx.createLinearGradient(0, 0, 0, viewH);
+// Static arena layers, cached per view height and backing scale (presentation only).
+// Per frame only the twinkling bokeh, the breathing cones and the dust are drawn live.
+type ArenaCache = { key: string; under: HTMLCanvasElement; over: HTMLCanvasElement; cones: HTMLCanvasElement[]; bokeh: HTMLCanvasElement[] };
+let arenaCache: ArenaCache | null = null;
+const BOKEH_COLS = ["255,190,110", "127,227,238", "255,110,160", "200,210,255"] as const;
+function layer(w: number, h: number, k: number, paint: (g: CanvasRenderingContext2D) => void) {
+  const c = document.createElement("canvas");
+  c.width = Math.max(1, Math.ceil(w * k)); c.height = Math.max(1, Math.ceil(h * k));
+  const g = c.getContext("2d")!; g.scale(k, k); paint(g);
+  return c;
+}
+function coneShape(g: CanvasRenderingContext2D, lx: number, side: number) {
+  g.beginPath(); g.moveTo(lx - 8, 14); g.lineTo(lx + 8, 14); g.lineTo(cx + side * -40 + 150 * side, cy + 160); g.lineTo(cx + side * -40 - 120 * side, cy + 190); g.closePath();
+}
+function arenaLayers(viewH: number, k: number): ArenaCache {
+  const key = `${viewH}:${k}`;
+  if (arenaCache?.key === key) return arenaCache;
+  const under = layer(390, viewH, k, (g) => paintUnder(g, viewH));
+  // One full-intensity bokeh sprite per colour (radius 18 covers every size); drawn scaled with alpha.
+  const bokeh = BOKEH_COLS.map((col) => layer(36, 36, k, (g) => paintBokeh(g, col, 18, 18, 18, 1)));
+  const cones = ([[48, 1], [342, -1]] as const).map(([lx, side]) => layer(390, viewH, k, (g) => paintCone(g, lx, side, 1)));
+  const over = layer(390, viewH, k, (g) => paintOver(g, viewH));
+  arenaCache = { key, under, over, cones, bokeh };
+  return arenaCache;
+}
+function paintUnder(g: CanvasRenderingContext2D, viewH: number) {
+  const hall = g.createLinearGradient(0, 0, 0, viewH);
   hall.addColorStop(0, "rgba(6,8,18,.78)"); hall.addColorStop(0.5, "rgba(8,10,24,.7)"); hall.addColorStop(1, "rgba(3,4,10,.9)");
-  ctx.fillStyle = hall; ctx.fillRect(0, 0, 390, viewH);
-  // Crowd lights out of focus (behind the board, both sides and above).
-  for (let k = 0; k < 34; k++) {
-    const x = (k * 97.3) % 390, y = 40 + ((k * 53.7) % 150) + (k % 3) * 120;
-    const tw = 0.5 + 0.5 * Math.sin(tick * 0.03 + k * 1.7), col = k % 4 === 0 ? "255,190,110" : k % 4 === 1 ? "127,227,238" : k % 4 === 2 ? "255,110,160" : "200,210,255";
-    const r = 6 + (k % 5) * 3;
-    const bo = ctx.createRadialGradient(x, y, 0, x, y, r);
-    bo.addColorStop(0, `rgba(${col},${0.26 + 0.16 * tw})`); bo.addColorStop(1, `rgba(${col},0)`);
-    ctx.fillStyle = bo; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-  }
-  // Lighting truss across the top with three lamps.
-  ctx.fillStyle = "#151924"; ctx.fillRect(0, 4, 390, 10);
-  ctx.strokeStyle = "rgba(150,165,190,.35)"; ctx.lineWidth = 1;
-  for (let x = 0; x < 390; x += 14) { ctx.beginPath(); ctx.moveTo(x, 4); ctx.lineTo(x + 7, 14); ctx.lineTo(x + 14, 4); ctx.stroke(); }
-  // Spotlight cones crossing on the board, with a slow breath and dust motes.
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  for (const [lx, side] of [[48, 1], [342, -1]] as const) {
-    const breath = 0.85 + 0.15 * Math.sin(tick * 0.02 + side);
-    const cone = ctx.createLinearGradient(lx, 14, cx, cy + 40);
-    cone.addColorStop(0, `rgba(255,244,220,${0.32 * breath})`); cone.addColorStop(1, "rgba(255,244,220,0)");
-    ctx.fillStyle = cone;
-    ctx.beginPath(); ctx.moveTo(lx - 8, 14); ctx.lineTo(lx + 8, 14); ctx.lineTo(cx + side * -40 + 150 * side, cy + 160); ctx.lineTo(cx + side * -40 - 120 * side, cy + 190); ctx.closePath(); ctx.fill();
-  }
-  for (let k = 0; k < 26; k++) {
-    const t0 = (tick * (0.15 + (k % 5) * 0.04) + k * 37) % 300;
-    const x = 70 + ((k * 61) % 250) + Math.sin((tick + k * 40) * 0.01) * 10, y = 30 + t0;
-    ctx.fillStyle = `rgba(255,246,226,${0.25 * (1 - t0 / 300)})`; ctx.fillRect(x, y, 1.4, 1.4);
-  }
-  ctx.restore();
+  g.fillStyle = hall; g.fillRect(0, 0, 390, viewH);
+  // Lighting truss across the top (the bokeh below never reaches it).
+  g.fillStyle = "#151924"; g.fillRect(0, 4, 390, 10);
+  g.strokeStyle = "rgba(150,165,190,.35)"; g.lineWidth = 1;
+  for (let x = 0; x < 390; x += 14) { g.beginPath(); g.moveTo(x, 4); g.lineTo(x + 7, 14); g.lineTo(x + 14, 4); g.stroke(); }
+}
+function paintBokeh(g: CanvasRenderingContext2D, col: string, x: number, y: number, r: number, alpha: number) {
+  const bo = g.createRadialGradient(x, y, 0, x, y, r);
+  bo.addColorStop(0, `rgba(${col},${alpha})`); bo.addColorStop(1, `rgba(${col},0)`);
+  g.fillStyle = bo; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+}
+function paintCone(g: CanvasRenderingContext2D, lx: number, side: number, alpha: number) {
+  const cone = g.createLinearGradient(lx, 14, cx, cy + 40);
+  cone.addColorStop(0, `rgba(255,244,220,${alpha})`); cone.addColorStop(1, "rgba(255,244,220,0)");
+  g.fillStyle = cone; coneShape(g, lx, side); g.fill();
+}
+function paintOver(g: CanvasRenderingContext2D, viewH: number) {
   for (const lx of [48, 195, 342]) {
-    ctx.fillStyle = "#262c3a"; ctx.fillRect(lx - 10, 10, 20, 12);
-    const lamp = ctx.createRadialGradient(lx, 22, 0, lx, 22, 16);
+    g.fillStyle = "#262c3a"; g.fillRect(lx - 10, 10, 20, 12);
+    const lamp = g.createRadialGradient(lx, 22, 0, lx, 22, 16);
     lamp.addColorStop(0, "rgba(255,248,230,.95)"); lamp.addColorStop(1, "rgba(255,248,230,0)");
-    ctx.fillStyle = lamp; ctx.beginPath(); ctx.arc(lx, 22, 16, 0, Math.PI * 2); ctx.fill();
+    g.fillStyle = lamp; g.beginPath(); g.arc(lx, 22, 16, 0, Math.PI * 2); g.fill();
   }
   // Coloured washes on the back wall, low on both sides (stage lighting).
   for (const [x0, col] of [[0, "255,70,150"], [390, "60,200,230"]] as const) {
-    const wash = ctx.createRadialGradient(x0, viewH * 0.62, 0, x0, viewH * 0.62, 260);
+    const wash = g.createRadialGradient(x0, viewH * 0.62, 0, x0, viewH * 0.62, 260);
     wash.addColorStop(0, `rgba(${col},.22)`); wash.addColorStop(1, `rgba(${col},0)`);
-    ctx.fillStyle = wash; ctx.fillRect(0, 0, 390, viewH);
+    g.fillStyle = wash; g.fillRect(0, 0, 390, viewH);
   }
   // Floor and the oche (throw line) near the bottom.
   const floorY = viewH - 150;
-  const fl = ctx.createLinearGradient(0, floorY, 0, viewH);
+  const fl = g.createLinearGradient(0, floorY, 0, viewH);
   fl.addColorStop(0, "rgba(20,24,40,0)"); fl.addColorStop(0.3, "rgba(22,26,44,.85)"); fl.addColorStop(1, "rgba(10,12,22,.95)");
-  ctx.fillStyle = fl; ctx.fillRect(0, floorY, 390, viewH - floorY);
-  ctx.strokeStyle = "rgba(127,227,238,.06)"; ctx.lineWidth = 1;
-  for (let k = -8; k <= 8; k++) { ctx.beginPath(); ctx.moveTo(195 + k * 18, floorY + 30); ctx.lineTo(195 + k * 60, viewH); ctx.stroke(); }
+  g.fillStyle = fl; g.fillRect(0, floorY, 390, viewH - floorY);
+  g.strokeStyle = "rgba(127,227,238,.06)"; g.lineWidth = 1;
+  for (let q = -8; q <= 8; q++) { g.beginPath(); g.moveTo(195 + q * 18, floorY + 30); g.lineTo(195 + q * 60, viewH); g.stroke(); }
   const ocheY = viewH - 48;
-  const oche = ctx.createLinearGradient(40, 0, 350, 0);
+  const oche = g.createLinearGradient(40, 0, 350, 0);
   oche.addColorStop(0, "rgba(255,210,122,0)"); oche.addColorStop(0.5, "rgba(255,210,122,.75)"); oche.addColorStop(1, "rgba(255,210,122,0)");
-  ctx.fillStyle = oche; ctx.fillRect(40, ocheY, 310, 3);
+  g.fillStyle = oche; g.fillRect(40, ocheY, 310, 3);
+}
+
+/** The same arena painted straight onto the context (no DOM, e.g. presentation tests). */
+function drawArenaDirect(ctx: CanvasRenderingContext2D, viewH: number, tick: number) {
+  paintUnder(ctx, viewH);
+  for (let q = 0; q < 34; q++) {
+    const x = (q * 97.3) % 390, y = 40 + ((q * 53.7) % 150) + (q % 3) * 120;
+    paintBokeh(ctx, BOKEH_COLS[q % 4], x, y, 6 + (q % 5) * 3, 0.26 + 0.16 * (0.5 + 0.5 * Math.sin(tick * 0.03 + q * 1.7)));
+  }
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const [lx, side] of [[48, 1], [342, -1]] as const) paintCone(ctx, lx, side, 0.32 * (0.85 + 0.15 * Math.sin(tick * 0.02 + side)));
+  ctx.restore();
+  paintOver(ctx, viewH);
+}
+function drawArena(ctx: CanvasRenderingContext2D, viewH: number, tick: number) {
+  drawSpaceBackdrop(ctx, 390, viewH, 0, tick);
+  if (typeof document === "undefined" || typeof ctx.getTransform !== "function") { drawArenaDirect(ctx, viewH, tick); return; }
+  const m = ctx.getTransform();
+  const k = Math.min(3, Math.max(1, Math.round(Math.hypot(m.a, m.b) * 4) / 4));
+  const L = arenaLayers(viewH, k);
+  ctx.drawImage(L.under, 0, 0, 390, viewH);
+  // Crowd lights out of focus (behind the board, both sides and above).
+  ctx.save();
+  for (let q = 0; q < 34; q++) {
+    const x = (q * 97.3) % 390, y = 40 + ((q * 53.7) % 150) + (q % 3) * 120;
+    const tw = 0.5 + 0.5 * Math.sin(tick * 0.03 + q * 1.7);
+    const r = 6 + (q % 5) * 3;
+    ctx.globalAlpha = 0.26 + 0.16 * tw;
+    ctx.drawImage(L.bokeh[q % 4], x - r, y - r, r * 2, r * 2);
+  }
+  // Spotlight cones crossing on the board, with a slow breath and dust motes.
+  ctx.globalCompositeOperation = "lighter";
+  for (const [i, side] of [[0, 1], [1, -1]] as const) {
+    ctx.globalAlpha = 0.32 * (0.85 + 0.15 * Math.sin(tick * 0.02 + side));
+    ctx.drawImage(L.cones[i], 0, 0, 390, viewH);
+  }
+  ctx.globalAlpha = 1;
+  for (let q = 0; q < 26; q++) {
+    const t0 = (tick * (0.15 + (q % 5) * 0.04) + q * 37) % 300;
+    const x = 70 + ((q * 61) % 250) + Math.sin((tick + q * 40) * 0.01) * 10, y = 30 + t0;
+    ctx.fillStyle = `rgba(255,246,226,${0.25 * (1 - t0 / 300)})`; ctx.fillRect(x, y, 1.4, 1.4);
+  }
+  ctx.restore();
+  ctx.drawImage(L.over, 0, 0, 390, viewH);
 }
 function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: number; height: number }) {
   const viewH = Math.max(620, view?.height ?? 620);

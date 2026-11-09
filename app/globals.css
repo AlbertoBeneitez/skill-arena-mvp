@@ -8753,9 +8753,10 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 /* Catalogue: "Enviar juego" as a small tab at the top left, opposite the rankings pill. */
 .appShell .homePlayHeading.gxHomeBar { justify-content: space-between; align-items: center; }
 .appShell .gxStudioTab {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px 0 10px;
-  border-radius: 999px; border: 1px solid rgba(127, 227, 238, .38); background: rgba(14, 14, 16, .85);
-  color: #cfeff6; font: 600 11.5px/1 var(--gx-ui); letter-spacing: .01em; box-shadow: none;
+  /* v156: as big as the Rankings pill beside it (it was a small tab). */
+  display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 17px 0 14px;
+  border-radius: 999px; border: 1px solid rgba(127, 227, 238, .5); background: rgba(14, 14, 16, .85);
+  color: #dff6fa; font: 700 14px/1 var(--gx-ui); letter-spacing: .01em; box-shadow: 0 0 0 1px rgba(127,227,238,.06), 0 6px 18px rgba(0,0,0,.35);
   -webkit-tap-highlight-color: transparent;
 }
 .appShell .gxStudioTab .uiIcon { color: var(--st-ion, #7fe3ee); }
@@ -8765,13 +8766,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 /* =====================================================================
    v154
    ===================================================================== */
-/* Avatar setup: an empty portrait (no pre-filled face) until the player picks or uploads one. */
-.galacticAvatarSetup .gxAvatarEmpty {
-  display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%;
-  background: radial-gradient(circle at 50% 34%, rgba(127,227,238,.16), rgba(127,227,238,.02) 62%), linear-gradient(180deg, #17191d, #0b0c0e);
-  box-shadow: inset 0 0 0 1px rgba(127,227,238,.18), inset 0 10px 30px rgba(0,0,0,.45);
-  color: rgba(191,241,246,.55);
-}
 /* One scoreboard for every game (GameScoreboard): a smoked-glass bar across the top of the play area, equal cells
    divided by hairlines, a small label over each value set in the app's type (no seven-segment digits). The score cell
    is gold with a short underline; the rest stay ice-white. Same size and place in every game. */
@@ -8804,10 +8798,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 .gxScoreCell.main { flex-grow: 1.35; }
 .gxScoreCell.main b { color: #f4dcaa; font-size: 18px; text-shadow: 0 0 14px rgba(233,194,122,.28); }
-.gxScoreCell.main::after {
-  content: ""; position: absolute; left: 12px; bottom: 5px; width: 22px; height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, #e9c27a, rgba(233,194,122,0));
-}
 .gxScoreCell.alert b { color: #ff8a8a; }
 @media (max-width: 360px) { .gxScoreCell { padding: 0 9px; } .gxScoreCell b { font-size: 15px; } .gxScoreCell.main b { font-size: 16.5px; } }
 /* The same scoreboard inside games laid out in the page flow (Mine Grid, Solitaire Sprint). */
@@ -8855,3 +8845,35 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 @media (prefers-reduced-motion: reduce) { .pinballVerified .coreControls button { transition: none; } }
 /* Mine Grid: the shared scoreboard sits at the top like in every other game (it replaces the v124 LED console). */
 .mineGridGame.mineGridDigital { padding-top: 58px !important; }
+
+/* =====================================================================
+   v156
+   ===================================================================== */
+/* Progress by game on the avatar tab: one row per game with its cover, league, series and best mark.
+   The journey bar has one segment per league (bronze → diamond); the current one fills with the series' wins. */
+.playerProgress { margin: 4px 0 14px; padding: 12px; border-radius: 18px; border: 1px solid var(--gx-edge); background: linear-gradient(170deg, rgba(28,28,30,.8), rgba(15,15,17,.92)); }
+.playerProgress > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 2px 10px; }
+.playerProgress h2 { margin: 0; font: 700 15px/1.2 var(--gx-display); color: var(--gx-ink); letter-spacing: .01em; }
+.playerProgress header > span { font-size: 12px; color: var(--gx-mute); white-space: nowrap; }
+.playerProgress ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.playerProgress li button {
+  width: 100%; display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  padding: 8px 12px 8px 8px; border-radius: 14px; border: 1px solid rgba(255,255,255,.06);
+  border-left: 3px solid var(--tier); background: rgba(10,10,12,.72); color: var(--gx-ink); text-align: start;
+  font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.playerProgress li button:active { translate: 0 1px; background: rgba(127,227,238,.08); }
+.playerProgress li button:focus-visible { outline: 2px solid var(--st-ion, #7fe3ee); outline-offset: 2px; }
+.playerProgress img { width: 64px; height: 44px; object-fit: cover; border-radius: 9px; display: block; }
+.playerProgress .progressMain { display: grid; gap: 5px; min-width: 0; }
+.playerProgress .progressMain strong { font: 700 14px/1.15 var(--gx-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.playerProgress .progressTier { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--tier); font-weight: 700; }
+.playerProgress .progressTier b { font-size: 13px; }
+.playerProgress .progressJourney { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; max-width: 150px; }
+.playerProgress .progressJourney i {
+  display: block; height: 4px; border-radius: 2px; background: rgba(255,255,255,.1);
+  background-image: linear-gradient(90deg, var(--c) calc(var(--f) * 100%), transparent calc(var(--f) * 100%));
+}
+.playerProgress .progressMark { display: grid; justify-items: end; gap: 3px; text-align: end; }
+.playerProgress .progressMark small { font-size: 10px; color: var(--gx-mute); white-space: nowrap; }
+.playerProgress .progressMark b { font: 700 14px/1 var(--gx-display); color: #f4dcaa; white-space: nowrap; }

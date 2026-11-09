@@ -35,7 +35,7 @@ function gloss(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, 
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); ctx.fill();
 }
 
-function symbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number, size: number, glow = false) {
+function paintSymbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number, size: number, glow = false) {
   const u = size, line = Math.max(1, u * 0.045);
   ctx.save();
   ctx.translate(x, y);
@@ -157,6 +157,44 @@ function symbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number,
   ctx.restore();
 }
 
+// Presentation only: each symbol is painted once per (id, size, glow, backing scale) into a sprite and then blitted.
+// Before, every frame repainted ~30 vector symbols with their gradients and glows.
+const symbolSprites = new Map<string, { c: HTMLCanvasElement; half: number }>();
+function backingScale(ctx: CanvasRenderingContext2D) {
+  const m = ctx.getTransform();
+  return Math.min(4, Math.max(1, Math.ceil(Math.hypot(m.a, m.b) * 2) / 2));
+}
+function symbol(ctx: CanvasRenderingContext2D, id: number, x: number, y: number, size: number, glow = false) {
+  if (typeof document === "undefined" || typeof ctx.getTransform !== "function") { paintSymbol(ctx, id, x, y, size, glow); return; }
+  const k = backingScale(ctx), u = Math.round(size * 2) / 2;
+  const key = `${id}:${u}:${glow ? 1 : 0}:${k}`;
+  let sprite = symbolSprites.get(key);
+  if (!sprite) {
+    if (symbolSprites.size > 160) symbolSprites.clear();
+    const half = u * (glow ? 1.25 : 0.7), c = document.createElement("canvas");
+    c.width = c.height = Math.ceil(half * 2 * k);
+    const g = c.getContext("2d")!;
+    g.scale(k, k); paintSymbol(g, id, half, half, u, glow);
+    sprite = { c, half };
+    symbolSprites.set(key, sprite);
+  }
+  ctx.drawImage(sprite.c, x - sprite.half, y - sprite.half, sprite.half * 2, sprite.half * 2);
+}
+
+const bulbSprites = new Map<string, HTMLCanvasElement>();
+/** A lit bulb with its glow, painted once (shadow blur is the costliest canvas operation on phones). */
+function bulbSprite(ctx: CanvasRenderingContext2D, fill: string, glow: string) {
+  const k = backingScale(ctx), key = `${fill}:${glow}:${k}`;
+  let c = bulbSprites.get(key);
+  if (!c) {
+    c = document.createElement("canvas"); c.width = c.height = Math.ceil(24 * k);
+    const g = c.getContext("2d")!; g.scale(k, k);
+    g.fillStyle = fill; g.shadowColor = glow; g.shadowBlur = 9;
+    g.beginPath(); g.arc(12, 12, 3, 0, Math.PI * 2); g.fill();
+    bulbSprites.set(key, c);
+  }
+  return c;
+}
 /** Ring of marquee bulbs around a rectangle; chase pattern, or all flashing on a win. */
 function bulbs(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, gap: number, tick: number, win: boolean) {
   const pts: [number, number][] = [];
@@ -168,14 +206,23 @@ function bulbs(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
   pts.forEach(([px, py], i) => {
     const on = win ? Math.floor(tick / 8) % 2 === i % 2 : (i + chase) % 4 === 0;
     const hue = BULB_COLORS[i % BULB_COLORS.length];
-    ctx.fillStyle = on ? (win ? "#fff3b0" : hue) : "rgba(255,211,106,.22)";
-    if (on) { ctx.shadowColor = win ? GOLD : hue; ctx.shadowBlur = 9; }
+    if (on && typeof document !== "undefined" && typeof ctx.getTransform === "function") { ctx.drawImage(bulbSprite(ctx, win ? "#fff3b0" : hue, win ? GOLD : hue), px - 12, py - 12, 24, 24); return; }
+    if (on) {
+      ctx.fillStyle = win ? "#fff3b0" : hue; ctx.shadowColor = win ? GOLD : hue; ctx.shadowBlur = 9;
+      ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; return;
+    }
+    ctx.fillStyle = "rgba(255,211,106,.22)";
     ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowBlur = 0;
   });
 }
 
-function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: number; height: number }) {
+/** Step colour: hue from blue (−3) through indigo (0) to violet (+3). */
+function stepTone(step: number) {
+  const f = Math.max(0, Math.min(1, (step + 3) / 6));
+  return { h: Math.round(212 + f * 66), l: Math.round(70 - 4 * Math.sin(f * Math.PI)) };
+}
+
+function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: number; height: number }, poster = false) {
   // v126: the canvas takes the full height; the reel window grows down to use it.
   // v143: the layout follows the real logical height (520 at least, the core's): before, it assumed 620 and on short
   // phones the cabinet's lower edge, the step counters and the pair line were drawn under the buttons or the frame.
@@ -212,19 +259,25 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
     }
   }
   // Pay table: one card per symbol with its triple and its pair (a triple pays four pairs; three sevens, five).
-  const payTop = tableTop + tableH + 6, cardW = 47, cardH = compact ? 56 : 64, gap = 3.5;
+  // v156: taller cards so each prize reads at a glance (amounts 15 px, was 11).
+  const payTop = tableTop + tableH + 6, cardW = 47, cardH = compact ? 62 : 74, gap = 3.5;
   SLOT_SYMBOLS_V4.forEach((id, k) => {
     const x = 20 + k * (cardW + gap), y = payTop;
     const card = ctx.createLinearGradient(0, y, 0, y + cardH);
     card.addColorStop(0, `${colors[id]}4a`); card.addColorStop(0.42, "rgba(26,8,58,.94)"); card.addColorStop(1, "rgba(14,4,36,.96)");
     ctx.fillStyle = card; ctx.beginPath(); ctx.roundRect(x, y, cardW, cardH, 10); ctx.fill();
     ctx.strokeStyle = `${colors[id]}c0`; ctx.lineWidth = 1.2; ctx.stroke();
-    symbol(ctx, id, x + cardW / 2, y + (compact ? 15 : 17), compact ? 24 : 28);
+    symbol(ctx, id, x + cardW / 2, y + (compact ? 14 : 16), compact ? 22 : 26);
     ctx.textBaseline = "middle";
     for (const [row, mult, amount] of [[0, "×3", SLOT_RULES_V4.triple[id] * 5], [1, "×2", SLOT_RULES_V4.pair[id] * 5]] as const) {
-      const ly = y + cardH - (compact ? 19 : 21) + row * (compact ? 11 : 12.5);
-      ctx.font = `700 ${compact ? 8 : 8.5}px system-ui`; ctx.fillStyle = "rgba(230,222,250,.7)"; ctx.textAlign = "left"; ctx.fillText(mult, x + 3.5, ly);
-      ctx.font = `900 ${compact ? 10 : 11}px system-ui`; ctx.fillStyle = row === 0 ? GOLD : "#ffe9c4"; ctx.textAlign = "right"; ctx.fillText(String(amount), x + cardW - 3.5, ly);
+      const ly = y + cardH - (compact ? 23 : 27) + row * (compact ? 14 : 16);
+      ctx.font = `700 ${compact ? 8.5 : 9}px system-ui`; ctx.fillStyle = "rgba(230,222,250,.72)"; ctx.textAlign = "left"; ctx.fillText(mult, x + 3, ly + 0.5);
+      const text = String(amount);
+      ctx.font = `900 ${compact ? 13 : 15}px system-ui`;
+      // Three-digit prizes shrink just enough to fit beside their multiplier.
+      const room = cardW - 6 - 13, w = ctx.measureText(text).width;
+      if (w > room) ctx.font = `900 ${Math.floor((compact ? 13 : 15) * room / w * 2) / 2}px system-ui`;
+      ctx.fillStyle = row === 0 ? GOLD : "#ffe9c4"; ctx.textAlign = "right"; ctx.fillText(text, x + cardW - 3, ly);
     }
   });
   ctx.textAlign = "center";
@@ -267,10 +320,13 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
     ctx.strokeStyle = "#c9902e"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(rx, ry, rw, rh, 12); ctx.stroke();
     // Step counter as an LED pill.
     const label = String(slotVisibleSteps(s.steps[i]));
+    // v156: the step's colour runs along a gradient, blue at −3 to violet at +3.
+    if (poster) continue;
+    const tone = stepTone(s.steps[i]);
     ctx.fillStyle = "#08051a"; ctx.beginPath(); ctx.roundRect(x - 26, top + height + 18, 52, 26, 13); ctx.fill();
-    ctx.strokeStyle = s.steps[i] === 0 ? "rgba(255,74,95,.8)" : "rgba(95,240,255,.6)"; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = s.steps[i] === 0 ? "#ff8a96" : "#9ff6ff"; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8;
-    ctx.font = "900 15px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.strokeStyle = `hsla(${tone.h},100%,66%,.75)`; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = `hsl(${tone.h},100%,${tone.l}%)`; ctx.shadowColor = `hsl(${tone.h},100%,60%)`; ctx.shadowBlur = 8;
+    ctx.font = "900 16px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(label, x, top + height + 31.5);
     ctx.shadowBlur = 0;
   }
@@ -294,19 +350,21 @@ function render(ctx: CanvasRenderingContext2D, s: SlotState, view?: { width: num
       ctx.beginPath(); ctx.ellipse(cx, cy, 6 * spin + 1, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
     const pop = since < 20 ? 0.6 + 0.4 * Math.sin((since / 20) * Math.PI * 0.5) + 0.15 * Math.sin((since / 20) * Math.PI) : 1 + 0.03 * Math.sin(since * 0.15);
-    ctx.save();
-    // Straddles the cabinet's top frame (decoration only), so no pay chip or symbol is ever covered.
-    ctx.translate(195, top - 6); ctx.scale(pop, pop);
-    ctx.font = `900 ${big ? 26 : 22}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    const label = t("slot.won", { n: formatNumber(s.lastPayout / 100) });
-    ctx.fillStyle = "rgba(20,6,42,.85)"; const w = ctx.measureText(label).width + 36;
-    ctx.beginPath(); ctx.roundRect(-w / 2, -18, w, 36, 18); ctx.fill();
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.stroke();
-    const g = ctx.createLinearGradient(0, -12, 0, 12);
-    g.addColorStop(0, "#fff6c2"); g.addColorStop(0.5, "#ffd23f"); g.addColorStop(1, "#ff7a3d");
-    ctx.fillStyle = g; ctx.shadowColor = "#ffb000"; ctx.shadowBlur = 14;
-    ctx.fillText(label, 0, 1);
-    ctx.restore();
+    if (!poster) {
+      ctx.save();
+      // Straddles the cabinet's top frame (decoration only), so no pay chip or symbol is ever covered.
+      ctx.translate(195, top - 6); ctx.scale(pop, pop);
+      ctx.font = `900 ${big ? 26 : 22}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const label = t("slot.won", { n: formatNumber(s.lastPayout / 100) });
+      ctx.fillStyle = "rgba(20,6,42,.85)"; const w = ctx.measureText(label).width + 36;
+      ctx.beginPath(); ctx.roundRect(-w / 2, -18, w, 36, 18); ctx.fill();
+      ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.stroke();
+      const g = ctx.createLinearGradient(0, -12, 0, 12);
+      g.addColorStop(0, "#fff6c2"); g.addColorStop(0.5, "#ffd23f"); g.addColorStop(1, "#ff7a3d");
+      ctx.fillStyle = g; ctx.shadowColor = "#ffb000"; ctx.shadowBlur = 14;
+      ctx.fillText(label, 0, 1);
+      ctx.restore();
+    }
   }
 }
 const hudLabel = (s: Readonly<SlotState>) =>
@@ -317,6 +375,9 @@ const scoreCells = (s: Readonly<SlotState>): ScoreCell[] => [
   { label: t("hud.time"), value: `${formatNumber(Math.max(0, 21600 - s.tick) / 120, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} s` },
   s.steps.every((step) => step === 0) ? { label: t("hud.shots"), value: t("slot.hudNoZero"), alert: true } : { label: t("hud.shots"), value: formatNumber(s.spins) },
 ];
+/** The game's own renderer, for the catalogue cover script (scripts/render-slot-cover.mjs). */
+export { render as renderSlot };
+
 export default function GalacticSlot(props: GameRuntimeProps) {
   useI18n();
   return (

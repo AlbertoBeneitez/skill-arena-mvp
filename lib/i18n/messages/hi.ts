@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "लोकल पहचान · काल्पनिक बैलेंस और इनाम",
   "profile.localAccount": "लोकल खाता · कोई वास्तविक रैंक नहीं",
   "profile.balance": "काल्पनिक बैलेंस",
-  "profile.add": "10 € काल्पनिक जोड़ें",
-  "profile.withdraw": "10 € काल्पनिक निकालें",
+  "profile.add": "10 € जोड़ें",
+  "profile.withdraw": "10 € निकालें",
   "profile.noMovements": "कोई लेनदेन नहीं",
   "profile.stats": "आँकड़े",
   "profile.played": "मैच",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "सींग वाले",
   "gallery.form.2": "नाग",
   "gallery.notTarget": "लक्ष्य नहीं",
+  "progress.title": "हर गेम में प्रगति",
+  "progress.summary": "{total} में से {n} में सर्वश्रेष्ठ",
+  "progress.rowAria": "{game}: {tier} लीग, सर्वश्रेष्ठ {mark}. खेलें",
+  "progress.noMark": "अभी कोई सर्वश्रेष्ठ नहीं",
+  "progress.seriesNote": "हर सीरीज़ में {n} मैच हैं; {wins} जीत से आप अगली लीग में जाते हैं।",
 };
 
 export default messages;

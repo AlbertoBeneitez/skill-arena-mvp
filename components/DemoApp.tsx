@@ -34,6 +34,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import LanguagePicker from "./LanguagePicker";
 import LeagueResult from "./LeagueResult";
 import RankingHub from "./GameRanking";
+import PlayerProgress from "./PlayerProgress";
 import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import dynamic from "next/dynamic";
 // v153: the studio proposal form loads only when the catalogue tab opens it.
@@ -243,7 +244,6 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
-  const [avatarUnpicked, setAvatarUnpicked] = useState(false);
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
@@ -803,7 +803,6 @@ export default function DemoApp() {
     const firstAvatar = Math.floor(Math.random() * AVATARS.length);
     setAvatarId(firstAvatar);
     setAvatarSrc(AVATARS[firstAvatar]);
-    setAvatarUnpicked(true);
     setAvatarEditorOpen(false);
     setAvatarError("");
     navigate("avatar-setup");
@@ -840,7 +839,6 @@ export default function DemoApp() {
     );
 
     setAvatarSrc(cropped);
-    setAvatarUnpicked(false);
     setCropSource(null);
   }
 
@@ -1270,7 +1268,7 @@ export default function DemoApp() {
                 aria-hidden="true"
                 onClick={() => setAvatarMenuOpen(true)}
               >
-                {avatarUnpicked ? <span className="gxAvatarEmpty"><UiIcon name="user" size={46} /></span> : <img src={avatarSrc} alt="" />}
+                <img src={avatarSrc} alt="" />
               </button>
             </div>
             <input
@@ -1315,7 +1313,7 @@ export default function DemoApp() {
                         className={current ? "current" : undefined}
                         aria-pressed={current}
                         aria-label={t("identity.avatarN", { n: index + 1 })}
-                        onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarUnpicked(false); setAvatarMenuOpen(false); }}
+                        onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
                         <img src={src} alt="" width={256} height={256} decoding="async" style={avatarFaceStyle(index)} />
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
@@ -1422,7 +1420,7 @@ export default function DemoApp() {
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
-            <button className="balanceChip" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><small>{t("shell.balanceLabel")}</small><b>{euro(balance)}</b></button>
+            <button className="balanceChip" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><b>{euro(balance)}</b></button>
             <button className="settingsGear gxIconBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
               <UiIcon name="gear" />
             </button>
@@ -1435,7 +1433,7 @@ export default function DemoApp() {
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <h1 className="visuallyHidden">{t("home.title")}</h1>
             <div className="homePlayHeading gxHomeBar">
-              <button type="button" className="gxStudioTab" onClick={() => setProposing(true)}><UiIcon name="upload" size={15} /><span>{t("studio.title")}</span></button>
+              <button type="button" className="gxStudioTab" onClick={() => setProposing(true)}><UiIcon name="upload" size={18} /><span>{t("studio.title")}</span></button>
               <button type="button" className="globalRankingShortcut gxRankingPill" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={17} /><span>{t("home.ranking")}</span></button>
             </div>
 
@@ -1648,6 +1646,8 @@ export default function DemoApp() {
               <div><b>{winRate}%</b><span>{t("profile.winRate")}</span></div>
               <div><b>{streak}</b><span>{t("profile.streak")}</span></div>
             </div>
+
+            <PlayerProgress leagues={persistentTraining ? undefined : leagues} bestScores={bestScores} onPlay={startMatch} />
 
             <section className="accountWalletCard">
               <div>

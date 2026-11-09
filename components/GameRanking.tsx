@@ -28,7 +28,7 @@ function sampleRows(game: GameMeta): Row[] {
   }).sort((a, b) => compareScores(game)(a.score, b.score));
 }
 
-function scoreText(game: GameMeta, score: number) {
+export function scoreText(game: GameMeta, score: number) {
   if (game.resultMetric === "fictitious-balance") return t("common.chips", { n: formatNumber(score / 100) });
   if (game.resultMetric === "reaction-time-ms") return t("common.ms", { n: formatNumber(score) });
   if (game.resultMetric === "orbs-eliminated") return t("common.orbs", { n: formatNumber(score) });

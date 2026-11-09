@@ -40,7 +40,7 @@ export function getBilliardsCamera(
     // under the HUD line; the logical viewport grows with tall phones (expand-vertical).
     const w = BILLIARDS_TABLE_VIEW_BOUNDS.right - BILLIARDS_TABLE_VIEW_BOUNDS.left;
     const h = BILLIARDS_TABLE_VIEW_BOUNDS.bottom - BILLIARDS_TABLE_VIEW_BOUNDS.top;
-    const hud = 48, strip = 78;
+    const hud = 48, strip = 92; // v156: power bar plus the three-panel dock
     const scale = Math.min((viewport.width - 12) / w, (viewport.height - hud - strip - 8) / h, 1.1);
     const top = hud + Math.max(0, (viewport.height - hud - strip - h * scale) / 2);
     return {

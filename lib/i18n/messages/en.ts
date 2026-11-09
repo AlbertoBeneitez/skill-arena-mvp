@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "Local identity · fictitious balance and prizes",
   "profile.localAccount": "Local account · no real position",
   "profile.balance": "FICTITIOUS BALANCE",
-  "profile.add": "Add €10 (fictitious)",
-  "profile.withdraw": "Withdraw €10 (fictitious)",
+  "profile.add": "Add €10",
+  "profile.withdraw": "Withdraw €10",
   "profile.noMovements": "No transactions",
   "profile.stats": "Statistics",
   "profile.played": "Matches",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "Horned",
   "gallery.form.2": "Serpents",
   "gallery.notTarget": "NOT A TARGET",
+  "progress.title": "Progress by game",
+  "progress.summary": "{n} of {total} with a best",
+  "progress.rowAria": "{game}: {tier} league, best {mark}. Play",
+  "progress.noMark": "no best yet",
+  "progress.seriesNote": "Each series has {n} matches; {wins} wins move you up a league.",
 };
 
 export default messages;

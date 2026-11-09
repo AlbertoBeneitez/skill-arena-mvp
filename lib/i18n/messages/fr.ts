@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "Identité locale · solde et gains fictifs",
   "profile.localAccount": "Compte local · sans position réelle",
   "profile.balance": "SOLDE FICTIF",
-  "profile.add": "Ajouter 10 € fictifs",
-  "profile.withdraw": "Retirer 10 € fictifs",
+  "profile.add": "Ajouter 10 €",
+  "profile.withdraw": "Retirer 10 €",
   "profile.noMovements": "Aucune opération",
   "profile.stats": "Statistiques",
   "profile.played": "Parties",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "Cornus",
   "gallery.form.2": "Serpents",
   "gallery.notTarget": "PAS UNE CIBLE",
+  "progress.title": "Progression par jeu",
+  "progress.summary": "{n} sur {total} avec un record",
+  "progress.rowAria": "{game} : ligue {tier}, meilleur score {mark}. Jouer",
+  "progress.noMark": "aucun record",
+  "progress.seriesNote": "Chaque série compte {n} parties ; {wins} victoires te font monter de ligue.",
 };
 
 export default messages;

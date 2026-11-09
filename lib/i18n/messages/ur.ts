@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "مقامی شناخت · فرضی بیلنس اور انعامات",
   "profile.localAccount": "مقامی اکاؤنٹ · کوئی حقیقی درجہ نہیں",
   "profile.balance": "فرضی بیلنس",
-  "profile.add": "10 € فرضی شامل کریں",
-  "profile.withdraw": "10 € فرضی نکالیں",
+  "profile.add": "10 € شامل کریں",
+  "profile.withdraw": "10 € نکالیں",
   "profile.noMovements": "کوئی لین دین نہیں",
   "profile.stats": "اعداد و شمار",
   "profile.played": "میچ",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "سینگ والے",
   "gallery.form.2": "ناگ",
   "gallery.notTarget": "ہدف نہیں",
+  "progress.title": "ہر گیم میں پیش رفت",
+  "progress.summary": "{total} میں سے {n} میں بہترین",
+  "progress.rowAria": "{game}: {tier} لیگ، بہترین {mark}۔ کھیلیں",
+  "progress.noMark": "ابھی کوئی بہترین نہیں",
+  "progress.seriesNote": "ہر سیریز میں {n} میچ ہیں؛ {wins} جیت سے آپ اگلی لیگ میں جاتے ہیں۔",
 };
 
 export default messages;

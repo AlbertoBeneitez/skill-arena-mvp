@@ -143,8 +143,8 @@ const es = {
   "profile.note": "Identidad local · saldo y premios ficticios",
   "profile.localAccount": "Cuenta local · sin posición real",
   "profile.balance": "SALDO FICTICIO",
-  "profile.add": "Añadir 10 € ficticios",
-  "profile.withdraw": "Retirar 10 € ficticios",
+  "profile.add": "Añadir 10 €",
+  "profile.withdraw": "Retirar 10 €",
   "profile.noMovements": "Sin movimientos",
   "profile.stats": "Estadísticas",
   "profile.played": "Partidas",
@@ -886,6 +886,11 @@ const es = {
   "gallery.form.1": "Cornudos",
   "gallery.form.2": "Sierpes",
   "gallery.notTarget": "NO ES OBJETIVO",
+  "progress.title": "Progreso por juego",
+  "progress.summary": "{n} de {total} con marca",
+  "progress.rowAria": "{game}: liga {tier}, mejor marca {mark}. Jugar",
+  "progress.noMark": "sin marca",
+  "progress.seriesNote": "Cada serie tiene {n} partidas; con {wins} victorias subes de liga.",
 } as const;
 
 export type MessageKey = keyof typeof es;

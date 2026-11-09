@@ -19,6 +19,7 @@ import { isStripe } from "@/lib/verified/billiardsCore.v5";
 import {
   BILLIARDS_CORE_V7,
   BILLIARDS_LEVEL_KINDS,
+  BILLIARDS_V7_RULES,
   isTarget,
   type BilliardsV7State as BilliardsV5State,
 } from "@/lib/verified/billiardsCore.v7";
@@ -165,13 +166,11 @@ function drawAimGuide(ctx: CanvasRenderingContext2D, s: BilliardsV5State) {
   ctx.restore();
 }
 
-function renderTable(
-  ctx: CanvasRenderingContext2D,
-  s: BilliardsV5State,
-  camera: BilliardsCamera,
-) {
-  ctx.save();
-  applyBilliardsCamera(ctx, camera);
+// The static table (frame, cloth, grid, sights and pockets) is painted once per backing scale into a sprite in
+// world space and blitted through the camera; before, it was repainted every frame with a blurred frame stroke.
+const TABLE_SPRITE = { x: 0, y: 50, w: 390, h: 500 };
+let tableSprite: { k: number; c: HTMLCanvasElement } | null = null;
+function paintStaticTable(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "#091724";
   ctx.beginPath();
   ctx.roundRect(24, 76, 342, 447, 26);
@@ -233,6 +232,94 @@ function renderTable(
     ctx.arc(x, y, 15, 0, Math.PI * 2);
     ctx.stroke();
   }
+}
+function drawStaticTable(ctx: CanvasRenderingContext2D) {
+  if (typeof document === "undefined" || typeof ctx.getTransform !== "function") { paintStaticTable(ctx); return; }
+  const m = ctx.getTransform();
+  const k = Math.min(4, Math.max(1, Math.ceil(Math.hypot(m.a, m.b) * 2) / 2));
+  if (tableSprite?.k !== k) {
+    const c = document.createElement("canvas");
+    c.width = Math.ceil(TABLE_SPRITE.w * k); c.height = Math.ceil(TABLE_SPRITE.h * k);
+    const g = c.getContext("2d")!;
+    g.scale(k, k); g.translate(-TABLE_SPRITE.x, -TABLE_SPRITE.y); paintStaticTable(g);
+    tableSprite = { k, c };
+  }
+  ctx.drawImage(tableSprite.c, TABLE_SPRITE.x, TABLE_SPRITE.y, TABLE_SPRITE.w, TABLE_SPRITE.h);
+}
+
+/** Upright dock under the table (portrait): power bar, then three panels mirrored about the centre —
+ * the five levels, this level's balls and the shots left. Drawn over the cue on translucent panels, so the cue
+ * still shows through while the numbers stay readable. */
+function renderDock(ctx: CanvasRenderingContext2D, s: BilliardsV5State, camera: BilliardsCamera) {
+  const tableBottom = billiardsTableBottom(camera), cx = camera.centerX;
+  ctx.save();
+  if (camera.rotated) {
+    for (let i = 0; i < 13; i++) {
+      ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
+      ctx.fillRect(cx - 64 + i * 10, 592, 7, 8);
+    }
+    ctx.restore();
+    return;
+  }
+  // Power: 13 segments centred under the table.
+  const segW = 12, segGap = 3, powerW = 13 * segW + 12 * segGap, py = tableBottom + 12;
+  for (let i = 0; i < 13; i++) {
+    ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
+    ctx.beginPath(); ctx.roundRect(cx - powerW / 2 + i * (segW + segGap), py, segW, 9, 2.5); ctx.fill();
+  }
+  // Three panels: equal sides, wider centre, symmetric about the table axis.
+  const W = Math.min(346 * camera.scale, 366), gap = 8, side = Math.round(W * 0.27), mid = W - 2 * side - 2 * gap;
+  const top = py + 19, h = 50, labelY = top + 13, rowY = top + 33;
+  const panels = [cx - W / 2, cx - mid / 2, cx + mid / 2 + gap] as const;
+  const widths = [side, mid, side] as const;
+  const targetsLeft = s.balls.some((b) => !b.potted && isTarget(b.id));
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  panels.forEach((x, i) => {
+    ctx.fillStyle = "rgba(7,18,30,.66)"; ctx.strokeStyle = "rgba(96,172,181,.34)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(x, top, widths[i], h, 12); ctx.fill(); ctx.stroke();
+    ctx.font = "800 10px system-ui"; ctx.fillStyle = "rgba(176,214,222,.78)";
+    ctx.fillText([t("hud.level"), t("hud.balls"), t("hud.shots")][i].toLocaleUpperCase(), x + widths[i] / 2, labelY);
+  });
+  // Levels 1–5: done (green), current (gold, ringed), next (dim), each with its number.
+  const pip = 15, pipGap = Math.min(5, (side - 16 - 5 * pip) / 4), levelsW = 5 * pip + 4 * pipGap;
+  for (let i = 0; i < 5; i++) {
+    const x = panels[0] + side / 2 - levelsW / 2 + i * (pip + pipGap), cur = i + 1 === s.level, done = i + 1 < s.level;
+    ctx.fillStyle = cur ? "#ffd36a" : done ? "#5cffb0" : "rgba(134,171,187,.24)";
+    ctx.beginPath(); ctx.roundRect(x, rowY - pip / 2, pip, pip, 4); ctx.fill();
+    if (cur) { ctx.strokeStyle = "rgba(255,211,106,.7)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x - 2.5, rowY - pip / 2 - 2.5, pip + 5, pip + 5, 6); ctx.stroke(); }
+    ctx.font = "900 10px system-ui"; ctx.fillStyle = cur || done ? "#0b1620" : "rgba(214,232,238,.7)";
+    ctx.fillText(String(i + 1), x + pip / 2, rowY + 0.5);
+  }
+  // This level's balls, potted ones dimmed; the 8 dimmed until the targets are down.
+  const ids = s.balls.filter((b) => isTarget(b.id) || b.id === 8).map((b) => b.id);
+  const ballScale = 1.15, ballPitch = Math.min(27, (mid - 12) / Math.max(1, ids.length)), ballsW = (ids.length - 1) * ballPitch;
+  ids.forEach((id, i) => {
+    const b = s.balls.find((q) => q.id === id)!;
+    ctx.save();
+    ctx.globalAlpha = b.potted ? 0.22 : id === 8 && targetsLeft ? 0.5 : 1;
+    ctx.translate(cx - ballsW / 2 + i * ballPitch, rowY); ctx.scale(ballScale, ballScale);
+    drawPoolBall(ctx, 0, 0, id, true);
+    ctx.restore();
+  });
+  // Shots: this level's allowance, the ones left lit (mirrors the level pips).
+  const total = Math.max(s.levelShotsLeft, BILLIARDS_V7_RULES.levelShots[s.level - 1] ?? s.levelShotsLeft);
+  const dot = 9, dotGap = Math.min(4, (side - 14 - total * dot) / Math.max(1, total - 1)), dotsW = total * dot + (total - 1) * dotGap;
+  for (let i = 0; i < total; i++) {
+    const x = panels[2] + side / 2 - dotsW / 2 + i * (dot + dotGap) + dot / 2, lit = i < s.levelShotsLeft;
+    ctx.fillStyle = lit ? "#e5c58b" : "rgba(134,171,187,.24)";
+    ctx.beginPath(); ctx.arc(x, rowY, dot / 2, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function renderTable(
+  ctx: CanvasRenderingContext2D,
+  s: BilliardsV5State,
+  camera: BilliardsCamera,
+) {
+  ctx.save();
+  applyBilliardsCamera(ctx, camera);
+  drawStaticTable(ctx);
   if (s.phase === "aim") drawAimGuide(ctx, s);
   // Middle third: the pull starts on the cue ball — a soft grab ring marks it.
   if (s.phase === "aim" && s.balls[0] && !s.balls[0].potted && !billiardsFreePull(s.balls[0])) {
@@ -314,34 +401,7 @@ function renderTable(
     }
   }
   ctx.restore();
-  // Power stays upright, separate from the rotated physical table.
   ctx.save();
-  const tableBottom = billiardsTableBottom(camera), barY = camera.rotated ? 592 : tableBottom + 12;
-  for (let i = 0; i < 13; i++) {
-    ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
-    ctx.fillRect(camera.centerX - 64 + i * 10, barY, 7, 8);
-  }
-  // Gymkhana strip: the five levels (done / current / next) and this level's balls, potted ones dimmed.
-  if (!camera.rotated) {
-    const y = tableBottom + 44;
-    for (let i = 0; i < 5; i++) {
-      const x = camera.centerX - 150 + i * 16, cur = i + 1 === s.level, done = i + 1 < s.level;
-      ctx.fillStyle = cur ? "#ffd36a" : done ? "#5cffb0" : "rgba(134,171,187,.28)";
-      ctx.beginPath(); ctx.roundRect(x, y - 5, 11, 10, 3); ctx.fill();
-      if (cur) { ctx.strokeStyle = "rgba(255,211,106,.6)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x - 2, y - 7, 15, 14, 4); ctx.stroke(); }
-    }
-    const ids = s.balls.filter((b) => isTarget(b.id) || b.id === 8).map((b) => b.id);
-    ids.forEach((id, i) => {
-      const b = s.balls.find((q) => q.id === id)!, x = camera.centerX - 50 + i * 24;
-      ctx.globalAlpha = b.potted ? 0.22 : id === 8 && targetsLeft ? 0.5 : 1;
-      drawPoolBall(ctx, x, y, id, true);
-      ctx.globalAlpha = 1;
-    });
-    for (let i = 0; i < s.levelShotsLeft; i++) {
-      ctx.fillStyle = "#e5c58b";
-      ctx.beginPath(); ctx.arc(camera.centerX + 146 - i * 9, y, 3, 0, Math.PI * 2); ctx.fill();
-    }
-  }
   // Event call-outs (group, fouls, the 8): upright, for ~1.6 s.
   // A level change pushes "cleared/out of shots" and "level N" on the same tick: show them one after the other.
   const last = s.events[s.events.length - 1], prev = s.events[s.events.length - 2];
@@ -418,6 +478,7 @@ function createPresentation() {
       }
       drawSpaceBackdrop(ctx, viewport.width, viewport.height, 0, state.tick);
       renderTable(ctx, state, camera);
+      renderDock(ctx, state, camera);
       if (drag && state.phase === "aim") drawSling(ctx, drag.screenFrom, drag.screenNow);
     },
     pointAction(

@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "Identidade local · saldo e prêmios fictícios",
   "profile.localAccount": "Conta local · sem posição real",
   "profile.balance": "SALDO FICTÍCIO",
-  "profile.add": "Adicionar 10 € fictícios",
-  "profile.withdraw": "Sacar 10 € fictícios",
+  "profile.add": "Adicionar 10 €",
+  "profile.withdraw": "Sacar 10 €",
   "profile.noMovements": "Sem movimentações",
   "profile.stats": "Estatísticas",
   "profile.played": "Partidas",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "Chifrudos",
   "gallery.form.2": "Serpentes",
   "gallery.notTarget": "NÃO É ALVO",
+  "progress.title": "Progresso por jogo",
+  "progress.summary": "{n} de {total} com recorde",
+  "progress.rowAria": "{game}: liga {tier}, melhor marca {mark}. Jogar",
+  "progress.noMark": "sem recorde",
+  "progress.seriesNote": "Cada série tem {n} partidas; com {wins} vitórias sobes de liga.",
 };
 
 export default messages;

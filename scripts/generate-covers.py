@@ -1655,7 +1655,7 @@ covers["reaction-test"] = covers["shot-gallery"]
 
 
 # ---------- v155 · subjects lower in the frame (clear of the catalogue's level badge, top left) ----------
-def lowered(src, s, ax=320, ay=440, feather=26):
+def lowered(src, s, ax=320, ay=440, feather=26, dy=0):
     """Shrink the whole composition about (ax, ay) so the subject sits lower and more centred; the edges it uncovers
     fade into the background through a feathered mask (no visible seam)."""
     head_end = src.index("</defs>") + len("</defs>")
@@ -1663,7 +1663,7 @@ def lowered(src, s, ax=320, ay=440, feather=26):
     body_start = src.index("/>", bg_start) + 2
     body_end = src.rindex('<rect width="640" height="440" fill="url(#vig)"/>')
     body = src[body_start:body_end]
-    x0, y0, w, h = ax - ax * s, ay - ay * s, 640 * s, 440 * s
+    x0, y0, w, h = ax - ax * s, ay - ay * s + dy, 640 * s, 440 * s
     m = (f'<filter id="lowblur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="{feather * .6:.1f}"/></filter>'
          f'<mask id="lowmask" maskUnits="userSpaceOnUse" x="0" y="0" width="640" height="440">'
          f'<rect x="{f(x0 + feather)}" y="{f(y0 + feather)}" width="{f(w - 2 * feather)}" height="{f(h + 200)}" fill="#fff" filter="url(#lowblur)"/></mask>')
@@ -1676,10 +1676,10 @@ def lowered(src, s, ax=320, ay=440, feather=26):
 
 covers["precision-stack"] = lowered(covers["precision-stack"], .8, 320, 470)
 covers["stack-3d"] = covers["precision-stack"]
-covers["bowling"] = lowered(covers["bowling"], .84)
+covers["bowling"] = lowered(covers["bowling"], .82, dy=26)  # v156: a little lower again
 covers["corner-sudoku"] = lowered(covers["corner-sudoku"], .8)
 covers["tower-drop"] = lowered(covers["tower-drop"], .76, 330, 480)
-covers["pinball"] = lowered(covers["pinball"], .84)
+covers["pinball"] = lowered(covers["pinball"], .82, dy=26)  # v156: a little lower again
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)

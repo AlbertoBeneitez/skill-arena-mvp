@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "Локальный профиль · условный баланс и призы",
   "profile.localAccount": "Локальный аккаунт · без реальной позиции",
   "profile.balance": "УСЛОВНЫЙ БАЛАНС",
-  "profile.add": "Добавить 10 € (условно)",
-  "profile.withdraw": "Вывести 10 € (условно)",
+  "profile.add": "Добавить 10 €",
+  "profile.withdraw": "Вывести 10 €",
   "profile.noMovements": "Операций нет",
   "profile.stats": "Статистика",
   "profile.played": "Матчи",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "Рогачи",
   "gallery.form.2": "Змеи",
   "gallery.notTarget": "НЕ ЦЕЛЬ",
+  "progress.title": "Прогресс по играм",
+  "progress.summary": "{n} из {total} с рекордом",
+  "progress.rowAria": "{game}: лига {tier}, рекорд {mark}. Играть",
+  "progress.noMark": "нет рекорда",
+  "progress.seriesNote": "В серии {n} матчей; {wins} победы поднимают в следующую лигу.",
 };
 
 export default messages;

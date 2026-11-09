@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 8 de noviembre de 2026 · base `mobile-test` en v155-saturn.
+Actualizado: 9 de noviembre de 2026 · base `mobile-test` en v156-saturn.
 
 ## Catálogo
 
@@ -86,6 +86,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Avatar, Slot, Billar y rendimiento (9 de noviembre, v156):** progreso por juego en el avatar; avatar aleatorio al darse de alta; botones sin «ficticio» (el alcance sigue en etiquetas y textos); premios del Slot más grandes y pasos en degradado; portada del Slot con sus 7; panel inferior del Billar simétrico; Dardos, Slot y Billar cachean lo estático.
 - [x] **Shot Gallery V13 y portadas (8 de noviembre, v155):** jungla espacial con tres formas de ser y cuatro auras; órdenes por aura o por forma, sin filas; portadas de Stack, Bowling, Galoku, Tower Drop y Pinball centradas bajo la insignia de nivel.
 - [x] **Grupo y envío de juegos (3 de noviembre, v139):** botón «ENVIAR JUEGO» (desde v153, pestaña pequeña arriba a la izquierda de Juegos); pestaña Grupo con una sola línea de indicaciones y tarjeta grafito con Saturno y avatares.
 - [x] **Portadas con más impacto (3 de noviembre, v140):** carteles del momento culminante de Shot Gallery, Bowling, Tower Drop, Solitaire Sprint, Pinball, Mine Grid, Slot y Dardos; Galoku con el cuadrado del vértice grande y centrado; Roulette con fondo oscuro; todas a 1600 × 1100.

@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "লোকাল পরিচয় · কাল্পনিক ব্যালান্স ও পুরস্কার",
   "profile.localAccount": "লোকাল অ্যাকাউন্ট · প্রকৃত অবস্থান নেই",
   "profile.balance": "কাল্পনিক ব্যালান্স",
-  "profile.add": "১০ € কাল্পনিক যোগ করুন",
-  "profile.withdraw": "১০ € কাল্পনিক তুলুন",
+  "profile.add": "১০ € যোগ করুন",
+  "profile.withdraw": "১০ € তুলুন",
   "profile.noMovements": "কোনো লেনদেন নেই",
   "profile.stats": "পরিসংখ্যান",
   "profile.played": "ম্যাচ",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "শিংওয়ালা",
   "gallery.form.2": "সর্প",
   "gallery.notTarget": "লক্ষ্য নয়",
+  "progress.title": "প্রতিটি গেমে অগ্রগতি",
+  "progress.summary": "{total}টির মধ্যে {n}টিতে সেরা স্কোর",
+  "progress.rowAria": "{game}: {tier} লিগ, সেরা {mark}। খেলুন",
+  "progress.noMark": "এখনও সেরা স্কোর নেই",
+  "progress.seriesNote": "প্রতিটি সিরিজে {n}টি ম্যাচ; {wins}টি জয়ে পরের লিগে উঠবেন।",
 };
 
 export default messages;

@@ -205,7 +205,8 @@ module.exports = (async () => {
       presentation.render(ctx, s, { width: 390, height: 620 });
       assert.equal(JSON.stringify(s), before);
       for (const b of state.balls.slice(1))
-        assert.equal(ctx.texts.filter((t) => t === String(b.id)).length, 2, `ball ${b.id} on the table and in the level strip`);
+        // v156: the dock also numbers the five level pips, so ids 1–5 appear once more.
+        assert.equal(ctx.texts.filter((t) => t === String(b.id)).length, b.id <= 5 ? 3 : 2, `ball ${b.id} on the table, in the dock and (1–5) on a level pip`);
       assert.ok(
         !ctx.texts.some((t) => /MESA \d|−250|TIRO EN CURSO|DESPEJADA/.test(t)),
       );

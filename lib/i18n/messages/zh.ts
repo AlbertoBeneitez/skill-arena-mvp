@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "本地身份 · 虚拟余额与奖励",
   "profile.localAccount": "本地账号 · 无真实排名",
   "profile.balance": "虚拟余额",
-  "profile.add": "增加 10 € 虚拟余额",
-  "profile.withdraw": "提取 10 € 虚拟余额",
+  "profile.add": "增加 10 €",
+  "profile.withdraw": "提取 10 €",
   "profile.noMovements": "暂无记录",
   "profile.stats": "统计",
   "profile.played": "对局",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "角兽",
   "gallery.form.2": "蛇妖",
   "gallery.notTarget": "不是目标",
+  "progress.title": "各游戏进度",
+  "progress.summary": "{total} 款中有 {n} 款有最佳成绩",
+  "progress.rowAria": "{game}：{tier}联赛，最佳成绩 {mark}。开始游戏",
+  "progress.noMark": "暂无成绩",
+  "progress.seriesNote": "每个系列 {n} 场；赢 {wins} 场即可升级联赛。",
 };
 
 export default messages;

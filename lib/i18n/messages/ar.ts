@@ -134,8 +134,8 @@ const messages: Messages = {
   "profile.note": "هوية محلية · رصيد وجوائز وهمية",
   "profile.localAccount": "حساب محلي · بلا مركز حقيقي",
   "profile.balance": "الرصيد الوهمي",
-  "profile.add": "إضافة 10 € وهمية",
-  "profile.withdraw": "سحب 10 € وهمية",
+  "profile.add": "إضافة 10 €",
+  "profile.withdraw": "سحب 10 €",
   "profile.noMovements": "لا توجد حركات",
   "profile.stats": "الإحصاءات",
   "profile.played": "المباريات",
@@ -848,6 +848,11 @@ const messages: Messages = {
   "gallery.form.1": "ذوو القرون",
   "gallery.form.2": "الأفاعي",
   "gallery.notTarget": "ليس هدفًا",
+  "progress.title": "التقدم في كل لعبة",
+  "progress.summary": "{n} من {total} بأفضل نتيجة",
+  "progress.rowAria": "{game}: دوري {tier}، أفضل نتيجة {mark}. العب",
+  "progress.noMark": "لا توجد نتيجة بعد",
+  "progress.seriesNote": "كل سلسلة فيها {n} مباريات؛ {wins} انتصارات ترفعك إلى الدوري التالي.",
 };
 
 export default messages;

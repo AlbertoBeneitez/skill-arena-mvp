@@ -882,6 +882,20 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v156-saturn · Progreso en el avatar, Slot más legible, Billar simétrico y fotogramas más ligeros (9-nov-2026)
+
+- **Rendimiento:** Dardos, Slot y Billar pintan una vez lo que no cambia (+49 %, +22 % y +48 % de fotogramas en un móvil modesto simulado).
+- **Avatar:** progreso por juego (liga, serie, camino de bronce a diamante y mejor marca); avatar aleatorio por defecto al darse de alta.
+- **Interfaz:** sin «ficticio» en los botones (el alcance sigue indicado en etiquetas y textos); «Enviar juego» más grande; marcador sin la línea naranja.
+- **Slot:** premios más grandes, pasos en degradado azul → violeta y portada con los 7 del juego.
+- **Billar:** panel inferior simétrico, con números y letras más grandes.
+- **Portadas:** Bowling y Pinball, más abajo.
+- **Pendiente:**
+  - competición con juegos de estudios;
+  - paquetes de más de 4 MB;
+  - el acuerdo completo, revisado por un abogado;
+  - siguientes candidatos de rendimiento: Bowling, Pinball y Orb Burst.
+
 ## v155-saturn · Shot Gallery V13 «Jungla de Xeno» y portadas más abajo (8-nov-2026)
 
 - **Shot Gallery V13:**
