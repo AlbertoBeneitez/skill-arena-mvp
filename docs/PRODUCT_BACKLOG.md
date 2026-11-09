@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v157-saturn · Avatares nuevos encuadrados en la cara (9-nov-2026)
+
+- 16 retratos nuevos del propietario, con los mismos identificadores.
+- Cada retrato tiene tres recortes centrados en la cara: un cuadrado de 512 px para el círculo, uno de 192 px para los avatares pequeños y uno 2:1 para la hoja de 16.
+
 ## v156-saturn · Progreso en el avatar, Slot más legible, Billar simétrico y fotogramas más ligeros (9-nov-2026)
 
 - **Rendimiento:** Dardos, Slot y Billar pintan una vez lo que no cambia (+49 %, +22 % y +48 % de fotogramas en un móvil modesto simulado).
