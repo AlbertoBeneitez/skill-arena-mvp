@@ -882,6 +882,20 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v166-saturn · Fichas cuadradas, botones sobrios, portadas nuevas y pestaña de Grupo (10-nov-2026)
+
+- **Catálogo:** fichas cuadradas y más pequeñas (casi tres por fila), con la imagen a todo el cuadrado.
+- **Inicio:** sin círculos brillantes en los iconos; «Enviar juego» sin relleno dorado.
+- **Portadas:** Dardos realista con la diana del juego y tres dardos en el triple 20; Galoku, Stack y Tower Drop reencuadradas.
+- **Grupo:**
+  - «Código» a la derecha del nombre, que se copia al pulsarlo;
+  - un botón «Compartir invitación» con las apps habituales;
+  - unirse en una línea;
+  - tres pasos numerados;
+  - «A votación»;
+  - reparto del bote en desplegable con barras enlazadas (70 · 20 · 10 por defecto, de mayor a menor).
+- **Textos:** sin «ficticio» ni «simulado» en las pantallas (legal y ayuda sin cambios).
+
 ## v165-saturn · Botones a medida, portadas a todo el recuadro, Mine Grid clásico y carga completa (10-nov-2026)
 
 - **Inicio:** «Enviar juego» y «Rankings» del mismo tamaño; los cinco controles (con sonido, saldo y ajustes) comparten cristal, borde mecanizado, bisel e icono engastado.

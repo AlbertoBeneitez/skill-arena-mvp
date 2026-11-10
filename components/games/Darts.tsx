@@ -73,7 +73,7 @@ const BOARD_PX = 3, BOARD_R = 160; // cached at 3× around the board centre (log
  * worn pin holes), lacquered doubles and trebles with their own sheen, a raised silver spider drawn with its
  * shadow and its lit edge, a wire number ring and embossed white numbers, and a key light from the upper left.
  */
-function boardSprite() {
+export function boardSprite() {
   if (boardCache || typeof document === "undefined") return boardCache;
   const c = document.createElement("canvas");
   c.width = c.height = BOARD_R * 2 * BOARD_PX;

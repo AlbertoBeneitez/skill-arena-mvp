@@ -16,7 +16,9 @@
 export const GROUP_COMMISSION_BPS = 500; // 5 %
 
 export type GroupFormat = "single" | "league-rounds" | "league-duels" | "tournament";
-export type GroupSplit = "winner" | "70-30";
+/** Prize split: legacy presets, or (v166) whole percentages per place — they add up to 100 and fall strictly from the
+ * first place to the last. */
+export type GroupSplit = "winner" | "70-30" | readonly number[];
 export type GroupEnd = { kind: "rounds"; rounds: number } | { kind: "vote" };
 export type GroupPlayer = { id: string; name: string; avatar: string; simulated?: boolean };
 export type GroupConfig = {
@@ -43,7 +45,53 @@ export type GroupCompetition = {
 };
 export type GroupStanding = { id: string; wins: number; beaten: number; played: number; out: boolean; place: number };
 
-const SPLITS: Record<GroupSplit, readonly number[]> = { winner: [10000], "70-30": [7000, 3000] };
+const SPLITS: Record<"winner" | "70-30", readonly number[]> = { winner: [10000], "70-30": [7000, 3000] };
+/** v166: default split for each number of paid places (percentages). */
+export const DEFAULT_SPLITS: Readonly<Record<number, readonly number[]>> = { 1: [100], 2: [70, 30], 3: [70, 20, 10], 4: [60, 25, 10, 5] };
+export const MAX_PAID_PLACES = 4;
+export const isValidSplit = (v: readonly number[]) =>
+  v.length >= 1 && v.every((x, i) => Number.isInteger(x) && x >= 1 && (i === 0 || x < v[i - 1])) && v.reduce((a, b) => a + b, 0) === 100;
+/** Shares in basis points for a split. */
+export function splitShares(split: GroupSplit): readonly number[] {
+  if (typeof split === "string") return SPLITS[split];
+  return isValidSplit(split) ? split.map((x) => x * 100) : SPLITS.winner;
+}
+const partitions = new Map<number, number[][]>();
+/** Every split of 100 into `n` whole, strictly falling parts (cached; n ≤ MAX_PAID_PLACES). */
+function descendingSplits(n: number): number[][] {
+  const hit = partitions.get(n);
+  if (hit) return hit;
+  const out: number[][] = [];
+  const walk = (left: number, max: number, acc: number[]) => {
+    if (acc.length === n) { if (left === 0) out.push(acc); return; }
+    const rest = n - acc.length - 1, minRest = (rest * (rest + 1)) / 2; // the smallest the remaining places can add up to
+    for (let x = Math.min(max, left - minRest); x >= rest + 1; x--) walk(left - x, x - 1, [...acc, x]);
+  };
+  walk(100, 100, []);
+  partitions.set(n, out);
+  return out;
+}
+/**
+ * v166 · Moving one place's bar: that place takes the value asked (moved to the nearest possible one) and the other
+ * places are re-shared so the total stays 100 % and every place still pays more than the next — as close as possible to
+ * their previous proportions.
+ */
+export function rebalanceSplit(current: readonly number[], index: number, value: number): number[] {
+  const n = current.length;
+  if (n <= 1) return [100];
+  const all = descendingSplits(n);
+  const possible = [...new Set(all.map((v) => v[index]))];
+  const x = possible.reduce((best, p) => (Math.abs(p - value) < Math.abs(best - value) ? p : best), possible[0]);
+  const othersBefore = current.reduce((a, v, i) => (i === index ? a : a + v), 0) || 1;
+  const target = current.map((v, i) => (i === index ? x : ((100 - x) * v) / othersBefore));
+  let best: number[] = all[0], bestCost = Infinity;
+  for (const v of all) {
+    if (v[index] !== x) continue;
+    const cost = v.reduce((a, y, i) => a + (y - target[i]) ** 2, 0);
+    if (cost < bestCost) { bestCost = cost; best = v; }
+  }
+  return [...best];
+}
 
 export function groupMoney(c: Pick<GroupCompetition, "config" | "players">) {
   const pot = c.config.entryMinor * c.players.length;
@@ -110,7 +158,12 @@ export function groupStandings(c: GroupCompetition): GroupStanding[] {
 }
 
 function settle(c: GroupCompetition): GroupCompetition {
-  const { prize } = groupMoney(c), shares = SPLITS[c.config.split], standings = groupStandings(c), payouts: Record<string, number> = {};
+  const standings = groupStandings(c);
+  // More paid places than players: the places that exist share the whole prize in the same proportions.
+  const raw = splitShares(c.config.split).slice(0, Math.max(1, standings.length)), sum = raw.reduce((a, b) => a + b, 0);
+  const shares = raw.map((x) => Math.floor((x * 10000) / sum));
+  shares[0] += 10000 - shares.reduce((a, b) => a + b, 0);
+  const { prize } = groupMoney(c), payouts: Record<string, number> = {};
   for (const s of standings) payouts[s.id] = 0;
   for (let place = 1; place <= standings.length; place++) {
     const tied = standings.filter((s) => s.place === place);
@@ -119,6 +172,9 @@ function settle(c: GroupCompetition): GroupCompetition {
     const total = Math.floor((prize * share) / 10000), each = Math.floor(total / tied.length);
     tied.forEach((s, i) => { payouts[s.id] = each + (i === 0 ? total - each * tied.length : 0); });
   }
+  // v166: the cents lost to rounding down go to the winner, so the whole prize is always paid out.
+  const paid = Object.values(payouts).reduce((a, b) => a + b, 0);
+  if (standings.length && paid < prize) payouts[standings[0].id] += prize - paid;
   return { ...c, finished: true, payouts };
 }
 

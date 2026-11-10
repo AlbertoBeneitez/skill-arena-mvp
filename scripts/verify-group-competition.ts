@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {
-  createGroupCompetition, groupMoney, groupStandings, isGroupCompetition, nextGroupMatch, recordGroupScore, voteToEndGroup,
+  DEFAULT_SPLITS, MAX_PAID_PLACES, createGroupCompetition, groupMoney, isValidSplit, rebalanceSplit, splitShares, groupStandings, isGroupCompetition, nextGroupMatch, recordGroupScore, voteToEndGroup,
   type GroupCompetition, type GroupConfig, type GroupPlayer,
 } from "../lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "../lib/demo/groupRivals";
@@ -110,4 +110,36 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(a))), "survives a save and reload");
   assert.equal(isGroupCompetition({ id: 1 }), false);
 }
-console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members");
+// v166 · Custom splits: whole percentages, strictly falling, adding up to 100; the bars rebalance and keep that shape.
+{
+  for (let n = 1; n <= MAX_PAID_PLACES; n++) assert.ok(isValidSplit(DEFAULT_SPLITS[n]), `default split for ${n}`);
+  assert.deepEqual(DEFAULT_SPLITS[3], [70, 20, 10]);
+  assert.equal(isValidSplit([50, 50]), false, "equal places are not allowed");
+  assert.equal(isValidSplit([30, 70]), false, "a lower place cannot pay more");
+  assert.equal(isValidSplit([60, 30]), false, "must add up to 100");
+  assert.deepEqual(splitShares([70, 20, 10]), [7000, 2000, 1000]);
+  assert.deepEqual(splitShares([10, 20, 70]), [10000], "an invalid stored split falls back to winner takes all");
+  assert.deepEqual(splitShares("70-30"), [7000, 3000], "legacy presets still settle");
+  const r1 = rebalanceSplit([70, 20, 10], 0, 50);
+  assert.ok(isValidSplit(r1) && r1[0] === 50, `first to 50 → ${r1}`);
+  assert.ok(r1[1] > r1[2] && r1[1] >= 30, `the others share the rest in proportion → ${r1}`);
+  const r2 = rebalanceSplit([70, 20, 10], 2, 60);
+  assert.ok(isValidSplit(r2) && r2[2] < r2[1] && r2[1] < r2[0], `third cannot overtake → ${r2}`);
+  const r3 = rebalanceSplit([70, 20, 10], 1, 1);
+  assert.ok(isValidSplit(r3) && r3[1] > r3[2] && r3[2] >= 1, `second cannot drop under third → ${r3}`);
+  for (let n = 2; n <= MAX_PAID_PLACES; n++)
+    for (let i = 0; i < n; i++)
+      for (const v of [1, 7, 33, 50, 99, 100]) assert.ok(isValidSplit(rebalanceSplit(DEFAULT_SPLITS[n], i, v)), `n=${n} i=${i} v=${v}`);
+  assert.deepEqual(rebalanceSplit([100], 0, 40), [100]);
+  // Settlement with a 3-place split: 70 / 20 / 10 of the prize, nothing lost to rounding.
+  let c = createGroupCompetition("sp", cfg({ split: [70, 20, 10] }), players(5));
+  c = play(c, { p0: 50, p1: 40, p2: 30, p3: 20, p4: 10 });
+  const prize = groupMoney(c).prize;
+  assert.equal(c.payouts!.p1, Math.floor(prize * 0.2));
+  assert.equal(c.payouts!.p2, Math.floor(prize * 0.1));
+  assert.equal(c.payouts!.p0, prize - Math.floor(prize * 0.2) - Math.floor(prize * 0.1), "rounding remainder goes to the winner");
+  assert.equal(c.payouts!.p3, 0);
+  assert.equal(total(c), prize);
+  assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(c))), "an array split survives a save and reload");
+}
+console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits");

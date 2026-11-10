@@ -173,12 +173,23 @@
   color: #f3f6fa; font-family: var(--gx-ui); font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
 }
 
-/* v165 · The cover fills its whole card: the sharp picture on top melts into the same picture, enlarged, blurred and
-   dimmed, which runs down behind the play button to the card's edges. */
-.ambient {
-  position: absolute; inset: -12%; z-index: 0; width: 124%; height: 124%; object-fit: cover; object-position: 50% 85%;
-  filter: blur(14px) saturate(1.35) brightness(.62); transform: translateZ(0); pointer-events: none;
-}
-.card > .cover { z-index: 1; background: none; -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent); mask-image: linear-gradient(180deg, #000 72%, transparent); }
-.card > .cover::after { content: none; }
+/* v165 ambient fill replaced in v166 by square cards (below). */
+.card > .cover { z-index: 1; background: none; }
 .card > .play { z-index: 2; }
+
+/* v166 · Smaller, square cards: a little under three per row. The picture fills the square and the play button sits
+   on its lower edge, over the darkened foot of the same picture. */
+.track { --gap: 10px; grid-auto-columns: calc((100% - 2 * var(--gap)) / 2.85); }
+.card { aspect-ratio: 1; border-radius: 14px; }
+.card > .cover { position: absolute; inset: 0; aspect-ratio: auto; -webkit-mask-image: none; mask-image: none; }
+.card > .cover img { height: 100%; aspect-ratio: auto; object-fit: cover; object-position: 50% 42%; }
+.card > .cover::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 46%; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(12,12,14,.72) 62%, rgba(12,12,14,.9));
+}
+.card > .play {
+  position: absolute; inset: auto 6px 6px 6px; margin: 0; min-height: 38px; padding: 6px 4px; border-radius: 10px;
+  font-size: 11px; letter-spacing: .02em; overflow-wrap: anywhere;
+}
+.card .ghost { width: 36px; height: 36px; right: 5px; top: 5px; border-radius: 9px; display: grid; place-items: center; }
+.card .studioBadge { top: 6px; bottom: auto; left: 6px; right: auto; font-size: 9.5px; }

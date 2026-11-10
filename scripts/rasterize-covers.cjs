@@ -7,7 +7,8 @@ const dir = path.join(__dirname, "..", "public", "covers");
 // Optional names on the command line render only those covers (v143), e.g. `node scripts/rasterize-covers.cjs stack-3d`.
 // v160: Shot Gallery (v155), Slot (v156) and Pinball (v160) covers come from their game renderers
 // (scripts/render-gallery-cover.mjs, render-slot-cover.mjs, render-pinball-cover.mjs), so they are not in this list.
-const all = ["galactic-roulette", "darts", "billiards", "tower-drop", "solitaire-sprint", "mine-grid", "stack-shift",
+// v166: Darts too (scripts/render-darts-cover.mjs: the game's board under a stage light, three darts in the treble 20).
+const all = ["galactic-roulette", "billiards", "tower-drop", "solitaire-sprint", "mine-grid", "stack-shift",
   "orb-burst", "stack-3d", "corner-sudoku", "bowling"];
 const names = process.argv.length > 2 ? all.filter((n) => process.argv.slice(2).includes(n)) : all;
 // v140: Shot Gallery and Bowling are posters again (they were renderer captures in v124/v125), and every cover is

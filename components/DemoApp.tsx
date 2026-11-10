@@ -100,7 +100,7 @@ function euro(value: number) {
 }
 
 function movementLabel(movement: Movement) {
-  if (!movement.key) return movement.label.replace(/\bdemo\b/gi, "ficticio");
+  if (!movement.key) return movement.label.replace(/\s*\bdemo\b/gi, "").trim();
   // v152: by id over the whole registry, so the history still names games that are no longer listed (Roulette).
   const game = movement.gameId ? getGameDefinition(movement.gameId) : undefined;
   return t(movement.key, { ...movement.vars, ...(game ? { game: gameName(game) } : {}) });
@@ -1093,11 +1093,13 @@ export default function DemoApp() {
     const m = groupComp?.matches[groupMatch];
     return groupComp && m && lowerWinsIn(groupComp, m.gameId) ? Number.MAX_SAFE_INTEGER : 0;
   }
-  /** Pays the group prize (fictitious) when the competition has just ended. */
+  /** Pays the group prize (sample balance) when the competition has just ended. */
   function payGroup(c: GroupCompetition) {
     if (!group) return;
     const prize = (c.payouts?.[GROUP_YOU] ?? 0) / 100, entry = c.config.entryMinor / 100;
-    const split = t(c.config.split === "winner" ? "group.splitWinner" : "group.split7030");
+    const split = typeof c.config.split === "string"
+      ? t(c.config.split === "winner" ? "group.splitWinner" : "group.split7030")
+      : `${c.config.split.join(" · ")} %`;
     if (prize > 0) {
       setBalance((value) => Number((value + prize).toFixed(2)));
       setMovements((items) => [{ label: `${group.name} · ${split}`, amount: prize, key: "move.groupPrize" as const, vars: { group: group.name, split } }, ...items].slice(0, 20));
@@ -1441,7 +1443,7 @@ export default function DemoApp() {
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
-            <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><span className="gxBtnWell" aria-hidden="true"><UiIcon name="coins" size={14} className="gxBalanceCoin" /></span><b>{euro(balance)}</b></button>
+            <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
             <button className="settingsGear gxIconBtn gxHeadBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
               <UiIcon name="gear" />
             </button>
@@ -1454,8 +1456,8 @@ export default function DemoApp() {
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <h1 className="visuallyHidden">{t("home.title")}</h1>
             <div className="homePlayHeading gxHomeBar">
-              <button type="button" className="gxStudioTab gxHomeBtn gxHomeBtnGold" onClick={openStudio}><span className="gxBtnWell" aria-hidden="true"><UiIcon name="coins" size={17} className="gxStudioCoin" /></span><span className="gxBtnLabel">{t("studio.title")}</span></button>
-              <button type="button" className="globalRankingShortcut gxRankingPill gxHomeBtn" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><span className="gxBtnWell" aria-hidden="true"><UiIcon name="trophy" size={16} /></span><span className="gxBtnLabel">{t("home.ranking")}</span></button>
+              <button type="button" className="gxStudioTab gxHomeBtn gxHomeBtnMoney" onClick={openStudio}><UiIcon name="coins" size={19} className="gxStudioCoin" /><span className="gxBtnLabel">{t("studio.title")}</span></button>
+              <button type="button" className="globalRankingShortcut gxRankingPill gxHomeBtn" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={18} /><span className="gxBtnLabel">{t("home.ranking")}</span></button>
             </div>
 
 
@@ -1684,13 +1686,13 @@ export default function DemoApp() {
               <div className="walletActions">
                 <button onClick={() => {
                   setBalance((b) => b + 10);
-                  setMovements((m) => [{ label: "Ingreso ficticio", amount: 10, key: "move.deposit" as const }, ...m]);
+                  setMovements((m) => [{ label: "Ingreso", amount: 10, key: "move.deposit" as const }, ...m]);
                 }}>{t("profile.add")}</button>
                 <button
                   disabled={balance < 10}
                   onClick={() => {
                     setBalance((b) => Number((b - 10).toFixed(2)));
-                    setMovements((m) => [{ label: "Retirada ficticia", amount: -10, key: "move.withdraw" as const }, ...m]);
+                    setMovements((m) => [{ label: "Retirada", amount: -10, key: "move.withdraw" as const }, ...m]);
                   }}
                 >{t("profile.withdraw")}</button>
               </div>

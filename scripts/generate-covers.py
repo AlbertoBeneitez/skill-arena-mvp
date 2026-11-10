@@ -2149,11 +2149,30 @@ def shifted(src, dy, feather=22):
     return src[:body_start] + inner + src[body_end:]
 
 
-covers["precision-stack"] = lowered(covers["precision-stack"], .8, 320, 470)
+def framed(src, s, cx, cy, tx=320, ty=196, feather=30):
+    """v166: square catalogue cards show the middle 440×440 of the cover with the play button over its lower edge.
+    Scale the composition by s about its subject's centre (cx, cy) and place that centre at (tx, ty), the optical
+    centre of the visible square; the edges it uncovers fade into the same picture, blurred, behind it."""
+    head_end = src.index("</defs>") + len("</defs>")
+    bg_start = src.index("<rect", head_end)
+    body_start = src.index("/>", bg_start) + 2
+    body_end = src.rindex('<rect width="640" height="440" fill="url(#vig)"/>')
+    body = src[body_start:body_end]
+    x0, y0 = tx - cx * s, ty - cy * s
+    m = (f'<filter id="frblur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="{feather * .6:.1f}"/></filter>'
+         f'<mask id="frmask" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1040" height="840">'
+         f'<rect x="{f(x0 + feather)}" y="{f(y0 + feather)}" width="{f(640 * s - 2 * feather)}" height="{f(440 * s + 400)}" fill="#fff" filter="url(#frblur)"/></mask>'
+         '<filter id="framb" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="30"/></filter>')
+    amb = f'<g filter="url(#framb)" opacity=".5"><g transform="translate({f(tx)} {f(ty)}) scale({max(s, 1.15):.3f}) translate({f(-cx)} {f(-cy)})">{body}</g></g>'
+    inner = f'<defs>{m}</defs>{amb}<g mask="url(#frmask)"><g transform="translate({f(x0)} {f(y0)}) scale({s})">{body}</g></g>'
+    return src[:body_start] + inner + src[body_end:]
+
+
+covers["precision-stack"] = framed(covers["precision-stack"], .78, 330, 270)
 covers["stack-3d"] = covers["precision-stack"]
 covers["bowling"] = shifted(covers["bowling"], 46)  # v162: full width (the card's whole square), still lower
-covers["corner-sudoku"] = lowered(covers["corner-sudoku"], .8)
-covers["tower-drop"] = lowered(covers["tower-drop"], .76, 330, 480)
+covers["corner-sudoku"] = framed(covers["corner-sudoku"], .74, 322, 250)
+covers["tower-drop"] = framed(covers["tower-drop"], .74, 330, 250)
 covers["pinball"] = lowered(covers["pinball"], .82, dy=26)  # v156: a little lower again
 
 if __name__ == "__main__":
