@@ -42,8 +42,44 @@ export function setGameSoundEnabled(enabled: boolean, fromGesture = false) {
   }
 }
 
+/**
+ * v168 · Silence while the app is in the background (phone locked, another app or tab in front): music stops, sounds
+ * are cut and the audio context is suspended. Coming back restores the gain and restarts the music the screen had
+ * asked for, if sound and music are still on.
+ */
+let appHidden = false;
+function silenceForBackground() {
+  if (appHidden) return;
+  appHidden = true;
+  const wanted = requestedMusicId;
+  haltMusic();
+  requestedMusicId = wanted;
+  cancelVoices();
+  if (masterGain && audioContext) {
+    masterGain.gain.cancelScheduledValues(audioContext.currentTime);
+    masterGain.gain.setValueAtTime(0, audioContext.currentTime);
+  }
+  if (audioContext?.state === "running") void audioContext.suspend().catch(() => {});
+}
+function restoreFromBackground() {
+  if (!appHidden) return;
+  appHidden = false;
+  if (!soundEnabled) return;
+  if (masterGain && audioContext) {
+    masterGain.gain.cancelScheduledValues(audioContext.currentTime);
+    masterGain.gain.setValueAtTime(1, audioContext.currentTime);
+    if (audioContext.state === "suspended") void audioContext.resume().catch(() => {});
+  }
+  if (requestedMusicId && musicEnabled) startGameMusic(requestedMusicId, true);
+}
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") silenceForBackground(); else restoreFromBackground(); });
+  window.addEventListener("pagehide", silenceForBackground);
+  window.addEventListener("pageshow", () => { if (document.visibilityState !== "hidden") restoreFromBackground(); });
+}
+
 function context() {
-  if (typeof window === "undefined" || !soundEnabled) return null;
+  if (typeof window === "undefined" || !soundEnabled || appHidden) return null;
   if (!audioContext) {
     audioContext = new AudioContext();
     masterGain = audioContext.createGain();
@@ -261,7 +297,7 @@ function scheduleMusicStep(gameId: string) {
  */
 export function startGameMusic(gameId: string, force = false) {
   requestedMusicId = gameId;
-  if (!soundEnabled || !musicEnabled || typeof window === "undefined") return;
+  if (!soundEnabled || !musicEnabled || appHidden || typeof window === "undefined") return;
 
   if (!force && musicGameId === gameId && musicTimer !== null) return;
 

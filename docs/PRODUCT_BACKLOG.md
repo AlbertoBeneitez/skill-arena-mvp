@@ -882,6 +882,17 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v168-saturn · Avatares enteros, «Tu selección», juegos repetibles en Grupo y silencio en segundo plano (10-nov-2026)
+
+- **Avatar:** selector 4 × 4 con los retratos enteros.
+- **Juegos:** fila «Tu selección» con los juegos más jugados.
+- **Grupo:**
+  - juegos repetibles en el orden pulsado, con «Orden de juego» y un buscador;
+  - entrada con el € dentro y flechas para subir o bajar;
+  - sin «Una sola inscripción…».
+- **Sonido:** se silencia en segundo plano.
+- **Pendiente:** el propietario elige una de las tres propuestas de color para Grupo y Avatar (`?tema=1|2|3`).
+
 ## v167-saturn · Grupo en negro y oro, juegos con portada, luz verde de rival (10-nov-2026)
 
 - **Grupo:**

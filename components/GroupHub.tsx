@@ -46,6 +46,9 @@ function normalizeJoinCode(value: string) {
   return trimmed.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
 }
 const euros = (minor: number) => formatMoney(minor / 100);
+const MAX_SEQUENCE = 20;
+/** Search: case and accents ignored. */
+const fold = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 /** Where an invite can go. Plain web share intents only: nothing is sent until the player confirms in that app. */
 type ShareTarget = { id: string; label: string; icon: UiIconName; tone: string; href: (text: string, url: string) => string };
@@ -71,8 +74,10 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const [sheetOpen, setSheetOpen] = useState(false);
   const [kind, setKind] = useState<Kind>("league");
   const [duels, setDuels] = useState(false);
-  /** v167: the games picked, in order (a league or a tournament plays them round by round); empty = random mix. */
+  /** v167/v168: the games picked, in play order; the same game may appear several times (a league or a tournament
+   * plays them round by round). Empty = random mix. */
   const [picked, setPicked] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
   const [entry, setEntry] = useState("5");
   const [byVote, setByVote] = useState(false);
   const [rounds, setRounds] = useState(5);
@@ -135,8 +140,15 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     setKind(next);
     if (next === "single") setPicked((list) => list.slice(0, 1));
   }
-  function toggleGame(id: string) {
-    setPicked((list) => kind === "single" ? (list[0] === id ? [] : [id]) : list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  /** Single match: tap picks or unpicks the one game. League and tournament: every tap adds the game to the end of the
+   * order (repeats allowed, up to MAX_SEQUENCE); the order strip removes them. */
+  function tapGame(id: string) {
+    setPicked((list) => kind === "single" ? (list[0] === id ? [] : [id]) : list.length >= MAX_SEQUENCE ? list : [...list, id]);
+  }
+  function stepEntry(delta: number) {
+    const current = Number(entry.replace(",", ".")) || 0;
+    const next = Math.min(Math.floor(balance), Math.max(0, Math.round(current) + delta));
+    setEntry(String(next));
   }
 
   if (!group) {
@@ -306,6 +318,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const shareText = t("group.shareText", { name: group.name, code: group.code });
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const multi = kind !== "single";
+  const visibleGames = query.trim() ? playable.filter((g) => fold(gameName(g)).includes(fold(query.trim()))) : playable;
   return (
     <section className={st.screen}>
       {header}
@@ -364,37 +377,70 @@ export default function GroupHub({ group, competition, balance, playerName, avat
           </li>
           <li>
             <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
+            <label className={st.search}>
+              <UiIcon name="search" size={18} />
+              <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")} enterKeyHint="search" />
+            </label>
             <div className={st.games} role="group" aria-label={t(multi ? "group.stepGames" : "group.stepGame")}>
-              {multi && (
+              {multi && !query && (
                 <button type="button" className={st.gameTile} aria-pressed={chosen.length === 0} onClick={() => setPicked([])}>
                   <span className={st.gameArt} data-random><UiIcon name="dice" size={26} /></span>
                   <span className={st.gameMark} aria-hidden="true">{chosen.length === 0 ? <UiIcon name="check" size={12} /> : null}</span>
                   <span className={st.gameName}>{t("group.randomMix")}</span>
                 </button>
               )}
-              {playable.map((g: GameMeta) => {
-                const at = chosen.indexOf(g.id);
+              {visibleGames.map((g: GameMeta) => {
+                const numbers = chosen.flatMap((id, i) => (id === g.id ? [i + 1] : []));
+                const label = numbers.length > 3 ? `${numbers.slice(0, 2).join(" ")} +${numbers.length - 2}` : numbers.join(" ");
                 return (
-                  <button key={g.id} type="button" className={st.gameTile} aria-pressed={at >= 0} onClick={() => toggleGame(g.id)}>
+                  <button key={g.id} type="button" className={st.gameTile} aria-pressed={numbers.length > 0} onClick={() => tapGame(g.id)}
+                    aria-label={numbers.length ? `${gameName(g)} · ${numbers.join(", ")}` : gameName(g)}>
                     <span className={st.gameArt}><img src={g.cover} alt="" loading="lazy" decoding="async" /></span>
-                    <span className={st.gameMark} aria-hidden="true">{at < 0 ? null : multi ? at + 1 : <UiIcon name="check" size={12} />}</span>
+                    <span className={st.gameMark} data-wide={numbers.length > 1 || undefined} aria-hidden="true">{!numbers.length ? null : multi ? label : <UiIcon name="check" size={12} />}</span>
                     <span className={st.gameName}>{gameName(g)}</span>
                   </button>
                 );
               })}
             </div>
-            <p className={st.hint}>{multi ? t(chosen.length > 1 ? "group.gamesOrderHint" : "group.gamesPickHint") : chosen.length ? "" : t("group.pickOne")}</p>
+            {!visibleGames.length && <p className={st.hint}>{t("group.noGamesFound")}</p>}
+            {multi && chosen.length > 0 && (
+              <div className={st.order}>
+                <div className={st.orderHead}>
+                  <span className={st.subLabel}>{t("group.sequence")}</span>
+                  <button type="button" className={st.textBtn} onClick={() => setPicked([])}>{t("group.clearSequence")}</button>
+                </div>
+                <ol className={st.orderList}>
+                  {chosen.map((id, i) => {
+                    const g = playable.find((x) => x.id === id);
+                    return (
+                      <li key={`${id}-${i}`}>
+                        <b>{i + 1}</b>
+                        {g && <img src={g.cover} alt="" />}
+                        <span>{g ? gameName(g) : id}</span>
+                        <button type="button" aria-label={t("group.removeFromSequence", { game: g ? gameName(g) : id, n: i + 1 })}
+                          onClick={() => setPicked((list) => list.filter((_, j) => j !== i))}><UiIcon name="close" size={14} /></button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            )}
+            <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
           <li>
             <span className={st.stepLabel}>{t("group.stepEntry")}</span>
-            <label className={st.field}>
-              <span className={st.subLabel}>{t("group.entryPrice")}</span>
-              <span className={st.money}>
-                <input type="number" min="0" max={balance} step="0.5" inputMode="decimal" value={entry} onChange={(event) => setEntry(event.target.value)} />
-                <b>€</b>
-              </span>
-              <small>{t("group.entryOnce")} {t("group.available", { amount: formatMoney(balance) })}</small>
-            </label>
+            <div className={st.field}>
+              <label className={st.subLabel} htmlFor="group-entry">{t("group.entryPrice")}</label>
+              <div className={st.money}>
+                <input id="group-entry" type="number" min="0" max={balance} step="0.5" inputMode="decimal" value={entry} onChange={(event) => setEntry(event.target.value)} />
+                <span className={st.euro} aria-hidden="true">€</span>
+                <span className={st.arrows}>
+                  <button type="button" aria-label={t("group.entryUp")} disabled={entryMinor >= Math.floor(balance) * 100} onClick={() => stepEntry(1)}><UiIcon name="chevronUp" size={16} /></button>
+                  <button type="button" aria-label={t("group.entryDown")} disabled={entryMinor <= 0} onClick={() => stepEntry(-1)}><UiIcon name="chevronDown" size={16} /></button>
+                </span>
+              </div>
+              <small>{t("group.available", { amount: formatMoney(balance) })}</small>
+            </div>
             <div className={st.prizeBox}>
               <span>{t("group.prizes")}</span>
               <b dir="ltr">{euros(money.prize)}</b>

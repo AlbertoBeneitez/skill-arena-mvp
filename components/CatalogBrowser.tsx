@@ -17,7 +17,7 @@ export const SHELF_ACCENTS: Record<string, string> = {
 };
 export const gameAccent = (game: GameMeta) => SHELF_ACCENTS[gameShelf(game)] ?? "#9ce6e8";
 /** v143: the colour of each row's title tick (the two curated rows have their own: ion for Populares, pink for Nuevos). */
-const rowAccent = (key: string) => SHELF_ACCENTS[key] ?? (key === "new" ? "#ff9ad8" : "#9ce6e8");
+const rowAccent = (key: string) => SHELF_ACCENTS[key] ?? (key === "new" ? "#ff9ad8" : key === "mine" ? "#ffd36b" : "#9ce6e8");
 type Props = {
   stake: Stake;
   serverOnly?: boolean;
@@ -30,6 +30,8 @@ type Props = {
   onPlay(game: GameMeta): void;
   /** Demo league per game (absent in server-backed mode). */
   leagues?: LeagueState;
+  /** v168: the player's most played games, most played first ("Tu selección"); empty hides the row. */
+  favorites?: readonly string[];
 };
 const prefetched = new Set<string>();
 /** Warm a game's code so opening it does not wait for the download (safe to call repeatedly). */
@@ -69,7 +71,9 @@ export default function CatalogBrowser(props: Props) {
   // v130: rows by kind of game, each ordered by popularity (GAMES order), "Populares" first; rows scroll sideways.
   // v132: "Nuevos" (recently added) follows "Populares".
   const now = Date.now();
-  const rows: { key: "popular" | "new" | (typeof CATALOG_SHELVES)[number]; games: GameMeta[]; studio: PublishedGame[] }[] = [
+  // v168: "Tu selección" (the games this player plays most) opens the list once there is any.
+  const rows: { key: "mine" | "popular" | "new" | (typeof CATALOG_SHELVES)[number]; games: GameMeta[]; studio: PublishedGame[] }[] = [
+    { key: "mine" as const, games: (props.favorites ?? []).map((id) => GAMES.find((g) => g.id === id)).filter((g): g is GameMeta => Boolean(g)), studio: [] },
     { key: "popular" as const, games: GAMES.slice(0, POPULAR_COUNT), studio: [] },
     { key: "new" as const, games: GAMES.filter((game) => isNewGame(game, now)), studio: external.filter((g) => isNewPublished(g, now)) },
     ...CATALOG_SHELVES.map((key) => ({ key, games: GAMES.filter((game) => gameShelf(game) === key), studio: external.filter((g) => g.shelf === key) })),

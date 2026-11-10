@@ -71,6 +71,7 @@ type PersistedState = {
   group: ClosedGroup | null;
   groupComp?: GroupCompetition | null;
   leagues?: LeagueState;
+  playCounts?: Record<string, number>;
   bestScores?: Record<string, number>;
 };
 
@@ -85,8 +86,8 @@ const AVATARS = Array.from({ length: PORTRAIT_COUNT }, (_, i) => portraitSrc(i +
  * v124 · Where each portrait's face is (percent of the square image). The 2:1 picker tiles crop to that band and
  * zoom in around the face, so every tile shows the character's face instead of its chest.
  */
-/** The picker sheet shows each portrait's horizontal (2:1) crop, centred on the same face as its circle. */
-const avatarTile = (src: string) => portraitCrop(src, "-t");
+/** v168: the picker sheet shows the 16 portraits whole, as squares in a 4 × 4 grid (no head cut off at the top). */
+const avatarTile = (src: string) => src;
 /** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
 const smallAvatar = (src: string) => portraitCrop(src, "-s");
 const START_BALANCE = 25;
@@ -244,6 +245,18 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   useEffect(() => { setPlayerAvatar(portraitCrop(avatarSrc, "")); }, [avatarSrc]);
+  // v168: colour proposals for Grupo and Avatar, previewed with ?tema=1|2|3 (kept for the session; ?tema=0 clears it).
+  useEffect(() => {
+    try {
+      const wanted = new URLSearchParams(window.location.search).get("tema");
+      if (wanted !== null) sessionStorage.setItem("gg.tema", /^[123]$/.test(wanted) ? wanted : "");
+      const tema = sessionStorage.getItem("gg.tema");
+      if (tema) document.documentElement.dataset.tema = tema;
+      else delete document.documentElement.dataset.tema;
+    } catch {
+      // Private mode or blocked storage: no preview theme.
+    }
+  }, []);
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
@@ -348,6 +361,13 @@ export default function DemoApp() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [wins, setWins] = useState(0);
   const [leagues, setLeagues] = useState<LeagueState>({});
+  /** v168: matches started per game, for "Tu selección" in the catalogue. */
+  const [playCounts, setPlayCounts] = useState<Record<string, number>>({});
+  /** Most played first (ties: catalogue order), up to eight games. */
+  const favoriteGames = useMemo(
+    () => GAMES.filter((g) => (playCounts[g.id] ?? 0) > 0).sort((a, b) => (playCounts[b.id] ?? 0) - (playCounts[a.id] ?? 0)).slice(0, 8).map((g) => g.id),
+    [playCounts],
+  );
   const [bestScores, setBestScores] = useState<Record<string, number>>({});
   // v153: the studio proposal opens from a small tab at the top left of the catalogue.
   const [proposing, setProposing] = useState(false);
@@ -530,6 +550,9 @@ export default function DemoApp() {
         }
         if (isGroupCompetition(data.groupComp)) setGroupComp(data.groupComp);
         if (isLeagueState(data.leagues)) setLeagues(data.leagues);
+        if (data.playCounts && typeof data.playCounts === "object") {
+          setPlayCounts(Object.fromEntries(Object.entries(data.playCounts).filter(([, v]) => typeof v === "number" && Number.isFinite(v) && v > 0)));
+        }
         if (data.bestScores && typeof data.bestScores === "object") {
           setBestScores(Object.fromEntries(Object.entries(data.bestScores).filter(([, v]) => typeof v === "number" && Number.isFinite(v))));
         }
@@ -586,13 +609,14 @@ export default function DemoApp() {
       groupComp,
       leagues,
       bestScores,
+      playCounts,
     };
     try {
       safeStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group, groupComp, leagues, bestScores]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group, groupComp, leagues, bestScores, playCounts]);
 
   function toggleSound() {
     const enabled = !musicOn;
@@ -899,6 +923,7 @@ export default function DemoApp() {
 
     matchStartLockRef.current = true;
     setStartingGameId(game.id);
+    setPlayCounts((counts) => ({ ...counts, [game.id]: (counts[game.id] ?? 0) + 1 }));
 
     setSelectedGame(game);
     setSelectedStake(stake);
@@ -1150,6 +1175,7 @@ export default function DemoApp() {
     matchStartLockRef.current = true;
     setGroupMatch(index);
     setStartingGameId(game.id);
+    setPlayCounts((counts) => ({ ...counts, [game.id]: (counts[game.id] ?? 0) + 1 }));
     setSelectedGame(game);
     setSelectedStake(0);
     setSelectedMode("create");
@@ -1188,6 +1214,7 @@ export default function DemoApp() {
     setStreak(0);
     setLeagues({});
     setBestScores({});
+    setPlayCounts({});
     setConfirmAction(null);
     setNotice(t("settings.resetStatsDone"));
   }
@@ -1337,7 +1364,7 @@ export default function DemoApp() {
                         aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
-                        <img src={avatarTile(src)} alt="" width={512} height={256} decoding="async" />
+                        <img src={avatarTile(src)} alt="" width={512} height={512} decoding="async" />
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
                       </button>
                     );
@@ -1472,7 +1499,7 @@ export default function DemoApp() {
               </div>
             )}
             {proposing && <GameProposal onClose={() => setProposing(false)} />}
-            <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} leagues={persistentTraining ? undefined : leagues} />
+            <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} leagues={persistentTraining ? undefined : leagues} favorites={favoriteGames} />
           </section>
         )}
 

@@ -9128,3 +9128,71 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 .gxStudioWelcomeGo:active { background: #c9a35a; }
 .gxStudioWelcomeGo:focus-visible { outline-color: #f0d28f; }
+
+/* v168 · Avatar picker: the 16 portraits whole, as rounded squares in a 4 × 4 grid that fits the screen at once. */
+.galacticAvatarSetup .avatarMenuGrid.gxAvatarGrid {
+  flex: none; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: auto;
+  align-content: start; gap: 10px; margin-top: 8px;
+}
+.galacticAvatarSetup .gxAvatarGrid button { aspect-ratio: 1; height: auto; border-radius: 16px; }
+.galacticAvatarSetup .gxAvatarGrid button img { object-position: 50% 0; transform: none !important; }
+.galacticAvatarSetup .gxAvatarGrid button::after { display: none; }
+.galacticAvatarSetup .gxAvatarGrid .gxAvatarTileCheck { top: 5px; right: 5px; width: 20px; height: 20px; }
+
+/* ======================================================================================================
+   v168 · Avatar tab: three colour proposals matching the Group ones (preview with ?tema=1, 2 or 3).
+   ====================================================================================================== */
+/* 1 · Brawl */
+:root[data-tema="1"] .appShell .simpleScreen h1 { color: #fff; text-shadow: 0 2px 0 #120a30; }
+:root[data-tema="1"] .appShell .avatarSections { border-bottom-color: rgba(150,130,255,.3); }
+:root[data-tema="1"] .appShell .avatarSections button { background: #251660 !important; border: 2px solid #120a30 !important; color: #c3baf5 !important; box-shadow: 0 3px 0 #120a30; }
+:root[data-tema="1"] .appShell .avatarSections button[aria-pressed="true"] { background: #ffd23f !important; color: #1b0f45 !important; box-shadow: inset 0 3px 0 rgba(255,255,255,.45), 0 3px 0 #b98700; }
+:root[data-tema="1"] .appShell .profileStrip { background: linear-gradient(180deg, #2c1b70, #221459) !important; border: 2px solid #120a30 !important; box-shadow: 0 4px 0 #120a30 !important; }
+:root[data-tema="1"] .appShell .profileStrip b { color: #5bea6a !important; }
+:root[data-tema="1"] .appShell .profileStats > div { border: 2px solid #120a30 !important; box-shadow: 0 3px 0 #120a30 !important; }
+:root[data-tema="1"] .appShell .profileStats > div:nth-child(1) { background: #ff4fa3 !important; }
+:root[data-tema="1"] .appShell .profileStats > div:nth-child(2) { background: #35d0ff !important; }
+:root[data-tema="1"] .appShell .profileStats > div:nth-child(3) { background: #5bea6a !important; }
+:root[data-tema="1"] .appShell .profileStats > div:nth-child(4) { background: #ffd23f !important; }
+:root[data-tema="1"] .appShell .profileStats :is(b, span) { color: #1b0f45 !important; }
+:root[data-tema="1"] .appShell .playerProgress { background: #251660 !important; border: 2px solid #120a30 !important; box-shadow: 0 4px 0 #120a30; }
+:root[data-tema="1"] .appShell .playerProgress li button { background: #1a0f48 !important; border-color: rgba(150,130,255,.25) !important; border-left-width: 4px !important; }
+:root[data-tema="1"] .appShell .playerProgress .progressMark b { color: #ffd23f !important; }
+:root[data-tema="1"] .appShell .accountWalletCard { background: linear-gradient(180deg, #2c1b70, #221459) !important; border: 2px solid #120a30 !important; }
+
+/* 2 · Candy */
+:root[data-tema="2"] .appShell .simpleScreen h1 { color: #fff4fb; }
+:root[data-tema="2"] .appShell .avatarSections { border-bottom-color: rgba(255,140,220,.2); }
+:root[data-tema="2"] .appShell .avatarSections button { background: #37104a !important; border: 1px solid rgba(255,140,220,.3) !important; color: #e2b6d8 !important; border-radius: 18px !important; }
+:root[data-tema="2"] .appShell .avatarSections button[aria-pressed="true"] { background: linear-gradient(180deg, #ff6aa8, #ff4f9a 45%, #ff8a3c) !important; color: #fff !important; border-color: transparent !important; box-shadow: inset 0 2px 0 rgba(255,255,255,.5), 0 6px 16px -6px rgba(255,79,154,.7); }
+:root[data-tema="2"] .appShell .profileStrip { background: radial-gradient(120% 90% at 0% 0%, rgba(255,79,154,.22), transparent 60%), #33103f !important; border: 1px solid rgba(255,140,220,.3) !important; border-radius: 24px !important; }
+:root[data-tema="2"] .appShell .profileStrip b { color: #3ee6b0 !important; }
+:root[data-tema="2"] .appShell .profileStats > div { border: 0 !important; border-radius: 20px !important; box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.18) !important; }
+:root[data-tema="2"] .appShell .profileStats > div:nth-child(1) { background: linear-gradient(180deg, #ff7cb5, #ff4f9a) !important; }
+:root[data-tema="2"] .appShell .profileStats > div:nth-child(2) { background: linear-gradient(180deg, #ffb46e, #ff8a3c) !important; }
+:root[data-tema="2"] .appShell .profileStats > div:nth-child(3) { background: linear-gradient(180deg, #c49bff, #a66bff) !important; }
+:root[data-tema="2"] .appShell .profileStats > div:nth-child(4) { background: linear-gradient(180deg, #6ff0c6, #3ee6b0) !important; }
+:root[data-tema="2"] .appShell .profileStats b { color: #fff !important; text-shadow: 0 1px 0 rgba(0,0,0,.25); }
+:root[data-tema="2"] .appShell .profileStats span { color: rgba(255,255,255,.9) !important; }
+:root[data-tema="2"] .appShell .playerProgress { background: #33103f !important; border: 1px solid rgba(255,140,220,.22) !important; border-radius: 24px !important; }
+:root[data-tema="2"] .appShell .playerProgress li button { background: #260a33 !important; border-color: rgba(255,140,220,.14) !important; border-radius: 18px !important; }
+:root[data-tema="2"] .appShell .playerProgress .progressMark b { color: #ffb46e !important; }
+:root[data-tema="2"] .appShell .accountWalletCard { background: linear-gradient(120deg, rgba(255,79,154,.3), rgba(255,154,60,.22)), #33103f !important; border: 0 !important; border-radius: 24px !important; }
+
+/* 3 · Felt */
+:root[data-tema="3"] .appShell .simpleScreen h1 { color: #f7f0de; }
+:root[data-tema="3"] .appShell .avatarSections { border-bottom-color: rgba(255,201,74,.25); }
+:root[data-tema="3"] .appShell .avatarSections button { background: #0f3a2c !important; border: 1px solid rgba(190,255,225,.18) !important; color: #b3cbbd !important; }
+:root[data-tema="3"] .appShell .avatarSections button[aria-pressed="true"] { background: #e8433a !important; color: #fff !important; border: 2px solid #8a1d16 !important; box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 3px 0 #8a1d16; }
+:root[data-tema="3"] .appShell .profileStrip { background: radial-gradient(130% 90% at 50% 0%, rgba(255,255,255,.07), transparent 60%), #0f3a2c !important; border: 1px solid rgba(255,201,74,.35) !important; }
+:root[data-tema="3"] .appShell .profileStrip b { color: #ffc94a !important; }
+:root[data-tema="3"] .appShell .profileStats > div { background: #0f3a2c !important; border: 2px dashed rgba(255,255,255,.35) !important; border-radius: 50% / 40% !important; }
+:root[data-tema="3"] .appShell .profileStats > div:nth-child(1) { background: #e8433a !important; }
+:root[data-tema="3"] .appShell .profileStats > div:nth-child(2) { background: #3d8bff !important; }
+:root[data-tema="3"] .appShell .profileStats > div:nth-child(3) { background: #c99712 !important; }
+:root[data-tema="3"] .appShell .profileStats > div:nth-child(4) { background: #1f1f24 !important; }
+:root[data-tema="3"] .appShell .profileStats :is(b, span) { color: #fff !important; }
+:root[data-tema="3"] .appShell .playerProgress { background: repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 5px), #0f3a2c !important; border: 1px solid rgba(255,201,74,.28) !important; }
+:root[data-tema="3"] .appShell .playerProgress li button { background: rgba(0,0,0,.22) !important; border-color: rgba(190,255,225,.1) !important; }
+:root[data-tema="3"] .appShell .playerProgress .progressMark b { color: #ffc94a !important; }
+:root[data-tema="3"] .appShell .accountWalletCard { background: #0f3a2c !important; border: 1px solid rgba(255,201,74,.4) !important; }

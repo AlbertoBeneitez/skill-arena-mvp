@@ -282,3 +282,147 @@
 .subLabel { justify-self: start; }
 .heroTitle, .headName h1 { text-wrap: balance; }
 :is(.seg3, .seg2) strong { letter-spacing: .01em; font-size: 13px; }
+
+/* v168 · Search, repeated picks and the play order strip; the entry field with € inside and up/down arrows. */
+.search {
+  display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border-radius: 12px;
+  border: 1px solid var(--line-2); background: var(--field); color: var(--dim);
+}
+.search:focus-within { border-color: var(--gold); color: var(--gold); }
+.search input { flex: 1; min-width: 0; height: 44px; border: 0; background: none; color: var(--ink); font: 500 16px/1 var(--gx-ui, sans-serif); outline: none; }
+.search input::placeholder { color: var(--dim); }
+.search input::-webkit-search-cancel-button { filter: invert(.6); }
+.gameMark[data-wide] { width: auto; min-width: 22px; padding: 0 6px; border-radius: 11px; letter-spacing: .02em; }
+.order { display: grid; gap: 8px; padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--field); }
+.orderHead { display: flex; align-items: center; justify-content: space-between; }
+.textBtn { min-height: 32px; padding: 0 8px; border: 0; background: none; color: var(--gold); font-size: 12.5px; font-weight: 600; }
+.orderList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.orderList li { display: grid; grid-template-columns: 22px 32px minmax(0, 1fr) 36px; align-items: center; gap: 8px; }
+.orderList b { font: 700 13px/1 var(--gx-data, monospace); color: var(--gold-hi); text-align: center; }
+.orderList img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
+.orderList span { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.orderList button { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; border: 1px solid var(--line); background: none; color: var(--mute); }
+.money { grid-template-columns: minmax(0, 1fr) auto 46px; gap: 0; align-items: stretch; border-radius: 12px; border: 1px solid var(--line-2); background: var(--field); overflow: hidden; }
+.money:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(217, 180, 106, .14); }
+.money input { border: 0; border-radius: 0; background: none; box-shadow: none !important; min-height: 56px; font-size: 20px; -moz-appearance: textfield; }
+.money input::-webkit-outer-spin-button, .money input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.money input:focus { box-shadow: none; }
+.euro { display: grid; place-items: center; padding: 0 12px 0 4px; font-size: 18px; font-weight: 600; color: var(--dim); }
+.arrows { display: grid; grid-template-rows: 1fr 1fr; border-inline-start: 1px solid var(--line-2); }
+.arrows button { display: grid; place-items: center; border: 0; background: none; color: var(--gold); }
+.arrows button + button { border-top: 1px solid var(--line-2); }
+.arrows button:active:not(:disabled) { background: rgba(217, 180, 106, .1); }
+.arrows button:disabled { color: var(--dim); }
+
+/* ======================================================================================================
+   v168 · Three colour proposals for the owner to choose from (preview with ?tema=1, ?tema=2 or ?tema=3;
+   without it the black-and-gold look above stays). Each mixes several colours, after the feel of a viral game.
+   ====================================================================================================== */
+
+/* 1 · Brawl: violet arena, yellow 3D buttons with a dark outline, cyan / pink / green accents. */
+:global(:root[data-tema="1"]) .screen {
+  --ink: #ffffff; --mute: #c3baf5; --dim: #8b80c9;
+  --gold: #ffd23f; --gold-hi: #ffe680; --gold-ink: #1b0f45;
+  --line: rgba(150, 130, 255, .28); --line-2: rgba(150, 130, 255, .45);
+  --panel: #251660; --field: #190e48; --chosen: #1d3f86;
+  --c1: #ff4fa3; --c2: #35d0ff; --c3: #5bea6a; --out: #120a30;
+}
+:global(:root[data-tema="1"]) .screen :is(.panel, .hero, .head) {
+  border: 2px solid var(--out); background: linear-gradient(180deg, #2c1b70, #221459);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .08), 0 4px 0 var(--out);
+}
+:global(:root[data-tema="1"]) .screen :is(.heroTitle, .headName h1, .formTitle, .panelHead h2) { text-shadow: 0 2px 0 var(--out); }
+:global(:root[data-tema="1"]) .screen .primary { border: 2px solid var(--out); box-shadow: inset 0 3px 0 rgba(255, 255, 255, .45), 0 4px 0 #b98700; text-shadow: none; }
+:global(:root[data-tema="1"]) .screen .secondary { border: 2px solid var(--out); background: var(--c2); color: #0b1f45; box-shadow: inset 0 3px 0 rgba(255, 255, 255, .4), 0 4px 0 #1789b0; }
+:global(:root[data-tema="1"]) .screen .steps > li:nth-child(1)::before { background: var(--c1); border-color: var(--out); color: #fff; }
+:global(:root[data-tema="1"]) .screen .steps > li:nth-child(2)::before { background: var(--c2); border-color: var(--out); color: #0b1f45; }
+:global(:root[data-tema="1"]) .screen .steps > li:nth-child(3)::before { background: var(--c3); border-color: var(--out); color: #0b2a10; }
+:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] { border: 2px solid var(--c2); background: var(--chosen); }
+:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: #fff; }
+:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #a9ecff; }
+:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameArt { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold), 0 3px 0 2px var(--out); }
+:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameMark { border-color: var(--out); }
+:global(:root[data-tema="1"]) .screen .ticket { border: 2px solid var(--c1); background: var(--field); color: var(--c1); }
+:global(:root[data-tema="1"]) .screen .ticket b { color: #fff; }
+:global(:root[data-tema="1"]) .screen .prizeBox { border: 2px solid var(--c3); background: #123d3a; }
+:global(:root[data-tema="1"]) .screen .prizeBox span { color: var(--c3); }
+:global(:root[data-tema="1"]) .screen .kicker { color: var(--c2); }
+:global(:root[data-tema="1"]) .screen .choice button[aria-selected="true"] { border: 2px solid var(--gold); background: var(--chosen); }
+:global(:root[data-tema="1"]) .screen .members li[data-you] img { border-color: var(--c1); }
+:global(:root[data-tema="1"]) .screen .members li:nth-child(2) img { border-color: var(--c2); }
+:global(:root[data-tema="1"]) .screen .members li:nth-child(3) img { border-color: var(--c3); }
+:global(:root[data-tema="1"]) .screen .members li:nth-child(4) img { border-color: var(--gold); }
+
+/* 2 · Candy: berry night, glossy pink-to-orange buttons, mint for what is chosen, sweets for step numbers. */
+:global(:root[data-tema="2"]) .screen {
+  --ink: #fff4fb; --mute: #e2b6d8; --dim: #a77a9f;
+  --gold: #3ee6b0; --gold-hi: #8ff5d2; --gold-ink: #062a1f;
+  --line: rgba(255, 140, 220, .2); --line-2: rgba(255, 140, 220, .36);
+  --panel: #37104a; --field: #260a33; --chosen: #0f3f3a;
+  --pink: #ff4f9a; --orange: #ff9a3c; --violet: #a66bff;
+}
+:global(:root[data-tema="2"]) .screen :is(.panel, .hero, .head) {
+  border-radius: 24px; background: radial-gradient(120% 80% at 0% 0%, rgba(255, 79, 154, .14), transparent 55%), radial-gradient(120% 80% at 100% 100%, rgba(255, 154, 60, .1), transparent 55%), #33103f;
+}
+:global(:root[data-tema="2"]) .screen .primary {
+  border-radius: 18px; color: #fff; background: linear-gradient(180deg, #ff6aa8, #ff4f9a 45%, #ff8a3c);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .5), inset 0 -3px 0 rgba(120, 0, 50, .35), 0 6px 18px -6px rgba(255, 79, 154, .7);
+  text-shadow: 0 1px 0 rgba(120, 0, 50, .5);
+}
+:global(:root[data-tema="2"]) .screen .primary:disabled { background: #4a2052; color: var(--dim); box-shadow: none; text-shadow: none; }
+:global(:root[data-tema="2"]) .screen .secondary { border-color: var(--gold); color: var(--gold-hi); border-radius: 18px; }
+:global(:root[data-tema="2"]) .screen .steps > li::before { border: 0; color: #fff; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2), inset 0 2px 0 rgba(255, 255, 255, .55); }
+:global(:root[data-tema="2"]) .screen .steps > li:nth-child(1)::before { background: radial-gradient(circle at 35% 30%, #ff9cc6, var(--pink)); }
+:global(:root[data-tema="2"]) .screen .steps > li:nth-child(2)::before { background: radial-gradient(circle at 35% 30%, #ffc78f, var(--orange)); }
+:global(:root[data-tema="2"]) .screen .steps > li:nth-child(3)::before { background: radial-gradient(circle at 35% 30%, #c9a6ff, var(--violet)); }
+:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button { border-radius: 18px; }
+:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] { border-color: var(--pink); background: linear-gradient(180deg, rgba(255, 79, 154, .28), rgba(166, 107, 255, .18)); }
+:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: #fff; }
+:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #ffd0e6; }
+:global(:root[data-tema="2"]) .screen .gameArt { border-radius: 16px; }
+:global(:root[data-tema="2"]) .screen .ticket { border: 1.5px solid var(--orange); color: var(--orange); }
+:global(:root[data-tema="2"]) .screen .ticket b { color: #ffd9b3; }
+:global(:root[data-tema="2"]) .screen .prizeBox { border: 0; background: linear-gradient(120deg, rgba(255, 79, 154, .3), rgba(255, 154, 60, .25)); }
+:global(:root[data-tema="2"]) .screen .prizeBox span { color: #ffd0e6; }
+:global(:root[data-tema="2"]) .screen .kicker { color: var(--pink); }
+:global(:root[data-tema="2"]) .screen .choice button[aria-selected="true"] { border-color: var(--pink); background: rgba(255, 79, 154, .14); color: var(--pink); }
+:global(:root[data-tema="2"]) .screen .bars li[data-place="1"] { --tone: #ff4f9a; }
+:global(:root[data-tema="2"]) .screen .bars li[data-place="2"] { --tone: #ff9a3c; }
+:global(:root[data-tema="2"]) .screen .bars li[data-place="3"] { --tone: #a66bff; }
+
+/* 3 · Felt: a card table — green baize, red chip buttons, blue for what is chosen, gold for the money. */
+:global(:root[data-tema="3"]) .screen {
+  --ink: #f7f0de; --mute: #b3cbbd; --dim: #7c9a8a;
+  --gold: #3d8bff; --gold-hi: #9cc4ff; --gold-ink: #ffffff;
+  --line: rgba(190, 255, 225, .13); --line-2: rgba(190, 255, 225, .24);
+  --panel: #0f3a2c; --field: #0a2b20; --chosen: #12355f;
+  --red: #e8433a; --cash: #ffc94a;
+}
+:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head) {
+  background:
+    radial-gradient(130% 90% at 50% 0%, rgba(255, 255, 255, .06), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 2px, transparent 2px 5px), #0f3a2c;
+  border: 1px solid rgba(255, 201, 74, .28); box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .12), 0 8px 20px rgba(0, 0, 0, .35);
+}
+:global(:root[data-tema="3"]) .screen .primary {
+  background: var(--red); color: #fff; border: 2px solid #8a1d16; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3), 0 3px 0 #8a1d16;
+}
+:global(:root[data-tema="3"]) .screen .primary:disabled { background: #2a4a3e; border-color: #1d3a30; color: var(--dim); box-shadow: none; }
+:global(:root[data-tema="3"]) .screen .secondary { background: var(--gold); color: #fff; border: 2px solid #1b4c99; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3), 0 3px 0 #1b4c99; }
+:global(:root[data-tema="3"]) .screen .steps > li::before { border: 2px dashed rgba(255, 255, 255, .7); color: #fff; }
+:global(:root[data-tema="3"]) .screen .steps > li:nth-child(1)::before { background: var(--red); }
+:global(:root[data-tema="3"]) .screen .steps > li:nth-child(2)::before { background: var(--gold); }
+:global(:root[data-tema="3"]) .screen .steps > li:nth-child(3)::before { background: #c99712; }
+:global(:root[data-tema="3"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] { border-color: var(--gold-hi); background: var(--chosen); }
+:global(:root[data-tema="3"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: #fff; }
+:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--red); border-color: #fff; color: #fff; }
+:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameArt { border-color: #fff; box-shadow: 0 0 0 2px var(--red); }
+:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameName { color: #fff; }
+:global(:root[data-tema="3"]) .screen .ticket { border-color: var(--cash); color: var(--cash); }
+:global(:root[data-tema="3"]) .screen .ticket b { color: #ffe39a; }
+:global(:root[data-tema="3"]) .screen .prizeBox { border: 1px solid rgba(255, 201, 74, .5); background: rgba(0, 0, 0, .22); }
+:global(:root[data-tema="3"]) .screen .prizeBox span { color: var(--cash); }
+:global(:root[data-tema="3"]) .screen .kicker { color: var(--cash); }
+:global(:root[data-tema="3"]) .screen .placesPick button[aria-pressed="true"] { background: var(--red); color: #fff; }
+:global(:root[data-tema="3"]) .screen .choice button[aria-selected="true"] { border-color: var(--cash); background: rgba(0, 0, 0, .2); color: var(--cash); }
+:global(:root[data-tema="3"]) .screen .arrows button, :global(:root[data-tema="3"]) .screen .money b { color: var(--cash); }
