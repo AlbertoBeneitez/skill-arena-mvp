@@ -332,7 +332,6 @@ export default function MineGrid({
     }
   }
 
-  const hudCorrect = correctCells(revealed, flagged);
 
   return (
     <div
@@ -416,7 +415,6 @@ export default function MineGrid({
           <span className="mineStartHint"><b className="dotMatrix mineMarquee">{tx("mine.startHint")}</b></span>
         ) : (
           <>
-            <span className="mineStartHint mineOkCounter"><SegmentDigits value={String(hudCorrect).padStart(3, "0")} label={tx("mine.ok", { n: hudCorrect })} /><small className="dotMatrix">OK</small></span>
             <button
               type="button"
               className={!flagMode ? "active" : ""}

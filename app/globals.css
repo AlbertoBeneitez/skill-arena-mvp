@@ -8960,38 +8960,105 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 .countdownOverlay.gxIntro .gxIntroCount { width: clamp(84px, 22vw, 104px); }
 
-/* v164: header controls as one machined set — sound, balance and settings share height, glass, hairline edge, inner
-   bevel and shadow; the balance carries a gold coin and the scoreboard's number design. */
-.appShell .appHeader .gxHeadBtn.gxHeadBtn {
-  height: 40px; min-height: 40px !important; border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, .11) !important;
+
+
+/* =====================================================================
+   v165 · Controls of the home screen, one crafted family
+   «Enviar juego», «Rankings» (same size, side by side) and the header's sound, balance and settings share one build:
+   a smoked-glass body over a graphite base, a machined border that is bright on top and settles into the accent at
+   the bottom, a fine top bevel and a dark bottom lip, a deep soft drop shadow, a faint accent light rising from below,
+   and the icon set in its own jewel well. Pressing sinks the control one pixel and lights the accent; keyboard focus
+   draws a clear ring. Gold marks money (Enviar juego, balance); ion cyan marks the tools.
+   ===================================================================== */
+.appShell .gxHomeBtn,
+.appShell .appHeader .gxHeadBtn {
+  --acc: 127, 227, 238;
+  --acc-ink: #dff7fb;
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent !important;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .015) 55%, rgba(0, 0, 0, .12)),
-    #111318 !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), inset 0 -1px 0 rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .45), 0 8px 18px rgba(0, 0, 0, .45) !important;
-  color: #e6eef8 !important;
-  transition: transform .12s ease, border-color .2s ease, background .2s ease;
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.025) 46%, rgba(255,255,255,0) 54%) padding-box,
+    radial-gradient(120% 90% at 50% 135%, rgba(var(--acc), .22), rgba(var(--acc), 0) 68%) padding-box,
+    linear-gradient(180deg, #1d2029, #0d0f14) padding-box,
+    linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.07) 38%, rgba(var(--acc), .5)) border-box !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(0,0,0,.6),
+    0 0 0 1px rgba(0,0,0,.55),
+    0 12px 24px -8px rgba(0,0,0,.8),
+    0 0 18px -6px rgba(var(--acc), .45) !important;
+  color: var(--acc-ink) !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
 }
-.appShell .appHeader .gxHeadBtn.gxHeadBtn:active { transform: scale(.95); border-color: rgba(127, 227, 238, .45) !important; }
-.appShell .appHeader .gxHeadBtn.gxHeadBtn:focus-visible { outline: 2px solid #7fe3ee; outline-offset: 2px; }
+/* A thin specular line along the top edge (machined chamfer). */
+.appShell .gxHomeBtn::after,
+.appShell .appHeader .gxHeadBtn::after {
+  content: ""; position: absolute; z-index: -1; left: 14%; right: 14%; top: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0));
+}
+.appShell .gxHomeBtn:active,
+.appShell .appHeader .gxHeadBtn:active {
+  transform: translateY(1px) scale(.985);
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,.65),
+    inset 0 0 0 1px rgba(var(--acc), .35),
+    0 0 0 1px rgba(0,0,0,.55),
+    0 4px 10px -4px rgba(0,0,0,.8),
+    0 0 22px -4px rgba(var(--acc), .7) !important;
+}
+.appShell .gxHomeBtn:focus-visible,
+.appShell .appHeader .gxHeadBtn:focus-visible { outline: 2px solid rgb(var(--acc)); outline-offset: 3px; }
+/* The jewel well that holds each icon. */
+.appShell .gxBtnWell {
+  flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  background:
+    radial-gradient(70% 70% at 35% 28%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+    radial-gradient(100% 100% at 50% 50%, rgba(var(--acc), .32), rgba(var(--acc), .08) 70%),
+    #0a0c11;
+  box-shadow: inset 0 0 0 1px rgba(var(--acc), .55), inset 0 -2px 4px rgba(0,0,0,.6), 0 0 10px rgba(var(--acc), .35);
+}
+.appShell .gxBtnWell .uiIcon { color: rgb(var(--acc)) !important; filter: drop-shadow(0 0 4px rgba(var(--acc), .7)); margin: 0 !important; }
+.appShell .gxBtnLabel { font: 700 14px/1 var(--gx-ui); letter-spacing: .02em; white-space: nowrap; text-shadow: 0 1px 0 rgba(0,0,0,.6); }
+
+/* Home bar: «Enviar juego» and «Rankings» exactly the same size, side by side. */
+.appShell .homePlayHeading.gxHomeBar { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; margin: 2px 0 2px; padding: 0; }
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtn {
+  width: 100%; height: 46px; min-height: 46px; padding: 0 14px 0 9px !important; gap: 10px; border-radius: 15px !important;
+  justify-content: flex-start;
+}
+.appShell .gxHomeBar .gxHomeBtn .gxBtnLabel { flex: 1; text-align: center; padding-inline-end: 26px; }
+/* Gold for money: «Enviar juego» on a light, translucent gold. */
+.appShell .gxHomeBtn.gxHomeBtnGold {
+  --acc: 233, 194, 122;
+  --acc-ink: #fff3d6;
+  background:
+    linear-gradient(180deg, rgba(255,240,200,.16), rgba(255,240,200,.03) 46%, rgba(255,240,200,0) 54%) padding-box,
+    radial-gradient(120% 100% at 50% 130%, rgba(233,194,122,.38), rgba(233,194,122,.06) 70%) padding-box,
+    linear-gradient(180deg, rgba(233,194,122,.22), rgba(233,194,122,.1)) padding-box,
+    linear-gradient(180deg, #1f1b13, #0f0d0a) padding-box,
+    linear-gradient(180deg, rgba(255,236,190,.85), rgba(233,194,122,.35) 40%, rgba(233,194,122,.75)) border-box !important;
+}
+.appShell .gxHomeBtn.gxHomeBtnGold .gxBtnWell .uiIcon { color: #ffd76a !important; }
+.appShell .gxHomeBtn.gxRankingPill { --acc: 233, 194, 122; --acc-ink: #f6ead2; }
+
+/* Header: sound, balance and settings — the same build at 40 px. */
+.appShell .appHeader .gxHeadBtn.gxHeadBtn {
+  height: 40px; min-height: 40px !important; border-radius: 13px !important; padding: 0 !important;
+}
 .appShell .appHeader .gxIconBtn.gxHeadBtn { width: 40px; min-width: 40px !important; }
-.appShell .appHeader .gxIconBtn.gxHeadBtn .uiIcon { width: 20px; height: 20px; color: #dbe8f4; }
+.appShell .appHeader .gxIconBtn.gxHeadBtn .uiIcon { width: 20px; height: 20px; color: var(--acc-ink) !important; filter: drop-shadow(0 0 5px rgba(var(--acc), .45)); }
 .appShell .appHeader .soundToggle.gxHeadBtn .gxLed { top: 7px; right: 7px; width: 5px; height: 5px; }
-.appShell .appHeader .balanceChip.gxHeadBtn {
-  display: inline-flex !important; flex-direction: row !important; align-items: center; gap: 7px;
-  padding: 0 13px 0 10px !important; border-radius: 12px !important;
-}
-.appShell .appHeader .balanceChip.gxHeadBtn .gxBalanceCoin { color: #e9c27a; flex: none; }
+.appShell .appHeader .soundToggle.gxHeadBtn.off { --acc: 150, 156, 170; }
+.appShell .appHeader .balanceChip.gxHeadBtn { --acc: 233, 194, 122; --acc-ink: #f4dcaa; display: inline-flex !important; flex-direction: row !important; align-items: center; gap: 8px; padding: 0 13px 0 7px !important; border-radius: 13px !important; white-space: nowrap; }
+.appShell .appHeader .balanceChip.gxHeadBtn .gxBtnWell { width: 26px; height: 26px; }
 .appShell .appHeader .balanceChip.gxHeadBtn b {
-  font: 700 14px/1 var(--gx-ui) !important; font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0 !important;
-  color: #f4dcaa; text-shadow: 0 0 10px rgba(233, 194, 122, .25);
+  font: 700 14.5px/1 var(--gx-ui) !important; font-variant-numeric: tabular-nums lining-nums; letter-spacing: .01em !important;
+  color: #f4dcaa; text-shadow: 0 0 10px rgba(233,194,122,.3), 0 1px 0 rgba(0,0,0,.6);
 }
-/* «Enviar juego»: the money first, on a light gold glass so it stands out next to Rankings. */
-.appShell .gxHomeBar .gxStudioTab.gxStudioTab {
-  border: 1px solid rgba(233, 194, 122, .7);
-  background: linear-gradient(180deg, rgba(233, 194, 122, .26), rgba(233, 194, 122, .12));
-  color: #fff3d6;
-  box-shadow: inset 0 1px 0 rgba(255, 240, 200, .25), 0 0 18px rgba(233, 194, 122, .22), 0 6px 18px rgba(0, 0, 0, .35);
+@media (max-width: 360px) {
+  .appShell .gxHomeBar .gxHomeBtn .gxBtnLabel { font-size: 13px; padding-inline-end: 18px; }
+  .appShell .appHeader .balanceChip.gxHeadBtn b { font-size: 13px !important; }
 }
-.appShell .gxHomeBar .gxStudioTab.gxStudioTab .uiIcon.gxStudioCoin { color: #ffd76a; margin: 0; filter: drop-shadow(0 0 6px rgba(255, 215, 106, .55)); }
-.appShell .gxHomeBar .gxStudioTab.gxStudioTab:active { background: rgba(233, 194, 122, .32); }
+@media (prefers-reduced-motion: reduce) { .appShell .gxHomeBtn, .appShell .appHeader .gxHeadBtn { transition: none; } }

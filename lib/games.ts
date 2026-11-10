@@ -192,7 +192,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/MineGridEntry")),
     competition: { verification: "client-result" },
     name: "Mine Grid",
-    cover: "/covers/mine-grid.webp?v=164",
+    cover: "/covers/mine-grid.webp?v=165",
     enabled: true,
     waitingStakes: [1, 10],
     category: "LÓGICA",

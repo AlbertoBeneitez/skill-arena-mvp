@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 9 de noviembre de 2026 · base `mobile-test` en v164-saturn.
+Actualizado: 9 de noviembre de 2026 · base `mobile-test` en v165-saturn.
 
 ## Catálogo
 
@@ -60,7 +60,6 @@ para replay). Fuente de verdad: `lib/games.ts`.
 - [ ] Hacer privado el repositorio.
 - [ ] Mantener `mobile-test` o probar solo desde la vista previa de cada pull request.
 - [ ] Tolerar cortes breves de conexión durante la partida (C3: cambia cuándo se pierde por abandono).
-- [ ] Bowling: el propietario ve que la partida termina nada más entrar, sin tocar nada (9 de noviembre). No se reproduce en 30 tiradas automáticas en tres tamaños de pantalla ni con la CPU frenada; falta una captura de la pantalla que aparece y el navegador del móvil.
 - [ ] Dejar de borrar los datos locales al abrir una pestaña nueva (C6).
 - [x] **Grupos (1 de noviembre):**
   - al crear un grupo se elige el formato: liga de partidas individuales (cada uno juega cuando quiere y suma sus resultados) o liga de enfrentamientos 1 contra 1 (misma semilla para los dos); además, el torneo;
@@ -87,6 +86,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Botones de inicio a medida y carga completa (10 de noviembre, v165):** «Enviar juego» y «Rankings» iguales; los controles de inicio y cabecera con un mismo diseño; portadas que llenan la ficha; Mine Grid clásico y sin contador; los juegos esperan a sus imágenes. Bowling confirmado por el propietario.
 - [x] **Rival a pantalla completa y dardos con el avatar (10 de noviembre, v164):** cuenta atrás con retrato grande, nombre, puntos y autor del juego (`creator`); números de marcador con un único diseño; aletas de los dardos con el avatar del jugador; cabecera y «Enviar juego» renovados; fichas sin medalla; portadas de Solitaire, Mine Grid y Orb Burst, y Pinball de v161.
 - [x] **Celebraciones de Bowling de estudio y marcador del rival (10 de noviembre, v163):** plató en 3D con bolos iluminados, reflejos, cámara lenta y triángulo-trofeo; la barra del rival en la cuenta atrás es la misma pieza que el marcador del juego.
 - [x] **Pinball V14, marcador común y Dardos (9 de noviembre, v162):** mesa más alta (arco de y 42 a y 12) justo bajo el marcador y Saturno en ojo de buey; marcador con el número a la derecha igual en los 13 juegos; diana y dardos realistas; celebraciones de Bowling más rápidas con final de fuegos artificiales; portadas de Mine Grid, Orb Burst, Solitaire Sprint, Dardos y Bowling; avatares con cabeza y hombros.

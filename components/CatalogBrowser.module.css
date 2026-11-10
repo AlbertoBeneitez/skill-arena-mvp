@@ -172,3 +172,13 @@
   border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); background: rgba(10,10,12,.78);
   color: #f3f6fa; font-family: var(--gx-ui); font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
 }
+
+/* v165 · The cover fills its whole card: the sharp picture on top melts into the same picture, enlarged, blurred and
+   dimmed, which runs down behind the play button to the card's edges. */
+.ambient {
+  position: absolute; inset: -12%; z-index: 0; width: 124%; height: 124%; object-fit: cover; object-position: 50% 85%;
+  filter: blur(14px) saturate(1.35) brightness(.62); transform: translateZ(0); pointer-events: none;
+}
+.card > .cover { z-index: 1; background: none; -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent); mask-image: linear-gradient(180deg, #000 72%, transparent); }
+.card > .cover::after { content: none; }
+.card > .play { z-index: 2; }

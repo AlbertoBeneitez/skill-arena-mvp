@@ -3,6 +3,7 @@ import GameResultSummary from "./GameResultSummary";
 import RivalScoreboard, { type RivalResult } from "./RivalScoreboard";
 import { safeStorage } from "@/lib/safeStorage";
 import { setPlayerAvatar } from "@/lib/playerLook";
+import { loadGameAssets } from "@/lib/gameAssets";
 import GameActionButton from "./GameActionButton";
 import CatalogBrowser, { gameAccent } from "./CatalogBrowser";
 import shellStyles from "./ProductShell.module.css";
@@ -905,10 +906,12 @@ export default function DemoApp() {
     setGhostEnabled(mode === "existing");
     setMatchScope("duel");
     setLeagueOutcome(null);
+    let rivalPortrait: string | undefined;
     if (!persistentTraining) {
       // Demo league matchmaking: a simulated rival of the player's tier in this game.
       const record = leagues[game.id] ?? emptyLeague();
       const rival = leagueRival(game, record);
+      rivalPortrait = portraitCrop(rival.avatar, "");
       setLeagueMatch({ gameId: game.id, rival, tier: record.tier });
       setMatchTargetScore(rival.balanceGoal ? game.rivalScore : rival.target);
     } else {
@@ -926,14 +929,17 @@ export default function DemoApp() {
       ].slice(0, 20));
     }
 
-    setResult(null);
-    setAttemptSummary(null);
-    setActiveGame(false);
-    setGameKey((k) => k + 1);
-    setCountdown(3);
-    gameTone("countdown");
-    haptic(12);
-    navigate("game");
+    // v165: the game opens only once its code and every picture it shows (backdrop, art, rival portrait) are ready.
+    void loadGameAssets(game, [rivalPortrait, portraitCrop(avatarSrc, "")]).then(() => {
+      setResult(null);
+      setAttemptSummary(null);
+      setActiveGame(false);
+      setGameKey((k) => k + 1);
+      setCountdown(3);
+      gameTone("countdown");
+      haptic(12);
+      navigate("game");
+    });
   }
 
   function settleLeague(won: boolean, score: number) {
@@ -1152,14 +1158,16 @@ export default function DemoApp() {
     setMatchTargetScore(rivals.length ? (lower ? Math.min(...rivals) : Math.max(...rivals)) : game.rivalScore);
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
-    setResult(null);
-    setAttemptSummary(null);
-    setActiveGame(false);
-    setGameKey((key) => key + 1);
-    setCountdown(3);
-    gameTone("countdown");
-    haptic(12);
-    navigate("game");
+    void loadGameAssets(game, [portraitCrop(avatarSrc, "")]).then(() => {
+      setResult(null);
+      setAttemptSummary(null);
+      setActiveGame(false);
+      setGameKey((key) => key + 1);
+      setCountdown(3);
+      gameTone("countdown");
+      haptic(12);
+      navigate("game");
+    });
   }
 
   function editProfile() {
@@ -1433,7 +1441,7 @@ export default function DemoApp() {
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
-            <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
+            <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><span className="gxBtnWell" aria-hidden="true"><UiIcon name="coins" size={14} className="gxBalanceCoin" /></span><b>{euro(balance)}</b></button>
             <button className="settingsGear gxIconBtn gxHeadBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
               <UiIcon name="gear" />
             </button>
@@ -1446,8 +1454,8 @@ export default function DemoApp() {
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <h1 className="visuallyHidden">{t("home.title")}</h1>
             <div className="homePlayHeading gxHomeBar">
-              <button type="button" className="gxStudioTab" onClick={openStudio}><UiIcon name="coins" size={19} className="gxStudioCoin" /><span>{t("studio.title")}</span></button>
-              <button type="button" className="globalRankingShortcut gxRankingPill" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={18} /><span>{t("home.ranking")}</span></button>
+              <button type="button" className="gxStudioTab gxHomeBtn gxHomeBtnGold" onClick={openStudio}><span className="gxBtnWell" aria-hidden="true"><UiIcon name="coins" size={17} className="gxStudioCoin" /></span><span className="gxBtnLabel">{t("studio.title")}</span></button>
+              <button type="button" className="globalRankingShortcut gxRankingPill gxHomeBtn" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><span className="gxBtnWell" aria-hidden="true"><UiIcon name="trophy" size={16} /></span><span className="gxBtnLabel">{t("home.ranking")}</span></button>
             </div>
 
 

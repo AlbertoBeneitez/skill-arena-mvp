@@ -1851,6 +1851,95 @@ def mine_v164():
 covers["mine-grid"] = mine_v164()
 
 
+# ---------- v165: Mine Grid — the classic minesweeper close-up, in our space ----------
+# The owner's reference (the classic grey board: raised tiles, a blue 1, a green 2, a red 3, the black mine, the red
+# flag and the smiley) remade in the house style: a graphite glass board lit from above in deep space, bevelled
+# raised tiles with a cyan rim, recessed open cells, the classic digit colours glowing, a glossy mine, the flag on its
+# black stand and the gold smiley as the game's button. Every number counts the mines around it.
+def mine_v165():
+    COLS, ROWS = 5, 4
+    MINE, FLAG, HIDDEN = (1, 1), (3, 2), (2, 3)
+    mines = {MINE, FLAG, HIDDEN}
+    covered = {(3, 0), (4, 0), (4, 1), (0, 3), HIDDEN, (4, 3)}
+    def n_at(c, r):
+        return sum((c + dc, r + dr) in mines for dc in (-1, 0, 1) for dr in (-1, 0, 1) if dc or dr)
+    HZ, FOOT, CW = -1514.0, 430.0, 120.0
+    def P(u, v):
+        sc = 1 / (1 + (ROWS - v) * .055)
+        return 320 + (u - COLS / 2) * CW * sc, HZ + (FOOT - HZ) * sc, sc
+    d = ('<radialGradient id="m5bg" cx="50%" cy="30%" r="85%"><stop offset="0" stop-color="#1a2140"/><stop offset=".55" stop-color="#0a0d1c"/><stop offset="1" stop-color="#030409"/></radialGradient>'
+         '<linearGradient id="m5tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#59647e"/><stop offset=".5" stop-color="#323a50"/><stop offset="1" stop-color="#1b2030"/></linearGradient>'
+         '<linearGradient id="m5open" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b0f1c"/><stop offset="1" stop-color="#151b2c"/></linearGradient>'
+         '<radialGradient id="m5mine" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#9aa3b8"/><stop offset=".3" stop-color="#3a3f4f"/><stop offset="1" stop-color="#07080c"/></radialGradient>'
+         '<radialGradient id="m5smile" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#fff6c4"/><stop offset=".45" stop-color="#ffd23f"/><stop offset="1" stop-color="#c47f00"/></radialGradient>'
+         '<linearGradient id="m5flag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a74"/><stop offset="1" stop-color="#b3121f"/></linearGradient>'
+         '<radialGradient id="m5lamp" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#bff6ff" stop-opacity=".28"/><stop offset="1" stop-color="#bff6ff" stop-opacity="0"/></radialGradient>')
+    p = ['<rect width="640" height="440" fill="url(#m5bg)"/>', stars(51, 90, 440), bokeh(29, ["#7fe3ee", "#ffd36a", "#b48cff"], 10, 440, 12, 40, (.06, .16))]
+    p.append('<ellipse cx="320" cy="0" rx="420" ry="300" fill="url(#m5lamp)"/>')
+    # board plate under the cells
+    a, b2, c2, d2 = P(-.12, -.12), P(COLS + .12, -.12), P(COLS + .12, ROWS + .12), P(-.12, ROWS + .12)
+    plate = " ".join(f"{f(x)},{f(y)}" for (x, y, _) in (a, b2, c2, d2))
+    p.append(f'<polygon points="{plate}" fill="#05070e" stroke="#7fe3ee" stroke-opacity=".35" stroke-width="2" filter="url(#shadow)"/>')
+    colours = {1: "#3d8bff", 2: "#33d46e", 3: "#ff3d4c", 4: "#6c5cff"}
+    for r in range(ROWS):
+        for c in range(COLS):
+            g = .045
+            q = [P(c + g, r + g), P(c + 1 - g, r + g), P(c + 1 - g, r + 1 - g), P(c + g, r + 1 - g)]
+            sc = (q[0][2] + q[2][2]) / 2
+            cx, cy = (q[0][0] + q[2][0]) / 2, (q[0][1] + q[2][1]) / 2
+            poly = " ".join(f"{f(x)},{f(y)}" for (x, y, _) in q)
+            if (c, r) in covered or (c, r) == FLAG:
+                lift = 9 * sc
+                top = [(x, y - lift) for (x, y, _) in q]
+                p.append(f'<polygon points="{f(q[3][0])},{f(q[3][1] - lift)} {f(q[2][0])},{f(q[2][1] - lift)} {f(q[2][0])},{f(q[2][1])} {f(q[3][0])},{f(q[3][1])}" fill="#0a0c14"/>')
+                p.append(f'<polygon points="{" ".join(f"{f(x)},{f(y)}" for (x, y) in top)}" fill="url(#m5tile)" stroke="#7fe3ee" stroke-opacity=".38" stroke-width="{f(1.4 * sc)}"/>')
+                # bevel: lit top and left edges, dark bottom and right (the classic raised tile)
+                bw = 7 * sc
+                (x0, y0), (x1, y1), (x2, y2), (x3, y3) = top
+                p.append(f'<polygon points="{f(x0)},{f(y0)} {f(x1)},{f(y1)} {f(x1 - bw)},{f(y1 + bw)} {f(x0 + bw)},{f(y0 + bw)}" fill="#ffffff" opacity=".28"/>')
+                p.append(f'<polygon points="{f(x0)},{f(y0)} {f(x0 + bw)},{f(y0 + bw)} {f(x3 + bw)},{f(y3 - bw)} {f(x3)},{f(y3)}" fill="#ffffff" opacity=".16"/>')
+                p.append(f'<polygon points="{f(x3)},{f(y3)} {f(x3 + bw)},{f(y3 - bw)} {f(x2 - bw)},{f(y2 - bw)} {f(x2)},{f(y2)}" fill="#000" opacity=".4"/>')
+                p.append(f'<polygon points="{f(x1)},{f(y1)} {f(x2)},{f(y2)} {f(x2 - bw)},{f(y2 - bw)} {f(x1 - bw)},{f(y1 + bw)}" fill="#000" opacity=".3"/>')
+                if (c, r) == FLAG:
+                    fx, fy = cx + 4 * sc, cy - lift + 22 * sc
+                    p.append(f'<ellipse cx="{f(fx)}" cy="{f(fy)}" rx="{f(22 * sc)}" ry="{f(6 * sc)}" fill="#05060a"/>')
+                    p.append(f'<rect x="{f(fx - 16 * sc)}" y="{f(fy - 9 * sc)}" width="{f(32 * sc)}" height="{f(8 * sc)}" rx="{f(2 * sc)}" fill="#11131a"/>')
+                    p.append(f'<rect x="{f(fx - 2 * sc)}" y="{f(fy - 58 * sc)}" width="{f(4 * sc)}" height="{f(50 * sc)}" fill="#1a1c24"/>')
+                    p.append(f'<polygon points="{f(fx + 2 * sc)},{f(fy - 58 * sc)} {f(fx + 2 * sc)},{f(fy - 28 * sc)} {f(fx - 30 * sc)},{f(fy - 43 * sc)}" fill="url(#m5flag)" filter="url(#glow)"/>')
+            else:
+                p.append(f'<polygon points="{poly}" fill="url(#m5open)" stroke="#2a3450" stroke-width="{f(1.2 * sc)}"/>')
+                p.append(f'<polygon points="{f(q[0][0])},{f(q[0][1])} {f(q[1][0])},{f(q[1][1])} {f(q[1][0])},{f(q[1][1] + 6 * sc)} {f(q[0][0])},{f(q[0][1] + 6 * sc)}" fill="#000" opacity=".45"/>')
+                if (c, r) == MINE:
+                    rr = 24 * sc
+                    p.append(f'<polygon points="{poly}" fill="#d81f2e" opacity=".55"/>')
+                    for k in range(8):
+                        an = k * math.pi / 4
+                        p.append(f'<line x1="{f(cx)}" y1="{f(cy)}" x2="{f(cx + math.cos(an) * rr * 1.45)}" y2="{f(cy + math.sin(an) * rr * 1.45)}" stroke="#2c303b" stroke-width="{f(6 * sc)}" stroke-linecap="round"/>')
+                    p.append(f'<circle cx="{f(cx)}" cy="{f(cy)}" r="{f(rr)}" fill="url(#m5mine)"/>')
+                    p.append(f'<circle cx="{f(cx - rr * .35)}" cy="{f(cy - rr * .38)}" r="{f(rr * .22)}" fill="#ffffff" opacity=".9"/>')
+                    p.append(f'<circle cx="{f(cx)}" cy="{f(cy)}" r="{f(rr * 2.2)}" fill="#ff3d4c" opacity=".12" filter="url(#soft)"/>')
+                else:
+                    n = n_at(c, r)
+                    if n:
+                        col = colours[n]
+                        p.append(f'<text x="{f(cx)}" y="{f(cy + 22 * sc)}" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="{f(66 * sc)}" fill="{col}" text-anchor="middle" filter="url(#glow)">{n}</text>')
+                        p.append(f'<text x="{f(cx)}" y="{f(cy + 22 * sc)}" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="{f(66 * sc)}" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="{f(1.2 * sc)}" text-anchor="middle">{n}</text>')
+    # the gold smiley, the game's button, floating over the top-right corner
+    sx, sy, sr = 572, 56, 36
+    p.append(f'<circle cx="{sx}" cy="{sy + 6}" r="{sr + 4}" fill="#000" opacity=".45" filter="url(#soft)"/>')
+    p.append(f'<circle cx="{sx}" cy="{sy}" r="{sr + 10}" fill="#ffd23f" opacity=".22" filter="url(#bigglow)"/>')
+    p.append(f'<circle cx="{sx}" cy="{sy}" r="{sr}" fill="url(#m5smile)" stroke="#7a4b00" stroke-width="2.5"/>')
+    p.append(f'<ellipse cx="{sx - 12}" cy="{sy - 9}" rx="5" ry="7" fill="#2a1a00"/><ellipse cx="{sx + 12}" cy="{sy - 9}" rx="5" ry="7" fill="#2a1a00"/>')
+    p.append(f'<path d="M{sx - 20},{sy + 6} Q{sx},{sy + 28} {sx + 20},{sy + 6}" fill="none" stroke="#2a1a00" stroke-width="5" stroke-linecap="round"/>')
+    p.append(f'<ellipse cx="{sx - 14}" cy="{sy - 22}" rx="12" ry="6" fill="#fff" opacity=".6" transform="rotate(-25 {sx - 14} {sy - 22})"/>')
+    p.append(sparkle(sx + 36, sy - 30, 11, "#fff6d8"))
+    p.append(cine(300, 220, key="#cfefff", strength=.55, flare_w=0))
+    return svg("".join(p), extra_defs=d)
+
+
+covers["mine-grid"] = mine_v165()
+
+
 # ---------- Stack: the gold block sits lower, just above the tower; no sliced chunk falling off the right ----------
 def stack_v153():
     src = stack_v143()

@@ -882,6 +882,14 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v165-saturn · Botones a medida, portadas a todo el recuadro, Mine Grid clásico y carga completa (10-nov-2026)
+
+- **Inicio:** «Enviar juego» y «Rankings» del mismo tamaño; los cinco controles (con sonido, saldo y ajustes) comparten cristal, borde mecanizado, bisel e icono engastado.
+- **Portadas:** llenan toda la ficha (la imagen continúa desenfocada tras el botón).
+- **Mine Grid:** portada clásica a nuestro estilo y sin el contador verde en el juego.
+- **Carga:** los juegos esperan a tener cargadas todas sus imágenes.
+- **Bowling:** confirmado que funciona.
+
 ## v164-saturn · Rival a pantalla completa, dardos con el avatar, números iguales, cabecera y portadas (10-nov-2026)
 
 - **Cuenta atrás:** retrato grande del rival, nombre, puntos y «Creado por» con el autor del juego (campo `creator`, por defecto GALACTIC GAMES).

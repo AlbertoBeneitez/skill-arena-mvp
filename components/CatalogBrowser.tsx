@@ -76,6 +76,7 @@ export default function CatalogBrowser(props: Props) {
   ].filter((r) => r.games.length + r.studio.length > 0);
   const renderStudioCard = (row: string, game: PublishedGame, index: number) => (
     <article key={`${row}-studio-${game.id}`} role="listitem" className={styles.card} aria-label={game.game} style={{ ["--accent" as string]: SHELF_ACCENTS[game.shelf] ?? "#9ce6e8", ["--i" as string]: index }}>
+      <img className={styles.ambient} src={publishedCoverUrl(game)} alt="" aria-hidden="true" loading="lazy" decoding="async" />
       <div className={styles.cover}>
         <img src={publishedCoverUrl(game)} alt="" width={480} height={330} loading="lazy" decoding="async" />
         <span className={styles.studioBadge}>{t("studio.ext.badge")}</span>
@@ -87,6 +88,9 @@ export default function CatalogBrowser(props: Props) {
   );
   const renderCard = (row: string, game: GameMeta, index: number) => (
     <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: gameAccent(game), ["--i" as string]: index }}>
+      {/* v165: the cover fills the whole card — sharp at the top, continued behind the button by the same picture
+          enlarged and softly blurred (no empty panel under the art). */}
+      <img className={styles.ambient} src={game.cover} alt="" aria-hidden="true" loading="eager" decoding="async" />
       <div className={styles.cover}>
         <img
           src={game.cover}
