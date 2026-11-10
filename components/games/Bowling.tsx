@@ -20,8 +20,8 @@ import { t as tx, useI18n } from "@/lib/i18n";
 /*
  * Presentation only (Bowling V3, v125). A perspective lane — a rendered maple/pine texture sampled one screen line at
  * a time, the pit wall with its masking unit, kickbacks and the pins reflected on the varnish — whose camera dollies
- * after the ball; a score sheet; and the strike / spare celebration (instant replay + a 10 s cartoon with the pins
- * as characters, skippable: a tap sends SKIP, which the core records). The throw gesture is turned into quantised
+ * after the ball; a score sheet; and the strike / spare celebration (instant replay + a 10 s studio sequence with the pins
+ * lit like a trophy, skippable: a tap sends SKIP, which the core records). The throw gesture is turned into quantised
  * AIM / ANGLE / SPIN / POWER actions here: the straight line from where the stroke starts to where it ends is the
  * direction, the stroke's bend away from that line is the spin, the final flick speed is the power. Only those
  * actions reach the recorder and the replay.
@@ -391,7 +391,7 @@ function replayReady(s: BowlingStateV3) {
   if (capture.seed !== s.seed || !capture.frames.length) return false;
   return capture.frames[capture.frames.length - 1].pins.some((p) => !p.standing && p.hitTick >= 0);
 }
-/** Strike / spare: 1.75 s instant replay, then the 10 s cartoon (bowlingShow.ts). */
+/** Strike / spare: 1.75 s instant replay, then the 10 s studio sequence (bowlingShow.ts). */
 function drawCelebration(ctx: CanvasRenderingContext2D, s: BowlingStateV3, H: number) {
   const kind = s.lastResult?.kind, t = s.tick - s.phaseTick;
   if (kind !== "strike" && kind !== "spare") return;

@@ -1,12 +1,15 @@
 /*
- * Bowling V3 celebrations (v125) — presentation only. After a short instant replay, a 10-second cartoon with the
- * pins as characters (eyes, arms, legs, sneakers):
- *  - strike «Despegue»: the knocked-down pins come round, put on space helmets, march into a rocket and blast off;
- *  - strike «Disco orbital»: under a mirror-ball planet the pins dance a kick line and finish in the rack pyramid;
- *  - spare «Abducción»: a flying saucer beams the pins up and drops them back with parachutes.
- * Which cartoon plays is a hash of the seed, the frame and the roll count (looks random, identical on replay).
- * Everything is a pure function of the state and the ticks since the celebration started; the core decides how
- * long the celebration lasts and records the SKIP.
+ * Bowling V3 celebrations — presentation only (v163, "professional pictures"). After the short instant replay, a
+ * 10-second studio sequence drawn in a small 3D projection (lateral x, height y, depth z) with lit, glossy pins:
+ *  - strike «Gala» (gold) and «Arena» (neon): the ball rolls into a full rack under the lights, the pins burst out in
+ *    bullet time, the metallic title lands, the pins fall onto the mirror floor and then fly back into a perfect rack
+ *    that is lit like a trophy, with fireworks behind;
+ *  - spare «Órbita» (cosmic): the pins that were left standing are swept away in slow motion in front of a ringed
+ *    planet, then the whole rack assembles in the same way.
+ * Pins are shaded maple (lacquer gradient, specular streak, two red neck stripes, coloured rim light) with contact
+ * shadows and reflections on the floor. Which look plays is a hash of the seed, the frame and the roll count (looks
+ * random, identical on replay). Everything is a pure function of the state and the ticks since the celebration
+ * started; the core decides how long the celebration lasts and records the SKIP.
  */
 import { t as tx } from "@/lib/i18n";
 import { bowlingScore, type BowlingStateV3 } from "@/lib/verified/bowlingCore.v3";
@@ -25,14 +28,14 @@ const easeInOut = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k 
 /** Spring that overshoots and settles at 1. */
 const spring = (k: number) => (k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-6 * k) * Math.cos(k * 11));
 
-export type Cartoon = "launch" | "disco" | "ufo";
+export type Cartoon = "gala" | "arena" | "orbit";
 export type Theme = "gold" | "neon" | "cosmic" | "steel";
 export function cartoonFor(s: Pick<BowlingStateV3, "seed" | "rolls" | "lastResult">): Cartoon {
-  if (s.lastResult?.kind !== "strike") return "ufo";
+  if (s.lastResult?.kind !== "strike") return "orbit";
   const k = hash01(seedHash(s.seed) * 0.001 + (s.lastResult?.frame ?? 0) * 7.13 + s.rolls.length * 3.7);
-  return k < 0.5 ? "launch" : "disco";
+  return k < 0.5 ? "gala" : "arena";
 }
-const THEME: Record<Cartoon, Theme> = { launch: "gold", disco: "neon", ufo: "cosmic" };
+const THEME: Record<Cartoon, Theme> = { gala: "gold", arena: "neon", orbit: "cosmic" };
 
 export const PALETTE: Record<Theme, { face: string[]; edge: string; glow: string; spark: string[]; beam: string }> = {
   gold: { face: ["#fffbe0", "#ffe27a", "#f5b52e", "#b86a00", "#ffd76a"], edge: "#5a2c00", glow: "#ffcf4a", spark: ["#fff3c4", "#ffd23f", "#ff9a3d"], beam: "255,205,90" },
@@ -164,488 +167,6 @@ function lowerThird(ctx: CanvasRenderingContext2D, s: BowlingStateV3, t: number,
   ctx.restore();
 }
 
-/* ------------------------------------------------------------------ the pin character */
-
-export type PinPose = {
-  tilt?: number; squash?: number; eyes?: "open" | "happy" | "dizzy" | "wow" | "closed"; mouth?: "smile" | "grin" | "o" | "wobble";
-  /** Arm angles from hanging down (0) through sideways (π/2) to straight up (π). */
-  armL?: number; armR?: number; legL?: number; legR?: number;
-  helmet?: number; shades?: number; look?: number; alpha?: number; flip?: number;
-};
-/** A pin with a face, arms, legs and sneakers, standing with its feet at (x, y); h is the full height. */
-export function pinChar(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, p: PinPose = {}) {
-  const w = h * 0.34, leg = h * 0.13, bodyH = h - leg, lw = Math.max(1, h * 0.022);
-  ctx.save();
-  ctx.globalAlpha *= p.alpha ?? 1;
-  ctx.translate(x, y);
-  ctx.fillStyle = "rgba(0,0,0,.3)"; ctx.beginPath(); ctx.ellipse(0, 0, w * 0.75, w * 0.18, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.rotate(p.tilt ?? 0);
-  const sq = p.squash ?? 0;
-  ctx.scale((1 + sq * 0.22) * (p.flip ?? 1), 1 - sq * 0.22);
-  // Legs and sneakers.
-  ctx.lineCap = "round";
-  for (const [side, ang] of [[-1, p.legL ?? 0], [1, p.legR ?? 0]] as const) {
-    ctx.save(); ctx.translate(side * w * 0.17, -leg); ctx.rotate(-side * 0.05 + ang);
-    ctx.strokeStyle = "#dfe6f2"; ctx.lineWidth = w * 0.16; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, leg * 0.8); ctx.stroke();
-    ctx.fillStyle = "#ff3d9a"; ctx.beginPath(); ctx.ellipse(side * w * 0.07, leg * 0.88, w * 0.17, w * 0.1, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ffffff"; ctx.fillRect(side * w * 0.07 - w * 0.17, leg * 0.9, w * 0.34, w * 0.05);
-    ctx.restore();
-  }
-  ctx.translate(0, -leg);
-  // Arms behind the body's outline (shoulder at the belly's widest point).
-  const arm = (side: number, ang: number) => {
-    ctx.save(); ctx.translate(side * w * 0.42, -bodyH * 0.34); ctx.rotate(side * -ang);
-    ctx.strokeStyle = "#1b2238"; ctx.lineWidth = w * 0.16 + lw * 1.6; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(side * w * 0.12, bodyH * 0.14, 0, bodyH * 0.27); ctx.stroke();
-    ctx.strokeStyle = "#e8eef8"; ctx.lineWidth = w * 0.16; ctx.stroke();
-    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#1b2238"; ctx.lineWidth = lw;
-    ctx.beginPath(); ctx.arc(0, bodyH * 0.29, w * 0.13, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.restore();
-  };
-  arm(-1, p.armL ?? 0.25); arm(1, p.armR ?? 0.25);
-  // Body.
-  const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
-  g.addColorStop(0, "#b9c3d2"); g.addColorStop(0.38, "#ffffff"); g.addColorStop(1, "#9aa6b8");
-  ctx.fillStyle = g; ctx.strokeStyle = "#1b2238"; ctx.lineWidth = lw;
-  const H = bodyH;
-  ctx.beginPath();
-  ctx.moveTo(0, -H);
-  ctx.bezierCurveTo(w * 0.36, -H, w * 0.38, -H * 0.82, w * 0.25, -H * 0.68);
-  ctx.bezierCurveTo(w * 0.18, -H * 0.6, w * 0.58, -H * 0.42, w * 0.52, -H * 0.13);
-  ctx.bezierCurveTo(w * 0.48, 0, -w * 0.48, 0, -w * 0.52, -H * 0.13);
-  ctx.bezierCurveTo(-w * 0.58, -H * 0.42, -w * 0.18, -H * 0.6, -w * 0.25, -H * 0.68);
-  ctx.bezierCurveTo(-w * 0.38, -H * 0.82, -w * 0.36, -H, 0, -H);
-  ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.beginPath(); ctx.ellipse(-w * 0.2, -H * 0.36, w * 0.06, H * 0.12, 0.1, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#e12d3f";
-  ctx.fillRect(-w * 0.26, -H * 0.71, w * 0.52, H * 0.03); ctx.fillRect(-w * 0.24, -H * 0.66, w * 0.48, H * 0.03);
-  // Face.
-  const ey = -H * 0.86, ex = w * 0.12, er = w * 0.085, look = (p.look ?? 0) * er * 0.5, eyes = p.eyes ?? "open";
-  ctx.strokeStyle = "#1b1f2e"; ctx.fillStyle = "#1b1f2e"; ctx.lineWidth = Math.max(0.9, w * 0.045);
-  for (const side of [-1, 1]) {
-    const cx = side * ex;
-    if (eyes === "happy") { ctx.beginPath(); ctx.arc(cx, ey + er * 0.5, er, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
-    else if (eyes === "closed") { ctx.beginPath(); ctx.moveTo(cx - er, ey); ctx.lineTo(cx + er, ey); ctx.stroke(); }
-    else if (eyes === "dizzy") { ctx.beginPath(); ctx.moveTo(cx - er, ey - er); ctx.lineTo(cx + er, ey + er); ctx.moveTo(cx + er, ey - er); ctx.lineTo(cx - er, ey + er); ctx.stroke(); }
-    else {
-      const big = eyes === "wow" ? 1.35 : 1.1;
-      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, ey, er * big, er * big * 1.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = Math.max(0.7, w * 0.03); ctx.stroke();
-      ctx.fillStyle = "#1b1f2e"; ctx.beginPath(); ctx.arc(cx + look, ey + er * 0.15, er * (eyes === "wow" ? 0.4 : 0.55), 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(cx + look - er * 0.2, ey - er * 0.15, er * 0.18, 0, Math.PI * 2); ctx.fill();
-      ctx.lineWidth = Math.max(0.9, w * 0.045);
-    }
-  }
-  ctx.fillStyle = "rgba(255,110,150,.5)";
-  for (const side of [-1, 1]) { ctx.beginPath(); ctx.arc(side * w * 0.22, ey + H * 0.05, w * 0.055, 0, Math.PI * 2); ctx.fill(); }
-  const mouth = p.mouth ?? "smile";
-  ctx.strokeStyle = "#1b1f2e"; ctx.fillStyle = "#1b1f2e";
-  if (mouth === "smile") { ctx.beginPath(); ctx.arc(0, ey + H * 0.03, w * 0.11, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke(); }
-  else if (mouth === "grin") {
-    ctx.beginPath(); ctx.moveTo(-w * 0.13, ey + H * 0.045); ctx.quadraticCurveTo(0, ey + H * 0.12, w * 0.13, ey + H * 0.045); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#ff6f8a"; ctx.beginPath(); ctx.ellipse(0, ey + H * 0.075, w * 0.05, H * 0.015, 0, 0, Math.PI * 2); ctx.fill();
-  } else if (mouth === "o") { ctx.beginPath(); ctx.ellipse(0, ey + H * 0.07, w * 0.055, H * 0.03, 0, 0, Math.PI * 2); ctx.fill(); }
-  else { ctx.beginPath(); ctx.moveTo(-w * 0.09, ey + H * 0.07); ctx.quadraticCurveTo(-w * 0.03, ey + H * 0.05, 0, ey + H * 0.07); ctx.quadraticCurveTo(w * 0.03, ey + H * 0.09, w * 0.09, ey + H * 0.065); ctx.stroke(); }
-  if ((p.shades ?? 0) > 0) {
-    const sy = ey - (1 - (p.shades ?? 0)) * H * 0.4;
-    ctx.globalAlpha *= clamp01((p.shades ?? 0) * 2);
-    ctx.fillStyle = "#0b0f1e";
-    for (const side of [-1, 1]) { ctx.beginPath(); ctx.roundRect(side * ex - er * 1.5, sy - er * 1.1, er * 3, er * 2.1, er * 0.7); ctx.fill(); }
-    ctx.fillRect(-ex + er, sy - er * 0.5, 2 * ex - 2 * er, er * 0.35);
-    ctx.fillStyle = "rgba(127,227,238,.7)";
-    for (const side of [-1, 1]) ctx.fillRect(side * ex - er * 0.9, sy - er * 0.7, er * 0.7, er * 0.3);
-  }
-  if ((p.helmet ?? 0) > 0) {
-    const drop = (1 - (p.helmet ?? 0)) * -H * 0.9, cy = -H * 0.83 + drop, r = w * 0.48;
-    ctx.globalAlpha = (p.alpha ?? 1) * clamp01((p.helmet ?? 0) * 3);
-    const hg = ctx.createRadialGradient(-r * 0.35, cy - r * 0.4, r * 0.1, 0, cy, r);
-    hg.addColorStop(0, "rgba(255,255,255,.55)"); hg.addColorStop(0.5, "rgba(160,220,255,.16)"); hg.addColorStop(1, "rgba(127,227,238,.35)");
-    ctx.fillStyle = hg; ctx.strokeStyle = "rgba(220,245,255,.9)"; ctx.lineWidth = lw * 1.2;
-    ctx.beginPath(); ctx.arc(0, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#c9d3e2"; ctx.strokeStyle = "#1b2238"; ctx.lineWidth = lw;
-    ctx.beginPath(); ctx.roundRect(-r * 0.75, cy + r * 0.78, r * 1.5, r * 0.32, r * 0.12); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#ffd23f"; ctx.beginPath(); ctx.arc(r * 0.45, cy + r * 0.94, r * 0.07, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.restore();
-}
-/** Little stars orbiting a dizzy head. */
-function dizzyStars(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, t: number) {
-  ctx.save(); ctx.fillStyle = "#ffd23f";
-  for (let k = 0; k < 3; k++) {
-    const a = t * 0.12 + (k * Math.PI * 2) / 3, sx = x + Math.cos(a) * r, sy = y + Math.sin(a) * r * 0.35;
-    star(ctx, sx, sy, 4 + Math.sin(a) * 1.2);
-  }
-  ctx.restore();
-}
-function star(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
-  ctx.beginPath();
-  for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2 - Math.PI / 2, rr = i % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
-  ctx.closePath(); ctx.fill();
-}
-function starfield(ctx: CanvasRenderingContext2D, H: number, n: number, t: number, seed: number) {
-  for (let i = 0; i < n; i++) {
-    const x = hash01(i * 3.7 + seed) * 390, y = hash01(i * 9.1 + seed) * H * 0.75, tw = 0.5 + 0.5 * Math.sin(t * 0.05 + i);
-    ctx.fillStyle = `rgba(255,255,255,${0.25 + 0.6 * tw * hash01(i * 1.3)})`; ctx.fillRect(x, y, 1.6, 1.6);
-  }
-}
-
-/* ------------------------------------------------------------------ strike: «Despegue» */
-
-function sceneLaunch(ctx: CanvasRenderingContext2D, H: number, t: number) {
-  const ground = H * 0.7, rx = 318;
-  const lift = t < 860 ? 0 : 0.5 * 0.034 * (t - 860) ** 2;
-  const shake = t > 790 && t < 1000 ? (hash01(t * 1.7) - 0.5) * 6 * (1 - seg(t, 940, 1000)) : 0;
-  ctx.save(); ctx.translate(shake, shake * 0.4);
-  // Sky and a ringed planet rising.
-  const sky = ctx.createLinearGradient(0, 0, 0, ground);
-  sky.addColorStop(0, "#05041a"); sky.addColorStop(0.7, "#1d1046"); sky.addColorStop(1, "#3a1d5c");
-  ctx.fillStyle = sky; ctx.fillRect(-10, -10, 410, ground + 10);
-  starfield(ctx, H, 90, t, 11);
-  const px = 90, py = H * 0.22 - seg(t, 0, 1200) * 20;
-  const pg = ctx.createRadialGradient(px - 18, py - 18, 4, px, py, 46);
-  pg.addColorStop(0, "#9fe8ff"); pg.addColorStop(0.6, "#4a7bd8"); pg.addColorStop(1, "#1b2a6a");
-  ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(px, py, 46, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = "rgba(230,210,255,.7)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(px, py, 78, 16, -0.3, 0, Math.PI * 2); ctx.stroke();
-  // Moon ground with craters.
-  const gg = ctx.createLinearGradient(0, ground, 0, H);
-  gg.addColorStop(0, "#8d8fa6"); gg.addColorStop(1, "#3c3e52");
-  ctx.fillStyle = gg; ctx.beginPath(); ctx.moveTo(-10, ground + 6);
-  for (let x = -10; x <= 400; x += 20) ctx.lineTo(x, ground + Math.sin(x * 0.03) * 4);
-  ctx.lineTo(400, H + 10); ctx.lineTo(-10, H + 10); ctx.closePath(); ctx.fill();
-  for (let i = 0; i < 7; i++) {
-    const cx = hash01(i * 4.1) * 390, cy = ground + 18 + hash01(i * 2.3) * (H - ground - 40), r = 10 + hash01(i) * 18;
-    ctx.fillStyle = "rgba(40,40,60,.35)"; ctx.beginPath(); ctx.ellipse(cx, cy, r, r * 0.32, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "rgba(220,220,240,.25)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(cx, cy - 1, r, r * 0.32, 0, Math.PI, Math.PI * 2); ctx.stroke();
-  }
-  // Launch pad.
-  ctx.fillStyle = "#2a2f45"; ctx.fillRect(rx - 52, ground - 8, 104, 12);
-  ctx.fillStyle = "#ffd23f"; for (let i = 0; i < 6; i++) ctx.fillRect(rx - 50 + i * 18, ground - 8, 9, 3);
-  // Tower with blinking light.
-  ctx.strokeStyle = "#5b6688"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(rx + 58, ground - 4); ctx.lineTo(rx + 58, ground - 210); ctx.stroke();
-  for (let k = 0; k < 9; k++) { ctx.beginPath(); ctx.moveTo(rx + 52, ground - 10 - k * 22); ctx.lineTo(rx + 64, ground - 30 - k * 22); ctx.stroke(); }
-  ctx.fillStyle = Math.floor(t / 30) % 2 ? "#ff3b5c" : "#5a1020"; ctx.beginPath(); ctx.arc(rx + 58, ground - 214, 4, 0, Math.PI * 2); ctx.fill();
-  // Smoke billows from ignition.
-  const smoke = (from: number) => {
-    for (let i = 0; i < 26; i++) {
-      const u = t - from - hash01(i * 5.3) * 60;
-      if (u <= 0) continue;
-      const dir = hash01(i * 2.9) - 0.5, x = rx + dir * (30 + u * 1.6), y = ground - 6 - hash01(i * 7.7) * 20 - u * 0.12;
-      const r = 10 + Math.min(40, u * 0.35);
-      ctx.fillStyle = `rgba(230,232,245,${Math.max(0, 0.55 - u / 700)})`; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-    }
-  };
-  // Rocket.
-  const ry = ground - 6 - lift;
-  if (ry > -260) {
-    ctx.save(); ctx.translate(rx, ry); ctx.scale(1.22, 1.22);
-    if (t > 800) {
-      const fl = 30 + 40 * seg(t, 800, 870) + Math.sin(t * 0.9) * 8;
-      const fg = ctx.createLinearGradient(0, 0, 0, fl + 40);
-      fg.addColorStop(0, "#ffffff"); fg.addColorStop(0.3, "#ffd23f"); fg.addColorStop(0.7, "#ff6a3d"); fg.addColorStop(1, "rgba(255,60,80,0)");
-      ctx.fillStyle = fg; ctx.beginPath(); ctx.moveTo(-16, -4); ctx.quadraticCurveTo(0, fl + 60, 16, -4); ctx.closePath(); ctx.fill();
-    }
-    // Fins.
-    ctx.fillStyle = "#e12d3f"; ctx.strokeStyle = "#1b2238"; ctx.lineWidth = 2;
-    for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * 22, -60); ctx.lineTo(s * 44, -8); ctx.lineTo(s * 22, -14); ctx.closePath(); ctx.fill(); ctx.stroke(); }
-    const bg = ctx.createLinearGradient(-24, 0, 24, 0);
-    bg.addColorStop(0, "#b9c3d2"); bg.addColorStop(0.4, "#ffffff"); bg.addColorStop(1, "#8f9aab");
-    ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(-24, -10); ctx.lineTo(-24, -150); ctx.quadraticCurveTo(-22, -210, 0, -236); ctx.quadraticCurveTo(22, -210, 24, -150); ctx.lineTo(24, -10); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#e12d3f"; ctx.beginPath(); ctx.moveTo(-17, -196); ctx.quadraticCurveTo(0, -205, 17, -196); ctx.quadraticCurveTo(10, -222, 0, -236); ctx.quadraticCurveTo(-10, -222, -17, -196); ctx.fill();
-    ctx.fillStyle = "#e12d3f"; ctx.fillRect(-24, -40, 48, 7);
-    ctx.fillStyle = "#1b2238"; ctx.font = "900 15px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("GG", 0, -62);
-    // Portholes with the passengers (once they are on board).
-    for (let k = 0; k < 3; k++) {
-      const py2 = -168 + k * 30;
-      ctx.fillStyle = "#0b1430"; ctx.strokeStyle = "#9aa6b8"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, py2, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      if (t > 690) {
-        ctx.save(); ctx.beginPath(); ctx.arc(0, py2, 9, 0, Math.PI * 2); ctx.clip();
-        ctx.fillStyle = "#f4f7fc"; ctx.beginPath(); ctx.arc(0, py2 + 4, 8, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "#1b1f2e"; ctx.lineWidth = 1.2;
-        for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 2.6, py2 + 2, 1.6, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
-        ctx.beginPath(); ctx.arc(0, py2 + 4, 2.4, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
-        ctx.restore();
-        if (t > 880) { ctx.fillStyle = "#fff"; ctx.strokeStyle = "#1b2238"; ctx.lineWidth = 1; const wv = Math.sin(t * 0.3 + k) * 3; ctx.beginPath(); ctx.arc(12 + wv * 0.3, py2 - 6 + wv, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
-      }
-    }
-    // Hatch: open while the crew boards.
-    const open = seg(t, 420, 450) * (1 - seg(t, 690, 720));
-    ctx.fillStyle = open > 0.05 ? "#0b1430" : "#c9d3e2"; ctx.strokeStyle = "#1b2238"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.roundRect(-11, -36, 22, 28, 5); ctx.fill(); ctx.stroke();
-    if (open > 0.05) { ctx.fillStyle = "#ffd76a"; ctx.globalAlpha = 0.5 * open; ctx.fillRect(-9, -34, 18, 24); ctx.globalAlpha = 1; }
-    ctx.restore();
-  }
-  if (t > 790) smoke(790);
-  // Countdown on a little board.
-  if (t > 700 && t < 900) {
-    const n = t < 740 ? 3 : t < 780 ? 2 : t < 820 ? 1 : 0, local = (t - 700) % 40;
-    ctx.save(); ctx.globalAlpha = Math.min(1, (900 - t) / 20);
-    ctx.fillStyle = "rgba(8,12,30,.85)"; ctx.strokeStyle = "#ffd23f"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.roundRect(40, ground - 150, 92, 70, 10); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = n ? "#ffd23f" : "#5cffb0"; ctx.font = `900 ${n ? 44 + (40 - local) * 0.4 : 28}px system-ui`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(n ? String(n) : "GO!", 86, ground - 115);
-    ctx.restore();
-  }
-  // The crew.
-  for (let i = 0; i < 10; i++) {
-    const x0 = 18 + i * 21 + hash01(i * 3.3 + 1) * 10, h = 80 + hash01(i * 1.9) * 10, row = i % 2;
-    const up = spring(seg(t, 150 + i * 12, 200 + i * 12)), happy = t > 190 + i * 12;
-    const helm = easeOut(seg(t, 300 + i * 8, 330 + i * 8));
-    const startWalk = 430 + i * 14;
-    const dist = rx - x0, walkT = Math.max(0, t - startWalk), xw = Math.min(dist, walkT * 2.2), x = x0 + xw;
-    if (xw >= dist && walkT * 2.2 > dist + 20) continue; // on board
-    const walking = walkT > 0 && xw < dist, step = Math.sin(walkT * 0.35 + i);
-    const hop = xw >= dist ? Math.sin(Math.min(1, (walkT * 2.2 - dist) / 20) * Math.PI) * 20 : 0;
-    const lying = (1 - up) * (i % 2 ? 1 : -1) * Math.PI / 2;
-    const cheer = t > 330 && t < 430;
-    pinChar(ctx, x, ground + 6 + row * 18 - hop - (walking ? Math.abs(step) * 3 : 0), h * (row ? 1 : 0.92), {
-      tilt: lying + (walking ? step * 0.06 : 0), squash: up < 1 && up > 0.85 ? (1 - up) * 2 : 0,
-      eyes: happy ? (cheer ? "happy" : "open") : "dizzy", mouth: happy ? (cheer ? "grin" : "smile") : "wobble",
-      armL: cheer ? 2.6 + Math.sin(t * 0.3 + i) * 0.3 : walking ? 0.3 + step * 0.4 : 0.25, armR: cheer ? 2.6 + Math.cos(t * 0.3 + i) * 0.3 : walking ? 0.3 - step * 0.4 : 0.25,
-      legL: walking ? step * 0.5 : 0, legR: walking ? -step * 0.5 : 0, helmet: helm, look: walking ? 1 : 0,
-    });
-    if (!happy) dizzyStars(ctx, x + (i % 2 ? 1 : -1) * h * 0.6 * (1 - up), ground + row * 18 - (h * 0.2 + (h * 0.75) * up), 16, t + i * 9);
-  }
-  ctx.restore();
-}
-
-/* ------------------------------------------------------------------ strike: «Disco orbital» */
-
-function sceneDisco(ctx: CanvasRenderingContext2D, H: number, t: number) {
-  const floor = H * 0.64, beat = t / 60, pulse = Math.pow(1 - (beat % 1), 3);
-  // Back wall with neon arcs.
-  const wall = ctx.createLinearGradient(0, 0, 0, floor);
-  wall.addColorStop(0, "#07051a"); wall.addColorStop(1, "#1a0b3a");
-  ctx.fillStyle = wall; ctx.fillRect(0, 0, 390, floor);
-  starfield(ctx, H, 50, t, 23);
-  for (let k = 0; k < 3; k++) {
-    ctx.strokeStyle = k === 1 ? `rgba(127,227,238,${0.5 + 0.4 * pulse})` : `rgba(255,111,216,${0.45 + 0.4 * pulse})`;
-    ctx.lineWidth = 4; ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 14;
-    ctx.beginPath(); ctx.arc(195, floor + 40, 150 + k * 34, Math.PI * 1.08, Math.PI * 1.92); ctx.stroke();
-  }
-  ctx.shadowBlur = 0;
-  // Disco floor in perspective: tiles light in a travelling pattern on the beat.
-  const rows = 7, cols = 9;
-  for (let r = 0; r < rows; r++) {
-    const y0 = floor + (H - floor) * Math.pow(r / rows, 1.3), y1 = floor + (H - floor) * Math.pow((r + 1) / rows, 1.3);
-    const sp0 = 0.55 + 0.45 * (r / rows), sp1 = 0.55 + 0.45 * ((r + 1) / rows);
-    for (let c = 0; c < cols; c++) {
-      const x0a = 195 + ((c / cols) - 0.5) * 520 * sp0, x1a = 195 + (((c + 1) / cols) - 0.5) * 520 * sp0;
-      const x0b = 195 + ((c / cols) - 0.5) * 520 * sp1, x1b = 195 + (((c + 1) / cols) - 0.5) * 520 * sp1;
-      const lit = (c + r + Math.floor(beat)) % 3 === 0;
-      const hue = ["255,111,216", "127,227,238", "255,210,63"][(c * 7 + r * 3 + Math.floor(beat / 2)) % 3];
-      ctx.fillStyle = lit ? `rgba(${hue},${0.35 + 0.45 * pulse})` : "rgba(30,20,60,.9)";
-      ctx.beginPath(); ctx.moveTo(x0a + 1, y0 + 1); ctx.lineTo(x1a - 1, y0 + 1); ctx.lineTo(x1b - 1, y1 - 1); ctx.lineTo(x0b + 1, y1 - 1); ctx.closePath(); ctx.fill();
-    }
-  }
-  // Mirror-ball planet coming down, spinning, throwing light dots.
-  const by = -60 + (H * 0.16 + 60) * easeOut(seg(t, 0, 110)), br = 36;
-  ctx.strokeStyle = "#8a94b0"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(195, 0); ctx.lineTo(195, by - br); ctx.stroke();
-  ctx.save(); ctx.beginPath(); ctx.arc(195, by, br, 0, Math.PI * 2); ctx.clip();
-  ctx.fillStyle = "#2a3050"; ctx.fillRect(195 - br, by - br, br * 2, br * 2);
-  for (let la = -4; la < 4; la++) for (let lo = 0; lo < 12; lo++) {
-    const a = (lo / 12) * Math.PI * 2 + t * 0.03, x = 195 + Math.sin(a) * br * Math.cos((la + 0.5) / 4 * Math.PI / 2);
-    if (Math.cos(a) < 0) continue;
-    const y = by + ((la + 0.5) / 4) * br, sh = hash01(lo * 13 + la * 7 + Math.floor(t / 6)) > 0.8;
-    ctx.fillStyle = sh ? "#ffffff" : `rgba(${150 + lo * 8},${170 + la * 10},230,.9)`; ctx.fillRect(x - 3, y - 3, 5.5, 5.5);
-  }
-  ctx.restore();
-  ctx.save(); ctx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 40; i++) {
-    const a = (i / 40) * Math.PI * 2 + t * 0.02, d = 80 + hash01(i) * 220;
-    const x = 195 + Math.cos(a) * d, y = by + Math.sin(a) * d * 0.55 + 30;
-    ctx.fillStyle = `rgba(255,255,255,${0.15 + 0.25 * hash01(i * 3 + Math.floor(t / 10))})`; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
-  }
-  // Spotlights sweeping from the top corners.
-  for (const [sx, col, ph] of [[0, "255,111,216", 0], [390, "127,227,238", 1.7]] as const) {
-    const ang = Math.PI / 2 + (sx ? 0.5 : -0.5) + Math.sin(t * 0.025 + ph) * 0.35, len = H;
-    const g = ctx.createLinearGradient(sx, 0, sx + Math.cos(ang) * len, Math.sin(ang) * len);
-    g.addColorStop(0, `rgba(${col},.45)`); g.addColorStop(1, `rgba(${col},0)`);
-    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(sx, 0);
-    ctx.lineTo(sx + Math.cos(ang - 0.13) * len, Math.sin(ang - 0.13) * len); ctx.lineTo(sx + Math.cos(ang + 0.13) * len, Math.sin(ang + 0.13) * len); ctx.closePath(); ctx.fill();
-  }
-  ctx.restore();
-  // Dancers.
-  const pyramid = [[0, 0], [1, 0], [2, 0], [3, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [0, 3]];
-  const rowN = [4, 3, 2, 1], h = 74;
-  const items: { x: number; y: number; i: number; pose: PinPose }[] = [];
-  for (let i = 0; i < 10; i++) {
-    const lineX = 26 + i * 37.5, fromLeft = i < 5;
-    const enter = easeOut(seg(t, 110 + (fromLeft ? 4 - i : i - 5) * 16, 200 + (fromLeft ? 4 - i : i - 5) * 16));
-    let x = fromLeft ? -40 + (lineX + 40) * enter : 430 - (430 - lineX) * enter, y = floor + 34;
-    const pose: PinPose = { eyes: "happy", mouth: "grin", shades: easeOut(seg(t, 280 + i * 4, 310 + i * 4)) };
-    const sliding = enter > 0 && enter < 1;
-    if (sliding) { pose.tilt = (fromLeft ? 1 : -1) * 0.18; pose.legL = (fromLeft ? -1 : 1) * 0.4; pose.legR = (fromLeft ? 1 : -1) * 0.2; pose.armL = 1.3; pose.armR = 1.3; pose.eyes = "open"; }
-    if (t >= 300 && t < 700) {
-      // Kick line: a wave of kicks along the line on the beat.
-      const ph = beat * Math.PI * 2 - i * 0.45, kick = Math.max(0, Math.sin(ph));
-      const left = Math.floor((beat - i * 0.07) % 2) === 0;
-      pose.legL = left ? -kick * 1.25 : 0; pose.legR = left ? 0 : kick * 1.25;
-      pose.armL = 1.6 + Math.sin(ph) * 0.5; pose.armR = 1.6 - Math.sin(ph) * 0.5;
-      pose.tilt = Math.sin(ph) * 0.08;
-      y -= Math.abs(Math.sin(beat * Math.PI)) * 7;
-      pose.squash = pulse * 0.4;
-    }
-    if (t >= 700) {
-      const [k, r] = pyramid[i], tx2 = 195 + (k - (rowN[r] - 1) / 2) * 46, ty2 = floor + 34 - r * h * 0.82;
-      const jump = seg(t, 700 + (3 - r) * 0 + r * 22, 760 + r * 22), je = easeInOut(jump);
-      x = x + (tx2 - x) * je; y = y + (ty2 - y) * je - Math.sin(jump * Math.PI) * (50 + r * 20);
-      pose.legL = jump > 0 && jump < 1 ? -0.5 : 0; pose.legR = jump > 0 && jump < 1 ? 0.5 : 0;
-      pose.armL = r === 3 && t > 830 ? 2.8 : 1.2 + (t > 830 ? Math.sin(t * 0.2 + i) * 0.4 : 0); pose.armR = r === 3 && t > 830 ? 2.8 : 1.2 + (t > 830 ? Math.cos(t * 0.2 + i) * 0.4 : 0);
-      if (r === 3 && t > 800 && t < 880) pose.flip = Math.cos((t - 800) * 0.16);
-      if (t > 1080) pose.tilt = Math.sin(seg(t, 1080, 1120) * Math.PI) * 0.45;
-      items.push({ x, y, i: 100 - r * 10 - k, pose });
-      continue;
-    }
-    items.push({ x, y, i, pose });
-  }
-  items.sort((a, b) => b.i - a.i).forEach((it) => pinChar(ctx, it.x, it.y, h, it.pose));
-}
-
-/* ------------------------------------------------------------------ spare: «Abducción» */
-
-function sceneUfo(ctx: CanvasRenderingContext2D, H: number, t: number, count: number) {
-  const ground = H * 0.7, h = 90;
-  const sky = ctx.createLinearGradient(0, 0, 0, ground);
-  sky.addColorStop(0, "#030a1c"); sky.addColorStop(0.6, "#0f2a4a"); sky.addColorStop(1, "#245a6a");
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, 390, ground);
-  starfield(ctx, H, 80, t, 41);
-  for (const [mx, my, mr, mc] of [[300, H * 0.12, 26, "#ffe7b0"], [345, H * 0.2, 12, "#c9b3ff"]] as const) {
-    const mg = ctx.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, 2, mx, my, mr);
-    mg.addColorStop(0, "#ffffff"); mg.addColorStop(1, mc); ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
-  }
-  // Dunes and alien plants.
-  for (const [base, col, amp, f] of [[ground - 22, "#173a4a", 16, 0.018], [ground, "#1f4f55", 10, 0.03]] as const) {
-    ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, H);
-    for (let x = 0; x <= 390; x += 10) ctx.lineTo(x, base + Math.sin(x * f + base) * amp);
-    ctx.lineTo(390, H); ctx.closePath(); ctx.fill();
-  }
-  const sand = ctx.createLinearGradient(0, ground, 0, H);
-  sand.addColorStop(0, "#2c6a66"); sand.addColorStop(1, "#123038");
-  ctx.fillStyle = sand; ctx.fillRect(0, ground + 8, 390, H - ground);
-  for (const [px, ph] of [[34, 46], [362, 60], [70, 30]] as const) {
-    ctx.strokeStyle = "#5cffb0"; ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(px, ground + 12); ctx.quadraticCurveTo(px - 6, ground - ph * 0.5, px + 4, ground - ph); ctx.stroke();
-    ctx.fillStyle = `rgba(92,255,176,${0.5 + 0.5 * Math.sin(t * 0.08 + px)})`; ctx.beginPath(); ctx.arc(px + 4, ground - ph, 5, 0, Math.PI * 2); ctx.fill();
-  }
-  // Saucer path: descend, hover, loop, hover, leave.
-  let ux = 195, uy = -80;
-  if (t < 150) uy = -80;
-  else if (t < 260) uy = -80 + (H * 0.2 + 80) * easeOut(seg(t, 150, 260));
-  else if (t < 620) { uy = H * 0.2 + Math.sin(t * 0.06) * 4; ux = 195 + Math.sin(t * 0.03) * 6; }
-  else if (t < 760) { const a = seg(t, 620, 760) * Math.PI * 2; ux = 195 + Math.sin(a) * 120; uy = H * 0.2 - (1 - Math.cos(a)) * 40; }
-  else if (t < 1020) { uy = H * 0.14 + Math.sin(t * 0.06) * 4; }
-  else { const k = seg(t, 1020, 1200); ux = 195 + k * k * 420; uy = H * 0.14 - k * 120; }
-  const beamOn = (t > 270 && t < 470) ? Math.min(1, (t - 270) / 12, (470 - t) / 12) : 0;
-  if (beamOn > 0) {
-    ctx.save(); ctx.globalCompositeOperation = "lighter";
-    const bg = ctx.createLinearGradient(0, uy, 0, ground + 20);
-    bg.addColorStop(0, `rgba(127,255,200,${0.55 * beamOn})`); bg.addColorStop(1, `rgba(127,255,200,${0.12 * beamOn})`);
-    ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(ux - 30, uy + 14); ctx.lineTo(ux + 30, uy + 14); ctx.lineTo(ux + 140, ground + 30); ctx.lineTo(ux - 140, ground + 30); ctx.closePath(); ctx.fill();
-    for (let i = 0; i < 24; i++) {
-      const k = ((t * 0.012 + hash01(i)) % 1), x = ux + (hash01(i * 3) - 0.5) * 2 * (22 + 88 * (1 - k)), y = ground + 10 - k * (ground - uy);
-      ctx.fillStyle = `rgba(220,255,240,${0.7 * beamOn})`; ctx.fillRect(x, y, 2, 2);
-    }
-    ctx.restore();
-  }
-  // Pins: tremble, get beamed up, parachute back, cheer.
-  const n = Math.max(1, Math.min(9, count));
-  for (let i = 0; i < n; i++) {
-    const homeX = 195 + (i - (n - 1) / 2) * Math.min(52, 330 / n);
-    const up = seg(t, 290 + i * 14, 400 + i * 14), inside = up >= 1 && t < 780;
-    const drop = seg(t, 780 + i * 10, 1000 + i * 6);
-    let x = homeX, y = ground + 30, alpha = 1;
-    const pose: PinPose = { eyes: "wow", mouth: "o", armL: 0.4, armR: 0.4, look: -0.4 };
-    if (t < 290 + i * 14) { x += Math.sin(t * 1.3 + i) * (t > 150 ? 1.6 : 0.6); pose.look = t > 150 ? 0 : -1; }
-    if (up > 0 && up < 1) {
-      const k = easeInOut(up);
-      x = homeX + (ux - homeX) * k; y = ground + 30 + (uy + 14 - ground - 30) * k;
-      pose.tilt = Math.sin(t * 0.1 + i) * 0.5; pose.armL = 2.4 + Math.sin(t * 0.4) * 0.5; pose.armR = 2.4 - Math.sin(t * 0.4) * 0.5;
-      pose.legL = Math.sin(t * 0.35) * 0.5; pose.legR = -Math.sin(t * 0.35) * 0.5; pose.eyes = up > 0.5 ? "happy" : "wow"; pose.mouth = up > 0.5 ? "grin" : "o";
-      alpha = 1 - seg(up, 0.85, 1);
-    }
-    if (inside) continue;
-    if (t >= 780) {
-      if (drop <= 0) continue;
-      const k = drop;
-      x = ux + (homeX - ux) * easeOut(Math.min(1, k * 1.6)) + Math.sin(t * 0.05 + i) * 10 * (1 - k);
-      y = uy + 20 + (ground + 30 - uy - 20) * k;
-      pose.eyes = "happy"; pose.mouth = "smile"; pose.armL = 2.9; pose.armR = 2.9; pose.tilt = Math.sin(t * 0.05 + i) * 0.12 * (1 - k);
-      if (k < 1) {
-        // Parachute.
-        const top = y - h - 56, cr = 32;
-        ctx.strokeStyle = "rgba(230,240,255,.8)"; ctx.lineWidth = 1;
-        for (const s of [-1, 0, 1]) { ctx.beginPath(); ctx.moveTo(x + s * cr * 0.9, top + 4); ctx.lineTo(x + s * 4, y - h * 0.9); ctx.stroke(); }
-        const cols = ["#ff6fd8", "#ffd23f", "#7fe3ee", "#5cffb0"];
-        for (let p = 0; p < 4; p++) {
-          ctx.fillStyle = cols[(p + i) % 4]; ctx.beginPath();
-          ctx.moveTo(x, top - cr * 0.15); ctx.arc(x, top + 4, cr, Math.PI + (p / 4) * Math.PI, Math.PI + ((p + 1) / 4) * Math.PI); ctx.closePath(); ctx.fill();
-        }
-      } else {
-        const jump = Math.max(0, Math.sin((t - 1000 - i * 6) * 0.12)) * 14;
-        y -= jump; pose.eyes = "happy"; pose.mouth = "grin"; pose.armL = 2.7 + Math.sin(t * 0.2 + i) * 0.3; pose.armR = 2.7 - Math.sin(t * 0.2 + i) * 0.3;
-        pose.squash = jump < 1 ? 0.3 : 0;
-      }
-    }
-    pinChar(ctx, x, y, h, { ...pose, alpha });
-  }
-  // The saucer.
-  ctx.save(); ctx.translate(ux, uy); ctx.scale(1.4, 1.4); ctx.rotate(t > 480 && t < 620 ? Math.sin(t * 0.25) * 0.12 : 0);
-  const dome = ctx.createRadialGradient(-8, -18, 2, 0, -10, 26);
-  dome.addColorStop(0, "rgba(255,255,255,.9)"); dome.addColorStop(1, "rgba(127,227,238,.35)");
-  // Pilot peeking out of the dome: a round bowling ball with one eye and an antenna.
-  const peek = seg(t, 480, 520) * (1 - seg(t, 600, 630));
-  if (peek > 0) {
-    ctx.fillStyle = "#6a4dff"; ctx.beginPath(); ctx.arc(0, -12 - peek * 8, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(0, -14 - peek * 8, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#1b1f2e"; ctx.beginPath(); ctx.arc(Math.sin(t * 0.1) * 1.5, -14 - peek * 8, 2.2, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#c9b3ff"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -24 - peek * 8); ctx.lineTo(4, -34 - peek * 8); ctx.stroke();
-    ctx.fillStyle = "#5cffb0"; ctx.beginPath(); ctx.arc(4, -35 - peek * 8, 2.5, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.fillStyle = dome; ctx.beginPath(); ctx.ellipse(0, -8, 24, 22, 0, Math.PI, Math.PI * 2); ctx.fill();
-  const hull = ctx.createLinearGradient(0, -8, 0, 14);
-  hull.addColorStop(0, "#e8eef8"); hull.addColorStop(0.5, "#8f9aab"); hull.addColorStop(1, "#3a4258");
-  ctx.fillStyle = hull; ctx.beginPath(); ctx.ellipse(0, 2, 62, 14, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = "#1b2238"; ctx.lineWidth = 1.5; ctx.stroke();
-  for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * Math.PI * 2 + t * 0.08, lx = Math.cos(a) * 50, ly = 4 + Math.sin(a) * 6;
-    if (Math.sin(a) < -0.2) continue;
-    ctx.fillStyle = (k + Math.floor(t / 8)) % 2 ? (t > 480 && t < 620 ? "#5cffb0" : "#ffd23f") : "#ff6fd8";
-    ctx.beginPath(); ctx.arc(lx, ly, 3.2, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.restore();
-}
-
-/* ------------------------------------------------------------------ entry point */
-
-/** v162 · Opening slam: the score-sheet mark (X or /) crashes in huge with a shockwave, a ring of rays and a shake. */
-function markSlam(ctx: CanvasRenderingContext2D, t: number, H: number, strike: boolean, theme: Theme) {
-  if (t < 0 || t > 110) return;
-  const pal = PALETTE[theme], cy = H * 0.42;
-  const k = clamp01(t / 12), fade = 1 - seg(t, 80, 110);
-  ctx.save();
-  ctx.globalAlpha = fade;
-  // Rays wheel behind the mark.
-  ctx.save(); ctx.translate(195, cy); ctx.rotate(t * 0.02); ctx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 16; i++) {
-    ctx.rotate(Math.PI / 8);
-    ctx.fillStyle = `rgba(${pal.beam},${0.22 * k})`;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-22, -420); ctx.lineTo(22, -420); ctx.closePath(); ctx.fill();
-  }
-  ctx.restore();
-  // Shockwave rings.
-  for (let r = 0; r < 3; r++) {
-    const u = t - 10 - r * 8;
-    if (u <= 0 || u > 60) continue;
-    ctx.strokeStyle = `rgba(255,255,255,${0.7 * (1 - u / 60)})`; ctx.lineWidth = 6 * (1 - u / 60) + 1;
-    ctx.beginPath(); ctx.arc(195, cy, 40 + u * 6, 0, Math.PI * 2); ctx.stroke();
-  }
-  const scale = t < 12 ? 3.2 - 2.2 * easeOut(k) : 1 + 0.12 * Math.exp(-(t - 12) / 8) * Math.cos((t - 12) * 0.8);
-  ctx.translate(195, cy); ctx.scale(scale, scale);
-  ctx.font = "900 190px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  const mark = strike ? "X" : "/";
-  for (let d = 10; d > 0; d--) { ctx.fillStyle = d > 7 ? "rgba(0,0,0,.5)" : pal.edge; ctx.fillText(mark, d * 0.5, d * 1.1); }
-  const face = ctx.createLinearGradient(0, -90, 0, 90);
-  pal.face.forEach((c, i) => face.addColorStop(i / (pal.face.length - 1), c));
-  ctx.shadowColor = pal.glow; ctx.shadowBlur = 40; ctx.fillStyle = face; ctx.fillText(mark, 0, 0); ctx.shadowBlur = 0;
-  ctx.restore();
-}
 /** v162 · Finale fireworks: deterministic shells that rise, burst into rings of stars and fall away. */
 function fireworks(ctx: CanvasRenderingContext2D, t: number, H: number, n: number, seed: number, colors: string[]) {
   if (t <= 0) return;
@@ -673,58 +194,352 @@ function fireworks(ctx: CanvasRenderingContext2D, t: number, H: number, n: numbe
   }
   ctx.restore();
 }
-/** v162 · Finale crowd: a line of pins at the bottom jumping, waving and cheering (a stadium wave). */
-function cheeringPins(ctx: CanvasRenderingContext2D, t: number, H: number, n: number) {
-  if (t <= 0) return;
-  const enter = easeOut(clamp01(t / 30)), base = H - 160 + 200 * (1 - enter);
-  for (let i = 0; i < n; i++) {
-    const x = 195 + (i - (n - 1) / 2) * (360 / n), ph = t * 0.16 - i * 0.7;
-    const hop = Math.max(0, Math.sin(ph)) * 34, up = Math.max(0, Math.sin(ph));
-    pinChar(ctx, x, base - hop, 84, {
-      tilt: Math.sin(ph * 0.5) * 0.12, squash: hop < 2 ? 0.92 : 1, eyes: up > 0.5 ? "happy" : "wow", mouth: up > 0.3 ? "grin" : "o",
-      armL: Math.PI * (0.55 + 0.4 * up), armR: Math.PI * (0.55 + 0.4 * up), legL: -0.3 * up, legR: 0.3 * up,
-    });
+
+/* ------------------------------------------------------------------ studio: projection, pin, ball */
+
+type Cam = { H: number; horizon: number; floor: number; zoom: number; sx: number; sy: number };
+const FOCAL = 520;
+/** Screen point and scale of a world point (x lateral, y height, z depth; z = 0 is the focal plane). */
+function proj(c: Cam, x: number, y: number, z: number) {
+  const s = FOCAL / (FOCAL + z);
+  const px = 195 + x * s, py = c.horizon + (c.floor - c.horizon) * s - y * s;
+  return { x: 195 + (px - 195) * c.zoom + c.sx, y: c.H * 0.5 + (py - c.H * 0.5) * c.zoom + c.sy, s: s * c.zoom };
+}
+const PIN_H = 124;
+/** Pin outline (feet at 0,0; height h; width w), drawn in local coordinates. */
+function pinPath(ctx: CanvasRenderingContext2D, h: number) {
+  const w = h * 0.34;
+  ctx.beginPath();
+  ctx.moveTo(0, -h);
+  ctx.bezierCurveTo(w * 0.3, -h, w * 0.33, -h * 0.84, w * 0.22, -h * 0.7);
+  ctx.bezierCurveTo(w * 0.15, -h * 0.62, w * 0.56, -h * 0.43, w * 0.5, -h * 0.17);
+  ctx.bezierCurveTo(w * 0.47, -h * 0.03, w * 0.3, 0, 0, 0);
+  ctx.bezierCurveTo(-w * 0.3, 0, -w * 0.47, -h * 0.03, -w * 0.5, -h * 0.17);
+  ctx.bezierCurveTo(-w * 0.56, -h * 0.43, -w * 0.15, -h * 0.62, -w * 0.22, -h * 0.7);
+  ctx.bezierCurveTo(-w * 0.33, -h * 0.84, -w * 0.3, -h, 0, -h);
+  ctx.closePath();
+}
+/**
+ * A lit maple pin: lacquer gradient across the body, a long specular streak, two red neck stripes with their own
+ * sheen, a coloured rim light on the shadow side and a thin dark edge. (x, y) is the centre of the pin; `rot` turns
+ * it about that centre.
+ */
+function proPin(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, rot: number, rim: string, alpha = 1) {
+  if (h < 2) return;
+  const w = h * 0.34;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.translate(x, y); ctx.rotate(rot); ctx.translate(0, h / 2);
+  const body = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+  body.addColorStop(0, "#5d6574"); body.addColorStop(0.16, "#b9c0cb"); body.addColorStop(0.36, "#fbfcfd");
+  body.addColorStop(0.5, "#eef1f5"); body.addColorStop(0.76, "#aab2bf"); body.addColorStop(1, "#4b5260");
+  pinPath(ctx, h); ctx.fillStyle = body; ctx.fill();
+  ctx.save(); pinPath(ctx, h); ctx.clip();
+  // Neck stripes: curved bands with a red lacquer gradient.
+  const red = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+  red.addColorStop(0, "#5c0712"); red.addColorStop(0.35, "#ff4255"); red.addColorStop(0.55, "#e01f33"); red.addColorStop(1, "#4a0610");
+  ctx.fillStyle = red;
+  for (const yy of [-h * 0.735, -h * 0.675]) {
+    ctx.beginPath(); ctx.ellipse(0, yy, w * 0.6, h * 0.035, 0, 0, Math.PI * 2); ctx.fill();
   }
+  // Vertical shading (darker toward the foot, light on the head) and the specular streak.
+  const v = ctx.createLinearGradient(0, -h, 0, 0);
+  v.addColorStop(0, "rgba(255,255,255,.18)"); v.addColorStop(0.55, "rgba(255,255,255,0)"); v.addColorStop(1, "rgba(0,0,10,.28)");
+  ctx.fillStyle = v; ctx.fillRect(-w, -h, w * 2, h);
+  ctx.fillStyle = "rgba(255,255,255,.85)";
+  ctx.beginPath(); ctx.ellipse(-w * 0.16, -h * 0.4, w * 0.045, h * 0.2, 0.03, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-w * 0.06, -h * 0.88, w * 0.035, h * 0.06, 0, 0, Math.PI * 2); ctx.fill();
+  // Rim light on the right edge.
+  ctx.strokeStyle = rim; ctx.lineWidth = Math.max(1, w * 0.12); ctx.globalAlpha *= 0.75;
+  ctx.translate(w * 0.07, 0); pinPath(ctx, h); ctx.stroke();
+  ctx.restore();
+  ctx.strokeStyle = "rgba(10,14,24,.55)"; ctx.lineWidth = Math.max(0.6, h * 0.008);
+  pinPath(ctx, h); ctx.stroke();
+  ctx.restore();
+}
+/** A glossy reactive-resin ball with its swirl, finger holes, specular highlight and rim light. */
+function proBall(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, roll: number, theme: Theme) {
+  const base = theme === "gold" ? ["#fff1c4", "#e0a12a", "#5a2a00"] : theme === "neon" ? ["#e8d8ff", "#7a4dff", "#14063f"] : ["#d8f6ff", "#2f8fd8", "#06173a"];
+  ctx.save();
+  const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.08, x, y, r);
+  g.addColorStop(0, base[0]); g.addColorStop(0.35, base[1]); g.addColorStop(1, base[2]);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.clip();
+  ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = r * 0.16;
+  for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.ellipse(x, y, r * (0.95 - k * 0.25), r * 0.32, roll * 0.6 + k * 1.1, 0, Math.PI * 2); ctx.stroke(); }
+  const hy = y + Math.cos(roll) * r * 0.45;
+  if (Math.sin(roll) < 0.55) { ctx.fillStyle = "rgba(4,4,12,.9)"; for (const [dx, dy] of [[-0.22, -0.12], [0.2, -0.16], [0, 0.18]]) { ctx.beginPath(); ctx.arc(x + dx * r, hy + dy * r, r * 0.1, 0, Math.PI * 2); ctx.fill(); } }
+  ctx.restore();
+  ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.beginPath(); ctx.ellipse(x - r * 0.38, y - r * 0.45, r * 0.26, r * 0.13, -0.6, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = `rgba(${PALETTE[theme].beam},.8)`; ctx.lineWidth = Math.max(1, r * 0.08);
+  ctx.beginPath(); ctx.arc(x, y, r * 0.96, -0.3, 1.4); ctx.stroke();
+  ctx.restore();
 }
 
-/** Draws cartoon frame t (0 … CARTOON_TICKS) plus its title, sparks and lower third. */
+/* ------------------------------------------------------------------ studio sets */
+
+function setGala(ctx: CanvasRenderingContext2D, c: Cam, t: number) {
+  const H = c.H;
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#060404"); bg.addColorStop(0.42, "#1a1008"); bg.addColorStop(1, "#040303");
+  ctx.fillStyle = bg; ctx.fillRect(-20, -20, 430, H + 40);
+  // Back wall: warm light bars, out of focus.
+  for (let i = 0; i < 9; i++) {
+    const x = 20 + i * 44, a = 0.1 + 0.08 * Math.sin(t * 0.03 + i);
+    const g = ctx.createLinearGradient(x, 0, x, c.horizon);
+    g.addColorStop(0, "rgba(255,190,90,0)"); g.addColorStop(0.6, `rgba(255,190,90,${a})`); g.addColorStop(1, "rgba(255,190,90,0)");
+    ctx.fillStyle = g; ctx.fillRect(x - 3, c.horizon * 0.15, 6, c.horizon * 0.85);
+  }
+  const glow = ctx.createRadialGradient(195, c.horizon, 10, 195, c.horizon, 260);
+  glow.addColorStop(0, "rgba(255,200,110,.38)"); glow.addColorStop(1, "rgba(255,200,110,0)");
+  ctx.fillStyle = glow; ctx.fillRect(-20, -20, 430, H + 40);
+  spotCones(ctx, c, t, "255,214,140");
+  mirrorFloor(ctx, c, ["#120c06", "#050403"]);
+}
+function setArena(ctx: CanvasRenderingContext2D, c: Cam, t: number) {
+  const H = c.H;
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#03030c"); bg.addColorStop(0.45, "#120a2c"); bg.addColorStop(1, "#02020a");
+  ctx.fillStyle = bg; ctx.fillRect(-20, -20, 430, H + 40);
+  const glow = ctx.createRadialGradient(195, c.horizon, 10, 195, c.horizon, 300);
+  glow.addColorStop(0, "rgba(255,80,200,.35)"); glow.addColorStop(0.5, "rgba(80,120,255,.12)"); glow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow; ctx.fillRect(-20, -20, 430, H + 40);
+  // Laser beams sweeping from the back.
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 6; i++) {
+    const a = Math.sin(t * 0.012 + i * 1.3) * 0.9, col = i % 2 ? "127,227,238" : "255,111,216";
+    ctx.save(); ctx.translate(195 + (i - 2.5) * 50, c.horizon - 6); ctx.rotate(a - Math.PI / 2 - 0.0);
+    const g = ctx.createLinearGradient(0, 0, 420, 0);
+    g.addColorStop(0, `rgba(${col},.55)`); g.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, -1); ctx.lineTo(420, -10); ctx.lineTo(420, 10); ctx.lineTo(0, 1); ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+  mirrorFloor(ctx, c, ["#0a0620", "#020108"]);
+  // Neon grid on the floor.
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let k = -8; k <= 8; k++) {
+    const a = proj(c, k * 60, 0, -120), b = proj(c, k * 60, 0, 1400);
+    ctx.strokeStyle = `rgba(255,111,216,${0.32 - Math.abs(k) * 0.025})`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  for (let z = -120 + ((t * 2) % 80); z < 1400; z += 80) {
+    const a = proj(c, -600, 0, z), b = proj(c, 600, 0, z);
+    ctx.strokeStyle = `rgba(127,227,238,${0.35 * (1 - z / 1400)})`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  ctx.restore();
+}
+function setOrbit(ctx: CanvasRenderingContext2D, c: Cam, t: number) {
+  const H = c.H;
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#02030a"); bg.addColorStop(0.5, "#0b0b26"); bg.addColorStop(1, "#020208");
+  ctx.fillStyle = bg; ctx.fillRect(-20, -20, 430, H + 40);
+  for (const [x, y, r, col] of [[90, 0.2, 170, "120,60,255"], [320, 0.28, 150, "0,170,255"], [210, 0.12, 120, "255,80,170"]] as const) {
+    const g = ctx.createRadialGradient(x, H * y, 0, x, H * y, r);
+    g.addColorStop(0, `rgba(${col},.22)`); g.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = g; ctx.fillRect(-20, -20, 430, H + 40);
+  }
+  for (let i = 0; i < 120; i++) {
+    const x = hash01(i * 3.1) * 390, y = hash01(i * 7.7) * c.horizon, tw = 0.5 + 0.5 * Math.sin(t * 0.05 + i);
+    ctx.fillStyle = `rgba(230,240,255,${0.25 + 0.55 * tw * hash01(i)})`; ctx.fillRect(x, y, i % 9 ? 1 : 2, i % 9 ? 1 : 2);
+  }
+  // A ringed planet rising behind the stage.
+  const px = 300, py = c.horizon + 4, pr = 74; // rising behind the stage, its lower half under the floor
+  ctx.save(); ctx.translate(px, py); ctx.rotate(-0.32);
+  ctx.strokeStyle = "rgba(230,200,150,.35)"; ctx.lineWidth = 7; ctx.beginPath(); ctx.ellipse(0, 0, pr * 1.9, pr * 0.42, 0, Math.PI, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+  const pg = ctx.createRadialGradient(px - 26, py - 30, 6, px, py, pr);
+  pg.addColorStop(0, "#f6dcab"); pg.addColorStop(0.55, "#c08850"); pg.addColorStop(1, "#2a160c");
+  ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.clip(); ctx.translate(px, py); ctx.rotate(-0.32);
+  for (let k = -4; k <= 4; k++) { ctx.fillStyle = k % 2 ? "rgba(120,60,20,.22)" : "rgba(255,235,200,.14)"; ctx.fillRect(-pr * 1.2, k * 15, pr * 2.4, 7); }
+  ctx.restore();
+  ctx.save(); ctx.translate(px, py); ctx.rotate(-0.32);
+  ctx.strokeStyle = "rgba(240,214,170,.7)"; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(0, 0, pr * 1.9, pr * 0.42, 0, 0, Math.PI); ctx.stroke();
+  ctx.strokeStyle = "rgba(160,120,80,.6)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, pr * 1.6, pr * 0.35, 0, 0, Math.PI); ctx.stroke();
+  ctx.restore();
+  mirrorFloor(ctx, c, ["#08081c", "#020208"]);
+}
+/** Volumetric spot cones from above onto the rack. */
+function spotCones(ctx: CanvasRenderingContext2D, c: Cam, t: number, col: string) {
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (const [x0, sway] of [[60, 1], [330, -1], [195, 0]] as const) {
+    const target = proj(c, sway * 40 * Math.sin(t * 0.01), 0, 120);
+    const g = ctx.createLinearGradient(x0, -20, target.x, target.y);
+    g.addColorStop(0, `rgba(${col},.32)`); g.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(x0 - 8, -20); ctx.lineTo(x0 + 8, -20); ctx.lineTo(target.x + 110, target.y); ctx.lineTo(target.x - 110, target.y); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+/** Glossy floor from the horizon down (the reflections are drawn afterwards with a fading mask). */
+function mirrorFloor(ctx: CanvasRenderingContext2D, c: Cam, cols: [string, string]) {
+  const top = proj(c, 0, 0, 1400).y;
+  const g = ctx.createLinearGradient(0, top, 0, c.H);
+  g.addColorStop(0, cols[0]); g.addColorStop(1, cols[1]);
+  ctx.fillStyle = g; ctx.fillRect(-20, top, 430, c.H - top + 20);
+  const sheen = ctx.createLinearGradient(0, top, 0, top + 30);
+  sheen.addColorStop(0, "rgba(255,255,255,.12)"); sheen.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = sheen; ctx.fillRect(-20, top, 430, 30);
+}
+
+/* ------------------------------------------------------------------ choreography */
+
+/** Rack spots (head pin nearest the camera) and the spare's standing pins. */
+const RACK = [0, 1, 2, 3].flatMap((r) => Array.from({ length: r + 1 }, (_, k) => ({ x: (k - r / 2) * 50, z: 60 + r * 44 })));
+const SPARE_LEFT = [9, 5, 8, 2, 4, 7, 1, 3, 6];
+type PinPose3 = { x: number; y: number; z: number; rot: number };
+const IMPACT = 64, SLOW_END = 400, FALL_END = 600, BUILD = 700;
+/** Where pin i is at tick t: standing, bursting out in bullet time, falling to the floor, flying back to the rack. */
+function pinAt(i: number, t: number, active: boolean): PinPose3 | null {
+  const home = RACK[i];
+  if (!active && t < BUILD) return null;
+  const h = (k: number) => hash01(i * 17.3 + k * 5.1);
+  // Burst: velocity from the hit, bigger behind, a spin each.
+  const vx = (home.x / 50) * 110 + (h(1) - 0.5) * 170, vy = 300 + h(2) * 260, vz = 40 + h(3) * 260 + (home.z - 60) * 0.8, w = (h(4) - 0.5) * 9;
+  const g = 900;
+  const delay = (home.z - 60) / 44 * 0.03 + Math.abs(home.x) / 50 * 0.015;
+  // Effective seconds after the impact: slow motion (×0.2) until SLOW_END, then real time ×0.9.
+  const tau = t < IMPACT ? 0 : t < SLOW_END ? ((t - IMPACT) / 120) * 0.2 : ((SLOW_END - IMPACT) / 120) * 0.2 + ((Math.min(t, FALL_END) - SLOW_END) / 120) * 0.9;
+  const u = Math.max(0, tau - delay);
+  let flying: PinPose3;
+  if (!active) flying = { x: home.x, y: 640, z: home.z, rot: (h(5) - 0.5) * 2 }; // on a spare the rest drop in from above
+  else if (u <= 0) flying = { x: home.x, y: 0, z: home.z, rot: 0 };
+  else {
+    const land = (2 * vy) / g;
+    if (u < land) flying = { x: home.x + vx * u, y: vy * u - 0.5 * g * u * u, z: home.z + vz * u, rot: w * u };
+    else {
+      const k = Math.min(1, (u - land) / 0.5), ease = 1 - Math.pow(1 - k, 3);
+      const rest = (w >= 0 ? 1 : -1) * Math.PI / 2;
+      flying = { x: home.x + vx * land + vx * 0.25 * ease, y: Math.max(0, 40 * Math.sin(Math.min(1, k * 2) * Math.PI) * (1 - k)), z: home.z + vz * land + vz * 0.2 * ease, rot: w * land + (rest - w * land) * ease };
+    }
+  }
+  if (t < BUILD) return flying;
+  // Back into the rack, one after the other, along an arc.
+  const d = BUILD + i * 13, k = seg(t, d, d + 110), e = easeInOut(k);
+  return { x: flying.x + (home.x - flying.x) * e, y: flying.y + (0 - flying.y) * e + Math.sin(k * Math.PI) * (active ? 150 : 0), z: flying.z + (home.z - flying.z) * e, rot: flying.rot * (1 - e) + Math.sin(k * Math.PI) * 0.4 * (i % 2 ? 1 : -1) };
+}
+
+function drawStage(ctx: CanvasRenderingContext2D, c: Cam, t: number, theme: Theme, standing: boolean[], rim: string, aim: { x: number; z: number }) {
+  // Ball: rolls in, strikes the head pin, carries on into the pit.
+  const ballZ = t < IMPACT ? -300 + (aim.z + 300) * (t / IMPACT) : aim.z + (t - IMPACT) * 3.2;
+  const ballX = t < IMPACT ? -20 + (aim.x + 20) * (t / IMPACT) : aim.x + (aim.x - -20) / (aim.z + 300) * (t - IMPACT) * 3.2;
+  const items: { z: number; draw: (mirror: boolean) => void }[] = [];
+  if (ballZ < 900) {
+    items.push({ z: ballZ, draw: (mirror) => {
+      const r = 27, p = proj(c, ballX, r, ballZ), pr = r * p.s;
+      if (mirror) { const f = proj(c, ballX, 0, ballZ); proBall(ctx, p.x, f.y + (f.y - p.y), pr, ballZ * 0.04, theme); return; }
+      const f = proj(c, ballX, 0, ballZ);
+      ctx.fillStyle = "rgba(0,0,0,.5)"; ctx.beginPath(); ctx.ellipse(f.x, f.y, pr * 1.05, pr * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+      if (t < IMPACT) for (let k = 1; k < 6; k++) { const q = proj(c, ballX, r, ballZ - k * 20); ctx.globalAlpha = 0.12 * (1 - k / 6); proBall(ctx, q.x, q.y, r * q.s, 0, theme); ctx.globalAlpha = 1; }
+      proBall(ctx, p.x, p.y, pr, ballZ * 0.04, theme);
+    } });
+  }
+  for (let i = 0; i < 10; i++) {
+    const pose = pinAt(i, t, standing[i]);
+    if (!pose) continue;
+    items.push({ z: pose.z, draw: (mirror) => {
+      const centre = proj(c, pose.x, pose.y + (PIN_H / 2) * Math.abs(Math.cos(pose.rot)) + 14 * Math.abs(Math.sin(pose.rot)), pose.z);
+      const hh = PIN_H * centre.s;
+      if (mirror) {
+        if (pose.y > 90) return;
+        const f = proj(c, pose.x, 0, pose.z);
+        proPin(ctx, centre.x, f.y + (f.y - centre.y), hh, Math.PI - pose.rot, rim, 1 - pose.y / 90);
+        return;
+      }
+      const f = proj(c, pose.x, 0, pose.z), lift = Math.max(0, pose.y) / 200;
+      ctx.fillStyle = `rgba(0,0,0,${0.45 * (1 - Math.min(1, lift))})`;
+      ctx.beginPath(); ctx.ellipse(f.x, f.y, hh * 0.26 * (1 + lift), hh * 0.06, 0, 0, Math.PI * 2); ctx.fill();
+      // Motion trail in bullet time.
+      if (t > IMPACT && t < FALL_END && standing[i]) {
+        const back = pinAt(i, t - 10, true);
+        if (back) { const q = proj(c, back.x, back.y + PIN_H / 2, back.z); proPin(ctx, q.x, q.y, PIN_H * q.s, back.rot, rim, 0.18); }
+      }
+      proPin(ctx, centre.x, centre.y, hh, pose.rot, rim);
+    } });
+  }
+  items.sort((a, b) => b.z - a.z);
+  // Reflections first (faded toward the viewer), then the scene.
+  ctx.save();
+  ctx.globalAlpha = 0.16;
+  for (const it of items) it.draw(true);
+  ctx.restore();
+  const top = proj(c, 0, 0, 1400).y, fade = ctx.createLinearGradient(0, top, 0, c.H);
+  fade.addColorStop(0, "rgba(0,0,0,0)"); fade.addColorStop(1, "rgba(0,0,0,.35)");
+  ctx.fillStyle = fade; ctx.fillRect(-20, top, 430, c.H - top + 20);
+  for (const it of items) it.draw(false);
+}
+
+/** The rack, rebuilt, lit like a trophy: a ring of light on the floor and a sheen sweeping across the pins. */
+function trophyLight(ctx: CanvasRenderingContext2D, c: Cam, t: number, theme: Theme) {
+  const k = seg(t, BUILD + 240, BUILD + 300);
+  if (k <= 0) return;
+  const p = proj(c, 0, 0, 125);
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let r = 0; r < 2; r++) {
+    const u = ((t - BUILD - 240 + r * 60) % 120) / 120;
+    ctx.strokeStyle = `rgba(${PALETTE[theme].beam},${0.6 * k * (1 - u)})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(p.x, p.y, (90 + u * 160) * p.s, (22 + u * 40) * p.s, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  const halo = ctx.createRadialGradient(p.x, p.y - 70 * p.s, 0, p.x, p.y - 70 * p.s, 190 * p.s);
+  halo.addColorStop(0, `rgba(${PALETTE[theme].beam},${0.32 * k})`); halo.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = halo; ctx.fillRect(p.x - 220, p.y - 280, 440, 400);
+  ctx.restore();
+}
+
+/* ------------------------------------------------------------------ entry point */
+
+/** Draws studio frame t (0 … CARTOON_TICKS) plus its title, sparks and lower third. */
 export function drawCartoon(ctx: CanvasRenderingContext2D, s: BowlingStateV3, H: number, t: number) {
   const kind = s.lastResult?.kind;
   if (kind !== "strike" && kind !== "spare") return;
-  const cartoon = cartoonFor(s), theme = THEME[cartoon], pal = PALETTE[theme];
+  const look = cartoonFor(s), theme = THEME[look], pal = PALETTE[theme];
   const label = kind === "strike" ? tx("bowling.strike") : tx("bowling.spare");
   const tt = Math.max(0, Math.min(CARTOON_TICKS - 1, t));
-  // v162: the story plays 1.7× faster (it used to reach its climax after eight seconds), after an opening slam; the
-  // time it frees is a finale with fireworks and the pins cheering.
-  const SLAM = 70, st = Math.max(0, Math.min(CARTOON_TICKS - 1, (tt - SLAM) * 1.7));
+  // Camera: a slow push-in, a jolt at the impact, a gentle drift while the rack is rebuilt.
+  const shake = tt > IMPACT && tt < IMPACT + 24 ? (IMPACT + 24 - tt) / 24 : 0;
+  const c: Cam = {
+    H, horizon: H * 0.36, floor: H * 0.75,
+    zoom: 1 + 0.12 * easeOut(seg(tt, 0, SLOW_END)) - 0.06 * easeInOut(seg(tt, SLOW_END, BUILD)),
+    sx: Math.sin(tt * 2.1) * 6 * shake + Math.sin(tt * 0.006) * 8 * seg(tt, BUILD, CARTOON_TICKS),
+    sy: Math.cos(tt * 2.9) * 5 * shake,
+  };
+  // Pins standing before the ball: the whole rack on a strike, the pins left over on a spare.
+  const standing = Array.from({ length: 10 }, () => kind === "strike");
+  if (kind === "spare") for (const i of SPARE_LEFT.slice(0, Math.max(1, Math.min(9, s.lastResult?.knocked ?? 2)))) standing[i] = true;
+  const rim = `rgba(${pal.beam},1)`;
+  const up = RACK.filter((_, i) => standing[i]), aim = { x: up.reduce((a, p) => a + p.x, 0) / up.length, z: Math.min(...up.map((p) => p.z)) };
   ctx.save();
-  // A short shake when the mark lands and when the title lands.
-  const titleAt = cartoon === "launch" ? 960 : cartoon === "disco" ? 880 : 860, titleT = SLAM + titleAt / 1.7, u = tt - titleT;
-  const shake = (tt > 10 && tt < 30 ? (30 - tt) / 20 : 0) + (u > 14 && u < 32 ? (32 - u) / 18 : 0);
-  if (shake > 0) ctx.translate(Math.sin(tt * 2.3) * 7 * shake, Math.cos(tt * 3.1) * 5 * shake);
-  if (cartoon === "launch") sceneLaunch(ctx, H, st);
-  else if (cartoon === "disco") sceneDisco(ctx, H, st);
-  else sceneUfo(ctx, H, st, s.lastResult?.knocked ?? 2);
-  if (tt < SLAM + 40) { ctx.fillStyle = `rgba(3,5,14,${0.55 * (1 - seg(tt, SLAM, SLAM + 40))})`; ctx.fillRect(-20, -20, 430, H + 40); }
-  markSlam(ctx, tt, H, kind === "strike", theme);
-  // Title act.
-  const cy = H * (cartoon === "disco" ? 0.36 : 0.3);
-  const finale = st >= CARTOON_TICKS - 1 ? tt - (SLAM + (CARTOON_TICKS - 1) / 1.7) : -1;
-  if (finale > 0) {
-    fireworks(ctx, finale, H, 12, (s.lastResult?.frame ?? 0) * 5 + s.rolls.length, [...pal.spark, "#5cffb0", "#ff6fd8"]);
-    cheeringPins(ctx, finale - 10, H, kind === "strike" ? 5 : 3);
+  if (look === "gala") setGala(ctx, c, tt); else if (look === "arena") setArena(ctx, c, tt); else setOrbit(ctx, c, tt);
+  const seed = (s.lastResult?.frame ?? 0) * 5 + s.rolls.length;
+  if (tt > BUILD + 260) fireworks(ctx, tt - BUILD - 260, H * 0.62, 10, seed, [...pal.spark, "#5cffb0", "#ff6fd8"]);
+  trophyLight(ctx, c, tt, theme);
+  drawStage(ctx, c, tt, theme, standing, rim, aim);
+  // Impact: flash, sparks and a shockwave on the floor.
+  const hit = proj(c, aim.x, 50, aim.z);
+  if (tt >= IMPACT && tt < IMPACT + 14) { ctx.fillStyle = `rgba(255,255,255,${0.7 * (1 - (tt - IMPACT) / 14)})`; ctx.fillRect(-20, -20, 430, H + 40); }
+  sparks(ctx, (tt - IMPACT) * 0.5, hit.x, hit.y, kind === "strike" ? 90 : 50, pal.spark, seed, H);
+  if (tt > IMPACT && tt < IMPACT + 90) {
+    const u = (tt - IMPACT) / 90, f = proj(c, aim.x, 0, aim.z);
+    ctx.strokeStyle = `rgba(${pal.beam},${0.8 * (1 - u)})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(f.x, f.y, 30 + u * 260, 8 + u * 60, 0, 0, Math.PI * 2); ctx.stroke();
   }
+  // Title act: lands in bullet time, stays up; lower third once the pins are down.
+  const u = tt - 150, cy = H * 0.2;
   if (u >= 0) {
-    if (u < 10) { ctx.fillStyle = `rgba(255,255,255,${0.6 * (1 - u / 10)})`; ctx.fillRect(-20, -20, 430, H + 40); }
-    sparks(ctx, u - 4, 195, cy, kind === "strike" ? 120 : 70, pal.spark, (s.lastResult?.frame ?? 0) + s.rolls.length, H);
+    if (u < 10) { ctx.fillStyle = `rgba(255,255,255,${0.5 * (1 - u / 10)})`; ctx.fillRect(-20, -20, 430, H + 40); }
     proTitle(ctx, label, u, cy, kind === "strike" ? 78 : 54, theme);
     lensFlare(ctx, u - 8, cy - 4, pal.beam);
-    lowerThird(ctx, s, u - 40, H, theme, label);
+    lowerThird(ctx, s, tt - 560, H, theme, label);
   }
-  if (cartoon === "disco") confetti(ctx, tt - (SLAM + 800 / 1.7), H, 90, s.rolls.length);
-  if (cartoon === "launch") confetti(ctx, tt - (SLAM + 1000 / 1.7), H, 60, s.rolls.length);
-  if (finale > 0) confetti(ctx, finale, H, 70, s.rolls.length + 3);
-  // Opening iris from the replay.
+  confetti(ctx, tt - BUILD - 220, H, 80, s.rolls.length);
+  // Cinematic letterbox and vignette.
+  const bar = 26 * easeOut(seg(tt, 0, 20));
+  ctx.fillStyle = "#000"; ctx.fillRect(-20, -20, 430, bar + 20); ctx.fillRect(-20, H - bar, 430, bar + 20);
+  const vig = ctx.createRadialGradient(195, H / 2, H * 0.3, 195, H / 2, H * 0.8);
+  vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, "rgba(0,0,0,.5)");
+  ctx.fillStyle = vig; ctx.fillRect(-20, -20, 430, H + 40);
   if (tt < 18) { ctx.fillStyle = `rgba(255,255,255,${0.8 * (1 - tt / 18)})`; ctx.fillRect(-20, -20, 430, H + 40); }
   ctx.restore();
 }

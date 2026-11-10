@@ -1536,26 +1536,27 @@ export default function DemoApp() {
                   aria-live="polite"
                   style={{ ["--accent" as string]: gameAccent(selectedGame) }}
                 >
-                  {leagueMatch && leagueMatch.gameId === selectedGame.id && (
-                    <div className={`gxIntroRival gxRivalBoard ${leagueMatch.rival.balanceGoal ? "chips" : "points"}`} style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
-                      <img src={leagueMatch.rival.avatar} alt="" width={44} height={44} />
-                      <span className="gxRivalWho">
-                        <small>{LEAGUE_ICONS[leagueMatch.tier]} {t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) })}</small>
-                        <b>{leagueMatch.rival.name}</b>
-                      </span>
-                      {(() => {
-                        const chips = leagueMatch.rival.balanceGoal, ms = !chips && lowerScoreWins(selectedGame);
-                        const n = chips ? leagueMatch.rival.target / 100 : leagueMatch.rival.target;
-                        const label = chips ? t("league.goalChips", { n: formatNumber(n) }) : ms ? t("common.ms", { n: formatNumber(n) }) : formatNumber(n);
-                        return (
-                          <span className="gxRivalTarget">
-                            <b aria-label={label}>{formatNumber(n)}</b>
-                            <small aria-hidden="true">{t(chips ? "game.unitChips" : ms ? "game.unitMs" : selectedGame.resultMetric === "orbs-eliminated" ? "game.unitOrbs" : "game.unitPoints")}</small>
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  )}
+                  {leagueMatch && leagueMatch.gameId === selectedGame.id && (() => {
+                    // v162+: the rival's score in the same bar as the in-game scoreboard (same glass, same cells,
+                    // label on the left and the number on the right).
+                    const chips = leagueMatch.rival.balanceGoal, ms = !chips && lowerScoreWins(selectedGame);
+                    const n = chips ? leagueMatch.rival.target / 100 : leagueMatch.rival.target;
+                    const label = chips ? t("league.goalChips", { n: formatNumber(n) }) : ms ? t("common.ms", { n: formatNumber(n) }) : formatNumber(n);
+                    const unit = chips ? t("hud.chips") : ms ? t("hud.reaction") : selectedGame.resultMetric === "orbs-eliminated" ? t("hud.bubbles") : t("hud.points");
+                    return (
+                      <div className="gxScoreboard inFlow gxIntroScore" role="group" style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
+                        <span className="gxScoreCell gxScoreRival">
+                          <img src={leagueMatch.rival.avatar} alt="" width={28} height={28} />
+                          <small aria-label={t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) })}>{LEAGUE_ICONS[leagueMatch.tier]}</small>
+                          <b>{leagueMatch.rival.name}</b>
+                        </span>
+                        <span className="gxScoreCell main">
+                          <small>{unit}</small>
+                          <b aria-label={label}>{ms ? `${formatNumber(n)} ms` : formatNumber(n)}</b>
+                        </span>
+                      </div>
+                    );
+                  })()}
                   <div className="gxIntroCount" key={countdown}>
                     <svg viewBox="0 0 120 120" aria-hidden="true">
                       <circle className="track" cx="60" cy="60" r="52" />

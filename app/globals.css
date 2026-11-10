@@ -8807,6 +8807,13 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 @media (max-width: 360px) { .gxScoreCell { padding: 0 8px; gap: 4px; } .gxScoreCell small { font-size: 9.5px; } .gxScoreCell b { font-size: 17px; } .gxScoreCell.main b { font-size: 20px; } }
 /* The same scoreboard inside games laid out in the page flow (Mine Grid, Solitaire Sprint). */
 .gxScoreboard.inFlow { position: relative; top: auto; left: auto; right: auto; flex: 0 0 auto; margin: 6px 12px 8px; }
+/* v163: the rival's score before the game is the same bar as the in-game scoreboard, above the countdown. */
+.gxScoreboard.gxIntroScore { width: calc(100% - 24px); max-width: 366px; margin: 0 auto 22px; }
+.gxIntroScore .gxScoreRival { flex-grow: 1.35; justify-content: flex-start; gap: 6px; }
+.gxIntroScore .gxScoreCell.main { flex-grow: 1.6; }
+.gxIntroScore .gxScoreRival img { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--tier); }
+.gxIntroScore .gxScoreRival small { flex: 0 0 auto; font-size: 13px; }
+.gxIntroScore .gxScoreRival b { flex: 0 1 auto; min-width: 0; font-size: 14px; letter-spacing: .01em; text-align: left; }
 /* Solitaire Sprint lays its board out inside an 8px padding: cancel it so the bar sits exactly where every game has it. */
 .solitaireSprint > .gxScoreboard.inFlow { margin: -2px 4px 8px; }
 /* Rival target in the intro: same type treatment as the scoreboard (no seven-segment digits). */

@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v163-saturn · Celebraciones de Bowling de estudio y marcador del rival igual al del juego (10-nov-2026)
+
+- **Bowling:** los dibujos animados pasan a un plató en 3D con bolos de arce iluminados, reflejos en suelo de espejo, cámara lenta, título metálico y el triángulo reconstruido como un trofeo (Gala, Arena y Órbita).
+- **Cuenta atrás:** la barra del rival es la misma que el marcador del juego (cristal, etiqueta a la izquierda y número dorado a la derecha).
+
 ## v162-saturn · Marcador común, Dardos realistas, Pinball V14, Bowling y portadas (9-nov-2026)
 
 - **Marcador:** etiqueta a la izquierda y número a la derecha, más grande; misma caja en los 13 juegos.

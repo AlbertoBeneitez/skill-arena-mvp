@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 9 de noviembre de 2026 · base `mobile-test` en v162-saturn.
+Actualizado: 9 de noviembre de 2026 · base `mobile-test` en v163-saturn.
 
 ## Catálogo
 
@@ -87,6 +87,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Celebraciones de Bowling de estudio y marcador del rival (10 de noviembre, v163):** plató en 3D con bolos iluminados, reflejos, cámara lenta y triángulo-trofeo; la barra del rival en la cuenta atrás es la misma pieza que el marcador del juego.
 - [x] **Pinball V14, marcador común y Dardos (9 de noviembre, v162):** mesa más alta (arco de y 42 a y 12) justo bajo el marcador y Saturno en ojo de buey; marcador con el número a la derecha igual en los 13 juegos; diana y dardos realistas; celebraciones de Bowling más rápidas con final de fuegos artificiales; portadas de Mine Grid, Orb Burst, Solitaire Sprint, Dardos y Bowling; avatares con cabeza y hombros.
 - [x] **Pinball V13 (9 de noviembre, v161):** recorridos con curvas suaves (spline entera), divisores de goma en el centro, estrellas en el carril central; neón de alto contraste y espacio vacío ocupado por carriles, arena, cometas y escaleras de progreso.
 - [x] **Pinball V12 (9 de noviembre, v160):** mesa nueva con la estructura de la referencia (rampas con boca central, órbitas, agujero tras dianas en V y bajo tejadillo, triángulo de bumpers); cada recorrido con un color fijo; luces calmadas; portada generada por el juego.
