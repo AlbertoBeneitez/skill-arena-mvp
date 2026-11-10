@@ -572,6 +572,7 @@ const messages: Messages = {
   "league.tier4": "Бриллиант",
   "league.leagueOf": "{tier}",
   "league.rivalOf": "Соперник · {tier}",
+  "intro.createdBy": "Автор",
   "league.goalChips": "{n} фишек",
   "league.beat": "Вы обыграли {name}",
   "league.lostTo": "Побеждает {name}",

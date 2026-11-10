@@ -12,7 +12,8 @@ import {
   dartPerspectiveFlight,
   dartPerspectivePose,
 } from "@/lib/dartsFlightPerspective";
-import { drawDart } from "@/lib/dartsPresentation";
+import { drawDart, type DartLook } from "@/lib/dartsPresentation";
+import { playerAvatar } from "@/lib/playerLook";
 import { dartsAimAction } from "@/lib/verified/dartsProtocol.v1";
 import { dartsFlickAimV4, type DartsGestureSample } from "@/lib/verified/dartsGesture.v4";
 import { drawSpaceBackdrop } from "@/lib/spaceBackdrop";
@@ -25,6 +26,35 @@ const cx = 195,
 // Visual zoom only (outer ring 161 * 1.15 = 185 of 195 half-width); aim input
 // uses the inverse, so authoritative coordinates are unchanged.
 const BOARD_ZOOM = 1.15;
+/**
+ * v164: the darts wear the player — the avatar is printed across the four flights and the barrel rings and flight
+ * edges take the avatar's overall colour (the mean of its pixels, measured once per image). Presentation only.
+ */
+const look: { src: string; value: DartLook } = { src: "", value: { image: null, color: "#6bdde2" } };
+function averageColor(img: HTMLImageElement) {
+  try {
+    const c = document.createElement("canvas"); c.width = c.height = 24;
+    const g = c.getContext("2d", { willReadFrequently: true });
+    if (!g) return null;
+    // Only the circle that the flights show counts.
+    g.beginPath(); g.arc(12, 12, 12, 0, Math.PI * 2); g.clip(); g.drawImage(img, 0, 0, 24, 24);
+    const d = g.getImageData(0, 0, 24, 24).data;
+    let r = 0, gg = 0, b = 0, n = 0;
+    for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 200) continue; r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; }
+    return n ? `rgb(${Math.round(r / n)},${Math.round(gg / n)},${Math.round(b / n)})` : null;
+  } catch { return null; }
+}
+function dartLook(): DartLook {
+  const src = playerAvatar();
+  if (src && src !== look.src && typeof Image !== "undefined" && typeof document !== "undefined") {
+    look.src = src;
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => { if (look.src === src) look.value = { image: img, color: averageColor(img) ?? look.value.color }; };
+    img.src = src;
+  }
+  return look.value;
+}
 /** Dart held under the finger while aiming (presentation only). */
 const held = { active: false, x: 0, y: 0, trail: [] as { x: number; y: number }[] };
 /**
@@ -324,7 +354,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
     const flying = i === s.impacts.length - 1 && s.phase === "flight";
     if (hit.timeout || (flying && s.phaseTicks < DARTS_RULES_V3.impactTicks)) continue;
     const pose = dartPerspectiveFlight(cx + hit.x / 1000, cy + hit.y / 1000, DARTS_RULES_V3.impactTicks);
-    drawDart(ctx, { ...pose, scale: 0.62 }, i % 2 ? "#dfb885" : "#6bdde2");
+    drawDart(ctx, { ...pose, scale: 0.62 }, dartLook());
   }
   const pose = (s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks) || (s.phase === "aim" && held.active)
     ? null : dartPerspectivePose(s);
@@ -349,7 +379,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
       }
       ctx.stroke();
     }
-    drawDart(ctx, pose);
+    drawDart(ctx, pose, dartLook());
   }
   ctx.restore();
   if (s.phase === "aim" && held.active) {
@@ -360,7 +390,7 @@ function render(ctx: CanvasRenderingContext2D, s: DartsStateV3, view?: { width: 
       ctx.beginPath(); ctx.moveTo(tr[i - 1].x, tr[i - 1].y - 30); ctx.lineTo(tr[i].x, tr[i].y - 30); ctx.stroke();
     }
     const tilt = a ? Math.max(-0.6, Math.min(0.6, (held.x - a.x) / 40)) : 0;
-    drawDart(ctx, { x: held.x, y: held.y - 30, angle: tilt, scale: 1.35 });
+    drawDart(ctx, { x: held.x, y: held.y - 30, angle: tilt, scale: 1.35 }, dartLook());
   }
   const hit = s.impacts.at(-1);
   if (hit && s.phase === "flight" && s.phaseTicks >= DARTS_RULES_V3.impactTicks) {

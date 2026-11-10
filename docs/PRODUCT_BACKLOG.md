@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v164-saturn · Rival a pantalla completa, dardos con el avatar, números iguales, cabecera y portadas (10-nov-2026)
+
+- **Cuenta atrás:** retrato grande del rival, nombre, puntos y «Creado por» con el autor del juego (campo `creator`, por defecto GALACTIC GAMES).
+- **Marcadores:** todos los números con un único diseño.
+- **Dardos:** el avatar del jugador repartido en cuatro aletas y su color en barril y aletas.
+- **Inicio:**
+  - sin el destello del aro vacío al cargar el avatar;
+  - «Enviar juego» dorado con la moneda a la izquierda;
+  - cabecera con botones a juego;
+  - fichas sin medalla ni círculos.
+- **Portadas:** Pinball de v161; Solitaire con la cascada; Mine Grid sin Saturno; Orb Burst con hueco ante el cañón.
+
 ## v163-saturn · Celebraciones de Bowling de estudio y marcador del rival igual al del juego (10-nov-2026)
 
 - **Bowling:** los dibujos animados pasan a un plató en 3D con bolos de arce iluminados, reflejos en suelo de espejo, cámara lenta, título metálico y el triángulo reconstruido como un trofeo (Gala, Arena y Órbita).

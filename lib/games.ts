@@ -70,6 +70,9 @@ export type GameDefinition<TId extends string = string> = {
   instruction: string;
   scoring: string;
   deterministicSeed?: string;
+  /** v164: who made the game, shown before each match. Games sent through «Enviar juego» will carry their author;
+   * the house games are by the studio (GAME_CREATOR_DEFAULT). */
+  creator?: string;
   /**
    * How the score reads. Default: points (higher wins). "fictitious-balance": closing chips.
    * "reaction-time-ms": accumulated milliseconds, LOWER wins (the core also publishes reach = base − ms).
@@ -168,7 +171,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/SolitaireSprint")),
     competition: { verification: "client-result" },
     name: "Solitaire Sprint",
-    cover: "/covers/solitaire-sprint.webp?v=162",
+    cover: "/covers/solitaire-sprint.webp?v=164",
     enabled: true,
     waitingStakes: [1, 5],
     category: "CARTAS",
@@ -189,7 +192,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/MineGridEntry")),
     competition: { verification: "client-result" },
     name: "Mine Grid",
-    cover: "/covers/mine-grid.webp?v=162",
+    cover: "/covers/mine-grid.webp?v=164",
     enabled: true,
     waitingStakes: [1, 10],
     category: "LÓGICA",
@@ -234,7 +237,7 @@ const GAME_DEFINITIONS = [
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 6, allowedActions: ORB_ACTIONS },
     resultMetric: "orbs-eliminated",
     name: "Orb Burst",
-    cover: "/covers/orb-burst.webp?v=162",
+    cover: "/covers/orb-burst.webp?v=164",
     enabled: true,
     waitingStakes: [5, 50],
     category: "PUZZLE",
@@ -303,7 +306,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/PinballVerified")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: PINBALL_ACTIONS_V3 },
     name: "Pinball",
-    cover: "/covers/pinball.webp?v=162",
+    cover: "/covers/pinball.webp?v=164",
     enabled: true,
     waitingStakes: [5, 10],
     category: "CONTROL",
@@ -361,6 +364,7 @@ const GAME_DEFINITIONS = [
 
 export type GameId = (typeof GAME_DEFINITIONS)[number]["id"];
 export type GameMeta = GameDefinition<GameId>;
+export const GAME_CREATOR_DEFAULT = "GALACTIC GAMES";
 
 export const GAME_REGISTRY = Object.fromEntries(
   GAME_DEFINITIONS.map((game) => [game.id, game])

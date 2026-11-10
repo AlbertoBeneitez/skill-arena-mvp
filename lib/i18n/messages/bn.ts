@@ -572,6 +572,7 @@ const messages: Messages = {
   "league.tier4": "হীরা",
   "league.leagueOf": "{tier}",
   "league.rivalOf": "{tier} প্রতিদ্বন্দ্বী",
+  "intro.createdBy": "নির্মাতা",
   "league.goalChips": "{n} চিপ",
   "league.beat": "আপনি {name}-কে হারালেন",
   "league.lostTo": "{name} জিতল",

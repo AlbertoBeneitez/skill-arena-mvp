@@ -572,6 +572,7 @@ const messages: Messages = {
   "league.tier4": "ہیرا",
   "league.leagueOf": "{tier}",
   "league.rivalOf": "{tier} حریف",
+  "intro.createdBy": "تخلیق کار",
   "league.goalChips": "{n} چپس",
   "league.beat": "آپ نے {name} کو ہرایا",
   "league.lostTo": "{name} جیت گیا",

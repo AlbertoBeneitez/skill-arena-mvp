@@ -610,6 +610,7 @@ const es = {
   "league.tier4": "Diamante",
   "league.leagueOf": "{tier}",
   "league.rivalOf": "Rival {tier}",
+  "intro.createdBy": "Creado por",
   "league.goalChips": "{n} fichas",
   "league.beat": "Ganas a {name}",
   "league.lostTo": "Gana {name}",

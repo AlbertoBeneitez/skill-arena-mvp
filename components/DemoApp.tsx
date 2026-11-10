@@ -2,11 +2,12 @@
 import GameResultSummary from "./GameResultSummary";
 import RivalScoreboard, { type RivalResult } from "./RivalScoreboard";
 import { safeStorage } from "@/lib/safeStorage";
+import { setPlayerAvatar } from "@/lib/playerLook";
 import GameActionButton from "./GameActionButton";
 import CatalogBrowser, { gameAccent } from "./CatalogBrowser";
 import shellStyles from "./ProductShell.module.css";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePublicMatchAvailability, usePendingMatchResolution } from "@/lib/usePublicMatchState";
 import OrbitalScene from "./OrbitalScene";
 import UiIcon from "./UiIcon";
@@ -16,7 +17,7 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
-import { GAMES, STAKES, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
+import { GAMES, GAME_CREATOR_DEFAULT, STAKES, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
 import { createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
 import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
@@ -241,11 +242,15 @@ export default function DemoApp() {
   const [playerName, setPlayerName] = useState("");
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
+  useEffect(() => { setPlayerAvatar(portraitCrop(avatarSrc, "")); }, [avatarSrc]);
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // v164: the big portrait (and its ring) stays hidden until the first image has loaded — no empty ring flashes.
+  const [portraitReady, setPortraitReady] = useState(false);
+  const portraitImgRef = useCallback((img: HTMLImageElement | null) => { if (img?.complete && img.naturalWidth > 0) setPortraitReady(true); }, []);
   // Avatar sheet (v121): the 16 portraits fill the phone screen as 8 rows × 2 columns.
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef<HTMLDivElement>(null);
@@ -1267,7 +1272,7 @@ export default function DemoApp() {
         <section className={`setupCard avatarSetupCard avatarSetupMinimal galacticAvatarSetup gxAvatarSetup ${avatarMenuOpen ? "avatarMenuIsOpen" : ""}`}>
           <h1 className="galacticSetupBrand gxSetupBrand">{PRODUCT_NAME}</h1>
           <div className="avatarPortraitWrap">
-            <div className="avatarPortrait">
+            <div className={`avatarPortrait${portraitReady ? " ready" : " loading"}`}>
               <button
                 type="button"
                 className="avatarPortraitTrigger"
@@ -1275,7 +1280,7 @@ export default function DemoApp() {
                 aria-hidden="true"
                 onClick={() => setAvatarMenuOpen(true)}
               >
-                <img src={avatarSrc} alt="" />
+                <img ref={portraitImgRef} src={avatarSrc} alt="" onLoad={() => setPortraitReady(true)} onError={() => setPortraitReady(true)} />
               </button>
             </div>
             <input
@@ -1428,8 +1433,8 @@ export default function DemoApp() {
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
-            <button className="balanceChip" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><b>{euro(balance)}</b></button>
-            <button className="settingsGear gxIconBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
+            <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
+            <button className="settingsGear gxIconBtn gxHeadBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
               <UiIcon name="gear" />
             </button>
           </div>
@@ -1441,7 +1446,7 @@ export default function DemoApp() {
           <section className="catalogScreen playCatalogSimple homePlayMerged">
             <h1 className="visuallyHidden">{t("home.title")}</h1>
             <div className="homePlayHeading gxHomeBar">
-              <button type="button" className="gxStudioTab" onClick={openStudio}><UiIcon name="upload" size={18} /><span>{t("studio.title")}</span><UiIcon name="coins" size={18} className="gxStudioCoin" /></button>
+              <button type="button" className="gxStudioTab" onClick={openStudio}><UiIcon name="coins" size={19} className="gxStudioCoin" /><span>{t("studio.title")}</span></button>
               <button type="button" className="globalRankingShortcut gxRankingPill" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={18} /><span>{t("home.ranking")}</span></button>
             </div>
 
@@ -1537,23 +1542,19 @@ export default function DemoApp() {
                   style={{ ["--accent" as string]: gameAccent(selectedGame) }}
                 >
                   {leagueMatch && leagueMatch.gameId === selectedGame.id && (() => {
-                    // v162+: the rival's score in the same bar as the in-game scoreboard (same glass, same cells,
-                    // label on the left and the number on the right).
+                    // v164: the rival large — the portrait in a big ring of its league colour, the name under it, the
+                    // score to beat lower down (the scoreboard's number design) and, below, who made the game.
                     const chips = leagueMatch.rival.balanceGoal, ms = !chips && lowerScoreWins(selectedGame);
                     const n = chips ? leagueMatch.rival.target / 100 : leagueMatch.rival.target;
-                    const label = chips ? t("league.goalChips", { n: formatNumber(n) }) : ms ? t("common.ms", { n: formatNumber(n) }) : formatNumber(n);
+                    const value = ms ? `${formatNumber(n)} ms` : formatNumber(n);
                     const unit = chips ? t("hud.chips") : ms ? t("hud.reaction") : selectedGame.resultMetric === "orbs-eliminated" ? t("hud.bubbles") : t("hud.points");
+                    const who = t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) });
                     return (
-                      <div className={`gxScoreboard inFlow gxIntroScore${ms ? " long" : ""}`} role="group" style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
-                        <span className="gxScoreCell gxScoreRival">
-                          <img src={leagueMatch.rival.avatar} alt="" width={28} height={28} />
-                          <small aria-label={t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) })}>{LEAGUE_ICONS[leagueMatch.tier]}</small>
-                          <b>{leagueMatch.rival.name}</b>
-                        </span>
-                        <span className="gxScoreCell main">
-                          <small>{unit}</small>
-                          <b aria-label={label}>{ms ? `${formatNumber(n)} ms` : formatNumber(n)}</b>
-                        </span>
+                      <div className="gxRivalCard" role="group" aria-label={`${who}: ${leagueMatch.rival.name}, ${value} ${unit}`} style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
+                        <img className="gxRivalPhoto" src={portraitCrop(leagueMatch.rival.avatar, "")} alt="" width={136} height={136} />
+                        <strong className="gxRivalName">{leagueMatch.rival.name}</strong>
+                        <div className="gxRivalScore"><small>{unit}</small><b>{value}</b></div>
+                        <div className="gxRivalCreator"><small>{t("intro.createdBy")}</small><b>{selectedGame.creator ?? GAME_CREATOR_DEFAULT}</b></div>
                       </div>
                     );
                   })()}

@@ -572,6 +572,7 @@ const messages: Messages = {
   "league.tier4": "钻石",
   "league.leagueOf": "{tier}",
   "league.rivalOf": "{tier}对手",
+  "intro.createdBy": "创作者",
   "league.goalChips": "{n} 枚筹码",
   "league.beat": "你战胜了 {name}",
   "league.lostTo": "{name} 获胜",

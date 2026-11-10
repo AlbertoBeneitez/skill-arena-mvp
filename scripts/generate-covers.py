@@ -930,6 +930,9 @@ covers["mine-grid"] = mine()
 
 
 # ---------- Orb Burst: a matching trio bursts, orbs drop, the shot already on its way ----------
+ORB_SKIP = set()  # v164: grid cells left empty (the gap between the cluster and the cannon)
+
+
 def orb():
     d = ('<radialGradient id="obbg" cx="50%" cy="20%" r="90%"><stop offset="0" stop-color="#1c1240"/><stop offset=".6" stop-color="#0a0a1c"/><stop offset="1" stop-color="#030308"/></radialGradient>'
          '<linearGradient id="dropTrail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="#ffffff" stop-opacity=".45"/></linearGradient>'
@@ -952,7 +955,9 @@ def orb():
             if row == 4 and r.random() < .4: continue
             x = 20 + i * 2 * R + (R if row % 2 else 0)
             y = 20 + row * R * 1.73
-            p.append(orb_at(x, y, R - 1.5, r.choice(cols), f"o{row}_{i}"))
+            col = r.choice(cols)
+            if (row, i) in ORB_SKIP: continue
+            p.append(orb_at(x, y, R - 1.5, col, f"o{row}_{i}"))
     # the burst: three gold orbs that matched, cracking apart around a white core
     bx, by = 400, 160
     for k, (ox, oy) in enumerate([(-34, -30), (34, -30), (0, 28)]):
@@ -1562,6 +1567,59 @@ def solitaire_v162():
 
 covers["solitaire-sprint"] = solitaire_v162()
 
+
+# ---------- v164: Solitaire Sprint — the victory cascade ----------
+# The game's best moment: the four foundations are complete and glowing gold, and the kings leap off them in the
+# classic bouncing cascade, each leaving a fan of card copies along its bounces across a lit green baize.
+def solitaire_v164():
+    d = ('<radialGradient id="sv4felt" cx="50%" cy="38%" r="80%"><stop offset="0" stop-color="#1fae78"/><stop offset=".45" stop-color="#0b6a48"/><stop offset="1" stop-color="#021a12"/></radialGradient>'
+         '<radialGradient id="sv4lamp" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#fff4d6" stop-opacity=".5"/><stop offset="1" stop-color="#fff4d6" stop-opacity="0"/></radialGradient>'
+         '<radialGradient id="sv4gold" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd76a" stop-opacity=".75"/><stop offset="1" stop-color="#ffd76a" stop-opacity="0"/></radialGradient>'
+         '<filter id="sv4weave" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9 .35" numOctaves="2" seed="9"/>'
+         '<feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1"/></filter>')
+    p = ['<rect width="640" height="440" fill="url(#sv4felt)"/>', '<rect width="640" height="440" fill="#000" filter="url(#sv4weave)" opacity=".2"/>',
+         '<ellipse cx="400" cy="40" rx="380" ry="260" fill="url(#sv4lamp)" style="mix-blend-mode:screen"/>']
+    # the gold-stitched rail round the table
+    p.append('<rect x="14" y="14" width="612" height="412" rx="26" fill="none" stroke="#e9c27a" stroke-opacity=".35" stroke-width="2" stroke-dasharray="6 6"/>')
+    s = .5
+    w, h = 150 * s, 212 * s
+    # foundations, top right: the four kings on their completed piles, a gold glow under each
+    found = [("Q", "♠", False), ("K", "♥", True), ("K", "♣", False), ("Q", "♦", True)]
+    fx0, fy0 = 300, 26
+    for i, (rk, su, red) in enumerate(found):
+        x = fx0 + i * (w + 10)
+        p.append(f'<ellipse cx="{f(x + w / 2)}" cy="{f(fy0 + h / 2)}" rx="{f(w * .9)}" ry="{f(h * .75)}" fill="url(#sv4gold)"/>')
+        for k in range(3):
+            p.append(f'<rect x="{f(x + k * 1.6)}" y="{f(fy0 + k * 1.6)}" width="{f(w)}" height="{f(h)}" rx="7" fill="#efe6cf" stroke="#bfa66a" stroke-width=".8"/>')
+        p.append(card_v162(x - 3, fy0 - 3, rk, su, red, 0, s, f"f{i}"))
+    # the cascade: two kings bouncing out, each leaving its fan of copies
+    def bounce(x0, y0, vx, g, floor, n, step):
+        pts, x, y, vy = [], x0, y0, -2.0
+        for _ in range(n):
+            pts.append((x, y))
+            x += vx * step; vy += g * step; y += vy * step
+            if y > floor: y, vy = floor, -abs(vy) * .78
+        return pts
+    # the classic victory cascade: two kings leap off their piles and bounce across the baize, each bounce printed
+    # as a ribbon of opaque copies (newest on top), the leading card sharp and lit
+    ribbons = [("K", "♠", False, 300, -8.6, 30, 1.05, "ka"), ("K", "♦", True, 300 + 3 * (w + 10), -6.2, 34, 1.0, "kd")]
+    ends = []
+    for (rk, su, red, x0, vx, n, step, tag) in ribbons:
+        pts = bounce(x0, fy0, vx, 3.0, 440 - h - 8, n, step)[3:]
+        for j, (x, y) in enumerate(pts):
+            p.append(card_v162(x, y, rk, su, red, 0, s, f"{tag}{j}"))
+        ends.append(pts[-1])
+    for (x, y) in ends:
+        p.append(f'<ellipse cx="{f(x + w / 2)}" cy="{f(y + h / 2)}" rx="{f(w * .9)}" ry="{f(h * .7)}" fill="url(#sv4gold)" opacity=".55" style="mix-blend-mode:screen"/>')
+    pts = [ends[0]]
+    lx, ly = pts[-1]
+    p.append(sparkle(fx0 + w * 2.2, fy0 + 6, 13, "#fff3b0") + sparkle(fx0 + w * 4.3, fy0 + h - 10, 11, "#fff3b0") + sparkle(lx + w * 1.1, ly + 4, 14, "#ffffff") + sparkle(lx - 10, ly + h * .9, 9, "#fff3b0"))
+    p.append(cine(360, 160, key="#fff1c8", flare="#ffe7a8", strength=.6, flare_w=0))
+    return svg("".join(p), extra_defs=d)
+
+
+covers["solitaire-sprint"] = solitaire_v164()
+
 # ---------- v162: Orb Burst without the loose orbs on the right ----------
 # The two orbs falling on the right and the next orb beside the cannon read as orbs crossing the line (a lost game):
 # they go. The burst gets gold glass shards flying out of it instead.
@@ -1592,6 +1650,27 @@ def orb_v162():
 
 
 covers["orb-burst"] = orb_v162()
+
+
+# ---------- v164: Orb Burst with clear air between the cluster and the cannon ----------
+def orb_v164():
+    global ORB_SKIP
+    ORB_SKIP = {(4, 3), (4, 4), (4, 5), (4, 6), (4, 7)}
+    try:
+        src = orb_v162()
+    finally:
+        ORB_SKIP = set()
+    # the loose purple orb beside the cannon goes too
+    def orb_at(x, y, rad, c, idn):
+        return (f'<circle cx="{f(x + 2)}" cy="{f(y + 5)}" r="{f(rad)}" fill="#000" opacity=".35" filter="url(#dof)"/>'
+                + sphere(x, y, rad, c, idn, shadow=False, gloss=.75)
+                + f'<path d="M{f(x + rad * .2)},{f(y + rad * .96)} A{f(rad)},{f(rad)} 0 0 0 {f(x + rad * .96)},{f(y + rad * .2)}" fill="none" stroke="{c}" stroke-width="2.2" opacity=".9" filter="url(#glow)"/>')
+    o = orb_at(240, 300, 26, "#b98cff", "dr240")
+    assert o in src
+    return src.replace(o, "")
+
+
+covers["orb-burst"] = orb_v164()
 
 # ---------- v162: Mine Grid that reads as the game ----------
 # A real minesweeper position: the gold start cell has just been tapped and the field opens around it; every number
@@ -1678,6 +1757,98 @@ def mine_v162():
 
 
 covers["mine-grid"] = mine_v162()
+
+
+# ---------- v164: Mine Grid without the planet, closer and lit ----------
+def mine_v164():
+    COLS, ROWS = 12, 10
+    mines = {(1, 1), (4, 0), (5, 1), (8, 1), (10, 2), (0, 4), (3, 3), (3, 4), (9, 4), (9, 3), (2, 6), (7, 7), (8, 7), (10, 7), (4, 8), (11, 9), (1, 9), (6, 0)}
+    start = (6, 5)
+    def around(c, r):
+        return [(c + dc, r + dr) for dc in (-1, 0, 1) for dr in (-1, 0, 1) if (dc or dr) and 0 <= c + dc < COLS and 0 <= r + dr < ROWS]
+    count = {(c, r): sum((q in mines) for q in around(c, r)) for c in range(COLS) for r in range(ROWS)}
+    opened, todo = set(), [start]
+    while todo:
+        q = todo.pop()
+        if q in opened or q in mines: continue
+        opened.add(q)
+        if count[q] == 0: todo += around(*q)
+    flags = {m for m in mines if any(n in opened for n in around(*m))}
+    # perspective: far rows smaller and higher
+    HZ, FOOT, CW = -600.0, 640.0, 72.0
+    def P(u, v):  # u along columns, v along rows (0 far … ROWS near)
+        sc = 1 / (1 + (ROWS - v) * .085)
+        return 320 + (u - COLS / 2) * CW * sc, HZ + (FOOT - HZ) * sc, sc
+    d = ('<linearGradient id="mgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#04050b"/><stop offset=".55" stop-color="#0d1022"/><stop offset="1" stop-color="#241a2c"/></linearGradient>'
+         '<linearGradient id="mgTile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f6286"/><stop offset=".45" stop-color="#26304a"/><stop offset="1" stop-color="#121726"/></linearGradient>'
+         '<linearGradient id="mgOpen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#090c16"/><stop offset="1" stop-color="#121829"/></linearGradient>'
+         '<linearGradient id="mgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a0"/><stop offset=".5" stop-color="#e9b443"/><stop offset="1" stop-color="#9a6a12"/></linearGradient>'
+         '<radialGradient id="mgHaze" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3fd6e8" stop-opacity=".22"/><stop offset=".6" stop-color="#7a4dff" stop-opacity=".1"/><stop offset="1" stop-color="#7a4dff" stop-opacity="0"/></radialGradient>''<linearGradient id="mgShaft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bff6ff"/><stop offset="1" stop-color="#bff6ff" stop-opacity="0"/></linearGradient>''<linearGradient id="mgRays" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffe7a0" stop-opacity=".75"/><stop offset="1" stop-color="#ffe7a0" stop-opacity="0"/></linearGradient>'
+         '<radialGradient id="mgPulse" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe7a0" stop-opacity=".9"/><stop offset=".5" stop-color="#7fe3ee" stop-opacity=".35"/><stop offset="1" stop-color="#7fe3ee" stop-opacity="0"/></radialGradient>'
+         '<linearGradient id="mgFlag" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff5a6a"/><stop offset="1" stop-color="#b3122a"/></linearGradient>')
+    p = ['<rect width="640" height="440" fill="url(#mgSky)"/>', stars(31, 70, 150)]
+    # a teal-violet haze over the far edge of the field and soft light shafts from above
+    p.append('<ellipse cx="320" cy="120" rx="420" ry="120" fill="url(#mgHaze)"/>')
+    for k, (x, w, op) in enumerate([(150, 70, .10), (300, 110, .14), (470, 80, .10)]):
+        p.append(f'<polygon points="{x - w / 2},-10 {x + w / 2},-10 {x + w * 1.6},250 {x - w * 1.6},250" fill="url(#mgShaft)" opacity="{op}" filter="url(#soft)"/>')
+    p.append(bokeh(23, ["#7fe3ee", "#ffd36a", "#b48cff"], 10, 200, 10, 34, (.06, .16)))
+    num_col = {1: "#7fe3ee", 2: "#5cffb0", 3: "#ffd23f", 4: "#ff6fd8"}
+    items, flag_items = [], []
+    for r in range(ROWS):
+        for c in range(COLS):
+            g = .06  # gap
+            a, b2, c2, d2 = P(c + g, r + g), P(c + 1 - g, r + g), P(c + 1 - g, r + 1 - g), P(c + g, r + 1 - g)
+            poly = " ".join(f"{f(x)},{f(y)}" for (x, y, _) in (a, b2, c2, d2))
+            sc = (a[2] + c2[2]) / 2
+            cxm, cym = (a[0] + c2[0]) / 2, (a[1] + c2[1]) / 2
+            out = []
+            if (c, r) in opened:
+                out.append(f'<polygon points="{poly}" fill="url(#mgOpen)" stroke="#2a3550" stroke-width="{f(1.2 * sc)}"/>')
+                n = count[(c, r)]
+                if n:
+                    col = num_col.get(n, "#ffffff")
+                    out.append(f'<text x="{f(cxm)}" y="{f(cym + 13 * sc)}" font-family="Arial Black, sans-serif" font-size="{f(38 * sc)}" fill="{col}" text-anchor="middle" filter="url(#glow)" transform="translate({f(cxm)} {f(cym)}) scale(1 .8) translate({f(-cxm)} {f(-cym)})">{n}</text>')
+            else:
+                lift = 7 * sc
+                top = " ".join(f"{f(x)},{f(y - lift)}" for (x, y, _) in (a, b2, c2, d2))
+                side = f"{f(d2[0])},{f(d2[1] - lift)} {f(c2[0])},{f(c2[1] - lift)} {f(c2[0])},{f(c2[1])} {f(d2[0])},{f(d2[1])}"
+                out.append(f'<polygon points="{side}" fill="#0b0d12"/>')
+                out.append(f'<polygon points="{top}" fill="url(#mgTile)" stroke="#7fe3ee" stroke-opacity="{.18 + .3 * sc:.2f}" stroke-width="{f(1.3 * sc)}"/>')
+                out.append(f'<line x1="{f(a[0] + 3 * sc)}" y1="{f(a[1] - lift + 1.5 * sc)}" x2="{f(b2[0] - 3 * sc)}" y2="{f(b2[1] - lift + 1.5 * sc)}" stroke="#ffffff" stroke-opacity=".28" stroke-width="{f(1.4 * sc)}"/>')
+                if (c, r) in flags:
+                    px, py = cxm - 6 * sc, cym - lift
+                    hgt = 36 * sc
+                    fl = []
+                    fl.append(f'<ellipse cx="{f(px)}" cy="{f(py)}" rx="{f(6 * sc)}" ry="{f(2.4 * sc)}" fill="#000" opacity=".5"/>')
+                    fl.append(f'<line x1="{f(px)}" y1="{f(py)}" x2="{f(px)}" y2="{f(py - hgt)}" stroke="#d9dee8" stroke-width="{f(2.6 * sc)}" stroke-linecap="round"/>')
+                    fl.append(f'<path d="M{f(px)},{f(py - hgt)} Q{f(px + 16 * sc)},{f(py - hgt - 4 * sc)} {f(px + 28 * sc)},{f(py - hgt + 8 * sc)} Q{f(px + 16 * sc)},{f(py - hgt + 14 * sc)} {f(px)},{f(py - hgt + 20 * sc)} Z" fill="url(#mgFlag)" filter="url(#glow)"/>')
+                    flag_items.append((r, "".join(fl)))
+            items.append((r, "".join(out)))
+    p += [x for (_, x) in sorted(items, key=lambda t: t[0])]
+    oc = P(6.5, 5.5)
+    p.append(f'<ellipse cx="{f(oc[0])}" cy="{f(oc[1])}" rx="240" ry="130" fill="#3fd6e8" opacity=".10" filter="url(#soft)" style="mix-blend-mode:screen"/>')
+    # the tapped gold start cell, glowing, with the reveal wave rippling out over the opened field
+    c, r = start
+    a, c2 = P(c + .06, r + .06), P(c + .94, r + .94)
+    cxm, cym, sc = (a[0] + c2[0]) / 2, (a[1] + c2[1]) / 2, (a[2] + c2[2]) / 2
+    pts = " ".join(f"{f(x)},{f(y)}" for (x, y, _) in (P(c + .06, r + .06), P(c + .94, r + .06), P(c + .94, r + .94), P(c + .06, r + .94)))
+    p.append(f'<polygon points="{pts}" fill="url(#mgGold)" opacity=".92" filter="url(#glow)"/>')
+    p.append(f'<ellipse cx="{f(cxm)}" cy="{f(cym)}" rx="{f(170 * sc)}" ry="{f(90 * sc)}" fill="url(#mgPulse)" style="mix-blend-mode:screen"/>')
+    for k, rr in enumerate((70, 130, 200)):
+        p.append(f'<ellipse cx="{f(cxm)}" cy="{f(cym)}" rx="{f(rr * sc)}" ry="{f(rr * sc * .5)}" fill="none" stroke="#ffe7a0" stroke-width="{3 - k * .8:.1f}" opacity="{.75 - k * .2:.2f}" filter="url(#glow)"/>')
+    for k in range(9):
+        a0 = -math.pi / 2 + (k - 4) * .16
+        x1, y1 = cxm + math.cos(a0) * 260, cym + math.sin(a0) * 260
+        p.append(f'<polygon points="{f(cxm - 6)},{f(cym)} {f(cxm + 6)},{f(cym)} {f(x1 + 14)},{f(y1)} {f(x1 - 14)},{f(y1)}" fill="url(#mgRays)" opacity="{.35 - abs(k - 4) * .05:.2f}" style="mix-blend-mode:screen"/>')
+    p.append(sparkle(cxm + 18, cym - 30, 16, "#fff6d8"))
+    p += [x for (_, x) in sorted(flag_items, key=lambda t: t[0])]
+    p.append(cine(cxm, cym - 40, key="#ffe7b8", strength=.6, flare_w=0))
+    return svg("".join(p), extra_defs=d)
+
+
+
+
+covers["mine-grid"] = mine_v164()
 
 
 # ---------- Stack: the gold block sits lower, just above the tower; no sliced chunk falling off the right ----------

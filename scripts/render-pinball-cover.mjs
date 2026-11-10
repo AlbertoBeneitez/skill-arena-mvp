@@ -22,7 +22,7 @@ await page.route("http://cover.local/**", async (route) => {
 });
 await page.goto("http://cover.local/");
 await page.evaluate(() => document.fonts.load("800 16px Unbounded"));
-const url = await page.evaluate(() => window.renderCover({ cropX: 10, cropY: 262, cropW: 370, bumper: 2, age: 3 }));
+const url = await page.evaluate(() => window.renderCover({ cropX: 22, cropY: 126, cropW: 346, bumper: 2, age: 3 }));
 await browser.close();
 const raw = path.join(tmp, "raw.png");
 fs.writeFileSync(raw, Buffer.from(url.split(",")[1], "base64"));

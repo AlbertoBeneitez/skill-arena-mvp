@@ -2,7 +2,6 @@
 import UiIcon from "./UiIcon";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { LeagueBadge } from "./LeagueResult";
 import { emptyLeague, type LeagueState } from "@/lib/leagues";
 import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, isNewGame, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
@@ -99,7 +98,6 @@ export default function CatalogBrowser(props: Props) {
           decoding="async"
           fetchPriority={row === "popular" && index < 3 ? "high" : "low"}
         />
-        {props.leagues && <LeagueBadge record={props.leagues[game.id] ?? emptyLeague()} />}
         {!props.serverOnly && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) ===
           "existing" && (
           <button

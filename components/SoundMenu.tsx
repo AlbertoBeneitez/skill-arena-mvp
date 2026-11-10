@@ -64,7 +64,7 @@ export default function SoundMenu({ musicOn, onToggleSound, variant }: Props) {
   const icon = <><UiIcon name={musicOn ? "sound" : "soundOff"} /><i className="gxLed" aria-hidden="true" /></>;
   const trigger = variant === "game"
     ? <GameActionButton className={`gameSoundToggle gxIconBtn ${musicOn ? "on" : "off"}`} aria-label={label} aria-haspopup="dialog" aria-expanded={open} onActivate={toggleOpen}>{icon}</GameActionButton>
-    : <button className={`soundToggle gxIconBtn ${musicOn ? "on" : "off"}`} type="button" aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={toggleOpen}>{icon}</button>;
+    : <button className={`soundToggle gxIconBtn gxHeadBtn ${musicOn ? "on" : "off"}`} type="button" aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={toggleOpen}>{icon}</button>;
 
   return (
     <span className="soundMenuAnchor" ref={anchor}>

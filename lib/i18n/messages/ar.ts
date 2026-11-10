@@ -572,6 +572,7 @@ const messages: Messages = {
   "league.tier4": "ماسي",
   "league.leagueOf": "{tier}",
   "league.rivalOf": "منافس {tier}",
+  "intro.createdBy": "من إنشاء",
   "league.goalChips": "{n} فيشة",
   "league.beat": "فزت على {name}",
   "league.lostTo": "فاز {name}",

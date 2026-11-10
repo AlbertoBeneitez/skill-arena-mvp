@@ -572,6 +572,7 @@ const messages: Messages = {
   "league.tier4": "Diamant",
   "league.leagueOf": "{tier}",
   "league.rivalOf": "Rival {tier}",
+  "intro.createdBy": "Créé par",
   "league.goalChips": "{n} jetons",
   "league.beat": "Tu bats {name}",
   "league.lostTo": "{name} gagne",

@@ -8796,27 +8796,18 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 .gxScoreCell b {
   flex: 0 0 auto; max-width: 100%;
-  font: 700 19px/1 var(--gx-ui); font-variant-numeric: tabular-nums; letter-spacing: 0; color: #eef6ff; text-align: right;
+  /* v164: every number in every scoreboard has one design — same face, size, weight, colour and glow. */
+  font: 700 20px/1 var(--gx-ui); font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0; color: #f4dcaa; text-align: right;
+  text-shadow: 0 0 12px rgba(233,194,122,.28);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .gxScoreCell.main { flex-grow: 1.3; }
-.gxScoreCell.main b { color: #f4dcaa; font-size: 22px; text-shadow: 0 0 14px rgba(233,194,122,.3); }
 .gxScoreCell.alert b { color: #ff8a8a; }
 /* A word instead of a number (a foul, a forbidden spin): smaller, and it may wrap onto two lines. */
-.gxScoreCell.word b { font-size: 11px; line-height: 1.1; white-space: normal; max-width: 70%; }
-@media (max-width: 360px) { .gxScoreCell { padding: 0 8px; gap: 4px; } .gxScoreCell small { font-size: 9.5px; } .gxScoreCell b { font-size: 17px; } .gxScoreCell.main b { font-size: 20px; } }
+.gxScoreCell.word b { font-size: 11px; text-shadow: none; line-height: 1.1; white-space: normal; max-width: 70%; }
+@media (max-width: 360px) { .gxScoreCell { padding: 0 8px; gap: 4px; } .gxScoreCell small { font-size: 9.5px; } .gxScoreCell b { font-size: 18px; } }
 /* The same scoreboard inside games laid out in the page flow (Mine Grid, Solitaire Sprint). */
 .gxScoreboard.inFlow { position: relative; top: auto; left: auto; right: auto; flex: 0 0 auto; margin: 6px 12px 8px; }
-/* v163: the rival's score before the game is the same bar as the in-game scoreboard, above the countdown. */
-.gxScoreboard.gxIntroScore { width: calc(100% - 24px); max-width: 366px; margin: 0 auto 22px; }
-.gxIntroScore .gxScoreRival { flex-grow: 1.35; justify-content: flex-start; gap: 6px; }
-.gxIntroScore .gxScoreCell.main { flex-grow: 1.6; }
-/* A long value (reaction time in ms): the rival cell gives up some room. */
-.gxIntroScore.long .gxScoreRival { flex-grow: 1.05; }
-.gxIntroScore.long .gxScoreRival b { font-size: 13px; }
-.gxIntroScore .gxScoreRival img { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--tier); }
-.gxIntroScore .gxScoreRival small { flex: 0 0 auto; font-size: 13px; }
-.gxIntroScore .gxScoreRival b { flex: 0 1 auto; min-width: 0; font-size: 14px; letter-spacing: .01em; text-align: left; }
 /* Solitaire Sprint lays its board out inside an 8px padding: cancel it so the bar sits exactly where every game has it. */
 .solitaireSprint > .gxScoreboard.inFlow { margin: -2px 4px 8px; }
 /* Rival target in the intro: same type treatment as the scoreboard (no seven-segment digits). */
@@ -8932,3 +8923,75 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .gxStudioWelcomeGo:focus-visible { outline: 2px solid #ffd36a; outline-offset: 2px; }
 /* Avatar picker (v159): the horizontal crop fills the tile; the chosen one gets a cyan ring. */
 .galacticAvatarSetup .gxAvatarGrid button[aria-pressed="true"] { box-shadow: 0 0 0 2px #7fe3ee, 0 0 18px rgba(127,227,238,.35); border-color: #7fe3ee; }
+
+/* v164: the onboarding portrait appears whole once its image has loaded (no empty gradient ring first). */
+.avatarPortrait.loading { opacity: 0; visibility: hidden; }
+.avatarPortrait.ready { opacity: 1; visibility: visible; transition: opacity .28s ease; }
+
+/* v164: before the match the rival takes the screen — a big portrait ringed in its league colour, the name under it,
+   the score to beat in the scoreboard's number design and, lower, who made the game; the countdown ring below. */
+.countdownOverlay.gxIntro { align-content: center; gap: clamp(12px, 2.4dvh, 22px); }
+.countdownOverlay.gxIntro .gxRivalCard { display: grid; justify-items: center; gap: clamp(8px, 1.6dvh, 14px); width: min(100%, 340px); }
+.countdownOverlay.gxIntro .gxRivalPhoto {
+  width: clamp(112px, 30vw, 150px); height: clamp(112px, 30vw, 150px); border-radius: 50%; object-fit: cover; display: block;
+  border: 3px solid var(--tier);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--tier) 18%, transparent), 0 0 38px color-mix(in srgb, var(--tier) 45%, transparent), 0 16px 30px rgba(0,0,0,.5);
+  animation: gxPop .5s cubic-bezier(.2,.9,.3,1.2) both;
+}
+.countdownOverlay.gxIntro .gxRivalName {
+  font: 800 clamp(22px, 6.4vw, 28px)/1.05 var(--gx-display); letter-spacing: .06em; color: #fff;
+  text-shadow: 0 4px 16px rgba(0,0,0,.6);
+}
+.countdownOverlay.gxIntro .gxRivalScore,
+.countdownOverlay.gxIntro .gxRivalCreator { display: grid; justify-items: center; gap: 4px; }
+.countdownOverlay.gxIntro .gxRivalScore { margin-top: clamp(4px, 1dvh, 10px); }
+.countdownOverlay.gxIntro .gxRivalScore small,
+.countdownOverlay.gxIntro .gxRivalCreator small {
+  font: 600 11px/1.1 var(--gx-ui); letter-spacing: .04em; color: rgba(191,241,246,.62); opacity: 1;
+}
+/* The score uses the scoreboard's number design (same face, weight, colour and glow), larger. */
+.countdownOverlay.gxIntro .gxRivalScore b {
+  font: 700 clamp(34px, 10vw, 44px)/1 var(--gx-ui); font-variant-numeric: tabular-nums lining-nums; color: #f4dcaa;
+  text-shadow: 0 0 12px rgba(233,194,122,.28); animation: none;
+}
+.countdownOverlay.gxIntro .gxRivalCreator { margin-top: clamp(6px, 1.6dvh, 16px); }
+.countdownOverlay.gxIntro .gxRivalCreator b {
+  font: 700 13px/1.1 var(--gx-display); letter-spacing: .14em; color: #e8f0fb; text-shadow: none; animation: none;
+}
+.countdownOverlay.gxIntro .gxIntroCount { width: clamp(84px, 22vw, 104px); }
+
+/* v164: header controls as one machined set — sound, balance and settings share height, glass, hairline edge, inner
+   bevel and shadow; the balance carries a gold coin and the scoreboard's number design. */
+.appShell .appHeader .gxHeadBtn.gxHeadBtn {
+  height: 40px; min-height: 40px !important; border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, .11) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .015) 55%, rgba(0, 0, 0, .12)),
+    #111318 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), inset 0 -1px 0 rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .45), 0 8px 18px rgba(0, 0, 0, .45) !important;
+  color: #e6eef8 !important;
+  transition: transform .12s ease, border-color .2s ease, background .2s ease;
+}
+.appShell .appHeader .gxHeadBtn.gxHeadBtn:active { transform: scale(.95); border-color: rgba(127, 227, 238, .45) !important; }
+.appShell .appHeader .gxHeadBtn.gxHeadBtn:focus-visible { outline: 2px solid #7fe3ee; outline-offset: 2px; }
+.appShell .appHeader .gxIconBtn.gxHeadBtn { width: 40px; min-width: 40px !important; }
+.appShell .appHeader .gxIconBtn.gxHeadBtn .uiIcon { width: 20px; height: 20px; color: #dbe8f4; }
+.appShell .appHeader .soundToggle.gxHeadBtn .gxLed { top: 7px; right: 7px; width: 5px; height: 5px; }
+.appShell .appHeader .balanceChip.gxHeadBtn {
+  display: inline-flex !important; flex-direction: row !important; align-items: center; gap: 7px;
+  padding: 0 13px 0 10px !important; border-radius: 12px !important;
+}
+.appShell .appHeader .balanceChip.gxHeadBtn .gxBalanceCoin { color: #e9c27a; flex: none; }
+.appShell .appHeader .balanceChip.gxHeadBtn b {
+  font: 700 14px/1 var(--gx-ui) !important; font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0 !important;
+  color: #f4dcaa; text-shadow: 0 0 10px rgba(233, 194, 122, .25);
+}
+/* «Enviar juego»: the money first, on a light gold glass so it stands out next to Rankings. */
+.appShell .gxHomeBar .gxStudioTab.gxStudioTab {
+  border: 1px solid rgba(233, 194, 122, .7);
+  background: linear-gradient(180deg, rgba(233, 194, 122, .26), rgba(233, 194, 122, .12));
+  color: #fff3d6;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 200, .25), 0 0 18px rgba(233, 194, 122, .22), 0 6px 18px rgba(0, 0, 0, .35);
+}
+.appShell .gxHomeBar .gxStudioTab.gxStudioTab .uiIcon.gxStudioCoin { color: #ffd76a; margin: 0; filter: drop-shadow(0 0 6px rgba(255, 215, 106, .55)); }
+.appShell .gxHomeBar .gxStudioTab.gxStudioTab:active { background: rgba(233, 194, 122, .32); }

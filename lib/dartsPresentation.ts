@@ -40,16 +40,23 @@ export function dartPresentationPose(
     ? dartFlightPose(195 + last.x / 1000, 285 + last.y / 1000, state.phaseTicks)
     : null;
 }
+/** Player look for the darts (v164): the avatar image printed across the four flights and its overall colour. */
+export type DartLook = Readonly<{ image: CanvasImageSource | null; color: string }>;
+const DEFAULT_LOOK: DartLook = { image: null, color: "#6bdde2" };
+
 /**
- * v162 · A realistic steel-tip dart (one bounded vector sprite, no image): a polished needle point, a knurled
- * tungsten barrel with its grip rings and a moving highlight, a ringed aluminium shaft and two standard flights in
- * perspective (the third seen edge-on) with a printed stripe. The tip is at (0, 0) and the tail runs towards +y.
+ * A realistic steel-tip dart (v162; v164 flights): a polished needle point, a knurled tungsten barrel with a ring in
+ * the player's colour, a ringed aluminium shaft and four flights seen from behind in an X — the player's avatar
+ * circle is printed across them, one quarter per flight, edged in the avatar's overall colour. The tip is at (0, 0)
+ * and the tail runs towards +y. Without an image the flights are filled with the colour.
  */
 export function drawDart(
   ctx: CanvasRenderingContext2D,
   pose: DartPose,
-  tint = "#6bdde2",
+  tint: string | DartLook = DEFAULT_LOOK,
 ) {
+  const look: DartLook = typeof tint === "string" ? { image: null, color: tint } : tint;
+  const col = look.color;
   ctx.save();
   ctx.translate(pose.x, pose.y);
   ctx.rotate(pose.angle);
@@ -57,55 +64,57 @@ export function drawDart(
   // Soft contact shadow.
   ctx.fillStyle = "rgba(0,8,21,.42)";
   ctx.beginPath();
-  ctx.ellipse(4, 28, 8, 20, 0, 0, Math.PI * 2);
+  ctx.ellipse(4, 30, 9, 21, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Flights: two wings spread left/right, the third edge-on behind the shaft.
-  const wing = (side: number) => {
+  // Four flights in an X around the tail, seen from behind (squashed along the dart): the avatar is clipped to them.
+  const fx = 0, fy = 41, R = 16, squash = 0.62;
+  const wings = () => {
     ctx.beginPath();
-    ctx.moveTo(side * 1.2, 31);
-    ctx.lineTo(side * 7, 34);
-    ctx.quadraticCurveTo(side * 14.5, 40, side * 13.5, 46.5);
-    ctx.lineTo(side * 9, 48.5);
-    ctx.lineTo(side * 1.2, 46);
-    ctx.closePath();
+    for (let q = 0; q < 4; q++) {
+      const a = Math.PI / 4 + (q * Math.PI) / 2, w = 0.6;
+      const p = (ang: number, r: number) => [fx + Math.cos(ang) * r, fy + Math.sin(ang) * r * squash] as const;
+      const [x0, y0] = p(a, 1.6), [x1, y1] = p(a - w, R * 0.62), [x2, y2] = p(a - w * 0.55, R), [x3, y3] = p(a + w * 0.55, R), [x4, y4] = p(a + w, R * 0.62);
+      ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.quadraticCurveTo(...p(a - w * 0.85, R * 0.92), x2, y2);
+      ctx.lineTo(x3, y3); ctx.quadraticCurveTo(...p(a + w * 0.85, R * 0.92), x4, y4); ctx.closePath();
+    }
   };
-  for (const side of [-1, 1]) {
-    const g = ctx.createLinearGradient(side * 1, 32, side * 14, 47);
-    g.addColorStop(0, tint);
-    g.addColorStop(0.55, tint);
-    g.addColorStop(1, "#0d1a2a");
-    ctx.fillStyle = g;
-    wing(side);
-    ctx.fill();
-    // Printed stripe and a light sheen on the film.
-    ctx.save();
-    wing(side);
+  ctx.save();
+  wings();
+  ctx.fillStyle = col;
+  ctx.fill();
+  if (look.image) {
     ctx.clip();
-    ctx.fillStyle = "rgba(255,255,255,.75)";
-    ctx.beginPath();
-    ctx.moveTo(side * 3, 33.5); ctx.lineTo(side * 15, 41); ctx.lineTo(side * 15, 43.5); ctx.lineTo(side * 3, 36.5); ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "rgba(8,14,26,.55)";
-    ctx.beginPath();
-    ctx.moveTo(side * 3, 38.5); ctx.lineTo(side * 15, 46); ctx.lineTo(side * 15, 49); ctx.lineTo(side * 3, 41.5); ctx.closePath();
-    ctx.fill();
+    ctx.save();
+    ctx.translate(fx, fy); ctx.scale(1, squash);
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(look.image, -R, -R, R * 2, R * 2);
     ctx.restore();
-    ctx.strokeStyle = "rgba(6,12,22,.85)";
-    ctx.lineWidth = 0.8;
-    wing(side);
-    ctx.stroke();
   }
-  ctx.fillStyle = "rgba(10,18,30,.9)";
-  ctx.fillRect(-0.9, 31, 1.8, 17);
-  // Shaft: ringed aluminium.
+  // Film sheen across the flights.
+  const sheen = ctx.createLinearGradient(fx - R, fy - R * squash, fx + R, fy + R * squash);
+  sheen.addColorStop(0, "rgba(255,255,255,.28)"); sheen.addColorStop(0.45, "rgba(255,255,255,0)"); sheen.addColorStop(1, "rgba(0,0,0,.25)");
+  ctx.fillStyle = sheen;
+  ctx.fillRect(fx - R, fy - R, R * 2, R * 2);
+  ctx.restore();
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 1.1;
+  wings();
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(6,10,18,.75)";
+  ctx.lineWidth = 0.5;
+  wings();
+  ctx.stroke();
+  // Shaft: ringed aluminium, into the flights' centre.
   const sh = ctx.createLinearGradient(-2, 0, 2, 0);
   sh.addColorStop(0, "#4b5563"); sh.addColorStop(0.35, "#e9eef5"); sh.addColorStop(0.65, "#aab4c2"); sh.addColorStop(1, "#3b4350");
   ctx.fillStyle = sh;
   ctx.beginPath();
-  ctx.roundRect(-1.9, 24.5, 3.8, 9.5, 0.8);
+  ctx.roundRect(-1.9, 24.5, 3.8, 15, 0.8);
   ctx.fill();
   ctx.fillStyle = "rgba(20,28,40,.65)";
-  for (const y of [26.5, 29, 31.5]) ctx.fillRect(-1.9, y, 3.8, 0.7);
+  for (const y of [27, 30, 33]) ctx.fillRect(-1.9, y, 3.8, 0.7);
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.arc(fx, fy, 2.1, 0, Math.PI * 2); ctx.fill();
   // Tungsten barrel: tapered torpedo with knurled grip rings.
   const barrel = () => {
     ctx.beginPath();
@@ -127,16 +136,16 @@ export function drawDart(
   ctx.save();
   barrel();
   ctx.clip();
-  // Knurling: fine dark grooves with a lit lip under each.
   for (let y = 13.2; y <= 21.8; y += 1.25) {
     ctx.fillStyle = "rgba(10,12,16,.62)";
     ctx.fillRect(-4, y, 8, 0.55);
     ctx.fillStyle = "rgba(255,255,255,.28)";
     ctx.fillRect(-4, y + 0.55, 8, 0.3);
   }
-  // Coloured ring at the front of the grip.
-  ctx.fillStyle = tint;
+  // Rings in the player's colour at both ends of the grip.
+  ctx.fillStyle = col;
   ctx.fillRect(-4, 11.6, 8, 0.9);
+  ctx.fillRect(-4, 23.2, 8, 0.8);
   ctx.restore();
   ctx.strokeStyle = "rgba(4,6,10,.7)";
   ctx.lineWidth = 0.5;
