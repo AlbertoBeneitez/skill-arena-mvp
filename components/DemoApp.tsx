@@ -1544,7 +1544,7 @@ export default function DemoApp() {
                     const label = chips ? t("league.goalChips", { n: formatNumber(n) }) : ms ? t("common.ms", { n: formatNumber(n) }) : formatNumber(n);
                     const unit = chips ? t("hud.chips") : ms ? t("hud.reaction") : selectedGame.resultMetric === "orbs-eliminated" ? t("hud.bubbles") : t("hud.points");
                     return (
-                      <div className="gxScoreboard inFlow gxIntroScore" role="group" style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
+                      <div className={`gxScoreboard inFlow gxIntroScore${ms ? " long" : ""}`} role="group" style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>
                         <span className="gxScoreCell gxScoreRival">
                           <img src={leagueMatch.rival.avatar} alt="" width={28} height={28} />
                           <small aria-label={t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) })}>{LEAGUE_ICONS[leagueMatch.tier]}</small>

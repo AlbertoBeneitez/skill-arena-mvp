@@ -8811,6 +8811,9 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .gxScoreboard.gxIntroScore { width: calc(100% - 24px); max-width: 366px; margin: 0 auto 22px; }
 .gxIntroScore .gxScoreRival { flex-grow: 1.35; justify-content: flex-start; gap: 6px; }
 .gxIntroScore .gxScoreCell.main { flex-grow: 1.6; }
+/* A long value (reaction time in ms): the rival cell gives up some room. */
+.gxIntroScore.long .gxScoreRival { flex-grow: 1.05; }
+.gxIntroScore.long .gxScoreRival b { font-size: 13px; }
 .gxIntroScore .gxScoreRival img { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--tier); }
 .gxIntroScore .gxScoreRival small { flex: 0 0 auto; font-size: 13px; }
 .gxIntroScore .gxScoreRival b { flex: 0 1 auto; min-width: 0; font-size: 14px; letter-spacing: .01em; text-align: left; }
