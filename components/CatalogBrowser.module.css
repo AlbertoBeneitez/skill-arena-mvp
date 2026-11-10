@@ -193,3 +193,13 @@
 }
 .card .ghost { width: 36px; height: 36px; right: 5px; top: 5px; border-radius: 9px; display: grid; place-items: center; }
 .card .studioBadge { top: 6px; bottom: auto; left: 6px; right: auto; font-size: 9.5px; }
+
+/* v167 · A rival's match is waiting: a small green light in the top-left corner of the picture. */
+.rivalLed {
+  position: absolute; z-index: 3; left: 8px; top: 8px; width: 10px; height: 10px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d9ffe4, #35e07a 45%, #10a24a);
+  box-shadow: 0 0 0 2px rgba(6,14,9,.75), 0 0 10px 2px rgba(53,224,122,.75);
+  animation: rivalLed 2.4s ease-in-out infinite;
+}
+@keyframes rivalLed { 50% { box-shadow: 0 0 0 2px rgba(6,14,9,.75), 0 0 4px 1px rgba(53,224,122,.45); } }
+@media (prefers-reduced-motion: reduce) { .rivalLed { animation: none; } }

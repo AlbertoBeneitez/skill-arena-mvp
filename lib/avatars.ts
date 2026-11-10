@@ -5,7 +5,7 @@
  * show the head and the shoulders (v162: the chosen avatar shows part of the body); "-t" (2:1, the picker sheet)
  * stays centred on the face.
  */
-export const AVATAR_VERSION = 162;
+export const AVATAR_VERSION = 167;
 export const PORTRAIT_COUNT = 16;
 export type PortraitCrop = "" | "-s" | "-t";
 const pad = (n: number) => String(n).padStart(2, "0");

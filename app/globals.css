@@ -9063,145 +9063,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 @media (prefers-reduced-motion: reduce) { .appShell .gxHomeBtn, .appShell .appHeader .gxHeadBtn { transition: none; } }
 
-/* v166 · Group tab: code ticket in the header, one share button with an app sheet, three numbered set-up steps and a
-   prize split folded into a disclosure with linked bars. */
-.groupScreen .groupHeaderCard.groupHeaderSinglePage { align-items: center; padding: 14px 14px 14px 16px; }
-.groupScreen .groupHeaderCard > .groupCodeButton {
-  flex: none; display: grid; justify-items: end; gap: 3px; min-width: 0; min-height: 52px; padding: 8px 12px 9px;
-  border-radius: 14px !important; border: 1px solid rgba(127,227,238,.42) !important;
-  background: linear-gradient(180deg, rgba(127,227,238,.14), rgba(127,227,238,.04)) !important;
-  color: var(--gx-ink) !important; letter-spacing: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-}
-.groupScreen .groupCodeButton small {
-  display: inline-flex; align-items: center; gap: 4px; color: var(--gx-aurora) !important;
-  font: 700 10px/1 var(--gx-ui); letter-spacing: .08em; text-transform: uppercase;
-}
-.groupScreen .groupCodeButton b { font: 700 17px/1 var(--gx-data); letter-spacing: .14em; color: #fff; }
-.groupScreen .groupCodeButton.copied { border-color: var(--gx-aurora) !important; box-shadow: 0 0 0 1px var(--gx-aurora), 0 0 18px rgba(127,227,238,.25); }
-.groupScreen .groupShareFeedback { color: var(--gx-mute); font-size: 12px; text-align: center; }
-
-.groupScreen .groupInviteCard {
-  display: grid; gap: 12px; padding: 14px; border-radius: 18px;
-  background: var(--st-panel); border: 1px solid var(--st-edge); box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 10px 24px rgba(0,0,0,.35);
-}
-.groupScreen .groupInviteCard .groupSectionTitle { display: flex; justify-content: space-between; align-items: baseline; margin: 0; }
-.groupScreen .groupInviteCard .groupSectionTitle span { font: 700 15px/1.2 var(--gx-display); color: var(--gx-ink); letter-spacing: 0; }
-.groupScreen .groupInviteCard .groupSectionTitle small { color: var(--gx-mute); font-size: 11px; letter-spacing: .06em; }
-.groupScreen .groupCrewRow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-.groupScreen .groupCrewRow li { display: grid; justify-items: center; gap: 5px; min-width: 0; }
-.groupScreen .groupCrewRow img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(232,240,251,.14); background: #111; }
-.groupScreen .groupCrewRow li.you img { border-color: var(--gx-aurora); box-shadow: 0 0 0 3px rgba(127,227,238,.16); }
-.groupScreen .groupCrewRow span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 700; color: var(--gx-ink); }
-.groupScreen .groupCrewRow li.you span { color: var(--gx-aurora); }
-.groupScreen .groupShareButton {
-  display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; width: 100%;
-  border-radius: 15px; border: 1px solid var(--gx-aurora); color: #04181b;
-  background: linear-gradient(180deg, #9cf0f7, #5fd3e0); font: 700 14px/1 var(--gx-display); letter-spacing: .02em;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 8px 22px rgba(127,227,238,.22);
-}
-
-.groupScreen .groupFormTitle { margin: 0 0 2px; font: 700 16px/1.2 var(--gx-display); color: var(--gx-ink); }
-.groupScreen .groupSteps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; counter-reset: gstep; }
-.groupScreen .groupSteps > li { position: relative; display: grid; gap: 8px; padding-inline-start: 36px; counter-increment: gstep; }
-.groupScreen .groupSteps > li::before {
-  content: counter(gstep); position: absolute; inset-inline-start: 0; top: -2px; width: 24px; height: 24px; border-radius: 50%;
-  display: grid; place-items: center; font: 700 12px/1 var(--gx-data); color: #04181b; background: var(--gx-aurora);
-}
-.groupScreen .groupSteps > li:not(:last-child)::after {
-  content: ""; position: absolute; inset-inline-start: 11.5px; top: 28px; bottom: -12px; width: 1px; background: linear-gradient(var(--st-edge), transparent);
-}
-.groupScreen .groupSteps .groupFormLabel { margin: 0; font: 700 13px/1.4 var(--gx-ui); letter-spacing: .02em; color: var(--gx-ink); text-transform: none; }
-.groupScreen .groupFormSub { font: 600 11px/1.3 var(--gx-ui); color: var(--gx-mute); letter-spacing: .04em; }
-.groupScreen .groupLeagueOptions { display: grid; gap: 8px; margin-top: 2px; }
-.groupScreen .groupSteps .competitionTypeGrid > button { min-height: 56px; }
-
-.groupScreen .groupPotSummary {
-  display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 2px 10px; padding: 10px 12px; border-radius: 12px;
-  background: rgba(233,194,122,.07); border: 1px solid rgba(233,194,122,.28);
-}
-.groupScreen .groupPotSummary span { font: 700 11px/1 var(--gx-ui); letter-spacing: .08em; color: var(--st-gold); text-transform: uppercase; }
-.groupScreen .groupPotSummary b { justify-self: end; font: 700 20px/1 var(--gx-data); color: #fff; font-variant-numeric: tabular-nums; }
-.groupScreen .groupPotSummary small { grid-column: 1 / -1; color: var(--gx-mute); font-size: 11px; font-variant-numeric: tabular-nums; }
-
-.groupScreen .groupPrizeDetails { border-radius: 14px; border: 1px solid var(--st-hair); background: rgba(9,9,11,.5); overflow: hidden; }
-.groupScreen .groupPrizeDetails[open] { border-color: var(--st-edge); }
-.groupScreen .groupPrizeDetails summary {
-  list-style: none; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; min-height: 50px; padding: 0 12px 0 14px; cursor: pointer;
-}
-.groupScreen .groupPrizeDetails summary::-webkit-details-marker { display: none; }
-.groupScreen .groupPrizeDetails summary span { font: 700 12px/1.2 var(--gx-ui); letter-spacing: .06em; color: var(--gx-ink); }
-.groupScreen .groupPrizeDetails summary b { font: 700 13px/1 var(--gx-data); color: var(--st-gold); }
-.groupScreen .groupPrizeDetails summary .uiIcon { color: var(--gx-mute); transition: transform .2s ease; }
-.groupScreen .groupPrizeDetails[open] summary .uiIcon { transform: rotate(180deg); }
-.groupScreen .groupPrizeBody { display: grid; gap: 12px; padding: 4px 14px 14px; border-top: 1px solid var(--st-hair); padding-top: 12px; }
-.groupScreen .groupPlacesRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.groupScreen .groupPlacesPick { display: inline-flex; padding: 3px; gap: 3px; border-radius: 11px; background: rgba(255,255,255,.05); border: 1px solid var(--st-hair); }
-.groupScreen .groupPlacesPick button {
-  min-width: 40px; min-height: 36px; border-radius: 8px; border: 0; background: transparent; color: var(--gx-mute); font: 700 14px/1 var(--gx-data);
-}
-.groupScreen .groupPlacesPick button.active { background: var(--gx-aurora); color: #04181b; }
-.groupScreen .groupPrizeBars { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.groupScreen .groupPrizeBars li { --tone: #7fe3ee; display: grid; grid-template-columns: 34px 1fr 50px; grid-template-rows: auto auto; align-items: center; column-gap: 10px; }
-.groupScreen .groupPrizeBars li.place1 { --tone: #f3c55a; }
-.groupScreen .groupPrizeBars li.place2 { --tone: #cfd8e3; }
-.groupScreen .groupPrizeBars li.place3 { --tone: #d99a62; }
-.groupScreen .groupPrizePlace { grid-row: 1 / 3; font: 700 13px/1 var(--gx-data); color: var(--tone); }
-.groupScreen .groupPrizeBars b { text-align: end; font: 700 14px/1 var(--gx-data); color: #fff; font-variant-numeric: tabular-nums; }
-.groupScreen .groupPrizeBars small { grid-column: 3; text-align: end; font-size: 10.5px; color: var(--gx-mute); font-variant-numeric: tabular-nums; }
-.groupScreen .groupPrizeBars input[type="range"] {
-  grid-row: 1 / 3; -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; padding: 0;
-  background: transparent !important; border: 0 !important; min-height: 0; touch-action: pan-y;
-}
-.groupScreen .groupPrizeBars input[type="range"]::-webkit-slider-runnable-track {
-  height: 8px; border-radius: 99px; background: linear-gradient(90deg, var(--tone) var(--fill), rgba(255,255,255,.1) var(--fill));
-}
-.groupScreen .groupPrizeBars input[type="range"]::-moz-range-track { height: 8px; border-radius: 99px; background: rgba(255,255,255,.1); }
-.groupScreen .groupPrizeBars input[type="range"]::-moz-range-progress { height: 8px; border-radius: 99px; background: var(--tone); }
-.groupScreen .groupPrizeBars input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 24px; height: 24px; margin-top: -8px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff, var(--tone) 70%); border: 2px solid #0b0b0d; box-shadow: 0 0 0 1px var(--tone), 0 3px 8px rgba(0,0,0,.5);
-}
-.groupScreen .groupPrizeBars input[type="range"]::-moz-range-thumb {
-  width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, var(--tone) 70%); border: 2px solid #0b0b0d;
-}
-.groupScreen .groupPrizeBars input[type="range"]:disabled { opacity: .7; }
-.groupScreen .groupPrizeHint { margin: 0; font-size: 11.5px; line-height: 1.4; color: var(--gx-mute); }
-.groupScreen .groupResumeNote { margin: 0; text-align: center; font-size: 11.5px; color: var(--gx-mute); }
-
-.groupScreen .groupJoinRow { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; padding: 12px !important; }
-.groupScreen .groupJoinRow input { min-height: 54px; margin: 0; font: 700 17px/1 var(--gx-data); letter-spacing: .12em; text-align: center; border-radius: 14px !important; }
-.groupScreen .groupJoinRow input::placeholder { font: 600 12px/1 var(--gx-ui); letter-spacing: .08em; color: var(--gx-mute); }
-.groupScreen .groupJoinRow .groupPrimaryAction { min-height: 54px; margin: 0; padding: 0 18px; width: auto; }
-
-.groupShareBackdrop {
-  position: fixed; inset: 0; z-index: 80; display: grid; align-items: end; background: rgba(4,4,6,.62);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: gxSheetFade .18s ease-out;
-}
-.groupShareSheet {
-  width: min(100%, 520px); margin: 0 auto; padding: 16px 16px calc(18px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0;
-  background: linear-gradient(180deg, #1d1d21, #121215); border: 1px solid var(--st-edge); border-bottom: 0;
-  box-shadow: 0 -18px 50px rgba(0,0,0,.55); animation: gxSheetUp .22s cubic-bezier(.2,.8,.2,1);
-}
-.groupShareHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.groupShareHead strong { font: 700 15px/1 var(--gx-display); color: var(--gx-ink); }
-.groupShareClose { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--st-hair); background: rgba(255,255,255,.04); color: var(--gx-ink); }
-.groupShareGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 6px; }
-.groupShareGrid > :is(a, button) {
-  display: grid; justify-items: center; gap: 7px; padding: 0; border: 0; background: none; color: var(--gx-ink);
-  text-decoration: none; font: 600 11px/1.2 var(--gx-ui); text-align: center; min-width: 0;
-}
-.groupShareIcon {
-  width: 54px; height: 54px; display: grid; place-items: center; border-radius: 17px; color: var(--tone);
-  background: color-mix(in srgb, var(--tone) 14%, #141417); border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
-}
-.groupShareLink {
-  margin: 16px 0 0; padding: 10px 12px; border-radius: 12px; background: rgba(9,9,11,.6); border: 1px solid var(--st-hair);
-  font: 500 11px/1.4 var(--gx-data); color: var(--gx-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-@keyframes gxSheetFade { from { opacity: 0; } }
-@keyframes gxSheetUp { from { transform: translateY(24px); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .groupShareBackdrop, .groupShareSheet { animation: none; } .groupPrizeDetails summary .uiIcon { transition: none; } }
+/* v166 group-tab rules moved to components/GroupHub.module.css in v167. */
 
 /* v166 · Home controls, quieter: no jewel wells and no glow. A matte graphite body with a hairline edge that is a
    touch brighter on top, the icon drawn crisp in its accent beside the label, and a calm pressed state. «Enviar juego»
@@ -9229,3 +9091,40 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .appHeader .balanceChip.gxHeadBtn { gap: 7px; padding: 0 13px 0 11px !important; }
 .appShell .appHeader .balanceChip.gxHeadBtn b { color: #f1f3f7; text-shadow: none; }
 @media (max-width: 360px) { .appShell .gxHomeBar .gxHomeBtn .gxBtnLabel { padding-inline-end: 0; } }
+
+/* v167 · Catalogue cards: no shading over the top of the picture. The older vignette for these covers (v121) was
+   now drawn as a dark band across the upper half; only the soft foot behind the play button remains. */
+.homePlayMerged article[aria-label] > div:first-child::after {
+  inset: auto 0 0 0; height: 42%;
+  background: linear-gradient(180deg, rgba(12,12,14,0), rgba(12,12,14,.55) 60%, rgba(12,12,14,.82));
+}
+
+/* v167 · «Enviar juego», a touch more present than «Rankings»: a warm gold edge, the label in warm white and, every
+   few seconds, a slow glint passing over the coin. Still the same quiet build as the other controls. */
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney {
+  background:
+    linear-gradient(180deg, rgba(255,236,196,.07), rgba(255,236,196,0) 55%) padding-box,
+    linear-gradient(180deg, #1f1c17, #141310) padding-box,
+    linear-gradient(180deg, rgba(240,210,143,.75), rgba(217,180,106,.32) 55%, rgba(217,180,106,.5)) border-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,236,196,.1), 0 1px 0 rgba(0,0,0,.5), 0 6px 16px -6px rgba(0,0,0,.75), 0 0 14px -6px rgba(217,180,106,.5) !important;
+}
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney .gxBtnLabel { color: #fbf3e2; }
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney > .uiIcon { color: #f0d28f !important; animation: gxCoinGlint 5.5s ease-in-out 1.2s infinite; }
+@keyframes gxCoinGlint { 0%, 82%, 100% { filter: none; } 90% { filter: brightness(1.55) drop-shadow(0 0 5px rgba(240,210,143,.8)); } }
+@media (prefers-reduced-motion: reduce) { .appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney > .uiIcon { animation: none; } }
+
+/* v167 · The «Enviar juego» welcome: a plain black card with a gold hairline, the coins drawn large in gold and a
+   solid gold button. No gradients. */
+.gxStudioWelcomeCard {
+  gap: 18px; padding: 30px 22px 22px; border-radius: 22px; border: 1px solid rgba(217,180,106,.42);
+  background: #111110; box-shadow: 0 24px 60px rgba(0,0,0,.65);
+}
+.gxStudioWelcomeCoin { width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; color: #e6c47f; }
+.gxStudioWelcomeCoin .uiIcon { width: 52px; height: 52px; stroke-width: 1.4; }
+.gxStudioWelcomeCard h2 { font-weight: 700; font-size: 22px; color: #f7f1e4; }
+.gxStudioWelcomeGo {
+  border: 0; background: #d9b46a; color: #17120a; font-weight: 800; letter-spacing: .08em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 rgba(0,0,0,.4);
+}
+.gxStudioWelcomeGo:active { background: #c9a35a; }
+.gxStudioWelcomeGo:focus-visible { outline-color: #f0d28f; }

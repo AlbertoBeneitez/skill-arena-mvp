@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 export type UiIconName =
   | "sound" | "soundOff" | "gear" | "back" | "close" | "upload" | "grid" | "ghost"
   | "games" | "group" | "trophy" | "check" | "chevronDown" | "logout" | "trash" | "user" | "coins"
-  | "share" | "copy" | "link" | "mail" | "chat" | "send" | "phone";
+  | "share" | "copy" | "link" | "mail" | "chat" | "send" | "phone" | "dice" | "plus" | "enter";
 
 /** Eight-tooth gear, computed once (pure math, identical on server and client). */
 const GEAR_PATH = (() => {
@@ -121,6 +121,16 @@ const PATHS: Record<UiIconName, ReactNode> = {
   phone: (<>
     <rect x="6.6" y="2.8" width="10.8" height="18.4" rx="2.4" />
     <path d="M10.6 18h2.8" />
+  </>),
+  dice: (<>
+    <rect x="4.2" y="4.2" width="15.6" height="15.6" rx="3.4" />
+    <circle cx="8.6" cy="8.6" r=".9" /><circle cx="15.4" cy="8.6" r=".9" /><circle cx="12" cy="12" r=".9" />
+    <circle cx="8.6" cy="15.4" r=".9" /><circle cx="15.4" cy="15.4" r=".9" />
+  </>),
+  plus: <path d="M12 5.4v13.2M5.4 12h13.2" />,
+  enter: (<>
+    <path d="M13.6 4.6h3.6a2.2 2.2 0 0 1 2.2 2.2v10.4a2.2 2.2 0 0 1-2.2 2.2h-3.6" />
+    <path d="M4.6 12h10.2M11 8.2l3.8 3.8-3.8 3.8" />
   </>),
   trash: (<>
     <path d="M4.6 6.8h14.8M9.6 6.6V4.8h4.8v1.8" />

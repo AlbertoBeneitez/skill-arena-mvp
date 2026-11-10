@@ -72,6 +72,7 @@ const es = {
   "catalog.entering": "ENTRANDO…",
   "catalog.playStake": "{game} · {n} FICHAS",
   "catalog.ghost": "Mostrar u ocultar fantasma",
+  "catalog.rivalWaiting": "Hay un rival esperando",
 
   // ---------- game screen ----------
   "game.training": "ENTRENAMIENTO",
@@ -785,6 +786,12 @@ const es = {
   "group.joinButton": "UNIRME",
   "group.codeField": "Código del grupo",
   "group.shareMore": "Más opciones",
+  "group.creatorLabel": "Creador",
+  "group.stepGames": "Juegos",
+  "group.gamesOrderHint": "Se juegan en este orden, uno por jornada.",
+  "group.gamesPickHint": "Pulsa varios juegos para alternarlos; sin elegir, se sortean.",
+  "group.pickOne": "Elige el juego de la partida.",
+  "group.randomMix": "Aleatorio",
   "catalog.shelf.popular": "POPULARES",
   "catalog.shelf.new": "NUEVOS",
   "catalog.shelf.casino": "CASINO",

@@ -882,6 +882,17 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v167-saturn · Grupo en negro y oro, juegos con portada, luz verde de rival (10-nov-2026)
+
+- **Grupo:**
+  - diseño negro y oro propio (`GroupHub.module.css`);
+  - juegos elegidos por su portada en miniatura, con un circulito de selección;
+  - liga y torneo con varios juegos en el orden elegido;
+  - sin «Eres quien organiza», «Me invitaron a uno» ni «Una partida».
+- **Catálogo:** sin sombra sobre la parte superior de las portadas; luz verde cuando un rival espera.
+- **Inicio:** «Enviar juego» con filo dorado y destello de moneda; bienvenida sin degradados.
+- **Avatar:** el chacal con la cabeza entera en el selector.
+
 ## v166-saturn · Fichas cuadradas, botones sobrios, portadas nuevas y pestaña de Grupo (10-nov-2026)
 
 - **Catálogo:** fichas cuadradas y más pequeñas (casi tres por fila), con la imagen a todo el cuadrado.

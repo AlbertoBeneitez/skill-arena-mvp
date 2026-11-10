@@ -85,6 +85,7 @@ export default function CatalogBrowser(props: Props) {
       </button>
     </article>
   );
+  const rivalWaiting = (game: GameMeta) => (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) === "existing";
   const renderCard = (row: string, game: GameMeta, index: number) => (
     <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: gameAccent(game), ["--i" as string]: index }}>
       {/* v166: a square card; the picture fills it and the play button sits on its lower edge. */}
@@ -99,8 +100,9 @@ export default function CatalogBrowser(props: Props) {
           decoding="async"
           fetchPriority={row === "popular" && index < 3 ? "high" : "low"}
         />
-        {!props.serverOnly && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) ===
-          "existing" && (
+        {/* v167: a green light when a rival's match is already waiting for this game. */}
+        {rivalWaiting(game) && <span className={styles.rivalLed} role="img" aria-label={t("catalog.rivalWaiting")} title={t("catalog.rivalWaiting")} />}
+        {!props.serverOnly && rivalWaiting(game) && (
           <button
             type="button"
             className={styles.ghost}

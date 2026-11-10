@@ -1,8 +1,10 @@
 "use client";
 /*
- * Groups (v128, reworked v166): create or join a group, invite through one share button, set up a competition in
- * three numbered steps and play it through. The rules — rounds, duels, eliminations, votes, the pot and its split —
- * live in lib/groupCompetition.ts (pure); this screen only collects the choices and shows the state.
+ * Groups (v128, reworked v166, black and gold v167): create or join a group, invite through one share button, set up
+ * a competition in three numbered steps — format, games picked from their covers (a league or a tournament plays
+ * several in the order chosen), entry and prizes — and play it through. The rules live in lib/groupCompetition.ts
+ * (pure); this screen only collects the choices and shows the state. Its look is self-contained in
+ * GroupHub.module.css (no shared group classes from globals.css).
  */
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
@@ -13,6 +15,7 @@ import { formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
 import UiIcon, { type UiIconName } from "@/components/UiIcon";
+import st from "./GroupHub.module.css";
 
 type Props = {
   group: ClosedGroup | null;
@@ -29,7 +32,6 @@ type Props = {
   onClearCompetition: () => void;
 };
 type Kind = "single" | "league" | "tournament";
-const MIXED = "mixed";
 
 function normalizeJoinCode(value: string) {
   const trimmed = value.trim();
@@ -69,7 +71,8 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const [sheetOpen, setSheetOpen] = useState(false);
   const [kind, setKind] = useState<Kind>("league");
   const [duels, setDuels] = useState(false);
-  const [gameId, setGameId] = useState<string>(MIXED);
+  /** v167: the games picked, in order (a league or a tournament plays them round by round); empty = random mix. */
+  const [picked, setPicked] = useState<string[]>([]);
   const [entry, setEntry] = useState("5");
   const [byVote, setByVote] = useState(false);
   const [rounds, setRounds] = useState(5);
@@ -128,50 +131,55 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     if (code.length < 4) return;
     setJoinCode(code); onJoinGroup(code);
   }
+  function chooseKind(next: Kind) {
+    setKind(next);
+    if (next === "single") setPicked((list) => list.slice(0, 1));
+  }
+  function toggleGame(id: string) {
+    setPicked((list) => kind === "single" ? (list[0] === id ? [] : [id]) : list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  }
 
   if (!group) {
     return (
-      <section className="groupScreen">
-        <div className="groupHero">
-          {/* v139: the crew instead of three numbered steps; one line says it all. */}
-          <div className="groupHeroCrew" aria-hidden="true">
-            {[avatarSrc, portraitSrc(2, "-s"), portraitSrc(5, "-s"), portraitSrc(9, "-s")].map((src, i) => <img key={i} src={src} alt="" width={46} height={46} />)}
+      <section className={st.screen}>
+        <div className={st.hero}>
+          <div className={st.crew} aria-hidden="true">
+            {[avatarSrc, portraitSrc(2, "-s"), portraitSrc(5, "-s"), portraitSrc(9, "-s")].map((src, i) => <img key={i} src={src} alt="" width={44} height={44} />)}
           </div>
-          <span>{t("group.heroTag")}</span>
-          <h1>{t("group.heroTitle")}</h1>
-          <p className="groupHeroLead">{t("group.heroLead")}</p>
+          <span className={st.kicker}>{t("group.heroTag")}</span>
+          <h1 className={st.heroTitle}>{t("group.heroTitle")}</h1>
+          <p className={st.heroLead}>{t("group.heroLead")}</p>
         </div>
 
-        <div className="groupEntryCards" role="tablist" aria-label={t("group.entryTabs")}>
-          <button type="button" role="tab" aria-selected={entryMode === "create"} className={entryMode === "create" ? "active" : ""} onClick={() => setEntryMode("create")}>
-            <span aria-hidden="true">＋</span>
-            <strong>{t("group.create")}</strong>
-            <small>{t("group.createSub")}</small>
+        <div className={st.choice} role="tablist" aria-label={t("group.entryTabs")}>
+          <button type="button" role="tab" aria-selected={entryMode === "create"} onClick={() => setEntryMode("create")}>
+            <UiIcon name="plus" size={20} />
+            <span>{t("group.create")}</span>
           </button>
-          <button type="button" role="tab" aria-selected={entryMode === "join"} className={entryMode === "join" ? "active" : ""} onClick={() => setEntryMode("join")}>
-            <span aria-hidden="true">⇢</span>
-            <strong>{t("group.join")}</strong>
-            <small>{t("group.joinSub")}</small>
+          <button type="button" role="tab" aria-selected={entryMode === "join"} onClick={() => setEntryMode("join")}>
+            <UiIcon name="enter" size={20} mirrorRtl />
+            <span>{t("group.join")}</span>
           </button>
         </div>
 
         {entryMode === "create" ? (
-          <div className="groupSetupCard">
-            <div className="groupSetupPreview">
+          <div className={st.panel}>
+            <div className={st.creator}>
               <img src={avatarSrc} alt="" />
               <div>
-                <small>{t("group.creator")}</small>
+                <small>{t("group.creatorLabel")}</small>
                 <strong>{playerName || t("common.you")}</strong>
               </div>
             </div>
-            <button className="groupPrimaryAction" type="button"
+            <button className={st.primary} type="button"
               onClick={() => onCreateGroup(playerName ? t("group.defaultName", { name: playerName }) : t("group.myGroup"), 0)}>
               {t("group.createButton")}
             </button>
           </div>
         ) : (
-          <form className="groupSetupCard groupJoinCard groupJoinRow" onSubmit={(event) => { event.preventDefault(); submitJoin(); }}>
+          <form className={`${st.panel} ${st.joinRow}`} onSubmit={(event) => { event.preventDefault(); submitJoin(); }}>
             <input
+              className={st.codeInput}
               aria-label={t("group.codeField")}
               value={joinCode}
               maxLength={12}
@@ -186,7 +194,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
               placeholder={t("group.codePlaceholder")}
               dir="ltr"
             />
-            <button className="groupPrimaryAction" type="submit" disabled={joinCode.length < 4}>{t("group.joinButton")}</button>
+            <button className={st.primary} type="submit" disabled={joinCode.length < 4}>{t("group.joinButton")}</button>
           </form>
         )}
       </section>
@@ -199,8 +207,9 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const split = shares && shares.length <= maxPlaces ? shares : DEFAULT_SPLITS[Math.min(3, maxPlaces)];
   const money = groupMoney({ config: { entryMinor } as GroupConfig, players: group.members });
   const affordable = entryMinor <= Math.round(balance * 100);
+  const chosen = kind === "single" ? picked.slice(0, 1) : picked;
   function buildConfig(): GroupConfig {
-    const ids = gameId !== MIXED ? [gameId] : (() => {
+    const ids = chosen.length ? [...chosen] : (() => {
       const rng = createRng(`${group!.code}:${format}:games`), pool = playable.map((g) => g.id);
       return Array.from({ length: 12 }, () => pool[rng.nextInt(pool.length)]);
     })();
@@ -211,12 +220,12 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     };
   }
   const header = (
-    <div className="groupHeaderCard groupHeaderSinglePage">
-      <div>
-        <small>{t("group.local")}</small>
+    <div className={st.head}>
+      <div className={st.headName}>
+        <span className={st.kicker}>{t("group.local")}</span>
         <h1>{group.name}</h1>
       </div>
-      <button type="button" className={`groupCodeButton ${copied === "code" ? "copied" : ""}`} aria-label={t("group.copyCodeAria", { code: group.code })}
+      <button type="button" className={st.ticket} data-copied={copied === "code" || undefined} aria-label={t("group.copyCodeAria", { code: group.code })}
         onClick={() => void copyText(group.code, "code")}>
         <small>{copied === "code" ? <><UiIcon name="check" size={12} />{t("group.codeCopiedShort")}</> : <><UiIcon name="copy" size={12} />{t("group.codeTitle")}</>}</small>
         <b dir="ltr">{group.code}</b>
@@ -224,7 +233,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     </div>
   );
   const feedback = (
-    <div className="groupShareFeedback" role="status" aria-live="polite">
+    <div className={st.feedback} role="status" aria-live="polite">
       {shareError || (copied === "code" ? t("group.codeCopiedMsg") : copied === "link" ? t("group.linkCopiedMsg") : "")}
       {shareFallback && <input aria-label={t("group.copyManual")} value={shareFallback} readOnly onFocus={(event) => event.target.select()} />}
     </div>
@@ -241,21 +250,26 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     const voting = competition.config.end.kind === "vote" && !competition.finished;
     const voted = competition.votes.includes(you);
     const tournament = competition.config.format === "tournament";
+    const pot = groupMoney(competition);
     return (
-      <section className="groupScreen">
+      <section className={st.screen}>
         {header}
         {feedback}
-        <div className="groupCompCard">
-          <div className="groupCompTitle">
+        <div className={st.panel}>
+          <div className={st.compTitle}>
             <strong>{t(tournament ? "group.tournament" : competition.config.format === "single" ? "group.singleMatch" : "group.league")}</strong>
             <span>{competition.finished ? t("group.finished") : t(tournament ? "group.roundN" : "group.matchdayN", { n: round })}</span>
           </div>
-          <p className="groupCompPot">{t("group.potLine", { pot: euros(groupMoney(competition).pot), fee: euros(groupMoney(competition).commission), prize: euros(groupMoney(competition).prize) })}</p>
-          <ol className="groupStandings" aria-label={t("group.standings")}>
+          <div className={st.prizeBox}>
+            <span>{t("group.prizes")}</span>
+            <b dir="ltr">{euros(pot.prize)}</b>
+            <small>{t("group.potLine", { pot: euros(pot.pot), fee: euros(pot.commission), prize: euros(pot.prize) })}</small>
+          </div>
+          <ol className={st.standings} aria-label={t("group.standings")}>
             {standings.map((s) => {
               const p = competition.players.find((x) => x.id === s.id)!;
               return (
-                <li key={s.id} className={`${s.id === you ? "you" : ""} ${s.out ? "out" : ""}`}>
+                <li key={s.id} data-you={s.id === you || undefined} data-out={s.out || undefined}>
                   <b>{s.place}</b>
                   <img src={p.avatar} alt="" />
                   <span>{p.name}</span>
@@ -265,80 +279,81 @@ export default function GroupHub({ group, competition, balance, playerName, avat
             })}
           </ol>
           {competition.finished ? (
-            <button className="groupPrimaryAction" type="button" onClick={onClearCompetition}>{t("group.newCompetition")}</button>
+            <button className={st.primary} type="button" onClick={onClearCompetition}>{t("group.newCompetition")}</button>
           ) : match ? (
-            <button className="groupPrimaryAction" type="button" onClick={onPlay}>
+            <button className={st.primary} type="button" onClick={onPlay}>
               {t("group.playNext", { game: game ? gameName(game) : match.gameId })}{opponent ? ` · ${t("group.vs", { name: nameOf(opponent) })}` : ""}
             </button>
           ) : (
-            <p className="groupCompWait" role="status">{t("group.waitingRound")}</p>
+            <p className={st.note} role="status">{t("group.waitingRound")}</p>
           )}
           {voting && (
-            <button className="groupVoteAction" type="button" disabled={voted} onClick={onVote}>
+            <button className={st.secondary} type="button" disabled={voted} onClick={onVote}>
               {voted ? t("group.voted", { n: competition.votes.length, total: competition.players.length }) : t("group.voteEnd")}
             </button>
           )}
-          <p className="groupResumeNote">{t("group.resume")}</p>
+          <p className={st.note}>{t("group.resume")}</p>
         </div>
       </section>
     );
   }
 
   const seg = <T extends string | boolean>(value: T, current: T, set: (v: T) => void, label: string, sub?: string) => (
-    <button type="button" className={value === current ? "active" : ""} aria-pressed={value === current} onClick={() => set(value)}>
+    <button type="button" aria-pressed={value === current} onClick={() => set(value)}>
       <strong>{label}</strong>{sub ? <span>{sub}</span> : null}
     </button>
   );
   const shareText = t("group.shareText", { name: group.name, code: group.code });
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
+  const multi = kind !== "single";
   return (
-    <section className="groupScreen">
+    <section className={st.screen}>
       {header}
       {feedback}
 
-      <div className="groupInviteCard">
-        <div className="groupSectionTitle">
-          <span>{t("group.inviteTitle")}</span>
+      <div className={st.panel}>
+        <div className={st.panelHead}>
+          <h2>{t("group.inviteTitle")}</h2>
           <small>{t("group.playersCount", { n: players })}</small>
         </div>
-        <ul className="groupCrewRow" aria-label={t("group.members")}>
+        <ul className={st.members} aria-label={t("group.members")}>
           {group.members.map((member) => (
-            <li key={member.id} className={member.isYou ? "you" : ""}>
+            <li key={member.id} data-you={member.isYou || undefined}>
               <img src={member.avatar} alt="" />
               <span>{member.isYou ? t("common.you") : member.name}</span>
             </li>
           ))}
         </ul>
-        <button type="button" className="groupShareButton" aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
-          <UiIcon name="share" size={20} />
+        <button type="button" className={st.secondary} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
+          <UiIcon name="share" size={18} />
           <span>{t("group.share")}</span>
         </button>
       </div>
 
-      <div className="groupFormCard">
-        <h2 className="groupFormTitle">{t("group.newTitle")}</h2>
-        <ol className="groupSteps">
+      <div className={st.panel}>
+        <h2 className={st.formTitle}>{t("group.newTitle")}</h2>
+        <ol className={st.steps}>
           <li>
-            <span className="groupFormLabel">{t("group.format")}</span>
-            <div className="competitionTypeGrid">
-              {seg<Kind>("single", kind, setKind, t("group.singleMatch"), t("group.quickSub"))}
-              {seg<Kind>("league", kind, setKind, t("group.league"), t("group.leagueSub"))}
-              {seg<Kind>("tournament", kind, setKind, t("group.tournament"), t("group.tournamentSub"))}
+            <span className={`${st.stepLabel} ${st.sc}`}>{t("group.format")}</span>
+            <div className={st.seg3}>
+              {seg<Kind>("single", kind, chooseKind, t("group.singleMatch"))}
+              {seg<Kind>("league", kind, chooseKind, t("group.league"), t("group.leagueSub"))}
+              {seg<Kind>("tournament", kind, chooseKind, t("group.tournament"), t("group.tournamentSub"))}
             </div>
             {kind === "league" && (
-              <div className="groupLeagueOptions">
-                <span className="groupFormSub">{t("group.leagueMode")}</span>
-                <div className="competitionTypeGrid two">
+              <div className={st.sub}>
+                <span className={st.subLabel}>{t("group.leagueMode")}</span>
+                <div className={st.seg2}>
                   {seg(false, duels, setDuels, t("group.modeRounds"), t("group.modeRoundsSub"))}
                   {seg(true, duels, setDuels, t("group.modeDuels"), t("group.modeDuelsSub"))}
                 </div>
-                <span className="groupFormSub">{t("group.end")}</span>
-                <div className="competitionTypeGrid two">
+                <span className={st.subLabel}>{t("group.end")}</span>
+                <div className={st.seg2}>
                   {seg(false, byVote, setByVote, t("group.endRounds", { n: rounds }))}
                   {seg(true, byVote, setByVote, t("group.endVote"))}
                 </div>
                 {!byVote && (
-                  <div className="groupStepperRow">
+                  <div className={st.stepper}>
                     <button type="button" aria-label="−" disabled={rounds <= 1} onClick={() => setRounds((n) => Math.max(1, n - 1))}>−</button>
                     <output aria-live="polite">{rounds}</output>
                     <button type="button" aria-label="+" disabled={rounds >= 20} onClick={() => setRounds((n) => Math.min(20, n + 1))}>+</button>
@@ -348,48 +363,62 @@ export default function GroupHub({ group, competition, balance, playerName, avat
             )}
           </li>
           <li>
-            <label className="groupField">
-              <span className="groupFormLabel">{t("group.stepGame")}</span>
-              <select value={gameId} onChange={(event) => setGameId(event.target.value)}>
-                {kind !== "single" && <option value={MIXED}>{t("group.random")}</option>}
-                {playable.map((g: GameMeta) => <option key={g.id} value={g.id}>{gameName(g)}</option>)}
-              </select>
-            </label>
+            <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
+            <div className={st.games} role="group" aria-label={t(multi ? "group.stepGames" : "group.stepGame")}>
+              {multi && (
+                <button type="button" className={st.gameTile} aria-pressed={chosen.length === 0} onClick={() => setPicked([])}>
+                  <span className={st.gameArt} data-random><UiIcon name="dice" size={26} /></span>
+                  <span className={st.gameMark} aria-hidden="true">{chosen.length === 0 ? <UiIcon name="check" size={12} /> : null}</span>
+                  <span className={st.gameName}>{t("group.randomMix")}</span>
+                </button>
+              )}
+              {playable.map((g: GameMeta) => {
+                const at = chosen.indexOf(g.id);
+                return (
+                  <button key={g.id} type="button" className={st.gameTile} aria-pressed={at >= 0} onClick={() => toggleGame(g.id)}>
+                    <span className={st.gameArt}><img src={g.cover} alt="" loading="lazy" decoding="async" /></span>
+                    <span className={st.gameMark} aria-hidden="true">{at < 0 ? null : multi ? at + 1 : <UiIcon name="check" size={12} />}</span>
+                    <span className={st.gameName}>{gameName(g)}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className={st.hint}>{multi ? t(chosen.length > 1 ? "group.gamesOrderHint" : "group.gamesPickHint") : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
           <li>
-            <span className="groupFormLabel">{t("group.stepEntry")}</span>
-            <label className="groupField">
-              <span className="groupFormSub">{t("group.entryPrice")}</span>
-              <div className="numberInputWithUnit">
+            <span className={st.stepLabel}>{t("group.stepEntry")}</span>
+            <label className={st.field}>
+              <span className={st.subLabel}>{t("group.entryPrice")}</span>
+              <span className={st.money}>
                 <input type="number" min="0" max={balance} step="0.5" inputMode="decimal" value={entry} onChange={(event) => setEntry(event.target.value)} />
                 <b>€</b>
-              </div>
+              </span>
               <small>{t("group.entryOnce")} {t("group.available", { amount: formatMoney(balance) })}</small>
             </label>
-            <div className="groupPotSummary">
+            <div className={st.prizeBox}>
               <span>{t("group.prizes")}</span>
-              <b>{euros(money.prize)}</b>
+              <b dir="ltr">{euros(money.prize)}</b>
               <small>{t("group.potLine", { pot: euros(money.pot), fee: euros(money.commission), prize: euros(money.prize) })}</small>
             </div>
-            <details className="groupPrizeDetails">
+            <details className={st.split}>
               <summary>
                 <span>{t("group.split")}</span>
                 <b dir="ltr">{split.join(" · ")} %</b>
                 <UiIcon name="chevronDown" size={18} />
               </summary>
-              <div className="groupPrizeBody">
-                <div className="groupPlacesRow">
-                  <span className="groupFormSub">{t("group.prizePlaces")}</span>
-                  <div className="groupPlacesPick" role="group" aria-label={t("group.prizePlaces")}>
+              <div className={st.splitBody}>
+                <div className={st.places}>
+                  <span className={st.subLabel}>{t("group.prizePlaces")}</span>
+                  <div className={st.placesPick} role="group" aria-label={t("group.prizePlaces")}>
                     {Array.from({ length: maxPlaces }, (_, i) => i + 1).map((n) => (
-                      <button key={n} type="button" className={split.length === n ? "active" : ""} aria-pressed={split.length === n} onClick={() => setShares(DEFAULT_SPLITS[n])}>{n}</button>
+                      <button key={n} type="button" aria-pressed={split.length === n} onClick={() => setShares(DEFAULT_SPLITS[n])}>{n}</button>
                     ))}
                   </div>
                 </div>
-                <ul className="groupPrizeBars">
+                <ul className={st.bars}>
                   {split.map((pct, i) => (
-                    <li key={i} className={`place${i + 1}`}>
-                      <span className="groupPrizePlace">{t("group.placeN", { n: i + 1 })}</span>
+                    <li key={i} data-place={i + 1}>
+                      <span className={st.place}>{t("group.placeN", { n: i + 1 })}</span>
                       <input type="range" min={1} max={100} step={1} value={pct} disabled={split.length === 1}
                         style={{ "--fill": `${pct}%` } as CSSProperties}
                         aria-label={`${t("group.placeN", { n: i + 1 })} · ${pct} %`}
@@ -399,44 +428,44 @@ export default function GroupHub({ group, competition, balance, playerName, avat
                     </li>
                   ))}
                 </ul>
-                {split.length > 1 && <p className="groupPrizeHint">{t("group.splitHint")}</p>}
+                {split.length > 1 && <p className={st.hint}>{t("group.splitHint")}</p>}
               </div>
             </details>
           </li>
         </ol>
-        <button className="groupPrimaryAction" type="button" disabled={!affordable || (kind === "single" && gameId === MIXED)}
+        <button className={st.primary} type="button" disabled={!affordable || (kind === "single" && chosen.length === 0)}
           onClick={() => onCreateCompetition(buildConfig())}>
           {t("group.payAndStart", { amount: euros(entryMinor) })}
         </button>
       </div>
 
       {sheetOpen && (
-        <div className="groupShareBackdrop" onClick={(event) => { if (event.target === event.currentTarget) setSheetOpen(false); }}>
-          <div className="groupShareSheet" role="dialog" aria-modal="true" aria-labelledby="groupShareTitle" ref={sheetRef}>
-            <div className="groupShareHead">
+        <div className={st.backdrop} onClick={(event) => { if (event.target === event.currentTarget) setSheetOpen(false); }}>
+          <div className={st.sheet} role="dialog" aria-modal="true" aria-labelledby="groupShareTitle" ref={sheetRef}>
+            <div className={st.sheetHead}>
               <strong id="groupShareTitle">{t("group.shareTitle")}</strong>
-              <button type="button" className="groupShareClose" aria-label={t("common.close")} onClick={() => setSheetOpen(false)}><UiIcon name="close" size={18} /></button>
+              <button type="button" className={st.close} aria-label={t("common.close")} onClick={() => setSheetOpen(false)}><UiIcon name="close" size={18} /></button>
             </div>
-            <div className="groupShareGrid">
+            <div className={st.apps}>
               {SHARE_TARGETS.map((target) => (
                 <a key={target.id} href={target.href(shareText, inviteLink())} target="_blank" rel="noopener noreferrer" style={{ "--tone": target.tone } as CSSProperties}
                   onClick={() => setSheetOpen(false)}>
-                  <span className="groupShareIcon"><UiIcon name={target.icon} size={22} /></span>
+                  <span className={st.appIcon}><UiIcon name={target.icon} size={22} /></span>
                   <span>{target.label}</span>
                 </a>
               ))}
-              <button type="button" style={{ "--tone": "#eaf4ff" } as CSSProperties} onClick={() => { void copyText(inviteLink(), "link"); setSheetOpen(false); }}>
-                <span className="groupShareIcon"><UiIcon name="link" size={22} /></span>
+              <button type="button" style={{ "--tone": "#f0d28f" } as CSSProperties} onClick={() => { void copyText(inviteLink(), "link"); setSheetOpen(false); }}>
+                <span className={st.appIcon}><UiIcon name="link" size={22} /></span>
                 <span>{t("group.shareCopy")}</span>
               </button>
               {canNativeShare && (
-                <button type="button" style={{ "--tone": "#b9a8ff" } as CSSProperties} onClick={() => void shareMore()}>
-                  <span className="groupShareIcon"><UiIcon name="grid" size={22} /></span>
+                <button type="button" style={{ "--tone": "#cfc8bb" } as CSSProperties} onClick={() => void shareMore()}>
+                  <span className={st.appIcon}><UiIcon name="grid" size={22} /></span>
                   <span>{t("group.shareMore")}</span>
                 </button>
               )}
             </div>
-            <p className="groupShareLink" dir="ltr">{inviteLink()}</p>
+            <p className={st.link} dir="ltr">{inviteLink()}</p>
           </div>
         </div>
       )}
