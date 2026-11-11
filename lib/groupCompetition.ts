@@ -7,8 +7,8 @@
  *  - league-rounds: rounds of individual matches (same game and seed for everyone, played whenever each player
  *                   wants); the best score in a round is a victory;
  *  - league-duels:  1-v-1 duels in a round-robin calendar (same seed for both players); each duel won is a victory;
- *  - tournament:    every round all remaining players play the same game; the lowest score is eliminated until one
- *                   is left.
+ *  - tournament:    ("Eliminatorias") every round all remaining players play the same game; the lowest scores are
+ *                   eliminated (config.eliminatePerRound, default 1; v171) until one is left.
  * One entry fee per player covers every match. The pot minus the platform commission is paid when the competition
  * ends: after the agreed number of rounds or by majority vote (leagues), after its match (single) or when one player
  * is left (tournament). Ties share the prize of the places they occupy.
@@ -16,8 +16,8 @@
 export const GROUP_COMMISSION_BPS = 500; // 5 %
 
 export type GroupFormat = "single" | "league-rounds" | "league-duels" | "tournament";
-/** Prize split: legacy presets, or (v166) whole percentages per place — they add up to 100 and fall strictly from the
- * first place to the last. */
+/** Prize split: legacy presets, or whole percentages per place (v166; v171: one entry per position, adding up to 100,
+ * never rising from one place to the next; lower places may get 0). */
 export type GroupSplit = "winner" | "70-30" | readonly number[];
 export type GroupEnd = { kind: "rounds"; rounds: number } | { kind: "vote" };
 export type GroupPlayer = { id: string; name: string; avatar: string; simulated?: boolean };
@@ -30,6 +30,8 @@ export type GroupConfig = {
   /** Games where the lowest score wins (reaction times). */
   lowerWinsGameIds: readonly string[];
   end: GroupEnd;
+  /** Eliminatorias: players knocked out per round (v171; 1 when absent). */
+  eliminatePerRound?: number;
 };
 export type GroupMatch = { round: number; gameId: string; seed: string; players: readonly string[]; scores: Readonly<Record<string, number>> };
 export type GroupCompetition = {
@@ -49,48 +51,44 @@ const SPLITS: Record<"winner" | "70-30", readonly number[]> = { winner: [10000],
 /** v166: default split for each number of paid places (percentages). */
 export const DEFAULT_SPLITS: Readonly<Record<number, readonly number[]>> = { 1: [100], 2: [70, 30], 3: [70, 20, 10], 4: [60, 25, 10, 5] };
 export const MAX_PAID_PLACES = 4;
+/** v171: step of the +/- buttons, in percentage points. */
+export const SPLIT_STEP = 5;
 export const isValidSplit = (v: readonly number[]) =>
-  v.length >= 1 && v.every((x, i) => Number.isInteger(x) && x >= 1 && (i === 0 || x < v[i - 1])) && v.reduce((a, b) => a + b, 0) === 100;
+  v.length >= 1 && v[0] > 0 && v.every((x, i) => Number.isInteger(x) && x >= 0 && (i === 0 || x <= v[i - 1])) && v.reduce((a, b) => a + b, 0) === 100;
 /** Shares in basis points for a split. */
 export function splitShares(split: GroupSplit): readonly number[] {
   if (typeof split === "string") return SPLITS[split];
   return isValidSplit(split) ? split.map((x) => x * 100) : SPLITS.winner;
 }
-const partitions = new Map<number, number[][]>();
-/** Every split of 100 into `n` whole, strictly falling parts (cached; n ≤ MAX_PAID_PLACES). */
-function descendingSplits(n: number): number[][] {
-  const hit = partitions.get(n);
-  if (hit) return hit;
-  const out: number[][] = [];
-  const walk = (left: number, max: number, acc: number[]) => {
-    if (acc.length === n) { if (left === 0) out.push(acc); return; }
-    const rest = n - acc.length - 1, minRest = (rest * (rest + 1)) / 2; // the smallest the remaining places can add up to
-    for (let x = Math.min(max, left - minRest); x >= rest + 1; x--) walk(left - x, x - 1, [...acc, x]);
-  };
-  walk(100, 100, []);
-  partitions.set(n, out);
+/** v171: one entry per position for `positions` players: 70 / 20 / 10 and 0 for the rest (fewer positions: the
+ * places that do not exist give their share to the last one that does). */
+export function defaultSplit(positions: number): number[] {
+  const n = Math.max(1, Math.floor(positions));
+  const base = [70, 20, 10];
+  const out = Array.from({ length: n }, (_, i) => base[i] ?? 0);
+  if (n < base.length) out[n - 1] += base.slice(n).reduce((a, b) => a + b, 0);
   return out;
 }
 /**
- * v166 · Moving one place's bar: that place takes the value asked (moved to the nearest possible one) and the other
- * places are re-shared so the total stays 100 % and every place still pays more than the next — as close as possible to
- * their previous proportions.
+ * v171 · The +/- buttons: place `index` goes up or down by SPLIT_STEP and the difference is taken from (or given to)
+ * the last paid place — or, when that is the place being changed, the nearest place that keeps the order. Returns
+ * null when no valid split exists for that move (the button is then disabled).
  */
-export function rebalanceSplit(current: readonly number[], index: number, value: number): number[] {
+export function stepSplit(current: readonly number[], index: number, direction: 1 | -1): number[] | null {
   const n = current.length;
-  if (n <= 1) return [100];
-  const all = descendingSplits(n);
-  const possible = [...new Set(all.map((v) => v[index]))];
-  const x = possible.reduce((best, p) => (Math.abs(p - value) < Math.abs(best - value) ? p : best), possible[0]);
-  const othersBefore = current.reduce((a, v, i) => (i === index ? a : a + v), 0) || 1;
-  const target = current.map((v, i) => (i === index ? x : ((100 - x) * v) / othersBefore));
-  let best: number[] = all[0], bestCost = Infinity;
-  for (const v of all) {
-    if (v[index] !== x) continue;
-    const cost = v.reduce((a, y, i) => a + (y - target[i]) ** 2, 0);
-    if (cost < bestCost) { bestCost = cost; best = v; }
+  if (n < 2 || index < 0 || index >= n) return null;
+  const lastPaid = current.reduce((last, x, i) => (x > 0 ? i : last), 0);
+  const order = [lastPaid, lastPaid + 1, ...Array.from({ length: n }, (_, k) => n - 1 - k)];
+  const tried = new Set<number>();
+  for (const j of order) {
+    if (j === index || j < 0 || j >= n || tried.has(j)) continue;
+    tried.add(j);
+    const next = [...current];
+    next[index] += direction * SPLIT_STEP;
+    next[j] -= direction * SPLIT_STEP;
+    if (isValidSplit(next)) return next;
   }
-  return [...best];
+  return null;
 }
 
 export function groupMoney(c: Pick<GroupCompetition, "config" | "players">) {
@@ -185,7 +183,10 @@ function advance(c: GroupCompetition): GroupCompetition {
   let next = c;
   if (c.config.format === "tournament") {
     const order = ranking(c, c.matches.find((m) => m.round === round)!);
-    next = { ...c, eliminated: [...c.eliminated, order[order.length - 1]] };
+    // v171: knock out the last `eliminatePerRound` (always leaving at least one player); worst first, so a player
+    // knocked out in the same round with a better score ranks above.
+    const k = Math.max(1, Math.min(Math.floor(c.config.eliminatePerRound ?? 1), order.length - 1));
+    next = { ...c, eliminated: [...c.eliminated, ...order.slice(-k).reverse()] };
     return active(next).length <= 1 ? settle(next) : schedule(next, round + 1);
   }
   if (c.config.end.kind === "rounds" && round >= c.config.end.rounds) return settle(next);

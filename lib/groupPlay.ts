@@ -12,6 +12,8 @@ export type ClosedGroup = {
   code: string;
   stake: number;
   members: GroupMember[];
+  /** v171: group picture chosen by the organiser (square JPEG data URL, about 192 px). */
+  image?: string;
 };
 
 const DEMO_MEMBERS: Omit<GroupMember, "id">[] = [

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {
-  DEFAULT_SPLITS, MAX_PAID_PLACES, createGroupCompetition, groupMoney, isValidSplit, rebalanceSplit, splitShares, groupStandings, isGroupCompetition, nextGroupMatch, recordGroupScore, voteToEndGroup,
+  DEFAULT_SPLITS, MAX_PAID_PLACES, createGroupCompetition, defaultSplit, groupMoney, isValidSplit, splitShares, stepSplit, groupStandings, isGroupCompetition, nextGroupMatch, recordGroupScore, voteToEndGroup,
   type GroupCompetition, type GroupConfig, type GroupPlayer,
 } from "../lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "../lib/demo/groupRivals";
@@ -79,6 +79,18 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.equal(c.payouts!.p2, Math.floor(groupMoney(c).prize * 0.7));
   assert.equal(total(c), groupMoney(c).prize);
 }
+// v171 · Eliminatorias with two knocked out per round: 6 → 4 → 2 → 1 (never fewer than one left).
+{
+  let c = createGroupCompetition("e2", cfg({ format: "tournament", split: [70, 20, 10, 0, 0, 0], eliminatePerRound: 2 }), players(6));
+  c = play(c, { p0: 6, p1: 5, p2: 4, p3: 3, p4: 2, p5: 1 });
+  assert.deepEqual(c.eliminated, ["p5", "p4"], "worst first");
+  c = play(c, { p0: 1, p1: 2, p2: 3, p3: 4 });
+  assert.deepEqual(c.eliminated, ["p5", "p4", "p0", "p1"]);
+  c = play(c, { p2: 1, p3: 2 });
+  assert.ok(c.finished, "two left and two to knock out: only one goes, the other wins");
+  assert.deepEqual(groupStandings(c).map((s) => s.id), ["p3", "p2", "p1", "p0", "p4", "p5"]);
+  assert.equal(total(c), groupMoney(c).prize);
+}
 // Vote rule: the league ends when a majority votes; open matches do not count; nobody votes twice.
 {
   let c = createGroupCompetition("v", cfg({ format: "league-rounds", end: { kind: "vote" } }), players(4));
@@ -110,27 +122,35 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(a))), "survives a save and reload");
   assert.equal(isGroupCompetition({ id: 1 }), false);
 }
-// v166 · Custom splits: whole percentages, strictly falling, adding up to 100; the bars rebalance and keep that shape.
+// v166/v171 · Custom splits: whole percentages, never rising from one place to the next, adding up to 100;
+// lower places may get 0; the +/- buttons move 5 points and keep that shape.
 {
   for (let n = 1; n <= MAX_PAID_PLACES; n++) assert.ok(isValidSplit(DEFAULT_SPLITS[n]), `default split for ${n}`);
-  assert.deepEqual(DEFAULT_SPLITS[3], [70, 20, 10]);
-  assert.equal(isValidSplit([50, 50]), false, "equal places are not allowed");
+  assert.deepEqual(defaultSplit(6), [70, 20, 10, 0, 0, 0]);
+  assert.deepEqual(defaultSplit(3), [70, 20, 10]);
+  assert.deepEqual(defaultSplit(2), [70, 30]);
+  assert.deepEqual(defaultSplit(1), [100]);
+  assert.equal(isValidSplit([50, 50]), true, "equal places are allowed (v171)");
+  assert.equal(isValidSplit([70, 20, 10, 0, 0]), true, "places without a prize");
   assert.equal(isValidSplit([30, 70]), false, "a lower place cannot pay more");
   assert.equal(isValidSplit([60, 30]), false, "must add up to 100");
+  assert.equal(isValidSplit([0, 0]), false, "the winner always gets something");
   assert.deepEqual(splitShares([70, 20, 10]), [7000, 2000, 1000]);
   assert.deepEqual(splitShares([10, 20, 70]), [10000], "an invalid stored split falls back to winner takes all");
   assert.deepEqual(splitShares("70-30"), [7000, 3000], "legacy presets still settle");
-  const r1 = rebalanceSplit([70, 20, 10], 0, 50);
-  assert.ok(isValidSplit(r1) && r1[0] === 50, `first to 50 → ${r1}`);
-  assert.ok(r1[1] > r1[2] && r1[1] >= 30, `the others share the rest in proportion → ${r1}`);
-  const r2 = rebalanceSplit([70, 20, 10], 2, 60);
-  assert.ok(isValidSplit(r2) && r2[2] < r2[1] && r2[1] < r2[0], `third cannot overtake → ${r2}`);
-  const r3 = rebalanceSplit([70, 20, 10], 1, 1);
-  assert.ok(isValidSplit(r3) && r3[1] > r3[2] && r3[2] >= 1, `second cannot drop under third → ${r3}`);
-  for (let n = 2; n <= MAX_PAID_PLACES; n++)
-    for (let i = 0; i < n; i++)
-      for (const v of [1, 7, 33, 50, 99, 100]) assert.ok(isValidSplit(rebalanceSplit(DEFAULT_SPLITS[n], i, v)), `n=${n} i=${i} v=${v}`);
-  assert.deepEqual(rebalanceSplit([100], 0, 40), [100]);
+  const base = defaultSplit(5);
+  assert.deepEqual(stepSplit(base, 0, 1), [75, 20, 5, 0, 0], "+ on the 1st takes from the last paid place");
+  assert.deepEqual(stepSplit(base, 0, -1), [65, 20, 15, 0, 0], "- on the 1st gives to the last paid place");
+  assert.deepEqual(stepSplit(base, 2, -1), [70, 20, 5, 5, 0], "- on the last paid place pays one more place");
+  assert.deepEqual(stepSplit(base, 2, 1), [70, 15, 15, 0, 0], "+ on the last paid place takes from the place above");
+  assert.deepEqual(stepSplit(base, 3, 1), [70, 20, 5, 5, 0], "+ on a place without prize");
+  assert.deepEqual(stepSplit([100, 0, 0], 1, 1), [95, 5, 0]);
+  assert.equal(stepSplit([100, 0, 0], 0, 1), null, "the 1st cannot go over 100");
+  assert.equal(stepSplit([50, 50], 1, 1), null, "the 2nd cannot overtake the 1st");
+  assert.equal(stepSplit([100], 0, 1), null);
+  // Any sequence of presses keeps the split valid.
+  let v = defaultSplit(6);
+  for (let k = 0; k < 400; k++) { const r = stepSplit(v, (k * 7) % 6, k % 3 ? 1 : -1); if (r) { assert.ok(isValidSplit(r), String(r)); v = r; } }
   // Settlement with a 3-place split: 70 / 20 / 10 of the prize, nothing lost to rounding.
   let c = createGroupCompetition("sp", cfg({ split: [70, 20, 10] }), players(5));
   c = play(c, { p0: 50, p1: 40, p2: 30, p3: 20, p4: 10 });
@@ -142,4 +162,4 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.equal(total(c), prize);
   assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(c))), "an array split survives a save and reload");
 }
-console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits");
+console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits · eliminations per round");

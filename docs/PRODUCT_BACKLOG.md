@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v171-saturn · Enviar juego con instrucciones, Grupo rehecho, cartera y propuestas de color (11-nov-2026)
+
+- **Enviar juego:** pantalla «Envía tu juego y gana dinero» y luego las instrucciones antes del formulario.
+- **Grupo:**
+  - foto y nombre editables, con el código debajo;
+  - Liga con «Todos contra todos» o «Duelos 1 vs 1» y número de jornadas;
+  - Eliminatorias con eliminados por ronda;
+  - reparto por posiciones con ±5 %.
+- **Cartera:** desplegable para ingresar y retirar desde el saldo de la cabecera.
+- **Avatar:** sin título ni notas locales, con el beneficio neto bajo el nombre y sin el cuadro de saldo.
+- **Pendiente:** el propietario elige una de las tres propuestas de color (`?tema=1|2|3`: Pista, Marfil, Telemetría).
+
 ## v170-saturn · Avatares en 9:16, botones sin destellos y cabecera de grupo (11-nov-2026)
 
 - Selector de avatar con fichas verticales 9:16.

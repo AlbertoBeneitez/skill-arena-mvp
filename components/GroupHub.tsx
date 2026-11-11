@@ -8,7 +8,7 @@
  */
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
-import { DEFAULT_SPLITS, MAX_PAID_PLACES, groupMoney, groupStandings, nextGroupMatch, rebalanceSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
+import { defaultSplit, groupMoney, groupStandings, nextGroupMatch, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
 import { createRng } from "@/lib/deterministic/seeded";
 import { GAMES, type GameMeta } from "@/lib/games";
 import { formatMoney, t, useI18n } from "@/lib/i18n";
@@ -30,6 +30,8 @@ type Props = {
   onPlay: () => void;
   onVote: () => void;
   onClearCompetition: () => void;
+  /** v171: rename the group or set its picture (a small data URL made from a phone photo). */
+  onUpdateGroup: (patch: { name?: string; image?: string | null }) => void;
 };
 type Kind = "single" | "league" | "tournament";
 
@@ -47,6 +49,24 @@ function normalizeJoinCode(value: string) {
 }
 const euros = (minor: number) => formatMoney(minor / 100);
 const MAX_SEQUENCE = 20;
+/** A phone photo cut to a centred square and shrunk to `size` px, as a JPEG data URL (stored with the group). */
+async function squarePhoto(file: File, size: number): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image(); el.onload = () => resolve(el); el.onerror = reject; el.src = url;
+    });
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    if (!side) throw new Error("empty image");
+    const canvas = document.createElement("canvas"); canvas.width = size; canvas.height = size;
+    const g = canvas.getContext("2d");
+    if (!g) throw new Error("no canvas");
+    g.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 /** Search: case and accents ignored. */
 const fold = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -61,7 +81,7 @@ const SHARE_TARGETS: readonly ShareTarget[] = [
   { id: "sms", label: "SMS", icon: "phone", tone: "#7fe3ee", href: (text, url) => `sms:?&body=${encodeURIComponent(`${text} ${url}`)}` },
 ];
 
-export default function GroupHub({ group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition }: Props) {
+export default function GroupHub({ group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup }: Props) {
   useI18n();
   const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
   const [joinCode, setJoinCode] = useState(normalizeJoinCode(initialJoinCode));
@@ -79,12 +99,14 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const [picked, setPicked] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [entry, setEntry] = useState("5");
-  const [byVote, setByVote] = useState(false);
   const [rounds, setRounds] = useState(5);
+  /** v171: Eliminatorias — players knocked out per round. */
+  const [knockout, setKnockout] = useState(1);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [photoError, setPhotoError] = useState("");
+  const photoRef = useRef<HTMLInputElement | null>(null);
   const players = group?.members.length ?? 0;
-  /** At least one player goes home without a prize; never more than MAX_PAID_PLACES places. */
-  const maxPlaces = Math.max(1, Math.min(MAX_PAID_PLACES, players - 1));
-  /** The organiser's split; null means the default for the places this group allows (70 · 20 · 10 with four or more). */
   const [shares, setShares] = useState<readonly number[] | null>(null);
   useEffect(() => {
     mountedRef.current = true;
@@ -216,7 +238,10 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const entryMinor = Math.max(0, Math.round(Number(entry.replace(",", ".")) * 100) || 0);
   const format: GroupFormat = kind === "league" ? (duels ? "league-duels" : "league-rounds") : kind;
   // Fewer players than the chosen paid places: back to the default for as many places as the group allows.
-  const split = shares && shares.length <= maxPlaces ? shares : DEFAULT_SPLITS[Math.min(3, maxPlaces)];
+  const split = shares && shares.length === Math.max(1, players) ? shares : defaultSplit(players);
+  const paidSplit = split.filter((x) => x > 0);
+  const maxKnockout = Math.max(1, players - 1);
+  const knockoutRounds = Math.ceil((players - 1) / Math.min(knockout, maxKnockout));
   const money = groupMoney({ config: { entryMinor } as GroupConfig, players: group.members });
   const affordable = entryMinor <= Math.round(balance * 100);
   const chosen = kind === "single" ? picked.slice(0, 1) : picked;
@@ -227,26 +252,54 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     })();
     return {
       format, entryMinor, split: [...split], gameIds: ids,
+      ...(kind === "tournament" ? { eliminatePerRound: Math.min(knockout, maxKnockout) } : {}),
       lowerWinsGameIds: playable.filter((g) => g.resultMetric === "reaction-time-ms").map((g) => g.id),
-      end: kind === "league" && byVote ? { kind: "vote" } : { kind: "rounds", rounds: kind === "league" ? rounds : 1 },
+      end: { kind: "rounds", rounds: kind === "league" ? rounds : 1 },
     };
+  }
+  async function pickPhoto(file: File | undefined) {
+    setPhotoError("");
+    if (!file) return;
+    try {
+      onUpdateGroup({ image: await squarePhoto(file, 192) });
+    } catch {
+      setPhotoError(t("group.photoFailed"));
+    }
+  }
+  function saveName() {
+    const name = nameDraft.trim().replace(/\s+/g, " ").slice(0, 32);
+    if (name) onUpdateGroup({ name });
+    setEditingName(false);
   }
   const header = (
     <div className={st.head}>
-      <div className={st.headName}>
-        {/* v170: the name already says it is a group — no «Grupo» label above it. */}
-        <h1>{group.name}</h1>
-      </div>
-      <button type="button" className={st.ticket} data-copied={copied === "code" || undefined} aria-label={t("group.copyCodeAria", { code: group.code })}
-        onClick={() => void copyText(group.code, "code")}>
-        <small>{copied === "code" ? <><UiIcon name="check" size={12} />{t("group.codeCopiedShort")}</> : <><UiIcon name="copy" size={12} />{t("group.codeTitle")}</>}</small>
-        <b dir="ltr">{group.code}</b>
+      <button type="button" className={st.groupPic} onClick={() => photoRef.current?.click()} aria-label={t(group.image ? "group.photoChange" : "group.photoAdd")}>
+        {group.image ? <img src={group.image} alt="" /> : <UiIcon name="group" size={24} />}
+        <span className={st.groupPicBadge} aria-hidden="true"><UiIcon name="camera" size={12} /></span>
       </button>
+      <input ref={photoRef} type="file" accept="image/*" hidden onChange={(event) => { void pickPhoto(event.target.files?.[0]); event.target.value = ""; }} />
+      <div className={st.headName}>
+        {editingName ? (
+          <form className={st.nameForm} onSubmit={(event) => { event.preventDefault(); saveName(); }}>
+            <input autoFocus value={nameDraft} maxLength={32} aria-label={t("group.nameField")} onChange={(event) => setNameDraft(event.target.value)} onBlur={saveName} />
+          </form>
+        ) : (
+          <button type="button" className={st.nameBtn} onClick={() => { setNameDraft(group.name); setEditingName(true); }} aria-label={t("group.renameAria", { name: group.name })}>
+            <h1>{group.name}</h1>
+            <UiIcon name="pencil" size={14} />
+          </button>
+        )}
+        <button type="button" className={st.ticket} data-copied={copied === "code" || undefined} aria-label={t("group.copyCodeAria", { code: group.code })}
+          onClick={() => void copyText(group.code, "code")}>
+          <small>{copied === "code" ? <><UiIcon name="check" size={12} />{t("group.codeCopiedShort")}</> : <><UiIcon name="copy" size={12} />{t("group.codeTitle")}</>}</small>
+          <b dir="ltr">{group.code}</b>
+        </button>
+      </div>
     </div>
   );
   const feedback = (
     <div className={st.feedback} role="status" aria-live="polite">
-      {shareError || (copied === "code" ? t("group.codeCopiedMsg") : copied === "link" ? t("group.linkCopiedMsg") : "")}
+      {photoError || shareError || (copied === "code" ? t("group.codeCopiedMsg") : copied === "link" ? t("group.linkCopiedMsg") : "")}
       {shareFallback && <input aria-label={t("group.copyManual")} value={shareFallback} readOnly onFocus={(event) => event.target.select()} />}
     </div>
   );
@@ -361,17 +414,27 @@ export default function GroupHub({ group, competition, balance, playerName, avat
                   {seg(true, duels, setDuels, t("group.modeDuels"), t("group.modeDuelsSub"))}
                 </div>
                 <span className={st.subLabel}>{t("group.end")}</span>
-                <div className={st.seg2}>
-                  {seg(false, byVote, setByVote, t("group.endRounds", { n: rounds }))}
-                  {seg(true, byVote, setByVote, t("group.endVote"))}
-                </div>
-                {!byVote && (
+                <div className={st.counter}>
+                  <span>{t("group.roundsCount")}</span>
                   <div className={st.stepper}>
-                    <button type="button" aria-label="−" disabled={rounds <= 1} onClick={() => setRounds((n) => Math.max(1, n - 1))}>−</button>
+                    <button type="button" aria-label={t("group.lessRounds")} disabled={rounds <= 1} onClick={() => setRounds((n) => Math.max(1, n - 1))}>−</button>
                     <output aria-live="polite">{rounds}</output>
-                    <button type="button" aria-label="+" disabled={rounds >= 20} onClick={() => setRounds((n) => Math.min(20, n + 1))}>+</button>
+                    <button type="button" aria-label={t("group.moreRounds")} disabled={rounds >= 30} onClick={() => setRounds((n) => Math.min(30, n + 1))}>+</button>
                   </div>
-                )}
+                </div>
+              </div>
+            )}
+            {kind === "tournament" && (
+              <div className={st.sub}>
+                <div className={st.counter}>
+                  <span>{t("group.knockoutPerRound")}</span>
+                  <div className={st.stepper}>
+                    <button type="button" aria-label={t("group.lessKnockout")} disabled={knockout <= 1} onClick={() => setKnockout((n) => Math.max(1, n - 1))}>−</button>
+                    <output aria-live="polite">{Math.min(knockout, maxKnockout)}</output>
+                    <button type="button" aria-label={t("group.moreKnockout")} disabled={knockout >= maxKnockout} onClick={() => setKnockout((n) => Math.min(maxKnockout, n + 1))}>+</button>
+                  </div>
+                </div>
+                <p className={st.hint}>{t("group.knockoutHint", { n: knockoutRounds })}</p>
               </div>
             )}
           </li>
@@ -449,33 +512,26 @@ export default function GroupHub({ group, competition, balance, playerName, avat
             <details className={st.split}>
               <summary>
                 <span>{t("group.split")}</span>
-                <b dir="ltr">{split.join(" · ")} %</b>
+                <b dir="ltr">{paidSplit.join(" · ")} %</b>
                 <UiIcon name="chevronDown" size={18} />
               </summary>
-              <div className={st.splitBody}>
-                <div className={st.places}>
-                  <span className={st.subLabel}>{t("group.prizePlaces")}</span>
-                  <div className={st.placesPick} role="group" aria-label={t("group.prizePlaces")}>
-                    {Array.from({ length: maxPlaces }, (_, i) => i + 1).map((n) => (
-                      <button key={n} type="button" aria-pressed={split.length === n} onClick={() => setShares(DEFAULT_SPLITS[n])}>{n}</button>
-                    ))}
-                  </div>
-                </div>
-                <ul className={st.bars}>
-                  {split.map((pct, i) => (
-                    <li key={i} data-place={i + 1}>
+              <ol className={st.positions}>
+                {split.map((pct, i) => {
+                  const up = stepSplit(split, i, 1), down = stepSplit(split, i, -1);
+                  return (
+                    <li key={i} data-place={i + 1} data-zero={pct === 0 || undefined}>
                       <span className={st.place}>{t("group.placeN", { n: i + 1 })}</span>
-                      <input type="range" min={1} max={100} step={1} value={pct} disabled={split.length === 1}
-                        style={{ "--fill": `${pct}%` } as CSSProperties}
-                        aria-label={`${t("group.placeN", { n: i + 1 })} · ${pct} %`}
-                        onChange={(event) => setShares(rebalanceSplit(split, i, Number(event.target.value)))} />
-                      <b dir="ltr">{pct} %</b>
-                      <small dir="ltr">{euros(Math.round((money.prize * pct) / 100))}</small>
+                      <span className={st.posMoney} dir="ltr">{euros(Math.round((money.prize * pct) / 100))}</span>
+                      <div className={st.pctStepper}>
+                        <button type="button" aria-label={t("group.lessShare", { n: i + 1 })} disabled={!down} onClick={() => down && setShares(down)}>−</button>
+                        <output dir="ltr" aria-live="polite">{pct} %</output>
+                        <button type="button" aria-label={t("group.moreShare", { n: i + 1 })} disabled={!up} onClick={() => up && setShares(up)}>+</button>
+                      </div>
                     </li>
-                  ))}
-                </ul>
-                {split.length > 1 && <p className={st.hint}>{t("group.splitHint")}</p>}
-              </div>
+                  );
+                })}
+              </ol>
+              {split.length > 1 && <p className={`${st.hint} ${st.splitHint}`}>{t("group.splitHint")}</p>}
             </details>
           </li>
         </ol>

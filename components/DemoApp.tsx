@@ -93,7 +93,6 @@ const AVATAR_TILE_FOCUS: Record<number, number> = { 0: 42, 7: 72 };
 /** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
 const smallAvatar = (src: string) => portraitCrop(src, "-s");
 const START_BALANCE = 25;
-const STUDIO_WELCOME_KEY = "gx-studio-welcome-v1";
 const APP_ITERATION = "v12";
 const STORAGE_KEY = `skill-arena-${APP_ITERATION}`;
 const TUTORIAL_KEY = `skill-arena-color-tutorial-${APP_ITERATION}`;
@@ -247,10 +246,19 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   useEffect(() => { setPlayerAvatar(portraitCrop(avatarSrc, "")); }, [avatarSrc]);
-  // v169: the owner chose the black-and-gold look; drop any v168 preview theme left in this session.
+  // v171: three new colour proposals for Grupo and Avatar, previewed with ?tema=1|2|3 (kept for the session;
+  // ?tema=0 goes back to black and gold, the default).
   useEffect(() => {
-    try { sessionStorage.removeItem("gg.tema"); } catch { /* storage blocked */ }
-    delete document.documentElement.dataset.tema;
+    try {
+      const wanted = new URLSearchParams(window.location.search).get("tema");
+      if (wanted !== null) sessionStorage.setItem("gg.tema171", /^[123]$/.test(wanted) ? wanted : "");
+      sessionStorage.removeItem("gg.tema");
+      const tema = sessionStorage.getItem("gg.tema171");
+      if (tema) document.documentElement.dataset.tema = tema;
+      else delete document.documentElement.dataset.tema;
+    } catch {
+      delete document.documentElement.dataset.tema;
+    }
   }, []);
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
@@ -367,7 +375,12 @@ export default function DemoApp() {
   // v153: the studio proposal opens from a small tab at the top left of the catalogue.
   const [proposing, setProposing] = useState(false);
   /** v158: the first tap on "Enviar juego" shows a one-off welcome box before the submission form. */
-  const [studioWelcome, setStudioWelcome] = useState(false);
+  /** v171: «Enviar juego» opens a short screen (earn money) and then the steps, before the submission form. */
+  const [studioWelcome, setStudioWelcome] = useState<false | "intro" | "steps">(false);
+  /** v171: the balance chip opens a wallet panel to add or withdraw money. */
+  const [walletOpen, setWalletOpen] = useState(false);
+  const [walletAmount, setWalletAmount] = useState(10);
+  useEffect(() => { setWalletOpen(false); }, [screen]);
   /** Simulated rival for the match in progress (demo leagues); null outside league duels. */
   const [leagueMatch, setLeagueMatch] = useState<{ gameId: string; rival: LeagueRival; tier: LeagueTier } | null>(null);
   const [leagueOutcome, setLeagueOutcome] = useState<{ won: boolean; record: LeagueRecord; rival: LeagueRival; score: number } | null>(null);
@@ -824,9 +837,29 @@ export default function DemoApp() {
   }, [earnings]);
 
   function openStudio() {
-    let seen = false;
-    try { seen = localStorage.getItem(STUDIO_WELCOME_KEY) === "1"; localStorage.setItem(STUDIO_WELCOME_KEY, "1"); } catch { /* shown again next time */ }
-    if (seen) setProposing(true); else setStudioWelcome(true);
+    setStudioWelcome("intro");
+  }
+
+  function moveMoney(direction: 1 | -1) {
+    const amount = walletAmount;
+    if (direction < 0 && balance < amount) return;
+    setBalance((b) => Number((b + direction * amount).toFixed(2)));
+    setMovements((m) => [direction > 0
+      ? { label: "Ingreso", amount, key: "move.deposit" as const }
+      : { label: "Retirada", amount: -amount, key: "move.withdraw" as const }, ...m]);
+    gameTone("good");
+    haptic(8);
+  }
+
+  function updateClosedGroup(patch: { name?: string; image?: string | null }) {
+    setGroup((g) => {
+      if (!g) return g;
+      const next = { ...g };
+      if (patch.name) next.name = patch.name;
+      if (patch.image === null) delete next.image;
+      else if (patch.image) next.image = patch.image;
+      return next;
+    });
   }
 
   function continueWithoutProvider() {
@@ -1119,7 +1152,7 @@ export default function DemoApp() {
     const prize = (c.payouts?.[GROUP_YOU] ?? 0) / 100, entry = c.config.entryMinor / 100;
     const split = typeof c.config.split === "string"
       ? t(c.config.split === "winner" ? "group.splitWinner" : "group.split7030")
-      : `${c.config.split.join(" · ")} %`;
+      : `${c.config.split.filter((x) => x > 0).join(" · ")} %`;
     if (prize > 0) {
       setBalance((value) => Number((value + prize).toFixed(2)));
       setMovements((items) => [{ label: `${group.name} · ${split}`, amount: prize, key: "move.groupPrize" as const, vars: { group: group.name, split } }, ...items].slice(0, 20));
@@ -1465,12 +1498,41 @@ export default function DemoApp() {
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
-            <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} onClick={() => navigate("profile")}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
+            <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} aria-haspopup="dialog" aria-expanded={walletOpen} onClick={() => setWalletOpen((v) => !v)}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
             <button className="settingsGear gxIconBtn gxHeadBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
               <UiIcon name="gear" />
             </button>
           </div>
         </header>
+      )}
+      {screen !== "game" && walletOpen && (
+        <>
+              <div className="gxWalletScrim" onClick={() => setWalletOpen(false)} aria-hidden="true" />
+              <div className="gxWallet" role="dialog" aria-label={t("wallet.title")}
+                onKeyDown={(event) => { if (event.key === "Escape") setWalletOpen(false); }}>
+                <div className="gxWalletHead">
+                  <small>{t("wallet.title")}</small>
+                  <strong dir="ltr">{euro(balance)}</strong>
+                </div>
+                <div className="gxWalletAmounts" role="radiogroup" aria-label={t("wallet.amount")}>
+                  {[10, 20, 50, 100].map((amount) => (
+                    <button key={amount} type="button" role="radio" aria-checked={walletAmount === amount} onClick={() => setWalletAmount(amount)} dir="ltr">{amount} €</button>
+                  ))}
+                </div>
+                <div className="gxWalletActions">
+                  <button type="button" className="gxWalletIn" autoFocus onClick={() => moveMoney(1)}>{t("wallet.deposit")}</button>
+                  <button type="button" className="gxWalletOut" disabled={balance < walletAmount} onClick={() => moveMoney(-1)}>{t("wallet.withdraw")}</button>
+                </div>
+                <div className="gxWalletMoves" aria-live="polite">
+                  {movements.length === 0 ? <p>{t("profile.noMovements")}</p> : movements.slice(0, 3).map((movement, index) => (
+                    <div key={`${movement.label}-${index}`}>
+                      <span>{movementLabel(movement)}</span>
+                      <b className={movement.amount < 0 ? "negative" : ""} dir="ltr">{movement.amount > 0 ? "+" : ""}{euro(movement.amount)}</b>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
       )}
 
       <div className={`appBody ${screen === "game" ? "gameBody" : ""}`}>
@@ -1486,10 +1548,23 @@ export default function DemoApp() {
             {matchStartError && <p role="status">{matchStartError}</p>}
             {studioWelcome && (
               <div className="gxStudioWelcome" role="dialog" aria-modal="true" aria-labelledby="studio-welcome-title" onClick={() => setStudioWelcome(false)}>
-                <div className="gxStudioWelcomeCard" onClick={(e) => e.stopPropagation()}>
-                  <span className="gxStudioWelcomeCoin" aria-hidden="true"><UiIcon name="coins" size={40} /></span>
-                  <h2 id="studio-welcome-title">{t("studio.welcome")}</h2>
-                  <button type="button" className="gxStudioWelcomeGo" autoFocus onClick={() => { setStudioWelcome(false); setProposing(true); }}>{t("common.continue")}</button>
+                <div className="gxStudioWelcomeCard" data-step={studioWelcome} onClick={(e) => e.stopPropagation()}>
+                  <button type="button" className="gxStudioWelcomeClose" aria-label={t("common.close")} onClick={() => setStudioWelcome(false)}><UiIcon name="close" size={18} /></button>
+                  {studioWelcome === "intro" ? (<>
+                    <span className="gxStudioWelcomeCoin" aria-hidden="true"><UiIcon name="coins" size={40} /></span>
+                    <h2 id="studio-welcome-title">{t("studio.introTitle")}</h2>
+                    <p>{t("studio.introLine")}</p>
+                    <button type="button" className="gxStudioWelcomeGo" autoFocus onClick={() => setStudioWelcome("steps")}>{t("studio.howTo")}</button>
+                  </>) : (<>
+                    <h2 id="studio-welcome-title">{t("studio.stepsTitle")}</h2>
+                    <ol className="gxStudioSteps">
+                      {(["studio.step1", "studio.step2", "studio.step3", "studio.step4"] as const).map((key, i) => (
+                        <li key={key}><b>{i + 1}</b><span>{t(key)}</span></li>
+                      ))}
+                    </ol>
+                    <button type="button" className="gxStudioWelcomeGo" autoFocus onClick={() => { setStudioWelcome(false); setProposing(true); }}>{t("studio.goSend")}</button>
+                    <button type="button" className="gxStudioWelcomeBack" onClick={() => setStudioWelcome("intro")}>{t("common.back")}</button>
+                  </>)}
                 </div>
               </div>
             )}
@@ -1512,6 +1587,7 @@ export default function DemoApp() {
             onCreateCompetition={startGroupComp}
             onPlay={() => playGroupMatch()}
             onVote={voteGroup}
+            onUpdateGroup={updateClosedGroup}
             onClearCompetition={() => setGroupComp(null)}
           />
         )}
@@ -1682,14 +1758,13 @@ export default function DemoApp() {
 
         {screen === "profile" && (
           <section className={`simpleScreen avatarScreen ${shellStyles.accountView}`} aria-label={t("profile.aria")}>
-            <h1>{t("profile.title")}</h1>
+            <h1 className="visuallyHidden">{t("profile.title")}</h1>
             <nav className="avatarSections" aria-label={t("profile.sections")}>
               <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>{t("profile.tabProfile")}</button>
               <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>{t("profile.tabRanking")}</button>
             </nav>
             {avatarSection === "ranking" ? <RankingHub bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
-            <p className={shellStyles.demoNote}>{t("profile.note")}</p>
-            <div className="profileStrip"><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span>{provider ? t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider }) : t("profile.localAccount")}</span></div><b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></div>
+            <div className="profileStrip"><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div></div>
 
             <div className="profileStats" aria-label={t("profile.stats")}>
               <div><b>{matchesPlayed}</b><span>{t("profile.played")}</span></div>
@@ -1699,37 +1774,6 @@ export default function DemoApp() {
             </div>
 
             <PlayerProgress leagues={persistentTraining ? undefined : leagues} bestScores={bestScores} onPlay={startMatch} />
-
-            <section className="accountWalletCard">
-              <div>
-                <small>{t("profile.balance")}</small>
-                <strong dir="ltr">{euro(balance)}</strong>
-              </div>
-              <div className="walletActions">
-                <button onClick={() => {
-                  setBalance((b) => b + 10);
-                  setMovements((m) => [{ label: "Ingreso", amount: 10, key: "move.deposit" as const }, ...m]);
-                }}>{t("profile.add")}</button>
-                <button
-                  disabled={balance < 10}
-                  onClick={() => {
-                    setBalance((b) => Number((b - 10).toFixed(2)));
-                    setMovements((m) => [{ label: "Retirada", amount: -10, key: "move.withdraw" as const }, ...m]);
-                  }}
-                >{t("profile.withdraw")}</button>
-              </div>
-              <div className="miniMovementList" aria-live="polite">
-                {movements.length === 0 && <p className={shellStyles.emptyNote}>{t("profile.noMovements")}</p>}
-                {movements.slice(0, 3).map((movement, index) => (
-                  <div key={`${movement.label}-${index}`}>
-                    <span>{movementLabel(movement)}</span>
-                    <b className={movement.amount < 0 ? "negative" : ""} dir="ltr">
-                      {movement.amount > 0 ? "+" : ""}{euro(movement.amount)}
-                    </b>
-                  </div>
-                ))}
-              </div>
-            </section>
 
             {persistentTraining && <RecentAttempts />}
             <div className="chartPanel">

@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 export type UiIconName =
   | "sound" | "soundOff" | "gear" | "back" | "close" | "upload" | "grid" | "ghost"
   | "games" | "group" | "trophy" | "check" | "chevronDown" | "logout" | "trash" | "user" | "coins"
-  | "share" | "copy" | "link" | "mail" | "chat" | "send" | "phone" | "dice" | "plus" | "enter" | "search" | "chevronUp";
+  | "share" | "copy" | "link" | "mail" | "chat" | "send" | "phone" | "dice" | "plus" | "enter" | "search" | "chevronUp" | "camera" | "pencil" | "wallet";
 
 /** Eight-tooth gear, computed once (pure math, identical on server and client). */
 const GEAR_PATH = (() => {
@@ -133,6 +133,19 @@ const PATHS: Record<UiIconName, ReactNode> = {
     <path d="m15.4 15.4 4.4 4.4" />
   </>),
   chevronUp: <path d="m6.5 14.5 5.5-5.5 5.5 5.5" />,
+  camera: (<>
+    <path d="M4 8.4a2 2 0 0 1 2-2h1.9l1.4-2h5.4l1.4 2H18a2 2 0 0 1 2 2v8.8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+    <circle cx="12" cy="12.6" r="3.4" />
+  </>),
+  pencil: (<>
+    <path d="M15.6 4.6a2 2 0 0 1 2.8 0l1 1a2 2 0 0 1 0 2.8L9.2 18.6 4.6 19.4l.8-4.6z" />
+    <path d="m13.8 6.4 3.8 3.8" />
+  </>),
+  wallet: (<>
+    <path d="M4.2 7.6a2.2 2.2 0 0 1 2.2-2.2h10.8v3" />
+    <rect x="4.2" y="8.4" width="15.6" height="10.2" rx="2.2" />
+    <path d="M15.4 13.5h2" />
+  </>),
   enter: (<>
     <path d="M13.6 4.6h3.6a2.2 2.2 0 0 1 2.2 2.2v10.4a2.2 2.2 0 0 1-2.2 2.2h-3.6" />
     <path d="M4.6 12h10.2M11 8.2l3.8 3.8-3.8 3.8" />

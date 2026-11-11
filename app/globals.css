@@ -9243,3 +9243,99 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .galacticAvatarSetup .gxAvatarGrid button { aspect-ratio: 9 / 16; border-radius: 14px; }
 .galacticAvatarSetup .gxAvatarGrid button img { width: 100%; height: 100%; object-fit: cover; }
 .galacticAvatarSetup .avatarMenuGrid.gxAvatarGrid { gap: 8px; }
+
+/* v171 · «Enviar juego»: a short screen (earn money) with a close button, then the steps and the form. */
+.gxStudioWelcomeCard { position: relative; text-align: center; }
+.gxStudioWelcomeCard p { margin: -6px 0 2px; color: #b9b2a4; font-size: 15px; line-height: 1.5; }
+.gxStudioWelcomeClose {
+  position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px;
+  border: 1px solid rgba(247,227,176,.18); background: transparent; color: #e9e4da;
+}
+.gxStudioWelcomeCard[data-step="steps"] { text-align: start; }
+.gxStudioWelcomeCard[data-step="steps"] h2 { padding-right: 44px; }
+.gxStudioSteps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.gxStudioSteps li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; color: #e9e4da; font-size: 14px; line-height: 1.45; }
+.gxStudioSteps b {
+  width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: #1a1206; font: 800 13px/1 var(--gx-data, monospace);
+  background: radial-gradient(circle at 35% 28%, #fff6d8, #f0cf86 38%, #b8863a 78%, #8a6224);
+}
+.gxStudioWelcomeBack { min-height: 44px; border: 0; background: none; color: #b9b2a4; font-weight: 600; }
+
+/* v171 · Wallet panel under the balance chip: amount, add, withdraw and the last movements. */
+.gxWalletScrim { position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,.45); }
+.gxWallet {
+  position: fixed; z-index: 71; top: calc(env(safe-area-inset-top, 0px) + 62px); right: 12px; width: min(320px, calc(100vw - 24px));
+  display: grid; gap: 14px; padding: 16px; border-radius: 18px; border: 1px solid transparent;
+  background: linear-gradient(180deg, #171613, #0d0c0b) padding-box,
+    linear-gradient(150deg, rgba(247,227,176,.55), rgba(247,227,176,.08) 34%, rgba(247,227,176,.2)) border-box;
+  box-shadow: 0 24px 50px rgba(0,0,0,.7); animation: gxWalletIn .16s ease-out;
+}
+@keyframes gxWalletIn { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .gxWallet { animation: none; } }
+.gxWalletHead { display: flex; align-items: baseline; justify-content: space-between; }
+.gxWalletHead small { color: #b9b2a4; font-size: 13px; }
+.gxWalletHead strong { font: 800 24px/1 var(--gx-data, monospace); background: linear-gradient(180deg, #fff6dc, #f4d692 42%, #c99a45); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gxWalletAmounts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.gxWalletAmounts button {
+  min-height: 40px; border-radius: 10px; border: 1px solid rgba(247,227,176,.16); background: #0b0a09; color: #e9e4da; font: 700 13px/1 var(--gx-data, monospace);
+}
+.gxWalletAmounts button[aria-checked="true"] { border-color: #e9c67e; color: #f7e3b0; background: #1a1712; }
+.gxWalletActions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gxWalletActions button { min-height: 48px; border-radius: 12px; font: 800 13px/1 var(--gx-display, sans-serif); letter-spacing: .04em; }
+.gxWalletIn {
+  border: 0; color: #1a1206;
+  background: linear-gradient(118deg, #fff4d2 0%, #f3d38c 20%, #c9973f 46%, #f7dc98 66%, #b8873a 88%, #e9c67e 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(90,58,12,.35);
+}
+.gxWalletOut { border: 1px solid rgba(233,198,126,.6); background: transparent; color: #f7e3b0; }
+.gxWalletOut:disabled { opacity: .45; }
+.gxWalletMoves { display: grid; gap: 0; }
+.gxWalletMoves p { margin: 0; color: #8d877c; font-size: 12.5px; text-align: center; }
+.gxWalletMoves > div { display: flex; justify-content: space-between; padding: 8px 2px; border-top: 1px solid rgba(247,227,176,.08); font-size: 13px; color: #b9b2a4; }
+.gxWalletMoves b { color: #9fe3b4; font-family: var(--gx-data, monospace); }
+.gxWalletMoves b.negative { color: #ff8a80; }
+
+/* v171 · Avatar tab: no title or local-identity notes; the net profit sits right under the name. */
+.appShell .avatarScreen .profileStrip > div { display: grid; gap: 3px; }
+.appShell .avatarScreen .profileStrip .profileNet { display: inline-flex; align-items: baseline; gap: 6px; color: var(--av-mute) !important; font-size: 12px !important; }
+.appShell .avatarScreen .profileStrip .profileNet b { font-size: 15px !important; font-family: var(--gx-data, monospace); }
+.appShell .avatarScreen .profileStrip .profileNet b.negative { color: #ff8a80 !important; background: none; }
+.appShell .avatarScreen .avatarSections { margin-top: 4px; }
+
+/* v171 · Avatar tab: the same three colour proposals (?tema=1|2|3). */
+:root[data-tema="1"] .appShell .avatarScreen { --av-ink:#f4efe1;--av-mute:#b9c4b3;--av-dim:#7f8d7c;--av-gold:#d9b45f;--av-gold-hi:#e2d4ff;--av-gold-ink:#fffaf0;--av-line:rgba(244,239,225,.11);--av-line-2:rgba(244,239,225,.22);--av-foil:linear-gradient(180deg,#7d50c4,#5c3299);--av-foil-text:linear-gradient(180deg,#fbefc4,#d9b45f);--av-surface:linear-gradient(180deg,#153124,#0e2219); }
+:root[data-tema="1"] .appShell .avatarScreen :is(.profileStrip, .playerProgress, .chartPanel, .settingsList, .gameRankingYou, .rankingTableWrap, .profileStats > div) { background: var(--av-surface) !important; border: 1px solid var(--av-line) !important; box-shadow: 0 14px 30px -18px rgba(0,0,0,.8) !important; }
+:root[data-tema="1"] .appShell .avatarScreen :is(.avatarSections button, .rankingViewTabs button) { background: #0b1c14 !important; border: 1px solid var(--av-line) !important; color: var(--av-mute) !important; box-shadow: none !important; }
+:root[data-tema="1"] .appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"], .rankingViewTabs button[aria-selected="true"]) { background: var(--av-foil) !important; color: var(--av-gold-ink) !important; border-color: transparent !important; box-shadow: none !important; text-shadow: none; }
+:root[data-tema="1"] .appShell .avatarScreen .rankingViewTabs { background: #0b1c14 !important; }
+:root[data-tema="1"] .appShell .avatarScreen .profileStats > div::before { background: var(--av-foil); }
+:root[data-tema="1"] .appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0b1c14, 0 0 0 3.5px #7d50c4 !important; }
+:root[data-tema="1"] .appShell .avatarScreen .playerProgress li button { background: #0b1c14 !important; }
+:root[data-tema="1"] .appShell .avatarScreen .profitLine { stroke: #7d50c4 !important; filter: none; }
+:root[data-tema="1"] .appShell .avatarScreen :is(.profileStrip strong, .playerProgress h2, .chartHead strong, .settingsList button, .gameRankingYou > span b) { color: var(--av-ink) !important; }
+:root[data-tema="1"] .appShell .avatarScreen .gameRankingPick select { background: #0b1c14 !important; color: var(--av-ink) !important; }
+:root[data-tema="2"] .appShell .avatarScreen { --av-ink:#17140f;--av-mute:#6b655b;--av-dim:#9a9387;--av-gold:#d23a24;--av-gold-hi:#b8301c;--av-gold-ink:#ffffff;--av-line:rgba(23,20,15,.12);--av-line-2:rgba(23,20,15,.22);--av-foil:linear-gradient(180deg,#e8462f,#c9331f);--av-foil-text:linear-gradient(180deg,#17140f,#17140f);--av-surface:linear-gradient(180deg,#f4efe6,#ebe4d7); }
+:root[data-tema="2"] .appShell .avatarScreen :is(.profileStrip, .playerProgress, .chartPanel, .settingsList, .gameRankingYou, .rankingTableWrap, .profileStats > div) { background: var(--av-surface) !important; border: 1px solid var(--av-line) !important; box-shadow: 0 14px 30px -18px rgba(0,0,0,.8) !important; }
+:root[data-tema="2"] .appShell .avatarScreen :is(.avatarSections button, .rankingViewTabs button) { background: #fbf8f2 !important; border: 1px solid var(--av-line) !important; color: var(--av-mute) !important; box-shadow: none !important; }
+:root[data-tema="2"] .appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"], .rankingViewTabs button[aria-selected="true"]) { background: var(--av-foil) !important; color: var(--av-gold-ink) !important; border-color: transparent !important; box-shadow: none !important; text-shadow: none; }
+:root[data-tema="2"] .appShell .avatarScreen .rankingViewTabs { background: #fbf8f2 !important; }
+:root[data-tema="2"] .appShell .avatarScreen .profileStats > div::before { background: var(--av-foil); }
+:root[data-tema="2"] .appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #fbf8f2, 0 0 0 3.5px #d23a24 !important; }
+:root[data-tema="2"] .appShell .avatarScreen .playerProgress li button { background: #fbf8f2 !important; }
+:root[data-tema="2"] .appShell .avatarScreen .profitLine { stroke: #d23a24 !important; filter: none; }
+:root[data-tema="2"] .appShell .avatarScreen :is(.profileStrip strong, .playerProgress h2, .chartHead strong, .settingsList button, .gameRankingYou > span b) { color: var(--av-ink) !important; }
+:root[data-tema="2"] .appShell .avatarScreen .gameRankingPick select { background: #fbf8f2 !important; color: var(--av-ink) !important; }
+:root[data-tema="2"] .appShell .avatarScreen .playerProgress li button { border-color: rgba(23,20,15,.1) !important; }
+:root[data-tema="2"] .appShell .avatarScreen :is(.playerProgress li strong, .playerProgress li b, .rankingTable td) { color: var(--av-ink) !important; }
+:root[data-tema="3"] .appShell .avatarScreen { --av-ink:#f2f4f7;--av-mute:#9aa1ab;--av-dim:#5f6670;--av-gold:#ff6a33;--av-gold-hi:#ff9a70;--av-gold-ink:#160903;--av-line:rgba(255,255,255,.08);--av-line-2:rgba(255,255,255,.16);--av-foil:linear-gradient(180deg,#ff6630,#ee4a12);--av-foil-text:linear-gradient(180deg,#f1fdff,#8fe3ff);--av-surface:linear-gradient(180deg,#15171a,#0d0e10); }
+:root[data-tema="3"] .appShell .avatarScreen :is(.profileStrip, .playerProgress, .chartPanel, .settingsList, .gameRankingYou, .rankingTableWrap, .profileStats > div) { background: var(--av-surface) !important; border: 1px solid var(--av-line) !important; box-shadow: 0 14px 30px -18px rgba(0,0,0,.8) !important; }
+:root[data-tema="3"] .appShell .avatarScreen :is(.avatarSections button, .rankingViewTabs button) { background: #0a0b0d !important; border: 1px solid var(--av-line) !important; color: var(--av-mute) !important; box-shadow: none !important; }
+:root[data-tema="3"] .appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"], .rankingViewTabs button[aria-selected="true"]) { background: var(--av-foil) !important; color: var(--av-gold-ink) !important; border-color: transparent !important; box-shadow: none !important; text-shadow: none; }
+:root[data-tema="3"] .appShell .avatarScreen .rankingViewTabs { background: #0a0b0d !important; }
+:root[data-tema="3"] .appShell .avatarScreen .profileStats > div::before { background: var(--av-foil); }
+:root[data-tema="3"] .appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0a0b0d, 0 0 0 3.5px #ff6a33 !important; }
+:root[data-tema="3"] .appShell .avatarScreen .playerProgress li button { background: #0a0b0d !important; }
+:root[data-tema="3"] .appShell .avatarScreen .profitLine { stroke: #ff6a33 !important; filter: none; }
+:root[data-tema="3"] .appShell .avatarScreen :is(.profileStrip strong, .playerProgress h2, .chartHead strong, .settingsList button, .gameRankingYou > span b) { color: var(--av-ink) !important; }
+:root[data-tema="3"] .appShell .avatarScreen .gameRankingPick select { background: #0a0b0d !important; color: var(--av-ink) !important; }
+:root[data-tema="3"] .appShell .avatarScreen :is(.profileStrip, .playerProgress, .chartPanel, .settingsList, .profileStats > div, .avatarSections button) { border-radius: 8px !important; }

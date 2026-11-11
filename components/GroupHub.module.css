@@ -479,3 +479,189 @@
 }
 .ticket { box-shadow: inset 0 1px 0 rgba(255, 246, 220, .06); }
 .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px #e9c67e; }
+
+/* v171 · Header in one row: the group picture (tap to set a phone photo), the name on a single line (tap to rename)
+   and the code right under it. */
+.head { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 14px; padding: 14px 16px; }
+.groupPic {
+  position: relative; width: 64px; height: 64px; padding: 0; border-radius: 50%; border: 0; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 30%, #1d1a14, #0b0a09); color: var(--gold);
+  box-shadow: 0 0 0 2px #0e0d0c, 0 0 0 3.5px #e9c67e;
+}
+.groupPic img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.groupPicBadge {
+  position: absolute; right: -2px; bottom: -2px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--foil); color: var(--gold-ink); box-shadow: 0 0 0 2px #121110;
+}
+.headName { display: grid; gap: 8px; justify-items: start; }
+.nameBtn {
+  display: flex; align-items: center; gap: 8px; max-width: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: var(--dim); text-align: start;
+}
+.nameBtn h1 {
+  margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-wrap: nowrap;
+  font: 700 20px/1.2 var(--gx-display, sans-serif); color: var(--ink);
+}
+.nameForm { width: 100%; }
+.nameForm input {
+  width: 100%; min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #e9c67e; background: var(--field);
+  color: var(--ink); font: 700 18px/1 var(--gx-display, sans-serif); outline: none;
+}
+.headName .ticket { display: inline-flex; align-items: center; gap: 10px; justify-items: initial; padding: 6px 12px; border-radius: 10px; }
+.headName .ticket b { font-size: 15px; letter-spacing: .14em; }
+.headName .ticket::before, .headName .ticket::after { display: none; }
+
+/* Counters: «Número de jornadas» and «Eliminados por ronda». */
+.counter { display: grid; grid-template-columns: minmax(0, 1fr) 156px; align-items: center; gap: 12px; }
+.counter > span { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.counter .stepper { grid-template-columns: 44px 1fr 44px; }
+
+/* Prize split: every position from top to bottom with its share and −/+ in steps of 5 %. */
+.positions { list-style: none; margin: 0; padding: 6px 12px 4px; display: grid; border-top: 1px solid var(--line); }
+.positions li { --tone: #9a958b; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 52px; }
+.positions li + li { border-top: 1px solid var(--line); }
+.positions li[data-place="1"] { --tone: #e9c67e; }
+.positions li[data-place="2"] { --tone: #d6dbe2; }
+.positions li[data-place="3"] { --tone: #cf8f5a; }
+.positions li[data-zero] { --tone: #6c6862; }
+.positions .place { grid-row: auto; font: 700 14px/1 var(--gx-data, monospace); color: var(--tone); }
+.posMoney { font: 600 13px/1 var(--gx-data, monospace); color: var(--mute); font-variant-numeric: tabular-nums; }
+.positions li[data-zero] .posMoney { color: var(--dim); }
+.pctStepper { display: grid; grid-template-columns: 38px 64px 38px; align-items: center; border-radius: 10px; border: 1px solid var(--line-2); overflow: hidden; }
+.pctStepper button { height: 38px; border: 0; background: rgba(247, 227, 176, .04); color: var(--gold-hi); font-size: 20px; font-weight: 600; }
+.pctStepper button:disabled { color: var(--dim); background: none; }
+.pctStepper button:active:not(:disabled) { background: rgba(233, 198, 126, .14); }
+.pctStepper output {
+  text-align: center; font: 700 14px/38px var(--gx-data, monospace); color: var(--ink); font-variant-numeric: tabular-nums;
+  border-inline: 1px solid var(--line-2);
+}
+.positions li[data-zero] .pctStepper output { color: var(--dim); }
+.splitHint { padding: 4px 14px 14px; }
+
+/* ======================================================================================================
+   v171 · Three new colour proposals for the owner (preview with ?tema=1, ?tema=2 or ?tema=3; without it the
+   black-and-gold look stays). Only colours and surfaces change; layout is shared.
+   ====================================================================================================== */
+
+/* 1 · Pista: verde hierba profunda, crema, morado de club y oro solo para el dinero. */
+:global(:root[data-tema="1"]) .screen {
+  --ink: #f4efe1; --mute: #b9c4b3; --dim: #7f8d7c; --gold: #b896ff; --gold-hi: #e2d4ff; --gold-ink: #fffaf0;
+  --line: rgba(244, 239, 225, .11); --line-2: rgba(244, 239, 225, .22); --panel: #12291f; --field: #0b1c14; --chosen: #20183a;
+  --foil: linear-gradient(180deg, #7d50c4, #5c3299); --foil-text: linear-gradient(180deg, #fbefc4, #d9b45f);
+  --edge: linear-gradient(150deg, rgba(244, 239, 225, .35), rgba(244, 239, 225, .06) 40%, rgba(244, 239, 225, .14)); --grain: none;
+}
+:global(:root[data-tema="1"]) .screen :is(.panel, .hero, .head), :global(:root[data-tema="1"]) .screen .sheet { background: linear-gradient(180deg, #153124, #0e2219); border: 1px solid var(--line); box-shadow: 0 14px 30px -18px rgba(0, 0, 0, .8); }
+:global(:root[data-tema="1"]) .screen .hero::after { background: var(--foil); }
+:global(:root[data-tema="1"]) .screen :is(.choice button, .seg3 button, .seg2 button) { background: #0b1c14; border: 1px solid var(--line); box-shadow: none; }
+:global(:root[data-tema="1"]) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) { background: linear-gradient(180deg, #2a1f4a, #1d1636); border: 1.5px solid var(--gold); box-shadow: none; }
+:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--gold-hi); }
+:global(:root[data-tema="1"]) .screen .primary { text-shadow: none; box-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
+:global(:root[data-tema="1"]) .screen .primary::after { display: none; }
+:global(:root[data-tema="1"]) .screen .primary:disabled { background: var(--line-2); color: var(--dim); }
+:global(:root[data-tema="1"]) .screen .secondary { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-hi); box-shadow: none; }
+:global(:root[data-tema="1"]) .screen .steps > li::before { background: #f4efe1; color: #12291f; box-shadow: none; }
+:global(:root[data-tema="1"]) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
+:global(:root[data-tema="1"]) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input) { background: #0b1c14; border-color: var(--line-2); }
+:global(:root[data-tema="1"]) .screen .ticket { background: #0b1c14; border: 1px dashed var(--gold); box-shadow: none; }
+:global(:root[data-tema="1"]) .screen .ticket small { color: var(--gold-hi); }
+:global(:root[data-tema="1"]) .screen .prizeBox { background: linear-gradient(180deg, #1b3a2b, #10261c); border: 1px solid rgba(217, 180, 95, .55); }
+:global(:root[data-tema="1"]) .screen .gameArt { border-color: var(--line); }
+:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--gold); }
+:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--foil); color: var(--gold-ink); box-shadow: none; }
+:global(:root[data-tema="1"]) .screen .gameArt[data-random] { background: #0b1c14; }
+:global(:root[data-tema="1"]) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #0b1c14, 0 0 0 3.5px var(--gold); }
+:global(:root[data-tema="1"]) .screen .groupPic { background: #0b1c14; color: var(--gold); }
+:global(:root[data-tema="1"]) .screen .groupPicBadge { box-shadow: 0 0 0 2px var(--panel); }
+:global(:root[data-tema="1"]) .screen .pctStepper button { background: transparent; color: var(--gold-hi); }
+:global(:root[data-tema="1"]) .screen .placesPick button[aria-pressed="true"] { box-shadow: none; }
+:global(:root[data-tema="1"]) .screen .standings li { background: #0b1c14; }
+:global(:root[data-tema="1"]) .screen .standings li[data-you] { background: linear-gradient(180deg, #2a1f4a, #1d1636); border: 1px solid var(--gold); }
+:global(:root[data-tema="1"]) .screen .appIcon { background: color-mix(in srgb, var(--tone) 12%, #0b1c14); }
+:global(:root[data-tema="1"]) .screen .kicker { background-image: var(--foil); }
+
+/* 2 · Marfil: tarjetas de marfil sobre negro, tinta y bermellón. */
+:global(:root[data-tema="2"]) .screen {
+  --ink: #17140f; --mute: #6b655b; --dim: #9a9387; --gold: #d23a24; --gold-hi: #b8301c; --gold-ink: #ffffff;
+  --line: rgba(23, 20, 15, .12); --line-2: rgba(23, 20, 15, .22); --panel: #f1ece2; --field: #fbf8f2; --chosen: #ffffff;
+  --foil: linear-gradient(180deg, #e8462f, #c9331f); --foil-text: linear-gradient(180deg, #17140f, #17140f);
+  --edge: linear-gradient(rgba(23, 20, 15, .08), rgba(23, 20, 15, .08)); --grain: none;
+}
+:global(:root[data-tema="2"]) .screen :is(.panel, .hero, .head), :global(:root[data-tema="2"]) .screen .sheet { background: linear-gradient(180deg, #f4efe6, #ebe4d7); border: 1px solid var(--line); box-shadow: 0 14px 30px -18px rgba(0, 0, 0, .8); }
+:global(:root[data-tema="2"]) .screen .hero::after { background: var(--foil); }
+:global(:root[data-tema="2"]) .screen :is(.choice button, .seg3 button, .seg2 button) { background: #fbf8f2; border: 1px solid var(--line); box-shadow: none; }
+:global(:root[data-tema="2"]) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) { background: #ffffff; border: 1.5px solid var(--gold); box-shadow: none; }
+:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--gold-hi); }
+:global(:root[data-tema="2"]) .screen .primary { text-shadow: none; box-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
+:global(:root[data-tema="2"]) .screen .primary::after { display: none; }
+:global(:root[data-tema="2"]) .screen .primary:disabled { background: var(--line-2); color: var(--dim); }
+:global(:root[data-tema="2"]) .screen .secondary { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-hi); box-shadow: none; }
+:global(:root[data-tema="2"]) .screen .steps > li::before { background: #17140f; color: #f4efe6; box-shadow: none; }
+:global(:root[data-tema="2"]) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
+:global(:root[data-tema="2"]) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input) { background: #fbf8f2; border-color: var(--line-2); }
+:global(:root[data-tema="2"]) .screen .ticket { background: #fbf8f2; border: 1px dashed var(--gold); box-shadow: none; }
+:global(:root[data-tema="2"]) .screen .ticket small { color: var(--gold-hi); }
+:global(:root[data-tema="2"]) .screen .prizeBox { background: #17140f; border: 1px solid #17140f; }
+:global(:root[data-tema="2"]) .screen .gameArt { border-color: var(--line); }
+:global(:root[data-tema="2"]) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--gold); }
+:global(:root[data-tema="2"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--foil); color: var(--gold-ink); box-shadow: none; }
+:global(:root[data-tema="2"]) .screen .gameArt[data-random] { background: #fbf8f2; }
+:global(:root[data-tema="2"]) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #fbf8f2, 0 0 0 3.5px var(--gold); }
+:global(:root[data-tema="2"]) .screen .groupPic { background: #fbf8f2; color: var(--gold); }
+:global(:root[data-tema="2"]) .screen .groupPicBadge { box-shadow: 0 0 0 2px var(--panel); }
+:global(:root[data-tema="2"]) .screen .pctStepper button { background: transparent; color: var(--gold-hi); }
+:global(:root[data-tema="2"]) .screen .placesPick button[aria-pressed="true"] { box-shadow: none; }
+:global(:root[data-tema="2"]) .screen .standings li { background: #fbf8f2; }
+:global(:root[data-tema="2"]) .screen .standings li[data-you] { background: #ffffff; border: 1px solid var(--gold); }
+:global(:root[data-tema="2"]) .screen .appIcon { background: color-mix(in srgb, var(--tone) 12%, #fbf8f2); }
+:global(:root[data-tema="2"]) .screen .kicker { background-image: var(--foil); }
+:global(:root[data-tema="2"]) .screen .members img { box-shadow: 0 0 0 1.5px rgba(23, 20, 15, .25); }
+:global(:root[data-tema="2"]) .screen .prizeBox span, :global(:root[data-tema="2"]) .screen .prizeBox small { color: #d9d1c2; }
+:global(:root[data-tema="2"]) .screen .prizeBox b { background: none; color: #f4efe6; }
+:global(:root[data-tema="2"]) .screen .gameMark { border-color: rgba(255, 255, 255, .9); }
+:global(:root[data-tema="2"]) .screen .positions li[data-place="1"] { --tone: #b8301c; }
+:global(:root[data-tema="2"]) .screen .positions li[data-place="2"] { --tone: #5a554c; }
+:global(:root[data-tema="2"]) .screen .positions li[data-place="3"] { --tone: #8a5a2b; }
+:global(:root[data-tema="2"]) .screen .search input, :global(:root[data-tema="2"]) .screen .money input { color: var(--ink); }
+:global(:root[data-tema="2"]) .screen .close { color: var(--ink); }
+
+/* 3 · Telemetría: carbono, naranja de señal y cifras en azul hielo, esquinas firmes. */
+:global(:root[data-tema="3"]) .screen {
+  --ink: #f2f4f7; --mute: #9aa1ab; --dim: #5f6670; --gold: #ff6a33; --gold-hi: #ff9a70; --gold-ink: #160903;
+  --line: rgba(255, 255, 255, .08); --line-2: rgba(255, 255, 255, .16); --panel: #121316; --field: #0a0b0d; --chosen: #1f1410;
+  --foil: linear-gradient(180deg, #ff6630, #ee4a12); --foil-text: linear-gradient(180deg, #f1fdff, #8fe3ff);
+  --edge: linear-gradient(rgba(255, 255, 255, .1), rgba(255, 255, 255, .1)); --grain: none;
+}
+:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head), :global(:root[data-tema="3"]) .screen .sheet { background: linear-gradient(180deg, #15171a, #0d0e10); border: 1px solid var(--line); box-shadow: 0 14px 30px -18px rgba(0, 0, 0, .8); }
+:global(:root[data-tema="3"]) .screen .hero::after { background: var(--foil); }
+:global(:root[data-tema="3"]) .screen :is(.choice button, .seg3 button, .seg2 button) { background: #0a0b0d; border: 1px solid var(--line); box-shadow: none; }
+:global(:root[data-tema="3"]) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) { background: linear-gradient(180deg, #24150f, #170e0a); border: 1.5px solid var(--gold); box-shadow: none; }
+:global(:root[data-tema="3"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--gold-hi); }
+:global(:root[data-tema="3"]) .screen .primary { text-shadow: none; box-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
+:global(:root[data-tema="3"]) .screen .primary::after { display: none; }
+:global(:root[data-tema="3"]) .screen .primary:disabled { background: var(--line-2); color: var(--dim); }
+:global(:root[data-tema="3"]) .screen .secondary { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-hi); box-shadow: none; }
+:global(:root[data-tema="3"]) .screen .steps > li::before { background: #ff6630; color: #160903; box-shadow: none; }
+:global(:root[data-tema="3"]) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
+:global(:root[data-tema="3"]) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input) { background: #0a0b0d; border-color: var(--line-2); }
+:global(:root[data-tema="3"]) .screen .ticket { background: #0a0b0d; border: 1px dashed var(--gold); box-shadow: none; }
+:global(:root[data-tema="3"]) .screen .ticket small { color: var(--gold-hi); }
+:global(:root[data-tema="3"]) .screen .prizeBox { background: linear-gradient(180deg, #10181c, #0b1114); border: 1px solid rgba(143, 227, 255, .45); }
+:global(:root[data-tema="3"]) .screen .gameArt { border-color: var(--line); }
+:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--gold); }
+:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--foil); color: var(--gold-ink); box-shadow: none; }
+:global(:root[data-tema="3"]) .screen .gameArt[data-random] { background: #0a0b0d; }
+:global(:root[data-tema="3"]) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #0a0b0d, 0 0 0 3.5px var(--gold); }
+:global(:root[data-tema="3"]) .screen .groupPic { background: #0a0b0d; color: var(--gold); }
+:global(:root[data-tema="3"]) .screen .groupPicBadge { box-shadow: 0 0 0 2px var(--panel); }
+:global(:root[data-tema="3"]) .screen .pctStepper button { background: transparent; color: var(--gold-hi); }
+:global(:root[data-tema="3"]) .screen .placesPick button[aria-pressed="true"] { box-shadow: none; }
+:global(:root[data-tema="3"]) .screen .standings li { background: #0a0b0d; }
+:global(:root[data-tema="3"]) .screen .standings li[data-you] { background: linear-gradient(180deg, #24150f, #170e0a); border: 1px solid var(--gold); }
+:global(:root[data-tema="3"]) .screen .appIcon { background: color-mix(in srgb, var(--tone) 12%, #0a0b0d); }
+:global(:root[data-tema="3"]) .screen .kicker { background-image: var(--foil); }
+:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head, .primary, .secondary, .seg3 button, .seg2 button, .choice button, .search, .money, .split, .order, .prizeBox, .ticket, .gameArt, .codeInput, .stepper button, .pctStepper) { border-radius: 8px; }
+:global(:root[data-tema="3"]) .screen .steps > li::before { border-radius: 4px; }
+:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head) { background-image: linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px), linear-gradient(180deg, #15171a, #0d0e10); background-size: 24px 24px, 24px 24px, auto; }
+:global(:root[data-tema="3"]) .screen .prizeBox span { color: #8fe3ff; }
+:global(:root[data-tema="3"]) .screen .positions .place { color: var(--gold); }
+:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: var(--mute); }
+:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button span { color: var(--mute); }
