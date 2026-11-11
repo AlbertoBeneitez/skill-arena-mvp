@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 10 de noviembre de 2026 · base `mobile-test` en v168-saturn.
+Actualizado: 10 de noviembre de 2026 · base `mobile-test` en v169-saturn.
 
 ## Catálogo
 
@@ -86,7 +86,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
-- [ ] **Colores de Grupo y Avatar (10 de noviembre, v168):** tres propuestas para ver con `?tema=1`, `?tema=2` o `?tema=3` (Brawl, Candy, Tapete), a la espera de que el propietario elija. En la misma versión: selector de avatar 4 × 4 con los retratos enteros, fila «Tu selección», juegos repetibles con buscador y orden en Grupo, € dentro de la entrada con flechas, y sonido silenciado en segundo plano.
+- [x] **Negro y oro metálico en Grupo y Avatar (11 de noviembre, v169):** el propietario eligió la propuesta negra; se elabora con oro metálico, grano y filetes dorados, y se retiran las propuestas `?tema=`.
+- [x] **Colores de Grupo y Avatar (10 de noviembre, v168):** tres propuestas para ver con `?tema=1`, `?tema=2` o `?tema=3` (Brawl, Candy, Tapete), a la espera de que el propietario elija. En la misma versión: selector de avatar 4 × 4 con los retratos enteros, fila «Tu selección», juegos repetibles con buscador y orden en Grupo, € dentro de la entrada con flechas, y sonido silenciado en segundo plano.
 - [x] **Grupo en negro y oro (10 de noviembre, v167):** diseño propio negro y oro; juegos elegidos por su portada (liga y torneo con varios, en orden); luz verde cuando un rival espera; sin sombra arriba de las portadas; «Enviar juego» algo más visible y su bienvenida sin degradados; avatar del chacal con la cabeza entera.
 - [x] **Fichas cuadradas y pestaña de Grupo (10 de noviembre, v166):** fichas cuadradas más pequeñas; botones sin círculos brillantes; portadas de Dardos, Galoku, Stack y Tower Drop; Grupo con código que se copia, un botón de compartir con apps, pasos numerados y reparto del bote con barras (70 · 20 · 10, de mayor a menor); sin «ficticio» ni «simulado» en pantallas, salvo los textos legales y de ayuda y el ranking de ejemplo, que se sigue llamando así.
 - [x] **Botones de inicio a medida y carga completa (10 de noviembre, v165):** «Enviar juego» y «Rankings» iguales; los controles de inicio y cabecera con un mismo diseño; portadas que llenan la ficha; Mine Grid clásico y sin contador; los juegos esperan a sus imágenes. Bowling confirmado por el propietario.

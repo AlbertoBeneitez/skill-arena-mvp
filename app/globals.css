@@ -9140,59 +9140,101 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .galacticAvatarSetup .gxAvatarGrid .gxAvatarTileCheck { top: 5px; right: 5px; width: 20px; height: 20px; }
 
 /* ======================================================================================================
-   v168 · Avatar tab: three colour proposals matching the Group ones (preview with ?tema=1, 2 or 3).
+   v169 · Avatar tab in black and metallic gold, matching Grupo: layered blacks with grain, a gold hairline lit at
+   the top-left, foil for the figures that matter (balance, best marks, ranks) and for the chosen tab.
    ====================================================================================================== */
-/* 1 · Brawl */
-:root[data-tema="1"] .appShell .simpleScreen h1 { color: #fff; text-shadow: 0 2px 0 #120a30; }
-:root[data-tema="1"] .appShell .avatarSections { border-bottom-color: rgba(150,130,255,.3); }
-:root[data-tema="1"] .appShell .avatarSections button { background: #251660 !important; border: 2px solid #120a30 !important; color: #c3baf5 !important; box-shadow: 0 3px 0 #120a30; }
-:root[data-tema="1"] .appShell .avatarSections button[aria-pressed="true"] { background: #ffd23f !important; color: #1b0f45 !important; box-shadow: inset 0 3px 0 rgba(255,255,255,.45), 0 3px 0 #b98700; }
-:root[data-tema="1"] .appShell .profileStrip { background: linear-gradient(180deg, #2c1b70, #221459) !important; border: 2px solid #120a30 !important; box-shadow: 0 4px 0 #120a30 !important; }
-:root[data-tema="1"] .appShell .profileStrip b { color: #5bea6a !important; }
-:root[data-tema="1"] .appShell .profileStats > div { border: 2px solid #120a30 !important; box-shadow: 0 3px 0 #120a30 !important; }
-:root[data-tema="1"] .appShell .profileStats > div:nth-child(1) { background: #ff4fa3 !important; }
-:root[data-tema="1"] .appShell .profileStats > div:nth-child(2) { background: #35d0ff !important; }
-:root[data-tema="1"] .appShell .profileStats > div:nth-child(3) { background: #5bea6a !important; }
-:root[data-tema="1"] .appShell .profileStats > div:nth-child(4) { background: #ffd23f !important; }
-:root[data-tema="1"] .appShell .profileStats :is(b, span) { color: #1b0f45 !important; }
-:root[data-tema="1"] .appShell .playerProgress { background: #251660 !important; border: 2px solid #120a30 !important; box-shadow: 0 4px 0 #120a30; }
-:root[data-tema="1"] .appShell .playerProgress li button { background: #1a0f48 !important; border-color: rgba(150,130,255,.25) !important; border-left-width: 4px !important; }
-:root[data-tema="1"] .appShell .playerProgress .progressMark b { color: #ffd23f !important; }
-:root[data-tema="1"] .appShell .accountWalletCard { background: linear-gradient(180deg, #2c1b70, #221459) !important; border: 2px solid #120a30 !important; }
+.appShell .avatarScreen {
+  --av-ink: #f6f2ea; --av-mute: #a8a39a; --av-dim: #6c6862; --av-gold: #e9c67e; --av-gold-hi: #f7e3b0; --av-gold-ink: #1a1206;
+  --av-line: rgba(247,227,176,.1); --av-line-2: rgba(247,227,176,.2);
+  --av-foil: linear-gradient(118deg, #fff4d2 0%, #f3d38c 20%, #c9973f 46%, #f7dc98 66%, #b8873a 88%, #e9c67e 100%);
+  --av-foil-text: linear-gradient(180deg, #fff6dc 0%, #f4d692 42%, #c99a45 100%);
+  --av-edge: linear-gradient(150deg, rgba(247,227,176,.55), rgba(247,227,176,.08) 34%, rgba(247,227,176,.05) 70%, rgba(247,227,176,.22));
+  --av-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  --av-surface: var(--av-grain) padding-box, radial-gradient(120% 70% at 0% 0%, rgba(247,227,176,.06), transparent 60%) padding-box, linear-gradient(180deg, #151412, #0c0b0a) padding-box, var(--av-edge) border-box;
+}
+.appShell .avatarScreen > h1 { color: var(--av-ink); }
+.appShell .avatarScreen > h1::after { content: ""; display: block; width: 44px; height: 2px; margin-top: 8px; border-radius: 2px; background: var(--av-foil); }
+.appShell .avatarScreen > p { color: var(--av-mute) !important; }
+.appShell .avatarScreen :is(.profileStrip, .playerProgress, .accountWalletCard, .chartPanel, .settingsList, .gameRankingYou, .rankingTableWrap) {
+  border: 1px solid transparent !important; background: var(--av-surface) !important;
+  box-shadow: inset 0 1px 0 rgba(255,246,220,.06), 0 14px 30px -18px rgba(0,0,0,.9) !important;
+}
 
-/* 2 · Candy */
-:root[data-tema="2"] .appShell .simpleScreen h1 { color: #fff4fb; }
-:root[data-tema="2"] .appShell .avatarSections { border-bottom-color: rgba(255,140,220,.2); }
-:root[data-tema="2"] .appShell .avatarSections button { background: #37104a !important; border: 1px solid rgba(255,140,220,.3) !important; color: #e2b6d8 !important; border-radius: 18px !important; }
-:root[data-tema="2"] .appShell .avatarSections button[aria-pressed="true"] { background: linear-gradient(180deg, #ff6aa8, #ff4f9a 45%, #ff8a3c) !important; color: #fff !important; border-color: transparent !important; box-shadow: inset 0 2px 0 rgba(255,255,255,.5), 0 6px 16px -6px rgba(255,79,154,.7); }
-:root[data-tema="2"] .appShell .profileStrip { background: radial-gradient(120% 90% at 0% 0%, rgba(255,79,154,.22), transparent 60%), #33103f !important; border: 1px solid rgba(255,140,220,.3) !important; border-radius: 24px !important; }
-:root[data-tema="2"] .appShell .profileStrip b { color: #3ee6b0 !important; }
-:root[data-tema="2"] .appShell .profileStats > div { border: 0 !important; border-radius: 20px !important; box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.18) !important; }
-:root[data-tema="2"] .appShell .profileStats > div:nth-child(1) { background: linear-gradient(180deg, #ff7cb5, #ff4f9a) !important; }
-:root[data-tema="2"] .appShell .profileStats > div:nth-child(2) { background: linear-gradient(180deg, #ffb46e, #ff8a3c) !important; }
-:root[data-tema="2"] .appShell .profileStats > div:nth-child(3) { background: linear-gradient(180deg, #c49bff, #a66bff) !important; }
-:root[data-tema="2"] .appShell .profileStats > div:nth-child(4) { background: linear-gradient(180deg, #6ff0c6, #3ee6b0) !important; }
-:root[data-tema="2"] .appShell .profileStats b { color: #fff !important; text-shadow: 0 1px 0 rgba(0,0,0,.25); }
-:root[data-tema="2"] .appShell .profileStats span { color: rgba(255,255,255,.9) !important; }
-:root[data-tema="2"] .appShell .playerProgress { background: #33103f !important; border: 1px solid rgba(255,140,220,.22) !important; border-radius: 24px !important; }
-:root[data-tema="2"] .appShell .playerProgress li button { background: #260a33 !important; border-color: rgba(255,140,220,.14) !important; border-radius: 18px !important; }
-:root[data-tema="2"] .appShell .playerProgress .progressMark b { color: #ffb46e !important; }
-:root[data-tema="2"] .appShell .accountWalletCard { background: linear-gradient(120deg, rgba(255,79,154,.3), rgba(255,154,60,.22)), #33103f !important; border: 0 !important; border-radius: 24px !important; }
+/* Tabs: a dark track; the chosen tab is the foil. */
+.appShell .avatarScreen .avatarSections { border-bottom-color: var(--av-line) !important; }
+.appShell .avatarScreen .avatarSections button,
+.appShell .avatarScreen .rankingViewTabs button {
+  background: linear-gradient(180deg, #11100e, #0a0a09) !important; border: 1px solid var(--av-line) !important; color: var(--av-mute) !important;
+  box-shadow: inset 0 1px 0 rgba(255,246,220,.04) !important;
+}
+.appShell .avatarScreen .avatarSections button[aria-pressed="true"],
+.appShell .avatarScreen .rankingViewTabs button[aria-selected="true"] {
+  position: relative; overflow: hidden; border-color: transparent !important; color: var(--av-gold-ink) !important; background: var(--av-foil) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(90,58,12,.35), 0 10px 22px -12px rgba(233,198,126,.75) !important;
+  text-shadow: 0 1px 0 rgba(255,244,210,.45);
+}
+.appShell .avatarScreen .rankingViewTabs { background: #0a0a09 !important; border: 1px solid var(--av-line) !important; }
 
-/* 3 · Felt */
-:root[data-tema="3"] .appShell .simpleScreen h1 { color: #f7f0de; }
-:root[data-tema="3"] .appShell .avatarSections { border-bottom-color: rgba(255,201,74,.25); }
-:root[data-tema="3"] .appShell .avatarSections button { background: #0f3a2c !important; border: 1px solid rgba(190,255,225,.18) !important; color: #b3cbbd !important; }
-:root[data-tema="3"] .appShell .avatarSections button[aria-pressed="true"] { background: #e8433a !important; color: #fff !important; border: 2px solid #8a1d16 !important; box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 3px 0 #8a1d16; }
-:root[data-tema="3"] .appShell .profileStrip { background: radial-gradient(130% 90% at 50% 0%, rgba(255,255,255,.07), transparent 60%), #0f3a2c !important; border: 1px solid rgba(255,201,74,.35) !important; }
-:root[data-tema="3"] .appShell .profileStrip b { color: #ffc94a !important; }
-:root[data-tema="3"] .appShell .profileStats > div { background: #0f3a2c !important; border: 2px dashed rgba(255,255,255,.35) !important; border-radius: 50% / 40% !important; }
-:root[data-tema="3"] .appShell .profileStats > div:nth-child(1) { background: #e8433a !important; }
-:root[data-tema="3"] .appShell .profileStats > div:nth-child(2) { background: #3d8bff !important; }
-:root[data-tema="3"] .appShell .profileStats > div:nth-child(3) { background: #c99712 !important; }
-:root[data-tema="3"] .appShell .profileStats > div:nth-child(4) { background: #1f1f24 !important; }
-:root[data-tema="3"] .appShell .profileStats :is(b, span) { color: #fff !important; }
-:root[data-tema="3"] .appShell .playerProgress { background: repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 5px), #0f3a2c !important; border: 1px solid rgba(255,201,74,.28) !important; }
-:root[data-tema="3"] .appShell .playerProgress li button { background: rgba(0,0,0,.22) !important; border-color: rgba(190,255,225,.1) !important; }
-:root[data-tema="3"] .appShell .playerProgress .progressMark b { color: #ffc94a !important; }
-:root[data-tema="3"] .appShell .accountWalletCard { background: #0f3a2c !important; border: 1px solid rgba(255,201,74,.4) !important; }
+/* Identity strip: the avatar in a foil ring, the net result in foil (red when negative). */
+.appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0e0d0c, 0 0 0 3.5px var(--av-gold), 0 8px 18px -8px rgba(233,198,126,.6) !important; }
+.appShell .avatarScreen .profileStrip strong { color: var(--av-ink) !important; }
+.appShell .avatarScreen .profileStrip span { color: var(--av-mute) !important; }
+.appShell .avatarScreen .profileStrip b:not(.negative) { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; font-size: 13px !important; }
+
+/* Four stats: dark plates with a foil rule on top and a gold figure. */
+.appShell .avatarScreen .profileStats > div {
+  position: relative; overflow: hidden; border: 1px solid transparent !important; background: var(--av-surface) !important;
+  box-shadow: inset 0 1px 0 rgba(255,246,220,.06), 0 10px 22px -16px rgba(0,0,0,.9) !important;
+}
+.appShell .avatarScreen .profileStats > div::before { content: ""; position: absolute; inset: 0 22% auto; height: 2px; border-radius: 0 0 2px 2px; background: var(--av-foil); }
+.appShell .avatarScreen .profileStats b { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+.appShell .avatarScreen .profileStats span { color: var(--av-mute) !important; }
+
+/* Progress by game. */
+.appShell .avatarScreen .playerProgress h2 { color: var(--av-ink) !important; }
+.appShell .avatarScreen .playerProgress header > span { color: var(--av-mute) !important; }
+.appShell .avatarScreen .playerProgress li button {
+  background: linear-gradient(180deg, #0f0e0c, #0a0908) !important; border-color: var(--av-line) !important; border-left-color: var(--tier) !important;
+}
+.appShell .avatarScreen .playerProgress li button:active { background: #16140f !important; }
+.appShell .avatarScreen .playerProgress img { box-shadow: 0 6px 12px -8px rgba(0,0,0,.9); }
+.appShell .avatarScreen .playerProgress .progressMark b { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+.appShell .avatarScreen .playerProgress .progressMark small { color: var(--av-dim) !important; }
+
+/* Balance: the amount in foil; «Añadir» is the foil button, «Retirar» an outlined one. */
+.appShell .avatarScreen .accountWalletCard small { color: var(--av-gold-hi) !important; letter-spacing: .08em; }
+.appShell .avatarScreen .accountWalletCard > div:first-child strong { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+.appShell .avatarScreen .accountWalletCard .walletActions button {
+  border: 1px solid transparent !important; color: var(--av-gold-hi) !important;
+  background: linear-gradient(180deg, #171511, #0e0d0b) padding-box, var(--av-foil) border-box !important; box-shadow: inset 0 1px 0 rgba(255,246,220,.07) !important;
+}
+.appShell .avatarScreen .accountWalletCard .walletActions button:first-child {
+  color: var(--av-gold-ink) !important; background: var(--av-foil) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(90,58,12,.35), 0 10px 22px -12px rgba(233,198,126,.75) !important;
+}
+.appShell .avatarScreen .accountWalletCard .walletActions button:disabled { opacity: .45; }
+.appShell .avatarScreen .miniMovementList > div { border-top: 1px solid var(--av-line); }
+.appShell .avatarScreen .miniMovementList span { color: var(--av-mute) !important; }
+
+/* Net profit chart: a gold line with a soft glow on a faint grid. */
+.appShell .avatarScreen .chartHead span { color: var(--av-gold-hi) !important; letter-spacing: .08em; }
+.appShell .avatarScreen .chartHead strong { color: var(--av-ink) !important; }
+.appShell .avatarScreen .earningsChart { background: repeating-linear-gradient(180deg, transparent 0 24px, rgba(247,227,176,.05) 24px 25px); border-radius: 10px; }
+.appShell .avatarScreen .profitLine { stroke: #e9c67e !important; filter: drop-shadow(0 0 3px rgba(233,198,126,.6)); }
+.appShell .avatarScreen .zeroLine { stroke: rgba(247,227,176,.18) !important; }
+.appShell .avatarScreen .chartAxis span { color: var(--av-dim) !important; }
+
+/* Settings rows. */
+.appShell .avatarScreen .settingsList button { background: transparent !important; border-color: var(--av-line) !important; color: var(--av-ink) !important; }
+.appShell .avatarScreen .settingsList button b { color: var(--av-gold) !important; }
+
+/* Ranking sub-tab. */
+.appShell .avatarScreen .gameRankingPick { color: var(--av-mute) !important; }
+.appShell .avatarScreen .gameRankingPick select { background: linear-gradient(180deg, #0b0b0a, #080807) !important; border-color: var(--av-line-2) !important; color: var(--av-ink) !important; }
+.appShell .avatarScreen .gameRankingYou img { box-shadow: 0 0 0 2px #0e0d0c, 0 0 0 3.5px var(--av-gold); }
+.appShell .avatarScreen .gameRankingYou strong { color: var(--av-gold-hi) !important; }
+.appShell .avatarScreen .rankingTable th { color: var(--av-gold-hi) !important; }
+.appShell .avatarScreen .rankingTable td { border-color: var(--av-line) !important; }
+.appShell .avatarScreen .rankingTable tr.you td { background: rgba(233,198,126,.08) !important; }
+.appShell .avatarScreen .rankingTable td:first-child { color: var(--av-gold) !important; }
+.appShell .avatarScreen .gameRankingScore { color: var(--av-ink) !important; }

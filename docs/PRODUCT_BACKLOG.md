@@ -882,6 +882,13 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v169-saturn · Negro y oro metálico en Grupo y Avatar (11-nov-2026)
+
+- El propietario elige la propuesta negra.
+- Se elabora con oro metálico en lugar de sepia, superficies con grano y filete dorado, monedas en los pasos, ticket del código y cifras en oro.
+- Avatar (perfil, estadísticas, progreso, saldo, gráfica y ranking) con el mismo lenguaje.
+- Se retiran las propuestas de color `?tema=`.
+
 ## v168-saturn · Avatares enteros, «Tu selección», juegos repetibles en Grupo y silencio en segundo plano (10-nov-2026)
 
 - **Avatar:** selector 4 × 4 con los retratos enteros.
@@ -891,7 +898,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - entrada con el € dentro y flechas para subir o bajar;
   - sin «Una sola inscripción…».
 - **Sonido:** se silencia en segundo plano.
-- **Pendiente:** el propietario elige una de las tres propuestas de color para Grupo y Avatar (`?tema=1|2|3`).
+- **Colores:** el propietario eligió la propuesta negra en v169.
 
 ## v167-saturn · Grupo en negro y oro, juegos con portada, luz verde de rival (10-nov-2026)
 

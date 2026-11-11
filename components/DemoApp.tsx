@@ -245,17 +245,10 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   useEffect(() => { setPlayerAvatar(portraitCrop(avatarSrc, "")); }, [avatarSrc]);
-  // v168: colour proposals for Grupo and Avatar, previewed with ?tema=1|2|3 (kept for the session; ?tema=0 clears it).
+  // v169: the owner chose the black-and-gold look; drop any v168 preview theme left in this session.
   useEffect(() => {
-    try {
-      const wanted = new URLSearchParams(window.location.search).get("tema");
-      if (wanted !== null) sessionStorage.setItem("gg.tema", /^[123]$/.test(wanted) ? wanted : "");
-      const tema = sessionStorage.getItem("gg.tema");
-      if (tema) document.documentElement.dataset.tema = tema;
-      else delete document.documentElement.dataset.tema;
-    } catch {
-      // Private mode or blocked storage: no preview theme.
-    }
+    try { sessionStorage.removeItem("gg.tema"); } catch { /* storage blocked */ }
+    delete document.documentElement.dataset.tema;
   }, []);
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
@@ -1686,7 +1679,7 @@ export default function DemoApp() {
         )}
 
         {screen === "profile" && (
-          <section className={`simpleScreen ${shellStyles.accountView}`} aria-label={t("profile.aria")}>
+          <section className={`simpleScreen avatarScreen ${shellStyles.accountView}`} aria-label={t("profile.aria")}>
             <h1>{t("profile.title")}</h1>
             <nav className="avatarSections" aria-label={t("profile.sections")}>
               <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>{t("profile.tabProfile")}</button>

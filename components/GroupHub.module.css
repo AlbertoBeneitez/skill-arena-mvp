@@ -315,114 +315,158 @@
 .arrows button:disabled { color: var(--dim); }
 
 /* ======================================================================================================
-   v168 · Three colour proposals for the owner to choose from (preview with ?tema=1, ?tema=2 or ?tema=3;
-   without it the black-and-gold look above stays). Each mixes several colours, after the feel of a viral game.
+   v169 · Black and metallic gold, worked further (owner's choice). Gold is a foil now — champagne light running
+   into deep gold — instead of a flat sepia; surfaces are layered blacks with a fine grain and a gold hairline that
+   catches the light at the top-left; the chosen things and the money wear the foil.
    ====================================================================================================== */
+.screen {
+  --ink: #f6f2ea;
+  --mute: #a8a39a;
+  --dim: #6c6862;
+  --gold: #e9c67e;
+  --gold-hi: #f7e3b0;
+  --gold-ink: #1a1206;
+  --line: rgba(247, 227, 176, .1);
+  --line-2: rgba(247, 227, 176, .2);
+  --panel: #100f0e;
+  --field: #090908;
+  --chosen: #1a1712;
+  --foil: linear-gradient(118deg, #fff4d2 0%, #f3d38c 20%, #c9973f 46%, #f7dc98 66%, #b8873a 88%, #e9c67e 100%);
+  --foil-text: linear-gradient(180deg, #fff6dc 0%, #f4d692 42%, #c99a45 100%);
+  --edge: linear-gradient(150deg, rgba(247, 227, 176, .55), rgba(247, 227, 176, .08) 34%, rgba(247, 227, 176, .05) 70%, rgba(247, 227, 176, .22));
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 
-/* 1 · Brawl: violet arena, yellow 3D buttons with a dark outline, cyan / pink / green accents. */
-:global(:root[data-tema="1"]) .screen {
-  --ink: #ffffff; --mute: #c3baf5; --dim: #8b80c9;
-  --gold: #ffd23f; --gold-hi: #ffe680; --gold-ink: #1b0f45;
-  --line: rgba(150, 130, 255, .28); --line-2: rgba(150, 130, 255, .45);
-  --panel: #251660; --field: #190e48; --chosen: #1d3f86;
-  --c1: #ff4fa3; --c2: #35d0ff; --c3: #5bea6a; --out: #120a30;
-}
-:global(:root[data-tema="1"]) .screen :is(.panel, .hero, .head) {
-  border: 2px solid var(--out); background: linear-gradient(180deg, #2c1b70, #221459);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .08), 0 4px 0 var(--out);
-}
-:global(:root[data-tema="1"]) .screen :is(.heroTitle, .headName h1, .formTitle, .panelHead h2) { text-shadow: 0 2px 0 var(--out); }
-:global(:root[data-tema="1"]) .screen .primary { border: 2px solid var(--out); box-shadow: inset 0 3px 0 rgba(255, 255, 255, .45), 0 4px 0 #b98700; text-shadow: none; }
-:global(:root[data-tema="1"]) .screen .secondary { border: 2px solid var(--out); background: var(--c2); color: #0b1f45; box-shadow: inset 0 3px 0 rgba(255, 255, 255, .4), 0 4px 0 #1789b0; }
-:global(:root[data-tema="1"]) .screen .steps > li:nth-child(1)::before { background: var(--c1); border-color: var(--out); color: #fff; }
-:global(:root[data-tema="1"]) .screen .steps > li:nth-child(2)::before { background: var(--c2); border-color: var(--out); color: #0b1f45; }
-:global(:root[data-tema="1"]) .screen .steps > li:nth-child(3)::before { background: var(--c3); border-color: var(--out); color: #0b2a10; }
-:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] { border: 2px solid var(--c2); background: var(--chosen); }
-:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: #fff; }
-:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #a9ecff; }
-:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameArt { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold), 0 3px 0 2px var(--out); }
-:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameMark { border-color: var(--out); }
-:global(:root[data-tema="1"]) .screen .ticket { border: 2px solid var(--c1); background: var(--field); color: var(--c1); }
-:global(:root[data-tema="1"]) .screen .ticket b { color: #fff; }
-:global(:root[data-tema="1"]) .screen .prizeBox { border: 2px solid var(--c3); background: #123d3a; }
-:global(:root[data-tema="1"]) .screen .prizeBox span { color: var(--c3); }
-:global(:root[data-tema="1"]) .screen .kicker { color: var(--c2); }
-:global(:root[data-tema="1"]) .screen .choice button[aria-selected="true"] { border: 2px solid var(--gold); background: var(--chosen); }
-:global(:root[data-tema="1"]) .screen .members li[data-you] img { border-color: var(--c1); }
-:global(:root[data-tema="1"]) .screen .members li:nth-child(2) img { border-color: var(--c2); }
-:global(:root[data-tema="1"]) .screen .members li:nth-child(3) img { border-color: var(--c3); }
-:global(:root[data-tema="1"]) .screen .members li:nth-child(4) img { border-color: var(--gold); }
-
-/* 2 · Candy: berry night, glossy pink-to-orange buttons, mint for what is chosen, sweets for step numbers. */
-:global(:root[data-tema="2"]) .screen {
-  --ink: #fff4fb; --mute: #e2b6d8; --dim: #a77a9f;
-  --gold: #3ee6b0; --gold-hi: #8ff5d2; --gold-ink: #062a1f;
-  --line: rgba(255, 140, 220, .2); --line-2: rgba(255, 140, 220, .36);
-  --panel: #37104a; --field: #260a33; --chosen: #0f3f3a;
-  --pink: #ff4f9a; --orange: #ff9a3c; --violet: #a66bff;
-}
-:global(:root[data-tema="2"]) .screen :is(.panel, .hero, .head) {
-  border-radius: 24px; background: radial-gradient(120% 80% at 0% 0%, rgba(255, 79, 154, .14), transparent 55%), radial-gradient(120% 80% at 100% 100%, rgba(255, 154, 60, .1), transparent 55%), #33103f;
-}
-:global(:root[data-tema="2"]) .screen .primary {
-  border-radius: 18px; color: #fff; background: linear-gradient(180deg, #ff6aa8, #ff4f9a 45%, #ff8a3c);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .5), inset 0 -3px 0 rgba(120, 0, 50, .35), 0 6px 18px -6px rgba(255, 79, 154, .7);
-  text-shadow: 0 1px 0 rgba(120, 0, 50, .5);
-}
-:global(:root[data-tema="2"]) .screen .primary:disabled { background: #4a2052; color: var(--dim); box-shadow: none; text-shadow: none; }
-:global(:root[data-tema="2"]) .screen .secondary { border-color: var(--gold); color: var(--gold-hi); border-radius: 18px; }
-:global(:root[data-tema="2"]) .screen .steps > li::before { border: 0; color: #fff; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2), inset 0 2px 0 rgba(255, 255, 255, .55); }
-:global(:root[data-tema="2"]) .screen .steps > li:nth-child(1)::before { background: radial-gradient(circle at 35% 30%, #ff9cc6, var(--pink)); }
-:global(:root[data-tema="2"]) .screen .steps > li:nth-child(2)::before { background: radial-gradient(circle at 35% 30%, #ffc78f, var(--orange)); }
-:global(:root[data-tema="2"]) .screen .steps > li:nth-child(3)::before { background: radial-gradient(circle at 35% 30%, #c9a6ff, var(--violet)); }
-:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button { border-radius: 18px; }
-:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] { border-color: var(--pink); background: linear-gradient(180deg, rgba(255, 79, 154, .28), rgba(166, 107, 255, .18)); }
-:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: #fff; }
-:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #ffd0e6; }
-:global(:root[data-tema="2"]) .screen .gameArt { border-radius: 16px; }
-:global(:root[data-tema="2"]) .screen .ticket { border: 1.5px solid var(--orange); color: var(--orange); }
-:global(:root[data-tema="2"]) .screen .ticket b { color: #ffd9b3; }
-:global(:root[data-tema="2"]) .screen .prizeBox { border: 0; background: linear-gradient(120deg, rgba(255, 79, 154, .3), rgba(255, 154, 60, .25)); }
-:global(:root[data-tema="2"]) .screen .prizeBox span { color: #ffd0e6; }
-:global(:root[data-tema="2"]) .screen .kicker { color: var(--pink); }
-:global(:root[data-tema="2"]) .screen .choice button[aria-selected="true"] { border-color: var(--pink); background: rgba(255, 79, 154, .14); color: var(--pink); }
-:global(:root[data-tema="2"]) .screen .bars li[data-place="1"] { --tone: #ff4f9a; }
-:global(:root[data-tema="2"]) .screen .bars li[data-place="2"] { --tone: #ff9a3c; }
-:global(:root[data-tema="2"]) .screen .bars li[data-place="3"] { --tone: #a66bff; }
-
-/* 3 · Felt: a card table — green baize, red chip buttons, blue for what is chosen, gold for the money. */
-:global(:root[data-tema="3"]) .screen {
-  --ink: #f7f0de; --mute: #b3cbbd; --dim: #7c9a8a;
-  --gold: #3d8bff; --gold-hi: #9cc4ff; --gold-ink: #ffffff;
-  --line: rgba(190, 255, 225, .13); --line-2: rgba(190, 255, 225, .24);
-  --panel: #0f3a2c; --field: #0a2b20; --chosen: #12355f;
-  --red: #e8433a; --cash: #ffc94a;
-}
-:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head) {
+/* Surfaces: grain, a soft light from above and a gold hairline brighter at the top-left corner. */
+.panel, .hero, .head {
+  border: 1px solid transparent;
   background:
-    radial-gradient(130% 90% at 50% 0%, rgba(255, 255, 255, .06), transparent 60%),
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 2px, transparent 2px 5px), #0f3a2c;
-  border: 1px solid rgba(255, 201, 74, .28); box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .12), 0 8px 20px rgba(0, 0, 0, .35);
+    var(--grain) padding-box,
+    radial-gradient(120% 70% at 0% 0%, rgba(247, 227, 176, .06), transparent 60%) padding-box,
+    linear-gradient(180deg, #151412, #0c0b0a) padding-box,
+    var(--edge) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 246, 220, .06), 0 14px 30px -18px rgba(0, 0, 0, .9);
 }
-:global(:root[data-tema="3"]) .screen .primary {
-  background: var(--red); color: #fff; border: 2px solid #8a1d16; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3), 0 3px 0 #8a1d16;
+.hero { padding: 22px 18px 20px; }
+.hero::after {
+  content: ""; display: block; width: 44px; height: 2px; margin-top: 6px; border-radius: 2px; background: var(--foil);
 }
-:global(:root[data-tema="3"]) .screen .primary:disabled { background: #2a4a3e; border-color: #1d3a30; color: var(--dim); box-shadow: none; }
-:global(:root[data-tema="3"]) .screen .secondary { background: var(--gold); color: #fff; border: 2px solid #1b4c99; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3), 0 3px 0 #1b4c99; }
-:global(:root[data-tema="3"]) .screen .steps > li::before { border: 2px dashed rgba(255, 255, 255, .7); color: #fff; }
-:global(:root[data-tema="3"]) .screen .steps > li:nth-child(1)::before { background: var(--red); }
-:global(:root[data-tema="3"]) .screen .steps > li:nth-child(2)::before { background: var(--gold); }
-:global(:root[data-tema="3"]) .screen .steps > li:nth-child(3)::before { background: #c99712; }
-:global(:root[data-tema="3"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] { border-color: var(--gold-hi); background: var(--chosen); }
-:global(:root[data-tema="3"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: #fff; }
-:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--red); border-color: #fff; color: #fff; }
-:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameArt { border-color: #fff; box-shadow: 0 0 0 2px var(--red); }
-:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameName { color: #fff; }
-:global(:root[data-tema="3"]) .screen .ticket { border-color: var(--cash); color: var(--cash); }
-:global(:root[data-tema="3"]) .screen .ticket b { color: #ffe39a; }
-:global(:root[data-tema="3"]) .screen .prizeBox { border: 1px solid rgba(255, 201, 74, .5); background: rgba(0, 0, 0, .22); }
-:global(:root[data-tema="3"]) .screen .prizeBox span { color: var(--cash); }
-:global(:root[data-tema="3"]) .screen .kicker { color: var(--cash); }
-:global(:root[data-tema="3"]) .screen .placesPick button[aria-pressed="true"] { background: var(--red); color: #fff; }
-:global(:root[data-tema="3"]) .screen .choice button[aria-selected="true"] { border-color: var(--cash); background: rgba(0, 0, 0, .2); color: var(--cash); }
-:global(:root[data-tema="3"]) .screen .arrows button, :global(:root[data-tema="3"]) .screen .money b { color: var(--cash); }
+.kicker { padding-inline-start: 22px; color: var(--gold-hi); background: linear-gradient(90deg, #f3d38c, #c9973f) no-repeat 0 55% / 14px 1px; }
+[dir="rtl"] .kicker { background-position: 100% 55%; }
+
+/* Foil text for the figures that matter. */
+.prizeBox b, .ticket b, .compTitle span, .standings b {
+  background: var(--foil-text); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Buttons: the primary one is the foil itself, with a highlight along its top and a warm shadow below. */
+.primary {
+  position: relative; overflow: hidden; color: var(--gold-ink);
+  background: var(--foil);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65), inset 0 -2px 0 rgba(90, 58, 12, .35), 0 10px 22px -12px rgba(233, 198, 126, .75), 0 1px 0 rgba(0, 0, 0, .6);
+  text-shadow: 0 1px 0 rgba(255, 244, 210, .45);
+}
+.primary::after {
+  content: ""; position: absolute; inset: 0 auto 0 -40%; width: 30%; transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent); opacity: .6; pointer-events: none;
+  animation: sheen 6s ease-in-out 1.5s infinite;
+}
+@keyframes sheen { 0%, 78% { left: -40%; } 92%, 100% { left: 130%; } }
+@media (prefers-reduced-motion: reduce) { .primary::after { animation: none; left: 10%; opacity: .3; } }
+.primary:active:not(:disabled) { background: var(--foil); filter: brightness(.92); }
+.primary:disabled { background: #22201c; color: var(--dim); text-shadow: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04); }
+.primary:disabled::after { display: none; }
+.secondary {
+  border: 1px solid transparent; color: var(--gold-hi);
+  background: linear-gradient(180deg, #171511, #0e0d0b) padding-box, var(--foil) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 246, 220, .07);
+}
+.secondary:active:not(:disabled) { background: linear-gradient(180deg, #1f1b14, #13110d) padding-box, var(--foil) border-box; }
+
+/* Choice tiles and segments: dark wells; the chosen one gets the foil edge and a gold wash from the top. */
+.choice button, .seg3 button, .seg2 button {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #11100e, #0a0a09);
+  box-shadow: inset 0 1px 0 rgba(255, 246, 220, .04);
+}
+.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"] {
+  border-color: transparent;
+  background:
+    radial-gradient(90% 70% at 50% 0%, rgba(247, 227, 176, .16), transparent 70%) padding-box,
+    linear-gradient(180deg, #1c1913, #110f0c) padding-box,
+    var(--foil) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 246, 220, .1), 0 6px 16px -10px rgba(233, 198, 126, .6);
+}
+.choice button[aria-selected="true"] { color: var(--gold-hi); }
+
+/* Step numbers: small gold coins. */
+.steps > li::before {
+  border: 0; color: var(--gold-ink); font-weight: 800;
+  background: radial-gradient(circle at 35% 28%, #fff6d8, #f0cf86 38%, #b8863a 78%, #8a6224);
+  box-shadow: inset 0 0 0 2px rgba(255, 240, 200, .35), inset 0 -2px 2px rgba(80, 50, 10, .45), 0 2px 6px rgba(0, 0, 0, .6);
+}
+.steps > li:not(:last-child)::after { background: linear-gradient(180deg, rgba(233, 198, 126, .5), rgba(233, 198, 126, .05)); }
+
+/* Code ticket: a stub with a foil edge and perforation. */
+.ticket {
+  position: relative; border: 1px dashed transparent;
+  background: linear-gradient(180deg, #14120f, #0b0a09) padding-box, var(--foil) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 246, 220, .06), 0 8px 18px -12px rgba(233, 198, 126, .55);
+}
+.ticket::before, .ticket::after {
+  content: ""; position: absolute; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #0d0c0b;
+}
+.ticket::before { left: -6px; box-shadow: inset -1px 0 0 rgba(233, 198, 126, .6); }
+.ticket::after { right: -6px; box-shadow: inset 1px 0 0 rgba(233, 198, 126, .6); }
+.ticket small { color: var(--gold); }
+
+/* Members: the player in a foil ring, the rest in a thin warm one. */
+.members img { border: 0; box-shadow: 0 0 0 1.5px rgba(247, 227, 176, .22), 0 6px 12px -6px rgba(0, 0, 0, .8); }
+.members li[data-you] img { box-shadow: 0 0 0 2px #0e0d0c, 0 0 0 3.5px #e9c67e, 0 6px 14px -6px rgba(233, 198, 126, .6); }
+.crew img { box-shadow: 0 0 0 1.5px rgba(233, 198, 126, .55); }
+.crew img:first-child { box-shadow: 0 0 0 2px #e9c67e; }
+.creator img { box-shadow: 0 0 0 2px #0e0d0c, 0 0 0 3.5px #e9c67e; }
+
+/* Game picker: covers in a dark frame; the chosen ones in a foil frame with a gold coin badge. */
+.gameArt { border: 1px solid var(--line); box-shadow: 0 6px 14px -10px rgba(0, 0, 0, .9); }
+.gameTile[aria-pressed="true"] .gameArt { border-color: transparent; box-shadow: 0 0 0 2px #e9c67e, 0 8px 18px -10px rgba(233, 198, 126, .7); }
+.gameTile[aria-pressed="true"] .gameMark {
+  border: 0; color: var(--gold-ink);
+  background: radial-gradient(circle at 35% 28%, #fff6d8, #f0cf86 40%, #b8863a 85%);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 240, 200, .5), 0 2px 5px rgba(0, 0, 0, .7);
+}
+.gameTile[aria-pressed="true"] .gameName { color: var(--gold-hi); }
+.gameArt[data-random] { background: radial-gradient(circle at 50% 30%, #1c1913, #0a0a09); }
+
+/* Fields. */
+.search, .money, .codeInput, .split, .order { background: linear-gradient(180deg, #0b0b0a, #080807); }
+.search:focus-within, .money:focus-within, .codeInput:focus { border-color: #e9c67e; box-shadow: 0 0 0 3px rgba(233, 198, 126, .14); }
+.arrows button { color: var(--gold-hi); }
+
+/* Prize box: a gold-lit plate. */
+.prizeBox {
+  border: 1px solid transparent;
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(247, 227, 176, .16), transparent 55%) padding-box,
+    linear-gradient(180deg, #19160f, #0f0d0a) padding-box,
+    var(--foil) border-box;
+}
+.prizeBox span { color: var(--gold-hi); }
+.prizeBox b { font-size: 24px; }
+.split summary b { color: var(--gold-hi); }
+.placesPick button[aria-pressed="true"] { background: var(--foil); color: var(--gold-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5); }
+.bars li[data-place="1"] { --tone: #e9c67e; }
+.bars li[data-place="2"] { --tone: #d6dbe2; }
+.bars li[data-place="3"] { --tone: #cf8f5a; }
+.bars input[type="range"]::-webkit-slider-thumb { background: radial-gradient(circle at 35% 30%, #fff, var(--tone) 60%); }
+
+/* Competition in progress. */
+.standings li { background: linear-gradient(180deg, #0f0e0c, #0a0908); border-color: var(--line); }
+.standings li[data-you] { border-color: transparent; background: linear-gradient(180deg, #1a1712, #100e0b) padding-box, var(--foil) border-box; }
+
+/* Share sheet. */
+.sheet {
+  border: 1px solid transparent; border-bottom: 0;
+  background: var(--grain) padding-box, linear-gradient(180deg, #161512, #0d0c0b) padding-box, var(--edge) border-box;
+}
+.appIcon { background: color-mix(in srgb, var(--tone) 10%, #0f0e0d); }
