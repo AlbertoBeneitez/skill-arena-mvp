@@ -93,6 +93,9 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   const heldRef = useRef(new Set<string>());
   const pointerRef = useRef<{ id: number; origin: CorePoint } | null>(null);
   const [presentingFinale, setPresentingFinale] = useState(false);
+  /** v173: the board stays hidden until the server's scenario is in place, so the player never sees the local
+   * preview layout (a different seed) and then watch it change after the countdown. Presentation only. */
+  const [seeded, setSeeded] = useState(false);
   // v123: the server round-trip (ticket at the start, replay check at the end) is normally a few hundred ms and stays
   // invisible: the game keeps its last frame. Only if it takes longer than 1.6 s does a small, quiet ring appear.
   const busyNow = attempt.state.status === "starting" || (attempt.state.status === "verifying" && !presentingFinale);
@@ -271,6 +274,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
       return;
     }
     stateRef.current = core.create(manifest.seed);
+    setSeeded(true);
     feedbackScoreRef.current = 0;
     targetRef.current = manifest.competition.target_score;
     epochRef.current = performance.now();
@@ -368,7 +372,7 @@ export default function CoreCanvasGame<S extends CoreState>(props: Props<S>) {
   }
 
   return <div className="detGameSurface verifiedArena coreGameSurface">
-    <canvas ref={canvasRef} className="gameCanvas deterministicCanvas" role="application" aria-label={`${name}. ${instruction}`} tabIndex={0}
+    <canvas ref={canvasRef} className={`gameCanvas deterministicCanvas${seeded ? "" : " coreCanvasPending"}`} role="application" aria-label={`${name}. ${instruction}`} tabIndex={0}
       onPointerDown={event => {
         event.preventDefault();
         if (pointerRef.current !== null) {

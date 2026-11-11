@@ -538,15 +538,13 @@
 .splitHint { padding: 4px 14px 14px; }
 
 /* ======================================================================================================
-   v172 · «Telemetría», worked as a design system (owner's choice from v171, without the orange). Preview with
-   ?tema=3 (racing red, recommended), ?tema=4 (cockpit amber) or ?tema=5 (signal magenta); without it the black
-   and gold look stays. Roles:
+   v172/v173 · «Telemetría», the Group tab's look (owner's choice: the amber variant, made greener — citron). Roles:
    - carbon: neutral, slightly warm blacks (no blue cast), a 24 px engineering grid and corner registration marks;
    - ice: data and selection — figures, chosen outlines, focus;
    - accent: action only — the main button, step chips and the share outline;
    - metals: 1st / 2nd / 3rd places; green and red: gains and losses.
    ====================================================================================================== */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen {
+.screen {
   --ink: #eef0f2; --mute: #8f959c; --dim: #5a5f65;
   --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .14);
   --panel: #121314; --field: #08090a; --chosen: #111a1e;
@@ -554,13 +552,12 @@
   --gold: var(--accent); --gold-hi: var(--ice-hi); --gold-ink: var(--on-accent);
   --foil: linear-gradient(180deg, var(--accent-hi), var(--accent)); --foil-text: linear-gradient(180deg, #f1fbff, var(--ice));
   --grain: none;
+  /* v173: the owner's accent — the amber variant, made greener (citron). */
+  --accent: #d2df3a; --accent-hi: #e2ec68; --on-accent: #151903;
 }
-:global(:root[data-tema="3"]) .screen { --accent: #e3242b; --accent-hi: #f0434a; --on-accent: #ffffff; }
-:global(:root[data-tema="4"]) .screen { --accent: #f5a524; --accent-hi: #ffbb45; --on-accent: #181003; }
-:global(:root[data-tema="5"]) .screen { --accent: #f2307c; --accent-hi: #ff5795; --on-accent: #ffffff; }
 
 /* Carbon panels: engineering grid, a hairline lit along the top, ice registration marks in two corners. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.panel, .hero, .head), :global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .sheet {
+.screen :is(.panel, .hero, .head), .screen .sheet {
   border-radius: 10px; border: 1px solid var(--line);
   background:
     linear-gradient(var(--ice), var(--ice)) left top / 10px 1px no-repeat,
@@ -572,80 +569,80 @@
     linear-gradient(180deg, #141517, #0d0e0f);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 18px 34px -22px rgba(0, 0, 0, .95);
 }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .sheet { border-radius: 14px 14px 0 0; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .hero::after { background: var(--accent); width: 32px; height: 3px; border-radius: 0; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .kicker { color: var(--ice); background-image: linear-gradient(var(--ice), var(--ice)); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.heroTitle, .headName h1, .formTitle, .panelHead h2) { letter-spacing: -.005em; }
+.screen .sheet { border-radius: 14px 14px 0 0; }
+.screen .hero::after { background: var(--accent); width: 32px; height: 3px; border-radius: 0; }
+.screen .kicker { color: var(--ice); background-image: linear-gradient(var(--ice), var(--ice)); }
+.screen :is(.heroTitle, .headName h1, .formTitle, .panelHead h2) { letter-spacing: -.005em; }
 
 /* Action: solid accent, square-ish, a fine top highlight; nothing else on screen uses the accent as a fill. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .primary {
+.screen .primary {
   border-radius: 8px; background: var(--foil); color: var(--on-accent); letter-spacing: .06em; text-shadow: none;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 22px -14px var(--accent);
 }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .primary::after { display: none; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .primary:disabled { background: #1b1c1e; color: var(--dim); box-shadow: none; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .secondary { border-radius: 8px; background: transparent; border: 1px solid var(--accent); color: var(--ink); box-shadow: none; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .secondary :global(.uiIcon) { color: var(--accent-hi); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .secondary:active:not(:disabled) { background: rgba(255, 255, 255, .04); }
+.screen .primary::after { display: none; }
+.screen .primary:disabled { background: #1b1c1e; color: var(--dim); box-shadow: none; }
+.screen .secondary { border-radius: 8px; background: transparent; border: 1px solid var(--accent); color: var(--ink); box-shadow: none; }
+.screen .secondary :global(.uiIcon) { color: var(--accent-hi); }
+.screen .secondary:active:not(:disabled) { background: rgba(255, 255, 255, .04); }
 
 /* Selection: an ice outline and a short ice bar on top — calm, readable, not a second loud colour. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.choice button, .seg3 button, .seg2 button) { border-radius: 8px; background: var(--field); border: 1px solid var(--line); box-shadow: none; position: relative; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) {
+.screen :is(.choice button, .seg3 button, .seg2 button) { border-radius: 8px; background: var(--field); border: 1px solid var(--line); box-shadow: none; position: relative; }
+.screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) {
   background: linear-gradient(180deg, var(--ice-soft), transparent 70%), var(--chosen); border: 1px solid var(--ice); box-shadow: none;
 }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"])::before {
+.screen :is(.seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"])::before {
   content: ""; position: absolute; left: 50%; top: -1px; width: 22px; height: 2px; margin-left: -11px; background: var(--ice-hi);
 }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--ice-hi); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #9fb7c0; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .choice button[aria-selected="true"] { color: var(--ice); }
+.screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--ice-hi); }
+.screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #9fb7c0; }
+.screen .choice button[aria-selected="true"] { color: var(--ice); }
 
 /* Steps: square accent chips with mono numerals, joined by a hairline. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .steps > li::before { border-radius: 4px; background: var(--accent); color: var(--on-accent); box-shadow: none; font-weight: 700; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
+.screen .steps > li::before { border-radius: 4px; background: var(--accent); color: var(--on-accent); box-shadow: none; font-weight: 700; }
+.screen .steps > li:not(:last-child)::after { background: var(--line-2); }
 
 /* Fields: recessed wells; focus in ice. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input, .stepper button, .pctStepper) { border-radius: 8px; background: var(--field); border-color: var(--line-2); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.search:focus-within, .money:focus-within, .codeInput:focus, .nameForm input) { border-color: var(--ice); box-shadow: 0 0 0 3px var(--ice-soft); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .search:focus-within { color: var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .arrows button, :global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .pctStepper button { color: var(--ice); background: transparent; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .arrows button:active:not(:disabled), :global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .pctStepper button:active:not(:disabled) { background: var(--ice-soft); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .stepper button { color: var(--ink); }
+.screen :is(.search, .money, .codeInput, .split, .order, .nameForm input, .stepper button, .pctStepper) { border-radius: 8px; background: var(--field); border-color: var(--line-2); }
+.screen :is(.search:focus-within, .money:focus-within, .codeInput:focus, .nameForm input) { border-color: var(--ice); box-shadow: 0 0 0 3px var(--ice-soft); }
+.screen .search:focus-within { color: var(--ice); }
+.screen .arrows button, .screen .pctStepper button { color: var(--ice); background: transparent; }
+.screen .arrows button:active:not(:disabled), .screen .pctStepper button:active:not(:disabled) { background: var(--ice-soft); }
+.screen .stepper button { color: var(--ink); }
 
 /* Code: a data tag. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .ticket { border-radius: 6px; background: var(--field); border: 1px solid var(--line-2); box-shadow: none; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .ticket small { color: var(--mute); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .ticket[data-copied] { border-color: var(--ice); }
+.screen .ticket { border-radius: 6px; background: var(--field); border: 1px solid var(--line-2); box-shadow: none; }
+.screen .ticket small { color: var(--mute); }
+.screen .ticket[data-copied] { border-color: var(--ice); }
 
 /* Money: a readout — ice figures on a well, with a thin ice rule on the left. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .prizeBox { border-radius: 8px; background: linear-gradient(90deg, var(--ice-soft), transparent 40%), var(--field); border: 1px solid var(--line-2); box-shadow: inset 2px 0 0 var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .prizeBox span { color: var(--ice); letter-spacing: .06em; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .split summary b { color: var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .placesPick button[aria-pressed="true"] { background: var(--ice); color: #05181f; box-shadow: none; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .positions li[data-place="1"] { --tone: #e2c06a; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .positions li[data-place="2"] { --tone: #c9d1da; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .positions li[data-place="3"] { --tone: #c58a55; }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .pctStepper output { border-color: var(--line-2); }
+.screen .prizeBox { border-radius: 8px; background: linear-gradient(90deg, var(--ice-soft), transparent 40%), var(--field); border: 1px solid var(--line-2); box-shadow: inset 2px 0 0 var(--ice); }
+.screen .prizeBox span { color: var(--ice); letter-spacing: .06em; }
+.screen .split summary b { color: var(--ice); }
+.screen .placesPick button[aria-pressed="true"] { background: var(--ice); color: #05181f; box-shadow: none; }
+.screen .positions li[data-place="1"] { --tone: #e2c06a; }
+.screen .positions li[data-place="2"] { --tone: #c9d1da; }
+.screen .positions li[data-place="3"] { --tone: #c58a55; }
+.screen .pctStepper output { border-color: var(--line-2); }
 
 /* Players and picture: ice ring for you, hairline for the rest. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .members img { box-shadow: 0 0 0 1.5px var(--line-2); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .members li[data-you] span { color: var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .groupPic { background: var(--field); color: var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .groupPicBadge { background: var(--accent); color: var(--on-accent); box-shadow: 0 0 0 2px #121314; }
+.screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--ice); }
+.screen .members img { box-shadow: 0 0 0 1.5px var(--line-2); }
+.screen .members li[data-you] span { color: var(--ice); }
+.screen .groupPic { background: var(--field); color: var(--ice); }
+.screen .groupPicBadge { background: var(--accent); color: var(--on-accent); box-shadow: 0 0 0 2px #121314; }
 
 /* Games: covers in a hairline frame; picked ones in ice with an accent counter. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameArt { border-radius: 8px; border-color: var(--line); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--accent); color: var(--on-accent); border: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameTile[aria-pressed="true"] .gameName { color: var(--ice-hi); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameArt[data-random] { background: var(--field); color: var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .orderList b { color: var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .textBtn { color: var(--ice); }
+.screen .gameArt { border-radius: 8px; border-color: var(--line); }
+.screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--ice); }
+.screen .gameTile[aria-pressed="true"] .gameMark { background: var(--accent); color: var(--on-accent); border: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+.screen .gameTile[aria-pressed="true"] .gameName { color: var(--ice-hi); }
+.screen .gameArt[data-random] { background: var(--field); color: var(--ice); }
+.screen .orderList b { color: var(--ice); }
+.screen .textBtn { color: var(--ice); }
 
 /* Standings. */
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .standings li { border-radius: 8px; background: var(--field); border-color: var(--line); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .standings li[data-you] { background: var(--chosen); border: 1px solid var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .compTitle span { background: none; color: var(--ice); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .appIcon { border-radius: 12px; background: color-mix(in srgb, var(--tone) 10%, #0d0e0f); }
-:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .close { border-radius: 8px; }
+.screen .standings li { border-radius: 8px; background: var(--field); border-color: var(--line); }
+.screen .standings li[data-you] { background: var(--chosen); border: 1px solid var(--ice); }
+.screen .compTitle span { background: none; color: var(--ice); }
+.screen .appIcon { border-radius: 12px; background: color-mix(in srgb, var(--tone) 10%, #0d0e0f); }
+.screen .close { border-radius: 8px; }

@@ -65,6 +65,28 @@ function hudLabel(s: Readonly<CornerSudokuStateV4>) {
   return tx("sudoku.progress", { n: Math.min(R.puzzles, s.solved + (s.status === "running" ? 1 : 0)), total: R.puzzles });
 }
 
+/**
+ * v173 · Digits drawn optically centred (measured glyph box, not the font's em box) in the display face, with a
+ * vertical gradient and a soft drop shadow. Presentation only.
+ */
+const DIGIT_FONT = `"Unbounded", "Chakra Petch", system-ui, sans-serif`;
+function drawDigit(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, top: string, bottom: string, shadow = "rgba(0,0,0,.5)") {
+  ctx.save();
+  ctx.font = `700 ${size}px ${DIGIT_FONT}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  const m = ctx.measureText(text);
+  const asc = m.actualBoundingBoxAscent || size * 0.72, desc = m.actualBoundingBoxDescent || 0;
+  const base = y + (asc - desc) / 2;
+  ctx.fillStyle = shadow;
+  ctx.fillText(text, x, base + Math.max(1, size * 0.06));
+  const g = ctx.createLinearGradient(0, base - asc, 0, base + desc);
+  g.addColorStop(0, top); g.addColorStop(1, bottom);
+  ctx.fillStyle = g;
+  ctx.fillText(text, x, base);
+  ctx.restore();
+}
+
 export default function CornerSudoku(props: GameRuntimeProps) {
   useI18n();
   const ui = useRef<Ui>({ selected: -1, armed: 0 });
@@ -113,9 +135,9 @@ export default function CornerSudoku(props: GameRuntimeProps) {
       if (d) {
         const c = centre(i), bad = !given && conflicts[i];
         if (bad) { diamond(ctx, p.col, p.row); ctx.fillStyle = "rgba(255,90,106,.22)"; ctx.fill(); }
-        ctx.font = `${given ? 800 : 900} ${given ? 20 : 21}px system-ui`;
-        ctx.fillStyle = given ? "#eef4ff" : bad ? "#ff6b7a" : "#7fe3ee";
-        ctx.fillText(String(d), c.x, c.y + 1.5);
+        if (given) drawDigit(ctx, String(d), c.x, c.y, 17, "#ffffff", "#c9d6ea");
+        else if (bad) drawDigit(ctx, String(d), c.x, c.y, 18, "#ffb0b8", "#ff5a6a");
+        else drawDigit(ctx, String(d), c.x, c.y, 18, "#e6fbff", "#5fd3e6");
       }
     }
     // Box outlines (thick, tinted).
@@ -166,16 +188,20 @@ export default function CornerSudoku(props: GameRuntimeProps) {
     ctx.beginPath(); ctx.roundRect(PAD[0].x - 10, PAD[0].y - 10, PAD[2].x + PAD[2].w - PAD[0].x + 20, ERASE.y + ERASE.h - PAD[0].y + 20, 20); ctx.fill();
     for (const k of PAD) {
       const full = false, armed = ui.current.armed === k.d;
+      // A raised key: a darker lip below, the face with a light from above and a fine highlight along its top.
+      ctx.beginPath(); ctx.roundRect(k.x, k.y + 3, k.w, k.h, 14);
+      ctx.fillStyle = armed ? "#9a6a12" : "#0a1428"; ctx.fill();
       ctx.beginPath(); ctx.roundRect(k.x, k.y, k.w, k.h, 14);
       const g = ctx.createLinearGradient(0, k.y, 0, k.y + k.h);
-      if (armed) { g.addColorStop(0, "#ffe9a6"); g.addColorStop(1, "#f3c55a"); }
-      else { g.addColorStop(0, full ? "rgba(40,52,72,.6)" : "#243c62"); g.addColorStop(1, full ? "rgba(20,28,44,.6)" : "#132544"); }
+      if (armed) { g.addColorStop(0, "#fff0bd"); g.addColorStop(0.5, "#f6cf6a"); g.addColorStop(1, "#e3ad3a"); }
+      else { g.addColorStop(0, full ? "rgba(40,52,72,.6)" : "#2b4a78"); g.addColorStop(0.55, "#1b3157"); g.addColorStop(1, full ? "rgba(20,28,44,.6)" : "#132544"); }
       ctx.fillStyle = g; ctx.fill();
-      ctx.strokeStyle = armed ? "#fff3c4" : full ? "rgba(255,255,255,.08)" : "rgba(127,227,238,.35)";
+      ctx.strokeStyle = armed ? "#fff6d6" : full ? "rgba(255,255,255,.08)" : "rgba(127,227,238,.38)";
       ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.fillStyle = armed ? "#2a1700" : full ? "rgba(255,255,255,.25)" : "#eef4ff";
-      ctx.font = "900 26px system-ui";
-      ctx.fillText(String(k.d), k.x + k.w / 2, k.y + k.h / 2 + 1);
+      ctx.beginPath(); ctx.roundRect(k.x + 6, k.y + 3, k.w - 12, 2, 1);
+      ctx.fillStyle = armed ? "rgba(255,255,255,.75)" : "rgba(190,235,255,.28)"; ctx.fill();
+      if (armed) drawDigit(ctx, String(k.d), k.x + k.w / 2, k.y + k.h / 2, 24, "#3b2400", "#1e1200", "rgba(255,255,255,.45)");
+      else drawDigit(ctx, String(k.d), k.x + k.w / 2, k.y + k.h / 2, 24, "#ffffff", "#9fdcf0");
     }
     // Erase key.
     {

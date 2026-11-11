@@ -246,20 +246,10 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   useEffect(() => { setPlayerAvatar(portraitCrop(avatarSrc, "")); }, [avatarSrc]);
-  // v172: «Telemetría» colour proposals for Grupo and Avatar, previewed with ?tema=3|4|5 (red, amber, magenta;
-  // kept for the session; ?tema=0 goes back to black and gold, the default).
+  // v173: the owner chose «Telemetría» (citron); the preview themes are gone — clear any left in this session.
   useEffect(() => {
-    try {
-      const wanted = new URLSearchParams(window.location.search).get("tema");
-      if (wanted !== null) sessionStorage.setItem("gg.tema171", /^[345]$/.test(wanted) ? wanted : "");
-      sessionStorage.removeItem("gg.tema");
-      const stored = sessionStorage.getItem("gg.tema171");
-      const tema = stored && /^[345]$/.test(stored) ? stored : "";
-      if (tema) document.documentElement.dataset.tema = tema;
-      else delete document.documentElement.dataset.tema;
-    } catch {
-      delete document.documentElement.dataset.tema;
-    }
+    try { sessionStorage.removeItem("gg.tema171"); sessionStorage.removeItem("gg.tema"); } catch { /* storage blocked */ }
+    delete document.documentElement.dataset.tema;
   }, []);
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
@@ -368,10 +358,13 @@ export default function DemoApp() {
   /** v168: matches started per game, for "Tu selección" in the catalogue. */
   const [playCounts, setPlayCounts] = useState<Record<string, number>>({});
   /** Most played first (ties: catalogue order), up to eight games. */
-  const favoriteGames = useMemo(
-    () => GAMES.filter((g) => (playCounts[g.id] ?? 0) > 0).sort((a, b) => (playCounts[b.id] ?? 0) - (playCounts[a.id] ?? 0)).slice(0, 8).map((g) => g.id),
-    [playCounts],
-  );
+  // v173: always shown — the player's most played first, then filled with the catalogue's first (popular) games.
+  const favoriteGames = useMemo(() => {
+    const played = GAMES.filter((g) => g.enabled && (playCounts[g.id] ?? 0) > 0)
+      .sort((a, b) => (playCounts[b.id] ?? 0) - (playCounts[a.id] ?? 0)).slice(0, 8).map((g) => g.id);
+    const fill = GAMES.filter((g) => g.enabled && !played.includes(g.id)).map((g) => g.id);
+    return [...played, ...fill].slice(0, Math.max(6, played.length));
+  }, [playCounts]);
   const [bestScores, setBestScores] = useState<Record<string, number>>({});
   // v153: the studio proposal opens from a small tab at the top left of the catalogue.
   const [proposing, setProposing] = useState(false);
@@ -380,7 +373,12 @@ export default function DemoApp() {
   const [studioWelcome, setStudioWelcome] = useState<false | "intro" | "steps">(false);
   /** v171: the balance chip opens a wallet panel to add or withdraw money. */
   const [walletOpen, setWalletOpen] = useState(false);
-  const [walletAmount, setWalletAmount] = useState(10);
+  /** v173: the amount is typed (euros, up to two decimals). */
+  const [walletInput, setWalletInput] = useState("");
+  const walletAmount = (() => {
+    const n = Number(walletInput.replace(",", "."));
+    return Number.isFinite(n) && n > 0 && n <= 100000 ? Math.round(n * 100) / 100 : 0;
+  })();
   useEffect(() => { setWalletOpen(false); }, [screen]);
   /** Simulated rival for the match in progress (demo leagues); null outside league duels. */
   const [leagueMatch, setLeagueMatch] = useState<{ gameId: string; rival: LeagueRival; tier: LeagueTier } | null>(null);
@@ -843,7 +841,8 @@ export default function DemoApp() {
 
   function moveMoney(direction: 1 | -1) {
     const amount = walletAmount;
-    if (direction < 0 && balance < amount) return;
+    if (!amount || (direction < 0 && balance < amount)) return;
+    setWalletInput("");
     setBalance((b) => Number((b + direction * amount).toFixed(2)));
     setMovements((m) => [direction > 0
       ? { label: "Ingreso", amount, key: "move.deposit" as const }
@@ -1515,14 +1514,18 @@ export default function DemoApp() {
                   <small>{t("wallet.title")}</small>
                   <strong dir="ltr">{euro(balance)}</strong>
                 </div>
-                <div className="gxWalletAmounts" role="radiogroup" aria-label={t("wallet.amount")}>
-                  {[10, 20, 50, 100].map((amount) => (
-                    <button key={amount} type="button" role="radio" aria-checked={walletAmount === amount} onClick={() => setWalletAmount(amount)} dir="ltr">{amount} €</button>
-                  ))}
-                </div>
+                <label className="gxWalletField">
+                  <span>{t("wallet.amount")}</span>
+                  <span className="gxWalletInput">
+                    <input type="text" inputMode="decimal" autoComplete="off" autoFocus placeholder="0,00" value={walletInput} dir="ltr"
+                      onChange={(event) => setWalletInput(event.target.value.replace(/[^0-9.,]/g, "").slice(0, 9))}
+                      onKeyDown={(event) => { if (event.key === "Enter") moveMoney(1); }} />
+                    <b aria-hidden="true">€</b>
+                  </span>
+                </label>
                 <div className="gxWalletActions">
-                  <button type="button" className="gxWalletIn" autoFocus onClick={() => moveMoney(1)}>{t("wallet.deposit")}</button>
-                  <button type="button" className="gxWalletOut" disabled={balance < walletAmount} onClick={() => moveMoney(-1)}>{t("wallet.withdraw")}</button>
+                  <button type="button" className="gxWalletIn" disabled={!walletAmount} onClick={() => moveMoney(1)}>{t("wallet.deposit")}</button>
+                  <button type="button" className="gxWalletOut" disabled={!walletAmount || balance < walletAmount} onClick={() => moveMoney(-1)}>{t("wallet.withdraw")}</button>
                 </div>
                 <div className="gxWalletMoves" aria-live="polite">
                   {movements.length === 0 ? <p>{t("profile.noMovements")}</p> : movements.slice(0, 3).map((movement, index) => (

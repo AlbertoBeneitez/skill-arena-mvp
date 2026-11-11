@@ -205,8 +205,9 @@ module.exports = (async () => {
       presentation.render(ctx, s, { width: 390, height: 620 });
       assert.equal(JSON.stringify(s), before);
       for (const b of state.balls.slice(1))
-        // v156: the dock also numbers the five level pips, so ids 1–5 appear once more.
-        assert.equal(ctx.texts.filter((t) => t === String(b.id)).length, b.id <= 5 ? 3 : 2, `ball ${b.id} on the table, in the dock and (1–5) on a level pip`);
+        // v173: the dock under the table is gone (level, balls and shots live in the scoreboard): each ball is
+        // numbered once, on the table.
+        assert.equal(ctx.texts.filter((t) => t === String(b.id)).length, 1, `ball ${b.id} numbered once, on the table`);
       assert.ok(
         !ctx.texts.some((t) => /MESA \d|−250|TIRO EN CURSO|DESPEJADA/.test(t)),
       );

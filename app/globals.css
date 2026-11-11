@@ -9302,39 +9302,52 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen .profileStrip .profileNet b.negative { color: #ff8a80 !important; background: none; }
 .appShell .avatarScreen .avatarSections { margin-top: 4px; }
 
-/* v172 · «Telemetría» for the Avatar tab (?tema=3 / 4 / 5): carbon panels with grid and registration marks, an
+/* v172/v173 · «Telemetría» for the Avatar tab (citron accent, owner's choice): carbon panels with grid and registration marks, an
    ice segmented control, ice data readouts, the accent kept for action only. */
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen {
+.appShell .avatarScreen {
   --av-ink: #eef0f2; --av-mute: #8f959c; --av-dim: #5a5f65; --av-line: rgba(255,255,255,.07); --av-line-2: rgba(255,255,255,.14);
-  --av-ice: #9fe6ff; --av-ice-hi: #d8f6ff;
+  --av-ice: #9fe6ff; --av-ice-hi: #d8f6ff; --av-accent: #d2df3a;
   --av-foil-text: linear-gradient(180deg, #f1fbff, #9fe6ff);
   --av-surface:
     linear-gradient(#9fe6ff,#9fe6ff) left top / 10px 1px no-repeat, linear-gradient(#9fe6ff,#9fe6ff) left top / 1px 10px no-repeat,
     linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(180deg, #141517, #0d0e0f);
 }
-:root[data-tema="3"] .appShell .avatarScreen { --av-accent: #e3242b; }
-:root[data-tema="4"] .appShell .avatarScreen { --av-accent: #f5a524; }
-:root[data-tema="5"] .appShell .avatarScreen { --av-accent: #f2307c; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen :is(.profileStrip, .playerProgress, .chartPanel, .settingsList, .gameRankingYou, .rankingTableWrap, .profileStats > div) {
+.appShell .avatarScreen :is(.profileStrip, .playerProgress, .chartPanel, .settingsList, .gameRankingYou, .rankingTableWrap, .profileStats > div) {
   border-radius: 10px !important; background: var(--av-surface) !important; border: 1px solid var(--av-line) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 34px -22px rgba(0,0,0,.95) !important;
 }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen > h1::after { background: var(--av-accent); }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .avatarSections, :root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .rankingViewTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 !important; padding: 3px !important; border-radius: 10px !important; background: #08090a !important; border: 1px solid var(--av-line-2) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen :is(.avatarSections button, .rankingViewTabs button) { border-radius: 7px !important; background: transparent !important; border: 0 !important; color: var(--av-mute) !important; box-shadow: none !important; text-shadow: none; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"], .rankingViewTabs button[aria-selected="true"]) { background: #e9f9ff !important; color: #071318 !important; box-shadow: 0 2px 8px rgba(0,0,0,.5) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .profileStats > div::before { inset: 0 auto auto 0; width: 14px; height: 2px; border-radius: 0; background: var(--av-accent); }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen :is(.profileStats b, .playerProgress .progressMark b, .profileStrip .profileNet b:not(.negative)) { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .profileStrip .profileNet b:not(.negative) { background: none; color: #39d98a !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .playerProgress li button { border-radius: 8px !important; background: #08090a !important; border-color: var(--av-line) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .profitLine { stroke: var(--av-ice) !important; filter: none; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .zeroLine { stroke: rgba(255,255,255,.12) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .earningsChart { background: repeating-linear-gradient(180deg, transparent 0 24px, rgba(255,255,255,.04) 24px 25px); }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen :is(.chartHead span, .accountWalletCard small) { color: var(--av-ice) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .settingsList button b { color: var(--av-ice) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .gameRankingPick select { border-radius: 8px !important; background: #08090a !important; border-color: var(--av-line-2) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .gameRankingYou img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice); }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen :is(.gameRankingYou strong, .rankingTable th, .rankingTable td:first-child) { color: var(--av-ice) !important; }
-:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"]) .appShell .avatarScreen .rankingTable tr.you td { background: rgba(159,230,255,.07) !important; }
+.appShell .avatarScreen > h1::after { background: var(--av-accent); }
+.appShell .avatarScreen .avatarSections, .appShell .avatarScreen .rankingViewTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 !important; padding: 3px !important; border-radius: 10px !important; background: #08090a !important; border: 1px solid var(--av-line-2) !important; }
+.appShell .avatarScreen :is(.avatarSections button, .rankingViewTabs button) { border-radius: 7px !important; background: transparent !important; border: 0 !important; color: var(--av-mute) !important; box-shadow: none !important; text-shadow: none; }
+.appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"], .rankingViewTabs button[aria-selected="true"]) { background: #e9f9ff !important; color: #071318 !important; box-shadow: 0 2px 8px rgba(0,0,0,.5) !important; }
+.appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice) !important; }
+.appShell .avatarScreen .profileStats > div::before { inset: 0 auto auto 0; width: 14px; height: 2px; border-radius: 0; background: var(--av-accent); }
+.appShell .avatarScreen :is(.profileStats b, .playerProgress .progressMark b, .profileStrip .profileNet b:not(.negative)) { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+.appShell .avatarScreen .profileStrip .profileNet b:not(.negative) { background: none; color: #39d98a !important; }
+.appShell .avatarScreen .playerProgress li button { border-radius: 8px !important; background: #08090a !important; border-color: var(--av-line) !important; }
+.appShell .avatarScreen .profitLine { stroke: var(--av-ice) !important; filter: none; }
+.appShell .avatarScreen .zeroLine { stroke: rgba(255,255,255,.12) !important; }
+.appShell .avatarScreen .earningsChart { background: repeating-linear-gradient(180deg, transparent 0 24px, rgba(255,255,255,.04) 24px 25px); }
+.appShell .avatarScreen :is(.chartHead span, .accountWalletCard small) { color: var(--av-ice) !important; }
+.appShell .avatarScreen .settingsList button b { color: var(--av-ice) !important; }
+.appShell .avatarScreen .gameRankingPick select { border-radius: 8px !important; background: #08090a !important; border-color: var(--av-line-2) !important; }
+.appShell .avatarScreen .gameRankingYou img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice); }
+.appShell .avatarScreen :is(.gameRankingYou strong, .rankingTable th, .rankingTable td:first-child) { color: var(--av-ice) !important; }
+.appShell .avatarScreen .rankingTable tr.you td { background: rgba(159,230,255,.07) !important; }
+
+/* v173 · Verified games: the board is drawn only once the server's scenario is in place (no preview layout that
+   changes after the countdown); it fades in. */
+.coreGameSurface .gameCanvas { transition: opacity .18s ease-out; }
+.coreGameSurface .gameCanvas.coreCanvasPending { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .coreGameSurface .gameCanvas { transition: none; } }
+
+/* v173 · Wallet: the amount is typed in a field with € inside. */
+.gxWalletField { display: grid; gap: 6px; }
+.gxWalletField > span:first-child { color: #b9b2a4; font-size: 12.5px; }
+.gxWalletInput { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; border-radius: 12px; border: 1px solid rgba(247,227,176,.22); background: #090908; }
+.gxWalletInput:focus-within { border-color: #e9c67e; box-shadow: 0 0 0 3px rgba(233,198,126,.14); }
+.gxWalletInput input { min-width: 0; height: 52px; padding: 0 12px; border: 0; background: none; color: #f6f2ea; font: 700 22px/1 var(--gx-data, monospace); outline: none; }
+.gxWalletInput input::placeholder { color: #5f5a52; }
+.gxWalletInput b { padding: 0 14px 0 4px; color: #6c6862; font-size: 18px; }
+.gxWalletActions button:disabled { opacity: .4; }

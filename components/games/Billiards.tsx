@@ -247,9 +247,8 @@ function drawStaticTable(ctx: CanvasRenderingContext2D) {
   ctx.drawImage(tableSprite.c, TABLE_SPRITE.x, TABLE_SPRITE.y, TABLE_SPRITE.w, TABLE_SPRITE.h);
 }
 
-/** Upright dock under the table (portrait): power bar, then three panels mirrored about the centre —
- * the five levels, this level's balls and the shots left. Drawn over the cue on translucent panels, so the cue
- * still shows through while the numbers stay readable. */
+/** Upright dock under the table (portrait): the power bar only (v173; level, balls and shots live in the
+ * scoreboard). */
 function renderDock(ctx: CanvasRenderingContext2D, s: BilliardsV5State, camera: BilliardsCamera) {
   const tableBottom = billiardsTableBottom(camera), cx = camera.centerX;
   ctx.save();
@@ -267,48 +266,7 @@ function renderDock(ctx: CanvasRenderingContext2D, s: BilliardsV5State, camera: 
     ctx.fillStyle = i <= s.power ? (s.power > 8 ? "#e5c58b" : "#79d8c3") : "rgba(134,171,187,.2)";
     ctx.beginPath(); ctx.roundRect(cx - powerW / 2 + i * (segW + segGap), py, segW, 9, 2.5); ctx.fill();
   }
-  // Three panels: equal sides, wider centre, symmetric about the table axis.
-  const W = Math.min(346 * camera.scale, 366), gap = 8, side = Math.round(W * 0.27), mid = W - 2 * side - 2 * gap;
-  const top = py + 19, h = 50, labelY = top + 13, rowY = top + 33;
-  const panels = [cx - W / 2, cx - mid / 2, cx + mid / 2 + gap] as const;
-  const widths = [side, mid, side] as const;
-  const targetsLeft = s.balls.some((b) => !b.potted && isTarget(b.id));
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  panels.forEach((x, i) => {
-    ctx.fillStyle = "rgba(7,18,30,.66)"; ctx.strokeStyle = "rgba(96,172,181,.34)"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.roundRect(x, top, widths[i], h, 12); ctx.fill(); ctx.stroke();
-    ctx.font = "800 10px system-ui"; ctx.fillStyle = "rgba(176,214,222,.78)";
-    ctx.fillText([t("hud.level"), t("hud.balls"), t("hud.shots")][i].toLocaleUpperCase(), x + widths[i] / 2, labelY);
-  });
-  // Levels 1–5: done (green), current (gold, ringed), next (dim), each with its number.
-  const pip = 15, pipGap = Math.min(5, (side - 16 - 5 * pip) / 4), levelsW = 5 * pip + 4 * pipGap;
-  for (let i = 0; i < 5; i++) {
-    const x = panels[0] + side / 2 - levelsW / 2 + i * (pip + pipGap), cur = i + 1 === s.level, done = i + 1 < s.level;
-    ctx.fillStyle = cur ? "#ffd36a" : done ? "#5cffb0" : "rgba(134,171,187,.24)";
-    ctx.beginPath(); ctx.roundRect(x, rowY - pip / 2, pip, pip, 4); ctx.fill();
-    if (cur) { ctx.strokeStyle = "rgba(255,211,106,.7)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x - 2.5, rowY - pip / 2 - 2.5, pip + 5, pip + 5, 6); ctx.stroke(); }
-    ctx.font = "900 10px system-ui"; ctx.fillStyle = cur || done ? "#0b1620" : "rgba(214,232,238,.7)";
-    ctx.fillText(String(i + 1), x + pip / 2, rowY + 0.5);
-  }
-  // This level's balls, potted ones dimmed; the 8 dimmed until the targets are down.
-  const ids = s.balls.filter((b) => isTarget(b.id) || b.id === 8).map((b) => b.id);
-  const ballScale = 1.15, ballPitch = Math.min(27, (mid - 12) / Math.max(1, ids.length)), ballsW = (ids.length - 1) * ballPitch;
-  ids.forEach((id, i) => {
-    const b = s.balls.find((q) => q.id === id)!;
-    ctx.save();
-    ctx.globalAlpha = b.potted ? 0.22 : id === 8 && targetsLeft ? 0.5 : 1;
-    ctx.translate(cx - ballsW / 2 + i * ballPitch, rowY); ctx.scale(ballScale, ballScale);
-    drawPoolBall(ctx, 0, 0, id, true);
-    ctx.restore();
-  });
-  // Shots: this level's allowance, the ones left lit (mirrors the level pips).
-  const total = Math.max(s.levelShotsLeft, BILLIARDS_V7_RULES.levelShots[s.level - 1] ?? s.levelShotsLeft);
-  const dot = 9, dotGap = Math.min(4, (side - 14 - total * dot) / Math.max(1, total - 1)), dotsW = total * dot + (total - 1) * dotGap;
-  for (let i = 0; i < total; i++) {
-    const x = panels[2] + side / 2 - dotsW / 2 + i * (dot + dotGap) + dot / 2, lit = i < s.levelShotsLeft;
-    ctx.fillStyle = lit ? "#e5c58b" : "rgba(134,171,187,.24)";
-    ctx.beginPath(); ctx.arc(x, rowY, dot / 2, 0, Math.PI * 2); ctx.fill();
-  }
+  // v173: level, balls and shots are no longer drawn here — the scoreboard already shows them.
   ctx.restore();
 }
 
@@ -418,7 +376,8 @@ function renderTable(
     const good = ev.kind === "level" || ev.kind === "levelClear" || ev.kind === "eightWin";
     ctx.globalAlpha = Math.min(1, (200 - age) / 30);
     ctx.font = "900 15px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    const w = Math.min(360, ctx.measureText(text).width + 30), cy2 = camera.rotated ? 40 : 52;
+    // v173: below the table (where the old dock was), never over the scoreboard.
+    const w = Math.min(360, ctx.measureText(text).width + 30), cy2 = camera.rotated ? 40 : billiardsTableBottom(camera) + 52;
     ctx.fillStyle = "rgba(6,14,30,.88)"; ctx.strokeStyle = good ? "rgba(92,255,176,.6)" : "rgba(255,110,120,.7)"; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.roundRect(camera.centerX - w / 2, cy2 - 17, w, 34, 17); ctx.fill(); ctx.stroke();
     ctx.fillStyle = good ? "#8affc6" : "#ff9aa4"; ctx.fillText(text, camera.centerX, cy2 + 1);

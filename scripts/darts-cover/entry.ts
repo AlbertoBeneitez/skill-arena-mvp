@@ -140,9 +140,10 @@ function drawDart(g: CanvasRenderingContext2D, tip: V, dir: V, len: number, w: n
   g.restore();
   // Three darts in the treble 20 (logical board coordinates, y up is negative).
   const P = (x: number, y: number): V => ({ x: bx + (0.965 * x + 0.03 * y) * scale, y: by + (-0.035 * x + y) * scale });
-  const tips = [P(-9, -82.5), P(9.5, -84.5), P(1, -80)];
-  const dirs: V[] = [{ x: 0.3, y: 0.95 }, { x: 0.72, y: 0.69 }, { x: 0.52, y: 0.85 }];
-  const lens = [375, 395, 360];
+  // v173: three darts spread across the top of the board (no dart over another), thrown from the same spot.
+  const tips = [P(-48, -63), P(-2, -85), P(50, -68)];
+  const dirs: V[] = [{ x: 0.42, y: 0.91 }, { x: 0.5, y: 0.87 }, { x: 0.58, y: 0.81 }];
+  const lens = [350, 365, 345];
   const hues = { a: "#0e3b44", b: "#7fe3ee" };
   tips.forEach((t, i) => drawDart(g, t, dirs[i], lens[i], 15.5, hues, true));
   // Back to front: the dart whose tail is highest is furthest away.

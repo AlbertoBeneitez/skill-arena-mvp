@@ -882,6 +882,17 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v173-saturn · Telemetría cítrica, cartera manual y arreglos de juegos (11-nov-2026)
+
+- **Grupo y Avatar:** en Telemetría con acento cítrico, como aspecto por defecto.
+- **Cartera:** la cantidad se escribe a mano.
+- **Juegos:**
+  - «Tu selección» siempre visible;
+  - Dardos con los dardos separados;
+  - los juegos verificados ya no muestran otra disposición antes de empezar;
+  - Galoku con cifras más trabajadas y centradas;
+  - Billar sin paneles inferiores y con los avisos fuera del marcador.
+
 ## v172-saturn · Telemetría como sistema de color, en tres acentos (11-nov-2026)
 
 - Telemetría rehecha:
@@ -890,7 +901,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - acento solo para acción;
   - metales para los puestos.
 - Variantes `?tema=3` (rojo carrera), `?tema=4` (ámbar) y `?tema=5` (magenta).
-- **Pendiente:** que el propietario elija el acento definitivo.
+- **Acento:** el propietario eligió en v173 el ámbar, más verdoso (cítrico).
 
 ## v171-saturn · Enviar juego con instrucciones, Grupo rehecho, cartera y propuestas de color (11-nov-2026)
 
