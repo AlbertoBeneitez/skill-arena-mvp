@@ -18,8 +18,13 @@
  * — never by the order of the player list. A match therefore always has one winner, every elimination is decided and
  * players knocked out in the same round get distinct places. Competitions saved without the field keep the earlier
  * rules (ties share the round win and the places), so their results never change.
+ *
+ * Random slots (v175): a `gameIds` entry may be RANDOM_GAME. Its game is drawn from `config.randomPool` only when that
+ * round is scheduled (FNV-1a of competition and round), so nobody knows it beforehand and the draw is reproducible.
  */
 export const GROUP_COMMISSION_BPS = 500; // 5 %
+/** v175: a game slot drawn at random when its round starts. */
+export const RANDOM_GAME = "random";
 
 export type GroupFormat = "single" | "league-rounds" | "league-duels" | "tournament";
 /** Prize split: legacy presets, or whole percentages per place (v166; v171: one entry per position, adding up to 100,
@@ -31,8 +36,10 @@ export type GroupConfig = {
   format: GroupFormat;
   entryMinor: number;
   split: GroupSplit;
-  /** Game of round k is gameIds[(k - 1) % length]. */
+  /** Game of round k is gameIds[(k - 1) % length]; RANDOM_GAME draws one from randomPool when the round starts. */
   gameIds: readonly string[];
+  /** v175: games a RANDOM_GAME slot can draw (required when gameIds has one). */
+  randomPool?: readonly string[];
   /** Games where the lowest score wins (reaction times). */
   lowerWinsGameIds: readonly string[];
   end: GroupEnd;
@@ -126,8 +133,22 @@ function duelPairs(ids: readonly string[], k: number) {
   return pairs;
 }
 
+function fnv(text: string) {
+  let h = 0x811c9dc5;
+  for (const ch of text) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193);
+  return h >>> 0;
+}
+
+/** The game of a round: its slot, or — for a RANDOM_GAME slot — a reproducible draw from the pool. */
+export function roundGame(c: Pick<GroupCompetition, "id" | "config">, round: number) {
+  const slot = c.config.gameIds[(round - 1) % c.config.gameIds.length];
+  if (slot !== RANDOM_GAME) return slot;
+  const pool = c.config.randomPool ?? [];
+  return pool[fnv(`${c.id}|r${round}|game`) % pool.length];
+}
+
 function schedule(c: GroupCompetition, round: number): GroupCompetition {
-  const gameId = c.config.gameIds[(round - 1) % c.config.gameIds.length];
+  const gameId = roundGame(c, round);
   const groups = c.config.format === "league-duels" ? duelPairs(active(c), round) : [active(c)];
   const matches = groups.map((players, i) => ({ round, gameId, seed: `${c.id}:r${round}:m${i}`, players, scores: {} }));
   return { ...c, matches: [...c.matches, ...matches] };
@@ -136,15 +157,14 @@ function schedule(c: GroupCompetition, round: number): GroupCompetition {
 export function createGroupCompetition(id: string, config: GroupConfig, players: readonly GroupPlayer[]): GroupCompetition {
   if (players.length < 2) throw new Error("A group competition needs at least two players");
   if (!config.gameIds.length) throw new Error("A group competition needs a game");
+  if (config.gameIds.includes(RANDOM_GAME) && (!config.randomPool?.length || config.randomPool.includes(RANDOM_GAME))) throw new Error("A random slot needs a pool of games");
   const end: GroupEnd = config.format === "single" || config.format === "tournament" ? { kind: "rounds", rounds: 1 } : config.end;
   return schedule({ id, config: { ...config, end, tieBreak: "time-v1" }, players, matches: [], votes: [], eliminated: [], finished: false, payouts: null }, 1);
 }
 
 /** v174: reproducible draw for exact ties (FNV-1a of competition, round, match seed and player). */
 function tieDraw(c: GroupCompetition, m: GroupMatch, id: string) {
-  let h = 0x811c9dc5;
-  for (const ch of `${c.id}|${m.round}|${m.seed}|${id}`) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193);
-  return h >>> 0;
+  return fnv(`${c.id}|${m.round}|${m.seed}|${id}`);
 }
 const timeOf = (m: GroupMatch, id: string) => { const t = m.times?.[id]; return typeof t === "number" && Number.isFinite(t) ? t : Number.POSITIVE_INFINITY; };
 /** Player ids ordered from best to worst result in a match (only those with a score). */

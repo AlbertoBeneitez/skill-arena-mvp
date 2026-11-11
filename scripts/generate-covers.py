@@ -1856,14 +1856,14 @@ covers["mine-grid"] = mine_v164()
 # flag and the smiley) remade in the house style: a graphite glass board lit from above in deep space, bevelled
 # raised tiles with a cyan rim, recessed open cells, the classic digit colours glowing, a glossy mine, the flag on its
 # black stand and the gold smiley as the game's button. Every number counts the mines around it.
-def mine_v165():
+def mine_v165(HZ=-1514.0):
     COLS, ROWS = 5, 4
     MINE, FLAG, HIDDEN = (1, 1), (3, 2), (2, 3)
     mines = {MINE, FLAG, HIDDEN}
     covered = {(3, 0), (4, 0), (4, 1), (0, 3), HIDDEN, (4, 3)}
     def n_at(c, r):
         return sum((c + dc, r + dr) in mines for dc in (-1, 0, 1) for dr in (-1, 0, 1) if dc or dr)
-    HZ, FOOT, CW = -1514.0, 430.0, 120.0
+    FOOT, CW = 430.0, 120.0
     def P(u, v):
         sc = 1 / (1 + (ROWS - v) * .055)
         return 320 + (u - COLS / 2) * CW * sc, HZ + (FOOT - HZ) * sc, sc
@@ -1938,6 +1938,11 @@ def mine_v165():
 
 
 covers["mine-grid"] = mine_v165()
+
+
+# v175 · The board reaches the top of the cover too (the owner saw an empty band above it in the catalogue): a lower
+# horizon stretches the rows so the far edge sits just under the top border; the smiley floats over the corner tile.
+covers["mine-grid"] = mine_v165(HZ=-1835.0)
 
 
 # ---------- Stack: the gold block sits lower, just above the tower; no sliced chunk falling off the right ----------

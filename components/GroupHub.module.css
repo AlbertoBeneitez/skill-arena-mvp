@@ -148,6 +148,21 @@
 
 /* ---------- Game picker: mini covers with a selection circle ---------- */
 .games { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 8px; }
+.tileWrap { position: relative; min-width: 0; display: grid; }
+/* v175: a discreet cross in the cover's lower corner removes the tile's last pick (the counter keeps the upper corner);
+   the hit area is larger than the drawn dot. The layer matches the square cover. */
+.unpickLayer { position: absolute; top: 0; inset-inline: 0; aspect-ratio: 1; pointer-events: none; }
+.unpick {
+  position: absolute; bottom: -6px; inset-inline-start: -6px; width: 32px; height: 32px; display: grid; place-items: center;
+  padding: 0; border: 0; background: none; color: var(--ink); pointer-events: auto;
+}
+.unpick::before {
+  content: ""; position: absolute; inset: 7px; border-radius: 50%; background: rgba(8, 9, 10, .82);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .28);
+}
+.unpick :global(.uiIcon) { position: relative; }
+.unpick:active::before { background: rgba(40, 42, 46, .95); }
+.unpick:focus-visible { outline: 2px solid var(--ice, var(--gold)); outline-offset: -4px; border-radius: 50%; }
 .gameTile { position: relative; display: grid; gap: 6px; padding: 0; border: 0; background: none; color: var(--ink); text-align: center; min-width: 0; }
 .gameArt {
   display: grid; place-items: center; aspect-ratio: 1; overflow: hidden; border-radius: 12px;
@@ -181,13 +196,15 @@
 }
 .money input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(217, 180, 106, .14); }
 .money b { display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--line-2); background: var(--field); color: var(--gold); font-size: 18px; }
+/* v175: prize and commission only, large and flat (no glow); final values for every theme layer. */
 .prizeBox {
-  display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 4px 10px; padding: 12px 14px;
-  border-radius: 14px; border: 1px solid rgba(217, 180, 106, .3); background: #15120c;
+  margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 10px 12px; padding: 14px 16px;
+  border-radius: 8px; border: 1px solid var(--line-2); background: var(--field); box-shadow: inset 2px 0 0 var(--ice, var(--gold));
 }
-.prizeBox span { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--gold); }
-.prizeBox b { justify-self: end; font: 700 22px/1 var(--gx-data, monospace); color: var(--ink); font-variant-numeric: tabular-nums; }
-.prizeBox small { grid-column: 1 / -1; font-size: 11.5px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.prizeBox dt { font-size: 16px; font-weight: 600; color: var(--ice, var(--gold)); }
+.prizeBox dd { margin: 0; justify-self: end; font: 700 30px/1 var(--gx-data, monospace); color: var(--ice-hi, var(--ink)); font-variant-numeric: tabular-nums; }
+.prizeBox dt:nth-of-type(2) { color: var(--mute); }
+.prizeBox .fee { font-size: 20px; color: var(--ink); }
 
 .split { border-radius: 14px; border: 1px solid var(--line); background: var(--field); overflow: hidden; }
 .split[open] { border-color: var(--line-2); }
@@ -293,15 +310,6 @@
 .search input::placeholder { color: var(--dim); }
 .search input::-webkit-search-cancel-button { filter: invert(.6); }
 .gameMark[data-wide] { width: auto; min-width: 22px; padding: 0 6px; border-radius: 11px; letter-spacing: .02em; }
-.order { display: grid; gap: 8px; padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--field); }
-.orderHead { display: flex; align-items: center; justify-content: space-between; }
-.textBtn { min-height: 32px; padding: 0 8px; border: 0; background: none; color: var(--gold); font-size: 12.5px; font-weight: 600; }
-.orderList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.orderList li { display: grid; grid-template-columns: 22px 32px minmax(0, 1fr) 36px; align-items: center; gap: 8px; }
-.orderList b { font: 700 13px/1 var(--gx-data, monospace); color: var(--gold-hi); text-align: center; }
-.orderList img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
-.orderList span { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.orderList button { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; border: 1px solid var(--line); background: none; color: var(--mute); }
 .money { grid-template-columns: minmax(0, 1fr) auto 46px; gap: 0; align-items: stretch; border-radius: 12px; border: 1px solid var(--line-2); background: var(--field); overflow: hidden; }
 .money:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(217, 180, 106, .14); }
 .money input { border: 0; border-radius: 0; background: none; box-shadow: none !important; min-height: 56px; font-size: 20px; -moz-appearance: textfield; }
@@ -355,7 +363,7 @@
 [dir="rtl"] .kicker { background-position: 100% 55%; }
 
 /* Foil text for the figures that matter. */
-.prizeBox b, .ticket b, .compTitle span, .standings b {
+.ticket b, .compTitle span, .standings b {
   background: var(--foil-text); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
@@ -439,20 +447,10 @@
 .gameArt[data-random] { background: radial-gradient(circle at 50% 30%, #1c1913, #0a0a09); }
 
 /* Fields. */
-.search, .money, .codeInput, .split, .order { background: linear-gradient(180deg, #0b0b0a, #080807); }
+.search, .money, .codeInput, .split { background: linear-gradient(180deg, #0b0b0a, #080807); }
 .search:focus-within, .money:focus-within, .codeInput:focus { border-color: #e9c67e; box-shadow: 0 0 0 3px rgba(233, 198, 126, .14); }
 .arrows button { color: var(--gold-hi); }
 
-/* Prize box: a gold-lit plate. */
-.prizeBox {
-  border: 1px solid transparent;
-  background:
-    radial-gradient(120% 120% at 100% 0%, rgba(247, 227, 176, .16), transparent 55%) padding-box,
-    linear-gradient(180deg, #19160f, #0f0d0a) padding-box,
-    var(--foil) border-box;
-}
-.prizeBox span { color: var(--gold-hi); }
-.prizeBox b { font-size: 24px; }
 .split summary b { color: var(--gold-hi); }
 .placesPick button[aria-pressed="true"] { background: var(--foil); color: var(--gold-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5); }
 .bars li[data-place="1"] { --tone: #e9c67e; }
@@ -556,14 +554,10 @@
   --accent: #d2df3a; --accent-hi: #e2ec68; --on-accent: #151903;
 }
 
-/* Carbon panels: engineering grid, a hairline lit along the top, ice registration marks in two corners. */
+/* Carbon panels: engineering grid and a hairline lit along the top (v175: no corner marks). */
 .screen :is(.panel, .hero, .head), .screen .sheet {
   border-radius: 10px; border: 1px solid var(--line);
   background:
-    linear-gradient(var(--ice), var(--ice)) left top / 10px 1px no-repeat,
-    linear-gradient(var(--ice), var(--ice)) left top / 1px 10px no-repeat,
-    linear-gradient(var(--ice), var(--ice)) right bottom / 10px 1px no-repeat,
-    linear-gradient(var(--ice), var(--ice)) right bottom / 1px 10px no-repeat,
     linear-gradient(rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(90deg, rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(180deg, #141517, #0d0e0f);
@@ -602,7 +596,7 @@
 .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
 
 /* Fields: recessed wells; focus in ice. */
-.screen :is(.search, .money, .codeInput, .split, .order, .nameForm input, .stepper button, .pctStepper) { border-radius: 8px; background: var(--field); border-color: var(--line-2); }
+.screen :is(.search, .money, .codeInput, .split, .nameForm input, .stepper button, .pctStepper) { border-radius: 8px; background: var(--field); border-color: var(--line-2); }
 .screen :is(.search:focus-within, .money:focus-within, .codeInput:focus, .nameForm input) { border-color: var(--ice); box-shadow: 0 0 0 3px var(--ice-soft); }
 .screen .search:focus-within { color: var(--ice); }
 .screen .arrows button, .screen .pctStepper button { color: var(--ice); background: transparent; }
@@ -615,8 +609,6 @@
 .screen .ticket[data-copied] { border-color: var(--ice); }
 
 /* Money: a readout — ice figures on a well, with a thin ice rule on the left. */
-.screen .prizeBox { border-radius: 8px; background: linear-gradient(90deg, var(--ice-soft), transparent 40%), var(--field); border: 1px solid var(--line-2); box-shadow: inset 2px 0 0 var(--ice); }
-.screen .prizeBox span { color: var(--ice); letter-spacing: .06em; }
 .screen .split summary b { color: var(--ice); }
 .screen .placesPick button[aria-pressed="true"] { background: var(--ice); color: #05181f; box-shadow: none; }
 .screen .positions li[data-place="1"] { --tone: #e2c06a; }
@@ -637,8 +629,6 @@
 .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--accent); color: var(--on-accent); border: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
 .screen .gameTile[aria-pressed="true"] .gameName { color: var(--ice-hi); }
 .screen .gameArt[data-random] { background: var(--field); color: var(--ice); }
-.screen .orderList b { color: var(--ice); }
-.screen .textBtn { color: var(--ice); }
 
 /* Standings. */
 .screen .standings li { border-radius: 8px; background: var(--field); border-color: var(--line); }

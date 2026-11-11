@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {
-  DEFAULT_SPLITS, MAX_PAID_PLACES, createGroupCompetition, defaultSplit, groupMoney, isValidSplit, splitShares, stepSplit, groupStandings, isGroupCompetition, nextGroupMatch, recordGroupScore, voteToEndGroup,
+  DEFAULT_SPLITS, MAX_PAID_PLACES, RANDOM_GAME, createGroupCompetition, roundGame, defaultSplit, groupMoney, isValidSplit, splitShares, stepSplit, groupStandings, isGroupCompetition, nextGroupMatch, recordGroupScore, voteToEndGroup,
   type GroupCompetition, type GroupConfig, type GroupPlayer,
 } from "../lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "../lib/demo/groupRivals";
@@ -196,4 +196,26 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.equal(total(c), prize);
   assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(c))), "an array split survives a save and reload");
 }
-console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits · eliminations per round · tie-breaks (time, seeded draw; legacy shared)");
+// v175 · «Aleatorio» is one more slot: drawn from the pool only when its round starts, reproducibly.
+{
+  const pool = ["a", "b", "c", "d", "e"];
+  const conf = cfg({ format: "league-rounds", gameIds: ["slot", RANDOM_GAME, "darts", RANDOM_GAME], randomPool: pool, end: { kind: "rounds", rounds: 8 } });
+  let c = createGroupCompetition("rnd", conf, players(3));
+  assert.equal(c.matches.length, 1, "only the first round exists at the start");
+  assert.equal(c.matches[0].gameId, "slot");
+  for (let r = 0; r < 8 && !c.finished; r++) c = play(c, { p0: 3, p1: 2, p2: 1 });
+  const games = [...new Set(c.matches.map((m) => m.round))].map((r) => c.matches.find((m) => m.round === r)!.gameId);
+  assert.equal(games.length, 8);
+  assert.equal(games[0], "slot"); assert.equal(games[2], "darts"); assert.equal(games[4], "slot"); assert.equal(games[6], "darts");
+  for (const r of [1, 3, 5, 7]) assert.ok(pool.includes(games[r]), `round ${r + 1} draws from the pool`);
+  assert.ok(!games.includes(RANDOM_GAME), "a scheduled match never carries the placeholder");
+  for (let r = 1; r <= 8; r++) assert.equal(roundGame(c, r), games[r - 1], "the draw is reproducible");
+  const draws = new Set(Array.from({ length: 40 }, (_, k) => roundGame({ id: `x${k}`, config: conf }, 2)));
+  assert.ok(draws.size >= 3, "different competitions draw different games");
+  assert.throws(() => createGroupCompetition("bad", cfg({ gameIds: [RANDOM_GAME] }), players(2)), /pool/);
+  assert.throws(() => createGroupCompetition("bad2", cfg({ gameIds: [RANDOM_GAME], randomPool: [RANDOM_GAME] }), players(2)), /pool/);
+  const single = createGroupCompetition("one", cfg({ gameIds: [RANDOM_GAME], randomPool: pool }), players(2));
+  assert.ok(pool.includes(single.matches[0].gameId), "a single random match is drawn at once");
+  assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(c))));
+}
+console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits · eliminations per round · tie-breaks (time, seeded draw; legacy shared) · random slots");

@@ -32,7 +32,6 @@
 }
 .out { border: 1px solid rgba(233, 198, 126, .6); background: transparent; color: #f7e3b0; }
 .moves { display: grid; }
-.moves p { margin: 0; color: #8d877c; font-size: 12.5px; text-align: center; }
 .moves > div { display: flex; justify-content: space-between; padding: 8px 2px; border-top: 1px solid rgba(247, 227, 176, .08); font-size: 13px; color: #b9b2a4; }
 .moves b { color: #9fe3b4; font-family: var(--gx-data, monospace); }
 .moves b.negative { color: #ff8a80; }

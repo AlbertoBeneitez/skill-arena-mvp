@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v175-saturn · Aleatorio como juego, premios claros y ajustes (11-nov-2026)
+
+- **Grupo:**
+  - Aleatorio se elige y repite como un juego más; se sortea al empezar su ronda;
+  - × discreta en cada juego elegido, sin cuadro de orden;
+  - premios con solo premio y comisión;
+  - «Rondas eliminatorias», sin subtítulos ni esquinas azules.
+- **Enviar juego:** textos nuevos en la bienvenida y en la página de envío.
+- **Cartera:** sin «Sin movimientos».
+- **Mine Grid:** la portada llena la parte de arriba.
+- **Perfil:** gráfica bajo la ficha, sin esquinas de dos segmentos.
+
 ## v174-saturn · Cosmicoins, desempates y auditoría técnica (11-nov-2026)
 
 - **Cosmicoins:** toda la app muestra el saldo en CC (1 CC = 1 €).

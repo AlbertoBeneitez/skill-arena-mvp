@@ -8,9 +8,8 @@
  */
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
-import { defaultSplit, groupMoney, groupStandings, nextGroupMatch, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
-import { createRng } from "@/lib/deterministic/seeded";
-import { GAMES, type GameMeta } from "@/lib/games";
+import { defaultSplit, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
+import { GAMES } from "@/lib/games";
 import { formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
@@ -163,9 +162,12 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     if (next === "single") setPicked((list) => list.slice(0, 1));
   }
   /** Single match: tap picks or unpicks the one game. League and tournament: every tap adds the game to the end of the
-   * order (repeats allowed, up to MAX_SEQUENCE); the order strip removes them. */
+   * order (repeats allowed, up to MAX_SEQUENCE); the small cross on a picked tile removes its last occurrence. */
   function tapGame(id: string) {
     setPicked((list) => kind === "single" ? (list[0] === id ? [] : [id]) : list.length >= MAX_SEQUENCE ? list : [...list, id]);
+  }
+  function unpick(id: string) {
+    setPicked((list) => { const last = list.lastIndexOf(id); return last < 0 ? list : list.filter((_, i) => i !== last); });
   }
   function stepEntry(delta: number) {
     const current = Number(entry.replace(",", ".")) || 0;
@@ -245,12 +247,11 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const affordable = entryMinor <= Math.round(balance * 100);
   const chosen = kind === "single" ? picked.slice(0, 1) : picked;
   function buildConfig(): GroupConfig {
-    const ids = chosen.length ? [...chosen] : (() => {
-      const rng = createRng(`${group!.code}:${format}:games`), pool = playable.map((g) => g.id);
-      return Array.from({ length: 12 }, () => pool[rng.nextInt(pool.length)]);
-    })();
+    // Nothing picked: every round is a surprise. Random slots are drawn when their round starts (lib/groupCompetition).
+    const ids = chosen.length ? [...chosen] : [RANDOM_GAME];
     return {
       format, entryMinor, split: [...split], gameIds: ids,
+      ...(ids.includes(RANDOM_GAME) ? { randomPool: playable.map((g) => g.id) } : {}),
       ...(kind === "tournament" ? { eliminatePerRound: Math.min(knockout, maxKnockout) } : {}),
       lowerWinsGameIds: playable.filter((g) => g.resultMetric === "reaction-time-ms").map((g) => g.id),
       end: { kind: "rounds", rounds: kind === "league" ? rounds : 1 },
@@ -303,6 +304,16 @@ export default function GroupHub({ group, competition, balance, playerName, avat
     </div>
   );
 
+  /** v175: only what each player can win and what the platform keeps, in large type. */
+  const prizeBox = (prize: number, commission: number) => (
+    <dl className={st.prizeBox}>
+      <dt>{t("group.prizes")}</dt>
+      <dd dir="ltr">{euros(prize)}</dd>
+      <dt>{t("group.commission")}</dt>
+      <dd dir="ltr" className={st.fee}>{euros(commission)}</dd>
+    </dl>
+  );
+
   if (competition) {
     const you = group.members.find((m) => m.isYou)?.id ?? "you";
     const standings = groupStandings(competition), next = nextGroupMatch(competition, you);
@@ -324,11 +335,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
             <strong>{t(tournament ? "group.tournament" : competition.config.format === "single" ? "group.singleMatch" : "group.league")}</strong>
             <span>{competition.finished ? t("group.finished") : t(tournament ? "group.roundN" : "group.matchdayN", { n: round })}</span>
           </div>
-          <div className={st.prizeBox}>
-            <span>{t("group.prizes")}</span>
-            <b dir="ltr">{euros(pot.prize)}</b>
-            <small>{t("group.potLine", { pot: euros(pot.pot), fee: euros(pot.commission), prize: euros(pot.prize) })}</small>
-          </div>
+          {prizeBox(pot.prize, pot.commission)}
           <ol className={st.standings} aria-label={t("group.standings")}>
             {standings.map((s) => {
               const p = competition.players.find((x) => x.id === s.id)!;
@@ -370,7 +377,9 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const shareText = t("group.shareText", { name: group.name, code: group.code });
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const multi = kind !== "single";
-  const visibleGames = query.trim() ? playable.filter((g) => fold(gameName(g)).includes(fold(query.trim()))) : playable;
+  /** v175: «Aleatorio» is one more game: it can be picked, repeated and ordered like the others. */
+  const tiles = [{ id: RANDOM_GAME, name: t("group.randomMix"), cover: "" }, ...playable.map((g) => ({ id: g.id, name: gameName(g), cover: g.cover }))]
+    .filter((tile) => !query.trim() || fold(tile.name).includes(fold(query.trim())));
   return (
     <section className={st.screen}>
       {header}
@@ -402,8 +411,8 @@ export default function GroupHub({ group, competition, balance, playerName, avat
             <span className={`${st.stepLabel} ${st.sc}`}>{t("group.format")}</span>
             <div className={st.seg3}>
               {seg<Kind>("single", kind, chooseKind, t("group.singleMatch"))}
-              {seg<Kind>("league", kind, chooseKind, t("group.league"), t("group.leagueSub"))}
-              {seg<Kind>("tournament", kind, chooseKind, t("group.tournament"), t("group.tournamentSub"))}
+              {seg<Kind>("league", kind, chooseKind, t("group.league"))}
+              {seg<Kind>("tournament", kind, chooseKind, t("group.tournament"))}
             </div>
             {kind === "league" && (
               <div className={st.sub}>
@@ -443,49 +452,29 @@ export default function GroupHub({ group, competition, balance, playerName, avat
               <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")} enterKeyHint="search" />
             </label>
             <div className={st.games} role="group" aria-label={t(multi ? "group.stepGames" : "group.stepGame")}>
-              {multi && !query && (
-                <button type="button" className={st.gameTile} aria-pressed={chosen.length === 0} onClick={() => setPicked([])}>
-                  <span className={st.gameArt} data-random><UiIcon name="dice" size={26} /></span>
-                  <span className={st.gameMark} aria-hidden="true">{chosen.length === 0 ? <UiIcon name="check" size={12} /> : null}</span>
-                  <span className={st.gameName}>{t("group.randomMix")}</span>
-                </button>
-              )}
-              {visibleGames.map((g: GameMeta) => {
-                const numbers = chosen.flatMap((id, i) => (id === g.id ? [i + 1] : []));
+              {tiles.map(({ id, name, cover }) => {
+                const numbers = chosen.flatMap((x, i) => (x === id ? [i + 1] : []));
                 const label = numbers.length > 3 ? `${numbers.slice(0, 2).join(" ")} +${numbers.length - 2}` : numbers.join(" ");
                 return (
-                  <button key={g.id} type="button" className={st.gameTile} aria-pressed={numbers.length > 0} onClick={() => tapGame(g.id)}
-                    aria-label={numbers.length ? `${gameName(g)} · ${numbers.join(", ")}` : gameName(g)}>
-                    <span className={st.gameArt}><img src={g.cover} alt="" loading="lazy" decoding="async" /></span>
-                    <span className={st.gameMark} data-wide={numbers.length > 1 || undefined} aria-hidden="true">{!numbers.length ? null : multi ? label : <UiIcon name="check" size={12} />}</span>
-                    <span className={st.gameName}>{gameName(g)}</span>
-                  </button>
+                  <div key={id} className={st.tileWrap}>
+                    <button type="button" className={st.gameTile} aria-pressed={numbers.length > 0} onClick={() => tapGame(id)}
+                      aria-label={numbers.length ? `${name} · ${numbers.join(", ")}` : name}>
+                      {cover ? <span className={st.gameArt}><img src={cover} alt="" loading="lazy" decoding="async" /></span>
+                        : <span className={st.gameArt} data-random><UiIcon name="dice" size={26} /></span>}
+                      <span className={st.gameMark} data-wide={numbers.length > 1 || undefined} aria-hidden="true">{!numbers.length ? null : multi ? label : <UiIcon name="check" size={12} />}</span>
+                      <span className={st.gameName}>{name}</span>
+                    </button>
+                    {numbers.length > 0 && (
+                      <span className={st.unpickLayer}>
+                        <button type="button" className={st.unpick} onClick={() => unpick(id)}
+                          aria-label={t("group.removeFromSequence", { game: name, n: numbers[numbers.length - 1] })}><UiIcon name="close" size={10} /></button>
+                      </span>
+                    )}
+                  </div>
                 );
               })}
             </div>
-            {!visibleGames.length && <p className={st.hint}>{t("group.noGamesFound")}</p>}
-            {multi && chosen.length > 0 && (
-              <div className={st.order}>
-                <div className={st.orderHead}>
-                  <span className={st.subLabel}>{t("group.sequence")}</span>
-                  <button type="button" className={st.textBtn} onClick={() => setPicked([])}>{t("group.clearSequence")}</button>
-                </div>
-                <ol className={st.orderList}>
-                  {chosen.map((id, i) => {
-                    const g = playable.find((x) => x.id === id);
-                    return (
-                      <li key={`${id}-${i}`}>
-                        <b>{i + 1}</b>
-                        {g && <img src={g.cover} alt="" />}
-                        <span>{g ? gameName(g) : id}</span>
-                        <button type="button" aria-label={t("group.removeFromSequence", { game: g ? gameName(g) : id, n: i + 1 })}
-                          onClick={() => setPicked((list) => list.filter((_, j) => j !== i))}><UiIcon name="close" size={14} /></button>
-                      </li>
-                    );
-                  })}
-                </ol>
-              </div>
-            )}
+            {!tiles.length && <p className={st.hint}>{t("group.noGamesFound")}</p>}
             <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
           <li>
@@ -502,11 +491,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
               </div>
               <small>{t("group.available", { amount: formatMoney(balance) })}</small>
             </div>
-            <div className={st.prizeBox}>
-              <span>{t("group.prizes")}</span>
-              <b dir="ltr">{euros(money.prize)}</b>
-              <small>{t("group.potLine", { pot: euros(money.pot), fee: euros(money.commission), prize: euros(money.prize) })}</small>
-            </div>
+            {prizeBox(money.prize, money.commission)}
             <details className={st.split}>
               <summary>
                 <span>{t("group.split")}</span>

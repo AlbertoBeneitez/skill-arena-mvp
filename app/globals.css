@@ -8605,7 +8605,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .studioInbox li p { margin: 0; }
 .studioInbox li a { color: var(--st-ion); }
 /* v142 · package submissions: kit link, file, check report, review actions and the isolated test frame */
-.studioLead { margin: 0; color: var(--st-mute); font-size: 14px; line-height: 1.45; }
+.studioLead { margin: 0; color: var(--st-mute); font-size: 14px; line-height: 1.45; white-space: pre-line; }
 .studioKit { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(127, 227, 238, .45); color: var(--st-ion); font-weight: 700; font-size: 13.5px; text-decoration: none; }
 .studioFile input { padding: 10px 12px; }
 .studioFile input::file-selector-button { margin-right: 10px; min-height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--st-hair); background: var(--st-deep); color: var(--st-ink); font: inherit; font-weight: 700; }
@@ -9212,14 +9212,14 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen .profileStrip .profileNet b.negative { color: #ff8a80 !important; background: none; }
 .appShell .avatarScreen .avatarSections { margin-top: 4px; }
 
-/* v172/v173 · «Telemetría» for the Avatar tab (citron accent, owner's choice): carbon panels with grid and registration marks, an
+/* v172/v173 · «Telemetría» for the Avatar tab (citron accent, owner's choice): carbon panels with a grid, an
    ice segmented control, ice data readouts, the accent kept for action only. */
 .appShell .avatarScreen {
   --av-ink: #eef0f2; --av-mute: #8f959c; --av-dim: #5a5f65; --av-line: rgba(255,255,255,.07); --av-line-2: rgba(255,255,255,.14);
   --av-ice: #9fe6ff; --av-ice-hi: #d8f6ff; --av-accent: #d2df3a;
   --av-foil-text: linear-gradient(180deg, #f1fbff, #9fe6ff);
+  /* v175: no corner marks (the owner removed the two-segment corners). */
   --av-surface:
-    linear-gradient(#9fe6ff,#9fe6ff) left top / 10px 1px no-repeat, linear-gradient(#9fe6ff,#9fe6ff) left top / 1px 10px no-repeat,
     linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(180deg, #141517, #0d0e0f);
 }
@@ -9232,7 +9232,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen :is(.avatarSections button, .rankingViewTabs button) { border-radius: 7px !important; background: transparent !important; border: 0 !important; color: var(--av-mute) !important; box-shadow: none !important; text-shadow: none; }
 .appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"], .rankingViewTabs button[aria-selected="true"]) { background: #e9f9ff !important; color: #071318 !important; box-shadow: 0 2px 8px rgba(0,0,0,.5) !important; }
 .appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice) !important; }
-.appShell .avatarScreen .profileStats > div::before { inset: 0 auto auto 0; width: 14px; height: 2px; border-radius: 0; background: var(--av-accent); }
+.appShell .avatarScreen .profileStats > div::before { display: none; }
 .appShell .avatarScreen :is(.profileStats b, .playerProgress .progressMark b, .profileStrip .profileNet b:not(.negative)) { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
 .appShell .avatarScreen .profileStrip .profileNet b:not(.negative) { background: none; color: #39d98a !important; }
 .appShell .avatarScreen .playerProgress li button { border-radius: 8px !important; background: #08090a !important; border-color: var(--av-line) !important; }

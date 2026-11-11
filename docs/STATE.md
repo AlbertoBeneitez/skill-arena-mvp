@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 11 de noviembre de 2026 · base `mobile-test` en v173-saturn; v174-saturn en su rama, pendiente de aprobación.
+Actualizado: 11 de noviembre de 2026 · base `mobile-test` en v175-saturn (incluye v174).
 
 ## Catálogo
 
@@ -86,7 +86,8 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
-- [x] **Cosmicoins, desempates y auditoría (11 de noviembre, v174, en rama):** saldo en CC (1 CC = 1 €); Grupo con «EMPEZAR»; Enviar juego con notas «i» por paso; desempate por tiempo y sorteo con semilla (`tieBreak: "time-v1"`, sin cambiar competiciones guardadas); oxlint en `pnpm lint`; cartera y bienvenida como componentes.
+- [x] **Aleatorio como juego y ajustes (11 de noviembre, v175):** Aleatorio repetible y sorteado al empezar su ronda (`RANDOM_GAME`/`randomPool`); × por juego elegido; premios solo con premio y comisión; «Rondas eliminatorias»; textos nuevos de Enviar juego; portada de Mine Grid hasta arriba; gráfica del perfil bajo la ficha; sin esquinas decorativas en Grupo y Avatar.
+- [x] **Cosmicoins, desempates y auditoría (11 de noviembre, v174):** saldo en CC (1 CC = 1 €); Grupo con «EMPEZAR»; Enviar juego con notas «i» por paso; desempate por tiempo y sorteo con semilla (`tieBreak: "time-v1"`, sin cambiar competiciones guardadas); oxlint en `pnpm lint`; cartera y bienvenida como componentes.
 - [x] **Colores de Grupo y Avatar (11 de noviembre, v173):** Telemetría con acento cítrico (`#d2df3a`), por defecto en Grupo y Avatar; el resto de la app sigue igual.
 - [x] **Cartera manual, Tu selección y juegos (11 de noviembre, v173):** cantidad escrita a mano; «Tu selección» siempre; dardos separados en la portada; tablero oculto hasta tener el escenario del servidor; cifras de Galoku centradas; Billar sin paneles inferiores.
 - [x] **Grupo, cartera y Enviar juego (11 de noviembre, v171):** foto y nombre del grupo; Liga con modalidades y número de jornadas; Eliminatorias con eliminados por ronda; reparto por posiciones ±5 %; cartera en la cabecera; «Enviar juego» con pantalla inicial e instrucciones; Avatar sin cuadro de saldo.

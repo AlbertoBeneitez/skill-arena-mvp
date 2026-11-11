@@ -38,7 +38,7 @@ export default function WalletPanel({ balance, format, onMove, onClose, movement
       <div className={st.panel} role="dialog" aria-label={t("wallet.title")} onKeyDown={(event) => { if (event.key === "Escape") onClose(); }}>
         <div className={st.head}>
           <small>{t("wallet.title")}</small>
-          <strong dir="ltr">{format(balance)}</strong>
+          <strong dir="ltr" aria-live="polite">{format(balance)}</strong>
         </div>
         <label className={st.field}>
           <span>{t("wallet.amount")}</span>
@@ -53,14 +53,16 @@ export default function WalletPanel({ balance, format, onMove, onClose, movement
           <button type="button" className={st.in} disabled={!amount} onClick={() => move(1)}>{t("wallet.deposit")}</button>
           <button type="button" className={st.out} disabled={!amount || balance < amount} onClick={() => move(-1)}>{t("wallet.withdraw")}</button>
         </div>
-        <div className={st.moves} aria-live="polite">
-          {movements.length === 0 ? <p>{t("profile.noMovements")}</p> : movements.map((movement, index) => (
-            <div key={`${movement.label}-${index}`}>
-              <span>{movement.label}</span>
-              <b className={movement.amount < 0 ? st.negative : undefined} dir="ltr">{movement.amount > 0 ? "+" : ""}{format(movement.amount)}</b>
-            </div>
-          ))}
-        </div>
+        {movements.length > 0 && (
+          <div className={st.moves}>
+            {movements.map((movement, index) => (
+              <div key={`${movement.label}-${index}`}>
+                <span>{movement.label}</span>
+                <b className={movement.amount < 0 ? st.negative : undefined} dir="ltr">{movement.amount > 0 ? "+" : ""}{format(movement.amount)}</b>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

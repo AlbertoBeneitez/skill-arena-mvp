@@ -1721,6 +1721,15 @@ export default function DemoApp() {
             {avatarSection === "ranking" ? <RankingHub bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
             <div className="profileStrip"><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div></div>
 
+            <div className="chartPanel">
+              <div className="chartHead"><span>{t("profile.netProfit")}</span><strong dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
+              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={t("profile.chartAria")}>
+                <line x1="0" y1="50" x2="100" y2="50" className="zeroLine" />
+                <polyline points={chartPoints} className="profitLine" />
+              </svg>
+              <div className="chartAxis" dir="ltr"><span>{t("profile.chartStart")}</span><span>{t("profile.chartNow")}</span></div>
+            </div>
+
             <div className="profileStats" aria-label={t("profile.stats")}>
               <div><b>{matchesPlayed}</b><span>{t("profile.played")}</span></div>
               <div><b>{wins}</b><span>{t("profile.wins")}</span></div>
@@ -1731,14 +1740,6 @@ export default function DemoApp() {
             <PlayerProgress leagues={persistentTraining ? undefined : leagues} bestScores={bestScores} onPlay={startMatch} />
 
             {persistentTraining && <RecentAttempts />}
-            <div className="chartPanel">
-              <div className="chartHead"><span>{t("profile.netProfit")}</span><strong dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
-              <svg className="earningsChart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={t("profile.chartAria")}>
-                <line x1="0" y1="50" x2="100" y2="50" className="zeroLine" />
-                <polyline points={chartPoints} className="profitLine" />
-              </svg>
-              <div className="chartAxis" dir="ltr"><span>{t("profile.chartStart")}</span><span>{t("profile.chartNow")}</span></div>
-            </div>
             <div className="settingsList">
               <button onClick={() => navigate("settings")}><span>{t("profile.settings")}</span><b aria-hidden="true" className="dirArrow">→</b></button>
               <button onClick={editProfile}><span>{t("profile.editProfile")}</span><b aria-hidden="true" className="dirArrow">→</b></button>
