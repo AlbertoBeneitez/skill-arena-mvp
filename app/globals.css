@@ -9238,3 +9238,8 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen .rankingTable tr.you td { background: rgba(233,198,126,.08) !important; }
 .appShell .avatarScreen .rankingTable td:first-child { color: var(--av-gold) !important; }
 .appShell .avatarScreen .gameRankingScore { color: var(--av-ink) !important; }
+
+/* v170 · Avatar picker: 9:16 portrait tiles (four across, four rows), the face kept in frame. */
+.galacticAvatarSetup .gxAvatarGrid button { aspect-ratio: 9 / 16; border-radius: 14px; }
+.galacticAvatarSetup .gxAvatarGrid button img { width: 100%; height: 100%; object-fit: cover; }
+.galacticAvatarSetup .avatarMenuGrid.gxAvatarGrid { gap: 8px; }

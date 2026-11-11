@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v170-saturn · Avatares en 9:16, botones sin destellos y cabecera de grupo (11-nov-2026)
+
+- Selector de avatar con fichas verticales 9:16.
+- Botones elegidos de Grupo sin destellos amarillos.
+- Cabecera de grupo sin la etiqueta «Grupo» repetida.
+
 ## v169-saturn · Negro y oro metálico en Grupo y Avatar (11-nov-2026)
 
 - El propietario elige la propuesta negra.

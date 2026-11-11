@@ -88,6 +88,8 @@ const AVATARS = Array.from({ length: PORTRAIT_COUNT }, (_, i) => portraitSrc(i +
  */
 /** v168: the picker sheet shows the 16 portraits whole, as squares in a 4 × 4 grid (no head cut off at the top). */
 const avatarTile = (src: string) => src;
+/** v170: the tiles are 9:16, cut from the square portraits; horizontal focus (%) where the face is off-centre. */
+const AVATAR_TILE_FOCUS: Record<number, number> = { 0: 42, 7: 72 };
 /** 192 px version of a built-in portrait for small spots (nav, profile strip); custom photos pass through. */
 const smallAvatar = (src: string) => portraitCrop(src, "-s");
 const START_BALANCE = 25;
@@ -1357,7 +1359,7 @@ export default function DemoApp() {
                         aria-label={t("identity.avatarN", { n: index + 1 })}
                         onClick={() => { setAvatarId(index); setAvatarSrc(src); setAvatarMenuOpen(false); }}
                       >
-                        <img src={avatarTile(src)} alt="" width={512} height={512} decoding="async" />
+                        <img src={avatarTile(src)} alt="" width={512} height={512} decoding="async" style={{ objectPosition: `${AVATAR_TILE_FOCUS[index] ?? 50}% 0` }} />
                         {current && <span className="gxAvatarTileCheck" aria-hidden="true"><UiIcon name="check" size={16} /></span>}
                       </button>
                     );

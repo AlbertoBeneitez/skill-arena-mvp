@@ -234,7 +234,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const header = (
     <div className={st.head}>
       <div className={st.headName}>
-        <span className={st.kicker}>{t("group.local")}</span>
+        {/* v170: the name already says it is a group — no «Grupo» label above it. */}
         <h1>{group.name}</h1>
       </div>
       <button type="button" className={st.ticket} data-copied={copied === "code" || undefined} aria-label={t("group.copyCodeAria", { code: group.code })}
