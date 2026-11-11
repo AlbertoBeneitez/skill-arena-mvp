@@ -418,8 +418,8 @@ export default function GroupHub({ group, competition, balance, playerName, avat
               <div className={st.sub}>
                 <span className={st.subLabel}>{t("group.leagueMode")}</span>
                 <div className={st.seg2}>
-                  {seg(false, duels, setDuels, t("group.modeRounds"), t("group.modeRoundsSub"))}
-                  {seg(true, duels, setDuels, t("group.modeDuels"), t("group.modeDuelsSub"))}
+                  {seg(false, duels, setDuels, t("group.modeRounds"))}
+                  {seg(true, duels, setDuels, t("group.modeDuels"))}
                 </div>
                 <span className={st.subLabel}>{t("group.end")}</span>
                 <div className={st.counter}>

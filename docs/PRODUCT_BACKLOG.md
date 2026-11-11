@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v176-saturn · Modalidades de liga sin explicaciones (11-nov-2026)
+
+- «Todos contra todos» y «Duelos 1 vs 1» sin subtítulos.
+
 ## v175-saturn · Aleatorio como juego, premios claros y ajustes (11-nov-2026)
 
 - **Grupo:**
