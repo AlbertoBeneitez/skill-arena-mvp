@@ -246,14 +246,15 @@ export default function DemoApp() {
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
   useEffect(() => { setPlayerAvatar(portraitCrop(avatarSrc, "")); }, [avatarSrc]);
-  // v171: three new colour proposals for Grupo and Avatar, previewed with ?tema=1|2|3 (kept for the session;
-  // ?tema=0 goes back to black and gold, the default).
+  // v172: «Telemetría» colour proposals for Grupo and Avatar, previewed with ?tema=3|4|5 (red, amber, magenta;
+  // kept for the session; ?tema=0 goes back to black and gold, the default).
   useEffect(() => {
     try {
       const wanted = new URLSearchParams(window.location.search).get("tema");
-      if (wanted !== null) sessionStorage.setItem("gg.tema171", /^[123]$/.test(wanted) ? wanted : "");
+      if (wanted !== null) sessionStorage.setItem("gg.tema171", /^[345]$/.test(wanted) ? wanted : "");
       sessionStorage.removeItem("gg.tema");
-      const tema = sessionStorage.getItem("gg.tema171");
+      const stored = sessionStorage.getItem("gg.tema171");
+      const tema = stored && /^[345]$/.test(stored) ? stored : "";
       if (tema) document.documentElement.dataset.tema = tema;
       else delete document.documentElement.dataset.tema;
     } catch {

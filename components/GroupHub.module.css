@@ -538,130 +538,114 @@
 .splitHint { padding: 4px 14px 14px; }
 
 /* ======================================================================================================
-   v171 · Three new colour proposals for the owner (preview with ?tema=1, ?tema=2 or ?tema=3; without it the
-   black-and-gold look stays). Only colours and surfaces change; layout is shared.
+   v172 · «Telemetría», worked as a design system (owner's choice from v171, without the orange). Preview with
+   ?tema=3 (racing red, recommended), ?tema=4 (cockpit amber) or ?tema=5 (signal magenta); without it the black
+   and gold look stays. Roles:
+   - carbon: neutral, slightly warm blacks (no blue cast), a 24 px engineering grid and corner registration marks;
+   - ice: data and selection — figures, chosen outlines, focus;
+   - accent: action only — the main button, step chips and the share outline;
+   - metals: 1st / 2nd / 3rd places; green and red: gains and losses.
    ====================================================================================================== */
-
-/* 1 · Pista: verde hierba profunda, crema, morado de club y oro solo para el dinero. */
-:global(:root[data-tema="1"]) .screen {
-  --ink: #f4efe1; --mute: #b9c4b3; --dim: #7f8d7c; --gold: #b896ff; --gold-hi: #e2d4ff; --gold-ink: #fffaf0;
-  --line: rgba(244, 239, 225, .11); --line-2: rgba(244, 239, 225, .22); --panel: #12291f; --field: #0b1c14; --chosen: #20183a;
-  --foil: linear-gradient(180deg, #7d50c4, #5c3299); --foil-text: linear-gradient(180deg, #fbefc4, #d9b45f);
-  --edge: linear-gradient(150deg, rgba(244, 239, 225, .35), rgba(244, 239, 225, .06) 40%, rgba(244, 239, 225, .14)); --grain: none;
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen {
+  --ink: #eef0f2; --mute: #8f959c; --dim: #5a5f65;
+  --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .14);
+  --panel: #121314; --field: #08090a; --chosen: #111a1e;
+  --ice: #9fe6ff; --ice-hi: #d8f6ff; --ice-soft: rgba(159, 230, 255, .1);
+  --gold: var(--accent); --gold-hi: var(--ice-hi); --gold-ink: var(--on-accent);
+  --foil: linear-gradient(180deg, var(--accent-hi), var(--accent)); --foil-text: linear-gradient(180deg, #f1fbff, var(--ice));
+  --grain: none;
 }
-:global(:root[data-tema="1"]) .screen :is(.panel, .hero, .head), :global(:root[data-tema="1"]) .screen .sheet { background: linear-gradient(180deg, #153124, #0e2219); border: 1px solid var(--line); box-shadow: 0 14px 30px -18px rgba(0, 0, 0, .8); }
-:global(:root[data-tema="1"]) .screen .hero::after { background: var(--foil); }
-:global(:root[data-tema="1"]) .screen :is(.choice button, .seg3 button, .seg2 button) { background: #0b1c14; border: 1px solid var(--line); box-shadow: none; }
-:global(:root[data-tema="1"]) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) { background: linear-gradient(180deg, #2a1f4a, #1d1636); border: 1.5px solid var(--gold); box-shadow: none; }
-:global(:root[data-tema="1"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--gold-hi); }
-:global(:root[data-tema="1"]) .screen .primary { text-shadow: none; box-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
-:global(:root[data-tema="1"]) .screen .primary::after { display: none; }
-:global(:root[data-tema="1"]) .screen .primary:disabled { background: var(--line-2); color: var(--dim); }
-:global(:root[data-tema="1"]) .screen .secondary { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-hi); box-shadow: none; }
-:global(:root[data-tema="1"]) .screen .steps > li::before { background: #f4efe1; color: #12291f; box-shadow: none; }
-:global(:root[data-tema="1"]) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
-:global(:root[data-tema="1"]) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input) { background: #0b1c14; border-color: var(--line-2); }
-:global(:root[data-tema="1"]) .screen .ticket { background: #0b1c14; border: 1px dashed var(--gold); box-shadow: none; }
-:global(:root[data-tema="1"]) .screen .ticket small { color: var(--gold-hi); }
-:global(:root[data-tema="1"]) .screen .prizeBox { background: linear-gradient(180deg, #1b3a2b, #10261c); border: 1px solid rgba(217, 180, 95, .55); }
-:global(:root[data-tema="1"]) .screen .gameArt { border-color: var(--line); }
-:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--gold); }
-:global(:root[data-tema="1"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--foil); color: var(--gold-ink); box-shadow: none; }
-:global(:root[data-tema="1"]) .screen .gameArt[data-random] { background: #0b1c14; }
-:global(:root[data-tema="1"]) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #0b1c14, 0 0 0 3.5px var(--gold); }
-:global(:root[data-tema="1"]) .screen .groupPic { background: #0b1c14; color: var(--gold); }
-:global(:root[data-tema="1"]) .screen .groupPicBadge { box-shadow: 0 0 0 2px var(--panel); }
-:global(:root[data-tema="1"]) .screen .pctStepper button { background: transparent; color: var(--gold-hi); }
-:global(:root[data-tema="1"]) .screen .placesPick button[aria-pressed="true"] { box-shadow: none; }
-:global(:root[data-tema="1"]) .screen .standings li { background: #0b1c14; }
-:global(:root[data-tema="1"]) .screen .standings li[data-you] { background: linear-gradient(180deg, #2a1f4a, #1d1636); border: 1px solid var(--gold); }
-:global(:root[data-tema="1"]) .screen .appIcon { background: color-mix(in srgb, var(--tone) 12%, #0b1c14); }
-:global(:root[data-tema="1"]) .screen .kicker { background-image: var(--foil); }
+:global(:root[data-tema="3"]) .screen { --accent: #e3242b; --accent-hi: #f0434a; --on-accent: #ffffff; }
+:global(:root[data-tema="4"]) .screen { --accent: #f5a524; --accent-hi: #ffbb45; --on-accent: #181003; }
+:global(:root[data-tema="5"]) .screen { --accent: #f2307c; --accent-hi: #ff5795; --on-accent: #ffffff; }
 
-/* 2 · Marfil: tarjetas de marfil sobre negro, tinta y bermellón. */
-:global(:root[data-tema="2"]) .screen {
-  --ink: #17140f; --mute: #6b655b; --dim: #9a9387; --gold: #d23a24; --gold-hi: #b8301c; --gold-ink: #ffffff;
-  --line: rgba(23, 20, 15, .12); --line-2: rgba(23, 20, 15, .22); --panel: #f1ece2; --field: #fbf8f2; --chosen: #ffffff;
-  --foil: linear-gradient(180deg, #e8462f, #c9331f); --foil-text: linear-gradient(180deg, #17140f, #17140f);
-  --edge: linear-gradient(rgba(23, 20, 15, .08), rgba(23, 20, 15, .08)); --grain: none;
+/* Carbon panels: engineering grid, a hairline lit along the top, ice registration marks in two corners. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.panel, .hero, .head), :global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .sheet {
+  border-radius: 10px; border: 1px solid var(--line);
+  background:
+    linear-gradient(var(--ice), var(--ice)) left top / 10px 1px no-repeat,
+    linear-gradient(var(--ice), var(--ice)) left top / 1px 10px no-repeat,
+    linear-gradient(var(--ice), var(--ice)) right bottom / 10px 1px no-repeat,
+    linear-gradient(var(--ice), var(--ice)) right bottom / 1px 10px no-repeat,
+    linear-gradient(rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(180deg, #141517, #0d0e0f);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 18px 34px -22px rgba(0, 0, 0, .95);
 }
-:global(:root[data-tema="2"]) .screen :is(.panel, .hero, .head), :global(:root[data-tema="2"]) .screen .sheet { background: linear-gradient(180deg, #f4efe6, #ebe4d7); border: 1px solid var(--line); box-shadow: 0 14px 30px -18px rgba(0, 0, 0, .8); }
-:global(:root[data-tema="2"]) .screen .hero::after { background: var(--foil); }
-:global(:root[data-tema="2"]) .screen :is(.choice button, .seg3 button, .seg2 button) { background: #fbf8f2; border: 1px solid var(--line); box-shadow: none; }
-:global(:root[data-tema="2"]) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) { background: #ffffff; border: 1.5px solid var(--gold); box-shadow: none; }
-:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--gold-hi); }
-:global(:root[data-tema="2"]) .screen .primary { text-shadow: none; box-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
-:global(:root[data-tema="2"]) .screen .primary::after { display: none; }
-:global(:root[data-tema="2"]) .screen .primary:disabled { background: var(--line-2); color: var(--dim); }
-:global(:root[data-tema="2"]) .screen .secondary { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-hi); box-shadow: none; }
-:global(:root[data-tema="2"]) .screen .steps > li::before { background: #17140f; color: #f4efe6; box-shadow: none; }
-:global(:root[data-tema="2"]) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
-:global(:root[data-tema="2"]) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input) { background: #fbf8f2; border-color: var(--line-2); }
-:global(:root[data-tema="2"]) .screen .ticket { background: #fbf8f2; border: 1px dashed var(--gold); box-shadow: none; }
-:global(:root[data-tema="2"]) .screen .ticket small { color: var(--gold-hi); }
-:global(:root[data-tema="2"]) .screen .prizeBox { background: #17140f; border: 1px solid #17140f; }
-:global(:root[data-tema="2"]) .screen .gameArt { border-color: var(--line); }
-:global(:root[data-tema="2"]) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--gold); }
-:global(:root[data-tema="2"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--foil); color: var(--gold-ink); box-shadow: none; }
-:global(:root[data-tema="2"]) .screen .gameArt[data-random] { background: #fbf8f2; }
-:global(:root[data-tema="2"]) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #fbf8f2, 0 0 0 3.5px var(--gold); }
-:global(:root[data-tema="2"]) .screen .groupPic { background: #fbf8f2; color: var(--gold); }
-:global(:root[data-tema="2"]) .screen .groupPicBadge { box-shadow: 0 0 0 2px var(--panel); }
-:global(:root[data-tema="2"]) .screen .pctStepper button { background: transparent; color: var(--gold-hi); }
-:global(:root[data-tema="2"]) .screen .placesPick button[aria-pressed="true"] { box-shadow: none; }
-:global(:root[data-tema="2"]) .screen .standings li { background: #fbf8f2; }
-:global(:root[data-tema="2"]) .screen .standings li[data-you] { background: #ffffff; border: 1px solid var(--gold); }
-:global(:root[data-tema="2"]) .screen .appIcon { background: color-mix(in srgb, var(--tone) 12%, #fbf8f2); }
-:global(:root[data-tema="2"]) .screen .kicker { background-image: var(--foil); }
-:global(:root[data-tema="2"]) .screen .members img { box-shadow: 0 0 0 1.5px rgba(23, 20, 15, .25); }
-:global(:root[data-tema="2"]) .screen .prizeBox span, :global(:root[data-tema="2"]) .screen .prizeBox small { color: #d9d1c2; }
-:global(:root[data-tema="2"]) .screen .prizeBox b { background: none; color: #f4efe6; }
-:global(:root[data-tema="2"]) .screen .gameMark { border-color: rgba(255, 255, 255, .9); }
-:global(:root[data-tema="2"]) .screen .positions li[data-place="1"] { --tone: #b8301c; }
-:global(:root[data-tema="2"]) .screen .positions li[data-place="2"] { --tone: #5a554c; }
-:global(:root[data-tema="2"]) .screen .positions li[data-place="3"] { --tone: #8a5a2b; }
-:global(:root[data-tema="2"]) .screen .search input, :global(:root[data-tema="2"]) .screen .money input { color: var(--ink); }
-:global(:root[data-tema="2"]) .screen .close { color: var(--ink); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .sheet { border-radius: 14px 14px 0 0; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .hero::after { background: var(--accent); width: 32px; height: 3px; border-radius: 0; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .kicker { color: var(--ice); background-image: linear-gradient(var(--ice), var(--ice)); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.heroTitle, .headName h1, .formTitle, .panelHead h2) { letter-spacing: -.005em; }
 
-/* 3 · Telemetría: carbono, naranja de señal y cifras en azul hielo, esquinas firmes. */
-:global(:root[data-tema="3"]) .screen {
-  --ink: #f2f4f7; --mute: #9aa1ab; --dim: #5f6670; --gold: #ff6a33; --gold-hi: #ff9a70; --gold-ink: #160903;
-  --line: rgba(255, 255, 255, .08); --line-2: rgba(255, 255, 255, .16); --panel: #121316; --field: #0a0b0d; --chosen: #1f1410;
-  --foil: linear-gradient(180deg, #ff6630, #ee4a12); --foil-text: linear-gradient(180deg, #f1fdff, #8fe3ff);
-  --edge: linear-gradient(rgba(255, 255, 255, .1), rgba(255, 255, 255, .1)); --grain: none;
+/* Action: solid accent, square-ish, a fine top highlight; nothing else on screen uses the accent as a fill. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .primary {
+  border-radius: 8px; background: var(--foil); color: var(--on-accent); letter-spacing: .06em; text-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 22px -14px var(--accent);
 }
-:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head), :global(:root[data-tema="3"]) .screen .sheet { background: linear-gradient(180deg, #15171a, #0d0e10); border: 1px solid var(--line); box-shadow: 0 14px 30px -18px rgba(0, 0, 0, .8); }
-:global(:root[data-tema="3"]) .screen .hero::after { background: var(--foil); }
-:global(:root[data-tema="3"]) .screen :is(.choice button, .seg3 button, .seg2 button) { background: #0a0b0d; border: 1px solid var(--line); box-shadow: none; }
-:global(:root[data-tema="3"]) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) { background: linear-gradient(180deg, #24150f, #170e0a); border: 1.5px solid var(--gold); box-shadow: none; }
-:global(:root[data-tema="3"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--gold-hi); }
-:global(:root[data-tema="3"]) .screen .primary { text-shadow: none; box-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
-:global(:root[data-tema="3"]) .screen .primary::after { display: none; }
-:global(:root[data-tema="3"]) .screen .primary:disabled { background: var(--line-2); color: var(--dim); }
-:global(:root[data-tema="3"]) .screen .secondary { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-hi); box-shadow: none; }
-:global(:root[data-tema="3"]) .screen .steps > li::before { background: #ff6630; color: #160903; box-shadow: none; }
-:global(:root[data-tema="3"]) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
-:global(:root[data-tema="3"]) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input) { background: #0a0b0d; border-color: var(--line-2); }
-:global(:root[data-tema="3"]) .screen .ticket { background: #0a0b0d; border: 1px dashed var(--gold); box-shadow: none; }
-:global(:root[data-tema="3"]) .screen .ticket small { color: var(--gold-hi); }
-:global(:root[data-tema="3"]) .screen .prizeBox { background: linear-gradient(180deg, #10181c, #0b1114); border: 1px solid rgba(143, 227, 255, .45); }
-:global(:root[data-tema="3"]) .screen .gameArt { border-color: var(--line); }
-:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--gold); }
-:global(:root[data-tema="3"]) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--foil); color: var(--gold-ink); box-shadow: none; }
-:global(:root[data-tema="3"]) .screen .gameArt[data-random] { background: #0a0b0d; }
-:global(:root[data-tema="3"]) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #0a0b0d, 0 0 0 3.5px var(--gold); }
-:global(:root[data-tema="3"]) .screen .groupPic { background: #0a0b0d; color: var(--gold); }
-:global(:root[data-tema="3"]) .screen .groupPicBadge { box-shadow: 0 0 0 2px var(--panel); }
-:global(:root[data-tema="3"]) .screen .pctStepper button { background: transparent; color: var(--gold-hi); }
-:global(:root[data-tema="3"]) .screen .placesPick button[aria-pressed="true"] { box-shadow: none; }
-:global(:root[data-tema="3"]) .screen .standings li { background: #0a0b0d; }
-:global(:root[data-tema="3"]) .screen .standings li[data-you] { background: linear-gradient(180deg, #24150f, #170e0a); border: 1px solid var(--gold); }
-:global(:root[data-tema="3"]) .screen .appIcon { background: color-mix(in srgb, var(--tone) 12%, #0a0b0d); }
-:global(:root[data-tema="3"]) .screen .kicker { background-image: var(--foil); }
-:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head, .primary, .secondary, .seg3 button, .seg2 button, .choice button, .search, .money, .split, .order, .prizeBox, .ticket, .gameArt, .codeInput, .stepper button, .pctStepper) { border-radius: 8px; }
-:global(:root[data-tema="3"]) .screen .steps > li::before { border-radius: 4px; }
-:global(:root[data-tema="3"]) .screen :is(.panel, .hero, .head) { background-image: linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px), linear-gradient(180deg, #15171a, #0d0e10); background-size: 24px 24px, 24px 24px, auto; }
-:global(:root[data-tema="3"]) .screen .prizeBox span { color: #8fe3ff; }
-:global(:root[data-tema="3"]) .screen .positions .place { color: var(--gold); }
-:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: var(--mute); }
-:global(:root[data-tema="2"]) .screen :is(.seg3, .seg2) button span { color: var(--mute); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .primary::after { display: none; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .primary:disabled { background: #1b1c1e; color: var(--dim); box-shadow: none; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .secondary { border-radius: 8px; background: transparent; border: 1px solid var(--accent); color: var(--ink); box-shadow: none; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .secondary :global(.uiIcon) { color: var(--accent-hi); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .secondary:active:not(:disabled) { background: rgba(255, 255, 255, .04); }
+
+/* Selection: an ice outline and a short ice bar on top — calm, readable, not a second loud colour. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.choice button, .seg3 button, .seg2 button) { border-radius: 8px; background: var(--field); border: 1px solid var(--line); box-shadow: none; position: relative; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) {
+  background: linear-gradient(180deg, var(--ice-soft), transparent 70%), var(--chosen); border: 1px solid var(--ice); box-shadow: none;
+}
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"])::before {
+  content: ""; position: absolute; left: 50%; top: -1px; width: 22px; height: 2px; margin-left: -11px; background: var(--ice-hi);
+}
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--ice-hi); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #9fb7c0; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .choice button[aria-selected="true"] { color: var(--ice); }
+
+/* Steps: square accent chips with mono numerals, joined by a hairline. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .steps > li::before { border-radius: 4px; background: var(--accent); color: var(--on-accent); box-shadow: none; font-weight: 700; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .steps > li:not(:last-child)::after { background: var(--line-2); }
+
+/* Fields: recessed wells; focus in ice. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.search, .money, .codeInput, .split, .order, .nameForm input, .stepper button, .pctStepper) { border-radius: 8px; background: var(--field); border-color: var(--line-2); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.search:focus-within, .money:focus-within, .codeInput:focus, .nameForm input) { border-color: var(--ice); box-shadow: 0 0 0 3px var(--ice-soft); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .search:focus-within { color: var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .arrows button, :global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .pctStepper button { color: var(--ice); background: transparent; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .arrows button:active:not(:disabled), :global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .pctStepper button:active:not(:disabled) { background: var(--ice-soft); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .stepper button { color: var(--ink); }
+
+/* Code: a data tag. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .ticket { border-radius: 6px; background: var(--field); border: 1px solid var(--line-2); box-shadow: none; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .ticket small { color: var(--mute); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .ticket[data-copied] { border-color: var(--ice); }
+
+/* Money: a readout — ice figures on a well, with a thin ice rule on the left. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .prizeBox { border-radius: 8px; background: linear-gradient(90deg, var(--ice-soft), transparent 40%), var(--field); border: 1px solid var(--line-2); box-shadow: inset 2px 0 0 var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .prizeBox span { color: var(--ice); letter-spacing: .06em; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .split summary b { color: var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .placesPick button[aria-pressed="true"] { background: var(--ice); color: #05181f; box-shadow: none; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .positions li[data-place="1"] { --tone: #e2c06a; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .positions li[data-place="2"] { --tone: #c9d1da; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .positions li[data-place="3"] { --tone: #c58a55; }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .pctStepper output { border-color: var(--line-2); }
+
+/* Players and picture: ice ring for you, hairline for the rest. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen :is(.members li[data-you] img, .creator img, .groupPic, .crew img:first-child) { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .members img { box-shadow: 0 0 0 1.5px var(--line-2); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .members li[data-you] span { color: var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .groupPic { background: var(--field); color: var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .groupPicBadge { background: var(--accent); color: var(--on-accent); box-shadow: 0 0 0 2px #121314; }
+
+/* Games: covers in a hairline frame; picked ones in ice with an accent counter. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameArt { border-radius: 8px; border-color: var(--line); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameTile[aria-pressed="true"] .gameArt { box-shadow: 0 0 0 2px var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameTile[aria-pressed="true"] .gameMark { background: var(--accent); color: var(--on-accent); border: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameTile[aria-pressed="true"] .gameName { color: var(--ice-hi); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .gameArt[data-random] { background: var(--field); color: var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .orderList b { color: var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .textBtn { color: var(--ice); }
+
+/* Standings. */
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .standings li { border-radius: 8px; background: var(--field); border-color: var(--line); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .standings li[data-you] { background: var(--chosen); border: 1px solid var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .compTitle span { background: none; color: var(--ice); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .appIcon { border-radius: 12px; background: color-mix(in srgb, var(--tone) 10%, #0d0e0f); }
+:global(:root:is([data-tema="3"], [data-tema="4"], [data-tema="5"])) .screen .close { border-radius: 8px; }

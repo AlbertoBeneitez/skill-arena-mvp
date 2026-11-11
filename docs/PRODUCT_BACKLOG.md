@@ -882,6 +882,16 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v172-saturn · Telemetría como sistema de color, en tres acentos (11-nov-2026)
+
+- Telemetría rehecha:
+  - carbono con cuadrícula y marcas de registro;
+  - hielo para datos y selección;
+  - acento solo para acción;
+  - metales para los puestos.
+- Variantes `?tema=3` (rojo carrera), `?tema=4` (ámbar) y `?tema=5` (magenta).
+- **Pendiente:** que el propietario elija el acento definitivo.
+
 ## v171-saturn · Enviar juego con instrucciones, Grupo rehecho, cartera y propuestas de color (11-nov-2026)
 
 - **Enviar juego:** pantalla «Envía tu juego y gana dinero» y luego las instrucciones antes del formulario.
@@ -892,7 +902,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - reparto por posiciones con ±5 %.
 - **Cartera:** desplegable para ingresar y retirar desde el saldo de la cabecera.
 - **Avatar:** sin título ni notas locales, con el beneficio neto bajo el nombre y sin el cuadro de saldo.
-- **Pendiente:** el propietario elige una de las tres propuestas de color (`?tema=1|2|3`: Pista, Marfil, Telemetría).
+- **Colores:** el propietario prefirió Telemetría sin naranja; se rehace en v172.
 
 ## v170-saturn · Avatares en 9:16, botones sin destellos y cabecera de grupo (11-nov-2026)
 

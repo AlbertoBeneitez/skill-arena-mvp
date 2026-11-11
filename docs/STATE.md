@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 10 de noviembre de 2026 · base `mobile-test` en v171-saturn.
+Actualizado: 10 de noviembre de 2026 · base `mobile-test` en v172-saturn.
 
 ## Catálogo
 
@@ -86,7 +86,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
-- [ ] **Colores de Grupo y Avatar (11 de noviembre, v171):** tres propuestas nuevas (`?tema=1` Pista, `?tema=2` Marfil, `?tema=3` Telemetría), a la espera de que el propietario elija.
+- [ ] **Colores de Grupo y Avatar (11 de noviembre, v172):** Telemetría, elegida en v171 sin el naranja, rehecha como sistema de color con tres acentos para elegir: `?tema=3` rojo carrera (recomendado), `?tema=4` ámbar y `?tema=5` magenta.
 - [x] **Grupo, cartera y Enviar juego (11 de noviembre, v171):** foto y nombre del grupo; Liga con modalidades y número de jornadas; Eliminatorias con eliminados por ronda; reparto por posiciones ±5 %; cartera en la cabecera; «Enviar juego» con pantalla inicial e instrucciones; Avatar sin cuadro de saldo.
 - [x] **Avatares 9:16 y Grupo sin destellos (11 de noviembre, v170):** fichas verticales en el selector de avatar; botones elegidos de Grupo solo con filo dorado; cabecera sin «Grupo» repetido.
 - [x] **Negro y oro metálico en Grupo y Avatar (11 de noviembre, v169):** el propietario eligió la propuesta negra; se elabora con oro metálico, grano y filetes dorados, y se retiran las propuestas `?tema=`.
