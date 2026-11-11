@@ -18,7 +18,9 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
-import { GAMES, GAME_CREATOR_DEFAULT, STAKES, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
+import WalletPanel from "./WalletPanel";
+import StudioWelcome from "./StudioWelcome";
+import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
 import { createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
 import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
@@ -38,7 +40,7 @@ import LeagueResult from "./LeagueResult";
 import RankingHub from "./GameRanking";
 import { PORTRAIT_COUNT, portraitCrop, portraitSrc } from "@/lib/avatars";
 import PlayerProgress from "./PlayerProgress";
-import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
+import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import dynamic from "next/dynamic";
 // v153: the studio proposal form loads only when the catalogue tab opens it.
 const GameProposal = dynamic(() => import("./GameProposal"), { ssr: false });
@@ -370,15 +372,9 @@ export default function DemoApp() {
   const [proposing, setProposing] = useState(false);
   /** v158: the first tap on "Enviar juego" shows a one-off welcome box before the submission form. */
   /** v171: «Enviar juego» opens a short screen (earn money) and then the steps, before the submission form. */
-  const [studioWelcome, setStudioWelcome] = useState<false | "intro" | "steps">(false);
+  const [studioWelcome, setStudioWelcome] = useState(false);
   /** v171: the balance chip opens a wallet panel to add or withdraw money. */
   const [walletOpen, setWalletOpen] = useState(false);
-  /** v173: the amount is typed (euros, up to two decimals). */
-  const [walletInput, setWalletInput] = useState("");
-  const walletAmount = (() => {
-    const n = Number(walletInput.replace(",", "."));
-    return Number.isFinite(n) && n > 0 && n <= 100000 ? Math.round(n * 100) / 100 : 0;
-  })();
   useEffect(() => { setWalletOpen(false); }, [screen]);
   /** Simulated rival for the match in progress (demo leagues); null outside league duels. */
   const [leagueMatch, setLeagueMatch] = useState<{ gameId: string; rival: LeagueRival; tier: LeagueTier } | null>(null);
@@ -388,6 +384,9 @@ export default function DemoApp() {
   const [group, setGroup] = useState<ClosedGroup | null>(null);
   const [matchScope, setMatchScope] = useState<MatchScope>("duel");
   const [matchTargetScore, setMatchTargetScore] = useState(GAMES[0].rivalScore);
+  /** v174: tie-break for the result screen — the best rival's time when scores are equal (group: its fastest
+   * equal rival; league: the simulated rival's reference time). Null keeps the older rule (a tie is no victory). */
+  const [matchTargetTime, setMatchTargetTime] = useState<number | null>(null);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   /** v128: the group competition in progress (pure rules in lib/groupCompetition.ts), saved so it survives a restart. */
@@ -836,13 +835,11 @@ export default function DemoApp() {
   }, [earnings]);
 
   function openStudio() {
-    setStudioWelcome("intro");
+    setStudioWelcome(true);
   }
 
-  function moveMoney(direction: 1 | -1) {
-    const amount = walletAmount;
-    if (!amount || (direction < 0 && balance < amount)) return;
-    setWalletInput("");
+  function moveMoney(direction: 1 | -1, amount: number) {
+    if (!(amount > 0) || (direction < 0 && balance < amount)) return;
     setBalance((b) => Number((b + direction * amount).toFixed(2)));
     setMovements((m) => [direction > 0
       ? { label: "Ingreso", amount, key: "move.deposit" as const }
@@ -924,14 +921,6 @@ export default function DemoApp() {
     setOnboarded(true);
     freshOnboardingRef.current = false;
     navigate(pendingJoinCode ? "group" : "home", true);
-  }
-
-  function selectStake(stake: Stake) {
-    haptic(4);
-    const mode = modeForStake(selectedGame, stake, nextTurn);
-    setSelectedStake(stake);
-    setSelectedMode(mode);
-    setGhostEnabled(mode === "existing");
   }
 
   const {persistentTraining,liveModes}=usePublicMatchAvailability(isLoaded&&onboarded,screen==="home",selectedStake);
@@ -1041,13 +1030,20 @@ export default function DemoApp() {
 
     // Demo league duel: training matches are decided against the simulated rival of the player's tier.
     const leagueDuel = !gameResult.serverMatch && matchScope === "duel" && leagueMatch !== null && leagueMatch.gameId === selectedGame.id;
-    const beatLeagueRival = leagueDuel && scoreBeats(selectedGame, gameResult.score, leagueMatch!.rival.target);
+    // v174: beating the rival needs a better score; an exact tie goes to whoever was faster (rivals saved without a
+    // reference time keep the older rule: a tie is a win).
+    const rivalTarget = leagueMatch?.rival.target ?? 0, rivalTime = leagueMatch?.rival.timeMs;
+    const beatLeagueRival = leagueDuel && (gameResult.score === rivalTarget
+      ? rivalTime === undefined || gameResult.timeMs < rivalTime
+      : scoreBeats(selectedGame, gameResult.score, rivalTarget));
     // Time-scored games are decided by the score alone (their run always completes).
     const beatTarget = lowerScoreWins(selectedGame) ? scoreBeats(selectedGame, gameResult.score, matchTargetScore) : gameResult.won || gameResult.score >= matchTargetScore;
     const didWin = gameResult.serverMatch
       ? gameResult.serverMatch.winnerSlot === gameResult.serverMatch.slot
       : matchScope === "group"
-        ? (lowerScoreWins(selectedGame) ? gameResult.score < matchTargetScore : gameResult.score > matchTargetScore) // a tie is no victory, as in the standings
+        ? (lowerScoreWins(selectedGame) ? gameResult.score < matchTargetScore : gameResult.score > matchTargetScore)
+          // v174: an equal score is decided by time (faster wins), as in the standings; older competitions: no victory.
+          || (gameResult.score === matchTargetScore && matchTargetTime !== null && gameResult.timeMs < matchTargetTime)
         : selectedStake === 0
           ? leagueDuel ? beatLeagueRival : gameResult.won
           : replyAttempt
@@ -1082,7 +1078,9 @@ export default function DemoApp() {
     }
 
     if (matchScope === "group" && groupComp) {
-      settleGroupScore(gameResult.verified === false || gameResult.forfeited || !Number.isFinite(gameResult.score) ? groupForfeit() : gameResult.score);
+      const valid = !(gameResult.verified === false || gameResult.forfeited || !Number.isFinite(gameResult.score));
+      // A forfeit has no time (it loses any tie); a played match carries its time for the tie-break.
+      settleGroupScore(valid ? gameResult.score : groupForfeit(), valid ? gameResult.timeMs : undefined);
       return;
     }
     if (selectedStake === 0) return;
@@ -1166,9 +1164,9 @@ export default function DemoApp() {
     setGroupComp(next);
     if (ended) payGroup(next);
   }
-  function settleGroupScore(score: number) {
+  function settleGroupScore(score: number, timeMs?: number) {
     if (!groupComp || groupMatch < 0) return;
-    updateGroup(playSimulatedMembers(recordGroupScore(groupComp, groupMatch, GROUP_YOU, score), GROUP_YOU, groupLook));
+    updateGroup(playSimulatedMembers(recordGroupScore(groupComp, groupMatch, GROUP_YOU, score, timeMs), GROUP_YOU, groupLook));
     setGroupMatch(-1);
   }
   function voteGroup() {
@@ -1211,7 +1209,10 @@ export default function DemoApp() {
     setMatchScope("group");
     setLeagueMatch(null);
     setLeagueOutcome(null);
-    setMatchTargetScore(rivals.length ? (lower ? Math.min(...rivals) : Math.max(...rivals)) : game.rivalScore);
+    const best = rivals.length ? (lower ? Math.min(...rivals) : Math.max(...rivals)) : game.rivalScore;
+    setMatchTargetScore(best);
+    const tiedTimes = m.players.filter((id) => id !== GROUP_YOU && m.scores[id] === best).map((id) => m.times?.[id]).filter((v): v is number => typeof v === "number");
+    setMatchTargetTime(comp.config.tieBreak === "time-v1" && tiedTimes.length ? Math.min(...tiedTimes) : null);
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
     void loadGameAssets(game, [portraitCrop(avatarSrc, "")]).then(() => {
@@ -1506,37 +1507,8 @@ export default function DemoApp() {
         </header>
       )}
       {screen !== "game" && walletOpen && (
-        <>
-              <div className="gxWalletScrim" onClick={() => setWalletOpen(false)} aria-hidden="true" />
-              <div className="gxWallet" role="dialog" aria-label={t("wallet.title")}
-                onKeyDown={(event) => { if (event.key === "Escape") setWalletOpen(false); }}>
-                <div className="gxWalletHead">
-                  <small>{t("wallet.title")}</small>
-                  <strong dir="ltr">{euro(balance)}</strong>
-                </div>
-                <label className="gxWalletField">
-                  <span>{t("wallet.amount")}</span>
-                  <span className="gxWalletInput">
-                    <input type="text" inputMode="decimal" autoComplete="off" autoFocus placeholder="0,00" value={walletInput} dir="ltr"
-                      onChange={(event) => setWalletInput(event.target.value.replace(/[^0-9.,]/g, "").slice(0, 9))}
-                      onKeyDown={(event) => { if (event.key === "Enter") moveMoney(1); }} />
-                    <b aria-hidden="true">€</b>
-                  </span>
-                </label>
-                <div className="gxWalletActions">
-                  <button type="button" className="gxWalletIn" disabled={!walletAmount} onClick={() => moveMoney(1)}>{t("wallet.deposit")}</button>
-                  <button type="button" className="gxWalletOut" disabled={!walletAmount || balance < walletAmount} onClick={() => moveMoney(-1)}>{t("wallet.withdraw")}</button>
-                </div>
-                <div className="gxWalletMoves" aria-live="polite">
-                  {movements.length === 0 ? <p>{t("profile.noMovements")}</p> : movements.slice(0, 3).map((movement, index) => (
-                    <div key={`${movement.label}-${index}`}>
-                      <span>{movementLabel(movement)}</span>
-                      <b className={movement.amount < 0 ? "negative" : ""} dir="ltr">{movement.amount > 0 ? "+" : ""}{euro(movement.amount)}</b>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
+        <WalletPanel balance={balance} format={euro} onMove={moveMoney} onClose={() => setWalletOpen(false)}
+          movements={movements.slice(0, 3).map((movement) => ({ label: movementLabel(movement), amount: movement.amount }))} />
       )}
 
       <div className={`appBody ${screen === "game" ? "gameBody" : ""}`}>
@@ -1550,28 +1522,7 @@ export default function DemoApp() {
 
 
             {matchStartError && <p role="status">{matchStartError}</p>}
-            {studioWelcome && (
-              <div className="gxStudioWelcome" role="dialog" aria-modal="true" aria-labelledby="studio-welcome-title" onClick={() => setStudioWelcome(false)}>
-                <div className="gxStudioWelcomeCard" data-step={studioWelcome} onClick={(e) => e.stopPropagation()}>
-                  <button type="button" className="gxStudioWelcomeClose" aria-label={t("common.close")} onClick={() => setStudioWelcome(false)}><UiIcon name="close" size={18} /></button>
-                  {studioWelcome === "intro" ? (<>
-                    <span className="gxStudioWelcomeCoin" aria-hidden="true"><UiIcon name="coins" size={40} /></span>
-                    <h2 id="studio-welcome-title">{t("studio.introTitle")}</h2>
-                    <p>{t("studio.introLine")}</p>
-                    <button type="button" className="gxStudioWelcomeGo" autoFocus onClick={() => setStudioWelcome("steps")}>{t("studio.howTo")}</button>
-                  </>) : (<>
-                    <h2 id="studio-welcome-title">{t("studio.stepsTitle")}</h2>
-                    <ol className="gxStudioSteps">
-                      {(["studio.step1", "studio.step2", "studio.step3", "studio.step4"] as const).map((key, i) => (
-                        <li key={key}><b>{i + 1}</b><span>{t(key)}</span></li>
-                      ))}
-                    </ol>
-                    <button type="button" className="gxStudioWelcomeGo" autoFocus onClick={() => { setStudioWelcome(false); setProposing(true); }}>{t("studio.goSend")}</button>
-                    <button type="button" className="gxStudioWelcomeBack" onClick={() => setStudioWelcome("intro")}>{t("common.back")}</button>
-                  </>)}
-                </div>
-              </div>
-            )}
+            {studioWelcome && <StudioWelcome onClose={() => setStudioWelcome(false)} onSend={() => { setStudioWelcome(false); setProposing(true); }} />}
             {proposing && <GameProposal onClose={() => setProposing(false)} />}
             <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} leagues={persistentTraining ? undefined : leagues} favorites={favoriteGames} />
           </section>

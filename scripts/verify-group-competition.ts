@@ -11,6 +11,8 @@ const play = (c: GroupCompetition, scores: Record<string, number>) => {
   for (const [id, s] of Object.entries(scores)) { const i = nextGroupMatch(c, id); if (i >= 0) c = recordGroupScore(c, i, id, s); }
   return c;
 };
+/** Competitions saved before v174 have no tie-break: they keep shared results. */
+const legacy = (c: GroupCompetition): GroupCompetition => { const config = { ...c.config }; delete config.tieBreak; return { ...c, config }; };
 const total = (c: GroupCompetition) => Object.values(c.payouts ?? {}).reduce((a, b) => a + b, 0);
 
 // One entry fee each; the pot keeps a 5 % commission.
@@ -23,9 +25,9 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.ok(c.finished);
   assert.equal(c.payouts!.p1, 1900);
   assert.equal(total(c), 1900);
-  let d = createGroupCompetition("s2", cfg({ split: "70-30" }), players(3));
+  let d = legacy(createGroupCompetition("s2", cfg({ split: "70-30" }), players(3)));
   d = play(d, { p0: 9, p1: 9, p2: 1 });
-  assert.equal(d.payouts!.p0 + d.payouts!.p1, groupMoney(d).prize, "two tied winners share 70 % + 30 %");
+  assert.equal(d.payouts!.p0 + d.payouts!.p1, groupMoney(d).prize, "legacy: two tied winners share 70 % + 30 %");
   assert.ok(Math.abs(d.payouts!.p0 - d.payouts!.p1) <= 1);
   assert.equal(d.payouts!.p2, 0);
 }
@@ -90,6 +92,38 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.ok(c.finished, "two left and two to knock out: only one goes, the other wins");
   assert.deepEqual(groupStandings(c).map((s) => s.id), ["p3", "p2", "p1", "p0", "p4", "p5"]);
   assert.equal(total(c), groupMoney(c).prize);
+}
+// v174 · Tie-breaks: equal scores go to the faster player, then to a reproducible draw — never to list order.
+{
+  const timed = (c: GroupCompetition, scores: Record<string, [number, number?]>) => {
+    for (const [id, [sc, ms]] of Object.entries(scores)) { const i = nextGroupMatch(c, id); if (i >= 0) c = recordGroupScore(c, i, id, sc, ms); }
+    return c;
+  };
+  let a = createGroupCompetition("tb1", cfg({ split: "70-30" }), players(3));
+  assert.equal(a.config.tieBreak, "time-v1", "new competitions carry the tie-break");
+  a = timed(a, { p0: [9, 60000], p1: [9, 50000], p2: [1, 1000] });
+  assert.ok(a.payouts!.p1 > a.payouts!.p0, "same score: the faster one takes 1st");
+  assert.deepEqual(groupStandings(a).map((r) => r.place), [1, 2, 3], "no shared places");
+  // No times at all: a seeded draw, the same every time, independent of the player list order.
+  const draw = (order: string[]) => {
+    let c = createGroupCompetition("tb2", cfg({ split: "70-30" }), order.map((id) => ({ id, name: id, avatar: "" })));
+    c = timed(c, { p0: [5], p1: [5], p2: [5] });
+    return groupStandings(c).map((r) => r.id).join(",");
+  };
+  assert.equal(draw(["p0", "p1", "p2"]), draw(["p2", "p0", "p1"]), "the draw does not depend on list order");
+  assert.equal(draw(["p0", "p1", "p2"]), draw(["p0", "p1", "p2"]), "reproducible");
+  // Eliminatorias: a tie at the bottom knocks out the slower one; same-round knock-outs get distinct places.
+  let e = createGroupCompetition("tb3", cfg({ format: "tournament", split: [70, 20, 10, 0] }), players(4));
+  e = timed(e, { p0: [8, 1], p1: [5, 1], p2: [3, 40000], p3: [3, 30000] });
+  assert.deepEqual(e.eliminated, ["p2"], "p2 and p3 tie; p2 was slower");
+  let k = createGroupCompetition("tb4", cfg({ format: "tournament", split: [70, 20, 10, 0, 0], eliminatePerRound: 2 }), players(5));
+  k = timed(k, { p0: [9, 1], p1: [8, 1], p2: [7, 1], p3: [2, 70000], p4: [2, 20000] });
+  assert.deepEqual(k.eliminated, ["p3", "p4"], "equal scores in the same round: slower ranks below");
+  // Duels: an equal duel is won on time.
+  let du = createGroupCompetition("tb5", cfg({ format: "league-duels", end: { kind: "rounds", rounds: 1 } }), players(2));
+  du = timed(du, { p0: [4, 9000], p1: [4, 8000] });
+  assert.equal(groupStandings(du).find((r) => r.id === "p1")!.wins, 1);
+  assert.equal(total(du), groupMoney(du).prize);
 }
 // Vote rule: the league ends when a majority votes; open matches do not count; nobody votes twice.
 {
@@ -162,4 +196,4 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.equal(total(c), prize);
   assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(c))), "an array split survives a save and reload");
 }
-console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits · eliminations per round");
+console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits · eliminations per round · tie-breaks (time, seeded draw; legacy shared)");

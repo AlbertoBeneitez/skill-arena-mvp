@@ -9,7 +9,7 @@ import {
 } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
-import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
+import { t as tx, useI18n } from "@/lib/i18n";
 import SegmentDigits, { SegmentGlowFilter } from "../SegmentDigits";
 import GameScoreboard from "../GameScoreboard";
 type Props = {

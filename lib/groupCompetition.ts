@@ -12,6 +12,12 @@
  * One entry fee per player covers every match. The pot minus the platform commission is paid when the competition
  * ends: after the agreed number of rounds or by majority vote (leagues), after its match (single) or when one player
  * is left (tournament). Ties share the prize of the places they occupy.
+ *
+ * Tie-breaks (v174, `config.tieBreak: "time-v1"`, set on every new competition): in a match, equal scores are split by
+ * the time taken (less is better), then by a reproducible draw seeded with the competition, the round and the player
+ * — never by the order of the player list. A match therefore always has one winner, every elimination is decided and
+ * players knocked out in the same round get distinct places. Competitions saved without the field keep the earlier
+ * rules (ties share the round win and the places), so their results never change.
  */
 export const GROUP_COMMISSION_BPS = 500; // 5 %
 
@@ -32,8 +38,14 @@ export type GroupConfig = {
   end: GroupEnd;
   /** Eliminatorias: players knocked out per round (v171; 1 when absent). */
   eliminatePerRound?: number;
+  /** v174: tie-break rule; absent on competitions created before it (they keep shared results). */
+  tieBreak?: "time-v1";
 };
-export type GroupMatch = { round: number; gameId: string; seed: string; players: readonly string[]; scores: Readonly<Record<string, number>> };
+export type GroupMatch = {
+  round: number; gameId: string; seed: string; players: readonly string[]; scores: Readonly<Record<string, number>>;
+  /** v174: time taken per player (ms), used to break equal scores. */
+  times?: Readonly<Record<string, number>>;
+};
 export type GroupCompetition = {
   id: string;
   config: GroupConfig;
@@ -125,13 +137,23 @@ export function createGroupCompetition(id: string, config: GroupConfig, players:
   if (players.length < 2) throw new Error("A group competition needs at least two players");
   if (!config.gameIds.length) throw new Error("A group competition needs a game");
   const end: GroupEnd = config.format === "single" || config.format === "tournament" ? { kind: "rounds", rounds: 1 } : config.end;
-  return schedule({ id, config: { ...config, end }, players, matches: [], votes: [], eliminated: [], finished: false, payouts: null }, 1);
+  return schedule({ id, config: { ...config, end, tieBreak: "time-v1" }, players, matches: [], votes: [], eliminated: [], finished: false, payouts: null }, 1);
 }
 
+/** v174: reproducible draw for exact ties (FNV-1a of competition, round, match seed and player). */
+function tieDraw(c: GroupCompetition, m: GroupMatch, id: string) {
+  let h = 0x811c9dc5;
+  for (const ch of `${c.id}|${m.round}|${m.seed}|${id}`) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193);
+  return h >>> 0;
+}
+const timeOf = (m: GroupMatch, id: string) => { const t = m.times?.[id]; return typeof t === "number" && Number.isFinite(t) ? t : Number.POSITIVE_INFINITY; };
 /** Player ids ordered from best to worst result in a match (only those with a score). */
 function ranking(c: GroupCompetition, m: GroupMatch) {
   const lower = c.config.lowerWinsGameIds.includes(m.gameId);
-  return m.players.filter((id) => m.scores[id] !== undefined).sort((a, b) => (lower ? m.scores[a] - m.scores[b] : m.scores[b] - m.scores[a]));
+  const byScore = (a: string, b: string) => (lower ? m.scores[a] - m.scores[b] : m.scores[b] - m.scores[a]);
+  const ids = m.players.filter((id) => m.scores[id] !== undefined);
+  if (c.config.tieBreak !== "time-v1") return ids.sort(byScore);
+  return ids.sort((a, b) => byScore(a, b) || timeOf(m, a) - timeOf(m, b) || tieDraw(c, m, a) - tieDraw(c, m, b) || (a < b ? -1 : 1));
 }
 
 export function groupStandings(c: GroupCompetition): GroupStanding[] {
@@ -140,12 +162,19 @@ export function groupStandings(c: GroupCompetition): GroupStanding[] {
   for (const m of c.matches) {
     if (!complete(m)) continue;
     const order = ranking(c, m), best = m.scores[order[0]], lower = c.config.lowerWinsGameIds.includes(m.gameId);
-    for (const id of order) {
+    const broken = c.config.tieBreak === "time-v1";
+    order.forEach((id, idx) => {
       const r = row(id), s = m.scores[id];
       r.played++;
+      if (broken) {
+        // v174: the tie-broken order decides: you beat everyone below you and only the first wins.
+        r.beaten += order.length - 1 - idx;
+        if (idx === 0) r.wins++;
+        return;
+      }
       r.beaten += order.filter((o) => (lower ? s < m.scores[o] : s > m.scores[o])).length;
       if (s === best && order.filter((o) => m.scores[o] === best).length === 1) r.wins++;
-    }
+    });
   }
   // Tournament: later elimination is better; leagues: victories, then opponents beaten.
   const outAt = (id: string) => (c.eliminated.includes(id) ? c.eliminated.indexOf(id) : c.eliminated.length + 1);
@@ -193,10 +222,13 @@ function advance(c: GroupCompetition): GroupCompetition {
   return schedule(next, round + 1);
 }
 
-export function recordGroupScore(c: GroupCompetition, matchIndex: number, playerId: string, score: number): GroupCompetition {
+export function recordGroupScore(c: GroupCompetition, matchIndex: number, playerId: string, score: number, timeMs?: number): GroupCompetition {
   const m = c.matches[matchIndex];
   if (c.finished || !m || !m.players.includes(playerId) || m.scores[playerId] !== undefined || !Number.isFinite(score)) return c;
-  const matches = c.matches.map((x, i) => (i === matchIndex ? { ...x, scores: { ...x.scores, [playerId]: score } } : x));
+  const time = typeof timeMs === "number" && Number.isFinite(timeMs) && timeMs >= 0 ? Math.round(timeMs) : undefined;
+  const matches = c.matches.map((x, i) => (i === matchIndex
+    ? { ...x, scores: { ...x.scores, [playerId]: score }, ...(time !== undefined ? { times: { ...x.times, [playerId]: time } } : {}) }
+    : x));
   return advance({ ...c, matches });
 }
 

@@ -9,7 +9,7 @@ import {
 import CoreCanvasGame from "./CoreCanvasGame";
 import type { ScoreCell } from "../GameScoreboard";
 
-import { t, formatNumber, useI18n } from "@/lib/i18n";
+import { t, useI18n } from "@/lib/i18n";
 // Presentation-only smoothing. Never read by the core; a new run (tick going
 // backwards) resets it, so replays and previews stay deterministic.
 const motion = { tick: -1, offsetY: Number.NaN, jaw: 1 };

@@ -5,7 +5,7 @@ import { useHiddenAttempt } from "@/lib/verified/useHiddenAttempt";
 import { mineAction } from "@/lib/verified/mineGridProtocol.v1";
 import type { MinePublicViewV2 } from "@/lib/verified/mineGridProtocol.v2";
 import { gameTone, haptic } from "@/lib/gameFeedback";
-import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
+import { t as tx, useI18n } from "@/lib/i18n";
 export default function MineGridAuthority(props: GameRuntimeProps) {
   useI18n();
   const { session, phase, send } = useHiddenAttempt<MinePublicViewV2>({

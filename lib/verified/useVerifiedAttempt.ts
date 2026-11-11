@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameId } from "@/lib/games";
 import type {
   AttemptTicket,
-  AttemptRecordResponse,
   MatchManifest,
   VerifiedAttemptResult,
 } from "./contracts";

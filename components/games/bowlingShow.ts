@@ -26,7 +26,6 @@ const seg = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
 const easeOut = (k: number) => 1 - Math.pow(1 - k, 3);
 const easeInOut = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 /** Spring that overshoots and settles at 1. */
-const spring = (k: number) => (k <= 0 ? 0 : k >= 1 ? 1 : 1 - Math.exp(-6 * k) * Math.cos(k * 11));
 
 export type Cartoon = "gala" | "arena" | "orbit";
 export type Theme = "gold" | "neon" | "cosmic" | "steel";

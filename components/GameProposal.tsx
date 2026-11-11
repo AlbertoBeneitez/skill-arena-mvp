@@ -11,6 +11,16 @@ import { PROPOSAL_CONSENT_VERSION, STUDIO_TERMS_VERSION, checkSubmission, type S
 import { PACKAGE_LIMITS, type Manifest, type Report } from "@/lib/studio/package";
 import StudioPreview from "./StudioPreview";
 
+type InfoId = "kit" | "file" | "send";
+/** v174: the «i» beside a step; it opens that step's explanation just below it. */
+function Info({ id, open, onToggle }: { id: InfoId; open: boolean; onToggle: (id: InfoId) => void }) {
+  return (
+    <button type="button" className="studioInfoBtn" aria-expanded={open} aria-controls={`studio-info-${id}`} aria-label={t("studio.infoAria")} onClick={() => onToggle(id)}>
+      <span aria-hidden="true">i</span>
+    </button>
+  );
+}
+
 type Draft = { studio: string; contact: string; terms: boolean; privacy: boolean };
 type Stored = { id: string; createdAt: string; studio: string; contact: string; game: string; shelf: string; summary: string; manifest: Manifest | null; report: Report | null; sha256: string | null; size: number; status: "received" | "approved" | "rejected" };
 type Status = { kind: "idle" | "sending" | "notOpen" | "failed" | "checksFailed" } | { kind: "sent"; id: string } | { kind: "invalid"; field: SubmissionField };
@@ -48,6 +58,8 @@ export default function GameProposal({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [report, setReport] = useState<Report | null>(null);
+  const [info, setInfo] = useState<InfoId | null>(null);
+  const toggleInfo = (id: InfoId) => setInfo((open) => (open === id ? null : id));
   const [inbox, setInbox] = useState<Stored[] | null>(null);
   const [tab, setTab] = useState<"form" | "inbox">("form");
   const [trying, setTrying] = useState<Stored | null>(null);
@@ -131,13 +143,22 @@ export default function GameProposal({ onClose }: { onClose: () => void }) {
       ) : (
         <form className="studioForm" onSubmit={submit} noValidate>
           <p className="studioLead">{t("studio.lead")}</p>
-          <a className="studioKit" href={KIT} download>{t("studio.kit")}</a>
+          {/* v174: each real step carries its explanation behind an «i» on its right. */}
+          <div className="studioStepRow">
+            <a className="studioKit" href={KIT} download>{t("studio.kit")}</a>
+            <Info id="kit" open={info === "kit"} onToggle={toggleInfo} />
+          </div>
+          {info === "kit" && <p className="studioInfo" id="studio-info-kit">{t("studio.step1")} {t("studio.step2")}</p>}
           {field("studio", "text", 80)}
           {field("contact", "email", 120)}
-          <label className="studioField studioFile">
-            <span>{t("studio.file")}</span>
-            <input type="file" accept=".zip,application/zip" aria-invalid={wrong === "file"} onChange={(e) => { setFile(e.currentTarget.files?.[0] ?? null); setReport(null); setStatus({ kind: "idle" }); }} />
-          </label>
+          <div className="studioStepRow">
+            <label className="studioField studioFile">
+              <span>{t("studio.file")}</span>
+              <input type="file" accept=".zip,application/zip" aria-invalid={wrong === "file"} onChange={(e) => { setFile(e.currentTarget.files?.[0] ?? null); setReport(null); setStatus({ kind: "idle" }); }} />
+            </label>
+            <Info id="file" open={info === "file"} onToggle={toggleInfo} />
+          </div>
+          {info === "file" && <p className="studioInfo" id="studio-info-file">{t("studio.step3")}</p>}
           <details className="studioTerms">
             <summary>{t("studio.termsShow")}</summary>
             <ul>{TERMS.map((k) => <li key={k}>{t(k)}</li>)}</ul>
@@ -153,9 +174,13 @@ export default function GameProposal({ onClose }: { onClose: () => void }) {
             {status.kind === "sent" && t("studio.sent", { id: status.id })}
           </p>
           {report && <ReportList report={report} />}
-          <button type="submit" className="mainAction studioSend" disabled={status.kind === "sending"}>
+          <div className="studioStepRow">
+            <button type="submit" className="mainAction studioSend" disabled={status.kind === "sending"}>
             {t(status.kind === "sending" ? "studio.sending" : "studio.send")}
           </button>
+            <Info id="send" open={info === "send"} onToggle={toggleInfo} />
+          </div>
+          {info === "send" && <p className="studioInfo" id="studio-info-send">{t("studio.step4")}</p>}
         </form>
       )}
       {trying && <StudioPreview id={trying.id} game={trying.game} onClose={() => setTrying(null)} />}

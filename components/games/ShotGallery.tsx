@@ -11,7 +11,7 @@ import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import type { ScoreCell } from "../GameScoreboard";
 import { AURAS, BOX_H, BOX_W, ORX, ORY, WORLD_H, WORLD_W, WORLD_Y0, drawBeing, drawFormIcon, paintLayer, rgba } from "./galleryJungleArt";
 
-import { t as tx, formatNumber, useI18n, type MessageKey } from "@/lib/i18n";
+import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 
 /*
  * Presentation only (V13 core: "Jungla de Xeno" — beings of three forms and four auras come out at ten hiding

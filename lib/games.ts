@@ -1,5 +1,4 @@
 import { ROULETTE_ACTIONS_V8 as ROULETTE_ACTIONS_V3 } from "./verified/galacticRouletteProtocol.v8";
-import { ROULETTE_ACTIONS } from "./verified/galacticRouletteProtocol.v1";
 import { SLOT_ACTIONS } from "./verified/galacticSlotProtocol.v1";
 import { MEMORY_ACTIONS } from "./verified/memoryMatchProtocol.v1";
 import { STACK_SHIFT_ACTIONS } from "./verified/stackShiftProtocol.v1";

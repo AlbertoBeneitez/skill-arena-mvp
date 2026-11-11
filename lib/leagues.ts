@@ -58,7 +58,13 @@ const RIVALS = [
   ["PULSAR", "AURORA", "SIRIUS", "NEBULA", "MAGNA", "ASTRA"],
 ] as const;
 
-export type LeagueRival = { name: string; avatar: string; target: number; balanceGoal: boolean; timeGoal?: boolean };
+export type LeagueRival = {
+  name: string; avatar: string; target: number; balanceGoal: boolean; timeGoal?: boolean;
+  /** v174: the rival's reference play time (ms) — an exact score tie goes to whoever was faster. */
+  timeMs?: number;
+};
+/** v174: drawn after the rival's other values, so names, avatars and targets stay exactly as before. */
+const rivalTime = (rng: { nextInt(n: number): number }, tier: number) => Math.round((70000 + rng.nextInt(50001)) / FACTORS[tier]);
 
 /** Matchmaking by league tier: the rival and its score depend only on game, tier and series position. */
 export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
@@ -68,7 +74,7 @@ export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
   const name = pool[rng.nextInt(pool.length)];
   const avatar = portraitSrc(1 + rng.nextInt(16), "-s");
   if (game.resultMetric === "fictitious-balance") {
-    return { name, avatar, target: BALANCE_GOALS[record.tier], balanceGoal: true };
+    return { name, avatar, target: BALANCE_GOALS[record.tier], balanceGoal: true, timeMs: rivalTime(rng, record.tier) };
   }
   const reference = REFERENCE[game.id] ?? game.rivalScore;
   const jitter = 0.92 + rng.nextInt(17) / 100; // 0.92–1.08
@@ -76,7 +82,7 @@ export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
   const lower = game.resultMetric === "reaction-time-ms";
   let target = Math.max(1, Math.round(lower ? reference / (FACTORS[record.tier] * jitter) : reference * FACTORS[record.tier] * jitter));
   if (CAP[game.id]) target = Math.min(CAP[game.id], target);
-  return { name, avatar, target, balanceGoal: false, timeGoal: lower };
+  return { name, avatar, target, balanceGoal: false, timeGoal: lower, timeMs: rivalTime(rng, record.tier) };
 }
 
 /** Records one match; closes the series after five and applies promotion/relegation. */

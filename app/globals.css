@@ -8895,32 +8895,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   min-height: 42px; gap: 8px; padding: 0 16px 0 13px; font: 700 14px/1 var(--gx-ui); letter-spacing: .01em;
 }
 .appShell .gxStudioTab .uiIcon.gxStudioCoin { color: var(--st-gold, #e9c27a); margin-inline-start: 1px; }
-/* First tap on "Enviar juego": a one-off welcome box before the form. */
-.gxStudioWelcome {
-  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 24px;
-  background: rgba(4,4,6,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  animation: gxFadeIn .22s ease-out both;
-}
-@keyframes gxFadeIn { from { opacity: 0; } }
-.gxStudioWelcomeCard {
-  width: min(340px, 100%); display: grid; justify-items: center; gap: 16px; padding: 28px 22px 22px; text-align: center;
-  border-radius: 24px; border: 1px solid rgba(233,194,122,.45);
-  background: radial-gradient(120% 80% at 50% 0%, rgba(233,194,122,.18), transparent 60%), linear-gradient(170deg, #1b1b1f, #0d0d10);
-  box-shadow: 0 24px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
-  animation: gxSheetUp .3s cubic-bezier(.2,.8,.2,1) both;
-}
-.gxStudioWelcomeCoin {
-  display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; color: #ffd36a;
-  background: radial-gradient(circle at 40% 35%, rgba(255,211,106,.28), rgba(255,211,106,.06) 70%);
-  box-shadow: 0 0 0 1px rgba(255,211,106,.4), 0 0 30px rgba(255,190,80,.25);
-}
-.gxStudioWelcomeCard h2 { margin: 0; font: 800 22px/1.2 var(--gx-display); color: #fff3d6; letter-spacing: .01em; text-wrap: balance; }
-.gxStudioWelcomeGo {
-  min-height: 48px; width: 100%; border-radius: 14px; border: 1px solid rgba(233,194,122,.6);
-  background: linear-gradient(180deg, #2a2418, #16130d); color: #ffe6b0; font: 700 15px/1 var(--gx-ui); letter-spacing: .06em;
-}
-.gxStudioWelcomeGo:active { translate: 0 1px; }
-.gxStudioWelcomeGo:focus-visible { outline: 2px solid #ffd36a; outline-offset: 2px; }
+/* «Enviar juego» welcome: components/StudioWelcome.module.css (v174). */
 /* Avatar picker (v159): the horizontal crop fills the tile; the chosen one gets a cyan ring. */
 .galacticAvatarSetup .gxAvatarGrid button[aria-pressed="true"] { box-shadow: 0 0 0 2px #7fe3ee, 0 0 18px rgba(127,227,238,.35); border-color: #7fe3ee; }
 
@@ -9113,22 +9088,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 @keyframes gxCoinGlint { 0%, 82%, 100% { filter: none; } 90% { filter: brightness(1.55) drop-shadow(0 0 5px rgba(240,210,143,.8)); } }
 @media (prefers-reduced-motion: reduce) { .appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney > .uiIcon { animation: none; } }
 
-/* v167 · The «Enviar juego» welcome: a plain black card with a gold hairline, the coins drawn large in gold and a
-   solid gold button. No gradients. */
-.gxStudioWelcomeCard {
-  gap: 18px; padding: 30px 22px 22px; border-radius: 22px; border: 1px solid rgba(217,180,106,.42);
-  background: #111110; box-shadow: 0 24px 60px rgba(0,0,0,.65);
-}
-.gxStudioWelcomeCoin { width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; color: #e6c47f; }
-.gxStudioWelcomeCoin .uiIcon { width: 52px; height: 52px; stroke-width: 1.4; }
-.gxStudioWelcomeCard h2 { font-weight: 700; font-size: 22px; color: #f7f1e4; }
-.gxStudioWelcomeGo {
-  border: 0; background: #d9b46a; color: #17120a; font-weight: 800; letter-spacing: .08em;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 1px 0 rgba(0,0,0,.4);
-}
-.gxStudioWelcomeGo:active { background: #c9a35a; }
-.gxStudioWelcomeGo:focus-visible { outline-color: #f0d28f; }
-
 /* v168 · Avatar picker: the 16 portraits whole, as rounded squares in a 4 × 4 grid that fits the screen at once. */
 .galacticAvatarSetup .avatarMenuGrid.gxAvatarGrid {
   flex: none; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: auto;
@@ -9244,56 +9203,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .galacticAvatarSetup .gxAvatarGrid button img { width: 100%; height: 100%; object-fit: cover; }
 .galacticAvatarSetup .avatarMenuGrid.gxAvatarGrid { gap: 8px; }
 
-/* v171 · «Enviar juego»: a short screen (earn money) with a close button, then the steps and the form. */
-.gxStudioWelcomeCard { position: relative; text-align: center; }
-.gxStudioWelcomeCard p { margin: -6px 0 2px; color: #b9b2a4; font-size: 15px; line-height: 1.5; }
-.gxStudioWelcomeClose {
-  position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px;
-  border: 1px solid rgba(247,227,176,.18); background: transparent; color: #e9e4da;
-}
-.gxStudioWelcomeCard[data-step="steps"] { text-align: start; }
-.gxStudioWelcomeCard[data-step="steps"] h2 { padding-right: 44px; }
-.gxStudioSteps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.gxStudioSteps li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; color: #e9e4da; font-size: 14px; line-height: 1.45; }
-.gxStudioSteps b {
-  width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: #1a1206; font: 800 13px/1 var(--gx-data, monospace);
-  background: radial-gradient(circle at 35% 28%, #fff6d8, #f0cf86 38%, #b8863a 78%, #8a6224);
-}
-.gxStudioWelcomeBack { min-height: 44px; border: 0; background: none; color: #b9b2a4; font-weight: 600; }
-
-/* v171 · Wallet panel under the balance chip: amount, add, withdraw and the last movements. */
-.gxWalletScrim { position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,.45); }
-.gxWallet {
-  position: fixed; z-index: 71; top: calc(env(safe-area-inset-top, 0px) + 62px); right: 12px; width: min(320px, calc(100vw - 24px));
-  display: grid; gap: 14px; padding: 16px; border-radius: 18px; border: 1px solid transparent;
-  background: linear-gradient(180deg, #171613, #0d0c0b) padding-box,
-    linear-gradient(150deg, rgba(247,227,176,.55), rgba(247,227,176,.08) 34%, rgba(247,227,176,.2)) border-box;
-  box-shadow: 0 24px 50px rgba(0,0,0,.7); animation: gxWalletIn .16s ease-out;
-}
-@keyframes gxWalletIn { from { opacity: 0; transform: translateY(-6px); } }
-@media (prefers-reduced-motion: reduce) { .gxWallet { animation: none; } }
-.gxWalletHead { display: flex; align-items: baseline; justify-content: space-between; }
-.gxWalletHead small { color: #b9b2a4; font-size: 13px; }
-.gxWalletHead strong { font: 800 24px/1 var(--gx-data, monospace); background: linear-gradient(180deg, #fff6dc, #f4d692 42%, #c99a45); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.gxWalletAmounts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-.gxWalletAmounts button {
-  min-height: 40px; border-radius: 10px; border: 1px solid rgba(247,227,176,.16); background: #0b0a09; color: #e9e4da; font: 700 13px/1 var(--gx-data, monospace);
-}
-.gxWalletAmounts button[aria-checked="true"] { border-color: #e9c67e; color: #f7e3b0; background: #1a1712; }
-.gxWalletActions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.gxWalletActions button { min-height: 48px; border-radius: 12px; font: 800 13px/1 var(--gx-display, sans-serif); letter-spacing: .04em; }
-.gxWalletIn {
-  border: 0; color: #1a1206;
-  background: linear-gradient(118deg, #fff4d2 0%, #f3d38c 20%, #c9973f 46%, #f7dc98 66%, #b8873a 88%, #e9c67e 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(90,58,12,.35);
-}
-.gxWalletOut { border: 1px solid rgba(233,198,126,.6); background: transparent; color: #f7e3b0; }
-.gxWalletOut:disabled { opacity: .45; }
-.gxWalletMoves { display: grid; gap: 0; }
-.gxWalletMoves p { margin: 0; color: #8d877c; font-size: 12.5px; text-align: center; }
-.gxWalletMoves > div { display: flex; justify-content: space-between; padding: 8px 2px; border-top: 1px solid rgba(247,227,176,.08); font-size: 13px; color: #b9b2a4; }
-.gxWalletMoves b { color: #9fe3b4; font-family: var(--gx-data, monospace); }
-.gxWalletMoves b.negative { color: #ff8a80; }
+/* v171 wallet panel: components/WalletPanel.module.css (v174). */
 
 /* v171 · Avatar tab: no title or local-identity notes; the net profit sits right under the name. */
 .appShell .avatarScreen .profileStrip > div { display: grid; gap: 3px; }
@@ -9342,12 +9252,16 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .coreGameSurface .gameCanvas.coreCanvasPending { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .coreGameSurface .gameCanvas { transition: none; } }
 
-/* v173 · Wallet: the amount is typed in a field with € inside. */
-.gxWalletField { display: grid; gap: 6px; }
-.gxWalletField > span:first-child { color: #b9b2a4; font-size: 12.5px; }
-.gxWalletInput { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; border-radius: 12px; border: 1px solid rgba(247,227,176,.22); background: #090908; }
-.gxWalletInput:focus-within { border-color: #e9c67e; box-shadow: 0 0 0 3px rgba(233,198,126,.14); }
-.gxWalletInput input { min-width: 0; height: 52px; padding: 0 12px; border: 0; background: none; color: #f6f2ea; font: 700 22px/1 var(--gx-data, monospace); outline: none; }
-.gxWalletInput input::placeholder { color: #5f5a52; }
-.gxWalletInput b { padding: 0 14px 0 4px; color: #6c6862; font-size: 18px; }
-.gxWalletActions button:disabled { opacity: .4; }
+/* v174 · Submission page: an «i» on the right of each real step (kit, file, send) opens its explanation below. */
+.studioForm .studioStepRow { display: grid; grid-template-columns: minmax(0, 1fr) 40px; align-items: center; gap: 10px; }
+.studioForm .studioStepRow > :first-child { margin: 0; min-width: 0; }
+.studioInfoBtn {
+  width: 36px; height: 36px; display: grid; place-items: center; justify-self: end; border-radius: 50%;
+  border: 1.5px solid rgba(233, 198, 126, .6); background: transparent; color: #f7e3b0;
+  font: 700 italic 16px/1 Georgia, "Times New Roman", serif;
+}
+.studioInfoBtn[aria-expanded="true"] { background: #e9c67e; color: #1a1206; border-color: #e9c67e; }
+.studioInfo {
+  margin: -4px 0 4px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(233, 198, 126, .25);
+  background: rgba(233, 198, 126, .06); color: #e9e4da; font-size: 13px; line-height: 1.5;
+}

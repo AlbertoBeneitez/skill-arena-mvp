@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v174-saturn · Cosmicoins, desempates y auditoría técnica (11-nov-2026)
+
+- **Cosmicoins:** toda la app muestra el saldo en CC (1 CC = 1 €).
+- **Grupo:** «EMPEZAR» y sin «X rondas hasta el ganador».
+- **Enviar juego:** abre la página de envío, con una nota «i» en cada paso.
+- **Desempates:** tiempo y después sorteo con semilla, en grupos y en liga contra rival. Versionado: las competiciones
+  guardadas no cambian.
+- **Técnica:**
+  - oxlint en `pnpm lint`;
+  - cartera y bienvenida de Enviar juego como componentes con su CSS;
+  - carga selectiva de verificadores descartada tras medirla.
+
 ## v173-saturn · Telemetría cítrica, cartera manual y arreglos de juegos (11-nov-2026)
 
 - **Grupo y Avatar:** en Telemetría con acento cítrico, como aspecto por defecto.

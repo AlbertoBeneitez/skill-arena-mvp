@@ -20,7 +20,8 @@ export function playSimulatedMembers(c: GroupCompetition, human: string, look: L
     if (c.finished || i < 0) return c;
     const m = c.matches[i], id = m.players.find((p) => p !== human && m.scores[p] === undefined)!;
     const lower = c.config.lowerWinsGameIds.includes(m.gameId), f = look.strength(id) * (0.82 + unit(`${m.seed}:${id}`) * 0.36);
-    c = recordGroupScore(c, i, id, Math.max(0, Math.round(lower ? look.base(m.gameId) / f : look.base(m.gameId) * f)));
+    // v174: a deterministic play time (45–120 s) for the tie-break.
+    c = recordGroupScore(c, i, id, Math.max(0, Math.round(lower ? look.base(m.gameId) / f : look.base(m.gameId) * f)), Math.round(45000 + unit(`${m.seed}:${id}:t`) * 75000));
   }
   return c;
 }

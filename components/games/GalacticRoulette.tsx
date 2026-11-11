@@ -54,8 +54,7 @@ export function ballLift(s: Readonly<RouletteStateV2>) {
 const NUMBER_OUTER = 121,
   NUMBER_INNER = 104,
   POCKET_OUTER = 103,
-  POCKET_INNER = 84,
-  POCKET_REST = 93.5;
+  POCKET_INNER = 84;
 function render(
   ctx: CanvasRenderingContext2D,
   s: RouletteStateV2,

@@ -7,7 +7,7 @@ import type { GameResult } from "@/lib/types";
 import { solitaireChallengeFor } from "@/lib/deterministic/challengeSets";
 import { gameTone, haptic } from "@/lib/gameFeedback";
 
-import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
+import { t as tx, useI18n } from "@/lib/i18n";
 import GameScoreboard from "../GameScoreboard";
 type Props = {
   active: boolean;
@@ -103,7 +103,7 @@ export default function SolitaireSprint({
     Array.from({ length: 4 }, () => [])
   );
   const [selected, setSelected] = useState<Source>(null);
-  const [score, setScore] = useState(0);
+  const [, setScore] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
 
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -239,7 +239,7 @@ export default function SolitaireSprint({
         if (fi >= 0) moved = { card, fromSel, foundation: fi, apply };
       };
       tryCard(w[w.length - 1], "[data-solitaire-waste]", () => { w = w.slice(0, -1); });
-      t.forEach((col, ci) => tryCard(col[col.length - 1], `[data-card-id="${col[col.length - 1]?.id}"]`, () => { col.pop(); }));
+      t.forEach((col) => tryCard(col[col.length - 1], `[data-card-id="${col[col.length - 1]?.id}"]`, () => { col.pop(); }));
       if (moved) {
         idle = 0;
         const m = moved as { card: Card; fromSel: string; foundation: number; apply: () => void };

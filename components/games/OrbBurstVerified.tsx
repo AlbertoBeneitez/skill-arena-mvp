@@ -345,7 +345,7 @@ function createPresentation() {
 function pointAction(
   point: CorePoint,
   phase: "down" | "move" | "up",
-  state: OrbV7State,
+  _state: OrbV7State,
 ) {
   if (phase === "up") return "SHOOT";
   const angle = Math.atan2(Math.min(-40, point.y - 574), point.x - 195);

@@ -19,7 +19,6 @@ import { isStripe } from "@/lib/verified/billiardsCore.v5";
 import {
   BILLIARDS_CORE_V7,
   BILLIARDS_LEVEL_KINDS,
-  BILLIARDS_V7_RULES,
   isTarget,
   type BilliardsV7State as BilliardsV5State,
 } from "@/lib/verified/billiardsCore.v7";

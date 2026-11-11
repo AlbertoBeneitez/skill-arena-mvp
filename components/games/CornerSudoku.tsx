@@ -111,7 +111,7 @@ export default function CornerSudoku(props: GameRuntimeProps) {
     ctx.globalAlpha = 0.25 + 0.75 * enter;
     ctx.translate(0, (1 - enter) * -24);
     // Box plates.
-    BOX_ORIGIN.forEach(([c0, r0], b) => {
+    BOX_ORIGIN.forEach(([c0, r0]) => {
       diamond(ctx, c0, r0, 3, 3);
       const g = ctx.createLinearGradient(0, OY + (c0 + r0) * K, 0, OY + (c0 + r0 + 6) * K);
       g.addColorStop(0, "rgba(22,42,72,.96)"); g.addColorStop(1, "rgba(8,18,36,.96)");

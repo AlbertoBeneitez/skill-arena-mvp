@@ -241,7 +241,6 @@ export default function GroupHub({ group, competition, balance, playerName, avat
   const split = shares && shares.length === Math.max(1, players) ? shares : defaultSplit(players);
   const paidSplit = split.filter((x) => x > 0);
   const maxKnockout = Math.max(1, players - 1);
-  const knockoutRounds = Math.ceil((players - 1) / Math.min(knockout, maxKnockout));
   const money = groupMoney({ config: { entryMinor } as GroupConfig, players: group.members });
   const affordable = entryMinor <= Math.round(balance * 100);
   const chosen = kind === "single" ? picked.slice(0, 1) : picked;
@@ -434,7 +433,6 @@ export default function GroupHub({ group, competition, balance, playerName, avat
                     <button type="button" aria-label={t("group.moreKnockout")} disabled={knockout >= maxKnockout} onClick={() => setKnockout((n) => Math.min(maxKnockout, n + 1))}>+</button>
                   </div>
                 </div>
-                <p className={st.hint}>{t("group.knockoutHint", { n: knockoutRounds })}</p>
               </div>
             )}
           </li>
@@ -496,7 +494,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
               <label className={st.subLabel} htmlFor="group-entry">{t("group.entryPrice")}</label>
               <div className={st.money}>
                 <input id="group-entry" type="number" min="0" max={balance} step="0.5" inputMode="decimal" value={entry} onChange={(event) => setEntry(event.target.value)} />
-                <span className={st.euro} aria-hidden="true">€</span>
+                <span className={st.euro} aria-hidden="true">CC</span>
                 <span className={st.arrows}>
                   <button type="button" aria-label={t("group.entryUp")} disabled={entryMinor >= Math.floor(balance) * 100} onClick={() => stepEntry(1)}><UiIcon name="chevronUp" size={16} /></button>
                   <button type="button" aria-label={t("group.entryDown")} disabled={entryMinor <= 0} onClick={() => stepEntry(-1)}><UiIcon name="chevronDown" size={16} /></button>

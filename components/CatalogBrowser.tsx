@@ -2,7 +2,7 @@
 import UiIcon from "./UiIcon";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { emptyLeague, type LeagueState } from "@/lib/leagues";
+import { type LeagueState } from "@/lib/leagues";
 import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, isNewGame, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
 import { t, useI18n } from "@/lib/i18n";
