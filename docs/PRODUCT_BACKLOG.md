@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v184-saturn · Base de datos en Neon (12-nov-2026)
+
+- PostgreSQL en Neon (Frankfurt, plan gratis) conectado a Vercel; tablas 001–006 creadas.
+- Funciones de Vercel en `fra1`, junto a la base.
+- Pendiente para la fase 1: aceptar el `sslmode` de Neon y encender las partidas públicas persistentes.
+
 ## v183-saturn · Banderas en el selector de idioma (12-nov-2026)
 
 - Banderas SVG (flag-icons, MIT) junto a cada idioma en Ajustes y en la bienvenida.

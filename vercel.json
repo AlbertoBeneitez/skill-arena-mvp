@@ -1,4 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "exit 1"
+  "ignoreCommand": "exit 1",
+  "regions": [
+    "fra1"
+  ]
 }

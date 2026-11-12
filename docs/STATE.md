@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v183-saturn.
+Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v184-saturn.
 
 ## Catálogo
 
@@ -44,7 +44,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 | Vistas previas | Cada push a `mobile-test` y `vNN-saturn`; protegidas por inicio de sesión de Vercel |
 | Node | 24 (`.nvmrc`, Vercel). La CI repite el determinismo en Node 22 |
 | Variables en Vercel | `MATCH_SIGNING_SECRET` y `ALLOW_LEGACY_STATELESS_TRAINING` en producción y preview. Sin `DATABASE_URL` |
-| PostgreSQL alojado | No existe. Proveedor elegido por el propietario el 12 de noviembre: **Neon** (plan gratis para la beta; plan Launch por uso cuando haya jugadores reales). Falta crear la base y poner `DATABASE_URL` en Vercel (lo hace el propietario). Migraciones `db/migrations/001`–`005` listas, se aplican a mano (004 y 005: juegos de estudios; con ellas, los juegos aprobados se publican en entrenamiento) |
+| PostgreSQL alojado | **Neon** (elegido el 12 de noviembre), proyecto `galactic-games` en Frankfurt (AWS eu-central-1), plan gratis, creado desde Vercel › Storage. `DATABASE_URL` en Production y Preview (sensible; la puso la integración, nadie la ha copiado). Migraciones 001–006 aplicadas por el propietario el 12 de noviembre con `db/setup/001-006-nueva-base.sql` en el editor SQL de Neon. Funciones de Vercel en `fra1` (`vercel.json`). Encendido solo lo que no tiene interruptor propio: la recepción de juegos de estudios. Partidas públicas (`ALLOW_PERSISTED_MATCH_TRAINING`), ranking real (`RANKING_READ_MODEL_READY`), autoridad de comandos (`COMMAND_AUTHORITY_READY`) y entrenamiento oculto siguen apagados; antes de encenderlos, aceptar en código el `sslmode` de Neon, porque hoy se exige `verify-full` |
 | Identidad | Cookie anónima y perfil local. Inicio de sesión con Google, Apple, X, Discord y Microsoft activado en el código (v122); cada proveedor se enciende al poner sus credenciales en Vercel (`docs/AUTH_PROVIDERS.md`). Hoy no hay ninguna |
 | Saldo y premios | Ficticios, calculados en el navegador (`localStorage`) |
 | CI | `build-v4.yml` (typecheck, determinismo, PostgreSQL, build, smoke móvil), CodeQL, Dependabot. Dependabot y el CodeQL semanal leen `main`, que aún no tiene `.github/`, así que no se ejecutan. El flujo antiguo «Sync Mobile Test» (forzaba `mobile-test`) se desactivó el 29 de octubre |
@@ -86,11 +86,12 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Base de datos en Neon (12 de noviembre, v184):** PostgreSQL creado en Frankfurt con las tablas 001–006; servidores de la app en Frankfurt.
 - [x] **Banderas en el selector de idioma (12 de noviembre, v183):** cada idioma lleva la bandera de la región de su formato de números (inglés EE. UU., portugués Brasil, árabe Arabia Saudí, español sin escudo); en la bienvenida, la bandera del idioma elegido sustituye al globo.
 - [x] **Arrastre en ordenador y portada de Orb Burst (12 de noviembre, v182):** el ratón desliza las filas en el marco de ordenador; Orb Burst con cañón y dos filas.
 - [x] **Grupo sin simulados (12 de noviembre, v181):** sin NOVA, KAI ni RHEA; EMPEZAR necesita otro jugador real (pendiente: grupos reales en servidor); competiciones antiguas con simulados retiradas con devolución de la entrada.
 - [x] **Ranking sin «Ver ejemplo» (12 de noviembre, v180):** Avatar › Ranking sin el selector real/ejemplo.
-- [x] **Signo ₡ y dos plataformas (12 de noviembre, v179):** cosmicoin con signo ₡ (fuente `gg-coin.woff`); el ordenador ya no se bloquea: ve la misma app en un marco de móvil y compite solo contra ordenadores (partidas públicas por plataforma con la migración aditiva 006, grupos con código M/D, rankings por plataforma). Pendiente: aplicar la migración 006 en producción.
+- [x] **Signo ₡ y dos plataformas (12 de noviembre, v179):** cosmicoin con signo ₡ (fuente `gg-coin.woff`); el ordenador ya no se bloquea: ve la misma app en un marco de móvil y compite solo contra ordenadores (partidas públicas por plataforma con la migración aditiva 006, grupos con código M/D, rankings por plataforma). Migración 006 aplicada en Neon el 12 de noviembre (v184).
 - [x] **Portadas, formato 2 de estudios, Avatar, ranking y cartera (12 de noviembre, v178):** portadas de Billar (triángulo), Bowling, Orb Burst (v162) y Stack Shift (3D realista); paquetes de estudio en formato 2 (TypeScript como la app, imagen de presentación obligatoria, integración como versión); perfil sin filas de ajustes y edición desde la ficha; ranking con selector Global y buscador de juegos; cartera con aspecto de Grupo, cantidad en € y retirada hacia un proveedor de pago aún no conectado (solo saldo ficticio).
 - [x] **Medallas y ajustes de Grupo (12 de noviembre, v177):** × arriba a la derecha y números arriba a la izquierda; medallas de oro, plata y bronce en el reparto; INGRESAR en pistacho.
 - [x] **Modalidades de liga sin explicaciones (11 de noviembre, v176):** «Todos contra todos» y «Duelos 1 vs 1» solo con su nombre.
