@@ -8,6 +8,7 @@ import {
 } from "../publicMatch";
 import type { VerifiedAttemptResult } from "../verified/contracts";
 import { hashManifest } from "./matchIntegrity";
+import type { Platform } from "../platform";
 import {
   PublicAttemptError,
   type PublicAttempt,
@@ -29,6 +30,18 @@ export class PostgresPublicAttemptRepository
   implements PublicAttemptRepository
 {
   constructor(private readonly pool: Pool) {}
+  /**
+   * v179: whether migration 006 (arena_public_matches.platform) is applied. Until it is, every match stays in the
+   * single phone pool and desktop starts are refused, so a deploy before the migration never mixes the pools.
+   */
+  private platformColumn: Promise<boolean> | null = null;
+  private hasPlatformColumn(c: PoolClient) {
+    this.platformColumn ??= c
+      .query(`SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema() AND table_name='arena_public_matches' AND column_name='platform'`)
+      .then((r) => r.rows.length > 0)
+      .catch(() => { this.platformColumn = null; return false; });
+    return this.platformColumn;
+  }
   private async tx<T>(run: (c: PoolClient) => Promise<T>) {
     const c = await this.pool.connect();
     try {
@@ -152,12 +165,15 @@ export class PostgresPublicAttemptRepository
       );
       if (quota.rows[0].total >= 2000 || quota.rows[0].own >= 20)
         throw new PublicAttemptError("TRAINING_QUOTA", 429);
+      const pools = await this.hasPlatformColumn(c);
+      if (!pools && args.platform !== "mobile") throw new PublicAttemptError("PLATFORM_POOL_UNAVAILABLE", 503);
       const candidate = await c.query(
         `SELECT m.manifest FROM arena_matches m JOIN arena_public_matches p USING(match_id) JOIN arena_public_attempts a USING(match_id)
    WHERE m.player_b IS NULL AND m.player_a<>$1 AND a.slot='A' AND a.state='verified' AND p.resolution IS NULL AND p.scope='training'
    AND p.expires_at>clock_timestamp() AND m.manifest->>'game_id'=$2 AND m.manifest->>'game_version'=$3 AND (m.manifest->'competition'->>'stake_minor')::int=$4
+   ${pools ? "AND p.platform=$5" : ""}
    ORDER BY m.stored_at,m.match_id LIMIT 1 FOR UPDATE OF m,p`,
-        [args.actor, args.gameId, args.gameVersion, args.stake],
+        pools ? [args.actor, args.gameId, args.gameVersion, args.stake, args.platform] : [args.actor, args.gameId, args.gameVersion, args.stake],
       );
       let manifest: PublicAttempt["manifest"], slot: "A" | "B";
       if (candidate.rows[0]) {
@@ -184,8 +200,10 @@ export class PostgresPublicAttemptRepository
           ],
         );
         await c.query(
-          `INSERT INTO arena_public_matches(match_id,policy_version,scope,expires_at) VALUES($1,$2,'training',clock_timestamp()+interval '24 hours')`,
-          [manifest.match_id, PUBLIC_MATCH_POLICY],
+          pools
+            ? `INSERT INTO arena_public_matches(match_id,policy_version,scope,expires_at,platform) VALUES($1,$2,'training',clock_timestamp()+interval '24 hours',$3)`
+            : `INSERT INTO arena_public_matches(match_id,policy_version,scope,expires_at) VALUES($1,$2,'training',clock_timestamp()+interval '24 hours')`,
+          pools ? [manifest.match_id, PUBLIC_MATCH_POLICY, args.platform] : [manifest.match_id, PUBLIC_MATCH_POLICY],
         );
       }
       const ticket = args.ticket(manifest, slot);
@@ -343,8 +361,10 @@ export class PostgresPublicAttemptRepository
       };
     });
   }
-  async availability(actor: string, stake: number) {
+  async availability(actor: string, stake: number, platform: Platform) {
     return this.tx(async (c) => {
+      const pools = await this.hasPlatformColumn(c);
+      if (!pools && platform !== "mobile") return [];
       const due = (
         await c.query<PublicAttempt>(
           `${queryAttempt} WHERE a.state='playing' AND (a.lease_until<=clock_timestamp() OR a.deadline<=clock_timestamp()) LIMIT 100 FOR UPDATE OF a SKIP LOCKED`,
@@ -353,8 +373,9 @@ export class PostgresPublicAttemptRepository
       for (const row of due) await this.expire(c, row);
       const r = await c.query(
         `SELECT m.manifest->>'game_id' AS game_id,m.manifest->>'game_version' AS game_version,bool_or(m.player_a=$1) AS own,bool_or(m.player_a<>$1) AS other FROM arena_matches m JOIN arena_public_matches p USING(match_id) JOIN arena_public_attempts a USING(match_id)
-   WHERE p.scope='training' AND p.resolution IS NULL AND p.expires_at>clock_timestamp() AND m.player_b IS NULL AND a.slot='A' AND a.state='verified' AND (m.manifest->'competition'->>'stake_minor')::int=$2 GROUP BY m.manifest->>'game_id',m.manifest->>'game_version'`,
-        [actor, stake],
+   WHERE p.scope='training' AND p.resolution IS NULL AND p.expires_at>clock_timestamp() AND m.player_b IS NULL AND a.slot='A' AND a.state='verified' AND (m.manifest->'competition'->>'stake_minor')::int=$2
+   ${pools ? "AND p.platform=$3" : ""} GROUP BY m.manifest->>'game_id',m.manifest->>'game_version'`,
+        pools ? [actor, stake, platform] : [actor, stake],
       );
       return r.rows.map((row) => ({
         gameId: row.game_id as string,

@@ -19,6 +19,7 @@ import {
   processAttemptRecord,
 } from "./verifiedMatch";
 import { sha256 } from "./matchIntegrity";
+import { isPlatform, type Platform } from "../platform";
 import { getServerGameAdapter } from "./gameVerifiers";
 import {
   PublicAttemptError,
@@ -32,8 +33,11 @@ export class PublicMatchService {
     if (!raw || typeof raw !== "object" || Array.isArray(raw))
       throw new PublicAttemptError("INVALID_START", 400);
     const body = raw as Record<string, unknown>;
+    // v179: an optional "platform" (absent = mobile, the only platform before); it picks the pool, not the rules.
+    const keys = Object.keys(body).sort().join(",");
     if (
-      Object.keys(body).sort().join(",") !== "game_id,stake_minor,start_key" ||
+      (keys !== "game_id,stake_minor,start_key" && keys !== "game_id,platform,stake_minor,start_key") ||
+      (body.platform !== undefined && !isPlatform(body.platform)) ||
       typeof body.game_id !== "string" ||
       typeof body.start_key !== "string" ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(
@@ -43,8 +47,10 @@ export class PublicMatchService {
       !isAllowedStakeMinor(body.stake_minor as number)
     )
       throw new PublicAttemptError("INVALID_START", 400);
+    const platform: Platform = isPlatform(body.platform) ? body.platform : "mobile";
+    // Mobile keeps the earlier request hash, so an in-flight start key still recovers after the deploy.
     const requestHash = sha256(
-      canonicalJson({ game: body.game_id, stake: body.stake_minor }),
+      canonicalJson(platform === "mobile" ? { game: body.game_id, stake: body.stake_minor } : { game: body.game_id, platform, stake: body.stake_minor }),
     );
     const recovered = await this.repository.recoverStart(
       actor,
@@ -67,6 +73,7 @@ export class PublicMatchService {
       gameId: game.id,
       gameVersion: game.version,
       stake: body.stake_minor as number,
+      platform,
       durationMs:
         Math.ceil(
           (adapter.simulation.maxFinalTick / adapter.simulation.tickRate) *
@@ -282,8 +289,8 @@ export class PublicMatchService {
       })),
     );
   }
-  async availability(actor: string, stake: number) {
-    return (await this.repository.availability(actor, stake)).filter(
+  async availability(actor: string, stake: number, platform: Platform = "mobile") {
+    return (await this.repository.availability(actor, stake, platform)).filter(
       (r) => getGameDefinition(r.gameId)?.version === r.gameVersion,
     );
   }

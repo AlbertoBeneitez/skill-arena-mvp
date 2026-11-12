@@ -10,7 +10,7 @@ import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
 import { GAMES } from "@/lib/games";
-import { formatMoney, t, useI18n } from "@/lib/i18n";
+import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
 import UiIcon, { type UiIconName } from "@/components/UiIcon";
@@ -25,6 +25,8 @@ type Props = {
   initialJoinCode?: string;
   onCreateGroup: (name: string, stake: number) => void;
   onJoinGroup: (code: string) => void;
+  /** v179: why the last code could not be joined (a group of the other platform). */
+  joinError?: string;
   onCreateCompetition: (config: GroupConfig) => void;
   onPlay: () => void;
   onVote: () => void;
@@ -95,7 +97,7 @@ function Medal({ place }: { place: number }) {
   );
 }
 
-export default function GroupHub({ group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup }: Props) {
+export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup }: Props) {
   useI18n();
   const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
   const [joinCode, setJoinCode] = useState(normalizeJoinCode(initialJoinCode));
@@ -246,6 +248,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
               dir="ltr"
             />
             <button className={st.primary} type="submit" disabled={joinCode.length < 4}>{t("group.joinButton")}</button>
+            {joinError && <p className={st.joinError} role="alert">{joinError}</p>}
           </form>
         )}
       </section>
@@ -498,7 +501,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
               <label className={st.subLabel} htmlFor="group-entry">{t("group.entryPrice")}</label>
               <div className={st.money}>
                 <input id="group-entry" type="number" min="0" max={balance} step="0.5" inputMode="decimal" value={entry} onChange={(event) => setEntry(event.target.value)} />
-                <span className={st.euro} aria-hidden="true">CC</span>
+                <span className={st.euro} aria-hidden="true">{COIN_SYMBOL}</span>
                 <span className={st.arrows}>
                   <button type="button" aria-label={t("group.entryUp")} disabled={entryMinor >= Math.floor(balance) * 100} onClick={() => stepEntry(1)}><UiIcon name="chevronUp" size={16} /></button>
                   <button type="button" aria-label={t("group.entryDown")} disabled={entryMinor <= 0} onClick={() => stepEntry(-1)}><UiIcon name="chevronDown" size={16} /></button>

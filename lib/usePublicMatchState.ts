@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { MatchMode } from "./games";
 import type { GameResult } from "./types";
+import { currentPlatform } from "./platform";
 import { ensureAttemptSession } from "./verified/attemptTransport";
 /** UI projections only; assignment, verification and resolution remain server-owned. */
 export function usePublicMatchAvailability(
@@ -34,7 +35,7 @@ export function usePublicMatchAvailability(
     const refresh = async () => {
       try {
         const r = await fetch(
-            `/api/verified-match/availability?stake_minor=${Math.round(stake * 100)}`,
+            `/api/verified-match/availability?stake_minor=${Math.round(stake * 100)}&platform=${currentPlatform()}`,
             { signal: controller.signal, cache: "no-store" },
           ),
           data = await r.json();

@@ -56,10 +56,12 @@ export function createDemoClosedGroup(args: {
   stake?: number;
   playerName: string;
   avatar: string;
+  /** v179: M (mobile) or D (desktop) leads the code, so only the same platform can join. */
+  platformLetter?: "M" | "D";
 }): ClosedGroup {
   return {
     id: randomCode(),
-    code: randomCode(),
+    code: `${args.platformLetter ?? ""}${randomCode()}`,
     name: args.name.trim() || "Mi grupo",
     stake: Math.max(0, Number(args.stake ?? 0)),
     members: [

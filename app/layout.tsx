@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { PRODUCT_NAME, PRODUCT_DESCRIPTION } from "@/lib/productIdentity";
-import MobileOnlyGate from "@/components/MobileOnlyGate";
+import PlatformShell from "@/components/PlatformShell";
 
 /** Public origin for absolute social-preview URLs; set NEXT_PUBLIC_SITE_URL once a custom domain exists. */
 const siteUrl =
@@ -51,7 +51,7 @@ export const viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
-      <body><MobileOnlyGate>{children}</MobileOnlyGate></body>
+      <body><PlatformShell>{children}</PlatformShell></body>
     </html>
   );
 }

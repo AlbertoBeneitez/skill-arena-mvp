@@ -34,7 +34,7 @@ export function formatNetProfit(value: string) {
   if (!validMinorAmount(value)) throw new Error("INVALID_AMOUNT");
   const amount = BigInt(value),
     absolute = amount < BigInt(0) ? -amount : amount;
-  return `${amount < BigInt(0) ? "-" : ""}${(absolute / BigInt(100)).toLocaleString("es-ES")},${(absolute % BigInt(100)).toString().padStart(2, "0")} CC`;
+  return `${amount < BigInt(0) ? "-" : ""}${(absolute / BigInt(100)).toLocaleString("es-ES")},${(absolute % BigInt(100)).toString().padStart(2, "0")}\u00a0₡`;
 }
 export function isRankingPage(
   value: unknown,

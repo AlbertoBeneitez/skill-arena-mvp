@@ -113,8 +113,9 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions) 
   return numberFormat(options).format(value);
 }
 
-/** v174: the app's own currency, cosmicoins (1 CC = 1 € of the earlier balance; internal records keep "EUR"). */
-export const COIN_SYMBOL = "CC";
+/** v174: the app's own currency, cosmicoins (1 cosmicoin = 1 € of the earlier balance; internal records keep "EUR").
+ * v179: its sign is ₡ (U+20A1), drawn by public/fonts/gg-coin.woff as a C with two vertical bars inside it. */
+export const COIN_SYMBOL = "₡";
 /** Balance and amounts shown in cosmicoins, formatted for the active language (two decimals, symbol after). */
 export function formatMoney(value: number) {
   return `${numberFormat({ minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}\u00a0${COIN_SYMBOL}`;

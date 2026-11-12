@@ -437,8 +437,51 @@ try {
     ),
     0,
   );
+  // v179 · Platform pools. Before migration 006 every match is a phone match and computers are refused.
+  await rejects(
+    () => service.start("desk-0", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "desktop" }),
+    "PLATFORM_POOL_UNAVAILABLE",
+  );
+  await rejects(
+    () => service.start("desk-0", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "tablet" }),
+    "INVALID_START",
+  );
+  for (let i = 0; i < 2; i++) await pool.query(await readFile("db/migrations/006-platform-pools.sql", "utf8"));
+  const pooled = new PublicMatchService(new PostgresPublicAttemptRepository(pool));
+  const startOn = (actor: string, platform: "mobile" | "desktop") =>
+    pooled.start(actor, { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform });
+  const playAndSubmit = async (actor: string, started: Awaited<ReturnType<typeof start>>) => {
+    const st = core.create(started.manifest.seed), ins: { seq: number; tick: number; action: string }[] = [];
+    while (st.status === "running" && st.tick < 1000) {
+      if (core.canApply(st, "DROP")) { ins.push({ seq: ins.length, tick: st.tick, action: "DROP" }); core.apply(st, "DROP"); }
+      if (st.status === "running") core.step(st);
+    }
+    const out = await pooled.submit(actor, { attempt_id: started.ticket.attempt_id, inputs: ins, final_tick: st.tick });
+    assert.ok(out.status === 200 || out.status === 202);
+  };
+  const deskA = await startOn("desk-A", "desktop");
+  assert.equal(deskA.ticket.slot, "A");
+  await playAndSubmit("desk-A", deskA);
+  assert.equal(
+    (await pooled.availability("desk-B", 0, "desktop")).find((r) => r.gameId === "precision-stack")?.mode,
+    "existing",
+    "a computer sees the computer's open match",
+  );
+  const phone = await startOn("phone-Z", "mobile");
+  assert.notEqual(phone.manifest.match_id, deskA.manifest.match_id, "a phone never joins a computer's match");
+  const deskB = await startOn("desk-B", "desktop");
+  assert.equal(deskB.manifest.match_id, deskA.manifest.match_id, "computers are paired with computers");
+  assert.equal(deskB.ticket.slot, "B");
+  assert.equal(
+    (await pool.query("SELECT platform FROM arena_public_matches WHERE match_id=$1", [deskA.manifest.match_id])).rows[0].platform,
+    "desktop",
+  );
+  assert.equal(
+    (await pool.query("SELECT platform FROM arena_public_matches WHERE match_id=$1", [phone.manifest.match_id])).rows[0].platform,
+    "mobile",
+  );
   console.log(
-    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection passed",
+    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools passed",
   );
 } finally {
   Date.now = originalNow;

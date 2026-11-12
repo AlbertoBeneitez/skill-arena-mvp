@@ -1,7 +1,7 @@
 "use client";
 /**
  * Wallet panel (v171, own component since v174): opened from the balance chip in the header.
- * v178: in the Group tab's look (carbon, ice, citron). Amounts are typed in euros (1 € = 1 CC). INGRESAR adds them to
+ * v178: in the Group tab's look (carbon, ice, citron). Amounts are typed in euros (1 € = 1 cosmicoin, ₡). INGRESAR adds them to
  * the fictitious balance. RETIRAR opens the payment-provider step: real withdrawals need a payment provider, which is
  * not connected yet, so that step says so and only offers a withdrawal from the fictitious balance (it never moves
  * real money and asks for no bank details). The balance itself lives in DemoApp (onMove).
@@ -13,7 +13,7 @@ import st from "./WalletPanel.module.css";
 
 type Props = {
   balance: number;
-  /** Formats an amount in the app's currency (CC). */
+  /** Formats an amount in the app's currency (₡). */
   format: (value: number) => string;
   onMove: (direction: 1 | -1, amount: number) => void;
   onClose: () => void;

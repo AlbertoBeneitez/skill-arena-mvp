@@ -648,3 +648,6 @@
 .split summary:has(.shares) > :global(.uiIcon) { grid-row: 1; grid-column: 2; }
 .medal { flex: none; width: 16px; height: 16px; display: block; }
 .positions .place { display: inline-flex; align-items: center; gap: 6px; }
+
+/* v179: a code of the other platform's group. */
+.joinError { grid-column: 1 / -1; margin: 0; color: #ff9b8f; font-size: 13px; line-height: 1.4; }

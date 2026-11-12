@@ -10,9 +10,9 @@ import {
   RankingRepositoryError,
 } from "../lib/server/rankingRepository";
 import { getProductionRankingRepository } from "../lib/server/postgresRankingRepository";
-assert.equal(formatNetProfit("12045"), "120,45 CC");
-assert.equal(formatNetProfit("-5"), "-0,05 CC");
-assert.equal(formatNetProfit("9007199254740993"), "90.071.992.547.409,93 CC");
+assert.equal(formatNetProfit("12045"), "120,45\u00a0₡");
+assert.equal(formatNetProfit("-5"), "-0,05\u00a0₡");
+assert.equal(formatNetProfit("9007199254740993"), "90.071.992.547.409,93\u00a0₡");
 for (const amount of [
   "1.2",
   "01",

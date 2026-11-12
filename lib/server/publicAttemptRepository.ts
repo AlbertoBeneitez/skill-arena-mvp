@@ -4,6 +4,7 @@ import type {
   VerifiedAttemptResult,
 } from "../verified/contracts";
 import type { PublicRecord, PublicMatchView } from "../publicMatch";
+import type { Platform } from "../platform";
 export type PublicAttempt = {
   request_hash: string;
   attempt_id: string;
@@ -27,6 +28,8 @@ export type StartPublicAttempt = {
   gameId: string;
   gameVersion: string;
   stake: number;
+  /** v179: the pool this start belongs to (phones with phones, computers with computers). */
+  platform: Platform;
   durationMs: number;
   manifest(index: number): MatchManifest;
   ticket(manifest: MatchManifest, slot: "A" | "B"): AttemptTicket;
@@ -59,6 +62,7 @@ export interface PublicAttemptRepository {
   availability(
     actor: string,
     stake: number,
+    platform: Platform,
   ): Promise<
     {
       gameId: string;

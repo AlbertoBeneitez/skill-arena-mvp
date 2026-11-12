@@ -165,6 +165,9 @@ Check:
 
 Authoritative simulation must not depend on refresh rate or screen size.
 
+Since v179 there are two platforms (`lib/platform.ts`): phones/tablets and computers. Computers see the same app in a
+phone-sized frame. Public matches, groups and rankings are split by platform; never pair or rank across them.
+
 ## Ranking / auth / money
 Real ranking data must come from authoritative server/settlement data.
 

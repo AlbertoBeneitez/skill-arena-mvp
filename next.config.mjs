@@ -19,12 +19,13 @@ const contentPolicy = [
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
-  "frame-ancestors 'none'",
+  // v179: the desktop platform shows the app inside a frame on this same origin; nobody else may frame it.
+  "frame-ancestors 'self'",
 ].join("; ");
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: contentPolicy },
-  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {

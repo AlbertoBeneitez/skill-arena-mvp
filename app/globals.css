@@ -15,7 +15,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
-body { font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+body { font-family: "GG Coin", "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 button, input { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .45; }
@@ -6548,6 +6548,12 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
 @font-face { font-family: "Chakra Petch"; font-style: normal; font-display: swap; font-weight: 700; src: url("/fonts/chakra-petch-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
 @font-face { font-family: "JetBrains Mono"; font-style: normal; font-display: swap; font-weight: 100 800; src: url("/fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: "JetBrains Mono"; font-style: normal; font-display: swap; font-weight: 100 800; src: url("/fonts/jetbrains-mono-latin-ext-wght-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+/* v179 · The cosmicoin sign ₡ (U+20A1) as a C with two vertical bars inside it (public/fonts/gg-coin.woff). Its own
+   family leads the app stacks, and it is also declared last for each app family, so it wins inside those too. */
+@font-face { font-family: "GG Coin"; font-style: normal; font-display: block; font-weight: 100 900; src: url("/fonts/gg-coin.woff") format("woff"); unicode-range: U+20A1; }
+@font-face { font-family: "Unbounded"; font-style: normal; font-display: block; font-weight: 100 900; src: url("/fonts/gg-coin.woff") format("woff"); unicode-range: U+20A1; }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-display: block; font-weight: 100 900; src: url("/fonts/gg-coin.woff") format("woff"); unicode-range: U+20A1; }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-display: block; font-weight: 100 900; src: url("/fonts/gg-coin.woff") format("woff"); unicode-range: U+20A1; }
 :root {
   --gx-void: #0a0a0b;
   --gx-glass: rgba(23,23,25,.62);
@@ -6558,9 +6564,9 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
   --gx-gold: #f3c55a;
   --gx-ink: #eaf4ff;
   --gx-mute: #93a9c2;
-  --gx-display: "Unbounded", "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
-  --gx-ui: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
-  --gx-data: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --gx-display: "GG Coin", "Unbounded", "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --gx-ui: "GG Coin", "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --gx-data: "GG Coin", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --gx-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 50px rgba(4,4,6,.45);
 }
 
@@ -7335,9 +7341,9 @@ html[data-reduce-motion="1"] *, html[data-reduce-motion="1"] *::before, html[dat
 [dir="rtl"] .appHeader, [dir="rtl"] .homePlayHeading { direction: rtl; }
 [dir="rtl"] .gameScreen, [dir="rtl"] .gameArenaWrap { direction: ltr; }
 [dir="rtl"] .gameScreen .gxIntroTagline, [dir="rtl"] .gameScreen .resultPanel { direction: rtl; }
-[dir="rtl"] body { font-family: "Noto Sans Arabic", "Noto Nastaliq Urdu", Tahoma, system-ui, sans-serif; }
-:lang(hi) body, :lang(bn) body { font-family: "Noto Sans Devanagari", "Noto Sans Bengali", system-ui, sans-serif; }
-:lang(zh) body { font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
+[dir="rtl"] body { font-family: "GG Coin", "Noto Sans Arabic", "Noto Nastaliq Urdu", Tahoma, system-ui, sans-serif; }
+:lang(hi) body, :lang(bn) body { font-family: "GG Coin", "Noto Sans Devanagari", "Noto Sans Bengali", system-ui, sans-serif; }
+:lang(zh) body { font-family: "GG Coin", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
 
 /* v108: brand wordmark is Latin text; keep it LTR so RTL locales don't clip its start. */
 .appHeader .logoButton { direction: ltr; unicode-bidi: isolate; text-align: start; }
@@ -7462,15 +7468,26 @@ html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: 
 .rankingNote { margin: 0; color: #8fa2c2; font-size: 12px; }
 
 /* ---------- v116 · Phone-only notice (non-touch devices) ---------- */
-.mobileGate { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: radial-gradient(120% 80% at 50% 0%, #26262a, #0a0a0b 70%); color: #eaf4ff; text-align: center; }
-.mobileGateCard { width: min(100%, 440px); padding: 34px 28px; border-radius: 28px; border: 1px solid rgba(170,230,255,.32); background: linear-gradient(165deg, rgba(32,32,35,.82), rgba(12,12,14,.92)); box-shadow: 0 18px 50px rgba(4,4,6,.5); }
-.mobileGateBrand { margin: 0 0 18px; font-family: var(--gx-display, system-ui); font-size: 12px; font-weight: 700; letter-spacing: .3em; color: #b9e6f2; }
-.mobileGateCard h1 { margin: 16px 0 8px; font-family: var(--gx-display, system-ui); font-size: 24px; line-height: 1.2; }
-.mobileGateCard p { margin: 0 0 18px; color: #b4c7da; font-size: 15px; line-height: 1.5; }
-.mobileGatePhone { width: 54px; height: 92px; margin: 0 auto; border: 3px solid #7fe3ee; border-radius: 12px; position: relative; box-shadow: 0 0 22px rgba(127,227,238,.35); }
-.mobileGatePhone span { position: absolute; left: 50%; bottom: 7px; width: 14px; height: 3px; margin-left: -7px; border-radius: 2px; background: #7fe3ee; }
-.mobileGateQr { width: 200px; height: 200px; display: block; margin: 0 auto 12px; }
-.mobileGateUrl { font-size: 13px !important; color: #7fe3ee !important; word-break: break-all; margin: 0 !important; }
+/* v179 · Desktop platform: the same app in a phone-sized frame, centred, with a quiet side note (components/PlatformShell). */
+.deskStage {
+  min-height: 100dvh; display: flex; align-items: center; justify-content: center; gap: 56px; padding: 24px;
+  background:
+    linear-gradient(rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 32px 32px,
+    radial-gradient(120% 90% at 50% 0%, #17181a, #08090a 70%);
+  color: #eef0f2;
+}
+.deskFrame {
+  flex: none; width: 430px; height: min(932px, calc(100dvh - 48px)); border: 1px solid rgba(255, 255, 255, .14); border-radius: 28px;
+  background: #09090a; box-shadow: 0 0 0 8px #111214, 0 0 0 9px rgba(255, 255, 255, .08), 0 40px 90px rgba(0, 0, 0, .7);
+}
+.deskSide { width: 240px; display: grid; gap: 14px; align-content: center; }
+.deskBrand { margin: 0; font: 700 15px/1.2 var(--gx-display, system-ui); letter-spacing: .14em; color: #eef0f2; }
+.deskPlatform { margin: 0; justify-self: start; padding: 6px 12px; border-radius: 6px; background: #d2df3a; color: #151903; font: 700 13px/1 var(--gx-ui, system-ui); }
+.deskNote { margin: 0; color: #8f959c; font-size: 14px; line-height: 1.5; }
+.deskPhone { display: grid; grid-template-columns: 88px 1fr; align-items: center; gap: 12px; margin-top: 10px; color: #8f959c; font-size: 13px; line-height: 1.4; }
+.deskQr { width: 88px; height: 88px; display: block; }
+@media (max-width: 760px) { .deskSide { display: none; } .deskStage { padding: 12px; } }
 
 /* ---------- v118 · Megaphone menu: sound on/off + the six songs ---------- */
 .soundMenuAnchor { display: inline-grid; }
@@ -9263,3 +9280,5 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   align-self: center; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%;
   border: 1px solid var(--av-line-2, rgba(255,255,255,.16)); color: var(--av-accent, #d2df3a) !important;
 }
+/* v179 · Which platform's ranking this is (phones and computers rank apart). */
+.rankingPlatform { margin: -2px 2px 0; color: #8f959c; font-size: 12.5px; }

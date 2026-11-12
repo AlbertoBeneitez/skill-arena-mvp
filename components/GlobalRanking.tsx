@@ -4,6 +4,7 @@ import ProfitChart, { profitSeries } from "./ProfitChart";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import { localeInfo, useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
+import type { Platform } from "@/lib/platform";
 import {
   formatNetProfit,
   isRankingPage,
@@ -16,7 +17,7 @@ type LoadState = {
   status: "loading" | "ready" | "not-configured" | "unavailable" | "error";
   page?: RankingPage;
 };
-export default function GlobalRanking({ embedded = false }: { embedded?: boolean }) {
+export default function GlobalRanking({ embedded = false, platform = "mobile" }: { embedded?: boolean; platform?: Platform }) {
   const { t, locale } = useI18n();
   const [source, setSource] = useState<"server" | "demo">("server");
   const [cursor, setCursor] = useState<string | null>(null);
@@ -39,6 +40,11 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
         if (source === "demo") {
           const demo = await import("@/lib/demo/globalRanking");
           page = demo.readDemoRankingPage(RANKING_PAGE_LIMIT, cursor);
+        } else if (platform === "desktop") {
+          // v179: the real ranking comes from settlement snapshots, which do not split phones and computers yet; until
+          // they do, the computer platform has no real ranking rather than the phones' one.
+          if (!controller.signal.aborted) setState({ key, status: "not-configured" });
+          return;
         } else {
           const params = new URLSearchParams({
             limit: String(RANKING_PAGE_LIMIT),
@@ -77,7 +83,7 @@ export default function GlobalRanking({ embedded = false }: { embedded?: boolean
     }
     void load();
     return () => controller.abort();
-  }, [source, cursor, key, retry]);
+  }, [source, cursor, key, retry, platform]);
   function switchSource(next: typeof source) {
     setSource(next);
     setCursor(null);

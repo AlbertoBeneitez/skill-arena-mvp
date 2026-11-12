@@ -9,6 +9,7 @@ import GlobalRanking from "./GlobalRanking";
 import { portraitSrc } from "@/lib/avatars";
 import UiIcon from "./UiIcon";
 import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
+import type { Platform } from "@/lib/platform";
 import rp from "./RankingPicker.module.css";
 
 type Row = { id: string; name: string; avatar: string; score: number; tier: LeagueTier; you?: boolean };
@@ -16,8 +17,9 @@ type Row = { id: string; name: string; avatar: string; score: number; tier: Leag
 const NAMES = SAMPLE_RANKING_NAMES;
 
 /** Sample leaderboard per game (datos de ejemplo): deterministic, spread over the five league tiers. */
-function sampleRows(game: GameMeta): Row[] {
-  const rng = createRng(`game-ranking:${game.id}`);
+function sampleRows(game: GameMeta, platform: Platform): Row[] {
+  // v179: each platform has its own leaderboard (mobile keeps its earlier sample exactly).
+  const rng = createRng(platform === "mobile" ? `game-ranking:${game.id}` : `game-ranking:${platform}:${game.id}`);
   return NAMES.map((name, i) => {
     const tier = (4 - Math.min(4, Math.floor(i / 6))) as LeagueTier;
     const record: LeagueRecord = { ...emptyLeague(), tier, series: i, results: [] };
@@ -36,13 +38,13 @@ export function scoreText(game: GameMeta, score: number) {
   return formatNumber(score);
 }
 
-export function GameRanking({ game, best, league, playerName, avatarSrc }: { game: GameMeta; best?: number; league: LeagueRecord; playerName: string; avatarSrc: string }) {
+export function GameRanking({ game, best, league, playerName, avatarSrc, platform = "mobile" }: { game: GameMeta; best?: number; league: LeagueRecord; playerName: string; avatarSrc: string; platform?: Platform }) {
   useI18n();
   const rows = useMemo(() => {
-    const list = sampleRows(game);
+    const list = sampleRows(game, platform);
     if (best !== undefined) list.push({ id: "you", name: playerName || t("common.you"), avatar: avatarSrc, score: best, tier: league.tier, you: true });
     return list.sort((a, b) => compareScores(game)(a.score, b.score) || (a.you ? -1 : 1));
-  }, [game, best, league.tier, playerName, avatarSrc]);
+  }, [game, best, league.tier, playerName, avatarSrc, platform]);
   const yourPosition = rows.findIndex((r) => r.you) + 1;
   return (
     <section className="gameRanking" aria-label={t("ranking.gameOf", { game: gameName(game) })}>
@@ -146,16 +148,18 @@ function RankingPicker({ value, onChange }: { value: string; onChange(id: string
 }
 
 /** Ranking screen: one picker — the global net-profit ranking by default, or one game's leaderboard. */
-export default function RankingHub({ bestScores, leagues, playerName, avatarSrc, showLeagues }: { bestScores: Record<string, number>; leagues: LeagueState; playerName: string; avatarSrc: string; showLeagues: boolean }) {
+export default function RankingHub({ bestScores, leagues, playerName, avatarSrc, showLeagues, platform = "mobile" }: { bestScores: Record<string, number>; leagues: LeagueState; playerName: string; avatarSrc: string; showLeagues: boolean; platform?: Platform }) {
   useI18n();
   const [view, setView] = useState<string>("global");
   const game = GAMES.find((g) => g.id === view);
   return (
     <div className="rankingHub">
       <RankingPicker value={view} onChange={setView} />
-      {!game ? <GlobalRanking embedded /> : (
+      {/* v179: phones and computers rank apart. */}
+      <p className="rankingPlatform">{t(platform === "desktop" ? "ranking.platformDesktop" : "ranking.platformMobile")}</p>
+      {!game ? <GlobalRanking embedded platform={platform} /> : (
         <>
-          <GameRanking game={game} best={bestScores[bestScoreKey(game)]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
+          <GameRanking platform={platform} game={game} best={bestScores[bestScoreKey(game)]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
           <p className="rankingNote">{t("ranking.gameNote")}</p>
         </>
       )}

@@ -14,6 +14,7 @@ import OrbitalScene from "./OrbitalScene";
 import UiIcon from "./UiIcon";
 import ProviderLogo from "./ProviderLogo";
 import { AUTH_PROVIDERS, type AuthProviderId, type AuthProviderInfo } from "@/lib/authProviders";
+import { assignTop, codePlatform, currentPlatform, platformLetter, type Platform } from "@/lib/platform";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
@@ -320,7 +321,7 @@ export default function DemoApp() {
   function chooseProvider(p: AuthProviderInfo) {
     if (authProviders.includes(p.id)) {
       setProviderNotice(null);
-      window.location.assign(`/api/auth/${p.id}/start`);
+      assignTop(`/api/auth/${p.id}/start`); // v179: the whole window, also from the desktop frame
       return;
     }
     setProviderNotice(p);
@@ -402,6 +403,10 @@ export default function DemoApp() {
   const [groupMatch, setGroupMatch] = useState(-1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [pendingJoinCode, setPendingJoinCode] = useState("");
+  const [groupJoinError, setGroupJoinError] = useState("");
+  // v179: phones play phones, computers play computers (lib/platform.ts); known after mount.
+  const [platform, setPlatform] = useState<Platform>("mobile");
+  useEffect(() => { setPlatform(currentPlatform()); }, []);
   const freshOnboardingRef = useRef(false);
   useI18n();
   const settings = useSettings();
@@ -1119,6 +1124,7 @@ export default function DemoApp() {
     const next = createDemoClosedGroup({
       name,
       stake,
+      platformLetter: platformLetter(platform),
       playerName: playerName || t("common.you"),
       avatar: avatarSrc,
     });
@@ -1128,6 +1134,15 @@ export default function DemoApp() {
   }
 
   function joinClosedGroup(code: string) {
+    // v179: a group belongs to one platform (its code says which); phones play phones, computers play computers.
+    const groupPlatform = codePlatform(code);
+    if (groupPlatform && groupPlatform !== platform) {
+      setGroupJoinError(t(groupPlatform === "desktop" ? "group.onlyDesktop" : "group.onlyMobile"));
+      setPendingJoinCode("");
+      gameTone("bad");
+      return;
+    }
+    setGroupJoinError("");
     const next = joinDemoClosedGroup({
       code,
       playerName: playerName || t("common.you"),
@@ -1539,6 +1554,7 @@ export default function DemoApp() {
         {screen === "group" && matchStartError && <p role="status">{matchStartError}</p>}
         {screen === "group" && (
           <GroupHub
+            joinError={groupJoinError}
             group={group}
             balance={balance}
             playerName={playerName}
@@ -1726,7 +1742,7 @@ export default function DemoApp() {
               <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>{t("profile.tabProfile")}</button>
               <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>{t("profile.tabRanking")}</button>
             </nav>
-            {avatarSection === "ranking" ? <RankingHub bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
+            {avatarSection === "ranking" ? <RankingHub platform={platform} bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
             {/* v178: the profile card itself edits the name and avatar (the separate rows are gone). */}
             <button type="button" className="profileStrip" onClick={editProfile} aria-label={`${playerName} · ${t("profile.editProfile")}`}><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div><span className="profileEdit" aria-hidden="true"><UiIcon name="pencil" size={16} /></span></button>
 

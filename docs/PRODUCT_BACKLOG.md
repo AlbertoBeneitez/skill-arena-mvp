@@ -882,6 +882,16 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v179-saturn · Signo ₡ y dos plataformas (12-nov-2026)
+
+- **Moneda:** el signo es ₡ (C con dos rayas verticales dentro), con fuente propia.
+- **Ordenador:** la misma app en un marco de móvil, con ratón y teclado.
+- **Separación entre plataformas:** las partidas públicas solo emparejan con la misma plataforma (migración 006), y
+  los grupos y los rankings van por plataforma.
+- **Pendiente:**
+  - aplicar `006-platform-pools.sql` en la base de datos de producción para abrir las partidas públicas de ordenador;
+  - ranking global real por plataforma cuando la liquidación lo registre.
+
 ## v178-saturn · Portadas, formato de juego de la app, Avatar simple, ranking con buscador y cartera (12-nov-2026)
 
 - **Portadas:** Billar con el triángulo inicial; Bowling más arriba; Orb Burst vuelve a la anterior; Stack Shift

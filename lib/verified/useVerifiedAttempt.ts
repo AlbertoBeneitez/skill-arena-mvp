@@ -10,6 +10,7 @@ import type {
 } from "./contracts";
 import type { ReplayInput } from "./inputValidation";
 import { ensureAttemptSession, submitAttemptRecord } from "./attemptTransport";
+import { currentPlatform } from "../platform";
 import { SubmissionGate } from "./submissionGate";
 
 type AttemptState =
@@ -263,7 +264,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
             game_id: gameId,
             stake_minor: stakeMinor,
             ...(capability.durable
-              ? { start_key: startKeyRef.current!.id }
+              ? { start_key: startKeyRef.current!.id, platform: currentPlatform() }
               : { target_score: targetScore }),
           }),
           signal: controller.signal,
