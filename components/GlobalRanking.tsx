@@ -96,22 +96,25 @@ export default function GlobalRanking({ embedded = false, platform = "mobile" }:
         {!embedded && <small>{PRODUCT_NAME}</small>}
         {embedded ? <h2>{t("ranking.title")}</h2> : <h1>{t("ranking.title")}</h1>}
       </header>
-      <div className="rankingSourceControls" aria-label={t("ranking.source")}>
-        <button
-          type="button"
-          aria-pressed={source === "server"}
-          onClick={() => switchSource("server")}
-        >
-          {t("ranking.real")}
-        </button>
-        <button
-          type="button"
-          aria-pressed={source === "demo"}
-          onClick={() => switchSource("demo")}
-        >
-          {t("ranking.example")}
-        </button>
-      </div>
+      {/* v180: Avatar › Ranking shows only the real ranking (no sample switch); the standalone screen keeps both. */}
+      {!embedded && (
+        <div className="rankingSourceControls" aria-label={t("ranking.source")}>
+          <button
+            type="button"
+            aria-pressed={source === "server"}
+            onClick={() => switchSource("server")}
+          >
+            {t("ranking.real")}
+          </button>
+          <button
+            type="button"
+            aria-pressed={source === "demo"}
+            onClick={() => switchSource("demo")}
+          >
+            {t("ranking.example")}
+          </button>
+        </div>
+      )}
       {source === "demo" && (
         <div className="rankingDemoNotice" role="note">
           <strong>{t("ranking.exampleNotice")}</strong>

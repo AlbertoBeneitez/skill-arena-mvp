@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v179-saturn.
+Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v180-saturn.
 
 ## Catálogo
 
@@ -86,6 +86,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Ranking sin «Ver ejemplo» (12 de noviembre, v180):** Avatar › Ranking sin el selector real/ejemplo.
 - [x] **Signo ₡ y dos plataformas (12 de noviembre, v179):** cosmicoin con signo ₡ (fuente `gg-coin.woff`); el ordenador ya no se bloquea: ve la misma app en un marco de móvil y compite solo contra ordenadores (partidas públicas por plataforma con la migración aditiva 006, grupos con código M/D, rankings por plataforma). Pendiente: aplicar la migración 006 en producción.
 - [x] **Portadas, formato 2 de estudios, Avatar, ranking y cartera (12 de noviembre, v178):** portadas de Billar (triángulo), Bowling, Orb Burst (v162) y Stack Shift (3D realista); paquetes de estudio en formato 2 (TypeScript como la app, imagen de presentación obligatoria, integración como versión); perfil sin filas de ajustes y edición desde la ficha; ranking con selector Global y buscador de juegos; cartera con aspecto de Grupo, cantidad en € y retirada hacia un proveedor de pago aún no conectado (solo saldo ficticio).
 - [x] **Medallas y ajustes de Grupo (12 de noviembre, v177):** × arriba a la derecha y números arriba a la izquierda; medallas de oro, plata y bronce en el reparto; INGRESAR en pistacho.

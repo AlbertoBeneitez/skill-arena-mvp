@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v180-saturn · Ranking sin «Ver ejemplo» (12-nov-2026)
+
+- Avatar › Ranking muestra solo el ranking real, sin el selector real/ejemplo.
+
 ## v179-saturn · Signo ₡ y dos plataformas (12-nov-2026)
 
 - **Moneda:** el signo es ₡ (C con dos rayas verticales dentro), con fuente propia.
