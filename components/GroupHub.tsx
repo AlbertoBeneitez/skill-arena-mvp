@@ -6,7 +6,7 @@
  * (pure); this screen only collects the choices and shows the state. Its look is self-contained in
  * GroupHub.module.css (no shared group classes from globals.css).
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
 import { GAMES } from "@/lib/games";
@@ -79,6 +79,21 @@ const SHARE_TARGETS: readonly ShareTarget[] = [
   { id: "email", label: "Email", icon: "mail", tone: "#f3c55a", href: (text, url) => `mailto:?subject=${encodeURIComponent("GALACTIC GAMES")}&body=${encodeURIComponent(`${text}\n${url}`)}` },
   { id: "sms", label: "SMS", icon: "phone", tone: "#7fe3ee", href: (text, url) => `sms:?&body=${encodeURIComponent(`${text} ${url}`)}` },
 ];
+
+/** v177 · Gold, silver and bronze medal for the first three prize places (decorative: the place is written next to it). */
+const MEDALS = [["#fff1b8", "#e2b43f", "#8a6416"], ["#ffffff", "#c3c9d2", "#69707c"], ["#ffd2a8", "#c9783a", "#6e3a14"]] as const;
+function Medal({ place }: { place: number }) {
+  const [hi, mid, lo] = MEDALS[place - 1];
+  const id = `medal-${useId().replace(/:/g, "")}`; // one gradient per instance: the open/closed list must not share ids
+  return (
+    <svg className={st.medal} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={hi} /><stop offset=".55" stopColor={mid} /><stop offset="1" stopColor={lo} /></linearGradient></defs>
+      <circle cx="8" cy="8" r="7.2" fill={`url(#${id})`} />
+      <circle cx="8" cy="8" r="5" fill="none" stroke={lo} strokeOpacity=".55" strokeWidth=".8" />
+      <text x="8" y="10.6" textAnchor="middle" fontSize="7.5" fontWeight="800" fill={lo} fontFamily="system-ui, sans-serif">{place}</text>
+    </svg>
+  );
+}
 
 export default function GroupHub({ group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup }: Props) {
   useI18n();
@@ -495,7 +510,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
             <details className={st.split}>
               <summary>
                 <span>{t("group.split")}</span>
-                <b dir="ltr">{paidSplit.join(" · ")} %</b>
+                <b dir="ltr" className={st.shares}>{paidSplit.map((pct, i) => <span key={i}>{i < 3 && <Medal place={i + 1} />}{pct} %</span>)}</b>
                 <UiIcon name="chevronDown" size={18} />
               </summary>
               <ol className={st.positions}>
@@ -503,7 +518,7 @@ export default function GroupHub({ group, competition, balance, playerName, avat
                   const up = stepSplit(split, i, 1), down = stepSplit(split, i, -1);
                   return (
                     <li key={i} data-place={i + 1} data-zero={pct === 0 || undefined}>
-                      <span className={st.place}>{t("group.placeN", { n: i + 1 })}</span>
+                      <span className={st.place}>{i < 3 && <Medal place={i + 1} />}{t("group.placeN", { n: i + 1 })}</span>
                       <span className={st.posMoney} dir="ltr">{euros(Math.round((money.prize * pct) / 100))}</span>
                       <div className={st.pctStepper}>
                         <button type="button" aria-label={t("group.lessShare", { n: i + 1 })} disabled={!down} onClick={() => down && setShares(down)}>−</button>
