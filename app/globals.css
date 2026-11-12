@@ -7282,14 +7282,17 @@ main article[aria-label]:nth-child(n+6) { animation-delay: .25s; }
 /* Language list */
 .languageList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .languageList button {
-  position: relative; display: grid; gap: 1px; justify-items: start; min-height: 54px; padding: 8px 32px 8px 12px; border-radius: 14px;
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 1px; align-items: center; justify-items: start;
+  min-height: 54px; padding-block: 8px; padding-inline: 10px 26px; border-radius: 14px;
   border: 1px solid var(--gx-edge-hi); background: rgba(255,255,255,.04); color: var(--gx-ink); text-align: start; cursor: pointer;
 }
-.languageList button[dir="rtl"] { padding: 8px 12px 8px 32px; justify-items: end; }
+.languageList button .langFlag { grid-row: 1 / span 2; }
+.languageList button span, .languageList button small { grid-column: 2; }
+.langFlag { display: block; width: 24px; height: 18px; flex: none; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255,255,255,.18); }
 .languageList button span { font-size: 15px; font-weight: 700; }
 .languageList button small { font-size: 11px; color: var(--gx-mute); }
-.languageList button b { position: absolute; top: 50%; inset-inline-end: 10px; transform: translateY(-50%); color: var(--gx-aurora); }
-.languageList button[dir="rtl"] b { inset-inline-end: auto; inset-inline-start: 10px; }
+/* Logical side: the tick always sits opposite the flag, in each button's own direction. */
+.languageList button b { position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); color: var(--gx-aurora); }
 .languageList button[aria-checked="true"] { border-color: var(--gx-aurora); background: linear-gradient(180deg, rgba(127,227,238,.22), rgba(127,227,238,.06)); box-shadow: 0 0 18px rgba(127,227,238,.18); }
 
 /* Document sheet (legal, help, contact, licences, about) */

@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v182-saturn.
+Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v183-saturn.
 
 ## Catálogo
 
@@ -44,7 +44,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
 | Vistas previas | Cada push a `mobile-test` y `vNN-saturn`; protegidas por inicio de sesión de Vercel |
 | Node | 24 (`.nvmrc`, Vercel). La CI repite el determinismo en Node 22 |
 | Variables en Vercel | `MATCH_SIGNING_SECRET` y `ALLOW_LEGACY_STATELESS_TRAINING` en producción y preview. Sin `DATABASE_URL` |
-| PostgreSQL alojado | No existe. Migraciones `db/migrations/001`–`005` listas, se aplican a mano (004 y 005: juegos de estudios; con ellas, los juegos aprobados se publican en entrenamiento) |
+| PostgreSQL alojado | No existe. Proveedor elegido por el propietario el 12 de noviembre: **Neon** (plan gratis para la beta; plan Launch por uso cuando haya jugadores reales). Falta crear la base y poner `DATABASE_URL` en Vercel (lo hace el propietario). Migraciones `db/migrations/001`–`005` listas, se aplican a mano (004 y 005: juegos de estudios; con ellas, los juegos aprobados se publican en entrenamiento) |
 | Identidad | Cookie anónima y perfil local. Inicio de sesión con Google, Apple, X, Discord y Microsoft activado en el código (v122); cada proveedor se enciende al poner sus credenciales en Vercel (`docs/AUTH_PROVIDERS.md`). Hoy no hay ninguna |
 | Saldo y premios | Ficticios, calculados en el navegador (`localStorage`) |
 | CI | `build-v4.yml` (typecheck, determinismo, PostgreSQL, build, smoke móvil), CodeQL, Dependabot. Dependabot y el CodeQL semanal leen `main`, que aún no tiene `.github/`, así que no se ejecutan. El flujo antiguo «Sync Mobile Test» (forzaba `mobile-test`) se desactivó el 29 de octubre |
@@ -86,6 +86,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Banderas en el selector de idioma (12 de noviembre, v183):** cada idioma lleva la bandera de la región de su formato de números (inglés EE. UU., portugués Brasil, árabe Arabia Saudí, español sin escudo); en la bienvenida, la bandera del idioma elegido sustituye al globo.
 - [x] **Arrastre en ordenador y portada de Orb Burst (12 de noviembre, v182):** el ratón desliza las filas en el marco de ordenador; Orb Burst con cañón y dos filas.
 - [x] **Grupo sin simulados (12 de noviembre, v181):** sin NOVA, KAI ni RHEA; EMPEZAR necesita otro jugador real (pendiente: grupos reales en servidor); competiciones antiguas con simulados retiradas con devolución de la entrada.
 - [x] **Ranking sin «Ver ejemplo» (12 de noviembre, v180):** Avatar › Ranking sin el selector real/ejemplo.

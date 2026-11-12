@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v183-saturn · Banderas en el selector de idioma (12-nov-2026)
+
+- Banderas SVG (flag-icons, MIT) junto a cada idioma en Ajustes y en la bienvenida.
+- Decisión 1 del plan estratégico: PostgreSQL en Neon.
+
 ## v182-saturn · Arrastre en ordenador y portada de Orb Burst (12-nov-2026)
 
 - **Ordenador:** el ratón arrastra las filas horizontales.

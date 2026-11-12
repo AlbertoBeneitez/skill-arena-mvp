@@ -326,3 +326,12 @@ Uses the project's existing synthesized audio and shared orbital background.
 - **Use:** renders the Stack Shift catalogue cover (`scripts/render-stackshift-cover.mjs`,
   `scripts/stackshift-cover/entry.ts`) in headless Chromium, including `RoundedBoxGeometry` and `RoomEnvironment` from
   its examples. It is not a project dependency; only the resulting image (`public/covers/stack-shift.webp`) ships.
+
+## flag-icons 7.6.0 (banderas del selector de idioma, v183)
+
+- **Package:** `flag-icons` 7.6.0 — https://github.com/lipis/flag-icons
+- **Copyright:** Copyright (c) 2013 Panayiotis Lipiridis
+- **License:** MIT
+- **Use:** nine 4:3 flags copied surgically and minified with svgo into `public/flags/`
+  (`us`, `cn`, `in`, `sa`, `fr`, `bd`, `br`, `ru`, `pk`). `public/flags/es.svg` is drawn
+  in-house (Spanish civil flag, without the coat of arms). Not a project dependency.
