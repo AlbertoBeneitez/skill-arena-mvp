@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v181-saturn · Grupo sin jugadores simulados (12-nov-2026)
+
+- El grupo empieza solo contigo; EMPEZAR exige otro jugador real.
+- **Pendiente:** grupos reales en el servidor (unirse con el código desde otro dispositivo), para que las
+  competiciones de grupo vuelvan a jugarse.
+
 ## v180-saturn · Ranking sin «Ver ejemplo» (12-nov-2026)
 
 - Avatar › Ranking muestra solo el ranking real, sin el selector real/ejemplo.

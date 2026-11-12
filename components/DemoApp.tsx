@@ -22,7 +22,7 @@ import GroupHub from "./GroupHub";
 import WalletPanel from "./WalletPanel";
 import StudioWelcome from "./StudioWelcome";
 import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
-import { DEMO_MEMBERS, createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
+import { DEMO_MEMBERS, createDemoClosedGroup, isSimulatedMemberId, joinDemoClosedGroup, withoutSimulatedMembers, type ClosedGroup } from "@/lib/groupPlay";
 import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
 import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
@@ -564,10 +564,21 @@ export default function DemoApp() {
         if (typeof data.wins === "number") setWins(data.wins);
         if (typeof data.losses === "number") setLosses(data.losses);
         if (typeof data.streak === "number") setStreak(data.streak);
-        if (data.group && typeof data.group === "object") {
-          setGroup(data.group as ClosedGroup);
+        if (data.group && typeof data.group === "object" && Array.isArray((data.group as ClosedGroup).members)) {
+          setGroup(withoutSimulatedMembers(data.group as ClosedGroup));
         }
-        if (isGroupCompetition(data.groupComp)) setGroupComp(data.groupComp);
+        if (isGroupCompetition(data.groupComp)) {
+          // v181: a competition against the former simulated members is withdrawn; an unfinished one refunds its entry.
+          const comp = data.groupComp;
+          if (comp.players.some((p) => isSimulatedMemberId(p.id))) {
+            const entry = comp.finished ? 0 : comp.config.entryMinor / 100;
+            if (entry > 0) {
+              const name = (data.group as ClosedGroup | undefined)?.name ?? "";
+              setBalance((value) => Number((value + entry).toFixed(2)));
+              setMovements((items) => [{ label: t("move.groupRefund", { group: name }), amount: entry, key: "move.groupRefund" as MessageKey, vars: { group: name } }, ...items].slice(0, 20));
+            }
+          } else setGroupComp(comp);
+        }
         if (isLeagueState(data.leagues)) setLeagues(data.leagues);
         if (data.playCounts && typeof data.playCounts === "object") {
           setPlayCounts(Object.fromEntries(Object.entries(data.playCounts).filter(([, v]) => typeof v === "number" && Number.isFinite(v) && v > 0)));

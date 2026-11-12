@@ -16,6 +16,7 @@ export type ClosedGroup = {
   image?: string;
 };
 
+/** The former simulated members (v181: no longer added to groups); their names stay reserved. */
 export const DEMO_MEMBERS: Omit<GroupMember, "id">[] = [
   {
     name: "NOVA",
@@ -64,6 +65,7 @@ export function createDemoClosedGroup(args: {
     code: `${args.platformLetter ?? ""}${randomCode()}`,
     name: args.name.trim() || "Mi grupo",
     stake: Math.max(0, Number(args.stake ?? 0)),
+    // v181: only you. The simulated members (NOVA, KAI, RHEA) are gone; real players appear here when they join.
     members: [
       {
         id: "you",
@@ -72,10 +74,6 @@ export function createDemoClosedGroup(args: {
         isYou: true,
         scoreFactor: 1,
       },
-      ...DEMO_MEMBERS.map((member, index) => ({
-        ...member,
-        id: `demo-${index + 1}`,
-      })),
     ],
   };
 }
@@ -96,6 +94,7 @@ export function joinDemoClosedGroup(args: {
     code: code || randomCode(),
     name: code ? `Grupo ${code}` : "Grupo privado",
     stake: 0,
+    // v181: only you. The simulated members (NOVA, KAI, RHEA) are gone; real players appear here when they join.
     members: [
       {
         id: "you",
@@ -104,10 +103,12 @@ export function joinDemoClosedGroup(args: {
         isYou: true,
         scoreFactor: 1,
       },
-      ...DEMO_MEMBERS.map((member, index) => ({
-        ...member,
-        id: `demo-${index + 1}`,
-      })),
     ],
   };
+}
+
+/** v181: simulated members saved by earlier versions (ids "demo-1"…) are removed from a stored group. */
+export const isSimulatedMemberId = (id: string) => /^demo-\d+$/.test(id);
+export function withoutSimulatedMembers(group: ClosedGroup): ClosedGroup {
+  return { ...group, members: group.members.filter((m) => m.isYou || !isSimulatedMemberId(m.id)) };
 }

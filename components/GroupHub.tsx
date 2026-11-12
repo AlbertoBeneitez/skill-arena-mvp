@@ -406,7 +406,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
       <div className={st.panel}>
         <div className={st.panelHead}>
           <h2>{t("group.inviteTitle")}</h2>
-          <small>{t("group.playersCount", { n: players })}</small>
+          <small>{players === 1 ? t("group.playersOne") : t("group.playersCount", { n: players })}</small>
         </div>
         <ul className={st.members} aria-label={t("group.members")}>
           {group.members.map((member) => (
@@ -536,7 +536,9 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             </details>
           </li>
         </ol>
-        <button className={st.primary} type="button" disabled={!affordable || (kind === "single" && chosen.length === 0)}
+        {/* v181: no simulated rivals any more — a competition starts once someone else has joined. */}
+        {players < 2 && <p className={st.hint} role="status">{t("group.needPlayers")}</p>}
+        <button className={st.primary} type="button" disabled={players < 2 || !affordable || (kind === "single" && chosen.length === 0)}
           onClick={() => onCreateCompetition(buildConfig())}>
           {t("group.payAndStart", { amount: euros(entryMinor) })}
         </button>
