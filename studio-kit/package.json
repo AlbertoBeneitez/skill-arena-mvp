@@ -1,0 +1,17 @@
+{
+  "name": "galactic-games-studio-kit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit && tsx tools/check.ts",
+    "preview": "esbuild tools/preview.ts --bundle --outfile=preview/preview.js --servedir=preview",
+    "zip": "node tools/zip.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "esbuild": "0.24.2",
+    "fflate": "0.8.2",
+    "tsx": "4.19.2",
+    "typescript": "5.6.3"
+  }
+}

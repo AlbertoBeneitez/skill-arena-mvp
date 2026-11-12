@@ -37,6 +37,8 @@
   ],
   "exclude": [
     "node_modules",
-    "studio-kit"
+    "studio-kit",
+    "scripts/fixtures/studio/kit-format1",
+    "scripts/stackshift-cover"
   ]
 }

@@ -4,8 +4,8 @@ import { unzipSync, zipSync, strToU8 } from "fflate";
 import { checkManifest, externalReferences, imageSize, inputScript, replayCore, seedWords, unpackPackage } from "../lib/studio/package";
 import { checkPackage } from "../lib/server/studioPackageCheck";
 
-// The studio kit is itself a valid package: it must pass every automatic check.
-const kitZip = new Uint8Array(readFileSync("public/studio/galactic-games-kit.zip"));
+// Format 1 (WebAssembly + HTML, v142–v177): still understood for stored and published packages. Its kit is a fixture.
+const kitZip = new Uint8Array(readFileSync("scripts/fixtures/studio/pulse-format1.zip"));
 const kit = unzipSync(kitZip);
 const pass = await checkPackage(kitZip);
 assert.ok(pass.report.ok, `kit passes: ${JSON.stringify(pass.report.checks.filter((c) => !c.ok))}`);
@@ -51,4 +51,36 @@ const [lo, hi] = seedWords("match-1");
 const a = replayCore(inst, lo, hi, inputScript("p", 1, 3600), 3600), b = replayCore(inst, lo, hi, inputScript("p", 1, 3600), 3600);
 assert.deepEqual(a, b);
 assert.ok(a.ended && a.score >= 0);
-console.log(`Studio packages OK · kit passes (core ${pass.report.checks.find((c) => c.id === "coreSpeed")?.detail}), manifest, external refs, cover, imports, seed, reset, length, time limit, zip safety`);
+// v178 · Format 2, the app's own TypeScript format: the downloadable kit is a valid package and uploads take only it.
+{
+  const v2Zip = new Uint8Array(readFileSync("public/studio/galactic-games-kit.zip"));
+  const v2 = unzipSync(v2Zip);
+  const ok = await checkPackage(v2Zip, [2]);
+  assert.ok(ok.report.ok, `kit v2 passes: ${JSON.stringify(ok.report.checks.filter((c) => !c.ok))}`);
+  assert.deepEqual(ok.report.checks.map((c) => c.id), ["zip", "manifest", "core", "view", "cover"]);
+  assert.equal(ok.unpacked.manifest?.format, 2);
+  assert.equal(ok.unpacked.manifest?.width, 360);
+  const old = await checkPackage(kitZip, [2]);
+  assert.equal(old.report.ok, false, "uploads refuse format 1");
+  assert.deepEqual(old.report.checks.filter((c) => !c.ok && !c.skipped).map((c) => `${c.id}:${c.detail}`), ["manifest:format 1 → 2"]);
+  const f2 = async (files: Record<string, Uint8Array>) => (await checkPackage(zipSync(files), [2])).report.checks.filter((c) => !c.ok && !c.skipped).map((c) => `${c.id}:${c.detail ?? ""}`);
+  const with2 = (name: string, data: string | null) => { const f: Record<string, Uint8Array> = { ...v2 }; if (data === null) delete f[name]; else f[name] = strToU8(data); return f; };
+  const coreSrc = new TextDecoder().decode(v2["src/core.ts"]), gameSrc = new TextDecoder().decode(v2["src/game.ts"]);
+  const m2 = JSON.parse(new TextDecoder().decode(v2["galactic.json"]));
+  assert.deepEqual(await f2(with2("src/core.ts", null)), ["core:src/core.ts"]);
+  assert.deepEqual(await f2(with2("src/game.ts", null)), ["view:src/game.ts"]);
+  assert.deepEqual(await f2(with2("cover.webp", null)), ["cover:cover.webp"], "the presentation image is required");
+  assert.deepEqual(await f2(with2("src/core.ts", coreSrc + "\nconst r = Math.random();")), ["core:src/core.ts: Math.random"]);
+  assert.deepEqual(await f2(with2("src/core.ts", coreSrc + "\nconst t = Date.now();")), ["core:src/core.ts: Date"]);
+  assert.deepEqual(await f2(with2("src/rules/extra.ts", "export const t = performance.now();")), ["core:src/rules/extra.ts: performance"]);
+  assert.deepEqual(await f2(with2("src/core.ts", 'import _ from "lodash";\n' + coreSrc)), ["core:src/core.ts: import lodash"]);
+  assert.deepEqual(await f2(with2("src/core.ts", coreSrc + "\n// never Math.random() or Date here\n/* nor performance */")), [], "comments are not code");
+  assert.deepEqual(await f2(with2("src/game.ts", gameSrc + '\nfetch("/score");')), ["view:src/game.ts: network"]);
+  assert.deepEqual(await f2(with2("src/game.ts", gameSrc + '\nconst img = "https://cdn.example.com/a.png";')), ["view:src/game.ts: external URL"]);
+  assert.deepEqual(await f2(with2("src/game.ts", gameSrc + "\nconst x = Date.now();")), [], "the screen may read the clock (it never decides)");
+  assert.deepEqual(await f2(with2("galactic.json", JSON.stringify({ ...m2, width: undefined }))), ["manifest:width/height"]);
+  const nested2: Record<string, Uint8Array> = {};
+  for (const [n, b] of Object.entries(v2)) nested2[`pulse/${n}`] = b;
+  assert.ok((await checkPackage(zipSync(nested2), [2])).report.ok, "a format-2 package inside one folder is accepted");
+}
+console.log(`Studio packages OK · format 2 kit, static source rules, format 1 refused at upload · format 1: kit passes (core ${pass.report.checks.find((c) => c.id === "coreSpeed")?.detail}), manifest, external refs, cover, imports, seed, reset, length, time limit, zip safety`);

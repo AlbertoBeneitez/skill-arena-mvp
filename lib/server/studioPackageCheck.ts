@@ -44,8 +44,22 @@ function playInWorker(core: Uint8Array, runs: Run[], maxTicks: number): Promise<
 
 const same = (a: ReplayResult, b: ReplayResult) => a.score === b.score && a.hash === b.hash && a.ticks === b.ticks && a.ended === b.ended;
 
-export async function checkPackage(zip: Uint8Array): Promise<{ report: Report; unpacked: Unpacked }> {
+/**
+ * `formats`: which package formats are accepted. Uploads take only format 2 since v178 (the app's own TypeScript
+ * format); format 1 is still understood for the packages already stored and published.
+ */
+export async function checkPackage(zip: Uint8Array, formats: readonly (1 | 2)[] = [1, 2]): Promise<{ report: Report; unpacked: Unpacked }> {
   const { checks, unpacked } = unpackPackage(zip);
+  const format = unpacked.format ?? 1;
+  if (!formats.includes(format)) {
+    // An old (format 1) package: say so on the manifest line and stop.
+    const i = checks.findIndex((c) => c.id === "manifest");
+    const wrong: Check = { id: "manifest", ok: false, detail: `format ${format} → ${formats.join("/")}` };
+    if (i >= 0) checks[i] = wrong; else checks.push(wrong);
+    return { report: finishReport(checks.filter((c) => c.id === "zip" || c.id === "manifest"), formats[0]), unpacked };
+  }
+  // Format 2 is checked statically (code is not run at upload); its report is complete here.
+  if (format === 2) return { report: finishReport(checks, 2), unpacked };
   const fail = (c: Check) => { checks.push(c); return { report: finishReport(checks), unpacked }; };
   if (!unpacked.core) return { report: finishReport(checks), unpacked };
   const inspected = inspectCore(unpacked.core);

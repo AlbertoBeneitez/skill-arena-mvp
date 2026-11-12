@@ -32,6 +32,7 @@ const TERMS: MessageKey[] = ["studio.terms1", "studio.terms2", "studio.terms3", 
 export const CHECK_LABEL: Record<string, MessageKey> = {
   zip: "studio.check.zip", manifest: "studio.check.manifest", game: "studio.check.game", cover: "studio.check.cover",
   coreLoad: "studio.check.coreLoad", coreReplay: "studio.check.coreReplay", coreSeed: "studio.check.coreSeed", coreSpeed: "studio.check.coreSpeed",
+  core: "studio.check.core", view: "studio.check.view",
 };
 const shelfName = (s: string) => t(`catalog.shelf.${s}` as MessageKey);
 const loadDraft = (): Draft => { try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? "{}"); return { ...EMPTY, studio: String(d.studio ?? ""), contact: String(d.contact ?? "") }; } catch { return EMPTY; } };
@@ -131,7 +132,8 @@ export default function GameProposal({ onClose }: { onClose: () => void }) {
               {p.report && <ReportList report={p.report} />}
               {p.manifest?.thirdParty.length ? <span>{t("studio.thirdParty")}: {p.manifest.thirdParty.map((x) => `${x.name} (${x.license})`).join(", ")}</span> : null}
               <div className="studioItemActions">
-                {p.manifest && <button type="button" className="studioTry" onClick={() => setTrying(p)}>{t("studio.try")}</button>}
+                {/* Format 2 (v178) is TypeScript to integrate as a version, not a package the app can run as is. */}
+                {p.manifest && p.manifest.format !== 2 && <button type="button" className="studioTry" onClick={() => setTrying(p)}>{t("studio.try")}</button>}
                 {p.manifest && <a href={`${API}?id=${p.id}`} download>{t("studio.download")}</a>}
                 {p.status !== "approved" && <button type="button" onClick={() => void act(p.id, "PATCH", "&status=approved")}>{t("studio.approve")}</button>}
                 {p.status !== "rejected" && <button type="button" onClick={() => void act(p.id, "PATCH", "&status=rejected")}>{t("studio.reject")}</button>}

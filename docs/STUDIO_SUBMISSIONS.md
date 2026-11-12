@@ -1,6 +1,43 @@
 # Envío y admisión de juegos de estudios externos
 
-Estado: v147 (5-nov-2026); envío y admisión desde v142, publicación en entrenamiento desde v147. El formato está en `studio-kit/README.md`, que también va en el kit descargable `public/studio/galactic-games-kit.zip`.
+Estado: v178 (12-nov-2026).
+- **Desde v178, formato 2:** los juegos se escriben como los de la app (reglas en TypeScript y pantalla en canvas) y se integran como una versión nueva.
+- **Formato 1** (WebAssembly + HTML, v142–v177): solo se conserva para los paquetes ya guardados y publicados.
+- **Dónde está el formato:** en `studio-kit/README.md`, que también va en el kit descargable `public/studio/galactic-games-kit.zip` (lo genera `scripts/build-studio-kit.py`).
+
+## Formato 2 (v178): el juego como los de la app
+- **Contenido del .zip:**
+  - `galactic.json` con `format: 2`, `width` y `height`;
+  - la **imagen de presentación**, obligatoria (`cover.webp`, 16:11, mejor a 1600 × 1100);
+  - `src/core.ts`, un `GameCore` igual que `lib/verified/*Core.v*.ts`;
+  - `src/game.ts`, un `GameView`: render en canvas, `pointAction`, `keys`, `controls` y `scoreCells`, lo mismo que recibe `CoreCanvasGame`;
+  - `kit/`, con el contrato y el RNG con semilla, copia de `lib/deterministic/seeded.ts`.
+- **Herramientas del estudio:**
+  - `npm run check`: tipos y la misma prueba de determinismo que pasamos antes de integrar (tres semillas, dos repeticiones, la semilla cambia la partida, termina antes de `maxFinalTick`);
+  - `npm run preview`: jugarlo en el navegador;
+  - `npm run zip`: preparar el envío.
+- **Comprobación al subirlo**, estática, porque en la subida no se ejecuta código:
+  - el zip y el manifiesto;
+  - las reglas no usan reloj, `Math.random`, APIs del navegador, red, `eval` ni imports no relativos;
+  - la pantalla no usa red, `eval` ni URLs externas;
+  - la imagen de presentación existe y tiene el formato y el tamaño correctos.
+- **Al aprobarlo no se publica solo:** se integra como versión.
+
+### Integrar un juego aprobado (el propietario pasa el .zip a Claude)
+1. **Núcleo:** `src/core.ts` pasa a `lib/verified/<id>Core.v1.ts`, cambiando los imports del kit por `@/lib/deterministic/seeded` y `./coreRuntime.v1`. `gameId` se añade a `GameId`.
+2. **Pantalla:** `src/game.ts` pasa a `components/games/<Nombre>.tsx`, que envuelve `CoreCanvasGame` con `core`, `render`, `pointAction`, `keys`, `controls` y `scoreCells`.
+3. **Imagen de presentación:** pasa a `public/covers/<id>.webp`, a 1600 × 1100 y con el sujeto en el cuadrado central.
+4. **Registro:**
+   - entrada en `lib/games.ts`, con estante, nombre, portada y estado `VERIFIED` cuando tenga verificador;
+   - adaptador en `lib/server/gameVerifiers.ts`;
+   - traducciones del nombre.
+5. **Pruebas:**
+   - el `check` del kit dentro del repositorio;
+   - una partida dorada (`scripts/verify-<id>-golden.ts`);
+   - `pnpm lint`, `pnpm test:determinism`, `pnpm build` y QA en el móvil.
+6. **Créditos:** los de `thirdParty` van a `THIRD_PARTY_NOTICES.md`. El estudio y la versión se anotan en `docs/STATE.md`.
+
+## Formato 1 (v142–v177, solo histórico)
 
 ## El proceso
 1. **El estudio descarga el kit** desde «ENVIAR JUEGO». El kit trae el formato y un juego de ejemplo completo («Pulse»), que ya es un paquete válido.

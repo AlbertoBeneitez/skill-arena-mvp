@@ -72,7 +72,8 @@ export async function listPublished(): Promise<PublishedGame[]> {
     `SELECT proposal_id,game,shelf,summary,studio,manifest,package_sha256,octet_length(package) AS size,COALESCE(reviewed_at,created_at) AS published_at
        FROM studio_game_proposals WHERE review_status='approved' AND package IS NOT NULL ORDER BY published_at DESC LIMIT 60`,
   );
-  return rows.map((r) => {
+  // Format 2 games (v178) are not run from their package: they reach the catalogue integrated in a version.
+  return rows.filter((r) => (r.manifest as Manifest).format !== 2).map((r) => {
     const m = r.manifest as Manifest;
     return {
       id: r.proposal_id, game: r.game, shelf: r.shelf, summary: r.summary, studio: r.studio, sha256: r.package_sha256, size: Number(r.size),

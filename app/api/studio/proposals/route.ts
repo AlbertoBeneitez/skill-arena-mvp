@@ -33,7 +33,8 @@ export async function POST(req: Request) {
   if (!(file instanceof Blob) || file.size === 0) return json({ error: "INVALID_FIELD", field: "file" }, 400);
   if (file.size > PACKAGE_LIMITS.zipBytes) return json({ error: "TOO_LARGE", field: "file" }, 413);
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const { report, unpacked } = await checkPackage(bytes);
+  // v178: new games come in the app's own format (2), so they can be integrated as a version.
+  const { report, unpacked } = await checkPackage(bytes, [2]);
   if (!report.ok || !unpacked.manifest) return json({ error: "CHECKS_FAILED", report }, 422);
   if (!proposalsOpen()) return json({ error: "PROPOSALS_NOT_OPEN", report }, 503);
   try { return json({ id: await saveSubmission(check.value, unpacked.manifest, report, bytes), report }, 201); }
