@@ -197,7 +197,7 @@ covers["galactic-roulette"] = roulette()
 
 
 # ---------- Billiards: low angle on the felt, cue ball huge in the foreground ----------
-def billiards():
+def billiards(sparks=True):
     """Low, cinematic angle across the felt at the moment of the break: the rack explodes under a pendant lamp,
     smoke in the light cone, warm bokeh in the dark room, the cue out of focus in the foreground."""
     d = ('<radialGradient id="broom" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="#1c3a3a"/><stop offset=".55" stop-color="#0a1418"/><stop offset="1" stop-color="#030607"/></radialGradient>'
@@ -235,6 +235,7 @@ def billiards():
     p.append('<rect x="316" y="0" width="8" height="22" fill="#1a1a1a"/><path d="M250,48 Q320,4 390,48 Z" fill="#0f3d2f"/><path d="M250,48 Q320,4 390,48" fill="none" stroke="#e3b660" stroke-width="3"/>')
     p.append('<ellipse cx="320" cy="48" rx="70" ry="9" fill="#fff6d6"/><ellipse cx="320" cy="50" rx="110" ry="22" fill="#fff6d6" opacity=".25" filter="url(#soft)"/>')
     # The break: the cue ball has just hit the apex; the rack bursts open.
+    p.append("<!--rack-->")
     cols = ["#ffd23f", "#2f6bff", "#e12d3f", "#7b3cff", "#ff7a1f", "#159a52", "#8a1c2a", "#111111", "#ffd23f", "#2f6bff", "#e12d3f", "#7b3cff", "#ff7a1f", "#159a52", "#8a1c2a"]
     ax, av = 0.0, .42
     rr = random.Random(7)
@@ -270,11 +271,58 @@ def billiards():
         g = random.Random(300 + q)
         p.append(f'<circle cx="{f(ix + g.gauss(0, 30))}" cy="{f(iy - 10 + g.gauss(0, 12))}" r="{f(g.uniform(1, 3))}" fill="#9fd0ff" opacity="{g.uniform(.3, .8):.2f}"/>')
     # Foreground: two balls very close to the camera, out of focus, and the cue following through.
+    p.append("<!--fg-->")
     p.append(f'<g filter="url(#dof2)">{sphere(70, 430, 92, "#e12d3f", "bf1", shade="#2a0508", shadow=False)}{sphere(590, 452, 80, "#ffd23f", "bf2", shade="#3a2a00", shadow=False)}</g>')
     p.append(f'<g filter="url(#dof)"><line x1="330" y1="620" x2="{f(ix)}" y2="{f(iy + 70)}" stroke="url(#bcue)" stroke-width="30" stroke-linecap="round"/></g>')
-    p.append(sparkle(ix + 34, iy - 30, 13, "#fff6d6") + sparkle(ix - cr * .4, iy - cr * .5, 9, "#ffffff"))
+    if sparks:
+        p.append(sparkle(ix + 34, iy - 30, 13, "#fff6d6") + sparkle(ix - cr * .4, iy - cr * .5, 9, "#ffffff"))
     return svg("".join(p), extra_defs=d)
 covers["billiards"] = billiards()
+
+
+def billiards_rack():
+    """v178 · The opening rack, as the owner asked: fifteen balls touching in the characteristic triangle (1 at the apex,
+    8 in the middle of the third row), the cue ball waiting in front and the cue lined up behind it, under the same lamp."""
+    src = billiards(sparks=False)
+    start, end = src.index("<!--rack-->"), src.index("<!--fg-->")
+    FY, NY, FW, NW = 156, 520, 250, 560
+    def P(u, v):
+        y = FY + (NY - FY) * v
+        w = FW + (NW - FW) * v
+        return 320 + u * w, y, w / NW
+    cols = {1: "#ffd23f", 2: "#2f6bff", 3: "#e12d3f", 4: "#7b3cff", 5: "#ff7a1f", 6: "#159a52", 7: "#8a1c2a", 8: "#111111"}
+    rows = [[1], [9, 2], [10, 8, 3], [4, 14, 7, 11], [12, 6, 15, 13, 5]]
+    du, dv, av = 72 / NW * 1.01, .056, .30   # touching across; rows foreshortened in depth; set back so cards show it
+    q = []
+    balls = []
+    for row, nums in enumerate(rows):
+        for i, n in enumerate(nums):
+            balls.append((av - row * dv, (i - row / 2) * du, n))
+    # One soft shadow under the whole rack, then the balls back to front.
+    bx0, by0, _ = P(0, av - 4 * dv)
+    bx1, by1, s1 = P(0, av)
+    q.append(f'<ellipse cx="{f(bx1)}" cy="{f((by0 + by1) / 2 + 26 * s1)}" rx="{f(150 * s1)}" ry="{f((by1 - by0) / 2 + 30 * s1)}" fill="#000" opacity=".35" filter="url(#soft)"/>')
+    for v, u, n in sorted(balls):
+        x, y, sc = P(u, v)
+        r = 36 * sc
+        q.append(f'<ellipse cx="{f(x + r * .15)}" cy="{f(y + r * .82)}" rx="{f(r * .9)}" ry="{f(r * .26)}" fill="#000" opacity=".5"/>')
+        q.append(sphere(x, y, r, cols[n if n <= 8 else n - 8], f"rk{n}", shade="#050505", shadow=False))
+        if n > 8:
+            q.append(f'<ellipse cx="{f(x)}" cy="{f(y)}" rx="{f(r * .97)}" ry="{f(r * .45)}" fill="#f6f2e6" opacity=".85"/>')
+        q.append(f'<circle cx="{f(x - r * .1)}" cy="{f(y - r * .05)}" r="{f(r * .38)}" fill="#fbf8ef"/><text x="{f(x - r * .1)}" y="{f(y + r * .13)}" font-family="Arial Black, sans-serif" font-size="{f(r * .44)}" text-anchor="middle" fill="#111">{n}</text>')
+    # The cue ball on the head spot, the cue drawn back behind it, aimed at the apex.
+    cx, cy, cs = P(0, .54)
+    cr = 36 * cs
+    q.append(f'<ellipse cx="{f(cx + cr * .15)}" cy="{f(cy + cr * .82)}" rx="{f(cr * .9)}" ry="{f(cr * .26)}" fill="#000" opacity=".5"/>')
+    q.append(sphere(cx, cy, cr, "#f6f3ea", "rkcb", shade="#7f7b70", shadow=False, gloss=.8))
+    body = "".join(q)
+    out = src[:start] + body + src[end:]
+    # Cue: pulled back, its tip a hand's width from the cue ball.
+    a = out.index('<g filter="url(#dof)"><line')
+    b = out.index("</g>", a) + 4
+    out = out[:a] + f'<g filter="url(#dof)"><line x1="338" y1="640" x2="{f(cx + 2)}" y2="{f(cy + cr + 26)}" stroke="url(#bcue)" stroke-width="30" stroke-linecap="round"/></g>' + out[b:]
+    return out
+covers["billiards"] = billiards_rack()
 
 
 # ---------- Tower Drop: tall stack of containers, elevator module above ----------
@@ -1670,7 +1718,8 @@ def orb_v164():
     return src.replace(o, "")
 
 
-covers["orb-burst"] = orb_v164()
+# v178: the owner asked for the previous Orb Burst cover back (v162, with the loose orbs beside the cannon).
+covers["orb-burst"] = orb_v162()
 
 # ---------- v162: Mine Grid that reads as the game ----------
 # A real minesweeper position: the gold start cell has just been tapped and the field opens around it; every number
@@ -2175,7 +2224,7 @@ def framed(src, s, cx, cy, tx=320, ty=196, feather=30):
 
 covers["precision-stack"] = framed(covers["precision-stack"], .78, 330, 270)
 covers["stack-3d"] = covers["precision-stack"]
-covers["bowling"] = shifted(covers["bowling"], 46)  # v162: full width (the card's whole square), still lower
+covers["bowling"] = shifted(covers["bowling"], -24)  # v178: raised (it was 46 lower since v162) so the ball clears the card label
 covers["corner-sudoku"] = framed(covers["corner-sudoku"], .74, 322, 250)
 covers["tower-drop"] = framed(covers["tower-drop"], .74, 330, 250)
 covers["pinball"] = lowered(covers["pinball"], .82, dy=26)  # v156: a little lower again

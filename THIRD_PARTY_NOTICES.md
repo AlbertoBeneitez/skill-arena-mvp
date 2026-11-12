@@ -315,5 +315,14 @@ Uses the project's existing synthesized audio and shared orbital background.
 
 - **Package:** `assemblyscript` 0.28.20 — https://github.com/AssemblyScript/assemblyscript
 - **License:** Apache-2.0
-- **Use:** compiles the studio kit's example core (`studio-kit/core/index.ts` → `studio-kit/core.wasm`). It is not a
+- **Use:** compiled the format-1 studio kit's example core (`scripts/fixtures/studio/kit-format1/core/index.ts` → `core.wasm`, kept as a test fixture since v178). It is not a
   project dependency and nothing of it ships in the app except that compiled example module (stub runtime).
+
+## three.js (v178, render-time tool only)
+
+- **Package:** `three` 0.170.0 — https://github.com/mrdoob/three.js
+- **Copyright:** Copyright © 2010-2024 three.js authors
+- **License:** MIT
+- **Use:** renders the Stack Shift catalogue cover (`scripts/render-stackshift-cover.mjs`,
+  `scripts/stackshift-cover/entry.ts`) in headless Chromium, including `RoundedBoxGeometry` and `RoomEnvironment` from
+  its examples. It is not a project dependency; only the resulting image (`public/covers/stack-shift.webp`) ships.
