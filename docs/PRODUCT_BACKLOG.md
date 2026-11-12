@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v182-saturn · Arrastre en ordenador y portada de Orb Burst (12-nov-2026)
+
+- **Ordenador:** el ratón arrastra las filas horizontales.
+- **Orb Burst:** la portada muestra el cañón y dos filas de bolas separadas de él.
+
 ## v181-saturn · Grupo sin jugadores simulados (12-nov-2026)
 
 - El grupo empieza solo contigo; EMPEZAR exige otro jugador real.

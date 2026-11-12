@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v181-saturn.
+Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v182-saturn.
 
 ## Catálogo
 
@@ -86,6 +86,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Arrastre en ordenador y portada de Orb Burst (12 de noviembre, v182):** el ratón desliza las filas en el marco de ordenador; Orb Burst con cañón y dos filas.
 - [x] **Grupo sin simulados (12 de noviembre, v181):** sin NOVA, KAI ni RHEA; EMPEZAR necesita otro jugador real (pendiente: grupos reales en servidor); competiciones antiguas con simulados retiradas con devolución de la entrada.
 - [x] **Ranking sin «Ver ejemplo» (12 de noviembre, v180):** Avatar › Ranking sin el selector real/ejemplo.
 - [x] **Signo ₡ y dos plataformas (12 de noviembre, v179):** cosmicoin con signo ₡ (fuente `gg-coin.woff`); el ordenador ya no se bloquea: ve la misma app en un marco de móvil y compite solo contra ordenadores (partidas públicas por plataforma con la migración aditiva 006, grupos con código M/D, rankings por plataforma). Pendiente: aplicar la migración 006 en producción.

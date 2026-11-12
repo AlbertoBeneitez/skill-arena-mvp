@@ -236,7 +236,7 @@ const GAME_DEFINITIONS = [
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 6, allowedActions: ORB_ACTIONS },
     resultMetric: "orbs-eliminated",
     name: "Orb Burst",
-    cover: "/covers/orb-burst.webp?v=178",
+    cover: "/covers/orb-burst.webp?v=182",
     enabled: true,
     waitingStakes: [5, 50],
     category: "PUZZLE",

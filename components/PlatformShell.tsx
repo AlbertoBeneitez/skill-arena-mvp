@@ -8,6 +8,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import qrcode from "qrcode-generator";
 import { t, useI18n } from "@/lib/i18n";
 import { PLATFORM_PARAM, isFramed, isPhoneLikeDevice } from "@/lib/platform";
+import { installMouseDragScroll } from "./mouseDragScroll";
 
 function QrCode({ text }: { text: string }) {
   const qr = qrcode(0, "M");
@@ -27,6 +28,8 @@ export default function PlatformShell({ children }: { children: ReactNode }) {
   useI18n();
   const [frameSrc, setFrameSrc] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
+  // v182: inside the desktop frame the mouse drags horizontal strips, like a swipe on a phone.
+  useEffect(() => (isFramed() ? installMouseDragScroll() : undefined), []);
   useEffect(() => {
     if (isFramed()) return;
     const coarse = typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;

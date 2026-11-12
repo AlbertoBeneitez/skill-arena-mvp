@@ -1721,6 +1721,69 @@ def orb_v164():
 # v178: the owner asked for the previous Orb Burst cover back (v162, with the loose orbs beside the cannon).
 covers["orb-burst"] = orb_v162()
 
+
+def orb_v182():
+    """v182 · What the owner asked to see on the card: the cannon, whole, and two rows of orbs above it with clear
+    space between them — the game's opening position. Catalogue cards show the middle 440 × 440 and put the name over
+    the lower third, so everything sits in the upper two thirds of that square."""
+    d = ('<radialGradient id="o2bg" cx="50%" cy="18%" r="95%"><stop offset="0" stop-color="#1c1240"/><stop offset=".6" stop-color="#0a0a1c"/><stop offset="1" stop-color="#030308"/></radialGradient>'
+         '<linearGradient id="cnPlate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f7a98"/><stop offset=".45" stop-color="#1d3a54"/><stop offset="1" stop-color="#08121d"/></linearGradient>'
+         '<linearGradient id="cnTube" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4f7ff"/><stop offset=".28" stop-color="#7cc0da"/><stop offset=".62" stop-color="#22506e"/><stop offset="1" stop-color="#0a1a29"/></linearGradient>'
+         '<linearGradient id="cnMuzzle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#ff6f91"/><stop offset="1" stop-color="#3a0a18"/></linearGradient>'
+         '<radialGradient id="cnDome" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#b4e6f6"/><stop offset=".5" stop-color="#2a5878"/><stop offset="1" stop-color="#081626"/></radialGradient>')
+    p = ['<rect width="640" height="440" fill="url(#o2bg)"/>', stars(182, 70, 440), bokeh(19, ["#ff6f91", "#4fa8ff", "#ffd23f"], 8, 440, 18, 50, (.05, .14))]
+    cols = ["#4fa8ff", "#ff6f91", "#ffd23f", "#5cffb0", "#b98cff", "#ff9a3c"]
+    rr = random.Random(182)
+    R = 23
+    def orb_at(x, y, rad, c, idn):
+        return (f'<circle cx="{f(x + 2)}" cy="{f(y + 5)}" r="{f(rad)}" fill="#000" opacity=".35" filter="url(#dof)"/>'
+                + sphere(x, y, rad, c, idn, shadow=False, gloss=.75)
+                + f'<path d="M{f(x + rad * .2)},{f(y + rad * .96)} A{f(rad)},{f(rad)} 0 0 0 {f(x + rad * .96)},{f(y + rad * .2)}" fill="none" stroke="{c}" stroke-width="2" opacity=".9" filter="url(#glow)"/>')
+    # Two rows, hexagonally packed, across the whole width (the card's square shows the middle eight of them).
+    for row in range(2):
+        y = 38 + row * R * 1.73
+        for i in range(-1, 13):
+            x = 320 + (i - 6) * 2 * R + (R if row % 2 else 0)
+            p.append(orb_at(x, y, R - 1.2, rr.choice(cols), f"r{row}_{i}"))
+    # The cannon: plate, barrel aimed up at the rows, breech with the loaded orb; the next orb waits beside it.
+    cx, cy = 320, 214
+    tx, ty = 352, 118
+    ang = math.degrees(math.atan2(ty - cy, tx - cx))
+    sc = .7
+    c = [f'<defs>{d}</defs>', f'<g transform="translate({cx} {cy}) scale({sc}) translate({-cx} {-cy})">']
+    c.append(f'<ellipse cx="{cx}" cy="{cy + 52}" rx="168" ry="50" fill="#000" opacity=".45" filter="url(#soft)"/>')
+    c.append(f'<ellipse cx="{cx}" cy="{cy + 40}" rx="150" ry="44" fill="url(#cnPlate)" stroke="#9fe3f6" stroke-width="3"/>')
+    c.append(f'<path d="M{cx - 132},{cy + 34} A132,34 0 0 1 {cx + 132},{cy + 34}" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="2"/>')
+    c.append(f'<ellipse cx="{cx}" cy="{cy + 34}" rx="96" ry="26" fill="none" stroke="#ff6f91" stroke-width="3" opacity=".85" filter="url(#glow)"/>')
+    for k in range(12):
+        a = k * 2 * math.pi / 12 + .26
+        bx, by = cx + 128 * math.cos(a), cy + 40 + 36 * math.sin(a)
+        c.append(f'<circle cx="{f(bx)}" cy="{f(by)}" r="4.2" fill="#a9cede" stroke="#0a1622" stroke-width="1.4"/><circle cx="{f(bx - 1)}" cy="{f(by - 1.2)}" r="1.4" fill="#fff" opacity=".7"/>')
+    c.append(f'<g transform="translate({cx} {cy}) rotate({ang:.2f})" filter="url(#shadow)">'
+             '<polygon points="20,-30 118,-21 118,21 20,30" fill="url(#cnTube)" stroke="#06111c" stroke-width="3"/>'
+             + "".join(f'<line x1="{x0}" y1="{-28 + (x0 - 20) * .09:.1f}" x2="{x0}" y2="{28 - (x0 - 20) * .09:.1f}" stroke="#06111c" stroke-opacity=".75" stroke-width="3.2"/>' for x0 in (52, 64, 76))
+             + '<rect x="28" y="-25" width="84" height="5" rx="2.5" fill="#ffffff" opacity=".55"/>'
+             '<rect x="112" y="-26" width="18" height="52" rx="6" fill="url(#cnMuzzle)" stroke="#06111c" stroke-width="2.6"/>'
+             '<rect x="114" y="-24" width="4" height="48" rx="2" fill="#fff" opacity=".5"/>'
+             '<ellipse cx="131" cy="0" rx="5" ry="20" fill="#ff6f91" opacity=".55" filter="url(#glow)"/></g>')
+    c.append(f'<circle cx="{cx}" cy="{cy}" r="54" fill="url(#cnDome)" stroke="#bdf0ff" stroke-width="3"/>')
+    c.append(f'<circle cx="{cx}" cy="{cy}" r="45" fill="none" stroke="#06111c" stroke-width="4"/>')
+    c.append(f'<path d="M{cx - 44},{cy - 18} A48,48 0 0 1 {cx + 10},{cy - 47}" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>')
+    c.append(f'<circle cx="{cx}" cy="{cy}" r="46" fill="#ff6f91" opacity=".22" filter="url(#bigglow)"/>')
+    c.append(sphere(cx, cy, 36, "#ff6f91", "shot", shadow=False, gloss=.8))
+    c.append(f'<g opacity=".9">{sphere(cx + 150, cy + 30, 20, "#5cffb0", "nextshot", shadow=False)}</g>')
+    c.append('</g>')
+    # The aim: a dotted line from the muzzle into the gap under the rows, fading out before it reaches them.
+    mx, my = cx + 135 * sc * math.cos(math.radians(ang)), cy + 135 * sc * math.sin(math.radians(ang))
+    for q in range(1, 6):
+        t = q / 6
+        x, y = mx + (tx - mx) * t, my + (ty - my) * t
+        c.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(4 - t * 1.8)}" fill="#e9fbff" opacity="{.9 - t * .55:.2f}" filter="url(#glow)"/>')
+    return svg("".join(p) + "".join(c), extra_defs="")
+
+
+covers["orb-burst"] = orb_v182()
+
 # ---------- v162: Mine Grid that reads as the game ----------
 # A real minesweeper position: the gold start cell has just been tapped and the field opens around it; every number
 # counts the mines around it, and the flags stand exactly on mines that those numbers prove. Graphite tiles and neon
