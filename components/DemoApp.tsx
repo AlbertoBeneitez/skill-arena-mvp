@@ -21,7 +21,8 @@ import GroupHub from "./GroupHub";
 import WalletPanel from "./WalletPanel";
 import StudioWelcome from "./StudioWelcome";
 import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
-import { createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
+import { DEMO_MEMBERS, createDemoClosedGroup, joinDemoClosedGroup, type ClosedGroup } from "@/lib/groupPlay";
+import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
 import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
 import type { GameResult } from "@/lib/types";
@@ -40,7 +41,7 @@ import LeagueResult from "./LeagueResult";
 import RankingHub from "./GameRanking";
 import { PORTRAIT_COUNT, portraitCrop, portraitSrc } from "@/lib/avatars";
 import PlayerProgress from "./PlayerProgress";
-import { emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
+import { RIVALS, emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import dynamic from "next/dynamic";
 // v153: the studio proposal form loads only when the catalogue tab opens it.
 const GameProposal = dynamic(() => import("./GameProposal"), { ssr: false });
@@ -112,16 +113,23 @@ function movementLabel(movement: Movement) {
 
 const BLOCKED_DEMO_NAMES = new Set(["admin", "skillarena", "skill_arena", "soporte", "support"]);
 
-/** Taken: a reserved (or, later, server-registered) name; the format rule is reported separately. */
+const foldName = (value: string) => value.trim().normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+/** v178: names other players already use — the sample ranking players, the simulated group members, the league and
+ * game rivals — count as taken, like the reserved ones (a server registry replaces this when identity is real). */
+const TAKEN_NAMES = new Set([
+  ...BLOCKED_DEMO_NAMES, ...SAMPLE_RANKING_NAMES, ...DEMO_MEMBERS.map((m) => m.name), ...RIVALS.flat(), ...GAMES.map((g) => g.rivalName),
+].map(foldName));
+
+/** Taken: a reserved name or one another player uses; the format rule is reported separately. */
 function isDemoNameTaken(value: string) {
-  return BLOCKED_DEMO_NAMES.has(value.trim().toLowerCase());
+  return TAKEN_NAMES.has(foldName(value));
 }
 
 function isDemoNameAvailable(value: string) {
   const clean = value.trim();
   // Any script (Latin, Cyrillic, Arabic, Devanagari, Han…): names stay local to this browser.
   if (!/^[\p{L}\p{M}\p{N}_ ]{2,18}$/u.test(clean) || /\s{2,}/.test(clean)) return false;
-  return !BLOCKED_DEMO_NAMES.has(clean.toLowerCase());
+  return !isDemoNameTaken(clean);
 }
 
 async function compactAvatarSource(source: string) {
@@ -1719,7 +1727,8 @@ export default function DemoApp() {
               <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>{t("profile.tabRanking")}</button>
             </nav>
             {avatarSection === "ranking" ? <RankingHub bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
-            <div className="profileStrip"><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div></div>
+            {/* v178: the profile card itself edits the name and avatar (the separate rows are gone). */}
+            <button type="button" className="profileStrip" onClick={editProfile} aria-label={`${playerName} · ${t("profile.editProfile")}`}><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div><span className="profileEdit" aria-hidden="true"><UiIcon name="pencil" size={16} /></span></button>
 
             <div className="chartPanel">
               <div className="chartHead"><span>{t("profile.netProfit")}</span><strong dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>
@@ -1740,11 +1749,6 @@ export default function DemoApp() {
             <PlayerProgress leagues={persistentTraining ? undefined : leagues} bestScores={bestScores} onPlay={startMatch} />
 
             {persistentTraining && <RecentAttempts />}
-            <div className="settingsList">
-              <button onClick={() => navigate("settings")}><span>{t("profile.settings")}</span><b aria-hidden="true" className="dirArrow">→</b></button>
-              <button onClick={editProfile}><span>{t("profile.editProfile")}</span><b aria-hidden="true" className="dirArrow">→</b></button>
-              <button onClick={logoutDemo}><span>{t("profile.logout")}</span><b aria-hidden="true">×</b></button>
-            </div>
             </>}
           </section>
         )}

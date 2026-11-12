@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v177-saturn.
+Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v178-saturn.
 
 ## Catálogo
 
@@ -86,6 +86,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Portadas, formato 2 de estudios, Avatar, ranking y cartera (12 de noviembre, v178):** portadas de Billar (triángulo), Bowling, Orb Burst (v162) y Stack Shift (3D realista); paquetes de estudio en formato 2 (TypeScript como la app, imagen de presentación obligatoria, integración como versión); perfil sin filas de ajustes y edición desde la ficha; ranking con selector Global y buscador de juegos; cartera con aspecto de Grupo, cantidad en € y retirada hacia un proveedor de pago aún no conectado (solo saldo ficticio).
 - [x] **Medallas y ajustes de Grupo (12 de noviembre, v177):** × arriba a la derecha y números arriba a la izquierda; medallas de oro, plata y bronce en el reparto; INGRESAR en pistacho.
 - [x] **Modalidades de liga sin explicaciones (11 de noviembre, v176):** «Todos contra todos» y «Duelos 1 vs 1» solo con su nombre.
 - [x] **Aleatorio como juego y ajustes (11 de noviembre, v175):** Aleatorio repetible y sorteado al empezar su ronda (`RANDOM_GAME`/`randomPool`); × por juego elegido; premios solo con premio y comisión; «Rondas eliminatorias»; textos nuevos de Enviar juego; portada de Mine Grid hasta arriba; gráfica del perfil bajo la ficha; sin esquinas decorativas en Grupo y Avatar.

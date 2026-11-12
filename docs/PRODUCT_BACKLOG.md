@@ -882,6 +882,23 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v178-saturn · Portadas, formato de juego de la app, Avatar simple, ranking con buscador y cartera (12-nov-2026)
+
+- **Portadas:** Billar con el triángulo inicial; Bowling más arriba; Orb Burst vuelve a la anterior; Stack Shift
+  realista en 3D.
+- **Enviar juego:**
+  - formato 2 en TypeScript, como los juegos de la app, con imagen de presentación obligatoria;
+  - kit con check, preview y zip;
+  - se integra como versión;
+  - botón «ENVIAR JUEGO».
+- **Avatar:** sin Ajustes, Nombre y avatar ni Cerrar sesión en el perfil; la ficha edita nombre y avatar, sin
+  nombres cogidos.
+- **Ranking:** selector «Global» con buscador de juegos (populares por defecto).
+- **Cartera:** aspecto de Grupo, cantidad en €, RETIRAR en ámbar hacia el proveedor de pago (preparado, sin
+  conectar).
+- **Pendiente:** conectar un proveedor de pago real (requiere decisión del propietario, contrato, claves y
+  cumplimiento).
+
 ## v177-saturn · × arriba a la derecha, medallas e INGRESAR pistacho (12-nov-2026)
 
 - **Grupo:** × arriba a la derecha y números arriba a la izquierda; medallas en el reparto del bote.

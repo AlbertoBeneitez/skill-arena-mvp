@@ -1,19 +1,19 @@
 "use client";
-import { useMemo, useState } from "react";
-import { GAMES, bestScoreKey, compareScores, type GameMeta } from "@/lib/games";
+import { useId, useMemo, useState } from "react";
+import { GAMES, POPULAR_COUNT, bestScoreKey, compareScores, type GameMeta } from "@/lib/games";
 import { formatNumber, t, useI18n, type MessageKey } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { createRng } from "@/lib/deterministic/seeded";
 import { emptyLeague, leagueRival, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import GlobalRanking from "./GlobalRanking";
 import { portraitSrc } from "@/lib/avatars";
+import UiIcon from "./UiIcon";
+import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
+import rp from "./RankingPicker.module.css";
 
 type Row = { id: string; name: string; avatar: string; score: number; tier: LeagueTier; you?: boolean };
 
-const NAMES = [
-  "Kairo", "Mika", "Zane", "Ayla", "Dario", "Noor", "Ilya", "Sora", "Teo", "Yara", "Lev", "Nadia", "Omar", "Priya",
-  "Ren", "Sven", "Tala", "Uma", "Vik", "Wen", "Xio", "Yusuf", "Zoe", "Aiko", "Bruno", "Chloé", "Dev", "Elif", "Farah", "Gael",
-];
+const NAMES = SAMPLE_RANKING_NAMES;
 
 /** Sample leaderboard per game (datos de ejemplo): deterministic, spread over the five league tiers. */
 function sampleRows(game: GameMeta): Row[] {
@@ -83,26 +83,78 @@ export function GameRanking({ game, best, league, playerName, avatarSrc }: { gam
   );
 }
 
-/** Ranking screen: the global net-profit ranking and one leaderboard per game. */
+const fold = (v: string) => v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
+/**
+ * v178 · One picker instead of two tabs: it reads «Global» until a game is chosen. Tapping it opens a search; before
+ * anything is typed it lists the most popular games (the catalogue's popularity order), and typing finds any game.
+ */
+function RankingPicker({ value, onChange }: { value: string; onChange(id: string): void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState(0);
+  const listId = useId();
+  const q = fold(query.trim());
+  const options = [
+    ...(!q || fold(t("ranking.tabGlobal")).includes(q) ? [{ id: "global", label: t("ranking.tabGlobal") }] : []),
+    ...(q ? GAMES.filter((g) => fold(gameName(g)).includes(q)) : GAMES.slice(0, POPULAR_COUNT)).map((g) => ({ id: g.id, label: gameName(g) })),
+  ];
+  const current = value === "global" ? t("ranking.tabGlobal") : gameName(GAMES.find((g) => g.id === value) ?? GAMES[0]);
+  const close = () => { setOpen(false); setQuery(""); setActive(0); };
+  const pick = (id: string) => { onChange(id); close(); };
+  return (
+    <div className={rp.picker}>
+      {!open ? (
+        <button type="button" className={rp.field} aria-haspopup="listbox" aria-expanded={false} onClick={() => setOpen(true)}>
+          <span>{current}</span>
+          <UiIcon name="chevronDown" size={18} />
+        </button>
+      ) : (
+        <div className={rp.open}>
+          <label className={rp.search}>
+            <UiIcon name="search" size={18} />
+            <input
+              autoFocus type="search" value={query} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")}
+              role="combobox" aria-expanded="true" aria-controls={listId} aria-activedescendant={options[active] ? `${listId}-${options[active].id}` : undefined}
+              onChange={(e) => { setQuery(e.target.value); setActive(0); }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") close();
+                else if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => Math.min(options.length - 1, i + 1)); }
+                else if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(0, i - 1)); }
+                else if (e.key === "Enter" && options[active]) { e.preventDefault(); pick(options[active].id); }
+              }}
+            />
+            <button type="button" className={rp.close} aria-label={t("common.close")} onClick={close}><UiIcon name="close" size={16} /></button>
+          </label>
+          {!q && <p className={rp.hint}>{t("ranking.popular")}</p>}
+          <ul id={listId} role="listbox" aria-label={t("ranking.title")} className={rp.list}>
+            {options.map((o, i) => (
+              <li key={o.id} id={`${listId}-${o.id}`} role="option" aria-selected={o.id === value} data-active={i === active || undefined}
+                onPointerDown={(e) => e.preventDefault()} onClick={() => pick(o.id)}>
+                {o.id === "global" ? <span className={rp.globe}><UiIcon name="globe" size={18} /></span>
+                  : <img src={GAMES.find((g) => g.id === o.id)?.cover} alt="" width={32} height={32} loading="lazy" />}
+                <span>{o.label}</span>
+                {o.id === value && <UiIcon name="check" size={16} />}
+              </li>
+            ))}
+            {!options.length && <li className={rp.none}>{t("group.noGamesFound")}</li>}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Ranking screen: one picker — the global net-profit ranking by default, or one game's leaderboard. */
 export default function RankingHub({ bestScores, leagues, playerName, avatarSrc, showLeagues }: { bestScores: Record<string, number>; leagues: LeagueState; playerName: string; avatarSrc: string; showLeagues: boolean }) {
   useI18n();
-  const [view, setView] = useState<"global" | "game">("game");
-  const [gameId, setGameId] = useState<string>(GAMES[0].id);
-  const game = GAMES.find((g) => g.id === gameId) ?? GAMES[0];
+  const [view, setView] = useState<string>("global");
+  const game = GAMES.find((g) => g.id === view);
   return (
     <div className="rankingHub">
-      <div className="rankingViewTabs" role="tablist" aria-label={t("ranking.title")}>
-        <button type="button" role="tab" aria-selected={view === "game"} onClick={() => setView("game")}>{t("ranking.tabGame")}</button>
-        <button type="button" role="tab" aria-selected={view === "global"} onClick={() => setView("global")}>{t("ranking.tabGlobal")}</button>
-      </div>
-      {view === "global" ? <GlobalRanking embedded /> : (
+      <RankingPicker value={view} onChange={setView} />
+      {!game ? <GlobalRanking embedded /> : (
         <>
-          <label className="gameRankingPick">
-            <span>{t("ranking.gamePick")}</span>
-            <select value={game.id} onChange={(e) => setGameId(e.target.value)}>
-              {GAMES.map((g) => <option key={g.id} value={g.id}>{gameName(g)}</option>)}
-            </select>
-          </label>
           <GameRanking game={game} best={bestScores[bestScoreKey(game)]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
           <p className="rankingNote">{t("ranking.gameNote")}</p>
         </>

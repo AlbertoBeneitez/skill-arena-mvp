@@ -16,7 +16,7 @@ export type ClosedGroup = {
   image?: string;
 };
 
-const DEMO_MEMBERS: Omit<GroupMember, "id">[] = [
+export const DEMO_MEMBERS: Omit<GroupMember, "id">[] = [
   {
     name: "NOVA",
     avatar: "/avatars/avatar-2.svg",

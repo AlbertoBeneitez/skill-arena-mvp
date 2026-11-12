@@ -50,7 +50,7 @@ const FACTORS = [0.45, 0.65, 0.85, 1, 1.2] as const;
 /** Balance games start with 100 chips (10 000 minor units): the goal is the closing balance. */
 const BALANCE_GOALS = [10000, 11000, 12500, 15000, 20000] as const;
 
-const RIVALS = [
+export const RIVALS = [
   ["COMET", "PIXEL", "NUBE", "ROCKY", "LUNA", "ZIGGY"],
   ["ORION", "VEGA", "SATU", "NIX", "KORA", "BLITZ"],
   ["NOVA", "ATLAS", "LYRA", "RIGEL", "SOL", "IRIS"],

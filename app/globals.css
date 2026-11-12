@@ -7447,11 +7447,6 @@ html[dir="rtl"] .appHeader .logoButton { text-align: right; }
 html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: none; }
 
 .rankingHub { display: grid; gap: 12px; }
-.rankingViewTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: 14px; background: rgba(9,9,11,.6); border: 1px solid rgba(127,227,238,.18); }
-.rankingViewTabs button { min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #a9b9d6; font-weight: 800; font-size: 13px; }
-.rankingViewTabs button[aria-selected="true"] { background: linear-gradient(135deg, #2a4f86, #29292d); color: #fff; box-shadow: 0 0 0 1px rgba(127,227,238,.35) inset; }
-.gameRankingPick { display: flex; align-items: center; gap: 10px; color: #a9b9d6; font-size: 13px; font-weight: 700; }
-.gameRankingPick select { flex: 1; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(127,227,238,.35); background: #161618; color: #fff; font-size: 15px; font-weight: 800; }
 .gameRanking { display: grid; gap: 12px; }
 .gameRankingYou { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: linear-gradient(135deg, rgba(30,30,32,.95), rgba(17,17,19,.95)); border: 1px solid color-mix(in srgb, var(--tier) 60%, transparent); }
 .gameRankingYou img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--tier); }
@@ -9121,18 +9116,15 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 
 /* Tabs: a dark track; the chosen tab is the foil. */
 .appShell .avatarScreen .avatarSections { border-bottom-color: var(--av-line) !important; }
-.appShell .avatarScreen .avatarSections button,
-.appShell .avatarScreen .rankingViewTabs button {
+.appShell .avatarScreen .avatarSections button {
   background: linear-gradient(180deg, #11100e, #0a0a09) !important; border: 1px solid var(--av-line) !important; color: var(--av-mute) !important;
   box-shadow: inset 0 1px 0 rgba(255,246,220,.04) !important;
 }
-.appShell .avatarScreen .avatarSections button[aria-pressed="true"],
-.appShell .avatarScreen .rankingViewTabs button[aria-selected="true"] {
+.appShell .avatarScreen .avatarSections button[aria-pressed="true"] {
   position: relative; overflow: hidden; border-color: transparent !important; color: var(--av-gold-ink) !important; background: var(--av-foil) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(90,58,12,.35), 0 10px 22px -12px rgba(233,198,126,.75) !important;
   text-shadow: 0 1px 0 rgba(255,244,210,.45);
 }
-.appShell .avatarScreen .rankingViewTabs { background: #0a0a09 !important; border: 1px solid var(--av-line) !important; }
 
 /* Identity strip: the avatar in a foil ring, the net result in foil (red when negative). */
 .appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0e0d0c, 0 0 0 3.5px var(--av-gold), 0 8px 18px -8px rgba(233,198,126,.6) !important; }
@@ -9188,8 +9180,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen .settingsList button b { color: var(--av-gold) !important; }
 
 /* Ranking sub-tab. */
-.appShell .avatarScreen .gameRankingPick { color: var(--av-mute) !important; }
-.appShell .avatarScreen .gameRankingPick select { background: linear-gradient(180deg, #0b0b0a, #080807) !important; border-color: var(--av-line-2) !important; color: var(--av-ink) !important; }
 .appShell .avatarScreen .gameRankingYou img { box-shadow: 0 0 0 2px #0e0d0c, 0 0 0 3.5px var(--av-gold); }
 .appShell .avatarScreen .gameRankingYou strong { color: var(--av-gold-hi) !important; }
 .appShell .avatarScreen .rankingTable th { color: var(--av-gold-hi) !important; }
@@ -9228,9 +9218,9 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 34px -22px rgba(0,0,0,.95) !important;
 }
 .appShell .avatarScreen > h1::after { background: var(--av-accent); }
-.appShell .avatarScreen .avatarSections, .appShell .avatarScreen .rankingViewTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 !important; padding: 3px !important; border-radius: 10px !important; background: #08090a !important; border: 1px solid var(--av-line-2) !important; }
-.appShell .avatarScreen :is(.avatarSections button, .rankingViewTabs button) { border-radius: 7px !important; background: transparent !important; border: 0 !important; color: var(--av-mute) !important; box-shadow: none !important; text-shadow: none; }
-.appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"], .rankingViewTabs button[aria-selected="true"]) { background: #e9f9ff !important; color: #071318 !important; box-shadow: 0 2px 8px rgba(0,0,0,.5) !important; }
+.appShell .avatarScreen .avatarSections { display: grid; grid-template-columns: 1fr 1fr; gap: 0 !important; padding: 3px !important; border-radius: 10px !important; background: #08090a !important; border: 1px solid var(--av-line-2) !important; }
+.appShell .avatarScreen :is(.avatarSections button) { border-radius: 7px !important; background: transparent !important; border: 0 !important; color: var(--av-mute) !important; box-shadow: none !important; text-shadow: none; }
+.appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"]) { background: #e9f9ff !important; color: #071318 !important; box-shadow: 0 2px 8px rgba(0,0,0,.5) !important; }
 .appShell .avatarScreen .profileStrip img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice) !important; }
 .appShell .avatarScreen .profileStats > div::before { display: none; }
 .appShell .avatarScreen :is(.profileStats b, .playerProgress .progressMark b, .profileStrip .profileNet b:not(.negative)) { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
@@ -9241,7 +9231,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen .earningsChart { background: repeating-linear-gradient(180deg, transparent 0 24px, rgba(255,255,255,.04) 24px 25px); }
 .appShell .avatarScreen :is(.chartHead span, .accountWalletCard small) { color: var(--av-ice) !important; }
 .appShell .avatarScreen .settingsList button b { color: var(--av-ice) !important; }
-.appShell .avatarScreen .gameRankingPick select { border-radius: 8px !important; background: #08090a !important; border-color: var(--av-line-2) !important; }
 .appShell .avatarScreen .gameRankingYou img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice); }
 .appShell .avatarScreen :is(.gameRankingYou strong, .rankingTable th, .rankingTable td:first-child) { color: var(--av-ice) !important; }
 .appShell .avatarScreen .rankingTable tr.you td { background: rgba(159,230,255,.07) !important; }
@@ -9264,4 +9253,13 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .studioInfo {
   margin: -4px 0 4px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(233, 198, 126, .25);
   background: rgba(233, 198, 126, .06); color: #e9e4da; font-size: 13px; line-height: 1.5;
+}
+
+/* v178 · Avatar › Perfil: the profile card is the button that edits name and avatar (Ajustes lives in the header gear). */
+.appShell .avatarScreen button.profileStrip { grid-template-columns: 52px minmax(0, 1fr) auto !important; width: 100%; font: inherit; text-align: start; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.appShell .avatarScreen button.profileStrip:active { transform: translateY(1px); }
+.appShell .avatarScreen button.profileStrip:focus-visible { outline: 2px solid var(--av-accent, #d2df3a); outline-offset: 2px; }
+.appShell .avatarScreen .profileStrip .profileEdit {
+  align-self: center; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid var(--av-line-2, rgba(255,255,255,.16)); color: var(--av-accent, #d2df3a) !important;
 }
