@@ -1,0 +1,57 @@
+name: Copia de la base de datos
+
+# v185 · Daily encrypted copy of the Neon database, kept 30 days as a workflow artifact.
+# Needs two repository secrets, set by the owner (GitHub › Settings › Secrets and variables › Actions):
+#   BACKUP_DATABASE_URL  connection string copied from Neon › Connect (never pasted anywhere else)
+#   BACKUP_PASSPHRASE    long passphrase the owner keeps safe; without it the copies cannot be opened
+# The repository is public, so the copy is encrypted before upload and nothing secret is printed.
+# Scheduled runs only start from the default branch (main).
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$BACKUP_DATABASE_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::warning::Copias sin configurar: faltan los secretos BACKUP_DATABASE_URL o BACKUP_PASSPHRASE."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Checkout
+        if: steps.config.outputs.ready == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Dump, check and encrypt
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          docker pull -q postgres:18 > /dev/null
+          PG_DUMP="docker run --rm -i postgres:18 pg_dump" \
+          PG_RESTORE="docker run --rm -i postgres:18 pg_restore" \
+          OUT="galactic-games-$(date -u +%Y%m%d-%H%M).dump.enc" \
+          scripts/db-backup.sh
+      - name: Keep the encrypted copy (30 days)
+        if: steps.config.outputs.ready == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: galactic-games-db-${{ github.run_id }}
+          path: galactic-games-*.dump.enc
+          retention-days: 30
+          if-no-files-found: error

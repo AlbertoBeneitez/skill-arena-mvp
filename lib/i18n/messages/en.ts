@@ -824,6 +824,8 @@ const messages: Messages = {
   "studio.sending": "Sending…",
   "studio.sent": "Received (reference {id}). It passed the checks; we will write to you after playing it.",
   "studio.notOpen": "Your game passes the checks, but submissions are not open yet. Send it again later.",
+  "studio.busy": "We've received a lot of games today. Please send yours again tomorrow.",
+  "studio.duplicate": "We already have this exact file. If you've changed the game, upload the new version.",
   "studio.invalid": "Check: {field}",
   "studio.failed": "It could not be sent. Try again.",
   "studio.inbox": "Inbox ({n})",

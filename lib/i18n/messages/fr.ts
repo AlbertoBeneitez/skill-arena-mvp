@@ -824,6 +824,8 @@ const messages: Messages = {
   "studio.sending": "Envoi…",
   "studio.sent": "Reçu (référence {id}). Il a passé les vérifications ; nous vous écrirons après l'avoir essayé.",
   "studio.notOpen": "Votre jeu passe les vérifications, mais les envois ne sont pas encore ouverts. Renvoyez-le plus tard.",
+  "studio.busy": "Nous avons déjà reçu beaucoup de jeux aujourd'hui. Renvoyez le vôtre demain.",
+  "studio.duplicate": "Nous avons déjà ce fichier. Si vous avez modifié le jeu, envoyez la nouvelle version.",
   "studio.invalid": "Vérifiez : {field}",
   "studio.failed": "Envoi impossible. Réessayez.",
   "studio.inbox": "Boîte ({n})",

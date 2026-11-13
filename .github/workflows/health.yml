@@ -1,0 +1,43 @@
+name: Salud de la app
+
+# v185 · Every 3 hours asks /api/health whether the app answers and reaches the database. A failed run makes
+# GitHub e-mail the owner. Every 3 hours (not hourly) because each check wakes the free Neon compute for ~5 minutes.
+# Configure in GitHub › Settings › Secrets and variables › Actions:
+#   variable HEALTH_URL           e.g. https://<production domain>/api/health
+#   secret   VERCEL_BYPASS_TOKEN  only while the site is behind Vercel login (Vercel › Deployment Protection ›
+#                                 Protection Bypass for Automation)
+# Scheduled runs only start from the default branch (main).
+
+on:
+  schedule:
+    - cron: "41 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HEALTH_URL: ${{ vars.HEALTH_URL }}
+      BYPASS: ${{ secrets.VERCEL_BYPASS_TOKEN }}
+    steps:
+      - name: Ask the app
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "::warning::Comprobación sin configurar: falta la variable HEALTH_URL."
+            exit 0
+          fi
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o body.json -w '%{http_code}' --max-time 20 ${BYPASS:+-H "x-vercel-protection-bypass: $BYPASS"} "$HEALTH_URL" || echo 000)
+            if [ "$code" = "200" ] && grep -q '"ok":true' body.json; then
+              echo "ok: $(cat body.json)"
+              exit 0
+            fi
+            echo "intento $attempt: HTTP $code"
+            sleep 30
+          done
+          echo "::error::La app no responde bien (HTTP $code). Revisa Vercel › Logs y Neon."
+          exit 1

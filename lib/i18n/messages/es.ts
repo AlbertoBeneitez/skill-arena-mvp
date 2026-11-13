@@ -862,6 +862,8 @@ const es = {
   "studio.sending": "Enviando…",
   "studio.sent": "Recibido (referencia {id}). Ha pasado las comprobaciones; te escribiremos tras probarlo.",
   "studio.notOpen": "Tu juego pasa las comprobaciones, pero la recepción aún no está abierta. Vuelve a enviarlo más adelante.",
+  "studio.busy": "Hoy ya hemos recibido muchos juegos. Vuelve a enviarlo mañana.",
+  "studio.duplicate": "Este mismo archivo ya nos llegó. Si has cambiado el juego, sube la versión nueva.",
   "studio.invalid": "Revisa: {field}",
   "studio.failed": "No se ha podido enviar. Inténtalo de nuevo.",
   "studio.inbox": "Bandeja ({n})",

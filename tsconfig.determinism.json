@@ -17,6 +17,7 @@
     "scripts/verify-match-contracts.ts",
     "scripts/verify-scenarios.ts",
     "scripts/verify-match-repository.ts",
+    "scripts/verify-studio-quotas.ts",
     "scripts/verify-submission-lifecycle.ts",
     "scripts/verify-attempt-records.ts",
     "scripts/verify-production-gates.ts",

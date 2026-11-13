@@ -1,7 +1,7 @@
 import { checkSubmission } from "@/lib/studioProposal";
 import { PACKAGE_LIMITS } from "@/lib/studio/package";
 import { checkPackage } from "@/lib/server/studioPackageCheck";
-import { REVIEW_STATUSES, deleteProposal, isStudioOwner, listSubmissions, proposalsOpen, readPackage, saveSubmission, setReviewStatus, type ReviewStatus } from "@/lib/server/studioProposals";
+import { REVIEW_STATUSES, deleteProposal, isStudioOwner, listSubmissions, proposalsOpen, readPackage, saveSubmission, setReviewStatus, StudioQuotaError, type ReviewStatus } from "@/lib/server/studioProposals";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,7 +38,11 @@ export async function POST(req: Request) {
   if (!report.ok || !unpacked.manifest) return json({ error: "CHECKS_FAILED", report }, 422);
   if (!proposalsOpen()) return json({ error: "PROPOSALS_NOT_OPEN", report }, 503);
   try { return json({ id: await saveSubmission(check.value, unpacked.manifest, report, bytes), report }, 201); }
-  catch { return json({ error: "STORAGE_FAILED", report }, 503); }
+  catch (error) {
+    if (error instanceof StudioQuotaError)
+      return json({ error: error.reason === "DUPLICATE" ? "DUPLICATE_PACKAGE" : "STUDIO_BUSY", report }, error.reason === "DUPLICATE" ? 409 : 429);
+    return json({ error: "STORAGE_FAILED", report }, 503);
+  }
 }
 
 /** The owner's inbox, or (?id=) one package to download. Anyone else gets 404, so the inbox's existence is not revealed. */

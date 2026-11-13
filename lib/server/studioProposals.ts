@@ -5,6 +5,7 @@
  * (db/migrations/004 and 005); without DATABASE_URL submissions are checked but never stored.
  */
 import { createHash, randomUUID } from "node:crypto";
+import type { Pool } from "pg";
 import { getProductionPostgresPool } from "./postgresPool";
 import { SESSION_COOKIE, authSecret, decodeSession, readCookie } from "./authSession";
 import type { Submission } from "@/lib/studioProposal";
@@ -25,15 +26,48 @@ export function isStudioOwner(req: Request, env: Record<string, string | undefin
   return !!s && owners.includes(`${s.p}:${s.sub}`);
 }
 
-export async function saveSubmission(s: Submission, manifest: Manifest, report: Report, pkg: Uint8Array): Promise<string> {
+/**
+ * v185 · Limits so an open upload form cannot fill the database: per day across everyone, total package bytes kept,
+ * and the same package twice. Checked and inserted under one transaction-scoped lock, so parallel uploads cannot
+ * slip past a limit together. Nothing about the sender (no IP) is stored to enforce them.
+ */
+export const STUDIO_LIMITS = { perDay: 20, storedBytes: 200 * 1024 * 1024 } as const;
+const STUDIO_LOCK = 19462815;
+export class StudioQuotaError extends Error {
+  constructor(readonly reason: "DAILY" | "STORAGE" | "DUPLICATE") { super(`STUDIO_QUOTA_${reason}`); }
+}
+
+export async function saveSubmission(s: Submission, manifest: Manifest, report: Report, pkg: Uint8Array, pool: Pool = getProductionPostgresPool(), limits: { perDay: number; storedBytes: number } = STUDIO_LIMITS): Promise<string> {
   const id = randomUUID();
   const sha = createHash("sha256").update(pkg).digest("hex");
-  await getProductionPostgresPool().query(
-    `INSERT INTO studio_game_proposals(proposal_id,studio,contact,game,shelf,summary,link,consent_version,package,package_sha256,manifest,report,terms_version)
-     VALUES($1,$2,$3,$4,$5,$6,NULL,$7,$8,$9,$10,$11,$12)`,
-    [id, s.studio, s.contact, manifest.name, manifest.shelf, manifest.description, s.consent, Buffer.from(pkg), sha, JSON.stringify(manifest), JSON.stringify(report), s.terms],
-  );
-  return id;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock($1)", [STUDIO_LOCK]);
+    const { rows } = await client.query(
+      `SELECT count(*) FILTER (WHERE created_at > now() - interval '1 day')::int AS today,
+              COALESCE(sum(octet_length(package)),0)::bigint AS bytes,
+              bool_or(package_sha256 = $1) AS duplicate
+         FROM studio_game_proposals`,
+      [sha],
+    );
+    const usage = rows[0];
+    if (usage.duplicate) throw new StudioQuotaError("DUPLICATE");
+    if (usage.today >= limits.perDay) throw new StudioQuotaError("DAILY");
+    if (Number(usage.bytes) + pkg.length > limits.storedBytes) throw new StudioQuotaError("STORAGE");
+    await client.query(
+      `INSERT INTO studio_game_proposals(proposal_id,studio,contact,game,shelf,summary,link,consent_version,package,package_sha256,manifest,report,terms_version)
+       VALUES($1,$2,$3,$4,$5,$6,NULL,$7,$8,$9,$10,$11,$12)`,
+      [id, s.studio, s.contact, manifest.name, manifest.shelf, manifest.description, s.consent, Buffer.from(pkg), sha, JSON.stringify(manifest), JSON.stringify(report), s.terms],
+    );
+    await client.query("COMMIT");
+    return id;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function listSubmissions(): Promise<StoredSubmission[]> {

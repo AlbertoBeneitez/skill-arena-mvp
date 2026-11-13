@@ -9,6 +9,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-ranking-repository.js");
   await import("../.det-test/scripts/verify-command-repository.js");
   await import("../.det-test/scripts/verify-persisted-hidden-training.js");
+  await import("../.det-test/scripts/verify-studio-quotas.js");
 } else {
   await import("../.det-test/scripts/verify-interactions-v96.js");
   await import("../.det-test/scripts/verify-auth-session.js");

@@ -824,6 +824,8 @@ const messages: Messages = {
   "studio.sending": "正在发送…",
   "studio.sent": "已收到（编号 {id}）。已通过检查；试玩后我们会给你写信。",
   "studio.notOpen": "游戏已通过检查，但暂未开放提交。请稍后再发送。",
+  "studio.busy": "今天我们已收到很多游戏，请明天再提交。",
+  "studio.duplicate": "我们已经收到过这个文件。如果你修改了游戏，请上传新版本。",
   "studio.invalid": "请检查：{field}",
   "studio.failed": "发送失败，请重试。",
   "studio.inbox": "收件箱（{n}）",

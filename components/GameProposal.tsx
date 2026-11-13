@@ -23,7 +23,7 @@ function Info({ id, open, onToggle }: { id: InfoId; open: boolean; onToggle: (id
 
 type Draft = { studio: string; contact: string; terms: boolean; privacy: boolean };
 type Stored = { id: string; createdAt: string; studio: string; contact: string; game: string; shelf: string; summary: string; manifest: Manifest | null; report: Report | null; sha256: string | null; size: number; status: "received" | "approved" | "rejected" };
-type Status = { kind: "idle" | "sending" | "notOpen" | "failed" | "checksFailed" } | { kind: "sent"; id: string } | { kind: "invalid"; field: SubmissionField };
+type Status = { kind: "idle" | "sending" | "notOpen" | "busy" | "duplicate" | "failed" | "checksFailed" } | { kind: "sent"; id: string } | { kind: "invalid"; field: SubmissionField };
 
 const DRAFT_KEY = "gg.studioProposalDraft";
 const EMPTY: Draft = { studio: "", contact: "", terms: false, privacy: false };
@@ -93,6 +93,8 @@ export default function GameProposal({ onClose }: { onClose: () => void }) {
       if (r.status === 201) { setStatus({ kind: "sent", id: String(j.id).slice(0, 8) }); setFile(null); void refresh(); }
       else if (r.status === 422) setStatus({ kind: "checksFailed" });
       else if (r.status === 503 && j.error === "PROPOSALS_NOT_OPEN") setStatus({ kind: "notOpen" });
+      else if (r.status === 429) setStatus({ kind: "busy" });
+      else if (r.status === 409) setStatus({ kind: "duplicate" });
       else if ((r.status === 400 || r.status === 413) && j.field) setStatus({ kind: "invalid", field: j.field });
       else setStatus({ kind: "failed" });
     } catch { setStatus({ kind: "failed" }); }
@@ -172,6 +174,8 @@ export default function GameProposal({ onClose }: { onClose: () => void }) {
             {status.kind === "sending" && t("studio.checking")}
             {status.kind === "checksFailed" && t("studio.checksFailed")}
             {status.kind === "notOpen" && t("studio.notOpen")}
+            {status.kind === "busy" && t("studio.busy")}
+            {status.kind === "duplicate" && t("studio.duplicate")}
             {status.kind === "failed" && t("studio.failed")}
             {status.kind === "sent" && t("studio.sent", { id: status.id })}
           </p>

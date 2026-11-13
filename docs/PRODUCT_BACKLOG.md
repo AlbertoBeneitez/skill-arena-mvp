@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v185-saturn · Seguridad mínima (13-nov-2026)
+
+- Límites a los envíos de estudios (20/día, 200 MB, sin repetidos) y reglas de límite de peticiones en Vercel.
+- Copia diaria cifrada de la base, comprobación de salud cada 3 horas y manual de operación.
+- Pendiente antes de producción: revisión de seguridad independiente, abrir el acceso (decisión del propietario).
+
 ## v184-saturn · Base de datos en Neon (12-nov-2026)
 
 - PostgreSQL en Neon (Frankfurt, plan gratis) conectado a Vercel; tablas 001–006 creadas.
