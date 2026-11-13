@@ -882,6 +882,16 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v186-saturn · Comisión solo al cambiar y revisión de seguridad (13-nov-2026)
+
+- Grupos sin comisión; 5 % al ingresar y al retirar.
+- Aviso de mantenimiento automático y regla manual en Vercel.
+- Revisión de seguridad independiente: arreglados 1, 2, 3, 8, 9, 10, 12, 13 (descarga) y 16.
+- Pendiente antes de partidas persistentes: cuota y bloqueo por jugador (5). Antes de dinero real: 4, 6, 7, 11, 13
+  (CSP con nonces), 15, 18 y liquidación en servidor.
+- Decisión pendiente: el reparto a estudios (50 % de la comisión de sus partidas) ya no tiene base, porque las partidas
+  no llevan comisión; hay que redefinirlo (nueva versión de las condiciones).
+
 ## v185-saturn · Seguridad mínima (13-nov-2026)
 
 - Límites a los envíos de estudios (20/día, 200 MB, sin repetidos) y reglas de límite de peticiones en Vercel.

@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
-# v185 · Encrypted PostgreSQL backup. Reads the connection string and passphrase from the environment only
-# (BACKUP_DATABASE_URL, BACKUP_PASSPHRASE) and never prints them. Writes OUT (default backup.dump.enc).
-#   PG_DUMP / PG_RESTORE: commands to use (the workflow runs them from the postgres:18 image, matching Neon).
-# Restore:  openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:BACKUP_PASSPHRASE -in backup.dump.enc -out backup.dump
-#           pg_restore --no-owner --no-privileges -d "$TARGET_DATABASE_URL" backup.dump
+# v186 · Encrypted PostgreSQL backup with age (public-key encryption with integrity check).
+#   BACKUP_DATABASE_URL  connection string (environment only; never printed)
+#   RECIPIENTS           file with the owner's age public key(s), default ops/backup-recipient.txt
+#   OUT                  output file, default backup.dump.age
+# Anyone can encrypt with the public key; only the owner's private key (kept offline) can open a copy:
+#   age -d -i galactic-backup-key.txt -o backup.dump backup.dump.age
+#   pg_restore --no-owner --no-privileges -d "$TARGET_DATABASE_URL" backup.dump
 set -euo pipefail
 : "${BACKUP_DATABASE_URL:?missing BACKUP_DATABASE_URL}"
-: "${BACKUP_PASSPHRASE:?missing BACKUP_PASSPHRASE}"
-OUT="${OUT:-backup.dump.enc}"
-PG_DUMP="${PG_DUMP:-pg_dump}"
-PG_RESTORE="${PG_RESTORE:-pg_restore}"
+RECIPIENTS="${RECIPIENTS:-ops/backup-recipient.txt}"
+OUT="${OUT:-backup.dump.age}"
+if ! grep -q '^age1' "$RECIPIENTS"; then
+  echo "no age public key in $RECIPIENTS" >&2
+  exit 2
+fi
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-$PG_DUMP --format=custom --no-owner --no-privileges --dbname="$BACKUP_DATABASE_URL" > "$work/backup.dump"
+pg_dump --format=custom --no-owner --no-privileges --dbname="$BACKUP_DATABASE_URL" > "$work/backup.dump"
 # The dump must be readable before it is kept: a broken copy is worse than none, because it looks safe.
-$PG_RESTORE --list < "$work/backup.dump" > "$work/contents.txt"
+pg_restore --list "$work/backup.dump" > "$work/contents.txt"
 tables=$(grep -c " TABLE public " "$work/contents.txt" || true)
-openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:BACKUP_PASSPHRASE -in "$work/backup.dump" -out "$OUT"
+age -R "$RECIPIENTS" -o "$OUT" "$work/backup.dump"
 echo "backup ok: $(wc -c < "$work/backup.dump") bytes, $tables tables, encrypted to $OUT"

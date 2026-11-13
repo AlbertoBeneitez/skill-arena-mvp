@@ -129,7 +129,7 @@ export default function GameProposal({ onClose }: { onClose: () => void }) {
                 <em>{t(`studio.status.${p.status}` as MessageKey)}</em>
               </div>
               <span>{shelfName(p.shelf)}{p.manifest && ` · v${p.manifest.version}`} · {(p.size / 1024).toFixed(0)} KB</span>
-              <span>{p.studio} · <a href={`mailto:${p.contact}`}>{p.contact}</a> · {new Date(p.createdAt).toLocaleDateString()}</span>
+              <span>{p.studio} · <a href={`mailto:${p.contact.replace(/[^a-z0-9._+@-]/gi, "")}`}>{p.contact}</a> · {new Date(p.createdAt).toLocaleDateString()}</span>
               <p>{p.summary}</p>
               {p.report && <ReportList report={p.report} />}
               {p.manifest?.thirdParty.length ? <span>{t("studio.thirdParty")}: {p.manifest.thirdParty.map((x) => `${x.name} (${x.license})`).join(", ")}</span> : null}

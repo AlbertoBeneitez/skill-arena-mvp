@@ -25,7 +25,7 @@
  * Code cannot be run safely at upload, so format 2 is checked statically here; determinism is proved by the kit's
  * own check (npm run check) and again when the game is integrated, with the app's golden replay tests.
  */
-import { unzipSync, type UnzipFileInfo } from "fflate";
+import { inflateSync } from "fflate";
 import { createRng, hashSeed } from "@/lib/deterministic/seeded";
 import { PROPOSAL_SHELVES } from "@/lib/studioProposal";
 
@@ -152,27 +152,85 @@ export function imageSize(b: Uint8Array): { w: number; h: number } | null {
   return null;
 }
 
+/** Raw-deflate decoder that must stop with an error as soon as the output would exceed `maxOut` bytes. */
+export type InflateRaw = (data: Uint8Array, maxOut: number) => Uint8Array;
+/** v186 · Largest accepted expansion per file (claimed size against compressed size). */
+export const MAX_ZIP_RATIO = 100;
+
+type ZipEntry = { name: string; method: number; flags: number; size: number; originalSize: number; offset: number };
+
+/**
+ * v186 · Reads the zip's central directory without decompressing anything, so a hostile archive is refused before it
+ * costs CPU: no zip64, no encryption, only stored (0) or deflate (8), at most MAX_ZIP_RATIO:1 per file, claimed sizes
+ * within the package limits. Throws on anything malformed.
+ */
+function zipEntries(zip: Uint8Array): ZipEntry[] {
+  const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+  let eocd = -1;
+  for (let i = zip.length - 22; i >= Math.max(0, zip.length - 22 - 0xffff); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("no end record");
+  const count = view.getUint16(eocd + 10, true), dirSize = view.getUint32(eocd + 12, true), dirOffset = view.getUint32(eocd + 16, true);
+  if (count === 0xffff || dirOffset === 0xffffffff || dirOffset + dirSize > eocd) throw new Error("zip64 or bad directory");
+  const entries: ZipEntry[] = [];
+  let p = dirOffset;
+  for (let n = 0; n < count; n++) {
+    if (p + 46 > zip.length || view.getUint32(p, true) !== 0x02014b50) throw new Error("bad directory entry");
+    const flags = view.getUint16(p + 8, true), method = view.getUint16(p + 10, true);
+    const size = view.getUint32(p + 20, true), originalSize = view.getUint32(p + 24, true);
+    const nameLen = view.getUint16(p + 28, true), extraLen = view.getUint16(p + 30, true), commentLen = view.getUint16(p + 32, true);
+    const offset = view.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(zip.subarray(p + 46, p + 46 + nameLen));
+    entries.push({ name, method, flags, size, originalSize, offset });
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return entries;
+}
+
+function entryData(zip: Uint8Array, e: ZipEntry) {
+  const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+  if (e.offset + 30 > zip.length || view.getUint32(e.offset, true) !== 0x04034b50) throw new Error("bad local header");
+  const start = e.offset + 30 + view.getUint16(e.offset + 26, true) + view.getUint16(e.offset + 28, true);
+  if (start + e.size > zip.length) throw new Error("truncated entry");
+  return zip.subarray(start, start + e.size);
+}
+
+/** Without a bounded decoder (browser previews), fflate fills a buffer of the claimed size and fails if it overflows. */
+const fallbackInflate: InflateRaw = (data, maxOut) => {
+  const out = inflateSync(data, { out: new Uint8Array(maxOut) });
+  if (out.length !== maxOut) throw new Error("size mismatch");
+  return out;
+};
+
 /** Unpacks and checks everything that does not need to run code: zip, manifest, interface, cover. */
-export function unpackPackage(zip: Uint8Array): { checks: Check[]; unpacked: Unpacked } {
+export function unpackPackage(zip: Uint8Array, opts: { inflateRaw?: InflateRaw } = {}): { checks: Check[]; unpacked: Unpacked } {
   const checks: Check[] = [];
   const unpacked: Unpacked = { manifest: null, gameHtml: null, core: null, cover: null };
   if (zip.length > PACKAGE_LIMITS.zipBytes) return { checks: [{ id: "zip", ok: false, detail: "> 4 MB" }], unpacked };
-  let files: Record<string, Uint8Array>;
-  let count = 0, total = 0, bad = "";
+  const files: Record<string, Uint8Array> = {};
+  let entries: ZipEntry[];
+  try { entries = zipEntries(zip); } catch { return { checks: [{ id: "zip", ok: false, detail: "unreadable" }], unpacked }; }
+  const fileEntries = entries.filter((e) => !e.name.endsWith("/"));
+  const bad = entries.find((e) => /(^|\/)\.\.(\/|$)|^\/|\\/.test(e.name));
+  if (bad) return { checks: [{ id: "zip", ok: false, detail: bad.name.slice(0, 80) }], unpacked };
+  if (fileEntries.length > PACKAGE_LIMITS.files) return { checks: [{ id: "zip", ok: false, detail: `> ${PACKAGE_LIMITS.files} files` }], unpacked };
+  const total = fileEntries.reduce((sum, e) => sum + e.originalSize, 0);
+  if (total > PACKAGE_LIMITS.unpackedBytes) return { checks: [{ id: "zip", ok: false, detail: "> 24 MB unpacked" }], unpacked };
+  const odd = fileEntries.find((e) => (e.flags & 1) !== 0 || (e.method !== 0 && e.method !== 8)
+    || (e.method === 0 && e.size !== e.originalSize) || e.originalSize > e.size * MAX_ZIP_RATIO + 1024);
+  if (odd) return { checks: [{ id: "zip", ok: false, detail: `unsupported: ${odd.name.slice(0, 60)}` }], unpacked };
+  const inflate = opts.inflateRaw ?? fallbackInflate;
   try {
-    files = unzipSync(zip, {
-      filter: (f: UnzipFileInfo) => {
-        count++; total += f.originalSize;
-        if (/(^|\/)\.\.(\/|$)|^\/|\\/.test(f.name)) bad = bad || f.name;
-        return !bad && count <= PACKAGE_LIMITS.files && total <= PACKAGE_LIMITS.unpackedBytes && !f.name.endsWith("/");
-      },
-    });
+    for (const e of fileEntries) {
+      const data = entryData(zip, e);
+      const out = e.method === 0 ? data.slice() : e.originalSize === 0 ? new Uint8Array(0) : inflate(data, e.originalSize);
+      if (out.length !== e.originalSize) throw new Error("size mismatch");
+      files[e.name] = out;
+    }
   } catch {
     return { checks: [{ id: "zip", ok: false, detail: "unreadable" }], unpacked };
   }
-  if (bad) return { checks: [{ id: "zip", ok: false, detail: bad.slice(0, 80) }], unpacked };
-  if (count > PACKAGE_LIMITS.files) return { checks: [{ id: "zip", ok: false, detail: `> ${PACKAGE_LIMITS.files} files` }], unpacked };
-  if (total > PACKAGE_LIMITS.unpackedBytes) return { checks: [{ id: "zip", ok: false, detail: "> 24 MB unpacked" }], unpacked };
   // A package may sit inside one top-level folder (how most tools zip a folder).
   const names = Object.keys(files);
   const prefix = names.length && names.every((n) => n.includes("/") && n.split("/")[0] === names[0].split("/")[0]) ? names[0].split("/")[0] + "/" : "";

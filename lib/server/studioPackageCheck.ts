@@ -5,6 +5,7 @@
  * The core imports nothing, so inside the worker it can only compute; the limit stops a core that never returns.
  */
 import { Worker } from "node:worker_threads";
+import { boundedInflateRaw } from "./boundedInflate";
 import { CHECK_SEEDS, finishReport, inputScript, inspectCore, replayCore, seedWords, unpackPackage, type Check, type Report, type ReplayResult, type Unpacked } from "@/lib/studio/package";
 
 const TIME_LIMIT_MS = 6000;
@@ -49,7 +50,7 @@ const same = (a: ReplayResult, b: ReplayResult) => a.score === b.score && a.hash
  * format); format 1 is still understood for the packages already stored and published.
  */
 export async function checkPackage(zip: Uint8Array, formats: readonly (1 | 2)[] = [1, 2]): Promise<{ report: Report; unpacked: Unpacked }> {
-  const { checks, unpacked } = unpackPackage(zip);
+  const { checks, unpacked } = unpackPackage(zip, { inflateRaw: boundedInflateRaw });
   const format = unpacked.format ?? 1;
   if (!formats.includes(format)) {
     // An old (format 1) package: say so on the manifest line and stop.

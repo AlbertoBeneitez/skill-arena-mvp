@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { unzipSync, zipSync, strToU8 } from "fflate";
 import { checkManifest, externalReferences, imageSize, inputScript, replayCore, seedWords, unpackPackage } from "../lib/studio/package";
 import { checkPackage } from "../lib/server/studioPackageCheck";
+import { boundedInflateRaw } from "../lib/server/boundedInflate";
 
 // Format 1 (WebAssembly + HTML, v142–v177): still understood for stored and published packages. Its kit is a fixture.
 const kitZip = new Uint8Array(readFileSync("scripts/fixtures/studio/pulse-format1.zip"));
@@ -83,4 +84,26 @@ assert.ok(a.ended && a.score >= 0);
   for (const [n, b] of Object.entries(v2)) nested2[`pulse/${n}`] = b;
   assert.ok((await checkPackage(zipSync(nested2), [2])).report.ok, "a format-2 package inside one folder is accepted");
 }
-console.log(`Studio packages OK · format 2 kit, static source rules, format 1 refused at upload · format 1: kit passes (core ${pass.report.checks.find((c) => c.id === "coreSpeed")?.detail}), manifest, external refs, cover, imports, seed, reset, length, time limit, zip safety`);
+// v186 · Zip bombs are refused before they cost CPU (independent security review, 13-nov).
+{
+  const big = zipSync({ "galactic.json": [new Uint8Array(10 * 1024 * 1024), { level: 9 }] });
+  const ratio = unpackPackage(big, { inflateRaw: boundedInflateRaw });
+  assert.equal(ratio.checks[0].ok, false, "honest but 1000:1 expansion is refused");
+  assert.match(String(ratio.checks[0].detail), /^unsupported/);
+  // The same archive lying about its size: the claimed size is patched to 16 bytes in both headers.
+  const lie = big.slice();
+  const dv = new DataView(lie.buffer);
+  for (let p = 0; p + 4 <= lie.length; p++) {
+    const sig = dv.getUint32(p, true);
+    if (sig === 0x04034b50) dv.setUint32(p + 22, 16, true);
+    if (sig === 0x02014b50) dv.setUint32(p + 24, 16, true);
+  }
+  const t0 = performance.now();
+  const lying = unpackPackage(lie, { inflateRaw: boundedInflateRaw });
+  const ms = performance.now() - t0;
+  assert.equal(lying.checks[0].ok, false, "a file that expands past its claimed size is refused");
+  assert.ok(ms < 1000, `refused quickly (${ms.toFixed(0)} ms)`);
+  const stored = zipSync({ "a.txt": [strToU8("hello"), { level: 0 }] });
+  assert.equal(unpackPackage(stored, { inflateRaw: boundedInflateRaw }).checks[0].ok, true, "stored entries still unpack");
+}
+console.log(`Studio packages OK · format 2 kit, static source rules, format 1 refused at upload · format 1: kit passes (core ${pass.report.checks.find((c) => c.id === "coreSpeed")?.detail}), manifest, external refs, cover, imports, seed, reset, length, time limit, zip safety, zip bombs`);

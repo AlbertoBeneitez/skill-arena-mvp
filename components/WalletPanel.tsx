@@ -1,13 +1,15 @@
 "use client";
 /**
  * Wallet panel (v171, own component since v174): opened from the balance chip in the header.
- * v178: in the Group tab's look (carbon, ice, citron). Amounts are typed in euros (1 € = 1 cosmicoin, ₡). INGRESAR adds them to
- * the fictitious balance. RETIRAR opens the payment-provider step: real withdrawals need a payment provider, which is
+ * v178: in the Group tab's look (carbon, ice, citron). 1 € = 1 cosmicoin (₡). INGRESAR adds the amount to the fictitious
+ * balance. v186: each change keeps a 5 % commission (lib/wallet.ts), shown before confirming: paying X € adds X − 5 % ₡;
+ * withdrawing X ₡ pays X − 5 % €. RETIRAR opens the payment-provider step: real withdrawals need a payment provider, which is
  * not connected yet, so that step says so and only offers a withdrawal from the fictitious balance (it never moves
  * real money and asks for no bank details). The balance itself lives in DemoApp (onMove).
  */
 import { useState } from "react";
 import { formatNumber, t, useI18n } from "@/lib/i18n";
+import { EXCHANGE_FEE_PERCENT, exchange } from "@/lib/wallet";
 import UiIcon from "./UiIcon";
 import st from "./WalletPanel.module.css";
 
@@ -34,9 +36,11 @@ export default function WalletPanel({ balance, format, onMove, onClose, movement
   const [text, setText] = useState("");
   const [withdrawing, setWithdrawing] = useState(false);
   const amount = parseWalletAmount(text);
+  const change = exchange(amount);
+  const pct = formatNumber(EXCHANGE_FEE_PERCENT);
   const deposit = () => {
     if (!amount) return;
-    onMove(1, amount);
+    onMove(1, change.net);
     setText("");
   };
   const simulateWithdraw = () => {
@@ -57,14 +61,19 @@ export default function WalletPanel({ balance, format, onMove, onClose, movement
               <strong dir="ltr" aria-live="polite">{format(balance)}</strong>
             </div>
             <label className={st.field}>
-              <span>{t("wallet.amountEuro")}</span>
+              <span>{t("wallet.amount")}</span>
               <span className={st.input}>
                 <input type="text" inputMode="decimal" autoComplete="off" autoFocus placeholder="0,00" value={text} dir="ltr"
                   onChange={(event) => setText(event.target.value.replace(/[^0-9.,]/g, "").slice(0, 9))}
                   onKeyDown={(event) => { if (event.key === "Enter") deposit(); }} />
                 <b aria-hidden="true">€</b>
               </span>
-              <small className={st.rate} dir="ltr">{amount ? `${euros(amount)} = ${format(amount)}` : t("wallet.rate")}</small>
+              {amount ? (
+                <small className={st.rate}>
+                  <span>{t("wallet.depositPreview", { eur: euros(amount), coins: format(change.net) })}</span>
+                  <span>{t("wallet.withdrawPreview", { coins: format(amount), eur: euros(change.net) })}</span>
+                </small>
+              ) : <small className={st.rate}>{t("wallet.rate", { pct })}</small>}
             </label>
             <div className={st.actions}>
               <button type="button" className={st.in} disabled={!amount} onClick={deposit}>{t("wallet.deposit")}</button>
@@ -88,8 +97,12 @@ export default function WalletPanel({ balance, format, onMove, onClose, movement
               <strong>{t("wallet.withdrawTitle")}</strong>
             </div>
             <dl className={st.summary}>
-              <dt>{t("wallet.amountEuro")}</dt>
-              <dd dir="ltr">{euros(amount)}</dd>
+              <dt>{t("wallet.youGive")}</dt>
+              <dd dir="ltr">{format(amount)}</dd>
+              <dt>{t("wallet.fee", { pct })}</dt>
+              <dd dir="ltr">{euros(change.fee)}</dd>
+              <dt>{t("wallet.youGet")}</dt>
+              <dd dir="ltr">{euros(change.net)}</dd>
               <dt>{t("wallet.provider")}</dt>
               <dd className={st.pending}>{t("wallet.providerPending")}</dd>
             </dl>

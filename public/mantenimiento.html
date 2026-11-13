@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#09090a">
+<title>Galactic Games · En mantenimiento</title>
+<!-- v186 · Planned maintenance page. Self-contained (no app code, no database), so it works while the app is down.
+     Shown when the owner turns on the «Modo mantenimiento» rule in Vercel › Firewall (docs/MANUAL_OPERACION.md). -->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+    background: radial-gradient(120% 80% at 50% 0%, #1b1d22 0%, #09090a 60%); color: #f2f4f7;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif; text-align: center;
+  }
+  main { display: grid; gap: 14px; justify-items: center; max-width: 360px; }
+  .brand { font-size: 12px; letter-spacing: .2em; color: #9aa3ad; font-weight: 700; }
+  .orbit { width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(210,223,58,.35); border-top-color: #d2df3a; animation: spin 2.4s linear infinite; }
+  h1 { margin: 0; font-size: 26px; line-height: 1.2; }
+  p { margin: 0; font-size: 16px; line-height: 1.55; color: #d7e6f3; }
+  button { min-height: 48px; margin-top: 6px; padding: 0 24px; border: 0; border-radius: 999px; background: #d2df3a; color: #121214; font: inherit; font-weight: 800; letter-spacing: .04em; cursor: pointer; }
+  button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .orbit { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="orbit" aria-hidden="true"></div>
+  <span class="brand">GALACTIC GAMES</span>
+  <h1 id="t">En mantenimiento</h1>
+  <p id="b">Estamos mejorando la app. Volvemos muy pronto; no hace falta que hagas nada.</p>
+  <button id="r" type="button">VOLVER A INTENTAR</button>
+</main>
+<script>
+  (function () {
+    var text = {
+      es: ["En mantenimiento", "Estamos mejorando la app. Volvemos muy pronto; no hace falta que hagas nada.", "VOLVER A INTENTAR"],
+      en: ["Under maintenance", "We're improving the app. We'll be back very soon; you don't need to do anything.", "TRY AGAIN"],
+      fr: ["En maintenance", "Nous améliorons l'application. Nous revenons très vite ; vous n'avez rien à faire.", "RÉESSAYER"],
+      pt: ["Em manutenção", "Estamos a melhorar a app. Voltamos muito em breve; não precisa de fazer nada.", "TENTAR DE NOVO"],
+      ru: ["Технические работы", "Мы улучшаем приложение. Скоро вернёмся — вам ничего не нужно делать.", "ПОВТОРИТЬ"],
+      zh: ["维护中", "我们正在改进应用，很快回来，你无需任何操作。", "重试"],
+      ar: ["قيد الصيانة", "نعمل على تحسين التطبيق. سنعود قريبًا جدًا، ولا تحتاج إلى فعل أي شيء.", "إعادة المحاولة"],
+      bn: ["রক্ষণাবেক্ষণ চলছে", "আমরা অ্যাপটি উন্নত করছি। খুব শিগগিরই ফিরব; আপনাকে কিছু করতে হবে না।", "আবার চেষ্টা করুন"],
+      hi: ["रखरखाव जारी है", "हम ऐप को बेहतर बना रहे हैं। बहुत जल्द लौटेंगे; आपको कुछ नहीं करना है।", "फिर कोशिश करें"],
+      ur: ["مرمت جاری ہے", "ہم ایپ کو بہتر بنا رہے ہیں۔ بہت جلد واپس آئیں گے؛ آپ کو کچھ کرنے کی ضرورت نہیں۔", "دوبارہ کوشش کریں"]
+    };
+    var saved = null;
+    try { saved = localStorage.getItem("ga-locale"); } catch (e) {}
+    var wanted = [saved].concat(navigator.languages || [navigator.language]);
+    var code = "es";
+    for (var i = 0; i < wanted.length; i++) {
+      var base = String(wanted[i] || "").toLowerCase().split(/[-_]/)[0];
+      if (text[base]) { code = base; break; }
+    }
+    var tr = text[code];
+    document.documentElement.lang = code;
+    document.documentElement.dir = code === "ar" || code === "ur" ? "rtl" : "ltr";
+    document.getElementById("t").textContent = tr[0];
+    document.getElementById("b").textContent = tr[1];
+    document.getElementById("r").textContent = tr[2];
+    document.title = "Galactic Games · " + tr[0];
+    var back = function () { location.href = "/"; };
+    document.getElementById("r").addEventListener("click", back);
+    // While the switch stays on, Vercel sends players straight back here; once it is off, they land in the app.
+    setTimeout(back, 120000);
+  })();
+</script>
+</body>
+</html>

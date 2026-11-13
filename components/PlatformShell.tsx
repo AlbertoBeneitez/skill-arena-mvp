@@ -4,6 +4,7 @@
  * same app inside a phone-sized frame on this origin, marked as the desktop platform, so it looks and behaves the same
  * but competes only against computers (lib/platform.ts). Inside that frame the app renders normally.
  */
+import MaintenanceGate from "./MaintenanceGate";
 import { useEffect, useState, type ReactNode } from "react";
 import qrcode from "qrcode-generator";
 import { t, useI18n } from "@/lib/i18n";
@@ -39,7 +40,7 @@ export default function PlatformShell({ children }: { children: ReactNode }) {
     setFrameSrc(url.pathname + url.search + url.hash);
     setOrigin(window.location.origin + "/");
   }, []);
-  if (!frameSrc) return <>{children}</>;
+  if (!frameSrc) return <>{children}<MaintenanceGate /></>;
   return (
     <main className="deskStage">
       <aside className="deskSide">

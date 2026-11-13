@@ -33,7 +33,7 @@
 .input input { min-width: 0; height: 52px; padding: 0 12px; border: 0; background: none; color: var(--ink); font: 700 22px/1 var(--gx-data, monospace); outline: none; }
 .input input::placeholder { color: var(--dim); }
 .input b { padding: 0 14px 0 4px; color: var(--mute); font-size: 17px; }
-.rate { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+.rate { display: grid; gap: 2px; color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .actions button, .providerGo, .simulate { min-height: 48px; border-radius: 8px; font: 800 13px/1 var(--gx-display, sans-serif); letter-spacing: .06em; }

@@ -1,16 +1,105 @@
 {
-  "_note": "Copia de las reglas activas en Vercel › Firewall (aplicadas el 13-nov-2026, v185, config waf_HHaVubzFVaH9 versión 1). Si se pierden, se pueden volver a crear igual.",
+  "_note": "Copia de las reglas en Vercel › Firewall (config waf_4g8sgvF0Qg3L versión 3, 13-nov-2026, v186). Si se pierden, se pueden volver a crear igual. La regla de mantenimiento está APAGADA; se enciende a mano.",
   "firewallEnabled": true,
   "rules": [
     {
+      "name": "MODO MANTENIMIENTO (encender solo para parar la web)",
+      "active": false,
+      "conditionGroup": [
+        {
+          "conditions": [
+            {
+              "type": "environment",
+              "op": "eq",
+              "value": "production"
+            },
+            {
+              "type": "path",
+              "op": "pre",
+              "value": "/mantenimiento.html",
+              "neg": true
+            },
+            {
+              "type": "path",
+              "op": "eq",
+              "value": "/api/health",
+              "neg": true
+            }
+          ]
+        }
+      ],
+      "action": {
+        "mitigate": {
+          "action": "redirect",
+          "redirect": {
+            "location": "/mantenimiento.html",
+            "permanent": false
+          }
+        }
+      }
+    },
+    {
       "name": "Envios de estudios: 10 cada 10 min por IP",
-      "conditionGroup": [{ "conditions": [{ "type": "path", "op": "eq", "value": "/api/studio/proposals" }, { "type": "method", "op": "eq", "value": "POST" }] }],
-      "action": { "mitigate": { "action": "rate_limit", "rateLimit": { "algo": "fixed_window", "window": 600, "limit": 10, "keys": ["ip"], "action": "rate_limit" } } }
+      "conditionGroup": [
+        {
+          "conditions": [
+            {
+              "type": "path",
+              "op": "pre",
+              "value": "/api/studio/proposals"
+            },
+            {
+              "type": "method",
+              "op": "eq",
+              "value": "POST"
+            }
+          ]
+        }
+      ],
+      "action": {
+        "mitigate": {
+          "action": "rate_limit",
+          "rateLimit": {
+            "algo": "fixed_window",
+            "window": 600,
+            "limit": 10,
+            "keys": [
+              "ip"
+            ],
+            "action": "rate_limit"
+          }
+        }
+      },
+      "active": true
     },
     {
       "name": "API: 300 por minuto por IP",
-      "conditionGroup": [{ "conditions": [{ "type": "path", "op": "pre", "value": "/api/" }] }],
-      "action": { "mitigate": { "action": "rate_limit", "rateLimit": { "algo": "fixed_window", "window": 60, "limit": 300, "keys": ["ip"], "action": "rate_limit" } } }
+      "conditionGroup": [
+        {
+          "conditions": [
+            {
+              "type": "path",
+              "op": "pre",
+              "value": "/api/"
+            }
+          ]
+        }
+      ],
+      "action": {
+        "mitigate": {
+          "action": "rate_limit",
+          "rateLimit": {
+            "algo": "fixed_window",
+            "window": 60,
+            "limit": 300,
+            "keys": [
+              "ip"
+            ],
+            "action": "rate_limit"
+          }
+        }
+      },
+      "active": true
     }
   ]
 }

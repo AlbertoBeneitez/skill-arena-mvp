@@ -1,7 +1,7 @@
 import { checkSubmission } from "@/lib/studioProposal";
 import { PACKAGE_LIMITS } from "@/lib/studio/package";
 import { checkPackage } from "@/lib/server/studioPackageCheck";
-import { REVIEW_STATUSES, deleteProposal, isStudioOwner, listSubmissions, proposalsOpen, readPackage, saveSubmission, setReviewStatus, StudioQuotaError, type ReviewStatus } from "@/lib/server/studioProposals";
+import { REVIEW_STATUSES, deleteProposal, isStudioOwner, inboxReachable, listSubmissions, proposalsOpen, readPackage, saveSubmission, setReviewStatus, StudioQuotaError, type ReviewStatus } from "@/lib/server/studioProposals";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +24,8 @@ const idOf = (req: Request) => { const id = new URL(req.url).searchParams.get("i
  */
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ error: "ORIGIN_REJECTED" }, 403);
+  // v186: closed inboxes answer before reading or unpacking anything, so a closed form costs no CPU.
+  if (!proposalsOpen()) return json({ error: "PROPOSALS_NOT_OPEN" }, 503);
   if (Number(req.headers.get("content-length") ?? 0) > PACKAGE_LIMITS.zipBytes + 64 * 1024) return json({ error: "TOO_LARGE", field: "file" }, 413);
   let form: FormData;
   try { form = await req.formData(); } catch { return json({ error: "INVALID_FORM" }, 400); }
@@ -36,7 +38,6 @@ export async function POST(req: Request) {
   // v178: new games come in the app's own format (2), so they can be integrated as a version.
   const { report, unpacked } = await checkPackage(bytes, [2]);
   if (!report.ok || !unpacked.manifest) return json({ error: "CHECKS_FAILED", report }, 422);
-  if (!proposalsOpen()) return json({ error: "PROPOSALS_NOT_OPEN", report }, 503);
   try { return json({ id: await saveSubmission(check.value, unpacked.manifest, report, bytes), report }, 201); }
   catch (error) {
     if (error instanceof StudioQuotaError)
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
 /** The owner's inbox, or (?id=) one package to download. Anyone else gets 404, so the inbox's existence is not revealed. */
 export async function GET(req: Request) {
   if (!isStudioOwner(req)) return json({ error: "NOT_FOUND" }, 404);
-  if (!proposalsOpen()) return json({ error: "PROPOSALS_NOT_OPEN" }, 503);
+  if (!inboxReachable()) return json({ error: "PROPOSALS_NOT_OPEN" }, 503);
   const wants = new URL(req.url).searchParams.has("id");
   try {
     if (!wants) return json({ proposals: await listSubmissions() });
@@ -67,7 +68,7 @@ export async function PATCH(req: Request) {
   const id = idOf(req);
   const status = new URL(req.url).searchParams.get("status") as ReviewStatus;
   if (!id || !REVIEW_STATUSES.includes(status)) return json({ error: "INVALID_ID" }, 400);
-  if (!proposalsOpen()) return json({ error: "PROPOSALS_NOT_OPEN" }, 503);
+  if (!inboxReachable()) return json({ error: "PROPOSALS_NOT_OPEN" }, 503);
   try { await setReviewStatus(id, status); return new Response(null, { status: 204, headers }); } catch { return json({ error: "STORAGE_FAILED" }, 503); }
 }
 
@@ -76,6 +77,6 @@ export async function DELETE(req: Request) {
   if (!sameOrigin(req) || !isStudioOwner(req)) return json({ error: "NOT_FOUND" }, 404);
   const id = idOf(req);
   if (!id) return json({ error: "INVALID_ID" }, 400);
-  if (!proposalsOpen()) return json({ error: "PROPOSALS_NOT_OPEN" }, 503);
+  if (!inboxReachable()) return json({ error: "PROPOSALS_NOT_OPEN" }, 503);
   try { await deleteProposal(id); return new Response(null, { status: 204, headers }); } catch { return json({ error: "STORAGE_FAILED" }, 503); }
 }

@@ -12,19 +12,29 @@ const play = (c: GroupCompetition, scores: Record<string, number>) => {
   return c;
 };
 /** Competitions saved before v174 have no tie-break: they keep shared results. */
-const legacy = (c: GroupCompetition): GroupCompetition => { const config = { ...c.config }; delete config.tieBreak; return { ...c, config }; };
+/** A competition saved before v174 (no tie-break) and v186 (no commissionBps: 5 % commission). */
+const legacy = (c: GroupCompetition): GroupCompetition => { const config = { ...c.config }; delete config.tieBreak; delete config.commissionBps; return { ...c, config }; };
 const total = (c: GroupCompetition) => Object.values(c.payouts ?? {}).reduce((a, b) => a + b, 0);
 
-// One entry fee each; the pot keeps a 5 % commission.
+// One entry fee each. Competitions saved before v186 (no commissionBps) keep their 5 % commission.
 assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 2000, commission: 100, prize: 1900 });
+// v186: new competitions keep no commission; the whole pot is the prize.
+{
+  const fresh = createGroupCompetition("c-v186", cfg({}), players(4));
+  assert.equal(fresh.config.commissionBps, 0);
+  assert.deepEqual(groupMoney(fresh), { pot: 2000, commission: 0, prize: 2000 });
+}
 
 // Single match: the best score takes the prize; 70/30 pays the first two; a tie shares the places it occupies.
 {
   let c = createGroupCompetition("s", cfg({}), players(4));
   c = play(c, { p0: 10, p1: 40, p2: 20, p3: 30 });
   assert.ok(c.finished);
-  assert.equal(c.payouts!.p1, 1900);
-  assert.equal(total(c), 1900);
+  assert.equal(c.payouts!.p1, 2000, "v186: the whole pot");
+  assert.equal(total(c), 2000);
+  let old = legacy(createGroupCompetition("s-old", cfg({}), players(4)));
+  old = play(old, { p0: 10, p1: 40, p2: 20, p3: 30 });
+  assert.equal(old.payouts!.p1, 1900, "saved before v186: keeps its 5 % commission");
   let d = legacy(createGroupCompetition("s2", cfg({ split: "70-30" }), players(3)));
   d = play(d, { p0: 9, p1: 9, p2: 1 });
   assert.equal(d.payouts!.p0 + d.payouts!.p1, groupMoney(d).prize, "legacy: two tied winners share 70 % + 30 %");
@@ -218,4 +228,4 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.ok(pool.includes(single.matches[0].gameId), "a single random match is drawn at once");
   assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(c))));
 }
-console.log("Group competitions OK · single / league rounds / league duels / tournament · 5 % commission · ties · vote · simulated members · custom splits · eliminations per round · tie-breaks (time, seeded draw; legacy shared) · random slots");
+console.log("Group competitions OK · single / league rounds / league duels / tournament · no commission (legacy 5 %) · ties · vote · simulated members · custom splits · eliminations per round · tie-breaks (time, seeded draw; legacy shared) · random slots");

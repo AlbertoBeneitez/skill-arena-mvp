@@ -15,7 +15,8 @@ export type SubmissionCheck = { ok: true; value: Submission } | { ok: false; fie
 
 /** Trimmed text without control characters and with single spaces. */
 const clean = (v: unknown) => (typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim() : "");
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+/** v186 · Plain addresses only: no ?, &, % or spaces, so a contact can never add fields to the owner's mail link. */
+const EMAIL = /^[a-z0-9._+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
 
 export function checkSubmission(raw: unknown): SubmissionCheck {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;

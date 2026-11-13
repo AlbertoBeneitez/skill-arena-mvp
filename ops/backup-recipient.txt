@@ -1,0 +1,3 @@
+# Clave PÚBLICA de cifrado de las copias de la base (age). Sustituye la línea de abajo por la tuya (empieza por age1…).
+# La clave privada que la acompaña NUNCA va aquí: guárdala fuera del ordenador (docs/MANUAL_OPERACION.md).
+PENDIENTE

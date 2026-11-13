@@ -8,7 +8,7 @@
  */
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
-import { defaultSplit, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
+import { defaultSplit, GROUP_COMMISSION_BPS, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
 import { GAMES } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
@@ -261,7 +261,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const split = shares && shares.length === Math.max(1, players) ? shares : defaultSplit(players);
   const paidSplit = split.filter((x) => x > 0);
   const maxKnockout = Math.max(1, players - 1);
-  const money = groupMoney({ config: { entryMinor } as GroupConfig, players: group.members });
+  const money = groupMoney({ config: { entryMinor, commissionBps: GROUP_COMMISSION_BPS }, players: group.members });
   const affordable = entryMinor <= Math.round(balance * 100);
   const chosen = kind === "single" ? picked.slice(0, 1) : picked;
   function buildConfig(): GroupConfig {
@@ -322,13 +322,15 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     </div>
   );
 
-  /** v175: only what each player can win and what the platform keeps, in large type. */
+  /** v175: what the players can win, in large type; v186: the commission row only on older competitions that had one. */
   const prizeBox = (prize: number, commission: number) => (
     <dl className={st.prizeBox}>
       <dt>{t("group.prizes")}</dt>
       <dd dir="ltr">{euros(prize)}</dd>
-      <dt>{t("group.commission")}</dt>
-      <dd dir="ltr" className={st.fee}>{euros(commission)}</dd>
+      {commission > 0 && <>
+        <dt>{t("group.commission")}</dt>
+        <dd dir="ltr" className={st.fee}>{euros(commission)}</dd>
+      </>}
     </dl>
   );
 

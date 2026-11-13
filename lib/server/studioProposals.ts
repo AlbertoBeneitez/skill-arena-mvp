@@ -7,6 +7,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { Pool } from "pg";
 import { getProductionPostgresPool } from "./postgresPool";
+import { boundedInflateRaw } from "./boundedInflate";
 import { SESSION_COOKIE, authSecret, decodeSession, readCookie } from "./authSession";
 import type { Submission } from "@/lib/studioProposal";
 import { unpackPackage, type Manifest, type Report } from "@/lib/studio/package";
@@ -17,7 +18,14 @@ export type StoredSubmission = {
   id: string; createdAt: string; studio: string; contact: string; game: string; shelf: string; summary: string;
   link: string | null; manifest: Manifest | null; report: Report | null; sha256: string | null; size: number; status: ReviewStatus;
 };
-export const proposalsOpen = () => !!process.env.DATABASE_URL;
+/**
+ * v186 · Receiving packages needs the database AND an explicit switch (STUDIO_UPLOADS_OPEN=1). The independent security
+ * review (13-nov) found the global limits let one sender block the inbox and store anyone's e-mail, so the inbox stays
+ * closed until uploads need sign-in (or a bot check) and a per-account limit.
+ */
+export const proposalsOpen = () => !!process.env.DATABASE_URL && process.env.STUDIO_UPLOADS_OPEN === "1";
+/** The owner's inbox (read, review, delete) only needs the database, so closing uploads never hides what arrived. */
+export const inboxReachable = () => !!process.env.DATABASE_URL;
 export const REVIEW_STATUSES: ReviewStatus[] = ["received", "approved", "rejected"];
 
 export function isStudioOwner(req: Request, env: Record<string, string | undefined> = process.env) {
@@ -118,14 +126,14 @@ export async function listPublished(): Promise<PublishedGame[]> {
 }
 /** The package of a published (approved) game, or null. */
 export async function readPublishedPackage(id: string): Promise<Buffer | null> {
-  const { rows } = await getProductionPostgresPool().query("SELECT package FROM studio_game_proposals WHERE proposal_id=$1 AND review_status='approved' AND package IS NOT NULL", [id]);
+  const { rows } = await getProductionPostgresPool().query("SELECT package FROM studio_game_proposals WHERE proposal_id=$1 AND review_status='approved' AND package IS NOT NULL AND COALESCE((manifest->>'format')::int, 1) <> 2", [id]);
   return rows.length ? (rows[0].package as Buffer) : null;
 }
 /** The cover image inside a published game's package. */
 export async function readPublishedCover(id: string): Promise<{ bytes: Uint8Array; type: string } | null> {
   const pkg = await readPublishedPackage(id);
   if (!pkg) return null;
-  const cover = unpackPackage(new Uint8Array(pkg)).unpacked.cover;
+  const cover = unpackPackage(new Uint8Array(pkg), { inflateRaw: boundedInflateRaw }).unpacked.cover;
   if (!cover) return null;
   const ext = cover.name.split(".").pop()?.toLowerCase();
   return { bytes: cover.bytes, type: ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg" };

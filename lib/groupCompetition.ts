@@ -9,9 +9,10 @@
  *  - league-duels:  1-v-1 duels in a round-robin calendar (same seed for both players); each duel won is a victory;
  *  - tournament:    ("Eliminatorias") every round all remaining players play the same game; the lowest scores are
  *                   eliminated (config.eliminatePerRound, default 1; v171) until one is left.
- * One entry fee per player covers every match. The pot minus the platform commission is paid when the competition
- * ends: after the agreed number of rounds or by majority vote (leagues), after its match (single) or when one player
+ * One entry fee per player covers every match. The pot is paid when the competition ends: after the agreed number of rounds or by majority vote (leagues), after its match (single) or when one player
  * is left (tournament). Ties share the prize of the places they occupy.
+ * Commission (v186): none — the whole pot is the prize. Competitions created earlier have no `commissionBps` and keep
+ * the 5 % they were created with, so their payouts never change.
  *
  * Tie-breaks (v174, `config.tieBreak: "time-v1"`, set on every new competition): in a match, equal scores are split by
  * the time taken (less is better), then by a reproducible draw seeded with the competition, the round and the player
@@ -22,7 +23,10 @@
  * Random slots (v175): a `gameIds` entry may be RANDOM_GAME. Its game is drawn from `config.randomPool` only when that
  * round is scheduled (FNV-1a of competition and round), so nobody knows it beforehand and the draw is reproducible.
  */
-export const GROUP_COMMISSION_BPS = 500; // 5 %
+/** Commission of competitions created before v186 (stored without `commissionBps`). */
+export const LEGACY_GROUP_COMMISSION_BPS = 500; // 5 %
+/** v186 · Groups keep no commission: the only fee is changing euros to cosmicoins and back (wallet). */
+export const GROUP_COMMISSION_BPS = 0;
 /** v175: a game slot drawn at random when its round starts. */
 export const RANDOM_GAME = "random";
 
@@ -47,6 +51,8 @@ export type GroupConfig = {
   eliminatePerRound?: number;
   /** v174: tie-break rule; absent on competitions created before it (they keep shared results). */
   tieBreak?: "time-v1";
+  /** v186: platform commission in basis points, fixed at creation (0). Absent on older competitions: 5 %. */
+  commissionBps?: number;
 };
 export type GroupMatch = {
   round: number; gameId: string; seed: string; players: readonly string[]; scores: Readonly<Record<string, number>>;
@@ -110,9 +116,9 @@ export function stepSplit(current: readonly number[], index: number, direction: 
   return null;
 }
 
-export function groupMoney(c: Pick<GroupCompetition, "config" | "players">) {
+export function groupMoney(c: { config: Pick<GroupConfig, "entryMinor" | "commissionBps">; players: readonly unknown[] }) {
   const pot = c.config.entryMinor * c.players.length;
-  const commission = Math.round((pot * GROUP_COMMISSION_BPS) / 10000);
+  const commission = Math.round((pot * (c.config.commissionBps ?? LEGACY_GROUP_COMMISSION_BPS)) / 10000);
   return { pot, commission, prize: pot - commission };
 }
 
@@ -159,7 +165,7 @@ export function createGroupCompetition(id: string, config: GroupConfig, players:
   if (!config.gameIds.length) throw new Error("A group competition needs a game");
   if (config.gameIds.includes(RANDOM_GAME) && (!config.randomPool?.length || config.randomPool.includes(RANDOM_GAME))) throw new Error("A random slot needs a pool of games");
   const end: GroupEnd = config.format === "single" || config.format === "tournament" ? { kind: "rounds", rounds: 1 } : config.end;
-  return schedule({ id, config: { ...config, end, tieBreak: "time-v1" }, players, matches: [], votes: [], eliminated: [], finished: false, payouts: null }, 1);
+  return schedule({ id, config: { ...config, end, tieBreak: "time-v1", commissionBps: GROUP_COMMISSION_BPS }, players, matches: [], votes: [], eliminated: [], finished: false, payouts: null }, 1);
 }
 
 /** v174: reproducible draw for exact ties (FNV-1a of competition, round, match seed and player). */
@@ -267,5 +273,6 @@ export function nextGroupMatch(c: GroupCompetition, playerId: string) {
 export function isGroupCompetition(v: unknown): v is GroupCompetition {
   const c = v as GroupCompetition;
   return !!c && typeof c.id === "string" && Array.isArray(c.players) && Array.isArray(c.matches) && Array.isArray(c.votes)
-    && Array.isArray(c.eliminated) && typeof c.finished === "boolean" && !!c.config && Array.isArray(c.config.gameIds);
+    && Array.isArray(c.eliminated) && typeof c.finished === "boolean" && !!c.config && Array.isArray(c.config.gameIds)
+    && (c.config.commissionBps === undefined || (Number.isInteger(c.config.commissionBps) && c.config.commissionBps >= 0 && c.config.commissionBps <= 10000));
 }

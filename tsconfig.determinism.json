@@ -29,6 +29,7 @@
     "scripts/verify-tower-v4.ts",
     "scripts/verify-tower-v5.ts",
     "scripts/verify-ranking.ts",
+    "scripts/verify-wallet.ts",
     "scripts/verify-ranking-repository.ts",
     "scripts/verify-orb-v1.ts",
     "scripts/verify-orb-v2.ts",

@@ -1286,7 +1286,8 @@ export default function DemoApp() {
   function deleteAllLocalData() {
     safeStorage
       .keys()
-      .filter((key) => key.startsWith("skill-arena-") || key.startsWith("galactic-") || key === SETTINGS_STORAGE_KEY || key === LOCALE_STORAGE_KEY || key.startsWith("ga-"))
+      // v186: also "gg." keys (the studio form draft keeps a studio name and contact e-mail).
+      .filter((key) => key.startsWith("skill-arena-") || key.startsWith("galactic-") || key === SETTINGS_STORAGE_KEY || key === LOCALE_STORAGE_KEY || key.startsWith("ga-") || key.startsWith("gg."))
       .forEach((key) => safeStorage.removeItem(key));
     resetSettings();
     void setLocale(matchLocale(typeof navigator === "undefined" ? [] : navigator.languages ?? [navigator.language]), false);

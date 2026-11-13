@@ -12,9 +12,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
  */
 export async function GET(req: Request) {
   const url = new URL(req.url), id = url.searchParams.get("id"), file = url.searchParams.get("file");
-  if (!proposalsOpen()) return Response.json({ games: [] }, { headers: { "Cache-Control": "public, max-age=60" } });
+  if (!proposalsOpen()) return Response.json({ games: [] }, { headers: { "Cache-Control": "public, max-age=60, s-maxage=60" } });
   try {
-    if (!id) return Response.json({ games: await listPublished() }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" } });
+    if (!id) return Response.json({ games: await listPublished() }, { headers: { "Cache-Control": "public, max-age=30, s-maxage=30, stale-while-revalidate=120" } });
     if (!UUID.test(id) || (file !== "package" && file !== "cover")) return Response.json({ error: "NOT_FOUND" }, { status: 404 });
     const immutable = { "Cache-Control": "public, max-age=300", "X-Content-Type-Options": "nosniff" };
     if (file === "cover") {
