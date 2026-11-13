@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v187-saturn · Recuento de partidas y aviso automático (13-nov-2026)
+
+- Reparto a estudios: 50 % de la comisión del cambio según partidas verificadas; recuento mensual en el servidor.
+- Condiciones de estudios v2026-11-13; aviso de mantenimiento solo automático.
+- Pendiente: que grupos y torneos cuenten partidas cuando corran en el servidor; liquidación real de pagos.
+
 ## v186-saturn · Comisión solo al cambiar y revisión de seguridad (13-nov-2026)
 
 - Grupos sin comisión; 5 % al ingresar y al retirar.
@@ -889,8 +895,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Revisión de seguridad independiente: arreglados 1, 2, 3, 8, 9, 10, 12, 13 (descarga) y 16.
 - Pendiente antes de partidas persistentes: cuota y bloqueo por jugador (5). Antes de dinero real: 4, 6, 7, 11, 13
   (CSP con nonces), 15, 18 y liquidación en servidor.
-- Decisión pendiente: el reparto a estudios (50 % de la comisión de sus partidas) ya no tiene base, porque las partidas
-  no llevan comisión; hay que redefinirlo (nueva versión de las condiciones).
+- Reparto a estudios redefinido en v187.
 
 ## v185-saturn · Seguridad mínima (13-nov-2026)
 

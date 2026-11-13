@@ -4,7 +4,8 @@
  * form only asks who sends it, how to reach them, and the acceptance of the studio conditions and of the privacy
  * notice in force. Name, category and description come from the package's galactic.json.
  */
-export const STUDIO_TERMS_VERSION = "studio-terms-2026-11-03";
+/** v186 · 13-nov: payout from the exchange commission by verified matches; games integrated after line-by-line review. */
+export const STUDIO_TERMS_VERSION = "studio-terms-2026-11-13";
 export const PROPOSAL_CONSENT_VERSION = "studio-proposal-2026-11-03";
 /** Rows a studio can choose in galactic.json (lib/games.ts CATALOG_SHELVES); "Populares" and "Nuevos" are earned. */
 export const PROPOSAL_SHELVES = ["bar", "mythic", "dynamic", "alternative"] as const;

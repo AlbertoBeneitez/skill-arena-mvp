@@ -38,14 +38,13 @@ anterior. El plan gratis guarda solo 6 horas.
 
 Sin la clave privada, las copias no se pueden abrir. Guárdala fuera del ordenador (gestor de contraseñas y un USB).
 
-## 3. Avisar a los jugadores: mantenimiento
+## 3. Aviso de mantenimiento (automático)
 
-- **Automático:** si la base de datos no responde, la app muestra «En mantenimiento · volvemos muy pronto» y lo
-  quita sola cuando vuelve.
-- **A mano (para parar la web a propósito):** Vercel › proyecto › **Firewall** › regla «MODO MANTENIMIENTO» ›
-  actívala y pulsa **Review Changes › Publish**. Todos los jugadores de producción ven `/mantenimiento.html` (en su
-  idioma). Para volver: desactívala y publica. Funciona al momento, sin publicar versiones, y aunque la app esté rota.
-- Si cae Vercel entero no se puede mostrar nada desde Vercel: consulta https://www.vercel-status.com.
+No tienes que hacer nada. Si el servidor falla (cualquier error 5xx, también si la base de datos no responde) o no
+contesta dos veces seguidas mientras el jugador tiene conexión, la app tapa la pantalla con «En mantenimiento ·
+volvemos muy pronto» en su idioma, lo comprueba cada minuto y lo quita sola al volver. Si la app se rompe al cargar,
+enseña «algo ha fallado» con un botón para reintentar. Si cae Vercel entero no se puede mostrar nada desde Vercel:
+consulta https://www.vercel-status.com.
 
 ## 4. Ataque o avalancha de tráfico
 
@@ -53,6 +52,7 @@ Sin la clave privada, las copias no se pueden abrir. Guárdala fuera del ordenad
   - `/api/`: 300 peticiones por minuto por conexión.
   - Envíos de juegos de estudios: 10 cada 10 minutos por conexión.
 - Si aun así hay un ataque: Vercel › Firewall › **Attack Challenge Mode** (pide verificación a todos los visitantes).
+- Partidas por juego para pagar a los estudios: `/api/studio/plays?month=2026-11` con tu sesión de propietario.
 - Una regla se quita o se pausa desde la misma pantalla; los cambios aplican al momento, sin publicar.
 - Además, la app limita los envíos de estudios: 20 al día en total, 200 MB guardados como máximo y ningún archivo
   repetido, y los .zip trampa se rechazan antes de abrirlos.

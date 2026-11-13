@@ -1,43 +1,7 @@
 {
-  "_note": "Copia de las reglas en Vercel › Firewall (config waf_4g8sgvF0Qg3L versión 3, 13-nov-2026, v186). Si se pierden, se pueden volver a crear igual. La regla de mantenimiento está APAGADA; se enciende a mano.",
+  "_note": "Copia de las reglas en Vercel › Firewall (config waf_p378LWa2Wk5R versión 4, 13-nov-2026, v186). Si se pierden, se pueden volver a crear igual. El aviso de mantenimiento es automático (components/MaintenanceGate.tsx); no hay regla manual.",
   "firewallEnabled": true,
   "rules": [
-    {
-      "name": "MODO MANTENIMIENTO (encender solo para parar la web)",
-      "active": false,
-      "conditionGroup": [
-        {
-          "conditions": [
-            {
-              "type": "environment",
-              "op": "eq",
-              "value": "production"
-            },
-            {
-              "type": "path",
-              "op": "pre",
-              "value": "/mantenimiento.html",
-              "neg": true
-            },
-            {
-              "type": "path",
-              "op": "eq",
-              "value": "/api/health",
-              "neg": true
-            }
-          ]
-        }
-      ],
-      "action": {
-        "mitigate": {
-          "action": "redirect",
-          "redirect": {
-            "location": "/mantenimiento.html",
-            "permanent": false
-          }
-        }
-      }
-    },
     {
       "name": "Envios de estudios: 10 cada 10 min por IP",
       "conditionGroup": [

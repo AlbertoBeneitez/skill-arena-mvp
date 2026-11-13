@@ -1,25 +1,36 @@
 "use client";
 /**
- * v186 · Maintenance notice. Asks /api/health once when the app opens and again when the tab comes back; if the
- * server answers 503 (its database does not respond) every screen is covered by a notice that rechecks each minute
- * and disappears by itself once the service is back. Offline or network errors show nothing: that is the player's
- * connection, not maintenance. Healthy apps are not polled, so the free database is not kept awake.
- * Planned maintenance uses a switch in Vercel › Firewall instead (docs/MANUAL_OPERACION.md), which sends players to
- * /mantenimiento.html without touching the app.
+ * v186 · Maintenance notice, automatic only (owner, 13-nov). Asks /api/health when the app opens and when the tab comes
+ * back. The notice covers every screen when:
+ *  - the server answers any 5xx (503: its database does not respond; 500/502/504: the server itself fails), or
+ *  - the device says it is online but the server does not answer twice in a row, 5 s apart.
+ * It rechecks every minute and disappears by itself once the service is back. A device without connection shows
+ * nothing: that is the player's network, not maintenance. Healthy apps are not polled, so the free database sleeps.
  */
 import { useCallback, useEffect, useState } from "react";
 import { t, useI18n } from "@/lib/i18n";
 import st from "./MaintenanceGate.module.css";
 
-async function serviceDown() {
+const RETRY_MS = 5000;
+
+async function ask(): Promise<"ok" | "down" | "unreachable"> {
   try {
     const res = await fetch("/api/health", { cache: "no-store" });
     // Only the status matters; release the body so the request finishes.
     await res.body?.cancel().catch(() => undefined);
-    return res.status === 503;
+    return res.status >= 500 ? "down" : "ok";
   } catch {
-    return false;
+    return "unreachable";
   }
+}
+
+async function serviceDown() {
+  const first = await ask();
+  if (first !== "unreachable") return first === "down";
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return false;
+  await new Promise((resolve) => setTimeout(resolve, RETRY_MS));
+  const second = await ask();
+  return second === "down" || (second === "unreachable" && navigator.onLine !== false);
 }
 
 export default function MaintenanceGate() {
