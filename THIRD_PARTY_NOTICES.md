@@ -335,3 +335,11 @@ Uses the project's existing synthesized audio and shared orbital background.
 - **Use:** nine 4:3 flags copied surgically and minified with svgo into `public/flags/`
   (`us`, `cn`, `in`, `sa`, `fr`, `bd`, `br`, `ru`, `pk`). `public/flags/es.svg` is drawn
   in-house (Spanish civil flag, without the coat of arms). Not a project dependency.
+
+## TypeScript 5.9.3 como `typescript-api` (herramienta de desarrollo, v188)
+
+- **Package:** `typescript` 5.9.3 — https://github.com/microsoft/TypeScript
+- **Copyright:** Copyright (c) Microsoft Corporation
+- **License:** Apache-2.0
+- **Use:** only `scripts/studio-strip-comments.mjs` (parser and printer to copy studio packages without comments).
+  Dev dependency; nothing of it ships in the app, which keeps TypeScript 7 for type checking.

@@ -73,7 +73,7 @@ def footer(canvas, doc):
     canvas.saveState()
     canvas.setFont("Sans", 7.5)
     canvas.setFillColor(MUTE)
-    canvas.drawString(20 * mm, 12 * mm, "Galactic Games · Tareas del propietario · v187 · 13 de noviembre de 2026")
+    canvas.drawString(20 * mm, 12 * mm, "Galactic Games · Tareas del propietario · v188 · 13 de noviembre de 2026")
     canvas.drawRightString(190 * mm, 12 * mm, f"Página {doc.page}")
     canvas.restoreState()
 
@@ -81,7 +81,7 @@ def footer(canvas, doc):
 story = [
     Paragraph("Tareas que solo puedes hacer tú", title),
     Paragraph(
-        "Galactic Games · versión v187 · 13 de noviembre de 2026. Cada tarea dice por qué importa, cuándo hacerla y los "
+        "Galactic Games · versión v188 · 13 de noviembre de 2026. Cada tarea dice por qué importa, cuándo hacerla y los "
         "pasos exactos. Marca la casilla al terminar. Si un paso no coincide con lo que ves en pantalla, para y "
         "pregúntale a Claude con una captura.",
         subtitle,
@@ -104,25 +104,25 @@ rules.setStyle(TableStyle([
 story += [rules, Spacer(1, 6)]
 
 summary = [
-    ["", "Tarea", "Cuándo"],
-    ["1", "Gestor de contraseñas: todas las claves en un solo sitio", "Ahora"],
-    ["2", "Verificación en dos pasos en Google, GitHub y Vercel", "Ahora"],
-    ["3", "Tu par de claves para las copias de la base", "Esta semana"],
-    ["4", "Conexión de las copias en GitHub", "Esta semana"],
-    ["5", "Claves distintas para pruebas y producción", "Antes de abrir a amigos"],
-    ["6", "Comprobar la protección de copias del repositorio (forks)", "Antes de abrir a amigos"],
-    ["7", "Aprobar el lanzamiento y abrir el acceso", "Cuando decidas lanzar"],
-    ["8", "Aviso de salud en GitHub", "Justo después de lanzar"],
-    ["9", "Si algo falla: volver atrás o recuperar datos", "Cuando haga falta"],
-    ["10", "Abogado de juego y visibilidad del código", "Antes de dinero real"],
+    ["", "Tarea", "Cuándo", "¿Imprescindible?"],
+    ["1", "Gestor de contraseñas: todas las claves en un solo sitio", "Ahora", "Sí"],
+    ["2", "Verificación en dos pasos en Google, GitHub y Vercel", "Ahora", "Sí"],
+    ["3", "Claves distintas para pruebas y producción", "Antes de que jueguen otros móviles", "Sí"],
+    ["4", "Copias de seguridad: tu clave y la conexión", "Antes de que jueguen otros móviles", "Sí, en cuanto haya datos de jugadores"],
+    ["5", "Dar acceso a otros móviles", "Cuando decidas", "Decisión tuya"],
+    ["6", "Dominio y correo", "Cuando los compres", "Sí, para lanzar en serio"],
+    ["7", "Abogado de juego y visibilidad del código", "Antes de dinero real", "Sí, antes de dinero"],
 ]
 t = Table([[Paragraph(c, small if r == 0 else body) for c in row] for r, row in enumerate(summary)],
-          colWidths=[10 * mm, 120 * mm, 46 * mm])
+          colWidths=[8 * mm, 82 * mm, 46 * mm, 40 * mm])
 t.setStyle(TableStyle([
     ("LINEBELOW", (0, 0), (-1, 0), 0.8, INK), ("LINEBELOW", (0, 1), (-1, -1), 0.3, LINE),
     ("VALIGN", (0, 0), (-1, -1), "TOP"), ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
 ]))
-story += [Paragraph("Resumen", h1), t, PageBreak()]
+story += [Paragraph("Resumen", h1), t, Spacer(1, 6), Paragraph(
+    "Ya no son tareas tuyas: el aviso de mantenimiento (es automático), comprobar la protección de forks (lo comprueba "
+    "Claude) y volver a una versión anterior o recuperar datos (está en el manual de operación por si algún día hace "
+    "falta, pero no hay que hacer nada ahora). El aviso de salud se configura con el dominio (tarea 6).", small), PageBreak()]
 
 story.append(task(
     "1", "Gestor de contraseñas: todas las claves en un solo sitio", "Ahora", "20 min",
@@ -134,7 +134,8 @@ story.append(task(
         "Elige una <b>contraseña maestra</b> larga que no uses en ningún otro sitio (por ejemplo, cuatro o cinco "
         "palabras al azar). Apúntala en papel y guárdala en casa: si la olvidas, nadie puede recuperar el gestor.",
         "Crea una carpeta <b>Galactic Games</b> y guarda dentro: tu cuenta de Google, GitHub y Vercel, los códigos de "
-        "recuperación de la tarea 2 y la clave privada de copias de la tarea 3.",
+        "recuperación de la tarea 2 y, más adelante, la clave privada de copias (tarea 4) y el registro del dominio "
+        "(tarea 6).",
         "Cambia las contraseñas débiles o repetidas de esas cuentas por otras generadas por el gestor.",
     ],
     heading="Ahora: proteger tus cuentas",
@@ -154,48 +155,10 @@ story.append(task(
         "móvil pierdes la cuenta.",
     ],
 ))
-
 story.append(task(
-    "3", "Tu par de claves para las copias de la base", "Esta semana", "10 min",
-    "Cada día se hace una copia de la base y se cifra. La clave <b>pública</b> sirve solo para cifrar y va en el "
-    "código; la clave <b>privada</b> es la única que abre las copias y solo la tienes tú. Así, aunque alguien "
-    "descargue una copia, no puede leerla.",
-    [
-        "En Windows, abre <b>PowerShell</b> (tecla Windows, escribe «PowerShell», Intro).",
-        "Instala la herramienta: " + code("winget install FiloSottile.age") + " (acepta si pregunta).",
-        "Cierra y vuelve a abrir PowerShell. Escribe: " + code("age-keygen -o galactic-backup-key.txt"),
-        "Verás una línea «Public key: age1…». <b>Esa línea es pública</b>: cópiala y pégasela a Claude, que la pondrá "
-        "en el proyecto.",
-        "El archivo " + code("galactic-backup-key.txt") + " es la <b>clave privada</b>. Guárdalo en el gestor de "
-        "contraseñas (como archivo adjunto o nota segura) y en un USB que guardes en casa. Después bórralo del "
-        "ordenador.",
-    ],
-    "Sin la clave privada, las copias no se pueden abrir: ni tú, ni Claude, ni nadie. Guárdala en dos sitios.",
-    heading="Esta semana: copias de seguridad",
-))
-story.append(task(
-    "4", "Conexión de las copias en GitHub", "Esta semana", "10 min",
-    "La copia diaria necesita poder leer la base. Le das la dirección de conexión como «secreto» de GitHub: queda "
-    "cifrada y nadie puede volver a verla, ni tú.",
-    [
-        "Vercel › Storage › galactic-games › <b>Open in Neon</b>. En Neon, pulsa <b>Connect</b>.",
-        "Comprueba: rama <b>main</b>, base <b>neondb</b>. Desactiva <b>Connection pooling</b> (las copias necesitan "
-        "conexión directa). Pulsa <b>Show password</b> y <b>Copy snippet</b> de la dirección que empieza por "
-        + code("postgresql://") + ".",
-        "GitHub › repositorio skill-arena-mvp › <b>Settings</b> › Secrets and variables › <b>Actions</b> › "
-        "<b>New repository secret</b>.",
-        "Name: " + code("BACKUP_DATABASE_URL") + ". Secret: pega la dirección. Pulsa <b>Add secret</b>.",
-        "Borra la dirección del portapapeles copiando cualquier otra cosa. Avisa a Claude: «secreto de copias "
-        "puesto» (sin pegarlo).",
-    ],
-    "Las copias automáticas empiezan cuando el código llegue a producción (rama main). Hasta entonces Claude puede "
-    "lanzarlas a mano para comprobar que funcionan.",
-))
-
-story.append(task(
-    "5", "Claves distintas para pruebas y producción", "Antes de abrir", "15 min, con Claude",
-    "La revisión de seguridad independiente avisó: si las vistas de prueba y la producción comparten la misma clave de "
-    "firma, algo creado en una prueba valdría en producción. Cada entorno debe tener la suya.",
+    "3", "Claves distintas para pruebas y producción", "Antes de que jueguen otros móviles", "15 min, con Claude",
+    "La revisión de seguridad independiente avisó: si las pruebas y la producción comparten la misma clave de firma, "
+    "algo creado en una prueba valdría en producción. Cada entorno debe tener la suya.",
     [
         "Vercel › proyecto › Settings › <b>Environment Variables</b>.",
         "Para " + code("MATCH_SIGNING_SECRET") + " (y " + code("AUTH_SECRET") + " si existe): edita la de "
@@ -203,68 +166,64 @@ story.append(task(
         "Haz lo mismo con la de <b>Preview</b>, con otro valor distinto. Guarda ambos en el gestor.",
         "Dile a Claude «claves separadas»: él publicará una versión para que se apliquen y comprobará que todo funciona.",
     ],
-    heading="Antes de abrir la web a tus amigos",
+    heading="Antes de que jueguen otros móviles",
 ))
 story.append(task(
-    "6", "Comprobar la protección de copias del repositorio (forks)", "Antes de abrir", "2 min",
-    "El código es público. Si alguien hace una copia del repositorio (fork) y propone cambios, Vercel no debe "
-    "publicarlos con tus claves.",
+    "4", "Copias de seguridad: tu clave y la conexión", "Antes de que jueguen otros móviles", "20 min",
+    "Cada día se hará una copia cifrada de la base. La clave <b>pública</b> solo sirve para cifrar y va en el código; "
+    "la <b>privada</b> es la única que abre las copias y solo la tienes tú. Mientras nadie más juegue, la base está "
+    "casi vacía y no corre prisa; en cuanto haya partidas de otros, sí.",
     [
-        "Vercel › proyecto › Settings › <b>Git</b>.",
-        "Busca <b>Git Fork Protection</b> y comprueba que está activado. Si no, actívalo y guarda.",
+        "En Windows, abre <b>PowerShell</b> y escribe: " + code("winget install FiloSottile.age") + " (acepta si pregunta). "
+        "Cierra y vuelve a abrir PowerShell.",
+        "Escribe: " + code("age-keygen -o galactic-backup-key.txt") + ". Verás «Public key: age1…»: esa línea es "
+        "pública, cópiala y pégasela a Claude.",
+        "El archivo " + code("galactic-backup-key.txt") + " es la <b>clave privada</b>: guárdalo en el gestor y en un "
+        "USB en casa, y bórralo del ordenador.",
+        "Vercel › Storage › galactic-games › <b>Open in Neon</b> › <b>Connect</b>: rama main, base neondb, "
+        "<b>Connection pooling</b> desactivado, <b>Show password</b>, copia la dirección " + code("postgresql://…") + ".",
+        "GitHub › skill-arena-mvp › Settings › Secrets and variables › Actions › <b>New repository secret</b>: Name "
+        + code("BACKUP_DATABASE_URL") + ", Secret: la dirección. <b>Add secret</b>. Avisa a Claude sin pegarla.",
+    ],
+    "Sin la clave privada, las copias no se pueden abrir: ni tú, ni Claude, ni nadie. Guárdala en dos sitios.",
+))
+story.append(task(
+    "5", "Dar acceso a otros móviles", "Cuando decidas", "5 min",
+    "Hoy toda la web pide iniciar sesión en Vercel, así que otros móviles no pueden entrar. Hay dos formas de abrirla; "
+    "Claude te recomendará cuál según lo que quieras probar.",
+    [
+        "<b>Solo para probar con unos pocos:</b> un enlace de invitación de la versión de pruebas (Vercel › la "
+        "publicación de mobile-test › <b>Share</b>). Quien tenga el enlace entra sin cuenta de Vercel.",
+        "<b>Para lanzar:</b> Claude lleva a producción la versión que apruebes; luego Vercel › Settings › "
+        "<b>Deployment Protection</b> › Vercel Authentication › <b>Only Preview Deployments</b>. Producción queda "
+        "abierta y las pruebas siguen con candado.",
+        "En los dos casos se juega con saldo ficticio, y la app lo dice.",
     ],
 ))
 story.append(task(
-    "7", "Aprobar el lanzamiento y abrir el acceso", "Cuando decidas lanzar", "5 min",
-    "Hoy toda la web, también producción, pide iniciar sesión en Vercel: tus amigos no podrían entrar. Lanzar es "
-    "llevar a producción (rama main) una versión que ya probaste en mobile-test; abrir es quitar ese candado solo en "
-    "producción.",
+    "6", "Dominio y correo", "Cuando los compres", "30 min, con Claude",
+    "Un dominio propio (por ejemplo galacticgames.es) da una dirección seria, permite el inicio de sesión con Google y "
+    "Apple con tu marca y es necesario para el correo de contacto y de privacidad.",
     [
-        "Prueba la versión en mobile-test en tu móvil. Si te convence, escribe a Claude: «lanza vNNN a producción».",
-        "Claude la lleva a main y comprueba que se publica. Tú abres la dirección de producción y la revisas.",
-        "Para abrirla: Vercel › proyecto › Settings › <b>Deployment Protection</b> › Vercel Authentication › elige "
-        "<b>Only Preview Deployments</b> y guarda. Producción queda abierta; las pruebas siguen con candado.",
-        "Comparte con tus amigos solo la dirección de producción.",
+        "Cómpralo en un registrador conocido (por ejemplo, el propio Vercel › Domains, Cloudflare o Namecheap). Activa "
+        "en el registrador la verificación en dos pasos y el bloqueo de transferencia, y guarda el acceso en el gestor.",
+        "Vercel › proyecto › Settings › <b>Domains</b> › Add: escribe el dominio y sigue los registros DNS que pide. "
+        "Claude comprueba que queda bien y actualiza la app (dirección pública, inicio de sesión, avisos).",
+        "Correo: créalo con un proveedor (Google Workspace, Zoho o el de tu registrador) para direcciones como "
+        "contacto@ y privacidad@. Añade los registros SPF, DKIM y DMARC que te indique; Claude te los revisa.",
+        "Aviso de salud: GitHub › Settings › Secrets and variables › Actions › Variables › " + code("HEALTH_URL")
+        + " = " + code("https://tu-dominio/api/health") + ". Si falla, te llega un correo.",
     ],
-    "Abrir no activa dinero real. Tus amigos juegan con saldo ficticio, y la app lo dice.",
+    heading="Cuando compres el dominio y el correo",
 ))
 story.append(task(
-    "8", "Aviso de salud en GitHub", "Justo después de lanzar", "3 min",
-    "Cada 3 horas GitHub pregunta a la app si funciona. Si no, te envía un correo.",
-    [
-        "GitHub › skill-arena-mvp › Settings › Secrets and variables › Actions › pestaña <b>Variables</b> › "
-        "<b>New repository variable</b>.",
-        "Name: " + code("HEALTH_URL") + ". Value: la dirección de producción terminada en " + code("/api/health")
-        + " (por ejemplo " + code("https://skill-arena-mvp.vercel.app/api/health") + "). Guarda.",
-        "Comprueba que te llegan los correos de GitHub: foto de perfil › Settings › Notifications › Actions › "
-        "«Notify me: Failed workflows only» activado.",
-    ],
-))
-
-story.append(task(
-    "9", "Volver atrás o recuperar datos", "Cuando haga falta", "1–10 min",
-    "Acciones rápidas que no necesitan a Claude. El aviso de mantenimiento a los jugadores es automático: no tienes que "
-    "hacer nada. El manual completo está en docs/MANUAL_OPERACION.md.",
-    [
-        "<b>Una versión ha roto algo:</b> Vercel › Deployments › la publicación anterior que funcionaba › menú «⋯» › "
-        "<b>Instant Rollback</b>. Segundos, sin tocar datos.",
-        "<b>Datos borrados o estropeados hace menos de 6 horas:</b> Neon › proyecto › Postgres database › <b>Backup "
-        "&amp; Restore</b> › elige el momento anterior.",
-        "<b>Datos más antiguos:</b> GitHub › Actions › «Copia de la base de datos» › la del día › descarga el archivo. "
-        "Claude te guía para abrirlo con tu clave privada sin verla.",
-    ],
-    heading="Cuando algo falle",
-))
-
-story.append(task(
-    "10", "Abogado de juego y visibilidad del código", "Antes de dinero real", "Decisiones",
+    "7", "Abogado de juego y visibilidad del código", "Antes de dinero real", "Decisiones",
     "Son decisiones de negocio y legales: Claude no las toma ni las activa.",
     [
-        "<b>Abogado especializado en juego online.</b> Torneos con inscripción en dinero y premio en dinero están "
-        "dentro de la Ley 13/2011 (juego y concursos), aunque dependan de la habilidad. Pregúntale qué licencia hace "
-        "falta, si la comisión del 5 % al cambiar euros por ₡ cambia algo, qué exige la verificación de identidad, y "
-        "que revise las condiciones para estudios (el 50 % de la comisión del cambio se reparte según las partidas de "
-        "cada juego).",
+        "<b>Abogado especializado en juego online.</b> Torneos con premio en dinero están dentro de la Ley 13/2011 "
+        "(juego y concursos), aunque dependan de la habilidad y aunque no haya pago por entrar. Pregúntale qué licencia "
+        "hace falta, si la comisión del 5 % al cambiar euros por ₡ cambia algo, qué exige la verificación de "
+        "identidad, y que revise las condiciones para estudios.",
         "<b>Código público o privado.</b> Hoy cualquiera puede leer el código (no cambiarlo). Para dinero real conviene "
         "privado. Se cambia en GitHub › Settings › General › Danger Zone › Change visibility; es decisión tuya.",
     ],

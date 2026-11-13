@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v188-saturn · Ranking Juegos y copia sin comentarios (13-nov-2026)
+
+- Ranking › Jugadores | Juegos (ingresos por juego, datos de ejemplo); herramienta de copia sin comentarios.
+- Pendiente: anti-bots capas 1–5 (`docs/ANTIBOT.md`); ingresos reales por juego cuando exista el libro de cuentas.
+
 ## v187-saturn · Recuento de partidas y aviso automático (13-nov-2026)
 
 - Reparto a estudios: 50 % de la comisión del cambio según partidas verificadas; recuento mensual en el servidor.

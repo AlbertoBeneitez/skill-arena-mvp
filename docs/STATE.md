@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v187-saturn.
+Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v188-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Ranking Juegos y copia sin comentarios (13 de noviembre, v188):** Ranking › Jugadores | Juegos con ingresos por juego (datos de ejemplo hasta el libro de cuentas); `scripts/studio-strip-comments.mjs` para integrar juegos de estudios; diseño anti-bots en `docs/ANTIBOT.md`; tareas del propietario reducidas a 7.
 - [x] **Recuento de partidas y aviso automático (13 de noviembre, v187):** el 50 % de la comisión del cambio se reparte entre juegos según partidas verificadas (máx. 20 por jugador, juego y día); condiciones de estudios `studio-terms-2026-11-13`; aviso de mantenimiento solo automático.
 - [x] **Comisión solo al cambiar y revisión de seguridad (13 de noviembre, v186):** grupos sin comisión (los antiguos conservan su 5 %); 5 % al ingresar y al retirar; aviso de mantenimiento automático y manual; arreglos de la revisión independiente (.zip trampa, buzón de estudios cerrado, copias con `age`, salud cacheada, pool robusto). Pendientes de la revisión en `docs/releases/v186-saturn.md`.
 - [x] **Seguridad mínima (13 de noviembre, v185):** límites a los envíos de estudios, cortafuegos con límites de peticiones, copia diaria cifrada, comprobación de salud y `docs/MANUAL_OPERACION.md`. Pendiente del propietario: secretos de las copias y `HEALTH_URL` en GitHub, verificación en dos pasos en GitHub, Vercel y Google.

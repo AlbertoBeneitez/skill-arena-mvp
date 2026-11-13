@@ -7456,6 +7456,11 @@ html[dir="rtl"] .appHeader .logoButton { text-align: right; }
 html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: none; }
 
 .rankingHub { display: grid; gap: 12px; }
+/* v188 · Jugadores / Juegos */
+.rankingKinds { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 10px; background: #08090a; border: 1px solid var(--av-line-2, #2f3236); }
+.rankingKinds button { min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--av-mute, #8fa2b4); font-weight: 750; cursor: pointer; }
+.rankingKinds button[aria-pressed="true"] { background: rgba(159,230,255,.14); color: #e9f9ff; box-shadow: inset 0 0 0 1px rgba(159,230,255,.45); }
+.rankingKinds button:focus-visible { outline: 2px solid var(--av-ice, #9fe6ff); outline-offset: 2px; }
 .gameRanking { display: grid; gap: 12px; }
 .gameRankingYou { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: linear-gradient(135deg, rgba(30,30,32,.95), rgba(17,17,19,.95)); border: 1px solid color-mix(in srgb, var(--tier) 60%, transparent); }
 .gameRankingYou img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--tier); }
