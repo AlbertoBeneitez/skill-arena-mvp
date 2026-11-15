@@ -218,10 +218,11 @@ arena_accounts ─┬─ arena_group_members ── arena_groups
 Cada fase se hace con migraciones que solo añaden, se aplican solas y se prueban antes contra una base vacía y contra
 una copia de la actual.
 
-## Decisiones del propietario
+## Decisiones del propietario (15 de noviembre de 2026)
 
-- **Copia diaria:** pendiente. Permitir llevar `db-backup.yml` y `health.yml` a `main`, y poner los secretos.
-
-- **Borrar una cuenta:** pendiente. La propuesta es anonimizarla y conservar el libro.
-- **Una cuenta en móvil y ordenador:** pendiente. La propuesta es que sí.
+- **Copia diaria:** aprobado. `db-backup.yml` y `health.yml` están en `main` desde el 15 de noviembre (la copia lee
+  su script de `mobile-test`). Faltan los secretos: `BACKUP_DATABASE_URL` y la clave pública en
+  `ops/backup-recipient.txt`; para la salud, `HEALTH_URL`.
+- **Borrar una cuenta:** se anonimiza y se conserva el libro el plazo legal (pendiente de confirmar con el abogado).
+- **Una cuenta en móvil y ordenador:** sí. La plataforma va en cada partida y en cada resultado.
 - **Plazo de conservación de partidas:** pendiente. La propuesta es 12 meses.
