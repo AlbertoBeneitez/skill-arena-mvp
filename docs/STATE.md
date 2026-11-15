@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v189-saturn.
+Actualizado: 12 de noviembre de 2026 · base `mobile-test` en v190-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Protección de datos al día (15 de noviembre, v190):** borrado automático de propuestas (30/180 días), política de privacidad reescrita en 10 idiomas y registro de actividades de tratamiento. Falta la identidad del responsable y el correo (con el dominio).
 - [x] **Juegos de azar y por dinero, periodos (13–15 de noviembre, v189):** Slot y Ruleta son de azar (nunca por dinero, también en el servidor) y no generan ingresos; los juegos por dinero se ven dorados; rankings con 1S, 1M, 6M, 1A y Todo.
 - [x] **Ranking Juegos y copia sin comentarios (13 de noviembre, v188):** Ranking › Jugadores | Juegos con ingresos por juego (datos de ejemplo hasta el libro de cuentas); `scripts/studio-strip-comments.mjs` para integrar juegos de estudios; diseño anti-bots en `docs/ANTIBOT.md`; tareas del propietario reducidas a 7.
 - [x] **Recuento de partidas y aviso automático (13 de noviembre, v187):** el 50 % de la comisión del cambio se reparte entre juegos según partidas verificadas (máx. 20 por jugador, juego y día); condiciones de estudios `studio-terms-2026-11-13`; aviso de mantenimiento solo automático.

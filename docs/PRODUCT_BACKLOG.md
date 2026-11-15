@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v190-saturn · Protección de datos al día (15-nov-2026)
+
+- Plazos de borrado de propuestas, política de privacidad nueva, registro de tratamientos.
+- Pendiente: responsable y correo de privacidad; plazo de conservación de partidas; DPA de proveedores.
+
 ## v189-saturn · Juegos de azar y por dinero, periodos (15-nov-2026)
 
 - Azar (Slot, Ruleta) sin dinero en cliente y servidor; juegos por dinero dorados; periodos en los rankings.

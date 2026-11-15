@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
 import { Pool } from "pg";
-import { STUDIO_LIMITS, StudioQuotaError, saveSubmission } from "../lib/server/studioProposals";
+import { STUDIO_LIMITS, StudioQuotaError, purgeExpiredProposals, saveSubmission } from "../lib/server/studioProposals";
 import type { Manifest, Report } from "../lib/studio/package";
 
 const connectionString = process.env.TEST_DATABASE_URL;
@@ -41,6 +41,18 @@ try {
   assert.equal(await reason(saveSubmission(sub, manifest, report, pkg(900, 4096), pool, small)), "STORAGE");
   assert.equal(await reason(saveSubmission(sub, manifest, report, pkg(901, 16), pool, small)), "ok");
   assert.equal(await reason(saveSubmission(sub, manifest, report, pkg(902, 128), pool, small)), "STORAGE");
+  // v189 · Retention: rejected after 30 days, never reviewed after 180, approved kept.
+  await pool.query("DELETE FROM studio_game_proposals");
+  for (let i = 0; i < 5; i++) assert.equal(await reason(saveSubmission(sub, manifest, report, pkg(700 + i), pool)), "ok");
+  const ids = (await pool.query("SELECT proposal_id FROM studio_game_proposals ORDER BY proposal_id")).rows.map((r) => r.proposal_id as string);
+  await pool.query("UPDATE studio_game_proposals SET review_status='rejected', reviewed_at=now() - interval '31 days' WHERE proposal_id=$1", [ids[0]]);
+  await pool.query("UPDATE studio_game_proposals SET review_status='rejected', reviewed_at=now() - interval '29 days' WHERE proposal_id=$1", [ids[1]]);
+  await pool.query("UPDATE studio_game_proposals SET created_at=now() - interval '181 days' WHERE proposal_id=$1", [ids[2]]);
+  await pool.query("UPDATE studio_game_proposals SET review_status='approved', reviewed_at=now() - interval '400 days', created_at=now() - interval '400 days' WHERE proposal_id=$1", [ids[3]]);
+  assert.equal(await purgeExpiredProposals(pool), 2);
+  const left = (await pool.query("SELECT proposal_id FROM studio_game_proposals ORDER BY proposal_id")).rows.map((r) => r.proposal_id);
+  assert.deepEqual(left, [ids[1], ids[3], ids[4]]);
+  console.log("Studio retention: rejected after 30 days, unreviewed after 180, approved kept");
   console.log("Studio quotas: duplicate package, daily cap under parallel uploads, stored-bytes cap, no sender data stored");
 } finally {
   await pool.end();

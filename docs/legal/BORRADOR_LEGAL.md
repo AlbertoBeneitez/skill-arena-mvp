@@ -27,8 +27,12 @@
   - El proveedor de alojamiento ([Vercel Inc.]) puede tratar datos técnicos de conexión (dirección IP, agente de usuario) en sus registros para operar y proteger el servicio.
   - No se piden datos de identidad, pago ni ubicación. Cámara, micrófono y geolocalización están bloqueados por la política de permisos.
 - **Finalidades y base jurídica:** prestar el servicio y verificar partidas (ejecución del servicio / interés legítimo); seguridad y prevención de abuso (interés legítimo). No hay publicidad ni elaboración de perfiles.
-- **Conservación:** [definir; con la configuración actual sin base de datos las partidas no se almacenan, y las cookies caducan a las 24 h]. Si se activa PostgreSQL: [plazo].
-- **Destinatarios y transferencias:** proveedor de alojamiento y, en su caso, de base de datos ([Vercel / proveedor de BD]); posibles transferencias internacionales amparadas en [cláusulas contractuales tipo / Marco de Privacidad de Datos UE-EEUU].
+- **Conservación (15-nov-2026):** propuestas de estudios rechazadas, 30 días tras decidir; sin revisar, 180 días;
+  aceptadas, mientras el juego esté en la app (borrado automático). Partidas verificadas: [fijar plazo]. Cookies: ver §4.
+  Copias de seguridad cifradas: 30 días. Detalle por tratamiento en `docs/legal/REGISTRO_TRATAMIENTOS.md`.
+- **Destinatarios y transferencias:** Vercel (alojamiento, funciones en Frankfurt), Neon (base de datos en Frankfurt) y
+  GitHub (copias cifradas); empresas de EE. UU., transferencias amparadas en el Marco de Privacidad de Datos UE-EE. UU.
+  o cláusulas contractuales tipo según cada proveedor. Texto de la app actualizado el 15-nov-2026 (`privacy.p8`).
 - **Derechos:** acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a [CORREO]; reclamación ante la Agencia Española de Protección de Datos (aepd.es). «Cerrar sesión local» borra los datos del navegador; no equivale a una solicitud de borrado en servidor, que se atiende por correo.
 - **Menores:** servicio no dirigido a menores de 14 años; los juegos de azar simulado, solo a mayores de 18.
 

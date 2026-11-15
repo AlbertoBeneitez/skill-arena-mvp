@@ -52,6 +52,7 @@ export async function saveSubmission(s: Submission, manifest: Manifest, report: 
   try {
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock($1)", [STUDIO_LOCK]);
+    await purgeExpiredProposals(client);
     const { rows } = await client.query(
       `SELECT count(*) FILTER (WHERE created_at > now() - interval '1 day')::int AS today,
               COALESCE(sum(octet_length(package)),0)::bigint AS bytes,
@@ -78,7 +79,24 @@ export async function saveSubmission(s: Submission, manifest: Manifest, report: 
   }
 }
 
+/**
+ * v189 · Retention (privacy policy): a rejected proposal is deleted 30 days after the decision; one never reviewed,
+ * 180 days after it arrived. Approved proposals stay while the game is in the app (the contact is needed to pay the
+ * studio's share). Runs before every new upload and every time the owner opens the inbox, so no scheduler is needed.
+ */
+export const STUDIO_RETENTION = { rejectedDays: 30, unreviewedDays: 180 } as const;
+export async function purgeExpiredProposals(db: Pick<Pool, "query"> = getProductionPostgresPool()): Promise<number> {
+  const { rowCount } = await db.query(
+    `DELETE FROM studio_game_proposals
+      WHERE (review_status = 'rejected' AND COALESCE(reviewed_at, created_at) < now() - make_interval(days => $1))
+         OR (review_status = 'received' AND created_at < now() - make_interval(days => $2))`,
+    [STUDIO_RETENTION.rejectedDays, STUDIO_RETENTION.unreviewedDays],
+  );
+  return rowCount ?? 0;
+}
+
 export async function listSubmissions(): Promise<StoredSubmission[]> {
+  await purgeExpiredProposals();
   const { rows } = await getProductionPostgresPool().query(
     `SELECT proposal_id,created_at,studio,contact,game,shelf,summary,link,manifest,report,package_sha256,
             COALESCE(octet_length(package),0) AS size,review_status

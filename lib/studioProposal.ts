@@ -6,7 +6,8 @@
  */
 /** v186 · 13-nov: payout from the exchange commission by verified matches; games integrated after line-by-line review. */
 export const STUDIO_TERMS_VERSION = "studio-terms-2026-11-13";
-export const PROPOSAL_CONSENT_VERSION = "studio-proposal-2026-11-03";
+/** v189 · 15-nov: concrete retention (30 days rejected, 180 unreviewed, kept while an accepted game is in the app). */
+export const PROPOSAL_CONSENT_VERSION = "studio-proposal-2026-11-15";
 /** Rows a studio can choose in galactic.json (lib/games.ts CATALOG_SHELVES); "Populares" and "Nuevos" are earned. */
 export const PROPOSAL_SHELVES = ["bar", "mythic", "dynamic", "alternative"] as const;
 export type ProposalShelf = (typeof PROPOSAL_SHELVES)[number];
