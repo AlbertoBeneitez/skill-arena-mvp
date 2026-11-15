@@ -1,0 +1,62 @@
+name: Copia de la base de datos
+
+# v186 · Daily copy of the Neon database, encrypted with the owner's age PUBLIC key (ops/backup-recipient.txt) and kept
+# 30 days as a workflow artifact. The repository is public, so artifacts can be downloaded by any GitHub user: only
+# the owner's private key, kept offline, opens them (age also detects any tampering).
+# Needs one repository secret (GitHub › Settings › Secrets and variables › Actions):
+#   BACKUP_DATABASE_URL  connection string copied from Neon › Connect
+# PostgreSQL 18 client tools come from the official signed apt repository (apt.postgresql.org), not a mutable image.
+# Scheduled runs only start from the default branch (main), but the script and the public key are read from
+# mobile-test (checkout ref), so main only needs this file (v193).
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: mobile-test
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$BACKUP_DATABASE_URL" ] || ! grep -q '^age1' ops/backup-recipient.txt; then
+            echo "::warning::Copias sin configurar: falta el secreto BACKUP_DATABASE_URL o la clave pública en ops/backup-recipient.txt."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install PostgreSQL 18 client and age
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common age > /dev/null
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y > /dev/null
+          sudo apt-get install -y -qq postgresql-client-18 > /dev/null
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+      - name: Dump, check and encrypt
+        if: steps.config.outputs.ready == 'true'
+        run: OUT="galactic-games-$(date -u +%Y%m%d-%H%M).dump.age" scripts/db-backup.sh
+      - name: Keep the encrypted copy (30 days)
+        if: steps.config.outputs.ready == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: galactic-games-db-${{ github.run_id }}
+          path: galactic-games-*.dump.age
+          retention-days: 30
+          if-no-files-found: error
