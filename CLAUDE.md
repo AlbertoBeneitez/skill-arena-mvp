@@ -38,3 +38,19 @@ Punto de entrada para cualquier sesión de Claude en este repositorio.
 Lo que `AGENTS.md` enumera en «Autonomy», más: borrar ramas o etiquetas,
 cambiar la rama de producción de Vercel, tocar variables de entorno de
 producción y cualquier cambio de visibilidad o permisos del repositorio.
+
+## Pagos y costes (propietario, 15 de noviembre de 2026)
+
+«ÚLTIMA VEZ QUE UN PAGO NO ME LO NOTIFICAS.»
+
+- Nada que cueste dinero sin el permiso explícito del propietario: planes de pago,
+  pruebas que pasan a ser de pago, dominios, almacenamiento, integraciones o
+  cualquier servicio con tarifa. Antes de proponerlo, decir el importe, cada
+  cuánto se cobra y cómo se cancela.
+- Al empezar cada sesión con acceso a Vercel, mirar los cargos de los últimos
+  días y avisar de cualquier cargo nuevo, aunque sea pequeño.
+- Si una tarea puede generar uso de pago (más tráfico, más compilaciones, más
+  datos), avisar antes de hacerla, no después.
+- Estado al 15 de noviembre: Vercel Pro (20 $ al mes más IVA) pendiente de que
+  el propietario lo cancele; Neon en plan gratis (1 GB; si se llena, deja de
+  escribir, no cobra); GitHub gratis (repositorio público).

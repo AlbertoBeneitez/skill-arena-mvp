@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v193-saturn · Revisión de la base de datos (15-nov-2026)
+
+- `docs/BASE_DE_DATOS.md`: cimientos pendientes (persona única, libro de partida doble, anonimizar al borrar, grupos
+  en el servidor) y plan en 4 fases. Regla de pagos en `CLAUDE.md`.
+- Pendiente: decisiones del propietario (borrado, cuenta única, plazo de partidas, copia diaria en `main`); fase 1.
+
 ## v192-saturn · Slot por dinero, migraciones automáticas, grupo contra grupo (15-nov-2026)
 
 - Slot es juego por dinero; sin rejilla ni grosores por defecto; crear grupo directo; borrar grupo en rojo.
