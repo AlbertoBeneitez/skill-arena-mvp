@@ -437,6 +437,11 @@ try {
     ),
     0,
   );
+  // v189 · Games of chance are never played for money; skill games still accept a stake.
+  await rejects(
+    () => service.start("chance-0", { game_id: "galactic-slot", stake_minor: 100, start_key: randomUUID() }),
+    "CHANCE_GAME_NOT_FOR_MONEY",
+  );
   // v179 · Platform pools. Before migration 006 every match is a phone match and computers are refused.
   await rejects(
     () => service.start("desk-0", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "desktop" }),

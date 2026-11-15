@@ -21,7 +21,7 @@ import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
 import WalletPanel from "./WalletPanel";
 import StudioWelcome from "./StudioWelcome";
-import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey } from "@/lib/games";
+import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey, playableForMoney } from "@/lib/games";
 import { DEMO_MEMBERS, createDemoClosedGroup, isSimulatedMemberId, joinDemoClosedGroup, withoutSimulatedMembers, type ClosedGroup } from "@/lib/groupPlay";
 import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
 import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
@@ -957,6 +957,8 @@ export default function DemoApp() {
     const mode = persistentTraining ? (liveModes[game.id]??"create") : modeForStake(game, stake as Stake, nextTurn);
 
     if (matchStartLockRef.current || stake > balance) return;
+    // v189: games of chance are never played for money (no licence); the server refuses it too.
+    if (stake > 0 && !playableForMoney(game)) return;
     if(persistentTraining && stake>0 && game.competition.verification!=="server-replay"){
       setMatchStartError(t("home.localOnly"));return;
     }

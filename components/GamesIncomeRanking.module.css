@@ -14,7 +14,10 @@
 .dotOn { fill: #ffffff; stroke: var(--av-ice, #9fe6ff); stroke-width: 2; }
 .tip { fill: #f2f6fa; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .hit { fill: transparent; cursor: pointer; }
-.axis { display: grid; grid-template-columns: repeat(6, 1fr); margin-top: 2px; color: #7d8a98; font-size: 11px; text-align: center; text-transform: capitalize; }
+.axis { position: relative; height: 16px; margin-top: 2px; color: #7d8a98; font-size: 11px; white-space: nowrap; }
+.axis span { position: absolute; top: 0; transform: translateX(-50%); }
+.axis span:first-child { transform: none; }
+.axis span:last-child { transform: translateX(-100%); }
 .axis span[data-on] { color: #e9f4fb; font-weight: 700; }
 .listTitle { margin: 4px 0 8px; font-size: 14px; color: #e9f4fb; }
 .list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }

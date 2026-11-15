@@ -1,4 +1,5 @@
 "use client";
+import type { RankingPeriod } from "@/lib/rankingPeriod";
 import RankingAvatar from "./RankingAvatar";
 import ProfitChart, { profitSeries } from "./ProfitChart";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
@@ -17,7 +18,7 @@ type LoadState = {
   status: "loading" | "ready" | "not-configured" | "unavailable" | "error";
   page?: RankingPage;
 };
-export default function GlobalRanking({ embedded = false, platform = "mobile" }: { embedded?: boolean; platform?: Platform }) {
+export default function GlobalRanking({ embedded = false, platform = "mobile", period = "all" }: { embedded?: boolean; platform?: Platform; period?: RankingPeriod }) {
   const { t, locale } = useI18n();
   const [source, setSource] = useState<"server" | "demo">("server");
   const [cursor, setCursor] = useState<string | null>(null);
@@ -28,7 +29,7 @@ export default function GlobalRanking({ embedded = false, platform = "mobile" }:
   });
   const [retry, setRetry] = useState(0);
   const [openRow, setOpenRow] = useState<string | null>(null);
-  const key = `${source}:${cursor ?? ""}`;
+  const key = `${source}:${period}:${cursor ?? ""}`;
   const visible =
     state.key === key ? state : { key, status: "loading" as const };
   useEffect(() => {
@@ -40,6 +41,10 @@ export default function GlobalRanking({ embedded = false, platform = "mobile" }:
         if (source === "demo") {
           const demo = await import("@/lib/demo/globalRanking");
           page = demo.readDemoRankingPage(RANKING_PAGE_LIMIT, cursor);
+        } else if (period !== "all") {
+          // v189: settlement snapshots hold the all-time ranking only; shorter periods arrive with the server read model.
+          if (!controller.signal.aborted) setState({ key, status: "not-configured" });
+          return;
         } else if (platform === "desktop") {
           // v179: the real ranking comes from settlement snapshots, which do not split phones and computers yet; until
           // they do, the computer platform has no real ranking rather than the phones' one.
@@ -83,7 +88,7 @@ export default function GlobalRanking({ embedded = false, platform = "mobile" }:
     }
     void load();
     return () => controller.abort();
-  }, [source, cursor, key, retry, platform]);
+  }, [source, cursor, key, retry, platform, period]);
   function switchSource(next: typeof source) {
     setSource(next);
     setCursor(null);

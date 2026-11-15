@@ -59,6 +59,11 @@ export type GameDefinition<TId extends string = string> = {
   cover: string;
   enabled: boolean;
   waitingStakes: readonly Stake[];
+  /**
+   * v189 · "chance": a game of chance (Slot, Roulette). It can never be played for money — there is no gaming licence
+   * for it — so no stake, no paid group entry, no prize. Every other game is a game of skill playable for money.
+   */
+  playKind?: "chance";
   category: string;
   tagline: string;
   difficulty: "MEDIA" | "ALTA";
@@ -107,13 +112,13 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:false,waitingStakes:[1,5],category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. La bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota a cámara lenta en el cuenco según la inclinación de cada superficie (unos 8 botes) y, cuando deja de botar, rueda hasta una casilla." },
+  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:false,waitingStakes:[],playKind:"chance",category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. La bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota a cámara lenta en el cuenco según la inclinación de cada superficie (unos 8 botes) y, cuando deja de botar, rueda hasta una casilla." },
   {
     id: "galactic-slot", version: "4.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 4, allowedActions: SLOT_ACTIONS },
     resultMetric: "fictitious-balance", name: "Slot", cover: "/covers/galactic-slot.webp?v=156", enabled: true,
-    waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
+    waitingStakes: [], playKind: "chance", category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
     rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100 fichas iniciales, 5 por tirada, máximo tres minutos. Siete símbolos en orden fijo y avances de −3 a +3 posiciones, sin jugada 000. Trío: 20 a 120 fichas según el símbolo (tres sietes, 200); pareja: 5 a 30 (dos sietes, 40); sin pareja no hay premio. Servidor reproduce inputs y saldo; sin dinero real.",
   },
 
@@ -450,6 +455,10 @@ export function modeForStake(
   if (game.waitingStakes.includes(stake)) return "waiting";
   return "create";
 }
+
+/** v189 · Games of chance can never be played for money (no licence): no stake, no paid group entry. */
+export const playableForMoney = (game: Pick<GameMeta, "playKind">) => game.playKind !== "chance";
+export const isChanceGameId = (id: string) => GAME_DEFINITIONS.some((g) => g.id === id && (g as { playKind?: string }).playKind === "chance");
 
 export function prizeForStake(stake: number) {
   if (stake === 0) return 0;

@@ -4,6 +4,7 @@
  * taxes, payment costs and refunds) is split between ALL games in proportion to their counted matches; the part of a
  * studio's games goes to that studio, the part of the house games stays with Galactic Games.
  *
+ * Games of chance (Slot, Roulette) are never played for money and do not take part (v189): leave them out of `games`.
  * Counted matches come from the server only (lib/server/playCounts.ts): verified matches, at most
  * PLAYS_PER_PLAYER_DAILY_CAP per player, game and day, so a studio cannot multiply its share by replaying alone.
  * Pure TypeScript, whole cents, exact totals.

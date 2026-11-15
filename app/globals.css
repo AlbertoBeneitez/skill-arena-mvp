@@ -7456,6 +7456,11 @@ html[dir="rtl"] .appHeader .logoButton { text-align: right; }
 html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: none; }
 
 .rankingHub { display: grid; gap: 12px; }
+/* v189 · Periods */
+.rankingPeriods { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.rankingPeriods button { min-height: 36px; border-radius: 999px; border: 1px solid var(--av-line-2, #2f3236); background: transparent; color: var(--av-mute, #8fa2b4); font-weight: 750; font-size: 13px; cursor: pointer; }
+.rankingPeriods button[aria-checked="true"] { background: #e9f9ff; color: #071318; border-color: #e9f9ff; }
+.rankingPeriods button:focus-visible { outline: 2px solid var(--av-ice, #9fe6ff); outline-offset: 2px; }
 /* v188 · Jugadores / Juegos */
 .rankingKinds { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 10px; background: #08090a; border: 1px solid var(--av-line-2, #2f3236); }
 .rankingKinds button { min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--av-mute, #8fa2b4); font-weight: 750; cursor: pointer; }

@@ -1,5 +1,5 @@
 import { canonicalJson } from "../verified/canonical";
-import { getGameDefinition } from "../games";
+import { getGameDefinition, playableForMoney } from "../games";
 import { validateInputSequence } from "../verified/inputValidation";
 import type {
   VerifiedAttemptResult,
@@ -66,6 +66,9 @@ export class PublicMatchService {
       !adapter
     )
       throw new PublicAttemptError("UNSUPPORTED_GAME_VERSION", 400);
+    // v189: games of chance are never played for money (no licence), whatever the client asks.
+    if ((body.stake_minor as number) > 0 && !playableForMoney(game))
+      throw new PublicAttemptError("CHANCE_GAME_NOT_FOR_MONEY", 400);
     const row = await this.repository.start({
       actor,
       key: body.start_key,

@@ -3,7 +3,7 @@ import UiIcon from "./UiIcon";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { type LeagueState } from "@/lib/leagues";
-import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, isNewGame, modeForStake, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
+import { CATALOG_SHELVES, GAMES, POPULAR_COUNT, gameShelf, isNewGame, modeForStake, playableForMoney, type GameMeta, type Stake, type GameId, type MatchMode } from "@/lib/games";
 import styles from "./CatalogBrowser.module.css";
 import { t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
@@ -91,7 +91,8 @@ export default function CatalogBrowser(props: Props) {
   );
   const rivalWaiting = (game: GameMeta) => (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) === "existing";
   const renderCard = (row: string, game: GameMeta, index: number) => (
-    <article key={`${row}-${game.id}`} role="listitem" className={styles.card} aria-label={gameName(game)} style={{ ["--accent" as string]: gameAccent(game), ["--i" as string]: index }}>
+    <article key={`${row}-${game.id}`} role="listitem" className={styles.card} data-kind={playableForMoney(game) ? "money" : "chance"}
+      aria-label={`${gameName(game)} · ${t(playableForMoney(game) ? "catalog.moneyGame" : "catalog.chanceGame")}`} style={{ ["--accent" as string]: gameAccent(game), ["--i" as string]: index }}>
       {/* v166: a square card; the picture fills it and the play button sits on its lower edge. */}
       <div className={styles.cover}>
         <img
@@ -104,6 +105,10 @@ export default function CatalogBrowser(props: Props) {
           decoding="async"
           fetchPriority={row === "popular" && index < 3 ? "high" : "low"}
         />
+        {/* v189: games for money carry a gold mark; games of chance say they are never for money. */}
+        {playableForMoney(game)
+          ? <span className={styles.moneyMark} aria-hidden="true"><svg viewBox="0 0 20 20" width="14" height="14"><path d="M10 1.5 12.6 7l6 .6-4.5 4 1.3 5.9L10 14.6l-5.4 2.9 1.3-5.9-4.5-4 6-.6Z" fill="currentColor" /></svg></span>
+          : <span className={styles.chanceTag}>{t("catalog.chanceTag")}</span>}
         {/* v167: a green light when a rival's match is already waiting for this game. */}
         {rivalWaiting(game) && <span className={styles.rivalLed} role="img" aria-label={t("catalog.rivalWaiting")} title={t("catalog.rivalWaiting")} />}
         {!props.serverOnly && rivalWaiting(game) && (

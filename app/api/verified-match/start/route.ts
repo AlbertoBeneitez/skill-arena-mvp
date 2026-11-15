@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { getGameDefinition, type GameId } from "@/lib/games";
+import { getGameDefinition, playableForMoney, type GameId } from "@/lib/games";
 import {
   createMatchManifest,
   hashManifest,
@@ -80,6 +80,10 @@ export async function POST(request: NextRequest) {
 
   if (!isAllowedStakeMinor(stakeMinor)) {
     return reject("INVALID_STAKE");
+  }
+  // v189: games of chance are never played for money (no licence).
+  if (stakeMinor > 0 && !playableForMoney(game)) {
+    return reject("CHANCE_GAME_NOT_FOR_MONEY");
   }
 
   const targetScore =

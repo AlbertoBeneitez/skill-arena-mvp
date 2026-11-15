@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v189-saturn · Juegos de azar y por dinero, periodos (15-nov-2026)
+
+- Azar (Slot, Ruleta) sin dinero en cliente y servidor; juegos por dinero dorados; periodos en los rankings.
+- Pendiente: grupo contra grupo y ranking de grupos (descripción del propietario); ranking real por periodos en el
+  servidor.
+
 ## v188-saturn · Ranking Juegos y copia sin comentarios (13-nov-2026)
 
 - Ranking › Jugadores | Juegos (ingresos por juego, datos de ejemplo); herramienta de copia sin comentarios.

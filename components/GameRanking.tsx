@@ -7,6 +7,7 @@ import { createRng } from "@/lib/deterministic/seeded";
 import { emptyLeague, leagueRival, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import GlobalRanking from "./GlobalRanking";
 import GamesIncomeRanking from "./GamesIncomeRanking";
+import { DEFAULT_RANKING_PERIOD, RANKING_PERIODS, type RankingPeriod } from "@/lib/rankingPeriod";
 import { portraitSrc } from "@/lib/avatars";
 import UiIcon from "./UiIcon";
 import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
@@ -18,9 +19,10 @@ type Row = { id: string; name: string; avatar: string; score: number; tier: Leag
 const NAMES = SAMPLE_RANKING_NAMES;
 
 /** Sample leaderboard per game (datos de ejemplo): deterministic, spread over the five league tiers. */
-function sampleRows(game: GameMeta, platform: Platform): Row[] {
-  // v179: each platform has its own leaderboard (mobile keeps its earlier sample exactly).
-  const rng = createRng(platform === "mobile" ? `game-ranking:${game.id}` : `game-ranking:${platform}:${game.id}`);
+function sampleRows(game: GameMeta, platform: Platform, period: RankingPeriod): Row[] {
+  // v179: each platform has its own leaderboard (mobile keeps its earlier sample exactly). v189: and each period.
+  const base0 = platform === "mobile" ? `game-ranking:${game.id}` : `game-ranking:${platform}:${game.id}`;
+  const rng = createRng(period === "all" ? base0 : `${base0}:${period}`);
   return NAMES.map((name, i) => {
     const tier = (4 - Math.min(4, Math.floor(i / 6))) as LeagueTier;
     const record: LeagueRecord = { ...emptyLeague(), tier, series: i, results: [] };
@@ -39,13 +41,13 @@ export function scoreText(game: GameMeta, score: number) {
   return formatNumber(score);
 }
 
-export function GameRanking({ game, best, league, playerName, avatarSrc, platform = "mobile" }: { game: GameMeta; best?: number; league: LeagueRecord; playerName: string; avatarSrc: string; platform?: Platform }) {
+export function GameRanking({ game, best, league, playerName, avatarSrc, platform = "mobile", period = "all" }: { game: GameMeta; best?: number; league: LeagueRecord; playerName: string; avatarSrc: string; platform?: Platform; period?: RankingPeriod }) {
   useI18n();
   const rows = useMemo(() => {
-    const list = sampleRows(game, platform);
+    const list = sampleRows(game, platform, period);
     if (best !== undefined) list.push({ id: "you", name: playerName || t("common.you"), avatar: avatarSrc, score: best, tier: league.tier, you: true });
     return list.sort((a, b) => compareScores(game)(a.score, b.score) || (a.you ? -1 : 1));
-  }, [game, best, league.tier, playerName, avatarSrc, platform]);
+  }, [game, best, league.tier, playerName, avatarSrc, platform, period]);
   const yourPosition = rows.findIndex((r) => r.you) + 1;
   return (
     <section className="gameRanking" aria-label={t("ranking.gameOf", { game: gameName(game) })}>
@@ -155,6 +157,7 @@ function RankingPicker({ value, onChange }: { value: string; onChange(id: string
 export default function RankingHub({ bestScores, leagues, playerName, avatarSrc, showLeagues, platform = "mobile" }: { bestScores: Record<string, number>; leagues: LeagueState; playerName: string; avatarSrc: string; showLeagues: boolean; platform?: Platform }) {
   useI18n();
   const [kind, setKind] = useState<"players" | "games">("players");
+  const [period, setPeriod] = useState<RankingPeriod>(DEFAULT_RANKING_PERIOD);
   const [view, setView] = useState<string>("global");
   const game = GAMES.find((g) => g.id === view);
   return (
@@ -163,13 +166,21 @@ export default function RankingHub({ bestScores, leagues, playerName, avatarSrc,
         <button type="button" aria-pressed={kind === "players"} onClick={() => setKind("players")}>{t("ranking.tabPlayers")}</button>
         <button type="button" aria-pressed={kind === "games"} onClick={() => setKind("games")}>{t("ranking.tabGames")}</button>
       </div>
-      {kind === "games" ? <GamesIncomeRanking /> : <>
+      {/* v189: every ranking can be read over one week, one month, six months, one year or all time. */}
+      <div className="rankingPeriods" role="radiogroup" aria-label={t("ranking.periodAria")}>
+        {RANKING_PERIODS.map((p) => (
+          <button key={p} type="button" role="radio" aria-checked={period === p} aria-label={t(`ranking.periodLong.${p}` as MessageKey)} onClick={() => setPeriod(p)}>
+            {t(`ranking.period.${p}` as MessageKey)}
+          </button>
+        ))}
+      </div>
+      {kind === "games" ? <GamesIncomeRanking period={period} /> : <>
         <RankingPicker value={view} onChange={setView} />
         {/* v179: phones and computers rank apart. */}
         <p className="rankingPlatform">{t(platform === "desktop" ? "ranking.platformDesktop" : "ranking.platformMobile")}</p>
-        {!game ? <GlobalRanking embedded platform={platform} /> : (
+        {!game ? <GlobalRanking embedded platform={platform} period={period} /> : (
           <>
-            <GameRanking platform={platform} game={game} best={bestScores[bestScoreKey(game)]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
+            <GameRanking platform={platform} period={period} game={game} best={bestScores[bestScoreKey(game)]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
             <p className="rankingNote">{t("ranking.gameNote")}</p>
           </>
         )}

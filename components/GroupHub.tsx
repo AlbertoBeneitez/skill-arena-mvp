@@ -9,7 +9,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, GROUP_COMMISSION_BPS, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
-import { GAMES } from "@/lib/games";
+import { GAMES, playableForMoney } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
@@ -262,14 +262,17 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const paidSplit = split.filter((x) => x > 0);
   const maxKnockout = Math.max(1, players - 1);
   const money = groupMoney({ config: { entryMinor, commissionBps: GROUP_COMMISSION_BPS }, players: group.members });
+  // v189: with an entry fee the group plays for money, so games of chance (no licence) are left out.
+  const forMoney = entryMinor > 0;
+  const pickable = forMoney ? playable.filter(playableForMoney) : playable;
   const affordable = entryMinor <= Math.round(balance * 100);
-  const chosen = kind === "single" ? picked.slice(0, 1) : picked;
+  const chosen = (kind === "single" ? picked.slice(0, 1) : picked).filter((id) => id === RANDOM_GAME || pickable.some((g) => g.id === id));
   function buildConfig(): GroupConfig {
     // Nothing picked: every round is a surprise. Random slots are drawn when their round starts (lib/groupCompetition).
     const ids = chosen.length ? [...chosen] : [RANDOM_GAME];
     return {
       format, entryMinor, split: [...split], gameIds: ids,
-      ...(ids.includes(RANDOM_GAME) ? { randomPool: playable.map((g) => g.id) } : {}),
+      ...(ids.includes(RANDOM_GAME) ? { randomPool: pickable.map((g) => g.id) } : {}),
       ...(kind === "tournament" ? { eliminatePerRound: Math.min(knockout, maxKnockout) } : {}),
       lowerWinsGameIds: playable.filter((g) => g.resultMetric === "reaction-time-ms").map((g) => g.id),
       end: { kind: "rounds", rounds: kind === "league" ? rounds : 1 },
@@ -398,7 +401,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const multi = kind !== "single";
   /** v175: «Aleatorio» is one more game: it can be picked, repeated and ordered like the others. */
-  const tiles = [{ id: RANDOM_GAME, name: t("group.randomMix"), cover: "" }, ...playable.map((g) => ({ id: g.id, name: gameName(g), cover: g.cover }))]
+  const tiles = [{ id: RANDOM_GAME, name: t("group.randomMix"), cover: "" }, ...pickable.map((g) => ({ id: g.id, name: gameName(g), cover: g.cover }))]
     .filter((tile) => !query.trim() || fold(tile.name).includes(fold(query.trim())));
   return (
     <section className={st.screen}>
@@ -495,6 +498,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
               })}
             </div>
             {!tiles.length && <p className={st.hint}>{t("group.noGamesFound")}</p>}
+            {forMoney && <p className={st.hint}>{t("group.chanceExcluded")}</p>}
             <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
           <li>

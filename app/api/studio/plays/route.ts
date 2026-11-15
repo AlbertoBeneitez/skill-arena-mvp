@@ -1,4 +1,4 @@
-import { GAMES, GAME_CREATOR_DEFAULT } from "@/lib/games";
+import { GAMES, GAME_CREATOR_DEFAULT, isChanceGameId } from "@/lib/games";
 import { getProductionPostgresPool } from "@/lib/server/postgresPool";
 import { monthlyPlayCounts, monthRange } from "@/lib/server/playCounts";
 import { inboxReachable, isStudioOwner } from "@/lib/server/studioProposals";
@@ -19,7 +19,8 @@ export async function GET(req: Request) {
   try {
     const counts = await monthlyPlayCounts(getProductionPostgresPool(), month);
     const creatorOf = (id: string) => GAMES.find((g) => g.id === id)?.creator ?? GAME_CREATOR_DEFAULT;
-    return Response.json({ month, games: counts.map((c) => ({ ...c, creator: creatorOf(c.gameId) })) }, { headers });
+    // v189: games of chance are never played for money, so their matches do not share the commission.
+    return Response.json({ month, games: counts.map((c) => ({ ...c, creator: creatorOf(c.gameId), countsForPayout: !isChanceGameId(c.gameId) })) }, { headers });
   } catch {
     return Response.json({ error: "STORAGE_FAILED" }, { status: 503, headers });
   }
