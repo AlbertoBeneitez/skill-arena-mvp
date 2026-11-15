@@ -1,5 +1,6 @@
 import { APP_VERSION } from "@/lib/productIdentity";
 import { getProductionPostgresPool } from "@/lib/server/postgresPool";
+import { schemaVersion } from "@/lib/server/migrations";
 
 /**
  * v185 · Health check for monitors and for the owner: is the app up, which version, can it reach the database.
@@ -34,8 +35,10 @@ async function probe(): Promise<DbState> {
 
 export async function GET() {
   const db = await database();
+  // v192: which database migration is in place (e.g. "007"), to confirm automatic migrations after a release.
+  const schema = db === "ok" ? await schemaVersion(getProductionPostgresPool()) : null;
   return Response.json(
-    { ok: db !== "down", version: APP_VERSION, database: db },
+    { ok: db !== "down", version: APP_VERSION, database: db, schema },
     { status: db === "down" ? 503 : 200, headers: { "Cache-Control": "no-store" } },
   );
 }

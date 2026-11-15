@@ -1,7 +1,7 @@
 # Manual de operación — Galactic Games
 
 Para el propietario. Explica qué hacer si algo va mal, sin depender de Claude ni de nadie más.
-Actualizado: 13 de noviembre de 2026 (v186). Las tareas que solo puedes hacer tú están, paso a paso, en
+Actualizado: 15 de noviembre de 2026 (v192). Las tareas que solo puedes hacer tú están, paso a paso, en
 `docs/TAREAS_PROPIETARIO.pdf`.
 
 ## Dónde está cada cosa
@@ -37,6 +37,11 @@ anterior. El plan gratis guarda solo 6 horas.
    exactas están al principio de `scripts/db-backup.sh`; Claude puede guiarte sin ver la clave.
 
 Sin la clave privada, las copias no se pueden abrir. Guárdala fuera del ordenador (gestor de contraseñas y un USB).
+
+**Tablas nuevas (automático desde v192).** No tienes que pegar nada en Neon: al arrancar, la app crea las tablas que
+falten y lo anota. Para comprobarlo, abre `/api/health` en la dirección de la app: `"schema": "007"` (o el número más
+alto) quiere decir que está al día. Si sale `null` con `"database": "ok"`, la creación falló: Vercel › Logs, busca
+«database migrations failed» y avisa a Claude. La app solo crea; nunca borra tablas ni datos por su cuenta.
 
 ## 3. Aviso de mantenimiento (automático)
 

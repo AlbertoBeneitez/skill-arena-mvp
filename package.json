@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build-migrations.mjs --check && next build",
     "start": "next start",
-    "lint": "tsc --noEmit && oxlint -c .oxlintrc.json --deny-warnings app components lib",
+    "lint": "node scripts/build-migrations.mjs --check && tsc --noEmit && oxlint -c .oxlintrc.json --deny-warnings app components lib",
     "check": "pnpm lint && pnpm test:determinism",
     "test:determinism": "node -e \"require('fs').rmSync('.det-test',{recursive:true,force:true})\" && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs",
     "test:repository": "node scripts/verify-i18n.cjs && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs repository",

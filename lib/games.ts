@@ -60,8 +60,10 @@ export type GameDefinition<TId extends string = string> = {
   enabled: boolean;
   waitingStakes: readonly Stake[];
   /**
-   * v189 · "chance": a game of chance (Slot, Roulette). It can never be played for money — there is no gaming licence
-   * for it — so no stake, no paid group entry, no prize. Every other game is a game of skill playable for money.
+   * v189 · "chance": a game of chance (Roulette). It can never be played for money — there is no gaming licence for it —
+   * so no stake, no paid group entry, no prize. Every other game is a game of skill playable for money. v192: the
+   * owner ruled that Galactic Slot is NOT a game of chance (its reels come from the seed and the player chooses the
+   * moves), so it is a game for money again.
    */
   playKind?: "chance";
   category: string;
@@ -118,7 +120,7 @@ const GAME_DEFINITIONS = [
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
     competition: { verification: "server-replay", engineVersion: "skill-core-3", inputProtocolVersion: 4, allowedActions: SLOT_ACTIONS },
     resultMetric: "fictitious-balance", name: "Slot", cover: "/covers/galactic-slot.webp?v=156", enabled: true,
-    waitingStakes: [], playKind: "chance", category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
+    waitingStakes: [1,5], category: "PRECISIÓN", tagline: "Tres franjas, una combinación orbital.", difficulty: "MEDIA", skillLabel: "OBSERVACIÓN + PLANIFICACIÓN", rivalScore: 1000000000,
     rivalName: "VEGA", rivalAvatar: "/avatars/avatar-4.svg", instruction: "", scoring: "Saldo ficticio final: 100 fichas iniciales, 5 por tirada, máximo tres minutos. Siete símbolos en orden fijo y avances de −3 a +3 posiciones, sin jugada 000. Trío: 20 a 120 fichas según el símbolo (tres sietes, 200); pareja: 5 a 30 (dos sietes, 40); sin pareja no hay premio. Servidor reproduce inputs y saldo; sin dinero real.",
   },
 

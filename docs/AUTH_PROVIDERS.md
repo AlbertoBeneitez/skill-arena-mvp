@@ -65,6 +65,6 @@ jugadores reales:
 La identidad del proveedor no se guarda tal cual: se guarda `HMAC(AUTH_SECRET, proveedor:id)`. Si cambia
 `AUTH_SECRET`, las cuentas existentes dejan de encontrarse: no cambiarlo sin migrar.
 
-Para activarlo en mobile-test: aplicar `db/setup/007-cuentas.sql` en el editor SQL de Neon; poner en Vercel (Preview)
+Para activarlo en mobile-test (las tablas de la migración 007 se crean solas al arrancar desde v192): poner en Vercel (Preview)
 `AUTH_SECRET`, `AUTH_URL` = dirección de mobile-test y las credenciales de Google; registrar en Google la URL de
 retorno `{AUTH_URL}/api/auth/google/callback`.

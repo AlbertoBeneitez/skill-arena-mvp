@@ -12,8 +12,10 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-studio-quotas.js");
   await import("../.det-test/scripts/verify-play-counts.js");
   await import("../.det-test/scripts/verify-accounts.js");
+  await import("../.det-test/scripts/verify-migrations.js");
 } else {
   await import("../.det-test/scripts/verify-wallet.js");
+  await import("../.det-test/scripts/verify-group-versus.js");
   await import("../.det-test/scripts/verify-studio-payout.js");
   await import("../.det-test/scripts/verify-interactions-v96.js");
   await import("../.det-test/scripts/verify-auth-session.js");

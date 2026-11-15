@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { getGameDefinition, playableForMoney } from "../lib/games";
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Pool } from "pg";
@@ -437,11 +438,9 @@ try {
     ),
     0,
   );
-  // v189 · Games of chance are never played for money; skill games still accept a stake.
-  await rejects(
-    () => service.start("chance-0", { game_id: "galactic-slot", stake_minor: 100, start_key: randomUUID() }),
-    "CHANCE_GAME_NOT_FOR_MONEY",
-  );
+  // v189/v192 · Games of chance (Roulette, hidden) are never played for money; Slot is a game of skill for money.
+  assert.equal(playableForMoney(getGameDefinition("galactic-roulette")!), false);
+  assert.equal(playableForMoney(getGameDefinition("galactic-slot")!), true);
   // v179 · Platform pools. Before migration 006 every match is a phone match and computers are refused.
   await rejects(
     () => service.start("desk-0", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "desktop" }),

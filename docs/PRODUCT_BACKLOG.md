@@ -882,6 +882,13 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v192-saturn · Slot por dinero, migraciones automáticas, grupo contra grupo (15-nov-2026)
+
+- Slot es juego por dinero; sin rejilla ni grosores por defecto; crear grupo directo; borrar grupo en rojo.
+- Migraciones automáticas al arrancar; reglas de grupo contra grupo con pruebas.
+- Pendiente: pestaña «Grupo contra grupo» (buscar rival por liga o torneo) y ranking de grupos por dinero ganado, que
+  necesitan grupos en el servidor; confirmar con el propietario el reparto del bote entre el grupo ganador.
+
 ## v191-saturn · Alta de jugadores como será (15-nov-2026)
 
 - Cuentas y cartera ficticia en el servidor; la app las usa al entrar con un proveedor.

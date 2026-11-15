@@ -7485,8 +7485,6 @@ html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: 
 .deskStage {
   min-height: 100dvh; display: flex; align-items: center; justify-content: center; gap: 56px; padding: 24px;
   background:
-    linear-gradient(rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 32px 32px,
-    linear-gradient(90deg, rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 32px 32px,
     radial-gradient(120% 90% at 50% 0%, #17181a, #08090a 70%);
   color: #eef0f2;
 }
@@ -9200,7 +9198,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 /* Net profit chart: a gold line with a soft glow on a faint grid. */
 .appShell .avatarScreen .chartHead span { color: var(--av-gold-hi) !important; letter-spacing: .08em; }
 .appShell .avatarScreen .chartHead strong { color: var(--av-ink) !important; }
-.appShell .avatarScreen .earningsChart { background: repeating-linear-gradient(180deg, transparent 0 24px, rgba(247,227,176,.05) 24px 25px); border-radius: 10px; }
+.appShell .avatarScreen .earningsChart { background: none; border-radius: 10px; } /* v192: no grid behind charts (owner) */
 .appShell .avatarScreen .profitLine { stroke: #e9c67e !important; filter: drop-shadow(0 0 3px rgba(233,198,126,.6)); }
 .appShell .avatarScreen .zeroLine { stroke: rgba(247,227,176,.18) !important; }
 .appShell .avatarScreen .chartAxis span { color: var(--av-dim) !important; }
@@ -9240,7 +9238,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   --av-foil-text: linear-gradient(180deg, #f1fbff, #9fe6ff);
   /* v175: no corner marks (the owner removed the two-segment corners). */
   --av-surface:
-    linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(180deg, #141517, #0d0e0f);
 }
 .appShell .avatarScreen :is(.profileStrip, .playerProgress, .chartPanel, .settingsList, .gameRankingYou, .rankingTableWrap, .profileStats > div) {
@@ -9256,9 +9253,11 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen :is(.profileStats b, .playerProgress .progressMark b, .profileStrip .profileNet b:not(.negative)) { background: var(--av-foil-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
 .appShell .avatarScreen .profileStrip .profileNet b:not(.negative) { background: none; color: #39d98a !important; }
 .appShell .avatarScreen .playerProgress li button { border-radius: 8px !important; background: #08090a !important; border-color: var(--av-line) !important; }
-.appShell .avatarScreen .profitLine { stroke: var(--av-ice) !important; filter: none; }
+.appShell .avatarScreen .profitLine { stroke: var(--av-ice) !important; filter: none; stroke-width: 1.25 !important; }
+/* v192: the zero mark stays (profit vs loss) but as a whisper, without a dashed default line. */
+.appShell .avatarScreen .zeroLine { stroke: rgba(255,255,255,.08) !important; stroke-dasharray: none !important; stroke-width: .6 !important; }
 .appShell .avatarScreen .zeroLine { stroke: rgba(255,255,255,.12) !important; }
-.appShell .avatarScreen .earningsChart { background: repeating-linear-gradient(180deg, transparent 0 24px, rgba(255,255,255,.04) 24px 25px); }
+.appShell .avatarScreen .earningsChart { background: none; }
 .appShell .avatarScreen :is(.chartHead span, .accountWalletCard small) { color: var(--av-ice) !important; }
 .appShell .avatarScreen .settingsList button b { color: var(--av-ice) !important; }
 .appShell .avatarScreen .gameRankingYou img { box-shadow: 0 0 0 2px #0d0e0f, 0 0 0 3.5px var(--av-ice); }

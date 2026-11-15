@@ -7,11 +7,9 @@
 .sub { color: #8fa2b4; font-size: 12px; }
 .chart { margin: 6px 0 0; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
-.grid { stroke: rgba(255,255,255,.06); stroke-width: 1; }
-.base { stroke: rgba(255,255,255,.16); stroke-width: 1; }
-.line { fill: none; stroke: var(--av-ice, #9fe6ff); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.dot { fill: var(--av-ice, #9fe6ff); stroke: #0d0e0f; stroke-width: 2; }
-.dotOn { fill: #ffffff; stroke: var(--av-ice, #9fe6ff); stroke-width: 2; }
+.line { fill: none; stroke: var(--av-ice, #9fe6ff); stroke-width: 1.25; stroke-linejoin: round; stroke-linecap: round; }
+.dot { fill: var(--av-ice, #9fe6ff); stroke: none; }
+.dotOn { fill: #ffffff; stroke: none; filter: drop-shadow(0 0 4px rgba(159,230,255,.8)); }
 .tip { fill: #f2f6fa; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .hit { fill: transparent; cursor: pointer; }
 .axis { position: relative; height: 16px; margin-top: 2px; color: #7d8a98; font-size: 11px; white-space: nowrap; }
@@ -24,7 +22,7 @@
 .row { border-radius: 10px; background: var(--av-surface, #121315); border: 1px solid var(--av-line, #2a2c30); overflow: hidden; }
 .row[data-open] { border-color: rgba(159,230,255,.45); }
 .rowButton {
-  display: grid; grid-template-columns: 22px 36px minmax(0, 1fr) auto; grid-template-rows: auto 6px; column-gap: 10px; row-gap: 6px;
+  display: grid; grid-template-columns: 22px 36px minmax(0, 1fr) auto; grid-template-rows: auto 3px; column-gap: 10px; row-gap: 6px;
   align-items: center; width: 100%; min-height: 56px; padding: 10px 12px; border: 0; background: transparent; color: inherit; text-align: start; cursor: pointer;
 }
 .rowButton:focus-visible { outline: 2px solid var(--av-ice, #9fe6ff); outline-offset: -2px; }
@@ -32,6 +30,6 @@
 .rowButton img { grid-row: 1 / span 2; width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
 .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: #f2f6fa; }
 .value { font-variant-numeric: tabular-nums; color: #f2f6fa; }
-.bar { grid-column: 3 / span 2; height: 6px; border-radius: 3px; background: rgba(255,255,255,.06); overflow: hidden; }
-.bar i { display: block; height: 100%; border-radius: 3px; background: var(--av-ice, #9fe6ff); }
+.bar { grid-column: 3 / span 2; height: 3px; border-radius: 2px; background: rgba(255,255,255,.06); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 2px; background: var(--av-ice, #9fe6ff); }
 .detail { display: grid; gap: 2px; padding: 0 12px 10px; }

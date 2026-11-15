@@ -1303,6 +1303,22 @@ export default function DemoApp() {
   }
 
   /** Pays the single entry fee and starts the competition with its first match. */
+  /**
+   * v192 · The red «Borrar» of the leagues and tournaments tab: removes the group and its competition from this device.
+   * An unfinished competition first gives back its entry fee, so nobody loses balance by deleting.
+   */
+  function deleteClosedGroup() {
+    if (!group) return;
+    const entry = groupComp && !groupComp.finished ? groupComp.config.entryMinor / 100 : 0;
+    if (entry > 0) {
+      const name = group.name;
+      setBalance((value) => Number((value + entry).toFixed(2)));
+      setMovements((items) => [{ label: t("move.groupRefund", { group: name }), amount: entry, key: "move.groupRefund" as MessageKey, vars: { group: name } }, ...items].slice(0, 20));
+    }
+    setGroupComp(null);
+    setGroup(null);
+  }
+
   function startGroupComp(config: GroupConfig) {
     if (!group || matchStartLockRef.current || config.entryMinor / 100 > balance) return;
     if(persistentTraining!==false){setMatchStartError(t("home.groupsUnavailable"));return;}
@@ -1676,6 +1692,7 @@ export default function DemoApp() {
             onVote={voteGroup}
             onUpdateGroup={updateClosedGroup}
             onClearCompetition={() => setGroupComp(null)}
+            onDeleteGroup={deleteClosedGroup}
           />
         )}
 

@@ -558,8 +558,6 @@
 .screen :is(.panel, .hero, .head), .screen .sheet {
   border-radius: 10px; border: 1px solid var(--line);
   background:
-    linear-gradient(rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 24px 24px,
-    linear-gradient(90deg, rgba(255, 255, 255, .022) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(180deg, #141517, #0d0e0f);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 18px 34px -22px rgba(0, 0, 0, .95);
 }
@@ -651,3 +649,15 @@
 
 /* v179: a code of the other platform's group. */
 .joinError { grid-column: 1 / -1; margin: 0; color: #ff9b8f; font-size: 13px; line-height: 1.4; }
+
+/* v192 · Red delete at the end of the leagues and tournaments tab. */
+.dangerZone { display: grid; gap: 10px; margin-top: 4px; }
+.dangerZone p { margin: 0; color: #ffd1cc; font-size: 14px; line-height: 1.45; }
+.dangerRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.danger {
+  min-height: 48px; border: 1px solid #ff6b5e; border-radius: 12px; background: #c8322a; color: #fff;
+  font-weight: 800; letter-spacing: .04em; cursor: pointer;
+}
+.danger:active { background: #a8261f; }
+.cancel { min-height: 48px; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: transparent; color: #e9edf2; font-weight: 700; cursor: pointer; }
+.danger:focus-visible, .cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

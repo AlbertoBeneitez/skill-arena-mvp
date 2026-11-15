@@ -31,6 +31,8 @@ type Props = {
   onPlay: () => void;
   onVote: () => void;
   onClearCompetition: () => void;
+  /** v192: deletes the group (and gives back the entry of an unfinished competition). */
+  onDeleteGroup: () => void;
   /** v171: rename the group or set its picture (a small data URL made from a phone photo). */
   onUpdateGroup: (patch: { name?: string; image?: string | null }) => void;
 };
@@ -97,7 +99,7 @@ function Medal({ place }: { place: number }) {
   );
 }
 
-export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup }: Props) {
+export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup }: Props) {
   useI18n();
   const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
   const [joinCode, setJoinCode] = useState(normalizeJoinCode(initialJoinCode));
@@ -108,6 +110,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const [shareFallback, setShareFallback] = useState("");
   const [copied, setCopied] = useState<"" | "code" | "link">("");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [kind, setKind] = useState<Kind>("league");
   const [duels, setDuels] = useState(false);
   /** v167/v168: the games picked, in play order; the same game may appear several times (a league or a tournament
@@ -204,32 +207,20 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           <p className={st.heroLead}>{t("group.heroLead")}</p>
         </div>
 
+        {/* v192: «Crear un grupo» creates it at once and the group opens right below; no second button. */}
         <div className={st.choice} role="tablist" aria-label={t("group.entryTabs")}>
-          <button type="button" role="tab" aria-selected={entryMode === "create"} onClick={() => setEntryMode("create")}>
+          <button type="button" role="tab" aria-selected={false} aria-expanded={false}
+            onClick={() => onCreateGroup(playerName ? t("group.defaultName", { name: playerName }) : t("group.myGroup"), 0)}>
             <UiIcon name="plus" size={20} />
             <span>{t("group.create")}</span>
           </button>
-          <button type="button" role="tab" aria-selected={entryMode === "join"} onClick={() => setEntryMode("join")}>
+          <button type="button" role="tab" aria-selected={entryMode === "join"} aria-expanded={entryMode === "join"} onClick={() => setEntryMode(entryMode === "join" ? "create" : "join")}>
             <UiIcon name="enter" size={20} mirrorRtl />
             <span>{t("group.join")}</span>
           </button>
         </div>
 
-        {entryMode === "create" ? (
-          <div className={st.panel}>
-            <div className={st.creator}>
-              <img src={avatarSrc} alt="" />
-              <div>
-                <small>{t("group.creatorLabel")}</small>
-                <strong>{playerName || t("common.you")}</strong>
-              </div>
-            </div>
-            <button className={st.primary} type="button"
-              onClick={() => onCreateGroup(playerName ? t("group.defaultName", { name: playerName }) : t("group.myGroup"), 0)}>
-              {t("group.createButton")}
-            </button>
-          </div>
-        ) : (
+        {entryMode === "join" && (
           <form className={`${st.panel} ${st.joinRow}`} onSubmit={(event) => { event.preventDefault(); submitJoin(); }}>
             <input
               className={st.codeInput}
@@ -337,6 +328,24 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     </dl>
   );
 
+  /** v192 · Red «Borrar» of the leagues and tournaments tab: first tap asks, second deletes (an unfinished competition
+   * gives its entry back). Shown under the competition and under the new-competition form. */
+  const deleteBlock = (
+    <div className={st.dangerZone}>
+          {confirmDelete ? (
+            <>
+              <p role="alert">{competition && !competition.finished ? t("group.deleteConfirmRefund") : t("group.deleteConfirm")}</p>
+              <div className={st.dangerRow}>
+                <button type="button" className={st.cancel} onClick={() => setConfirmDelete(false)}>{t("common.cancel")}</button>
+                <button type="button" className={st.danger} onClick={() => { setConfirmDelete(false); onDeleteGroup(); }}>{t("group.deleteYes")}</button>
+              </div>
+            </>
+          ) : (
+            <button type="button" className={st.danger} onClick={() => setConfirmDelete(true)}>{t("group.delete")}</button>
+          )}
+        </div>
+  );
+
   if (competition) {
     const you = group.members.find((m) => m.isYou)?.id ?? "you";
     const standings = groupStandings(competition), next = nextGroupMatch(competition, you);
@@ -388,6 +397,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           )}
           <p className={st.note}>{t("group.resume")}</p>
         </div>
+        {deleteBlock}
       </section>
     );
   }
@@ -498,7 +508,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
               })}
             </div>
             {!tiles.length && <p className={st.hint}>{t("group.noGamesFound")}</p>}
-            {forMoney && <p className={st.hint}>{t("group.chanceExcluded")}</p>}
+            {forMoney && GAMES.some((g) => !playableForMoney(g)) && <p className={st.hint}>{t("group.chanceExcluded")}</p>}
             <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
           <li>
@@ -549,6 +559,8 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           {t("group.payAndStart", { amount: euros(entryMinor) })}
         </button>
       </div>
+
+      {deleteBlock}
 
       {sheetOpen && (
         <div className={st.backdrop} onClick={(event) => { if (event.target === event.currentTarget) setSheetOpen(false); }}>
