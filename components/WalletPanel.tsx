@@ -17,6 +17,7 @@ type Props = {
   balance: number;
   /** Formats an amount in the app's currency (₡). */
   format: (value: number) => string;
+  /** +1 with the euros paid, −1 with the cosmicoins given; the 5 % commission is applied by the receiver. */
   onMove: (direction: 1 | -1, amount: number) => void;
   onClose: () => void;
   /** The latest movements, already labelled. */
@@ -40,7 +41,7 @@ export default function WalletPanel({ balance, format, onMove, onClose, movement
   const pct = formatNumber(EXCHANGE_FEE_PERCENT);
   const deposit = () => {
     if (!amount) return;
-    onMove(1, change.net);
+    onMove(1, change.amount); // v191: the euros paid; the app takes off the commission (DemoApp.moveMoney)
     setText("");
   };
   const simulateWithdraw = () => {

@@ -40,6 +40,7 @@ const messages: Messages = {
   "identity.nameAria": "खिलाड़ी का नाम",
   "identity.nameAvailable": "यह नाम इस ब्राउज़र में उपलब्ध है",
   "identity.nameTaken": "यह नाम पहले से लिया गया है",
+  "identity.accountFailed": "आपका खाता सहेजा नहीं जा सका। फिर कोशिश करें।",
   "identity.nameUnavailable": "कोई दूसरा नाम चुनें (2–18 अक्षर, अंक या _)",
   "identity.imageTooBig": "इमेज बहुत बड़ी है। अधिकतम 8 MB।",
   "identity.cropTitle": "अपनी फ़ोटो एडजस्ट करें",

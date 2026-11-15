@@ -44,6 +44,7 @@ const es = {
   "identity.nameAria": "Nombre de jugador",
   "identity.nameAvailable": "Nombre disponible en este navegador",
   "identity.nameTaken": "Nombre ya elegido",
+  "identity.accountFailed": "No hemos podido guardar tu cuenta. Inténtalo de nuevo.",
   "identity.nameUnavailable": "Elige otro nombre (2–18 letras, números o _)",
   "identity.imageTooBig": "La imagen es demasiado grande. Máximo 8 MB.",
   "identity.cropTitle": "AJUSTA TU FOTO",

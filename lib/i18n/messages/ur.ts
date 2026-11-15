@@ -40,6 +40,7 @@ const messages: Messages = {
   "identity.nameAria": "کھلاڑی کا نام",
   "identity.nameAvailable": "یہ نام اس براؤزر میں دستیاب ہے",
   "identity.nameTaken": "یہ نام پہلے سے لیا گیا ہے",
+  "identity.accountFailed": "آپ کا اکاؤنٹ محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",
   "identity.nameUnavailable": "کوئی اور نام منتخب کریں (2–18 حروف، ہندسے یا _)",
   "identity.imageTooBig": "تصویر بہت بڑی ہے۔ زیادہ سے زیادہ 8 MB۔",
   "identity.cropTitle": "اپنی تصویر درست کریں",

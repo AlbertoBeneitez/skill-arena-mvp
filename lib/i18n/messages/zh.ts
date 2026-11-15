@@ -40,6 +40,7 @@ const messages: Messages = {
   "identity.nameAria": "玩家名称",
   "identity.nameAvailable": "此名称在本浏览器中可用",
   "identity.nameTaken": "名字已被使用",
+  "identity.accountFailed": "无法保存你的账户，请重试。",
   "identity.nameUnavailable": "请换一个名字（2–18 个字、数字或 _）",
   "identity.imageTooBig": "图片太大，最大 8 MB。",
   "identity.cropTitle": "调整你的照片",

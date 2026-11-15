@@ -32,6 +32,7 @@
     "scripts/verify-wallet.ts",
     "scripts/verify-studio-payout.ts",
     "scripts/verify-play-counts.ts",
+    "scripts/verify-accounts.ts",
     "scripts/verify-ranking-repository.ts",
     "scripts/verify-orb-v1.ts",
     "scripts/verify-orb-v2.ts",

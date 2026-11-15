@@ -40,6 +40,7 @@ const messages: Messages = {
   "identity.nameAria": "Nom du joueur",
   "identity.nameAvailable": "Nom disponible dans ce navigateur",
   "identity.nameTaken": "Nom déjà pris",
+  "identity.accountFailed": "Impossible d'enregistrer votre compte. Réessayez.",
   "identity.nameUnavailable": "Choisis un autre nom (2 à 18 lettres, chiffres ou _)",
   "identity.imageTooBig": "L'image est trop lourde. 8 Mo maximum.",
   "identity.cropTitle": "AJUSTE TA PHOTO",

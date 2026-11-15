@@ -11,6 +11,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-persisted-hidden-training.js");
   await import("../.det-test/scripts/verify-studio-quotas.js");
   await import("../.det-test/scripts/verify-play-counts.js");
+  await import("../.det-test/scripts/verify-accounts.js");
 } else {
   await import("../.det-test/scripts/verify-wallet.js");
   await import("../.det-test/scripts/verify-studio-payout.js");

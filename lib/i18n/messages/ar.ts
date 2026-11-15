@@ -40,6 +40,7 @@ const messages: Messages = {
   "identity.nameAria": "اسم اللاعب",
   "identity.nameAvailable": "الاسم متاح في هذا المتصفح",
   "identity.nameTaken": "الاسم مستخدم بالفعل",
+  "identity.accountFailed": "تعذّر حفظ حسابك. حاول مرة أخرى.",
   "identity.nameUnavailable": "اختر اسمًا آخر (2–18 حرفًا أو رقمًا أو _)",
   "identity.imageTooBig": "الصورة كبيرة جدًا. الحد الأقصى 8 ميغابايت.",
   "identity.cropTitle": "اضبط صورتك",

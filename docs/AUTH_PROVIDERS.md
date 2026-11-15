@@ -49,3 +49,22 @@ La bandeja de «Enviar juego» solo la ve el propietario. Para activarla:
 5. Mientras falte la base de datos, el formulario avisa de que la recepción aún no está abierta y no guarda nada en el servidor.
 
 Después, vuelve a desplegar. En Juegos → ENVIAR JUEGO aparecerá la pestaña «Bandeja», con Probar, Descargar, Aprobar, Rechazar y Borrar (proceso completo en `docs/STUDIO_SUBMISSIONS.md`).
+
+## Cuentas de jugador en el servidor (v191)
+
+Con inicio de sesión **y** base de datos (`AUTH_SECRET` + `DATABASE_URL`), el alta funciona como funcionará con
+jugadores reales:
+
+1. El jugador entra con su proveedor (Google, …). La primera vez la app le pide nombre y avatar.
+2. `POST /api/account` crea la cuenta: nombre único sin distinguir mayúsculas ni acentos (y sin nombres reservados),
+   uno de los avatares de la app (las fotos propias se quedan en el móvil) y 25 ₡ ficticios de bienvenida.
+3. El saldo vive en el servidor (`/api/wallet`): ingresar y retirar son ficticios, con la comisión del 5 %, y un mismo
+   toque repetido no se cobra dos veces. Al recargar o cambiar de móvil, el saldo es el mismo.
+4. `DELETE /api/account` borra la cuenta y todos sus movimientos (derecho de supresión).
+
+La identidad del proveedor no se guarda tal cual: se guarda `HMAC(AUTH_SECRET, proveedor:id)`. Si cambia
+`AUTH_SECRET`, las cuentas existentes dejan de encontrarse: no cambiarlo sin migrar.
+
+Para activarlo en mobile-test: aplicar `db/setup/007-cuentas.sql` en el editor SQL de Neon; poner en Vercel (Preview)
+`AUTH_SECRET`, `AUTH_URL` = dirección de mobile-test y las credenciales de Google; registrar en Google la URL de
+retorno `{AUTH_URL}/api/auth/google/callback`.

@@ -19,6 +19,7 @@ import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
 import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
+import { exchange } from "@/lib/wallet";
 import WalletPanel from "./WalletPanel";
 import StudioWelcome from "./StudioWelcome";
 import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey, playableForMoney } from "@/lib/games";
@@ -253,6 +254,14 @@ export default function DemoApp() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [onboarded, setOnboarded] = useState(false);
   const [provider, setProvider] = useState<Provider>(null);
+  /**
+   * v191 · Registration as it will work for real players. When the player has signed in with a provider and the
+   * server keeps accounts (AUTH_SECRET + DATABASE_URL), name, avatar and balance live on the server: "pending" until
+   * the player chooses a name, then the account. Otherwise (null) everything stays on this device, as before.
+   */
+  const [serverAccount, setServerAccount] = useState<null | "pending" | { id: string; name: string; avatar: number }>(null);
+  const [serverNameTaken, setServerNameTaken] = useState("");
+  const [accountBusy, setAccountBusy] = useState(false);
   const [playerName, setPlayerName] = useState("");
   const [avatarId, setAvatarId] = useState(0);
   const [avatarSrc, setAvatarSrc] = useState(AVATARS[0]);
@@ -302,10 +311,7 @@ export default function DemoApp() {
         const s = data.session;
         if (s && AUTH_PROVIDERS.some((p) => p.id === s.provider)) {
           setProvider(s.provider);
-          if (outcome === "ok") {
-            setPlayerName((name) => name || s.name);
-            setScreen((current) => (current === "welcome" ? "avatar-setup" : current));
-          }
+          void loadServerAccount(outcome === "ok", s.name);
         } else if (outcome === "error" || outcome === "unavailable") {
           setAuthMessage(outcome === "error" ? "welcome.authFailed" : "welcome.authUnavailable");
         }
@@ -862,8 +868,33 @@ export default function DemoApp() {
     setStudioWelcome(true);
   }
 
-  function moveMoney(direction: 1 | -1, amount: number) {
+  /**
+   * Wallet. `amount` is what the player gives: euros when depositing, cosmicoins when withdrawing; v191: the 5 %
+   * commission comes off (lib/wallet.ts). With a server account the server applies it and returns the balance.
+   */
+  async function moveMoney(direction: 1 | -1, amount: number) {
     if (!(amount > 0) || (direction < 0 && balance < amount)) return;
+    if (serverAccount && serverAccount !== "pending") {
+      try {
+        const r = await fetch("/api/wallet", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ direction: direction > 0 ? "deposit" : "withdraw", amount_minor: Math.round(amount * 100), key: crypto.randomUUID().replace(/-/g, "") }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) { gameTone("bad"); return; }
+        setBalance(data.balanceMinor / 100);
+        setMovements((m) => [direction > 0
+          ? { label: "Ingreso", amount: data.movement.amountMinor / 100, key: "move.deposit" as const }
+          : { label: "Retirada", amount: data.movement.amountMinor / 100, key: "move.withdraw" as const }, ...m]);
+        gameTone("good");
+        haptic(8);
+      } catch {
+        gameTone("bad");
+      }
+      return;
+    }
+    if (direction > 0) amount = exchange(amount).net;
     setBalance((b) => Number((b + direction * amount).toFixed(2)));
     setMovements((m) => [direction > 0
       ? { label: "Ingreso", amount, key: "move.deposit" as const }
@@ -938,9 +969,71 @@ export default function DemoApp() {
     });
   }
 
-  function completeAvatar() {
+  /** v191 · Reads the signed-in player's server account; falls back to this device when accounts are not available. */
+  async function loadServerAccount(justSignedIn: boolean, providerName: string) {
+    const toLocal = () => {
+      if (!justSignedIn) return;
+      setPlayerName((name) => name || providerName);
+      setScreen((current) => (current === "welcome" ? "avatar-setup" : current));
+    };
+    try {
+      const r = await fetch("/api/account", { cache: "no-store" });
+      if (!r.ok) return toLocal();
+      const data = (await r.json()) as { account: { id: string; name: string; avatar: number; balanceMinor: number } | null };
+      if (!data.account) {
+        setServerAccount("pending");
+        setPlayerName((name) => name || providerName);
+        setScreen((current) => (current === "welcome" || current === "home" ? "avatar-setup" : current));
+        return;
+      }
+      const a = data.account;
+      setServerAccount({ id: a.id, name: a.name, avatar: a.avatar });
+      setPlayerName(a.name);
+      setAvatarSrc(AVATARS[a.avatar - 1] ?? AVATARS[0]);
+      setBalance(a.balanceMinor / 100);
+      setOnboarded(true);
+      setScreen((current) => (current === "welcome" || current === "avatar-setup" ? "home" : current));
+    } catch {
+      toLocal();
+    }
+  }
+
+  /** v191 · Portrait number kept on the server (custom photos stay on this device). */
+  const serverAvatarIndex = () => {
+    const i = AVATARS.indexOf(avatarSrc);
+    return i >= 0 ? i + 1 : typeof serverAccount === "object" && serverAccount ? serverAccount.avatar : 1;
+  };
+
+  async function completeAvatar() {
     const clean = playerName.trim().replace(/\s+/g, " ").slice(0, 18);
     if (!isDemoNameAvailable(clean)) return;
+    if (serverAccount) {
+      // v191: the server decides whether the name is free; the account (or the change) is saved there.
+      if (accountBusy) return;
+      setAccountBusy(true);
+      setServerNameTaken("");
+      try {
+        const creating = serverAccount === "pending";
+        const r = await fetch("/api/account", {
+          method: creating ? "POST" : "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(creating
+            ? { name: clean, avatar: serverAvatarIndex(), platform }
+            : { ...(clean !== serverAccount.name ? { name: clean } : {}), avatar: serverAvatarIndex() }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.status === 409 && data.error === "NAME_TAKEN") { setServerNameTaken(clean); return; }
+        if (!r.ok || !data.account) { setAvatarError(t("identity.accountFailed")); return; }
+        setServerAccount({ id: data.account.id, name: data.account.name, avatar: data.account.avatar });
+        setBalance(data.account.balanceMinor / 100);
+        if (creating) setMovements([]);
+      } catch {
+        setAvatarError(t("identity.accountFailed"));
+        return;
+      } finally {
+        setAccountBusy(false);
+      }
+    }
     setPlayerName(clean);
     setOnboarded(true);
     freshOnboardingRef.current = false;
@@ -1451,12 +1544,13 @@ export default function DemoApp() {
           />
           {/* v158: nothing while the name is fine; "already taken" for a taken name, the format rule otherwise. */}
           <div className={`nameAvailability ${nameAvailable ? "available" : "unavailable"}`} aria-live="polite">
-            {playerName.trim().length === 0 || nameAvailable ? "" : isDemoNameTaken(playerName) ? t("identity.nameTaken") : t("identity.nameUnavailable")}
+            {playerName.trim().length === 0 ? "" : !nameAvailable ? (isDemoNameTaken(playerName) ? t("identity.nameTaken") : t("identity.nameUnavailable"))
+              : serverNameTaken && serverNameTaken === playerName.trim().replace(/\s+/g, " ") ? t("identity.nameTaken") : ""}
           </div>
 
           {avatarError && <div className="avatarError" role="alert">{avatarError}</div>}
 
-          <button className="mainAction" onClick={completeAvatar} disabled={!nameAvailable}>{t("common.continue")}</button>
+          <button className="mainAction" onClick={() => void completeAvatar()} disabled={!nameAvailable || accountBusy}>{t("common.continue")}</button>
 
           {cropSource && (
             <div className="avatarCropOverlay" role="dialog" aria-modal="true" aria-label={t("identity.cropAria")}>

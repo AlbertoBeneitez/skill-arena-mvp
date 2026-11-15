@@ -40,6 +40,7 @@ const messages: Messages = {
   "identity.nameAria": "Имя игрока",
   "identity.nameAvailable": "Имя свободно в этом браузере",
   "identity.nameTaken": "Имя уже занято",
+  "identity.accountFailed": "Не удалось сохранить аккаунт. Попробуйте ещё раз.",
   "identity.nameUnavailable": "Выберите другое имя (2–18 букв, цифр или _)",
   "identity.imageTooBig": "Изображение слишком большое. Максимум 8 МБ.",
   "identity.cropTitle": "НАСТРОЙТЕ ФОТО",

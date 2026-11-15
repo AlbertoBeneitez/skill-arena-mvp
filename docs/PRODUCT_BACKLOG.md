@@ -882,6 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v191-saturn · Alta de jugadores como será (15-nov-2026)
+
+- Cuentas y cartera ficticia en el servidor; la app las usa al entrar con un proveedor.
+- Pendiente: migración 007 en Neon y Google en Preview (propietario); partidas y grupos ligados a la cuenta; borrar la
+  cuenta desde la app.
+
 ## v190-saturn · Protección de datos al día (15-nov-2026)
 
 - Plazos de borrado de propuestas, política de privacidad nueva, registro de tratamientos.
