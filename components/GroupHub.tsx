@@ -9,7 +9,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, GROUP_COMMISSION_BPS, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
-import { GAMES, playableForMoney } from "@/lib/games";
+import { CATALOG_SHELVES, GAMES, gameShelf, playableForMoney } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
@@ -117,6 +117,8 @@ export default function GroupHub({ joinError, group, competition, balance, playe
    * plays them round by round). Empty = random mix. */
   const [picked, setPicked] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  /** v194: filter the game list by catalogue category ("" = all). */
+  const [category, setCategory] = useState<string>("");
   const [entry, setEntry] = useState("5");
   const [rounds, setRounds] = useState(5);
   /** v171: Eliminatorias — players knocked out per round. */
@@ -411,7 +413,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const multi = kind !== "single";
   /** v175: «Aleatorio» is one more game: it can be picked, repeated and ordered like the others. */
-  const tiles = [{ id: RANDOM_GAME, name: t("group.randomMix"), cover: "" }, ...pickable.map((g) => ({ id: g.id, name: gameName(g), cover: g.cover }))]
+  const tiles = [{ id: RANDOM_GAME, name: t("group.randomMix"), cover: "" }, ...pickable.filter((g) => !category || gameShelf(g) === category).map((g) => ({ id: g.id, name: gameName(g), cover: g.cover }))]
     .filter((tile) => !query.trim() || fold(tile.name).includes(fold(query.trim())));
   return (
     <section className={st.screen}>
@@ -480,9 +482,19 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           </li>
           <li>
             <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
+            <div className={st.categories} role="group" aria-label={t("group.categories")}>
+              {["", ...CATALOG_SHELVES].map((key) => (
+                <button key={key || "all"} type="button" aria-pressed={category === key} onClick={() => setCategory(key)}>
+                  {key ? t(`catalog.shelf.${key}` as "catalog.shelf.bar") : t("group.categoryAll")}
+                </button>
+              ))}
+            </div>
             <label className={st.search}>
               <UiIcon name="search" size={18} />
               <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")} enterKeyHint="search" />
+              <button type="button" className={st.clear} aria-label={t("group.clearSearch")} disabled={!query} onClick={() => setQuery("")}>
+                <UiIcon name="close" size={16} />
+              </button>
             </label>
             <div className={st.games} role="group" aria-label={t(multi ? "group.stepGames" : "group.stepGame")}>
               {tiles.map(({ id, name, cover }) => {

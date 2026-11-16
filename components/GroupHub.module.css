@@ -661,3 +661,15 @@
 .danger:active { background: #a8261f; }
 .cancel { min-height: 48px; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: transparent; color: #e9edf2; font-weight: 700; cursor: pointer; }
 .danger:focus-visible, .cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* v194 · category chips above the game search, and a clear (X) button at the right of the search field. */
+.categories { display: flex; gap: 6px; overflow-x: auto; min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box; padding: 2px 0 8px; scrollbar-width: none; }
+.categories::-webkit-scrollbar { display: none; }
+.categories button { flex: none; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--field); color: var(--dim); font: 600 12.5px/1 var(--gx-ui, sans-serif); }
+.categories button[aria-pressed="true"] { color: var(--ink); border-color: var(--ice); background: var(--ice-soft); }
+.search .clear { flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin-inline-end: -6px; border: 0; border-radius: 50%; background: none; color: var(--dim); }
+.search .clear:disabled { opacity: .35; }
+.search .clear:not(:disabled):active { background: var(--ice-soft); color: var(--ink); }
+.search input::-webkit-search-cancel-button { display: none; }
+.search { min-width: 0; }
+.search input { width: 0; }

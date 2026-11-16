@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v194-saturn · Círculo de partida y buscador de grupos (16-nov-2026)
+
+- Círculo verde/blanco en el catálogo; X y categorías en el buscador de juegos de Grupos; arreglo de desborde en móvil.
+
 ## v193-saturn · Cimientos de la base de datos (16-nov-2026)
 
 - Hechos los cuatro cimientos (migraciones 008–010): persona en las partidas, libro de partida doble, anonimizar al

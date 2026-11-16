@@ -196,12 +196,15 @@
 
 /* v167 · A rival's match is waiting: a small green light in the top-left corner of the picture. */
 .rivalLed {
-  position: absolute; z-index: 3; left: 8px; top: 8px; width: 10px; height: 10px; border-radius: 50%;
+  position: absolute; z-index: 3; left: 9px; top: 9px; width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255, 255, 255, .92); box-shadow: 0 0 0 2px rgba(8, 9, 12, .6);
+}
+.rivalLed[data-waiting="yes"] {
   background: radial-gradient(circle at 35% 30%, #d9ffe4, #35e07a 45%, #10a24a);
-  box-shadow: 0 0 0 2px rgba(6,14,9,.75), 0 0 10px 2px rgba(53,224,122,.75);
+  box-shadow: 0 0 0 2px rgba(6,14,9,.75), 0 0 9px 2px rgba(53,224,122,.7);
   animation: rivalLed 2.4s ease-in-out infinite;
 }
-@keyframes rivalLed { 50% { box-shadow: 0 0 0 2px rgba(6,14,9,.75), 0 0 4px 1px rgba(53,224,122,.45); } }
+@keyframes rivalLed { 50% { box-shadow: 0 0 0 2px rgba(6,14,9,.75), 0 0 4px 1px rgba(53,224,122,.4); } }
 @media (prefers-reduced-motion: reduce) { .rivalLed { animation: none; } }
 
 /* v189 · Two kinds of game. Games for money (skill) read as more important: a fine gold rim, a soft warm glow and a
@@ -222,11 +225,7 @@
     linear-gradient(180deg, #fff1c4, rgba(216, 176, 82, .45) 55%, rgba(232, 196, 106, .8)) border-box;
   color: #fff7e2;
 }
-.moneyMark {
-  position: absolute; top: 8px; left: 8px; z-index: 3; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
-  color: #3a2a06; background: radial-gradient(circle at 35% 30%, #fff3c8, #e8c46a 55%, #b8892e); box-shadow: 0 0 0 1px rgba(0, 0, 0, .45), 0 2px 8px rgba(0, 0, 0, .5);
-}
 .chanceTag {
-  position: absolute; top: 8px; left: 8px; z-index: 3; padding: 3px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+  position: absolute; top: 5px; left: 26px; z-index: 3; padding: 3px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
   color: #d6dbe2; background: rgba(12, 13, 15, .78); border: 1px solid rgba(255, 255, 255, .18); backdrop-filter: blur(4px);
 }

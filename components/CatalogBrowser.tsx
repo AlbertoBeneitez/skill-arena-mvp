@@ -105,12 +105,10 @@ export default function CatalogBrowser(props: Props) {
           decoding="async"
           fetchPriority={row === "popular" && index < 3 ? "high" : "low"}
         />
-        {/* v189: games for money carry a gold mark; games of chance say they are never for money. */}
-        {playableForMoney(game)
-          ? <span className={styles.moneyMark} aria-hidden="true"><svg viewBox="0 0 20 20" width="14" height="14"><path d="M10 1.5 12.6 7l6 .6-4.5 4 1.3 5.9L10 14.6l-5.4 2.9 1.3-5.9-4.5-4 6-.6Z" fill="currentColor" /></svg></span>
-          : <span className={styles.chanceTag}>{t("catalog.chanceTag")}</span>}
-        {/* v167: a green light when a rival's match is already waiting for this game. */}
-        {rivalWaiting(game) && <span className={styles.rivalLed} role="img" aria-label={t("catalog.rivalWaiting")} title={t("catalog.rivalWaiting")} />}
+        {/* v194: one discreet circle, top left: green when a match is waiting for this game, white when none is. */}
+        <span className={styles.rivalLed} data-waiting={rivalWaiting(game) ? "yes" : "no"} role="img"
+          aria-label={t(rivalWaiting(game) ? "catalog.rivalWaiting" : "catalog.noRivalWaiting")} title={t(rivalWaiting(game) ? "catalog.rivalWaiting" : "catalog.noRivalWaiting")} />
+        {!playableForMoney(game) && <span className={styles.chanceTag}>{t("catalog.chanceTag")}</span>}
         {!props.serverOnly && rivalWaiting(game) && (
           <button
             type="button"
