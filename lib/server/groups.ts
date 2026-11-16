@@ -371,9 +371,9 @@ export async function listMyGroups(pool: Pool, accountId: string): Promise<Group
 }
 
 /** Competitions of the groups an account belongs to, with its own entry state (the "my competitions" list). */
-export async function listMyCompetitions(pool: Pool, accountId: string, limit = 20): Promise<(CompetitionView & { entered: boolean })[]> {
+export async function listMyCompetitions(pool: Pool, accountId: string, limit = 20): Promise<(CompetitionView & { entered: boolean; state: unknown })[]> {
   const { rows } = await pool.query(
-    `SELECT k.competition_id, k.mode, k.platform, k.status, k.entry_minor, k.result,
+    `SELECT k.competition_id, k.mode, k.platform, k.status, k.entry_minor, k.result, k.state,
             (SELECT array_agg(cg.group_id ORDER BY cg.side) FROM arena_competition_groups cg WHERE cg.competition_id = k.competition_id) AS groups,
             (SELECT count(*) FROM arena_competition_players cp WHERE cp.competition_id = k.competition_id) AS players,
             EXISTS (SELECT 1 FROM arena_competition_players cp WHERE cp.competition_id = k.competition_id AND cp.account_id = $1) AS entered
@@ -384,5 +384,14 @@ export async function listMyCompetitions(pool: Pool, accountId: string, limit = 
   return rows.map((r) => ({
     id: r.competition_id as string, mode: r.mode as CompetitionMode, platform: r.platform as Platform, status: r.status, entryMinor: Number(r.entry_minor),
     groupIds: r.groups as string[], players: Number(r.players), potMinor: Number(r.entry_minor) * Number(r.players), result: r.result, entered: Boolean(r.entered),
+    state: r.state ?? null,
   }));
+}
+
+/** v204: the owner renames the group (2–30 characters). */
+export async function renameGroup(pool: Pool, ownerId: string, groupId: string, name: string): Promise<void> {
+  const clean = name.trim().replace(/\s+/g, " ");
+  if (clean.length < 2 || clean.length > 30) throw new GroupError("INVALID_NAME");
+  const { rowCount } = await pool.query("UPDATE arena_groups SET name = $3 WHERE group_id = $1 AND owner_account_id = $2 AND closed_at IS NULL", [groupId, ownerId, clean]);
+  if (!rowCount) throw new GroupError("NOT_OWNER");
 }

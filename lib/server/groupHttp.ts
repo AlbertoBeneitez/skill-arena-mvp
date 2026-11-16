@@ -12,7 +12,7 @@ import type { VersusSetup } from "@/lib/groupVersus";
 import { recordEvent } from "./events";
 import {
   GroupError, acceptChallenge, cancelCompetition, closeGroup, createCompetition, createGroup, enterCompetition, groupWinningsRanking, joinGroup,
-  leaveGroup, listMyCompetitions, listMyGroups, listOpenVersus, recordResult, startCompetition, type CompetitionMode,
+  leaveGroup, listGroupMembers, listMyCompetitions, listMyGroups, listOpenVersus, recordResult, renameGroup, startCompetition, type CompetitionMode,
 } from "./groups";
 
 export const MAX_ENTRY_MINOR = 10_000;
@@ -60,7 +60,9 @@ export async function groupsOverview(pool: Pool, actor: Actor) {
   const [groups, competitions, open, ranking] = await Promise.all([
     listMyGroups(pool, actor.accountId), listMyCompetitions(pool, actor.accountId), listOpenVersus(pool, actor.platform), groupWinningsRanking(pool, actor.platform, 20),
   ]);
-  return { platform: actor.platform, groups, competitions, open, ranking };
+  // v204: the group the screen shows (the newest one) with its members, as the offline screen shows its own group.
+  const current = groups[0] ? { group: groups[0], members: await listGroupMembers(pool, groups[0].id) } : null;
+  return { platform: actor.platform, groups, competitions, open, ranking, current };
 }
 
 /** One action. Returns the body to send; throws GroupError or BadRequest. */
@@ -79,6 +81,9 @@ export async function groupAction(pool: Pool, actor: Actor, body: Record<string,
       await note("group_joined");
       return { group };
     }
+    case "rename":
+      await renameGroup(pool, accountId, isUuid(body.groupId) ? body.groupId : bad("groupId"), typeof body.name === "string" ? body.name : "");
+      return {};
     case "leave": await leaveGroup(pool, accountId, isUuid(body.groupId) ? body.groupId : bad("groupId")); return {};
     case "close": await closeGroup(pool, accountId, isUuid(body.groupId) ? body.groupId : bad("groupId")); return {};
     case "competition": {

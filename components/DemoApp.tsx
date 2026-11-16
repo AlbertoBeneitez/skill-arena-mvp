@@ -1799,7 +1799,7 @@ export default function DemoApp() {
 
         {screen === "group" && matchStartError && <p role="status">{matchStartError}</p>}
         {screen === "group" && !offline && typeof serverAccount === "object" && serverAccount && (
-          <ServerGroups accountId={serverAccount.id} onBalanceChanged={() => void loadServerAccount(false, playerName)} />
+          <ServerGroups accountId={serverAccount.id} playerName={playerName} avatarSrc={avatarSrc} balance={balance} onBalanceChanged={() => void loadServerAccount(false, playerName)} />
         )}
         {screen === "group" && (offline || !(typeof serverAccount === "object" && serverAccount)) && (
           <GroupHub
