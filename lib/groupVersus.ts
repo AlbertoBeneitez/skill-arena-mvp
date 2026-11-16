@@ -32,6 +32,7 @@ export function createGroupVersus(id: string, mode: VersusMode, a: VersusTeam, b
     format: mode === "league" ? "league-rounds" : "tournament",
     entryMinor: setup.entryMinor,
     split: "winner",
+    commissionBps: 0,
     gameIds: setup.gameIds,
     ...(setup.randomPool ? { randomPool: setup.randomPool } : {}),
     lowerWinsGameIds: setup.lowerWinsGameIds,

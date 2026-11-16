@@ -210,9 +210,9 @@ arena_accounts ─┬─ arena_group_members ── arena_groups
 
 | Fase | Qué | Cuándo |
 |---|---|---|
-| 1 | `account_id` y columnas propias en partidas y resultados; plataforma por partida; borrar = anonimizar; índices; tope de espacio para paquetes | Siguiente ronda, cuando decidas los puntos de abajo |
-| 2 | Grupos y competiciones en el servidor: buscar rival, ranking de grupos | Después de la fase 1 |
-| 3 | Libro de partida doble con ₡ ficticios; se pasan los movimientos actuales | Antes de activar entradas en grupos del servidor |
+| 1 | `account_id` y columnas propias en partidas y resultados; plataforma por partida; borrar = anonimizar; índices; tope de espacio para paquetes | **Hecha en v193** (migración 008), salvo el tope de espacio para paquetes |
+| 2 | Grupos y competiciones en el servidor: buscar rival, ranking de grupos | **Hecha en v193** (migración 009, `lib/server/groups.ts`); faltan las rutas `/api/groups` y la pantalla |
+| 3 | Libro de partida doble con ₡ ficticios; se pasan los movimientos actuales | **Hecha en v193** (migración 010, `lib/server/ledger.ts`); el saldo ya se lee del libro |
 | 4 | Usuarios separados en la base, plazos legales, auditoría externa; plan de pago de Neon solo si hace falta y con tu permiso | Antes de dinero real |
 
 Cada fase se hace con migraciones que solo añaden, se aplican solas y se prueban antes contra una base vacía y contra

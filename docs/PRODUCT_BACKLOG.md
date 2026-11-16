@@ -882,11 +882,12 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
-## v193-saturn · Revisión de la base de datos (15-nov-2026)
+## v193-saturn · Cimientos de la base de datos (16-nov-2026)
 
-- `docs/BASE_DE_DATOS.md`: cimientos pendientes (persona única, libro de partida doble, anonimizar al borrar, grupos
-  en el servidor) y plan en 4 fases. Regla de pagos en `CLAUDE.md`.
-- Pendiente: decisiones del propietario (borrado, cuenta única, plazo de partidas, copia diaria en `main`); fase 1.
+- Hechos los cuatro cimientos (migraciones 008–010): persona en las partidas, libro de partida doble, anonimizar al
+  borrar, grupos y competiciones en el servidor. Guía PDF de la copia de seguridad. Regla de pagos en `CLAUDE.md`.
+- Pendiente: rutas `/api/groups` y pantalla «Grupo contra grupo»; `account_id` desde la sesión; ranking por periodo;
+  usuarios separados en la base; plazo de partidas (propuesta 12 meses); tope de espacio para paquetes.
 
 ## v192-saturn · Slot por dinero, migraciones automáticas, grupo contra grupo (15-nov-2026)
 

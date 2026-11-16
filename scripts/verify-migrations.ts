@@ -42,13 +42,13 @@ try {
   // A changed migration is refused.
   await pool.query("UPDATE arena_schema_migrations SET sha256 = 'x' WHERE id = '007'");
   await assert.rejects(applyMigrations(pool), /already applied with different content/);
-  await pool.query("UPDATE arena_schema_migrations SET sha256 = $1 WHERE id = '007'", [MIGRATIONS[6].sha256]);
+  await pool.query("UPDATE arena_schema_migrations SET sha256 = $1 WHERE id = '007'", [MIGRATIONS.find((m) => m.id === "007")!.sha256]);
   // A failing migration leaves nothing behind: all pending ones apply together or not at all.
-  const extra = [...MIGRATIONS, { id: "008", file: "008-ok.sql", sha256: "a", sql: "CREATE TABLE qa_ok(x int);" },
-    { id: "009", file: "009-bad.sql", sha256: "b", sql: "SELECT qa_missing_function();" }];
+  const extra = [...MIGRATIONS, { id: "900", file: "900-ok.sql", sha256: "a", sql: "CREATE TABLE qa_ok(x int);" },
+    { id: "901", file: "901-bad.sql", sha256: "b", sql: "SELECT qa_missing_function();" }];
   await assert.rejects(applyMigrations(pool, extra));
   assert.equal((await pool.query("SELECT to_regclass('qa_ok') AS t")).rows[0].t, null);
-  assert.equal(await schemaVersion(pool), "007");
+  assert.equal(await schemaVersion(pool), MIGRATIONS[MIGRATIONS.length - 1].id);
   console.log("Migrations: applied once by itself, parallel-safe, records hand-applied ones, all-or-nothing, refuses changed or destructive SQL");
 } finally {
   await pool.end();

@@ -208,8 +208,8 @@ export class PostgresPublicAttemptRepository
       }
       const ticket = args.ticket(manifest, slot);
       await c.query(
-        `INSERT INTO arena_public_attempts(attempt_id,match_id,player_id,slot,start_key,request_hash,ticket,state,lease_until,deadline)
-   VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,'playing',clock_timestamp()+$8*interval '1 millisecond',clock_timestamp()+$9*interval '1 millisecond')`,
+        `INSERT INTO arena_public_attempts(attempt_id,match_id,player_id,slot,start_key,request_hash,ticket,state,lease_until,deadline${args.accountId ? ",account_id" : ""})
+   VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,'playing',clock_timestamp()+$8*interval '1 millisecond',clock_timestamp()+$9*interval '1 millisecond'${args.accountId ? ",$10" : ""})`,
         [
           ticket.attempt_id,
           manifest.match_id,
@@ -220,6 +220,7 @@ export class PostgresPublicAttemptRepository
           JSON.stringify(ticket),
           CONNECTION_LEASE_MS,
           args.durationMs,
+          ...(args.accountId ? [args.accountId] : []),
         ],
       );
       return this.load(c, args.actor, ticket.attempt_id);

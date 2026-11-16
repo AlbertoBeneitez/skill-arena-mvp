@@ -1,9 +1,10 @@
 /** v191 · Accounts and fictitious wallet against local PostgreSQL. */
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
 import { Pool } from "pg";
 import { cleanName, WELCOME_MINOR } from "../lib/accountRules";
+import { applyMigrations } from "../lib/server/migrations";
+import { ledgerBalance } from "../lib/server/ledger";
 import { AccountError, accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findAccount, listMovements, updateProfile } from "../lib/server/accounts";
 
 const connectionString = process.env.TEST_DATABASE_URL;
@@ -30,7 +31,7 @@ try {
 
   await admin.query(`CREATE SCHEMA ${schema}`);
   created = true;
-  for (let i = 0; i < 2; i++) await pool.query(await readFile("db/migrations/007-accounts.sql", "utf8"));
+  await applyMigrations(pool);
 
   // Registration: welcome balance, unique names (case and accents ignored), one account per identity.
   const a = await createAccount(pool, k1, "Mr Beny", 3, "mobile");
@@ -62,13 +63,29 @@ try {
   assert.deepEqual(moves.map((m) => m.kind), ["withdraw", "withdraw", "withdraw", "deposit", "welcome"]);
   assert.equal(moves[0].feeMinor, 50);
 
-  // The ledger is append-only; erasure removes the account and its ledger.
+  // The two ledgers agree: the player's statement and the double-entry ledger, and money is neither created nor lost.
+  const aId = (await pool.query("SELECT account_id FROM arena_accounts WHERE auth_key = $1", [k1])).rows[0].account_id as string;
+  assert.equal(await ledgerBalance(pool, { kind: "player", accountId: aId }, "CC"), 450);
+  assert.equal(await ledgerBalance(pool, { kind: "house" }, "EUR"), 50 + 3 * 50, "5 % kept on the deposit and on three withdrawals");
+  for (const currency of ["EUR", "CC"]) {
+    const total = (await pool.query("SELECT COALESCE(sum(amount_minor),0)::int AS t FROM arena_ledger_postings WHERE currency = $1", [currency])).rows[0].t;
+    assert.equal(total, 0, `${currency}: everything adds up to zero`);
+  }
+  assert.equal((await pool.query("SELECT count(*)::int AS n FROM arena_ledger_transactions WHERE kind = 'deposit'")).rows[0].n, 1, "the retried deposit posted once");
+
+  // Erasure anonymises: the account and its movements stay, without a name or sign-in identity.
   await assert.rejects(pool.query("UPDATE arena_wallet_entries SET amount_minor = 1"), /immutable/);
+  await assert.rejects(pool.query("DELETE FROM arena_accounts WHERE account_id = $1", [aId]), /anonymised, never deleted/);
   assert.equal(await deleteAccount(pool, k1), true);
+  assert.equal(await deleteAccount(pool, k1), false, "already erased");
   assert.equal(await findAccount(pool, k1), null);
-  assert.equal((await pool.query("SELECT count(*)::int AS n FROM arena_wallet_entries")).rows[0].n, 1, "only Lucía's welcome entry is left");
+  const gone = (await pool.query("SELECT display_name, name_key, avatar, deleted_at FROM arena_accounts WHERE account_id = $1", [aId])).rows[0];
+  assert.equal(gone.display_name, "Cuenta borrada");
+  assert.ok(gone.deleted_at);
+  assert.equal((await pool.query("SELECT count(*)::int AS n FROM arena_wallet_entries WHERE account_id = $1", [aId])).rows[0].n, 5, "the movements are kept");
+  assert.equal(await ledgerBalance(pool, { kind: "player", accountId: aId }, "CC"), 450, "and so is the ledger");
   assert.equal((await createAccount(pool, k1, "Mr Beny", 3, "mobile")).balanceMinor, WELCOME_MINOR, "the name is free again");
-  console.log("Accounts: unique names, one per identity, 5 % exchange, idempotent, no overdraft, append-only ledger, erasure");
+  console.log("Accounts: unique names, one per identity, 5 % exchange, idempotent, no overdraft, append-only ledger, double-entry ledger agrees, erasure anonymises");
 } finally {
   await pool.end();
   if (created) await admin.query(`DROP SCHEMA ${schema} CASCADE`);

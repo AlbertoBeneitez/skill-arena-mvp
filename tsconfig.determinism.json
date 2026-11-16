@@ -35,6 +35,7 @@
     "scripts/verify-play-counts.ts",
     "scripts/verify-accounts.ts",
     "scripts/verify-migrations.ts",
+    "scripts/verify-groups.ts",
     "scripts/verify-ranking-repository.ts",
     "scripts/verify-orb-v1.ts",
     "scripts/verify-orb-v2.ts",

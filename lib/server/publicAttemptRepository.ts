@@ -30,6 +30,8 @@ export type StartPublicAttempt = {
   stake: number;
   /** v179: the pool this start belongs to (phones with phones, computers with computers). */
   platform: Platform;
+  /** v193: the signed-in person behind the device, when there is one (anonymous training has none). */
+  accountId?: string | null;
   durationMs: number;
   manifest(index: number): MatchManifest;
   ticket(manifest: MatchManifest, slot: "A" | "B"): AttemptTicket;

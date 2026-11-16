@@ -29,7 +29,7 @@ import {
 /** Application orchestration; repository is responsible for atomic durable state. */
 export class PublicMatchService {
   constructor(private readonly repository: PublicAttemptRepository) {}
-  async start(actor: string, raw: unknown) {
+  async start(actor: string, raw: unknown, accountId: string | null = null) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw))
       throw new PublicAttemptError("INVALID_START", 400);
     const body = raw as Record<string, unknown>;
@@ -77,6 +77,7 @@ export class PublicMatchService {
       gameVersion: game.version,
       stake: body.stake_minor as number,
       platform,
+      accountId,
       durationMs:
         Math.ceil(
           (adapter.simulation.maxFinalTick / adapter.simulation.tickRate) *
