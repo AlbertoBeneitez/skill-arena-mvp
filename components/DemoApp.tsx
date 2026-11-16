@@ -1748,7 +1748,7 @@ export default function DemoApp() {
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
             <button className={`netToggle gxIconBtn gxHeadBtn ${offline ? "off" : "on"}`} type="button" aria-pressed={!offline}
               aria-label={t(offline ? "net.offlineSwitch" : "net.onlineSwitch")} title={t(offline ? "net.offline" : "net.online")}
-              onClick={() => { updateSettings({ online: offline }); setNotice(t(offline ? "net.nowOnline" : "net.nowOffline")); haptic(8); }}>
+              onClick={() => { updateSettings({ online: offline }); setNotice(t(offline ? "net.online" : "net.offline")); haptic(8); }}>
               <UiIcon name="network" /><i className="gxLed" aria-hidden="true" />
             </button>
             <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} aria-haspopup="dialog" aria-expanded={walletOpen} onClick={() => setWalletOpen((v) => !v)}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
@@ -1769,7 +1769,6 @@ export default function DemoApp() {
             <h1 className="visuallyHidden">{t("home.title")}</h1>
             <div className="homePlayHeading gxHomeBar">
               <button type="button" className="gxStudioTab gxHomeBtn gxHomeBtnMoney" onClick={openStudio}><UiIcon name="coins" size={19} className="gxStudioCoin" /><span className="gxBtnLabel">{t("studio.title")}</span></button>
-              <button type="button" className="globalRankingShortcut gxRankingPill gxHomeBtn" aria-label={t("home.rankingAria")} onClick={()=>navigate("ranking")}><UiIcon name="trophy" size={18} /><span className="gxBtnLabel">{t("home.ranking")}</span></button>
             </div>
 
 

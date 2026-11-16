@@ -663,7 +663,7 @@
 .danger:focus-visible, .cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* v194 · category chips above the game search, and a clear (X) button at the right of the search field. */
-.categories { display: flex; gap: 6px; overflow-x: auto; min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box; padding: 2px 0 8px; scrollbar-width: none; }
+.categories { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box; padding: 2px 0 8px; max-height: calc(3 * 36px + 2 * 6px + 10px); overflow: hidden; }
 .categories::-webkit-scrollbar { display: none; }
 .categories button { flex: none; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--field); color: var(--dim); font: 600 12.5px/1 var(--gx-ui, sans-serif); }
 .categories button[aria-pressed="true"] { color: var(--ink); border-color: var(--ice); background: var(--ice-soft); }
@@ -681,3 +681,9 @@
 .addRival button { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1.5px dashed rgba(255, 255, 255, .35); background: transparent; color: #e9ebef; padding: 0; }
 .addRival button:active { background: rgba(255, 255, 255, .08); }
 .addRival span { color: var(--dim) !important; }
+
+/* v202 · The step «Juegos» carries its own clear (X): search, category and chosen games. */
+.stepHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.clearStep { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-2); background: var(--field); color: var(--ink); padding: 0; }
+.clearStep:active { background: var(--ice-soft, rgba(127, 227, 234, .12)); }
+.search input:focus, .search input:focus-visible { outline: none; box-shadow: none; border: 0; }

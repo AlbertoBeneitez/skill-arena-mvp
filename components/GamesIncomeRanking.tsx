@@ -8,7 +8,7 @@
  */
 import { useId, useMemo, useState } from "react";
 import { GAMES, playableForMoney } from "@/lib/games";
-import { formatNumber, getLocale, t, useI18n, type MessageKey } from "@/lib/i18n";
+import { COIN_SYMBOL, formatNumber, getLocale, t, useI18n, type MessageKey } from "@/lib/i18n";
 import { localeInfo } from "@/lib/i18n/locales";
 import { gameName } from "@/lib/i18n/games";
 import { sampleIncomeSeries } from "@/lib/demo/sampleGameIncome";
@@ -16,7 +16,7 @@ import type { RankingPeriod } from "@/lib/rankingPeriod";
 import st from "./GamesIncomeRanking.module.css";
 
 const euros = (cents: number, decimals = 0) =>
-  `${formatNumber(cents / 100, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} €`;
+  `${formatNumber(cents / 100, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ${COIN_SYMBOL}`;
 
 function LineChart({ values, labels, name }: { values: number[]; labels: string[]; name: string }) {
   const [pickRaw, setPick] = useState(values.length - 1);

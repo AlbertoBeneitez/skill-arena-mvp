@@ -209,9 +209,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           <div className={st.crew} aria-hidden="true">
             {[avatarSrc, portraitSrc(2, "-s"), portraitSrc(5, "-s"), portraitSrc(9, "-s")].map((src, i) => <img key={i} src={src} alt="" width={44} height={44} />)}
           </div>
-          <span className={st.kicker}>{t("group.heroTag")}</span>
           <h1 className={st.heroTitle}>{t("group.heroTitle")}</h1>
-          <p className={st.heroLead}>{t("group.heroLead")}</p>
         </div>
 
         {/* v192: «Crear un grupo» creates it at once and the group opens right below; no second button. */}
@@ -501,7 +499,14 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             )}
           </li>
           <li>
-            <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
+            <div className={st.stepHead}>
+              <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
+              {(query || category || picked.length > 0) && (
+                <button type="button" className={st.clearStep} aria-label={t("group.clearGames")} onClick={() => { setQuery(""); setCategory(""); setPicked([]); }}>
+                  <UiIcon name="close" size={16} />
+                </button>
+              )}
+            </div>
             <div className={st.categories} role="group" aria-label={t("group.categories")}>
               {["", ...CATALOG_SHELVES].map((key) => (
                 <button key={key || "all"} type="button" aria-pressed={category === key} onClick={() => setCategory(key)}>
@@ -512,9 +517,6 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             <label className={st.search}>
               <UiIcon name="search" size={18} />
               <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")} enterKeyHint="search" />
-              <button type="button" className={st.clear} aria-label={t("group.clearSearch")} disabled={!query} onClick={() => setQuery("")}>
-                <UiIcon name="close" size={16} />
-              </button>
             </label>
             <div className={st.games} role="group" aria-label={t(multi ? "group.stepGames" : "group.stepGame")}>
               {tiles.map(({ id, name, cover }) => {

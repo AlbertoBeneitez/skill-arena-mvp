@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v202-saturn · Ajustes de Grupo y ranking (16-nov-2026)
+
+- Offline/Online, sin botón Rankings, Grupo más limpio, categorías en filas, X junto a «Juegos», ranking en ₡. Pendiente: Online igual que Offline (v203) y 1 contra 1 offline (v204).
+
 ## v201-saturn · Sin etiqueta «Sin dinero» (16-nov-2026)
 
 - Los juegos sin apuestas ya no muestran la etiqueta; los distingue el botón negro.
