@@ -9,6 +9,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, GROUP_COMMISSION_BPS, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
+import { groupArt } from "@/lib/groupArt";
 import { CATALOG_SHELVES, GAMES, gameShelf, playableForMoney } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
@@ -297,11 +298,11 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     <div className={st.head}>
       {allowPhoto ? (
         <button type="button" className={st.groupPic} onClick={() => photoRef.current?.click()} aria-label={t(group.image ? "group.photoChange" : "group.photoAdd")}>
-          {group.image ? <img src={group.image} alt="" /> : <UiIcon name="group" size={24} />}
+          <img src={group.image || groupArt(group.code || group.id)} alt="" />
           <span className={st.groupPicBadge} aria-hidden="true"><UiIcon name="camera" size={12} /></span>
         </button>
       ) : (
-        <span className={st.groupPic} aria-hidden="true"><UiIcon name="group" size={24} /></span>
+        <span className={st.groupPic} aria-hidden="true"><img src={groupArt(group.code || group.id)} alt="" /></span>
       )}
       <input ref={photoRef} type="file" accept="image/*" hidden onChange={(event) => { void pickPhoto(event.target.files?.[0]); event.target.value = ""; }} />
       <div className={st.headName}>

@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v206-saturn · Imágenes de grupo (16-nov-2026)
+
+- 6 ilustraciones propias por defecto para los grupos. Pendiente: logo (el propietario pide algo más original y sutil).
+
 ## v205-saturn · Retoques (16-nov-2026)
 
 - Populares más grandes, sin barra en el formato elegido, login sin subtítulo, sin juegos sin apuestas en retos con entrada. Pendiente: marca (5 logos) y formato de diseño (5 opciones) a elegir por el propietario.
