@@ -72,7 +72,6 @@ const messages: Messages = {
   "catalog.noRivalWaiting": "没有等待中的对局",
   "catalog.moneyGame": "真钱游戏",
   "catalog.chanceGame": "运气类游戏，无真钱",
-  "catalog.chanceTag": "无真钱",
 
   "game.training": "训练",
   "game.duel": "{n} 个筹码 · 1 对 1",

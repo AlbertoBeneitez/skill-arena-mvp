@@ -72,7 +72,6 @@ const messages: Messages = {
   "catalog.noRivalWaiting": "لا توجد مباراة بالانتظار",
   "catalog.moneyGame": "لعبة على المال",
   "catalog.chanceGame": "لعبة حظ، بلا مال",
-  "catalog.chanceTag": "بلا مال",
 
   "game.training": "تدريب",
   "game.duel": "{n} رقائق · 1 ضد 1",

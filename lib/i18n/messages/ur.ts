@@ -72,7 +72,6 @@ const messages: Messages = {
   "catalog.noRivalWaiting": "کوئی میچ انتظار میں نہیں",
   "catalog.moneyGame": "پیسوں والا گیم",
   "catalog.chanceGame": "قسمت کا گیم، بغیر پیسوں",
-  "catalog.chanceTag": "بغیر پیسوں",
 
   "game.training": "مشق",
   "game.duel": "{n} چپس · 1 بمقابلہ 1",

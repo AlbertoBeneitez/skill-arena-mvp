@@ -72,7 +72,6 @@ const messages: Messages = {
   "catalog.noRivalWaiting": "Нет ожидающих матчей",
   "catalog.moneyGame": "Игра на деньги",
   "catalog.chanceGame": "Азартная игра, без денег",
-  "catalog.chanceTag": "Без денег",
 
   "game.training": "ТРЕНИРОВКА",
   "game.duel": "{n} ФИШЕК · 1 НА 1",

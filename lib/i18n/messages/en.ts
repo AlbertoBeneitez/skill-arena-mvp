@@ -72,7 +72,6 @@ const messages: Messages = {
   "catalog.noRivalWaiting": "No match waiting",
   "catalog.moneyGame": "Game for money",
   "catalog.chanceGame": "Game of chance, no money",
-  "catalog.chanceTag": "No money",
 
   "game.training": "TRAINING",
   "game.duel": "{n} CHIPS · 1 VS 1",

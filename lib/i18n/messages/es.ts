@@ -77,7 +77,6 @@ const es = {
   "catalog.noRivalWaiting": "Ninguna partida esperando",
   "catalog.moneyGame": "Juego por dinero",
   "catalog.chanceGame": "Juego de azar, sin dinero",
-  "catalog.chanceTag": "Sin dinero",
 
   // ---------- game screen ----------
   "game.training": "ENTRENAMIENTO",

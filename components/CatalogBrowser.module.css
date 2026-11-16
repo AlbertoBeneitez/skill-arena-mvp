@@ -233,7 +233,3 @@
   color: #e9ebef;
 }
 .card:not([data-kind="money"]) > .play::before { content: none; }
-.chanceTag {
-  position: absolute; top: 5px; left: 26px; z-index: 3; padding: 3px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
-  color: #d6dbe2; background: rgba(12, 13, 15, .78); border: 1px solid rgba(255, 255, 255, .18); backdrop-filter: blur(4px);
-}

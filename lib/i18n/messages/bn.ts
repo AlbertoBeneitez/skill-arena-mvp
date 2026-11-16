@@ -72,7 +72,6 @@ const messages: Messages = {
   "catalog.noRivalWaiting": "কোনো ম্যাচ অপেক্ষায় নেই",
   "catalog.moneyGame": "টাকার গেম",
   "catalog.chanceGame": "ভাগ্যের গেম, টাকা ছাড়া",
-  "catalog.chanceTag": "টাকা ছাড়া",
 
   "game.training": "অনুশীলন",
   "game.duel": "{n}টি চিপ · ১ বনাম ১",

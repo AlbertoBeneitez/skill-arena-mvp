@@ -108,7 +108,6 @@ export default function CatalogBrowser(props: Props) {
         {/* v194: one discreet circle, top left: green when a match is waiting for this game, white when none is. */}
         <span className={styles.rivalLed} data-waiting={rivalWaiting(game) ? "yes" : "no"} role="img"
           aria-label={t(rivalWaiting(game) ? "catalog.rivalWaiting" : "catalog.noRivalWaiting")} title={t(rivalWaiting(game) ? "catalog.rivalWaiting" : "catalog.noRivalWaiting")} />
-        {!playableForMoney(game) && <span className={styles.chanceTag}>{t("catalog.chanceTag")}</span>}
         {!props.serverOnly && rivalWaiting(game) && (
           <button
             type="button"
