@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v198-saturn · Guía de entrada con Google (16-nov-2026)
+
+- PDF paso a paso; Vercel Pro hasta el 12-dic. Pendiente del propietario: AUTH_SECRET, AUTH_URL, cliente de Google, desactivar Vercel Authentication, secreto BACKUP_DATABASE_URL.
+
 ## v197-saturn · Grupos en el servidor (16-nov-2026)
 
 - `/api/groups` y pestaña Online. Pendiente: jugar las partidas de la competición (startMatch con competitionId + result), traducciones de `sg.*` en 8 idiomas.
