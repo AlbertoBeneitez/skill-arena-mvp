@@ -9,7 +9,7 @@ import type {
   VerifiedAttemptResult,
 } from "./contracts";
 import type { ReplayInput } from "./inputValidation";
-import { ensureAttemptSession, submitAttemptRecord } from "./attemptTransport";
+import { currentPairing, ensureAttemptSession, submitAttemptRecord } from "./attemptTransport";
 import { currentPlatform } from "../platform";
 import { SubmissionGate } from "./submissionGate";
 
@@ -264,7 +264,7 @@ export function useVerifiedAttempt<TInput extends ReplayInput>({
             game_id: gameId,
             stake_minor: stakeMinor,
             ...(capability.durable
-              ? { start_key: startKeyRef.current!.id, platform: currentPlatform() }
+              ? { start_key: startKeyRef.current!.id, platform: currentPlatform(), ...(currentPairing() === "solo" && stakeMinor === 0 ? { solo: true } : {}) }
               : { target_score: targetScore }),
           }),
           signal: controller.signal,

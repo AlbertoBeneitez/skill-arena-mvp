@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v203-saturn · Offline en 1 contra 1 (16-nov-2026)
+
+- Duelos Offline contra rivales inventados con partidas reales; partidas «solo» en el servidor (migración 012); arreglo del grupo Offline en la vista previa. Pendiente: Online con el mismo aspecto que Offline (v204).
+
 ## v202-saturn · Ajustes de Grupo y ranking (16-nov-2026)
 
 - Offline/Online, sin botón Rankings, Grupo más limpio, categorías en filas, X junto a «Juegos», ranking en ₡. Pendiente: Online igual que Offline (v203) y 1 contra 1 offline (v204).

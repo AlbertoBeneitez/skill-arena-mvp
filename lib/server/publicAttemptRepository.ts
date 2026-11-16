@@ -32,6 +32,8 @@ export type StartPublicAttempt = {
   platform: Platform;
   /** v193: the signed-in person behind the device, when there is one (anonymous training has none). */
   accountId?: string | null;
+  /** v203: a match against an invented rival (Offline): never paired, never offered (migration 012). */
+  solo?: boolean;
   durationMs: number;
   manifest(index: number): MatchManifest;
   ticket(manifest: MatchManifest, slot: "A" | "B"): AttemptTicket;

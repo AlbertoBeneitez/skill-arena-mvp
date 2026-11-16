@@ -34,8 +34,10 @@ export class PublicMatchService {
       throw new PublicAttemptError("INVALID_START", 400);
     const body = raw as Record<string, unknown>;
     // v179: an optional "platform" (absent = mobile, the only platform before); it picks the pool, not the rules.
-    const keys = Object.keys(body).sort().join(",");
+    // v203: an optional "solo": true (Offline, invented rival) keeps the match out of pairing; never with an entry.
+    const keys = Object.keys(body).filter((k) => k !== "solo").sort().join(",");
     if (
+      (body.solo !== undefined && (body.solo !== true || body.stake_minor !== 0)) ||
       (keys !== "game_id,stake_minor,start_key" && keys !== "game_id,platform,stake_minor,start_key") ||
       (body.platform !== undefined && !isPlatform(body.platform)) ||
       typeof body.game_id !== "string" ||
@@ -50,7 +52,9 @@ export class PublicMatchService {
     const platform: Platform = isPlatform(body.platform) ? body.platform : "mobile";
     // Mobile keeps the earlier request hash, so an in-flight start key still recovers after the deploy.
     const requestHash = sha256(
-      canonicalJson(platform === "mobile" ? { game: body.game_id, stake: body.stake_minor } : { game: body.game_id, platform, stake: body.stake_minor }),
+      canonicalJson(body.solo === true
+        ? { game: body.game_id, platform, solo: true, stake: body.stake_minor }
+        : platform === "mobile" ? { game: body.game_id, stake: body.stake_minor } : { game: body.game_id, platform, stake: body.stake_minor }),
     );
     const recovered = await this.repository.recoverStart(
       actor,
@@ -78,6 +82,7 @@ export class PublicMatchService {
       stake: body.stake_minor as number,
       platform,
       accountId,
+      solo: body.solo === true,
       durationMs:
         Math.ceil(
           (adapter.simulation.maxFinalTick / adapter.simulation.tickRate) *

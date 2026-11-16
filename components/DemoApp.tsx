@@ -30,6 +30,7 @@ import { playSimulatedMembers, voteWithSimulatedMembers, type RivalSample } from
 import type { GameResult } from "@/lib/types";
 import SoundMenu from "./SoundMenu";
 import ServerGroups from "./ServerGroups";
+import { setNextPairing } from "@/lib/verified/attemptTransport";
 import { flushAnalytics, setAnalyticsEnabled, track } from "@/lib/analytics";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
@@ -1054,26 +1055,34 @@ export default function DemoApp() {
     navigate(pendingJoinCode ? "group" : "home", true);
   }
 
-  const {persistentTraining,liveModes}=usePublicMatchAvailability(isLoaded&&onboarded,screen==="home",selectedStake);
+  const {persistentTraining,liveModes}=usePublicMatchAvailability(isLoaded&&onboarded,screen==="home"&&!offline,selectedStake);
+  /** v203: Offline plays every duel against an invented rival, like the local groups: no server pairing decisions. */
+  const serverMode = offline ? false : persistentTraining;
+  /** v203: the match now open is played against invented rivals (Offline duel or local group): kept out of pairing. */
+  const soloMatchRef = useRef(false);
   usePendingMatchResolution(screen==="game"&&result!==null,attemptSummary,finishMatch);
 
 
-  function startMatch(gameOverride?: GameMeta) {
+  async function startMatch(gameOverride?: GameMeta) {
     const game = gameOverride ?? selectedGame;
     // v200: a game that is never for money (Roulette) is always played without entry, whatever entry is selected.
-    const stake = playableForMoney(game) ? selectedStake : 0;
-    const mode = persistentTraining ? (liveModes[game.id]??"create") : modeForStake(game, stake as Stake, nextTurn);
+    const stake = playableForMoney(game) && !offline ? selectedStake : 0; // v203: Offline never moves money
+    const mode = serverMode ? (liveModes[game.id]??"create") : modeForStake(game, stake as Stake, nextTurn);
 
     if (matchStartLockRef.current || stake > balance) return;
     // v189: games of chance are never played for money (no licence); the server refuses it too.
     if (stake > 0 && !playableForMoney(game)) return;
-    if(persistentTraining && stake>0 && game.competition.verification!=="server-replay"){
+    if(serverMode && stake>0 && game.competition.verification!=="server-replay"){
       setMatchStartError(t("home.localOnly"));return;
     }
     setMatchStartError("");
 
     matchStartLockRef.current = true;
     setStartingGameId(game.id);
+    soloMatchRef.current = offline;
+    setNextPairing(offline ? "solo" : "public");
+    // v203: Offline, the invented rival plays a real verified match of another player of this game, when there is one.
+    const sample = offline ? pickSample((await fetchSamplesFor([game.id]))[game.id]) : null;
     setPlayCounts((counts) => ({ ...counts, [game.id]: (counts[game.id] ?? 0) + 1 }));
 
     setSelectedGame(game);
@@ -1083,10 +1092,11 @@ export default function DemoApp() {
     setMatchScope("duel");
     setLeagueOutcome(null);
     let rivalPortrait: string | undefined;
-    if (!persistentTraining) {
+    if (!serverMode) {
       // Demo league matchmaking: a simulated rival of the player's tier in this game.
       const record = leagues[game.id] ?? emptyLeague();
-      const rival = leagueRival(game, record);
+      const drawn = leagueRival(game, record);
+      const rival = sample && !drawn.balanceGoal ? { ...drawn, target: sample.score, timeMs: sample.timeMs ?? drawn.timeMs } : drawn;
       rivalPortrait = portraitCrop(rival.avatar, "");
       setLeagueMatch({ gameId: game.id, rival, tier: record.tier });
       setMatchTargetScore(rival.balanceGoal ? game.rivalScore : rival.target);
@@ -1147,7 +1157,7 @@ export default function DemoApp() {
       return;
     }
 
-    if(gameResult.serverMatch){
+    if(gameResult.serverMatch && !soloMatchRef.current){
       setAttemptSummary(gameResult);
       if(gameResult.serverMatch.status==="waiting"){
         setSelectedMode("create");setResult({...gameResult,won:false});return;
@@ -1163,7 +1173,7 @@ export default function DemoApp() {
       (selectedMode === "existing" || selectedMode === "waiting");
 
     // Demo league duel: training matches are decided against the simulated rival of the player's tier.
-    const leagueDuel = !gameResult.serverMatch && matchScope === "duel" && leagueMatch !== null && leagueMatch.gameId === selectedGame.id;
+    const leagueDuel = (!gameResult.serverMatch || soloMatchRef.current) && matchScope === "duel" && leagueMatch !== null && leagueMatch.gameId === selectedGame.id;
     // v174: beating the rival needs a better score; an exact tie goes to whoever was faster (rivals saved without a
     // reference time keep the older rule: a tie is a win).
     const rivalTarget = leagueMatch?.rival.target ?? 0, rivalTime = leagueMatch?.rival.timeMs;
@@ -1358,8 +1368,14 @@ export default function DemoApp() {
     setGroup((g) => (g ? { ...g, members: g.members.filter((m) => m.isYou || m.id !== id) } : g));
   }
   /** Other players' verified scores for the games of a competition (empty when the server has none or is unreachable). */
-  async function fetchRivalSamples(config: GroupConfig): Promise<Record<string, RivalSample[]>> {
-    const ids = [...new Set([...config.gameIds, ...(config.randomPool ?? [])].filter((id) => id !== RANDOM_GAME))].slice(0, 20);
+  function fetchRivalSamples(config: GroupConfig): Promise<Record<string, RivalSample[]>> {
+    return fetchSamplesFor([...new Set([...config.gameIds, ...(config.randomPool ?? [])].filter((id) => id !== RANDOM_GAME))]);
+  }
+  function pickSample(pool: RivalSample[] | undefined): RivalSample | null {
+    return pool && pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  }
+  async function fetchSamplesFor(gameIds: string[]): Promise<Record<string, RivalSample[]>> {
+    const ids = gameIds.slice(0, 20);
     if (!ids.length) return {};
     const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 3000);
     try {
@@ -1405,6 +1421,8 @@ export default function DemoApp() {
     const rivals = m.players.filter((id) => id !== GROUP_YOU).map((id) => m.scores[id]).filter((v): v is number => v !== undefined);
     const lower = lowerWinsIn(comp, m.gameId);
     matchStartLockRef.current = true;
+    soloMatchRef.current = true;
+    setNextPairing("solo");
     setGroupMatch(index);
     setStartingGameId(game.id);
     setPlayCounts((counts) => ({ ...counts, [game.id]: (counts[game.id] ?? 0) + 1 }));
@@ -1775,7 +1793,7 @@ export default function DemoApp() {
             {matchStartError && <p role="status">{matchStartError}</p>}
             {studioWelcome && <StudioWelcome onClose={() => setStudioWelcome(false)} onSend={() => { setStudioWelcome(false); setProposing(true); }} />}
             {proposing && <GameProposal onClose={() => setProposing(false)} />}
-            <CatalogBrowser serverOnly={persistentTraining === true} modes={persistentTraining ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={startMatch} leagues={persistentTraining ? undefined : leagues} favorites={favoriteGames} />
+            <CatalogBrowser offline={offline} serverOnly={serverMode === true} modes={serverMode ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={(g) => void startMatch(g)} leagues={serverMode ? undefined : leagues} favorites={favoriteGames} />
           </section>
         )}
 
@@ -1828,7 +1846,7 @@ export default function DemoApp() {
               </div>
               <div className="gameHeaderActions">
                 <SoundMenu variant="game" musicOn={musicOn} onToggleSound={toggleSound} />
-                {!persistentTraining && selectedMode === "existing" && matchScope === "duel" && (
+                {!serverMode && selectedMode === "existing" && matchScope === "duel" && (
                   <button
                     className={`ghostToggle gxIconBtn ${ghostEnabled ? "active" : ""}`}
                     onClick={() => setGhostEnabled((value) => !value)}
@@ -1846,11 +1864,11 @@ export default function DemoApp() {
                 game={selectedGame}
                 active={activeGame}
                 stake={selectedStake}
-                ghostEnabled={!persistentTraining && selectedMode === "existing" && ghostEnabled}
+                ghostEnabled={!serverMode && selectedMode === "existing" && ghostEnabled}
                 instanceKey={gameKey}
                 targetScore={matchTargetScore}
                 stopOnTarget={
-                  !persistentTraining && matchScope === "duel" &&
+                  !serverMode && matchScope === "duel" &&
                   (selectedMode === "existing" ||
                     selectedMode === "waiting")
                 }
@@ -1953,7 +1971,7 @@ export default function DemoApp() {
                   ) : (
                     <>
                       <GameActionButton className="rematchAction" onActivate={source => {
-                        if (resultActionsReady && (source === "click" || resultPointerReadyRef.current)) startMatch();
+                        if (resultActionsReady && (source === "click" || resultPointerReadyRef.current)) void startMatch();
                       }}>
                         {t("game.again")}
                       </GameActionButton>
@@ -1977,7 +1995,7 @@ export default function DemoApp() {
               <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>{t("profile.tabProfile")}</button>
               <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>{t("profile.tabRanking")}</button>
             </nav>
-            {avatarSection === "ranking" ? <RankingHub platform={platform} bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!persistentTraining} /> : <>
+            {avatarSection === "ranking" ? <RankingHub platform={platform} bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!serverMode} /> : <>
             {/* v178: the profile card itself edits the name and avatar (the separate rows are gone). */}
             <button type="button" className="profileStrip" onClick={editProfile} aria-label={`${playerName} · ${t("profile.editProfile")}`}><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div><span className="profileEdit" aria-hidden="true"><UiIcon name="pencil" size={16} /></span></button>
 
@@ -1997,7 +2015,7 @@ export default function DemoApp() {
               <div><b>{streak}</b><span>{t("profile.streak")}</span></div>
             </div>
 
-            <PlayerProgress leagues={persistentTraining ? undefined : leagues} bestScores={bestScores} onPlay={startMatch} />
+            <PlayerProgress leagues={serverMode ? undefined : leagues} bestScores={bestScores} onPlay={(g) => void startMatch(g)} />
 
             {persistentTraining && <RecentAttempts />}
             </>}

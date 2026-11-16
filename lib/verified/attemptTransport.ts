@@ -51,3 +51,12 @@ export async function submitAttemptRecord(
     });
   }
 }
+
+/**
+ * v203 · Pairing of the next durable start: "solo" (Offline duel or local group, against invented rivals) keeps the
+ * match out of the public pool; "public" (default) is a normal match that may meet a real player. Set by the app right
+ * before it opens a game; read once when the game starts its attempt.
+ */
+let nextPairing: "public" | "solo" = "public";
+export function setNextPairing(pairing: "public" | "solo") { nextPairing = pairing; }
+export function currentPairing() { return nextPairing; }

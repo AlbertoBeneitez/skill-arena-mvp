@@ -484,8 +484,23 @@ try {
     (await pool.query("SELECT platform FROM arena_public_matches WHERE match_id=$1", [phone.manifest.match_id])).rows[0].platform,
     "mobile",
   );
+  // v203 · Solo (Offline) matches: refused before migration 012, then never paired, never offered, never with an entry.
+  await rejects(() => pooled.start("solo-0", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "mobile", solo: true }), "SOLO_UNAVAILABLE");
+  for (let i = 0; i < 2; i++) await pool.query(await readFile("db/migrations/012-solo-matches.sql", "utf8"));
+  const soloService = new PublicMatchService(new PostgresPublicAttemptRepository(pool));
+  await rejects(() => soloService.start("solo-1", { game_id: "precision-stack", stake_minor: 100, start_key: randomUUID(), platform: "mobile", solo: true }), "INVALID_START");
+  await rejects(() => soloService.start("solo-1", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "mobile", solo: "yes" }), "INVALID_START");
+  const waitingPhone = await soloService.start("solo-W", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "mobile" });
+  await playAndSubmit("solo-W", waitingPhone);
+  const soloA = await soloService.start("solo-1", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "mobile", solo: true });
+  assert.equal(soloA.ticket.slot, "A", "a solo start never joins someone's waiting match");
+  assert.notEqual(soloA.manifest.match_id, waitingPhone.manifest.match_id);
+  await playAndSubmit("solo-1", soloA);
+  assert.equal((await pool.query("SELECT solo FROM arena_public_matches WHERE match_id=$1", [soloA.manifest.match_id])).rows[0].solo, true);
+  const nextPhone = await soloService.start("solo-2", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "mobile" });
+  assert.notEqual(nextPhone.manifest.match_id, soloA.manifest.match_id, "nobody is paired into a solo match");
   console.log(
-    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools passed",
+    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools, solo (Offline) matches passed",
   );
 } finally {
   Date.now = originalNow;

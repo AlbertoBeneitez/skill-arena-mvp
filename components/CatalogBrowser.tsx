@@ -20,6 +20,8 @@ export const gameAccent = (game: GameMeta) => SHELF_ACCENTS[gameShelf(game)] ?? 
 const rowAccent = (key: string) => SHELF_ACCENTS[key] ?? (key === "new" ? "#ff9ad8" : key === "mine" ? "#ffd36b" : "#9ce6e8");
 type Props = {
   stake: Stake;
+  /** v203: Offline: no real player is ever waiting, so every circle stays white. */
+  offline?: boolean;
   serverOnly?: boolean;
   modes?: Partial<Record<GameId,MatchMode>>;
   balance: number;
@@ -89,7 +91,7 @@ export default function CatalogBrowser(props: Props) {
       </button>
     </article>
   );
-  const rivalWaiting = (game: GameMeta) => (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) === "existing";
+  const rivalWaiting = (game: GameMeta) => !props.offline && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) === "existing";
   const renderCard = (row: string, game: GameMeta, index: number) => (
     <article key={`${row}-${game.id}`} role="listitem" className={styles.card} data-kind={playableForMoney(game) ? "money" : "chance"}
       aria-label={`${gameName(game)} · ${t(playableForMoney(game) ? "catalog.moneyGame" : "catalog.chanceGame")}`} style={{ ["--accent" as string]: gameAccent(game), ["--i" as string]: index }}>
