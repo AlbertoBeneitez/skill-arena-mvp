@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v198-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v199-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Sin conexión / online (16 de noviembre, v199, app 1.99):** globo en la cabecera; grupo sin conexión con rivales inventados que juegan partidas verificadas reales de otros jugadores (`/api/rival-samples`), gratis; botón negro para juegos sin dinero; traducciones completas. Copia de seguridad diaria funcionando (secreto puesto, primera copia el 16-nov). Regla: Claude no juega partidas.
 - [x] **Guía de entrada con Google (16 de noviembre, v198):** `docs/GUIA_ENTRADA_CON_GOOGLE.pdf` (AUTH_SECRET, AUTH_URL, cliente de Google en modo Pruebas, Vercel Authentication). Vercel Pro se mantiene hasta el 12 de diciembre (ya pagado). Con Vercel Authentication activa, los amigos no pueden abrir la web de pruebas.
 - [x] **Grupos en el servidor: rutas y pantalla Online (16 de noviembre, v197, app 1.97):** `/api/groups`, pestaña Online en Grupo (crear/unirse, competiciones, buscar rival, ranking). Falta jugar las partidas desde la pantalla.
 - [x] **Medición de jugadores (16 de noviembre, v196, app 1.96):** consentimiento versionado y eventos de catálogo solo-añadir (migración 011), vista de partidas por persona, totales recalculables, retención 12 meses (pendiente de confirmar). `docs/EVENTOS.md`.

@@ -35,6 +35,10 @@ type Props = {
   onDeleteGroup: () => void;
   /** v171: rename the group or set its picture (a small data URL made from a phone photo). */
   onUpdateGroup: (patch: { name?: string; image?: string | null }) => void;
+  /** v199: offline (header globe off): invented rivals can be added; competitions are free (no entry, no prizes). */
+  offline?: boolean;
+  onAddRival?: () => void;
+  onRemoveRival?: (id: string) => void;
 };
 type Kind = "single" | "league" | "tournament";
 
@@ -99,8 +103,9 @@ function Medal({ place }: { place: number }) {
   );
 }
 
-export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup }: Props) {
+export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup, offline = false, onAddRival, onRemoveRival }: Props) {
   useI18n();
+  const competitionRunning = Boolean(competition && !competition.finished);
   const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
   const [joinCode, setJoinCode] = useState(normalizeJoinCode(initialJoinCode));
   const mountedRef = useRef(false);
@@ -248,7 +253,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     );
   }
 
-  const entryMinor = Math.max(0, Math.round(Number(entry.replace(",", ".")) * 100) || 0);
+  const entryMinor = offline ? 0 : Math.max(0, Math.round(Number(entry.replace(",", ".")) * 100) || 0);
   const format: GroupFormat = kind === "league" ? (duels ? "league-duels" : "league-rounds") : kind;
   // Fewer players than the chosen paid places: back to the default for as many places as the group allows.
   const split = shares && shares.length === Math.max(1, players) ? shares : defaultSplit(players);
@@ -427,16 +432,31 @@ export default function GroupHub({ joinError, group, competition, balance, playe
         </div>
         <ul className={st.members} aria-label={t("group.members")}>
           {group.members.map((member) => (
-            <li key={member.id} data-you={member.isYou || undefined}>
+            <li key={member.id} data-you={member.isYou || undefined} data-invented={member.id.startsWith("bot-") || undefined}>
               <img src={member.avatar} alt="" />
               <span>{member.isYou ? t("common.you") : member.name}</span>
+              {offline && member.id.startsWith("bot-") && !competitionRunning && (
+                <button type="button" className={st.dropRival} aria-label={t("group.removeRival", { name: member.name })} onClick={() => onRemoveRival?.(member.id)}>
+                  <UiIcon name="close" size={12} />
+                </button>
+              )}
             </li>
           ))}
+          {offline && players < 20 && !competitionRunning && (
+            <li className={st.addRival}>
+              <button type="button" aria-label={t("group.addRival")} onClick={() => onAddRival?.()}><UiIcon name="plus" size={20} /></button>
+              <span>{t("group.addRivalShort")}</span>
+            </li>
+          )}
         </ul>
-        <button type="button" className={st.secondary} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
-          <UiIcon name="share" size={18} />
-          <span>{t("group.share")}</span>
-        </button>
+        {offline
+          ? <p className={st.hint}>{t("group.offlineHint")}</p>
+          : (
+            <button type="button" className={st.secondary} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
+              <UiIcon name="share" size={18} />
+              <span>{t("group.share")}</span>
+            </button>
+          )}
       </div>
 
       <div className={st.panel}>
@@ -523,7 +543,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             {forMoney && GAMES.some((g) => !playableForMoney(g)) && <p className={st.hint}>{t("group.chanceExcluded")}</p>}
             <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
-          <li>
+          {!offline && <li>
             <span className={st.stepLabel}>{t("group.stepEntry")}</span>
             <div className={st.field}>
               <label className={st.subLabel} htmlFor="group-entry">{t("group.entryPrice")}</label>
@@ -562,13 +582,13 @@ export default function GroupHub({ joinError, group, competition, balance, playe
               </ol>
               {split.length > 1 && <p className={`${st.hint} ${st.splitHint}`}>{t("group.splitHint")}</p>}
             </details>
-          </li>
+          </li>}
         </ol>
         {/* v181: no simulated rivals any more — a competition starts once someone else has joined. */}
-        {players < 2 && <p className={st.hint} role="status">{t("group.needPlayers")}</p>}
+        {players < 2 && <p className={st.hint} role="status">{t(offline ? "group.needRivals" : "group.needPlayers")}</p>}
         <button className={st.primary} type="button" disabled={players < 2 || !affordable || (kind === "single" && chosen.length === 0)}
           onClick={() => onCreateCompetition(buildConfig())}>
-          {t("group.payAndStart", { amount: euros(entryMinor) })}
+          {offline ? t("group.startFree") : t("group.payAndStart", { amount: euros(entryMinor) })}
         </button>
       </div>
 

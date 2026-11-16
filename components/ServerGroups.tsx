@@ -150,15 +150,3 @@ export default function ServerGroups({ accountId, onBalanceChanged }: { accountI
     </section>
   );
 }
-
-/** Two chips at the top of the group screen: the local group or the online groups (signed-in players only). */
-export function GroupTabs({ value, onChange }: { value: "mine" | "online"; onChange(next: "mine" | "online"): void }) {
-  useI18n();
-  return (
-    <div className={st.tabs} role="group" aria-label={t("sg.title")}>
-      {(["mine", "online"] as const).map((key) => (
-        <button key={key} type="button" aria-pressed={value === key} onClick={() => onChange(key)}>{t(key === "mine" ? "sg.tab.mine" : "sg.tab.online")}</button>
-      ))}
-    </div>
-  );
-}

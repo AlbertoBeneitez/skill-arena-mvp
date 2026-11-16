@@ -225,6 +225,14 @@
     linear-gradient(180deg, #fff1c4, rgba(216, 176, 82, .45) 55%, rgba(232, 196, 106, .8)) border-box;
   color: #fff7e2;
 }
+/* v199 · Games that cannot be played for money (and studio games) carry a plain black button; gold is only for money. */
+.card:not([data-kind="money"]) > .play {
+  background:
+    linear-gradient(180deg, #0c0c0e, #050506) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .1) 55%, rgba(255, 255, 255, .2)) border-box;
+  color: #e9ebef;
+}
+.card:not([data-kind="money"]) > .play::before { content: none; }
 .chanceTag {
   position: absolute; top: 5px; left: 26px; z-index: 3; padding: 3px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
   color: #d6dbe2; background: rgba(12, 13, 15, .78); border: 1px solid rgba(255, 255, 255, .18); backdrop-filter: blur(4px);

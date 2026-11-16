@@ -673,3 +673,11 @@
 .search input::-webkit-search-cancel-button { display: none; }
 .search { min-width: 0; }
 .search input { width: 0; }
+
+/* v199 · Offline group: invented rivals (a plain ring) can be added and removed before a competition. */
+.members li { position: relative; }
+.members li[data-invented] img { box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .28); }
+.dropRival { position: absolute; top: -4px; inset-inline-end: calc(50% - 30px); width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .25); background: #0c0d0f; color: #cfd3d9; padding: 0; }
+.addRival button { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1.5px dashed rgba(255, 255, 255, .35); background: transparent; color: #e9ebef; padding: 0; }
+.addRival button:active { background: rgba(255, 255, 255, .08); }
+.addRival span { color: var(--dim) !important; }

@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 export type UiIconName =
   | "sound" | "soundOff" | "gear" | "back" | "close" | "upload" | "grid" | "ghost"
   | "games" | "group" | "trophy" | "check" | "chevronDown" | "logout" | "trash" | "user" | "coins"
-  | "share" | "copy" | "link" | "mail" | "chat" | "send" | "phone" | "dice" | "plus" | "enter" | "search" | "chevronUp" | "camera" | "pencil" | "wallet" | "globe";
+  | "share" | "copy" | "link" | "mail" | "chat" | "send" | "phone" | "dice" | "plus" | "enter" | "search" | "chevronUp" | "camera" | "pencil" | "wallet" | "globe" | "network";
 
 /** Eight-tooth gear, computed once (pure math, identical on server and client). */
 const GEAR_PATH = (() => {
@@ -133,6 +133,10 @@ const PATHS: Record<UiIconName, ReactNode> = {
     <path d="m15.4 15.4 4.4 4.4" />
   </>),
   chevronUp: <path d="m6.5 14.5 5.5-5.5 5.5 5.5" />,
+  network: (<>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 3v18M3 12h18M4.6 7.5h14.8M4.6 16.5h14.8M12 3c-3.2 2.6-4.6 5.6-4.6 9s1.4 6.4 4.6 9M12 3c3.2 2.6 4.6 5.6 4.6 9s-1.4 6.4-4.6 9" />
+  </>),
   globe: (<>
     <circle cx="12" cy="12" r="8.4" />
     <path d="M3.6 12h16.8M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4s1.2-6 3.6-8.4Z" />

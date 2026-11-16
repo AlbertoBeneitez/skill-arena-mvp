@@ -9294,3 +9294,14 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 /* v179 · Which platform's ranking this is (phones and computers rank apart). */
 .rankingPlatform { margin: -2px 2px 0; color: #8f959c; font-size: 12.5px; }
+
+/* v199 · Header globe: online (green light) or offline (grey, no light). */
+.appShell .appHeader .netToggle.gxHeadBtn { position: relative; }
+.appShell .appHeader .netToggle.gxHeadBtn .gxLed { top: 7px; right: 7px; width: 5px; height: 5px; background: #35e07a; box-shadow: 0 0 6px #35e07a; }
+.appShell .appHeader .netToggle.gxHeadBtn.off .gxLed { display: none; }
+.appShell .appHeader .netToggle.gxHeadBtn.off .uiIcon { color: #8b909c !important; }
+.appShell .appHeader .netToggle.gxHeadBtn[aria-pressed="true"] { border-color: transparent !important; }
+@media (max-width: 360px) {
+  .appShell .appHeader .appHeaderActions { gap: 6px; }
+  .appShell .appHeader .balanceChip.gxHeadBtn { padding: 0 9px 0 8px !important; gap: 5px; }
+}

@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { Pool } from "pg";
 import { accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findAccount } from "../lib/server/accounts";
 import { BadRequest, buildSetup, groupAction, groupErrorStatus, groupsOverview } from "../lib/server/groupHttp";
+import { rivalSamples } from "../lib/server/rivalSamples";
 import { applyMigrations } from "../lib/server/migrations";
 import { ledgerBalance } from "../lib/server/ledger";
 import {
@@ -239,6 +240,17 @@ try {
   assert.equal(groupErrorStatus("INSUFFICIENT_BALANCE"), 402);
   await act("H1", "mobile", { action: "cancel", competitionId: hc.id });
   await act("H1", "mobile", { action: "close", groupId: hg.id });
+
+  // v199: samples of other players' verified scores for invented rivals: same platform, no own matches, verified only.
+  const samples = await rivalSamples(pool, [GAME, "no-such"], "mobile", `device-${ids.A1}`);
+  assert.ok((samples[GAME] ?? []).length > 0, "verified scores of others are offered");
+  assert.ok(Object.keys(samples[GAME][0]).every((k) => k === "score" || k === "timeMs"), "only score and time travel");
+  const allMine = await rivalSamples(pool, [GAME], "mobile", null, 30);
+  const others = await rivalSamples(pool, [GAME], "mobile", `device-${ids.A1}`, 30);
+  assert.ok(others[GAME].length <= allMine[GAME].length);
+  assert.deepEqual(await rivalSamples(pool, [GAME], "desktop", null), {}, "no phone scores for computers");
+  await attempt(ids.A3, "darts", 77_777, { state: "rejected" });
+  assert.ok(!((await rivalSamples(pool, ["darts"], "mobile", null, 30)).darts ?? []).some((x) => x.score === 77_777), "rejected matches are never offered");
   console.log("Groups: identity on attempts, groups and competitions on the server (league, tournament, challenge), double-entry ledger, erasure anonymises, HTTP layer (platform from the account, setup rebuilt on the server)");
 } finally {
   await pool.end();

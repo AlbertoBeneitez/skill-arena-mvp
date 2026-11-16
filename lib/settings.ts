@@ -10,10 +10,12 @@ export type AppSettings = {
   reduceMotion: boolean;
   /** 0 = off. */
   reminderMinutes: 0 | 15 | 30 | 60;
+  /** v199: online (real players, server groups) or offline (local groups with invented rivals). */
+  online: boolean;
 };
 export const SETTINGS_STORAGE_KEY = "ga-settings";
 export const REMINDER_OPTIONS = [0, 15, 30, 60] as const;
-const DEFAULTS: AppSettings = { music: true, musicTrack: "mix", vibration: true, reduceMotion: false, reminderMinutes: 0 };
+const DEFAULTS: AppSettings = { music: true, musicTrack: "mix", vibration: true, reduceMotion: false, reminderMinutes: 0, online: true };
 
 let current: AppSettings = DEFAULTS;
 const listeners = new Set<() => void>();
@@ -39,6 +41,7 @@ function parse(raw: string | null): AppSettings {
       reminderMinutes: (REMINDER_OPTIONS as readonly number[]).includes(data.reminderMinutes as number)
         ? (data.reminderMinutes as AppSettings["reminderMinutes"])
         : DEFAULTS.reminderMinutes,
+      online: typeof data.online === "boolean" ? data.online : DEFAULTS.online,
     };
   } catch {
     return DEFAULTS;

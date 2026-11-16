@@ -157,6 +157,15 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   };
   const a = run(), b = run();
   assert.deepEqual(a, b, "same competition, same result");
+  // v199: with other players' verified scores, every invented rival takes one of them (same pick every time).
+  const gameId = cfg({}).gameIds[0];
+  const sampled = { ...look, samples: { [gameId]: [{ score: 111, timeMs: 61_000 }, { score: 222, timeMs: null }, { score: 333, timeMs: 70_000 }] } };
+  const s1 = playSimulatedMembers(createGroupCompetition("smp", cfg({}), players(4)), "p0", sampled);
+  const s2 = playSimulatedMembers(createGroupCompetition("smp", cfg({}), players(4)), "p0", sampled);
+  assert.deepEqual(s1, s2, "a sampled rival is reproducible");
+  const rivals = s1.matches[0].players.filter((p) => p !== "p0").map((p) => s1.matches[0].scores[p]);
+  assert.ok(rivals.length === 3 && rivals.every((x) => [111, 222, 333].includes(x)), "rival scores come from the samples");
+  assert.equal(s1.matches[0].scores.p0, undefined, "the human still plays");
   assert.ok(a.finished);
   assert.equal(total(a), groupMoney(a).prize);
   let v = playSimulatedMembers(createGroupCompetition("vote", cfg({ format: "league-rounds", end: { kind: "vote" } }), players(4)), "p0", look);
@@ -228,4 +237,4 @@ assert.deepEqual(groupMoney({ config: cfg({}), players: players(4) }), { pot: 20
   assert.ok(pool.includes(single.matches[0].gameId), "a single random match is drawn at once");
   assert.ok(isGroupCompetition(JSON.parse(JSON.stringify(c))));
 }
-console.log("Group competitions OK · single / league rounds / league duels / tournament · no commission (legacy 5 %) · ties · vote · simulated members · custom splits · eliminations per round · tie-breaks (time, seeded draw; legacy shared) · random slots");
+console.log("Group competitions OK · single / league rounds / league duels / tournament · no commission (legacy 5 %) · ties · vote · simulated members (and sampled real scores) · custom splits · eliminations per round · tie-breaks (time, seeded draw; legacy shared) · random slots");

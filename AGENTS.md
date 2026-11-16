@@ -150,6 +150,9 @@ For each substantial game unit:
 
 Do not consider a game finished merely because it loads or compiles.
 
+Owner rule (16 November 2026): Claude does not play matches, by hand or with scripts, on any environment. Game QA
+that needs playing is done by the owner on the Vercel preview.
+
 ## Mobile quality
 Check:
 - portrait mobile layouts;

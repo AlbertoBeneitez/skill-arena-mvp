@@ -25,18 +25,18 @@ import StudioWelcome from "./StudioWelcome";
 import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey, playableForMoney } from "@/lib/games";
 import { DEMO_MEMBERS, createDemoClosedGroup, isSimulatedMemberId, joinDemoClosedGroup, withoutSimulatedMembers, type ClosedGroup } from "@/lib/groupPlay";
 import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
-import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
-import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
+import { RANDOM_GAME, createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
+import { playSimulatedMembers, voteWithSimulatedMembers, type RivalSample } from "@/lib/demo/groupRivals";
 import type { GameResult } from "@/lib/types";
 import SoundMenu from "./SoundMenu";
-import ServerGroups, { GroupTabs } from "./ServerGroups";
+import ServerGroups from "./ServerGroups";
 import { flushAnalytics, setAnalyticsEnabled, track } from "@/lib/analytics";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
 import { matchLocale } from "@/lib/i18n/locales";
 import { gameName } from "@/lib/i18n/games";
 import type { DocId } from "@/lib/i18n/docs";
-import { initSettings, resetSettings, useSettings, SETTINGS_STORAGE_KEY } from "@/lib/settings";
+import { initSettings, resetSettings, updateSettings, useSettings, SETTINGS_STORAGE_KEY } from "@/lib/settings";
 import DocSheet from "./DocSheet";
 import SettingsScreen from "./SettingsScreen";
 import ConfirmDialog from "./ConfirmDialog";
@@ -77,6 +77,8 @@ type PersistedState = {
   streak: number;
   group: ClosedGroup | null;
   groupComp?: GroupCompetition | null;
+  /** v199: other players' verified scores used by the invented rivals of the saved competition. */
+  groupSamples?: Record<string, RivalSample[]>;
   leagues?: LeagueState;
   playCounts?: Record<string, number>;
   bestScores?: Record<string, number>;
@@ -264,8 +266,8 @@ export default function DemoApp() {
   const [serverAccount, setServerAccount] = useState<null | "pending" | { id: string; name: string; avatar: number }>(null);
   /** v196: the signed-in player's decision about measurement (null: no server account, so nothing to decide). */
   const [measurement, setMeasurement] = useState<boolean | null>(null);
-  /** v197: signed-in players can switch the group screen between their local group and the online groups. */
-  const [groupTab, setGroupTab] = useState<"mine" | "online">("mine");
+  /** v199: scores of other players' verified matches taken by the invented rivals of the local competition. */
+  const [groupSamples, setGroupSamples] = useState<Record<string, RivalSample[]>>({});
   const [serverNameTaken, setServerNameTaken] = useState("");
   const [accountBusy, setAccountBusy] = useState(false);
   const [playerName, setPlayerName] = useState("");
@@ -422,6 +424,8 @@ export default function DemoApp() {
   const freshOnboardingRef = useRef(false);
   useI18n();
   const settings = useSettings();
+  /** v199: the header globe — online (real players) or offline (local group with invented rivals). */
+  const offline = !settings.online;
   const [doc, setDoc] = useState<DocId | null>(null);
   const [confirmAction, setConfirmAction] = useState<null | "reset" | "delete">(null);
   const [notice, setNotice] = useState("");
@@ -589,7 +593,10 @@ export default function DemoApp() {
               setBalance((value) => Number((value + entry).toFixed(2)));
               setMovements((items) => [{ label: t("move.groupRefund", { group: name }), amount: entry, key: "move.groupRefund" as MessageKey, vars: { group: name } }, ...items].slice(0, 20));
             }
-          } else setGroupComp(comp);
+          } else {
+            setGroupComp(comp);
+            if (data.groupSamples && typeof data.groupSamples === "object") setGroupSamples(data.groupSamples);
+          }
         }
         if (isLeagueState(data.leagues)) setLeagues(data.leagues);
         if (data.playCounts && typeof data.playCounts === "object") {
@@ -649,6 +656,7 @@ export default function DemoApp() {
       streak,
       group,
       groupComp,
+      groupSamples,
       leagues,
       bestScores,
       playCounts,
@@ -658,7 +666,7 @@ export default function DemoApp() {
     } catch {
       // Storage can be full on mobile; gameplay must continue even if persistence fails.
     }
-  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group, groupComp, leagues, bestScores, playCounts]);
+  }, [isLoaded, onboarded, provider, playerName, avatarId, avatarSrc, balance, netEarnings, nextTurn, musicOn, earnings, movements, tutorialSeen, wins, losses, streak, group, groupComp, groupSamples, leagues, bestScores, playCounts]);
 
   function toggleSound() {
     const enabled = !musicOn;
@@ -1272,6 +1280,7 @@ export default function DemoApp() {
   const groupLook = {
     base: (gameId: string) => getGameDefinition(gameId)?.rivalScore ?? 1000,
     strength: (id: string) => group?.members.find((m) => m.id === id)?.scoreFactor ?? 1,
+    samples: groupSamples,
   };
   const lowerWinsIn = (c: GroupCompetition, gameId: string) => c.config.lowerWinsGameIds.includes(gameId);
   /** The worst possible result: an abandoned or unverified group match. */
@@ -1325,12 +1334,53 @@ export default function DemoApp() {
     setGroup(null);
   }
 
-  function startGroupComp(config: GroupConfig) {
-    if (!group || matchStartLockRef.current || config.entryMinor / 100 > balance) return;
-    if(persistentTraining!==false){setMatchStartError(t("home.groupsUnavailable"));return;}
+  /** v199: an invented rival for the offline group: a reserved sample name, a portrait and its own strength. */
+  function addInventedRival() {
+    setGroup((g) => {
+      if (!g || g.members.length >= 20) return g;
+      const used = new Set(g.members.map((m) => m.name));
+      const free = SAMPLE_RANKING_NAMES.filter((n) => !used.has(n));
+      const name = free[Math.floor(Math.random() * free.length)] ?? `Rival ${g.members.length}`;
+      const avatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+      const id = `bot-${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
+      return { ...g, members: [...g.members, { id, name, avatar, scoreFactor: Number((0.86 + Math.random() * 0.24).toFixed(3)) }] };
+    });
+    gameTone("good");
+    haptic(8);
+  }
+  function removeInventedRival(id: string) {
+    if (groupComp && !groupComp.finished && groupComp.players.some((p) => p.id === id)) return;
+    setGroup((g) => (g ? { ...g, members: g.members.filter((m) => m.isYou || m.id !== id) } : g));
+  }
+  /** Other players' verified scores for the games of a competition (empty when the server has none or is unreachable). */
+  async function fetchRivalSamples(config: GroupConfig): Promise<Record<string, RivalSample[]>> {
+    const ids = [...new Set([...config.gameIds, ...(config.randomPool ?? [])].filter((id) => id !== RANDOM_GAME))].slice(0, 20);
+    if (!ids.length) return {};
+    const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 3000);
+    try {
+      const r = await fetch(`/api/rival-samples?games=${encodeURIComponent(ids.join(","))}&platform=${platform}`, { cache: "no-store", signal: abort.signal });
+      const d = r.ok ? ((await r.json()) as { samples?: Record<string, RivalSample[]> }) : null;
+      return d?.samples && typeof d.samples === "object" ? d.samples : {};
+    } catch {
+      return {};
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function startGroupComp(config: GroupConfig) {
+    if (!group || matchStartLockRef.current) return;
+    // v199: offline groups play against invented rivals and never move money, not even the fictitious balance.
+    if (offline) config = { ...config, entryMinor: 0 };
+    if (config.entryMinor / 100 > balance) return;
+    if (!offline && persistentTraining !== false) { setMatchStartError(t("home.groupsUnavailable")); return; }
     setMatchStartError("");
+    matchStartLockRef.current = true;
+    const samples = await fetchRivalSamples(config);
+    matchStartLockRef.current = false;
+    setGroupSamples(samples);
     const players = group.members.map((m) => ({ id: m.isYou ? GROUP_YOU : m.id, name: m.name, avatar: m.avatar, simulated: !m.isYou }));
-    const comp = playSimulatedMembers(createGroupCompetition(`${group.code}-${Date.now().toString(36)}`, config, players), GROUP_YOU, groupLook);
+    const comp = playSimulatedMembers(createGroupCompetition(`${group.code}-${Date.now().toString(36)}`, config, players), GROUP_YOU, { ...groupLook, samples });
     const entry = config.entryMinor / 100;
     if (entry > 0) {
       setBalance((value) => Number((value - entry).toFixed(2)));
@@ -1691,6 +1741,11 @@ export default function DemoApp() {
           <button className="logoButton" onClick={() => navigate("home")}><span>{PRODUCT_NAME}</span></button>
           <div className="appHeaderActions">
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
+            <button className={`netToggle gxIconBtn gxHeadBtn ${offline ? "off" : "on"}`} type="button" aria-pressed={!offline}
+              aria-label={t(offline ? "net.offlineSwitch" : "net.onlineSwitch")} title={t(offline ? "net.offline" : "net.online")}
+              onClick={() => { updateSettings({ online: offline }); setNotice(t(offline ? "net.nowOnline" : "net.nowOffline")); haptic(8); }}>
+              <UiIcon name="network" /><i className="gxLed" aria-hidden="true" />
+            </button>
             <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} aria-haspopup="dialog" aria-expanded={walletOpen} onClick={() => setWalletOpen((v) => !v)}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
             <button className="settingsGear gxIconBtn gxHeadBtn" type="button" aria-label={t("common.settings")} onClick={() => navigate("settings")}>
               <UiIcon name="gear" />
@@ -1721,11 +1776,10 @@ export default function DemoApp() {
         )}
 
         {screen === "group" && matchStartError && <p role="status">{matchStartError}</p>}
-        {screen === "group" && typeof serverAccount === "object" && serverAccount && <GroupTabs value={groupTab} onChange={setGroupTab} />}
-        {screen === "group" && groupTab === "online" && typeof serverAccount === "object" && serverAccount && (
+        {screen === "group" && !offline && typeof serverAccount === "object" && serverAccount && (
           <ServerGroups accountId={serverAccount.id} onBalanceChanged={() => void loadServerAccount(false, playerName)} />
         )}
-        {screen === "group" && !(groupTab === "online" && typeof serverAccount === "object" && serverAccount) && (
+        {screen === "group" && (offline || !(typeof serverAccount === "object" && serverAccount)) && (
           <GroupHub
             joinError={groupJoinError}
             group={group}
@@ -1742,6 +1796,9 @@ export default function DemoApp() {
             onUpdateGroup={updateClosedGroup}
             onClearCompetition={() => setGroupComp(null)}
             onDeleteGroup={deleteClosedGroup}
+            offline={offline}
+            onAddRival={addInventedRival}
+            onRemoveRival={removeInventedRival}
           />
         )}
 
