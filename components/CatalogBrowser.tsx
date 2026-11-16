@@ -125,7 +125,7 @@ export default function CatalogBrowser(props: Props) {
         className={styles.play}
         type="button"
         disabled={
-          props.stake > props.balance || props.startingGameId !== null || (props.serverOnly === true && props.stake > 0 && game.competition.verification !== "server-replay")
+          (playableForMoney(game) && props.stake > props.balance) || props.startingGameId !== null || (props.serverOnly === true && props.stake > 0 && playableForMoney(game) && game.competition.verification !== "server-replay")
         }
         aria-label={t("catalog.play", { game: gameName(game) })}
         aria-busy={props.startingGameId === game.id}
@@ -134,7 +134,7 @@ export default function CatalogBrowser(props: Props) {
       >
         {props.startingGameId === game.id
           ? t("catalog.entering")
-          : props.stake === 0
+          : props.stake === 0 || !playableForMoney(game)
             ? gameName(game)
             : t("catalog.playStake", { game: gameName(game), n: props.stake })}
       </button>

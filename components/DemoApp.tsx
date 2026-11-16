@@ -1060,7 +1060,8 @@ export default function DemoApp() {
 
   function startMatch(gameOverride?: GameMeta) {
     const game = gameOverride ?? selectedGame;
-    const stake = selectedStake;
+    // v200: a game that is never for money (Roulette) is always played without entry, whatever entry is selected.
+    const stake = playableForMoney(game) ? selectedStake : 0;
     const mode = persistentTraining ? (liveModes[game.id]??"create") : modeForStake(game, stake as Stake, nextTurn);
 
     if (matchStartLockRef.current || stake > balance) return;
@@ -1341,7 +1342,11 @@ export default function DemoApp() {
       const used = new Set(g.members.map((m) => m.name));
       const free = SAMPLE_RANKING_NAMES.filter((n) => !used.has(n));
       const name = free[Math.floor(Math.random() * free.length)] ?? `Rival ${g.members.length}`;
-      const avatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+      // v200: every rival wears a portrait nobody in the group has (yours included), while there are free ones.
+      const taken = new Set(g.members.map((m) => portraitCrop(m.avatar, "")));
+      const freeFaces = AVATARS.filter((src) => !taken.has(portraitCrop(src, "")));
+      const faces = freeFaces.length ? freeFaces : AVATARS;
+      const avatar = faces[Math.floor(Math.random() * faces.length)];
       const id = `bot-${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
       return { ...g, members: [...g.members, { id, name, avatar, scoreFactor: Number((0.86 + Math.random() * 0.24).toFixed(3)) }] };
     });

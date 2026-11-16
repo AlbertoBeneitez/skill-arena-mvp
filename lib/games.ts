@@ -114,7 +114,7 @@ function adaptGameComponent<TProps extends object>(
 }
 
 const GAME_DEFINITIONS = [
-  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:false,waitingStakes:[],playKind:"chance",category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. La bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota a cámara lenta en el cuenco según la inclinación de cada superficie (unos 8 botes) y, cuando deja de botar, rueda hasta una casilla." },
+  { id: "galactic-roulette", version: "21.0.0", status: "VERIFIED", loadComponent: adaptGameComponent(() => import("@/components/games/GalacticRoulette")), competition: {verification:"server-replay",engineVersion:"skill-core-3",inputProtocolVersion:4,allowedActions:ROULETTE_ACTIONS_V3}, resultMetric:"fictitious-balance", name:"Roulette",cover:"/covers/galactic-roulette.webp?v=140",enabled:true,waitingStakes:[],playKind:"chance",category:"PRECISIÓN",tagline:"Una rueda orbital y un lanzamiento preciso.",difficulty:"MEDIA",skillLabel:"TIMING + LANZAMIENTO",rivalScore:1000000000,rivalName:"NOVA",rivalAvatar:"/avatars/avatar-3.svg",instruction:"",scoring:"Ruleta europea de cero único con 100 fichas ficticias: coloca fichas de 1, 5 o 25 en el tapete (el tapete se vacía al acabar cada tirada; la bola no puede salir de la rueda) y lanza la bola desde el lanzador exterior (solo con fichas en el tapete); los ocho rombos de la pista la desvían y la hacen saltar. La partida acaba cuando decides parar (TERMINAR) o te quedas sin fichas. Lanzamiento cuantizado, fricción y posición autoritativa; saldo terminal por replay. La bola se lanza en parábola desde la cuna (dirección y fuerza deciden dónde cae), rebota a cámara lenta en el cuenco según la inclinación de cada superficie (unos 8 botes) y, cuando deja de botar, rueda hasta una casilla." },
   {
     id: "galactic-slot", version: "4.0.0", status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/GalacticSlot")),
@@ -382,7 +382,8 @@ export const GAME_REGISTRY = Object.fromEntries(
  * left to right). Fixed and editable here until the server reports real play counts; GAMES keeps this order.
  */
 /**
- * v152 · Roulette is hidden from players (owner request, 7 Nov 2026): it is out of this list and `enabled: false`, so
+ * v152 · Roulette was hidden from players (owner request, 7 Nov 2026); v200 brings it back at the end, never for money.
+ * The old note: it is out of this list and `enabled: false`, so
  * it is in no row, ranking or group, and the server starts no new match of it. Its registry entry, cores (V1–V21),
  * renderer, verifier adapters, fixtures and covers all stay, so its archived matches still verify. To bring it back:
  * set `enabled: true` on its entry and put "galactic-roulette" back at the head of this list (and a shelf below).
@@ -401,6 +402,8 @@ const CATALOG_ORDER: GameId[] = [
   "corner-sudoku",
   "reaction-test",
   "stack-shift",
+  // v200: back for players (owner, 16 Nov 2026) as a game that is never played for money.
+  "galactic-roulette",
 ];
 
 /** v130 · Catalogue rows. A developer picks one of these for a new game; "Populares" is never picked, it is earned. */
@@ -412,12 +415,12 @@ const GAME_SHELF: Partial<Record<GameId, CatalogShelf>> = {
   darts: "bar", billiards: "bar", bowling: "bar",
   "orb-burst": "mythic", "solitaire-sprint": "mythic", "mine-grid": "mythic", "stack-shift": "mythic", pinball: "mythic",
   "precision-stack": "dynamic", "tower-drop": "dynamic",
-  "corner-sudoku": "alternative", "reaction-test": "alternative", "galactic-slot": "alternative",
+  "corner-sudoku": "alternative", "reaction-test": "alternative", "galactic-slot": "alternative", "galactic-roulette": "alternative",
 };
 export const gameShelf = (game: Pick<GameMeta, "id">): CatalogShelf => GAME_SHELF[game.id as GameId] ?? "alternative";
 /** Day each game joined the catalogue; games without a date predate the 29 September 2026 launch. "Nuevos" lists the
  * games added in the last NEW_GAME_DAYS days (external games will bring their own date). */
-const GAME_ADDED: Partial<Record<GameId, string>> = { pinball: "2026-10-23", bowling: "2026-10-25", "corner-sudoku": "2026-10-25" };
+const GAME_ADDED: Partial<Record<GameId, string>> = { "galactic-roulette": "2026-11-16", pinball: "2026-10-23", bowling: "2026-10-25", "corner-sudoku": "2026-10-25" };
 export const NEW_GAME_DAYS = 30;
 export const isNewGame = (game: Pick<GameMeta, "id">, now: number) => {
   const added = GAME_ADDED[game.id as GameId];

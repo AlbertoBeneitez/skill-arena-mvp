@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v200-saturn · Roulette sin dinero (16-nov-2026)
+
+- Roulette visible, nunca por dinero; retratos únicos para rivales inventados. Pendiente: dirección gráfica (elige el propietario en la siguiente iteración); mejorar la imagen de los rivales inventados (concretar con el propietario).
+
 ## v199-saturn · Sin conexión / online (16-nov-2026)
 
 - Globo, rivales inventados con partidas reales, botón negro, traducciones. Pendiente: si el globo debe afectar también al catálogo; propuesta gráfica (elige el propietario).
