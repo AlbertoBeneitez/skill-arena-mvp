@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v196-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v197-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Grupos en el servidor: rutas y pantalla Online (16 de noviembre, v197, app 1.97):** `/api/groups`, pestaña Online en Grupo (crear/unirse, competiciones, buscar rival, ranking). Falta jugar las partidas desde la pantalla.
 - [x] **Medición de jugadores (16 de noviembre, v196, app 1.96):** consentimiento versionado y eventos de catálogo solo-añadir (migración 011), vista de partidas por persona, totales recalculables, retención 12 meses (pendiente de confirmar). `docs/EVENTOS.md`.
 - [x] **Cada partida, de una persona (16 de noviembre, v195, app 1.95):** el inicio de partida pública guarda `account_id` tomado de la sesión firmada (nunca del navegador); invitado = sin persona.
 - [x] **Círculo de partida y buscador de grupos (16 de noviembre, v194, app 1.94):** círculo verde/blanco en las tarjetas del catálogo en lugar de la estrella; X de borrar y categorías en el buscador de juegos de Grupos.

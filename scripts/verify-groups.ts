@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { Pool } from "pg";
 import { accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findAccount } from "../lib/server/accounts";
+import { BadRequest, buildSetup, groupAction, groupErrorStatus, groupsOverview } from "../lib/server/groupHttp";
 import { applyMigrations } from "../lib/server/migrations";
 import { ledgerBalance } from "../lib/server/ledger";
 import {
@@ -210,7 +211,35 @@ try {
   assert.equal(await code(joinGroup(pool, ids.A2, g1.code, "mobile")), "NO_ACCOUNT");
   await closeGroup(pool, ids.A1, g1.id);
   assert.equal(await code(joinGroup(pool, ids.D1, g1.code, "mobile")), "NO_GROUP", "a closed group takes nobody");
-  console.log("Groups: identity on attempts, groups and competitions on the server (league, tournament, challenge), double-entry ledger, erasure anonymises");
+
+  // v197: the HTTP face. Platform comes from the account; the setup is rebuilt on the server; scores come from attempts.
+  for (const [name, platform] of [["H1", "mobile"], ["H2", "mobile"], ["HD", "desktop"]] as const) {
+    ids[name] = (await createAccount(pool, accountAuthKey("google", `sub-${name}`, SECRET), `Jugador ${name}`, 1, platform)).id;
+  }
+  const act = (who: string, plat: "mobile" | "desktop", body: Record<string, unknown>) => groupAction(pool, { accountId: ids[who], platform: plat }, body);
+  const refused = async (p: Promise<unknown>) => { try { await p; return "ok"; } catch (e) { if (e instanceof BadRequest) return `bad:${e.message}`; if (e instanceof GroupError) return e.code; throw e; } };
+  const hg = (await act("H1", "mobile", { action: "create", name: "Via HTTP" })).group as { id: string; code: string };
+  assert.equal((await act("H2", "mobile", { action: "join", code: hg.code })).group !== undefined, true);
+  assert.equal(await refused(act("HD", "desktop", { action: "join", code: hg.code })), "PLATFORM_MISMATCH", "a computer cannot join a phone group");
+  assert.equal(await refused(act("H1", "mobile", { action: "nope" })), "bad:action");
+  assert.equal(await refused(act("H1", "mobile", { action: "competition", mode: "group", groupIds: [hg.id], config: { format: "single", entryMinor: 5, gameIds: ["no-such-game"] } })), "bad:gameIds");
+  assert.equal(await refused(act("H1", "mobile", { action: "competition", mode: "group", groupIds: [hg.id], config: { format: "single", entryMinor: -1, gameIds: [GAME] } })), "bad:entryMinor");
+  assert.equal(await refused(act("H1", "mobile", { action: "competition", mode: "group", groupIds: [hg.id], config: { format: "single", entryMinor: 99_999, gameIds: [GAME] } })), "bad:entryMinor");
+  const smuggled = buildSetup("group", { format: "league-rounds", entryMinor: 10, gameIds: [GAME], rounds: 2, commissionBps: 9000, lowerWinsGameIds: [GAME], tieBreak: "x" }) as unknown as { commissionBps: number; tieBreak: string; lowerWinsGameIds: string[] };
+  assert.equal(smuggled.commissionBps, 0, "commission is fixed on the server");
+  assert.equal(smuggled.tieBreak, "time-v1");
+  assert.ok(!smuggled.lowerWinsGameIds.includes(GAME), "lower-wins games come from the registry");
+  const hc = (await act("H1", "mobile", { action: "competition", mode: "group", groupIds: [hg.id], config: { format: "single", entryMinor: 5, gameIds: [GAME] } })).competition as { id: string };
+  assert.equal((await act("H1", "mobile", { action: "enter", competitionId: hc.id })).entered, true);
+  assert.equal((await act("H1", "mobile", { action: "enter", competitionId: hc.id })).entered, false, "a retried tap changes nothing");
+  assert.equal(await refused(act("H2", "mobile", { action: "result", competitionId: hc.id, matchIndex: 0, attemptId: "x" })), "NOT_RUNNING");
+  const ov = await groupsOverview(pool, { accountId: ids.H1, platform: "mobile" });
+  assert.ok(ov.groups.some((g) => g.id === hg.id) && ov.competitions.some((k) => k.id === hc.id && k.entered), "the overview lists my group and competition");
+  assert.equal(groupErrorStatus("NOT_OWNER"), 403);
+  assert.equal(groupErrorStatus("INSUFFICIENT_BALANCE"), 402);
+  await act("H1", "mobile", { action: "cancel", competitionId: hc.id });
+  await act("H1", "mobile", { action: "close", groupId: hg.id });
+  console.log("Groups: identity on attempts, groups and competitions on the server (league, tournament, challenge), double-entry ledger, erasure anonymises, HTTP layer (platform from the account, setup rebuilt on the server)");
 } finally {
   await pool.end();
   if (created) await admin.query(`DROP SCHEMA ${schema} CASCADE`);

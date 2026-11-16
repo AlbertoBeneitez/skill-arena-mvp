@@ -29,6 +29,7 @@ import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroup
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
 import type { GameResult } from "@/lib/types";
 import SoundMenu from "./SoundMenu";
+import ServerGroups, { GroupTabs } from "./ServerGroups";
 import { flushAnalytics, setAnalyticsEnabled, track } from "@/lib/analytics";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
@@ -263,6 +264,8 @@ export default function DemoApp() {
   const [serverAccount, setServerAccount] = useState<null | "pending" | { id: string; name: string; avatar: number }>(null);
   /** v196: the signed-in player's decision about measurement (null: no server account, so nothing to decide). */
   const [measurement, setMeasurement] = useState<boolean | null>(null);
+  /** v197: signed-in players can switch the group screen between their local group and the online groups. */
+  const [groupTab, setGroupTab] = useState<"mine" | "online">("mine");
   const [serverNameTaken, setServerNameTaken] = useState("");
   const [accountBusy, setAccountBusy] = useState(false);
   const [playerName, setPlayerName] = useState("");
@@ -1718,7 +1721,11 @@ export default function DemoApp() {
         )}
 
         {screen === "group" && matchStartError && <p role="status">{matchStartError}</p>}
-        {screen === "group" && (
+        {screen === "group" && typeof serverAccount === "object" && serverAccount && <GroupTabs value={groupTab} onChange={setGroupTab} />}
+        {screen === "group" && groupTab === "online" && typeof serverAccount === "object" && serverAccount && (
+          <ServerGroups accountId={serverAccount.id} onBalanceChanged={() => void loadServerAccount(false, playerName)} />
+        )}
+        {screen === "group" && !(groupTab === "online" && typeof serverAccount === "object" && serverAccount) && (
           <GroupHub
             joinError={groupJoinError}
             group={group}

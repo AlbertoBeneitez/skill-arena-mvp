@@ -359,3 +359,30 @@ export async function groupWinningsRanking(pool: Pool, platform: Platform, limit
       GROUP BY g.group_id, g.name ORDER BY net DESC, g.group_id LIMIT $2`, [platform, Math.min(Math.max(limit, 1), 200)]);
   return rows.map((r) => ({ groupId: r.group_id as string, name: r.name as string, netMinor: Number(r.net), competitions: Number(r.competitions) }));
 }
+
+/** The groups an account belongs to (the "my groups" list), newest first. */
+export async function listMyGroups(pool: Pool, accountId: string): Promise<GroupView[]> {
+  const { rows } = await pool.query(
+    `SELECT g.group_id, g.name, g.code, g.platform, g.owner_account_id,
+            (SELECT count(*) FROM arena_group_members x WHERE x.group_id = g.group_id AND x.left_at IS NULL) AS members
+       FROM arena_groups g JOIN arena_group_members m ON m.group_id = g.group_id
+      WHERE m.account_id = $1 AND m.left_at IS NULL AND g.closed_at IS NULL ORDER BY g.created_at DESC LIMIT 20`, [accountId]);
+  return rows.map((g) => ({ id: g.group_id as string, name: g.name as string, code: g.code as string, platform: g.platform as Platform, ownerId: g.owner_account_id as string, members: Number(g.members) }));
+}
+
+/** Competitions of the groups an account belongs to, with its own entry state (the "my competitions" list). */
+export async function listMyCompetitions(pool: Pool, accountId: string, limit = 20): Promise<(CompetitionView & { entered: boolean })[]> {
+  const { rows } = await pool.query(
+    `SELECT k.competition_id, k.mode, k.platform, k.status, k.entry_minor, k.result,
+            (SELECT array_agg(cg.group_id ORDER BY cg.side) FROM arena_competition_groups cg WHERE cg.competition_id = k.competition_id) AS groups,
+            (SELECT count(*) FROM arena_competition_players cp WHERE cp.competition_id = k.competition_id) AS players,
+            EXISTS (SELECT 1 FROM arena_competition_players cp WHERE cp.competition_id = k.competition_id AND cp.account_id = $1) AS entered
+       FROM arena_competitions k
+      WHERE EXISTS (SELECT 1 FROM arena_competition_groups cg JOIN arena_group_members m ON m.group_id = cg.group_id AND m.account_id = $1 AND m.left_at IS NULL
+                     WHERE cg.competition_id = k.competition_id)
+      ORDER BY k.created_at DESC LIMIT $2`, [accountId, Math.min(Math.max(limit, 1), 50)]);
+  return rows.map((r) => ({
+    id: r.competition_id as string, mode: r.mode as CompetitionMode, platform: r.platform as Platform, status: r.status, entryMinor: Number(r.entry_minor),
+    groupIds: r.groups as string[], players: Number(r.players), potMinor: Number(r.entry_minor) * Number(r.players), result: r.result, entered: Boolean(r.entered),
+  }));
+}
