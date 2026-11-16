@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v206-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v207-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **QA online (16 de noviembre, v207, app 2.07):** el segundo jugador no podía unirse a ninguna partida pública (503): el guardián de inmutabilidad de `arena_matches` veía cambiar las columnas generadas de 008; migración 013 lo arregla. El duelo offline se perdía siempre (decidía el emparejamiento del servidor, que en partidas solo no existe) y mostraba «Rival pendiente». Las muestras de rival pasan a `/api/verified-match/rival-samples` para que llegue la cookie del jugador y no le toque su propia partida. Detectado y pendiente de decisión del propietario: el resolvedor online (`forfeit-on-disconnect-v1`) da la victoria a la cifra más alta también en Shot Gallery (menos es mejor) y en Stack desempata por tiempo en vez de por superficie. Vista previa: falta `ALLOW_PERSISTED_MATCH_TRAINING=1`, así que allí no hay emparejamiento online real.
 - [x] **Imágenes de grupo (16 de noviembre, v206, app 2.06):** 6 ilustraciones propias (`public/groups/`: tripulación, sistema, constelación, flota, base lunar, cometas) como imagen por defecto de cada grupo, elegida por su código (`lib/groupArt.ts`); la foto propia sigue sustituyéndola.
 - [x] **Retoques (16 de noviembre, v205, app 2.05):** tarjetas de Populares más grandes; sin barra encima del formato elegido en Grupo; «Iniciar sesión» sin subtítulo; con entrada, el reto entre grupos no ofrece juegos sin apuestas (Roulette).
 - [x] **Online igual que Offline (16 de noviembre, v204, app 2.04):** la pantalla de grupo Online es la misma que la Offline (GroupHub) con datos del servidor: crear/unirse, miembros reales, renombrar (dueño), nueva competición con el mismo formulario (el creador entra pagando), competición abierta con Entrar/Empezar/Cancelar, retar a otro grupo, retos abiertos y ranking de grupos con los mismos paneles. Jugar las partidas de una competición online sigue pendiente.

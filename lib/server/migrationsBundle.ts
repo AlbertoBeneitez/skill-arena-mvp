@@ -72,5 +72,11 @@ export const MIGRATIONS: readonly BundledMigration[] = [
     "file": "012-solo-matches.sql",
     "sha256": "cc17a52cd3d8965f4bb736227d82423539b2e16dd914934c1af850d35cf48c17",
     "sql": "-- v203 · Additive. A \"solo\" public match is played against an invented rival (Offline mode, local groups): it is\n-- verified like any other but never offered to, nor joined by, another player.\nALTER TABLE arena_public_matches ADD COLUMN IF NOT EXISTS solo boolean NOT NULL DEFAULT false;\n"
+  },
+  {
+    "id": "013",
+    "file": "013-match-pairing-fix.sql",
+    "sha256": "3465e493d7dbe23ec5cceb06f32eeab334ee516c20bacc97c6f4cd13002a6077",
+    "sql": "-- v207 · Fix (introduced by 008): the generated columns game_id/game_version are not yet computed in a BEFORE UPDATE\n-- trigger, so NEW differed from OLD and the rewrite guard refused the only allowed update (setting player_b when a rival\n-- joins). The guard now ignores those two derived columns; they come from the manifest, which it still compares.\nCREATE OR REPLACE FUNCTION arena_prevent_match_rewrite()\nRETURNS trigger LANGUAGE plpgsql AS $$\nBEGIN\n IF (to_jsonb(NEW) - 'game_id' - 'game_version') IS DISTINCT FROM (to_jsonb(OLD) - 'game_id' - 'game_version') AND NOT (\n  OLD.player_b IS NULL AND NEW.player_b IS NOT NULL\n  AND (to_jsonb(NEW) - 'player_b' - 'game_id' - 'game_version') = (to_jsonb(OLD) - 'player_b' - 'game_id' - 'game_version')\n ) THEN RAISE EXCEPTION 'IMMUTABLE_MATCH' USING ERRCODE='23514'; END IF;\n RETURN NEW;\nEND;\n$$;\n"
   }
 ];

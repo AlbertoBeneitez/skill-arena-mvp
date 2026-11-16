@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v207-saturn · QA online (16-nov-2026)
+
+- Arreglado: unirse a partida pública (migración 013), duelo offline que siempre perdía, muestras de rival con la propia partida.
+- Pendiente (propietario): resolvedor online v2 que respete la métrica de cada juego (Shot Gallery: menos es mejor; Stack: desempate por superficie); activar `ALLOW_PERSISTED_MATCH_TRAINING=1` en la vista previa.
+
 ## v206-saturn · Imágenes de grupo (16-nov-2026)
 
 - 6 ilustraciones propias por defecto para los grupos. Pendiente: logo (el propietario pide algo más original y sutil).

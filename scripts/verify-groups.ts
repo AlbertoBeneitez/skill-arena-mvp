@@ -1,6 +1,7 @@
 /** v193 · Foundations against local PostgreSQL: identity, groups and competitions on the server, double-entry ledger. */
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
 import { Pool } from "pg";
 import { accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findAccount } from "../lib/server/accounts";
 import { BadRequest, buildSetup, groupAction, groupErrorStatus, groupsOverview } from "../lib/server/groupHttp";
@@ -251,6 +252,22 @@ try {
   assert.deepEqual(await rivalSamples(pool, [GAME], "desktop", null), {}, "no phone scores for computers");
   await attempt(ids.A3, "darts", 77_777, { state: "rejected" });
   assert.ok(!((await rivalSamples(pool, ["darts"], "mobile", null, 30)).darts ?? []).some((x) => x.score === 77_777), "rejected matches are never offered");
+
+  // v207 · Regression: the player cookie only travels to /api/verified-match/*, so the samples route must live there or
+  // the caller is never identified and can be offered their own score.
+  const cookiePath = /path:\s*"([^"]+)"/.exec(readFileSync("app/api/verified-match/session/route.ts", "utf8"))?.[1];
+  assert.equal(cookiePath, "/api/verified-match");
+  assert.ok(existsSync(`app${cookiePath}/rival-samples/route.ts`), "rival samples are served under the player cookie path");
+  assert.ok(readFileSync("components/DemoApp.tsx", "utf8").includes(`${cookiePath}/rival-samples?`), "the app asks that route");
+
+  // v207 · Regression: with every migration applied (008 adds generated columns), a rival can still join a public
+  // match (player_b), and nothing else of a stored match can be rewritten.
+  await pool.query("INSERT INTO arena_matches(match_id, manifest, manifest_hash, player_a) VALUES ('join-1', $1::jsonb, $2, 'dev-a')", [JSON.stringify({ match_id: "join-1", manifest_version: "3", game_id: "billiards", game_version: "7.0.0" }), `sha256:${"1".repeat(64)}`]);
+  await pool.query("UPDATE arena_matches SET player_b = 'dev-b' WHERE match_id = 'join-1' AND player_b IS NULL");
+  assert.equal((await pool.query("SELECT player_b FROM arena_matches WHERE match_id = 'join-1'")).rows[0].player_b, "dev-b", "a rival joins");
+  for (const sql of ["UPDATE arena_matches SET player_b = 'dev-c' WHERE match_id = 'join-1'", "UPDATE arena_matches SET player_a = 'x' WHERE match_id = 'join-1'", "UPDATE arena_matches SET manifest = manifest || '{\"seed\":1}' WHERE match_id = 'join-1'"]) {
+    await assert.rejects(pool.query(sql), /IMMUTABLE_MATCH/, sql);
+  }
   console.log("Groups: identity on attempts, groups and competitions on the server (league, tournament, challenge), double-entry ledger, erasure anonymises, HTTP layer (platform from the account, setup rebuilt on the server)");
 } finally {
   await pool.end();

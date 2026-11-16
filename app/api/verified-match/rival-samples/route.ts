@@ -9,6 +9,8 @@ import { MAX_SAMPLE_GAMES, rivalSamples } from "@/lib/server/rivalSamples";
  * v199 · GET ?games=a,b&platform=mobile → { samples: { gameId: [{ score, timeMs }] } }: scores of other players'
  * verified matches, for the invented rivals of an offline group. Without a database it answers an empty set and the
  * app falls back to simulated rivals.
+ * v207: lives under /api/verified-match so the browser sends the player cookie (scoped to that path) and the caller's
+ * own matches are really left out; at /api/rival-samples it never arrived and a player could meet their own score.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

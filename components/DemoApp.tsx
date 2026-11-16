@@ -1182,6 +1182,9 @@ export default function DemoApp() {
       : scoreBeats(selectedGame, gameResult.score, rivalTarget));
     // Time-scored games are decided by the score alone (their run always completes).
     const beatTarget = lowerScoreWins(selectedGame) ? scoreBeats(selectedGame, gameResult.score, matchTargetScore) : gameResult.won || gameResult.score >= matchTargetScore;
+    // v207: a solo match (offline duel, local group) is stored for verification only: nobody joins it, so its server
+    // pairing never decides the result and is not shown (it would always read "pending" and count as a loss).
+    if (soloMatchRef.current) gameResult = { ...gameResult, serverMatch: undefined };
     const didWin = gameResult.serverMatch
       ? gameResult.serverMatch.winnerSlot === gameResult.serverMatch.slot
       : matchScope === "group"
@@ -1379,7 +1382,7 @@ export default function DemoApp() {
     if (!ids.length) return {};
     const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 3000);
     try {
-      const r = await fetch(`/api/rival-samples?games=${encodeURIComponent(ids.join(","))}&platform=${platform}`, { cache: "no-store", signal: abort.signal });
+      const r = await fetch(`/api/verified-match/rival-samples?games=${encodeURIComponent(ids.join(","))}&platform=${platform}`, { cache: "no-store", signal: abort.signal });
       const d = r.ok ? ((await r.json()) as { samples?: Record<string, RivalSample[]> }) : null;
       return d?.samples && typeof d.samples === "object" ? d.samples : {};
     } catch {
