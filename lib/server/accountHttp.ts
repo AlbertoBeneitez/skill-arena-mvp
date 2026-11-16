@@ -3,7 +3,8 @@
  * whether accounts can work here (AUTH_SECRET + DATABASE_URL), same-origin checks and bounded JSON bodies.
  */
 import { authSecret, decodeSession, readCookie, SESSION_COOKIE } from "./authSession";
-import { accountAuthKey } from "./accounts";
+import { accountAuthKey, findAccount } from "./accounts";
+import { getProductionPostgresPool } from "./postgresPool";
 import { sameOrigin } from "./publicMatchHttp";
 
 export const noStore = { "Cache-Control": "no-store" };
@@ -30,6 +31,22 @@ export async function readJson(req: Request, maxBytes = 2048): Promise<Record<st
   try {
     const value = JSON.parse(text);
     return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/** v195 · The account behind this request, if any: read from the signed session cookie only (the browser never says
+ * who it is). Returns null for guests, when accounts are not configured, or when the lookup fails, so playing as a
+ * guest keeps working and the match simply carries no person. */
+export async function sessionAccountId(req: Request): Promise<string | null> {
+  const secret = authSecret();
+  if (!secret || !process.env.DATABASE_URL) return null;
+  const session = decodeSession(readCookie(req, SESSION_COOKIE), secret);
+  if (!session) return null;
+  try {
+    const account = await findAccount(getProductionPostgresPool(), accountAuthKey(session.p, session.sub, secret));
+    return account?.id ?? null;
   } catch {
     return null;
   }

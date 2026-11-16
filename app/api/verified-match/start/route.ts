@@ -17,6 +17,7 @@ import {
   publicMatchError,
   requireLegacyStatelessTraining,
 } from "@/lib/server/publicMatchHttp";
+import { sessionAccountId } from "@/lib/server/accountHttp";
 export const runtime = "nodejs";
 type StartRequest = {
   game_id?: string;
@@ -40,6 +41,8 @@ export async function POST(request: NextRequest) {
         await getPublicMatchService().start(
           actor,
           await readBoundedJson(request, 4096),
+          // v195: the signed-in player (from the session cookie), so the attempt belongs to a person.
+          await sessionAccountId(request),
         ),
         { headers: { "Cache-Control": "no-store" } },
       );

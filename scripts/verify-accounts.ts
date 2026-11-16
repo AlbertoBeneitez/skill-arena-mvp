@@ -5,6 +5,8 @@ import { Pool } from "pg";
 import { cleanName, WELCOME_MINOR } from "../lib/accountRules";
 import { applyMigrations } from "../lib/server/migrations";
 import { ledgerBalance } from "../lib/server/ledger";
+import { sessionAccountId } from "../lib/server/accountHttp";
+import { encodeSession, SESSION_COOKIE } from "../lib/server/authSession";
 import { AccountError, accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findAccount, listMovements, updateProfile } from "../lib/server/accounts";
 
 const connectionString = process.env.TEST_DATABASE_URL;
@@ -85,6 +87,15 @@ try {
   assert.equal((await pool.query("SELECT count(*)::int AS n FROM arena_wallet_entries WHERE account_id = $1", [aId])).rows[0].n, 5, "the movements are kept");
   assert.equal(await ledgerBalance(pool, { kind: "player", accountId: aId }, "CC"), 450, "and so is the ledger");
   assert.equal((await createAccount(pool, k1, "Mr Beny", 3, "mobile")).balanceMinor, WELCOME_MINOR, "the name is free again");
+  // v195: the account behind a request comes only from the signed session cookie.
+  process.env.AUTH_SECRET = SECRET;
+  process.env.DATABASE_URL = `${connectionString}?options=${encodeURIComponent(`-c search_path=${schema}`)}`;
+  const who = (sub: string, secret = SECRET) => new Request("http://x/api", { headers: { cookie: `${SESSION_COOKIE}=${encodeSession({ p: "google", sub, n: "N", iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 3600 }, secret)}` } });
+  const mine = await createAccount(pool, accountAuthKey("google", "sess-1", SECRET), "Sesion Uno", 2, "mobile");
+  assert.equal(await sessionAccountId(who("sess-1")), mine.id, "a signed-in player is found by the session");
+  assert.equal(await sessionAccountId(who("sess-unknown")), null, "no account yet: no person");
+  assert.equal(await sessionAccountId(who("sess-1", "y".repeat(40))), null, "a cookie signed with another secret is ignored");
+  assert.equal(await sessionAccountId(new Request("http://x/api")), null, "a guest has no person");
   console.log("Accounts: unique names, one per identity, 5 % exchange, idempotent, no overdraft, append-only ledger, double-entry ledger agrees, erasure anonymises");
 } finally {
   await pool.end();
