@@ -1581,7 +1581,7 @@ export default function DemoApp() {
               </div>
             </div>
             <p id="provider-notice" className="gxProviderNotice" role="status">{providerNotice ? t("welcome.providerSoon", { provider: providerNotice.name }) : authMessage ? t(authMessage) : ""}</p>
-            <button className="authButton guest galacticEntryAction gxLocalEntry" aria-label={t("welcome.loginAria")} onClick={continueWithoutProvider}><span>{t("welcome.login")}</span><small>{t("welcome.loginLocal")}</small></button>
+            <button className="authButton guest galacticEntryAction gxLocalEntry" aria-label={t("welcome.loginAria")} onClick={continueWithoutProvider}><span>{t("welcome.login")}</span></button>
           </div>
           <p className="welcomeLegal">
             {t("identity.terms", { terms: "\u0001", privacy: "\u0002" }).split(/(\u0001|\u0002)/).map((part, index) =>

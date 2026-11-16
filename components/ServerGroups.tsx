@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import GroupHub from "./GroupHub";
 import UiIcon from "./UiIcon";
-import { GAMES } from "@/lib/games";
+import { GAMES, playableForMoney } from "@/lib/games";
 import { portraitSrc } from "@/lib/avatars";
 import type { ClosedGroup } from "@/lib/groupPlay";
 import type { GroupCompetition, GroupConfig } from "@/lib/groupCompetition";
@@ -126,14 +126,15 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
           </div>
           <label className={st.field}>{t("sg.game")}
             <select className={hub.codeInput} value={vsGame} onChange={(e) => setVsGame(e.target.value)}>
-              {GAMES.filter((g) => g.enabled).map((g) => <option key={g.id} value={g.id}>{gameName(g)}</option>)}
+              {/* v205: with an entry, games that never take bets (Roulette and any like it) are not offered. */}
+              {GAMES.filter((g) => g.enabled && (vsEntry === 0 || playableForMoney(g))).map((g) => <option key={g.id} value={g.id}>{gameName(g)}</option>)}
             </select>
           </label>
           <label className={st.field}>{t("sg.entry")}
             <input className={hub.codeInput} type="number" inputMode="numeric" min={0} max={100} step={1} value={vsEntry}
               onChange={(e) => setVsEntry(Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))))} />
           </label>
-          <button type="button" className={hub.primary} disabled={busy || !vsGame}
+          <button type="button" className={hub.primary} disabled={busy || !vsGame || (vsEntry > 0 && !playableForMoney(GAMES.find((g) => g.id === vsGame) ?? { playKind: "chance" }))}
             onClick={() => void act({ action: "competition", mode: vsMode, groupIds: [current.group.id], config: { entryMinor: vsEntry * 100, gameIds: [vsGame], rounds: 1 } })}>
             {t("sg.challengeCreate")}
           </button>

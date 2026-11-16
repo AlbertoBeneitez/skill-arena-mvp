@@ -233,3 +233,6 @@
   color: #e9ebef;
 }
 .card:not([data-kind="money"]) > .play::before { content: none; }
+
+/* v205 · «Populares» shows bigger cards (owner): two and a half per screen instead of almost three. */
+.track[data-row="popular"] { grid-auto-columns: calc((100% - 2 * var(--gap)) / 2.4); }

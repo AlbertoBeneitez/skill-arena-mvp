@@ -577,13 +577,10 @@
 .screen .secondary :global(.uiIcon) { color: var(--accent-hi); }
 .screen .secondary:active:not(:disabled) { background: rgba(255, 255, 255, .04); }
 
-/* Selection: an ice outline and a short ice bar on top — calm, readable, not a second loud colour. */
+/* Selection: an ice outline — calm, readable, not a second loud colour (v205: no bar on top, owner). */
 .screen :is(.choice button, .seg3 button, .seg2 button) { border-radius: 8px; background: var(--field); border: 1px solid var(--line); box-shadow: none; position: relative; }
 .screen :is(.choice button[aria-selected="true"], .seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"]) {
   background: linear-gradient(180deg, var(--ice-soft), transparent 70%), var(--chosen); border: 1px solid var(--ice); box-shadow: none;
-}
-.screen :is(.seg3 button[aria-pressed="true"], .seg2 button[aria-pressed="true"])::before {
-  content: ""; position: absolute; left: 50%; top: -1px; width: 22px; height: 2px; margin-left: -11px; background: var(--ice-hi);
 }
 .screen :is(.seg3, .seg2) button[aria-pressed="true"] strong { color: var(--ice-hi); }
 .screen :is(.seg3, .seg2) button[aria-pressed="true"] span { color: #9fb7c0; }

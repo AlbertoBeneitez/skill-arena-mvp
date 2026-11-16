@@ -27,7 +27,6 @@ const messages: Messages = {
 
   "welcome.soon": "{provider}，即将推出",
   "welcome.login": "登录",
-  "welcome.loginLocal": "在此设备上的本地会话",
   "welcome.loginAria": "以本地会话登录",
   "welcome.language": "语言",
   "identity.chooseAvatar": "选择头像",

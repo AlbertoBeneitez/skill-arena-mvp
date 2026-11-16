@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v204-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v205-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Retoques (16 de noviembre, v205, app 2.05):** tarjetas de Populares más grandes; sin barra encima del formato elegido en Grupo; «Iniciar sesión» sin subtítulo; con entrada, el reto entre grupos no ofrece juegos sin apuestas (Roulette).
 - [x] **Online igual que Offline (16 de noviembre, v204, app 2.04):** la pantalla de grupo Online es la misma que la Offline (GroupHub) con datos del servidor: crear/unirse, miembros reales, renombrar (dueño), nueva competición con el mismo formulario (el creador entra pagando), competición abierta con Entrar/Empezar/Cancelar, retar a otro grupo, retos abiertos y ranking de grupos con los mismos paneles. Jugar las partidas de una competición online sigue pendiente.
 - [x] **Offline también en 1 contra 1 (16 de noviembre, v203, app 2.03):** con el globo en Offline, cada duelo es contra un rival inventado que juega una partida verificada real de otro jugador (si la hay; si no, el rival de liga simulado), sin entrada. Las partidas Offline y de grupo local se verifican en el servidor como partidas «solo» (migración 012): nunca se emparejan ni se ofrecen a otros. Arregla un fallo de v199: en la vista previa una partida de grupo Offline podía quedar «esperando rival» y no anotarse.
 - [x] **Ajustes de Grupo y ranking (16 de noviembre, v202, app 2.02):** aviso del globo solo «Offline»/«Online»; sin botón Rankings en Juegos (el ranking sigue en Perfil › Ranking); Grupo sin «Grupos» ni subtítulo; categorías en filas (máx. 3); X junto a «2 Juegos» que borra búsqueda, categoría y juegos elegidos; ingresos del ranking de juegos en ₡.

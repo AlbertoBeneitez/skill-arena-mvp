@@ -146,7 +146,7 @@ export default function CatalogBrowser(props: Props) {
       {rows.map((r) => (
         <section key={r.key} className={styles.row} aria-labelledby={`shelf-${r.key}`} style={{ ["--accent" as string]: rowAccent(r.key) }}>
           <h2 id={`shelf-${r.key}`} className={styles.rowTitle}>{t(`catalog.shelf.${r.key}`)}</h2>
-          <div className={styles.track} role="list">
+          <div className={styles.track} data-row={r.key} role="list">
             {r.games.map((game, index) => renderCard(r.key, game, index))}
             {r.studio.map((game, index) => renderStudioCard(r.key, game, r.games.length + index))}
           </div>

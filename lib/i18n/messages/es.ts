@@ -31,7 +31,6 @@ const es = {
   // ---------- welcome / identity ----------
   "welcome.soon": "{provider}, próximamente",
   "welcome.login": "Iniciar sesión",
-  "welcome.loginLocal": "Sesión local en este dispositivo",
   "welcome.loginAria": "Iniciar sesión local",
   "welcome.language": "Idioma",
   "identity.chooseAvatar": "Elegir avatar",

@@ -27,7 +27,6 @@ const messages: Messages = {
 
   "welcome.soon": "{provider}، قريبًا",
   "welcome.login": "تسجيل الدخول",
-  "welcome.loginLocal": "جلسة محلية على هذا الجهاز",
   "welcome.loginAria": "تسجيل الدخول بجلسة محلية",
   "welcome.language": "اللغة",
   "identity.chooseAvatar": "اختر صورة رمزية",

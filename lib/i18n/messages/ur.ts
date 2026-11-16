@@ -27,7 +27,6 @@ const messages: Messages = {
 
   "welcome.soon": "{provider}، جلد آ رہا ہے",
   "welcome.login": "سائن ان کریں",
-  "welcome.loginLocal": "اس ڈیوائس پر مقامی سیشن",
   "welcome.loginAria": "مقامی سیشن سے سائن ان کریں",
   "welcome.language": "زبان",
   "identity.chooseAvatar": "اوتار منتخب کریں",

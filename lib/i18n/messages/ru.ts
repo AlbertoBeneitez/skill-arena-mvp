@@ -27,7 +27,6 @@ const messages: Messages = {
 
   "welcome.soon": "{provider} — скоро",
   "welcome.login": "Войти",
-  "welcome.loginLocal": "Локальный сеанс на этом устройстве",
   "welcome.loginAria": "Войти в локальный сеанс",
   "welcome.language": "Язык",
   "identity.chooseAvatar": "Выбрать аватар",
