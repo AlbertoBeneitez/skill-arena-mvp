@@ -216,7 +216,7 @@ const messages: Messages = {
   "terms.h1": "1. O que é",
   "terms.p1": "GALACTIC GAMES é um aplicativo web de minijogos de habilidade e entretenimento. Todos os saldos, inscrições, apostas e prêmios são fictícios: não têm valor monetário, não podem ser sacados nem trocados, e nenhum pagamento é feito.",
   "terms.h2": "2. Idade",
-  "terms.p2": "O serviço não se destina a menores de 14 anos. Slot e Roulette simulam jogos de azar com saldo fictício e são destinados apenas a maiores de 18 anos.",
+  "terms.p2": "O serviço não se destina a menores de 14 anos. Slot é um jogo de habilidade, não de azar. Roulette simula um jogo de azar com saldo fictício. Slot e Roulette são destinados apenas a maiores de 18 anos.",
   "terms.h3": "3. Resultados e ranking",
   "terms.p3": "Nos jogos verificados, o servidor repete a partida a partir dos dados enviados e calcula o resultado; se a verificação falhar, a vitória não é confirmada. O ranking de exemplo usa dados fictícios e é separado do ranking real.",
   "terms.h4": "4. Uso adequado",
@@ -247,7 +247,7 @@ const messages: Messages = {
   "rules.p4": "Nos grupos, o pote fictício é dividido 70% / 30% entre os dois primeiros ou 100% para o vencedor, conforme escolhido ao criar a competição.",
 
   "responsible.p1": "GALACTIC GAMES é entretenimento: não se joga com dinheiro real e não é possível ganhar dinheiro real.",
-  "responsible.p2": "Slot e Roulette simulam jogos de azar. São apenas para maiores de 18 anos e não preveem resultados de jogos com dinheiro.",
+  "responsible.p2": "Slot é um jogo de habilidade. Roulette simula um jogo de azar. Ambos são apenas para maiores de 18 anos e não preveem resultados de jogos com dinheiro.",
   "responsible.p3": "Defina seus limites: ative o lembrete de tempo de jogo em Configurações e faça pausas com frequência.",
   "responsible.p4": "Se o jogo deixar de ser divertido ou se você estiver preocupado com sua relação com apostas, converse com alguém de confiança e procure os serviços de apoio do seu país.",
 
