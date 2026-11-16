@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v196-saturn · Medición de jugadores (16-nov-2026)
+
+- Consentimiento + eventos auditables + totales recalculables + retención; interruptor en Ajustes; `docs/EVENTOS.md`.
+- Pendiente: tarea programada de retención; eventos de servidor desde las rutas de grupos (rama v197).
+
 ## v195-saturn · Cada partida, de una persona (16-nov-2026)
 
 - `account_id` desde la sesión en el inicio de partida pública; prueba en `verify-accounts`.

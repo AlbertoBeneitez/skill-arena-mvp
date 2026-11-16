@@ -29,6 +29,7 @@ import { createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroup
 import { playSimulatedMembers, voteWithSimulatedMembers } from "@/lib/demo/groupRivals";
 import type { GameResult } from "@/lib/types";
 import SoundMenu from "./SoundMenu";
+import { flushAnalytics, setAnalyticsEnabled, track } from "@/lib/analytics";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
 import { matchLocale } from "@/lib/i18n/locales";
@@ -260,6 +261,8 @@ export default function DemoApp() {
    * the player chooses a name, then the account. Otherwise (null) everything stays on this device, as before.
    */
   const [serverAccount, setServerAccount] = useState<null | "pending" | { id: string; name: string; avatar: number }>(null);
+  /** v196: the signed-in player's decision about measurement (null: no server account, so nothing to decide). */
+  const [measurement, setMeasurement] = useState<boolean | null>(null);
   const [serverNameTaken, setServerNameTaken] = useState("");
   const [accountBusy, setAccountBusy] = useState(false);
   const [playerName, setPlayerName] = useState("");
@@ -1406,6 +1409,45 @@ export default function DemoApp() {
     logoutDemo();
   }
 
+  // v196: with a server account, ask once whether the player agreed to measurement; events flow only after "yes".
+  const accountId = typeof serverAccount === "object" && serverAccount ? serverAccount.id : null;
+  useEffect(() => {
+    if (!accountId) { setMeasurement(null); setAnalyticsEnabled(false); return; }
+    let live = true;
+    fetch("/api/consent", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d: { consent?: { granted: boolean } } | null) => {
+      if (!live || !d?.consent) return;
+      setMeasurement(d.consent.granted);
+      setAnalyticsEnabled(d.consent.granted);
+    }).catch(() => undefined);
+    return () => { live = false; };
+  }, [accountId]);
+  async function changeMeasurement(next: boolean) {
+    const before = measurement;
+    setMeasurement(next);
+    setAnalyticsEnabled(false);
+    try {
+      const r = await fetch("/api/consent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ granted: next, version: "analytics-v1" }) });
+      const d = (await r.json()) as { consent?: { granted: boolean } };
+      if (!r.ok || !d.consent) throw new Error("consent");
+      setMeasurement(d.consent.granted);
+      setAnalyticsEnabled(d.consent.granted);
+    } catch {
+      setMeasurement(before);
+      setAnalyticsEnabled(Boolean(before));
+    }
+  }
+  // Screens and games opened (catalogue events; nothing is sent unless the player agreed).
+  useEffect(() => {
+    if (screen === "game") return;
+    track("screen_view", { screen });
+  }, [screen]);
+  useEffect(() => {
+    if (screen !== "game" || !activeGame) return;
+    const opened = Date.now();
+    track("game_opened", undefined, selectedGame.id);
+    return () => { track("game_left", { ms: Math.min(3_600_000, Date.now() - opened) }, selectedGame.id); flushAnalytics(); };
+  }, [screen, activeGame, selectedGame.id]);
+
   function logoutDemo() {
     void fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
     safeStorage.removeItem(STORAGE_KEY);
@@ -1902,6 +1944,8 @@ export default function DemoApp() {
             onResetStats={() => setConfirmAction("reset")}
             onDeleteData={() => setConfirmAction("delete")}
             onLogout={logoutDemo}
+            measurement={measurement}
+            onMeasurement={changeMeasurement}
             onOpenDoc={setDoc}
             onBack={() => navigate("profile")}
           />

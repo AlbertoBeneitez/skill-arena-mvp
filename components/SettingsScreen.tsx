@@ -26,6 +26,8 @@ export default function SettingsScreen({
   onResetStats,
   onDeleteData,
   onLogout,
+  measurement,
+  onMeasurement,
   onOpenDoc,
   onBack,
 }: {
@@ -35,6 +37,9 @@ export default function SettingsScreen({
   onResetStats(): void;
   onDeleteData(): void;
   onLogout(): void;
+  /** v196: the player's decision about measurement; null when there is no server account to decide for. */
+  measurement: boolean | null;
+  onMeasurement(next: boolean): void;
   onOpenDoc(doc: DocId): void;
   onBack(): void;
 }) {
@@ -107,6 +112,7 @@ export default function SettingsScreen({
           <span><strong>{t("settings.editProfile")}</strong></span>
           <b aria-hidden="true">›</b>
         </button>
+        {measurement !== null && <Toggle label={t("settings.measurement")} hint={t("settings.measurementHint")} checked={measurement} onChange={onMeasurement} />}
         <button type="button" className="settingsRow settingsLink" onClick={onResetStats}>
           <span><strong>{t("settings.resetStats")}</strong></span>
           <b aria-hidden="true">↺</b>

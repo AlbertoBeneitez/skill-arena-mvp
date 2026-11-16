@@ -14,6 +14,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-accounts.js");
   await import("../.det-test/scripts/verify-migrations.js");
   await import("../.det-test/scripts/verify-groups.js");
+  await import("../.det-test/scripts/verify-events.js");
 } else {
   await import("../.det-test/scripts/verify-wallet.js");
   await import("../.det-test/scripts/verify-group-versus.js");

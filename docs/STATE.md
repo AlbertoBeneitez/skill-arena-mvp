@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v195-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v196-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Medición de jugadores (16 de noviembre, v196, app 1.96):** consentimiento versionado y eventos de catálogo solo-añadir (migración 011), vista de partidas por persona, totales recalculables, retención 12 meses (pendiente de confirmar). `docs/EVENTOS.md`.
 - [x] **Cada partida, de una persona (16 de noviembre, v195, app 1.95):** el inicio de partida pública guarda `account_id` tomado de la sesión firmada (nunca del navegador); invitado = sin persona.
 - [x] **Círculo de partida y buscador de grupos (16 de noviembre, v194, app 1.94):** círculo verde/blanco en las tarjetas del catálogo en lugar de la estrella; X de borrar y categorías en el buscador de juegos de Grupos.
 - [x] **Cimientos de la base de datos (16 de noviembre, v193, app 1.93):** persona unida a las partidas (`account_id`), libro de partida doble (saldo leído del libro), borrar = anonimizar, grupos/competiciones/desafíos/ranking en el servidor (migraciones 008–010, `lib/server/groups.ts`, `ledger.ts`; pruebas `verify-groups`). Faltan rutas y pantalla de grupos. Guía de copia: `docs/GUIA_COPIA_DE_SEGURIDAD.pdf`. Regla de avisar de costes en `CLAUDE.md`; Vercel Pro pendiente de que el propietario lo cancele.
