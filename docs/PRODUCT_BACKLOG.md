@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v210-saturn · Círculo morado (17-nov-2026)
+
+- Morado = tienes una partida de ese juego por jugar (siguiente partido de tu competición de grupo). Pendiente: turnos del juego grupal y competiciones online cuando se puedan jugar.
+
 ## v209-saturn · Shot Gallery V14 (17-nov-2026)
 
 - Pantalla hasta acertar todos los blancos; cada señuelo abatido hace salir un blanco nuevo en otro lado (contra disparar a todo). Pendiente: prueba del propietario en el móvil.

@@ -67,6 +67,7 @@ const messages: Messages = {
   "catalog.ghost": "إظهار الشبح أو إخفاؤه",
   "catalog.rivalWaiting": "هناك منافس ينتظر",
   "catalog.noRivalWaiting": "لا توجد مباراة بالانتظار",
+  "catalog.matchToPlay": "لديك مباراة عليك لعبها",
   "catalog.moneyGame": "لعبة على المال",
   "catalog.chanceGame": "لعبة حظ، بلا مال",
 

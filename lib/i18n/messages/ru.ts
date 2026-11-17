@@ -67,6 +67,7 @@ const messages: Messages = {
   "catalog.ghost": "Показать или скрыть призрака",
   "catalog.rivalWaiting": "Соперник ждёт",
   "catalog.noRivalWaiting": "Нет ожидающих матчей",
+  "catalog.matchToPlay": "У тебя есть матч, который нужно сыграть",
   "catalog.moneyGame": "Игра на деньги",
   "catalog.chanceGame": "Азартная игра, без денег",
 

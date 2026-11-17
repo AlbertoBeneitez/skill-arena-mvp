@@ -67,6 +67,7 @@ const messages: Messages = {
   "catalog.ghost": "ঘোস্ট দেখান বা লুকান",
   "catalog.rivalWaiting": "একজন প্রতিদ্বন্দ্বী অপেক্ষা করছে",
   "catalog.noRivalWaiting": "কোনো ম্যাচ অপেক্ষায় নেই",
+  "catalog.matchToPlay": "তোমার একটি ম্যাচ খেলা বাকি",
   "catalog.moneyGame": "টাকার গেম",
   "catalog.chanceGame": "ভাগ্যের গেম, টাকা ছাড়া",
 

@@ -72,6 +72,7 @@ const es = {
   "catalog.ghost": "Mostrar u ocultar fantasma",
   "catalog.rivalWaiting": "Hay un rival esperando",
   "catalog.noRivalWaiting": "Ninguna partida esperando",
+  "catalog.matchToPlay": "Tienes una partida por jugar",
   "catalog.moneyGame": "Juego por dinero",
   "catalog.chanceGame": "Juego de azar, sin dinero",
 

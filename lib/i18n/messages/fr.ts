@@ -67,6 +67,7 @@ const messages: Messages = {
   "catalog.ghost": "Afficher ou masquer le fantôme",
   "catalog.rivalWaiting": "Un rival t’attend",
   "catalog.noRivalWaiting": "Aucune partie en attente",
+  "catalog.matchToPlay": "Tu as une partie à jouer",
   "catalog.moneyGame": "Jeu d'argent",
   "catalog.chanceGame": "Jeu de hasard, sans argent",
 

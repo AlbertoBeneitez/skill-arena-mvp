@@ -255,6 +255,9 @@ async function cropAvatarSource(
   });
 }
 
+/** The player's own id inside a local group competition. */
+const GROUP_YOU = "you";
+
 export default function DemoApp() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [onboarded, setOnboarded] = useState(false);
@@ -415,6 +418,13 @@ export default function DemoApp() {
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   /** v128: the group competition in progress (pure rules in lib/groupCompetition.ts), saved so it survives a restart. */
   const [groupComp, setGroupComp] = useState<GroupCompetition | null>(null);
+  // v210: games with a match of the player's own still to play (the next match of the group competition in progress).
+  const pendingGames = useMemo(() => {
+    const out = new Set<string>();
+    const next = groupComp && !groupComp.finished ? groupComp.matches[nextGroupMatch(groupComp, GROUP_YOU)] : undefined;
+    if (next && next.gameId !== RANDOM_GAME) out.add(next.gameId);
+    return out;
+  }, [groupComp]);
   const [groupMatch, setGroupMatch] = useState(-1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [pendingJoinCode, setPendingJoinCode] = useState("");
@@ -1290,7 +1300,6 @@ export default function DemoApp() {
   }
 
 
-  const GROUP_YOU = "you";
   const groupLook = {
     base: (gameId: string) => getGameDefinition(gameId)?.rivalScore ?? 1000,
     strength: (id: string) => group?.members.find((m) => m.id === id)?.scoreFactor ?? 1,
@@ -1796,7 +1805,7 @@ export default function DemoApp() {
             {matchStartError && <p role="status">{matchStartError}</p>}
             {studioWelcome && <StudioWelcome onClose={() => setStudioWelcome(false)} onSend={() => { setStudioWelcome(false); setProposing(true); }} />}
             {proposing && <GameProposal onClose={() => setProposing(false)} />}
-            <CatalogBrowser offline={offline} serverOnly={serverMode === true} modes={serverMode ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={(g) => void startMatch(g)} leagues={serverMode ? undefined : leagues} favorites={favoriteGames} />
+            <CatalogBrowser offline={offline} pendingGames={pendingGames} serverOnly={serverMode === true} modes={serverMode ? liveModes : undefined} stake={selectedStake as Stake} balance={balance} nextTurn={nextTurn} startingGameId={startingGameId} ghostEnabled={ghostEnabled} onToggleGhost={()=>setGhostEnabled(value=>!value)} onPlay={(g) => void startMatch(g)} leagues={serverMode ? undefined : leagues} favorites={favoriteGames} />
           </section>
         )}
 

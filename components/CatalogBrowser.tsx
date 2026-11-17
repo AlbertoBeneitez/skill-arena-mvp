@@ -22,6 +22,8 @@ type Props = {
   stake: Stake;
   /** v203: Offline: no real player is ever waiting, so every circle stays white. */
   offline?: boolean;
+  /** v210: games where the player has a match to play (a group match, a relay turn): the circle turns purple. */
+  pendingGames?: ReadonlySet<string>;
   serverOnly?: boolean;
   modes?: Partial<Record<GameId,MatchMode>>;
   balance: number;
@@ -92,6 +94,8 @@ export default function CatalogBrowser(props: Props) {
     </article>
   );
   const rivalWaiting = (game: GameMeta) => !props.offline && (props.modes?.[game.id] ?? modeForStake(game, props.stake, props.nextTurn)) === "existing";
+  const ledState = (game: GameMeta) => (props.pendingGames?.has(game.id) ? "mine" : rivalWaiting(game) ? "yes" : "no");
+  const ledLabel = (game: GameMeta) => ({ mine: "catalog.matchToPlay", yes: "catalog.rivalWaiting", no: "catalog.noRivalWaiting" } as const)[ledState(game)];
   const renderCard = (row: string, game: GameMeta, index: number) => (
     <article key={`${row}-${game.id}`} role="listitem" className={styles.card} data-kind={playableForMoney(game) ? "money" : "chance"}
       aria-label={`${gameName(game)} · ${t(playableForMoney(game) ? "catalog.moneyGame" : "catalog.chanceGame")}`} style={{ ["--accent" as string]: gameAccent(game), ["--i" as string]: index }}>
@@ -107,9 +111,10 @@ export default function CatalogBrowser(props: Props) {
           decoding="async"
           fetchPriority={row === "popular" && index < 3 ? "high" : "low"}
         />
-        {/* v194: one discreet circle, top left: green when a match is waiting for this game, white when none is. */}
-        <span className={styles.rivalLed} data-waiting={rivalWaiting(game) ? "yes" : "no"} role="img"
-          aria-label={t(rivalWaiting(game) ? "catalog.rivalWaiting" : "catalog.noRivalWaiting")} title={t(rivalWaiting(game) ? "catalog.rivalWaiting" : "catalog.noRivalWaiting")} />
+        {/* v194: one discreet circle, top left: green when a match is waiting for this game, white when none is.
+            v210: purple (it wins over green) when the player has a match of this game to play. */}
+        <span className={styles.rivalLed} data-waiting={ledState(game)} role="img"
+          aria-label={t(ledLabel(game))} title={t(ledLabel(game))} />
         {!props.serverOnly && rivalWaiting(game) && (
           <button
             type="button"

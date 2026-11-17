@@ -67,6 +67,7 @@ const messages: Messages = {
   "catalog.ghost": "显示或隐藏幽灵",
   "catalog.rivalWaiting": "有对手在等你",
   "catalog.noRivalWaiting": "没有等待中的对局",
+  "catalog.matchToPlay": "你有一场待进行的对局",
   "catalog.moneyGame": "真钱游戏",
   "catalog.chanceGame": "运气类游戏，无真钱",
 

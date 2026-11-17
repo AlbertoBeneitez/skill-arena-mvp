@@ -205,7 +205,14 @@
   animation: rivalLed 2.4s ease-in-out infinite;
 }
 @keyframes rivalLed { 50% { box-shadow: 0 0 0 2px rgba(6,14,9,.75), 0 0 4px 1px rgba(53,224,122,.4); } }
-@media (prefers-reduced-motion: reduce) { .rivalLed { animation: none; } }
+/* v210 · A match of this game is yours to play: purple, and it wins over green. */
+.rivalLed[data-waiting="mine"] {
+  background: radial-gradient(circle at 35% 30%, #f1e2ff, #a66bff 45%, #6b2bd6);
+  box-shadow: 0 0 0 2px rgba(12,6,20,.75), 0 0 10px 2px rgba(166,107,255,.75);
+  animation: rivalLedMine 2.4s ease-in-out infinite;
+}
+@keyframes rivalLedMine { 50% { box-shadow: 0 0 0 2px rgba(12,6,20,.75), 0 0 4px 1px rgba(166,107,255,.4); } }
+@media (prefers-reduced-motion: reduce) { .rivalLed, .rivalLed[data-waiting] { animation: none; } }
 
 /* v189 · Two kinds of game. Games for money (skill) read as more important: a fine gold rim, a soft warm glow and a
    gold star mark; games of chance (never for money, no licence) stay plain and say so. */

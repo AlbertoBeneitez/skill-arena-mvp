@@ -67,6 +67,7 @@ const messages: Messages = {
   "catalog.ghost": "Show or hide ghost",
   "catalog.rivalWaiting": "A rival is waiting",
   "catalog.noRivalWaiting": "No match waiting",
+  "catalog.matchToPlay": "You have a match to play",
   "catalog.moneyGame": "Game for money",
   "catalog.chanceGame": "Game of chance, no money",
 
