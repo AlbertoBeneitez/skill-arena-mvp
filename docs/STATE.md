@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v213-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v214-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Portada de Tower Drop (17 de noviembre, v214, app 2.14):** el contenedor siguiente cuelga recto de un cable, separado por encima de la torre; sin fantasmas de balanceo ni destellos, para que no parezca un contenedor encajado entre otros dos. Una línea discontinua marca dónde aterrizará.
 - [x] **Interfaz (17 de noviembre, v213, app 2.13):** sin textos ni QR junto al marco de ordenador; pestaña «Grupos»; texto más grande en toda la app (≤ 9 px +1, 10–18 px +2); la X de borrar juegos va justo a la derecha de «2 Juegos» y siempre visible; al cambiar Online/Offline aparece «Modo Online»/«Modo Offline» en el centro. Paquete `qrcode-generator` retirado.
 - [x] **Next.js 16.4.5 (17 de noviembre, v212, app 2.12):** corrige dos avisos moderados de seguridad de 16.4.2 (caché con `'use cache'`/`unstable_cache`, que la app no usa). `pnpm audit --prod`: sin vulnerabilidades.
 - [x] **Juego grupal (17 de noviembre, v211, app 2.11):** botón «Juego grupal» en los grupos online: el grupo construye una sola torre de Stack, cada turno sigue la torre del anterior (3, 5 o 10 bloques por turno). Solo uno juega a la vez: el que empieza después recibe al momento quién juega y desde cuándo; un turno fuera de plazo, de otro o jugado más rápido que el tiempo real no cuenta y se avisa. Resultado común y bloques por jugador. Stack se pone morado cuando la torre espera turno. ADR 008, migración 015.

@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v214-saturn · Portada de Tower Drop (17-nov-2026)
+
+- Contenedor colgante separado por encima de la torre (`tower_v214` en `scripts/generate-covers.py`).
+
 ## v213-saturn · Interfaz (17-nov-2026)
 
 - Lateral de ordenador vacío, «Grupos», texto más grande, X junto a «2 Juegos», aviso central de modo. Pendiente: aclarar con el propietario el salto a Grupos al abrir la app.

@@ -2100,6 +2100,52 @@ def tower_v153():
 covers["tower-drop"] = tower_v153()
 
 
+def tower_v214():
+    """v214 (owner): the next container hangs clearly ABOVE the tower, level, from a vertical cable; no swing ghosts and
+    no landing flash, so nothing reads as a container wedged between two others."""
+    d = ('<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0614"/><stop offset=".55" stop-color="#3a1240"/><stop offset=".85" stop-color="#d2502e"/><stop offset="1" stop-color="#ffb35a"/></linearGradient>'
+         '<radialGradient id="sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff1c4"/><stop offset=".35" stop-color="#ffb35a" stop-opacity=".8"/><stop offset="1" stop-color="#ff6a2a" stop-opacity="0"/></radialGradient>')
+    p = ['<rect width="640" height="440" fill="url(#sky)"/>', stars(17, 90, 200)]
+    p.append('<circle cx="120" cy="440" r="240" fill="url(#sun)"/>')
+    for (x, a, c) in [(70, -28, "#ffe2b0"), (580, 24, "#bff6ff")]:
+        p.append(f'<polygon points="{x},440 {x - 30 + a * 6},-20 {x + 30 + a * 6},-20" fill="{c}" opacity=".12" filter="url(#soft)"/>')
+    rr = random.Random(8)
+    sk = []
+    x = -10
+    while x < 650:
+        w = rr.randint(26, 60); h = rr.randint(40, 150)
+        sk.append(f'<rect x="{x}" y="{440 - h}" width="{w}" height="{h}" fill="#0b0710"/>')
+        for wy in range(440 - h + 8, 440, 14):
+            for wx in range(x + 5, x + w - 5, 10):
+                if rr.random() < .35:
+                    sk.append(f'<rect x="{wx}" y="{wy}" width="4" height="6" fill="#ffcf7a" opacity=".6"/>')
+        x += w + rr.randint(2, 10)
+    p.append(f'<g filter="url(#dof2)">{"".join(sk)}</g>')
+    # everything in the foreground is 1.3× closer than v140, pivoting on the top of the tower
+    g = ['<g transform="translate(330 250) scale(1.3) translate(-330 -196)">']
+    cols = [("#e0582f", "#7a2510"), ("#1f9aa8", "#0d4a52"), ("#d63345", "#6e1220"), ("#e8b627", "#7a5a08"), ("#3a6fe0", "#173a80"), ("#7a3fd0", "#3a1a70")]
+    y = 440
+    for i in range(6):
+        h = 66 - i * 6; w = 380 - i * 34; sway = [0, 6, -4, 10, -8, 14][i]
+        y -= h
+        g.append(container(320 - w / 2 + sway, y, w, h, face=cols[i][0], shade=cols[i][1], label=f"GX-0{i + 1}", idn=f"tc{i}"))
+    top = y
+    # the next container, hanging level on a vertical cable, a clear gap above the roof of GX-06
+    hx, hy = 334, top - 46 - 34
+    g.append(f'<line x1="{hx}" y1="-80" x2="{hx}" y2="{hy - 18}" stroke="#c9d2dc" stroke-width="2.6"/>')
+    g.append(f'<path d="M{hx - 40},{hy} L{hx},{hy - 18} L{hx + 40},{hy}" fill="none" stroke="#c9d2dc" stroke-width="2"/>')
+    g.append(f'<rect x="{hx - 10}" y="{hy - 26}" width="20" height="12" rx="3" fill="#e9c27a"/>')
+    g.append(f'<g filter="url(#shadow)">{container(hx - 95, hy, 190, 46, "#5cffb0", "#16704a", "GX-07", "tg0")}</g>')
+    # where it will land: its soft shadow on the roof below and a faint dashed outline
+    g.append(f'<ellipse cx="{hx}" cy="{top + 3}" rx="92" ry="7" fill="#000" opacity=".35" filter="url(#soft)"/>')
+    g.append(f'<rect x="{hx - 95}" y="{top - 2}" width="190" height="4" rx="2" fill="none" stroke="#fff1c4" stroke-width="1.6" stroke-dasharray="7 6" opacity=".75"/>')
+    g.append('</g>')
+    p += g
+    p.append(cine(360, 170, key="#ffe2b0", strength=.6, flare_w=0))
+    return svg("".join(p), extra_defs=d)
+covers["tower-drop"] = tower_v214()
+
+
 # ---------- Shot Gallery: the targets worked up — rim light from the laser side, shading, texture, more anatomy ----------
 def _at(x, y, s, inner):
     return f'<g transform="translate({f(x)} {f(y)}) scale({s})">{inner}</g>'

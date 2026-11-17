@@ -157,7 +157,7 @@ const GAME_DEFINITIONS = [
       allowedActions: ["DROP"],
     },
     name: "Tower Drop",
-    cover: "/covers/tower-drop.webp?v=166",
+    cover: "/covers/tower-drop.webp?v=214",
     enabled: true,
     waitingStakes: [1, 5],
     category: "TIMING",
