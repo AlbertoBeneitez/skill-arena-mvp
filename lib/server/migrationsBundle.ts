@@ -78,5 +78,11 @@ export const MIGRATIONS: readonly BundledMigration[] = [
     "file": "013-match-pairing-fix.sql",
     "sha256": "3465e493d7dbe23ec5cceb06f32eeab334ee516c20bacc97c6f4cd13002a6077",
     "sql": "-- v207 · Fix (introduced by 008): the generated columns game_id/game_version are not yet computed in a BEFORE UPDATE\n-- trigger, so NEW differed from OLD and the rewrite guard refused the only allowed update (setting player_b when a rival\n-- joins). The guard now ignores those two derived columns; they come from the manifest, which it still compares.\nCREATE OR REPLACE FUNCTION arena_prevent_match_rewrite()\nRETURNS trigger LANGUAGE plpgsql AS $$\nBEGIN\n IF (to_jsonb(NEW) - 'game_id' - 'game_version') IS DISTINCT FROM (to_jsonb(OLD) - 'game_id' - 'game_version') AND NOT (\n  OLD.player_b IS NULL AND NEW.player_b IS NOT NULL\n  AND (to_jsonb(NEW) - 'player_b' - 'game_id' - 'game_version') = (to_jsonb(OLD) - 'player_b' - 'game_id' - 'game_version')\n ) THEN RAISE EXCEPTION 'IMMUTABLE_MATCH' USING ERRCODE='23514'; END IF;\n RETURN NEW;\nEND;\n$$;\n"
+  },
+  {
+    "id": "014",
+    "file": "014-public-match-policy-v2.sql",
+    "sha256": "0b567709e4f61ca9a60d8239b84b848e867d41f8b7f601fbac150ddef0eeeca3",
+    "sql": "-- v208 · New public matches are stored under forfeit-on-disconnect-v2 (each game's score in its own direction, then\n-- time). Matches already stored under v1 keep it and keep resolving under v1. Only the allowed values change.\nDO $$\nDECLARE c text;\nBEGIN\n  FOR c IN SELECT conname FROM pg_constraint\n            WHERE conrelid = 'arena_public_matches'::regclass AND contype = 'c' AND pg_get_constraintdef(oid) LIKE '%policy_version%'\n  LOOP\n    EXECUTE format('ALTER TABLE arena_public_matches DROP CONSTRAINT %I', c);\n  END LOOP;\nEND $$;\nALTER TABLE arena_public_matches ADD CONSTRAINT arena_public_matches_policy_version_check\n  CHECK (policy_version IN ('forfeit-on-disconnect-v1', 'forfeit-on-disconnect-v2'));\n"
   }
 ];

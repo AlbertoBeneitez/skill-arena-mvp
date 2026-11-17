@@ -14,7 +14,7 @@ import {
   getPublicMatchService,
   sameOrigin,
 } from "../lib/server/publicMatchHttp";
-import { MAX_ATTEMPT_RECORD_BYTES } from "../lib/publicMatch";
+import { decidePublicMatch, LOWER_SCORE_WINS_GAMES, MAX_ATTEMPT_RECORD_BYTES, PUBLIC_MATCH_POLICY, PUBLIC_MATCH_POLICY_V1 } from "../lib/publicMatch";
 import { GAMES } from "../lib/games";
 const connectionString = process.env.TEST_DATABASE_URL;
 assert.ok(connectionString, "TEST_DATABASE_URL required; no skip");
@@ -51,6 +51,8 @@ try {
   await pool.query(
     await readFile("db/migrations/003-public-attempts.sql", "utf8"),
   );
+  // v208: new matches are stored under policy V2 (migration 014, repeatable).
+  for (let i = 0; i < 2; i++) await pool.query(await readFile("db/migrations/014-public-match-policy-v2.sql", "utf8"));
   const proxyHeaders = {
     host: "preview.example.invalid",
     origin: "https://preview.example.invalid",
@@ -499,8 +501,23 @@ try {
   assert.equal((await pool.query("SELECT solo FROM arena_public_matches WHERE match_id=$1", [soloA.manifest.match_id])).rows[0].solo, true);
   const nextPhone = await soloService.start("solo-2", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID(), platform: "mobile" });
   assert.notEqual(nextPhone.manifest.match_id, soloA.manifest.match_id, "nobody is paired into a solo match");
+  // v208 · Policy V2: new matches are stored under V2 and decided by each game's score in its own direction; V1
+  // matches keep the archived rule (height, then time).
+  assert.equal((await pool.query("SELECT policy_version FROM arena_public_matches WHERE match_id=$1", [soloA.manifest.match_id])).rows[0].policy_version, PUBLIC_MATCH_POLICY);
+  assert.equal(PUBLIC_MATCH_POLICY, "forfeit-on-disconnect-v2");
+  const fast = { score: 2_000, height: 9_000, time_ms: 9_000 }, slow = { score: 3_000, height: 8_000, time_ms: 9_000 };
+  assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "reaction-test", fast, slow), { winner: "A", reason: "score" }, "Shot Gallery: fewer ms wins");
+  assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY_V1, "reaction-test", fast, slow), { winner: "A", reason: "reach" }, "V1 archived: reach mirror");
+  const tallNarrow = { score: 600_700, height: 6, time_ms: 5_000 }, tallWide = { score: 600_830, height: 6, time_ms: 4_000 }, short = { score: 500_999, height: 5, time_ms: 1_000 };
+  assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "precision-stack", tallNarrow, tallWide), { winner: "B", reason: "score" }, "Stack: same height, more surface wins");
+  assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "precision-stack", short, tallNarrow), { winner: "B", reason: "score" }, "Stack: more blocks always win");
+  assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY_V1, "precision-stack", tallNarrow, tallWide), { winner: "B", reason: "time" }, "V1 archived: time tie-break");
+  assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "darts", { score: 5, time_ms: 9 }, { score: 5, time_ms: 7 }), { winner: "B", reason: "time" });
+  assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "darts", { score: 5, time_ms: 7 }, { score: 5, time_ms: 7 }), { winner: null, reason: "exact-tie" });
+  for (const g of GAMES) assert.equal(LOWER_SCORE_WINS_GAMES.has(g.id), g.resultMetric === "reaction-time-ms", `${g.id}: score direction mirrors the catalogue`);
+  await assert.rejects(pool.query("UPDATE arena_public_matches SET policy_version='forfeit-on-disconnect-v9' WHERE match_id=$1", [soloA.manifest.match_id]));
   console.log(
-    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools, solo (Offline) matches passed",
+    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools, solo (Offline) matches, policy V2 by game score direction (V1 archived) passed",
   );
 } finally {
   Date.now = originalNow;

@@ -64,3 +64,13 @@ Antes de habilitarlo en un despliegue se drenan los intentos legacy en vuelo;
 los sobres nuevos sólo identifican el intento y sus inputs. Mine/Solitaire
 legacy no se habilitan como duelos por esta migración; Mine privado conserva
 su autoridad y configuración separadas, y grupos simulados no entran al pool público.
+
+## Política V2 (v208, 17-nov-2026)
+
+Las partidas públicas nuevas se guardan con `forfeit-on-disconnect-v2` (migración 014): gana la mejor puntuación
+del juego en su propia dirección (menos es mejor en Shot Gallery, `LOWER_SCORE_WINS_GAMES`) y, si empatan, el más
+rápido; empate exacto igual que V1. Así el online decide igual que la liga y los grupos: en Stack la puntuación es
+altura × 100.000 + superficie, de modo que gana quien pone más bloques y, a igual altura, la mayor superficie, como
+dice su reglamento. Cada partida se resuelve con la política con que se guardó (`decidePublicMatch` en
+`lib/publicMatch.ts`); las V1 conservan `height ?? score` y luego tiempo. Solo se empareja con partidas de la
+política vigente.

@@ -2,6 +2,7 @@ import { randomInt, randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import {
   CONNECTION_LEASE_MS,
+  decidePublicMatch,
   PUBLIC_MATCH_POLICY,
   type PublicMatchView,
   type PublicRecord,
@@ -75,7 +76,7 @@ export class PostgresPublicAttemptRepository
   }
   private async resolve(c: PoolClient, match: string) {
     const m = await c.query(
-      `SELECT resolution FROM arena_public_matches WHERE match_id=$1 FOR UPDATE`,
+      `SELECT p.resolution, p.policy_version, m.manifest->>'game_id' AS game_id FROM arena_public_matches p JOIN arena_matches m USING(match_id) WHERE p.match_id=$1 FOR UPDATE OF p`,
       [match],
     );
     if (!m.rows.length || m.rows[0].resolution) return;
@@ -93,19 +94,10 @@ export class PostgresPublicAttemptRepository
     if (!closed(a) || (b && !closed(b))) return;
     if (!b && a.state === "verified") return;
     let winner: "A" | "B" | null = null,
-      reason = "forfeit";
+      reason: string = "forfeit";
     if (a.state === "verified" && b?.state === "verified") {
-      const ar = a.response!,
-        br = b.response!;
-      const reachA = ar.height ?? ar.score ?? 0,
-        reachB = br.height ?? br.score ?? 0;
-      if (reachA !== reachB) {
-        winner = reachA > reachB ? "A" : "B";
-        reason = "reach";
-      } else if (ar.time_ms !== br.time_ms) {
-        winner = (ar.time_ms ?? 0) < (br.time_ms ?? 0) ? "A" : "B";
-        reason = "time";
-      } else reason = "exact-tie";
+      // v208: each match resolves under the policy it was stored with (V1 archived, V2 for new matches).
+      ({ winner, reason } = decidePublicMatch(m.rows[0].policy_version, m.rows[0].game_id, a.response!, b.response!));
     } else if (b) {
       if (a.state === "verified") winner = "A";
       else if (b.state === "verified") winner = "B";
@@ -117,7 +109,7 @@ export class PostgresPublicAttemptRepository
         JSON.stringify({
           winnerSlot: winner,
           reason,
-          policyVersion: PUBLIC_MATCH_POLICY,
+          policyVersion: m.rows[0].policy_version,
         }),
       ],
     );
@@ -180,7 +172,7 @@ export class PostgresPublicAttemptRepository
       if (args.solo && (!solos || !pools)) throw new PublicAttemptError("SOLO_UNAVAILABLE", 503);
       const candidate = args.solo ? { rows: [] as { manifest: PublicAttempt["manifest"] }[] } : await c.query(
         `SELECT m.manifest FROM arena_matches m JOIN arena_public_matches p USING(match_id) JOIN arena_public_attempts a USING(match_id)
-   WHERE m.player_b IS NULL AND m.player_a<>$1 AND a.slot='A' AND a.state='verified' AND p.resolution IS NULL AND p.scope='training' ${solos ? "AND NOT p.solo" : ""}
+   WHERE m.player_b IS NULL AND m.player_a<>$1 AND a.slot='A' AND a.state='verified' AND p.resolution IS NULL AND p.scope='training' AND p.policy_version='${PUBLIC_MATCH_POLICY}' ${solos ? "AND NOT p.solo" : ""}
    AND p.expires_at>clock_timestamp() AND m.manifest->>'game_id'=$2 AND m.manifest->>'game_version'=$3 AND (m.manifest->'competition'->>'stake_minor')::int=$4
    ${pools ? "AND p.platform=$5" : ""}
    ORDER BY m.stored_at,m.match_id LIMIT 1 FOR UPDATE OF m,p`,
@@ -349,10 +341,11 @@ export class PostgresPublicAttemptRepository
     return this.tx(async (c) => {
       const row = await this.expire(c, await this.load(c, actor, id));
       const result = await c.query(
-        `SELECT resolution FROM arena_public_matches WHERE match_id=$1`,
+        `SELECT resolution, policy_version FROM arena_public_matches WHERE match_id=$1`,
         [row.match_id],
       );
       const resolution = result.rows[0]?.resolution;
+      const policy: string = result.rows[0]?.policy_version ?? PUBLIC_MATCH_POLICY;
       // After resolution the opponent's verified score is public to both players (shown on the result screen).
       let opponentScore: number | undefined;
       if (resolution) {
@@ -371,7 +364,7 @@ export class PostgresPublicAttemptRepository
         slot: row.slot,
         status: resolution ? "resolved" : "waiting",
         winnerSlot: resolution?.winnerSlot ?? null,
-        policyVersion: PUBLIC_MATCH_POLICY,
+        policyVersion: policy,
         reason: resolution?.reason,
         ...(opponentScore !== undefined ? { opponentScore } : {}),
       };

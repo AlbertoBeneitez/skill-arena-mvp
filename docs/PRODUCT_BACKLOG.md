@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v208-saturn · Regla online V2 (17-nov-2026)
+
+- Partidas públicas nuevas: puntuación del juego en su dirección y luego tiempo. Stack gana quien más bloques pone (desempate por superficie). V1 archivada.
+
 ## v207-saturn · QA online (16-nov-2026)
 
 - Arreglado: unirse a partida pública (migración 013), duelo offline que siempre perdía, muestras de rival con la propia partida.
