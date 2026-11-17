@@ -465,6 +465,13 @@ export default function DemoApp() {
   const [doc, setDoc] = useState<DocId | null>(null);
   const [confirmAction, setConfirmAction] = useState<null | "reset" | "delete">(null);
   const [notice, setNotice] = useState("");
+  // v213: switching Online/Offline shows the mode in the middle of the screen for a moment.
+  const [modeFlash, setModeFlash] = useState<"online" | "offline" | null>(null);
+  useEffect(() => {
+    if (!modeFlash) return;
+    const id = setTimeout(() => setModeFlash(null), 1400);
+    return () => clearTimeout(id);
+  }, [modeFlash]);
   // Responsible play: optional reminder after N minutes in the app (Settings).
   const [reminderDue, setReminderDue] = useState(false);
   const reminderAnchorRef = useRef(0);
@@ -1803,7 +1810,7 @@ export default function DemoApp() {
             <SoundMenu variant="header" musicOn={musicOn} onToggleSound={toggleSound} />
             <button className={`netToggle gxIconBtn gxHeadBtn ${offline ? "off" : "on"}`} type="button" aria-pressed={!offline}
               aria-label={t(offline ? "net.offlineSwitch" : "net.onlineSwitch")} title={t(offline ? "net.offline" : "net.online")}
-              onClick={() => { updateSettings({ online: offline }); setNotice(t(offline ? "net.online" : "net.offline")); haptic(8); }}>
+              onClick={() => { updateSettings({ online: offline }); setModeFlash(offline ? "online" : "offline"); haptic(8); }}>
               <UiIcon name="network" /><i className="gxLed" aria-hidden="true" />
             </button>
             <button className="balanceChip gxHeadBtn" aria-label={t("shell.fictitiousBalance", { amount: euro(balance) })} aria-haspopup="dialog" aria-expanded={walletOpen} onClick={() => setWalletOpen((v) => !v)}><UiIcon name="coins" size={17} className="gxBalanceCoin" /><b>{euro(balance)}</b></button>
@@ -2105,6 +2112,7 @@ export default function DemoApp() {
         />
       )}
       {notice && <div className="appToast" role="status">{notice}</div>}
+      {modeFlash && <div key={modeFlash} className="modeFlash" data-mode={modeFlash} role="status">{t(modeFlash === "online" ? "net.modeOnline" : "net.modeOffline")}</div>}
     </main>
   );
 }

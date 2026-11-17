@@ -874,6 +874,8 @@ const messages: Messages = {
   "group.clearGames": "清除搜索和已选游戏",
   "net.online": "在线",
   "net.offline": "离线",
+  "net.modeOnline": "在线模式",
+  "net.modeOffline": "离线模式",
   "net.onlineSwitch": "在线模式。点按切换为离线游戏",
   "net.offlineSwitch": "离线模式。点按切换为在线游戏",
   "group.addRival": "添加虚构对手",

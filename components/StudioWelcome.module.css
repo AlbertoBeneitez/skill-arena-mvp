@@ -12,10 +12,10 @@
 .coin { display: grid; place-items: center; color: #e6c47f; }
 .coin :global(.uiIcon) { stroke-width: 1.4; }
 .card h2 { margin: 0; font: 700 22px/1.2 var(--gx-display); color: #f7f1e4; letter-spacing: .01em; text-wrap: balance; }
-.card p { margin: -6px 0 2px; color: #b9b2a4; font-size: 15px; line-height: 1.5; }
+.card p { margin: -6px 0 2px; color: #b9b2a4; font-size: 17px; line-height: 1.5; }
 .go {
   min-height: 48px; width: 100%; border-radius: 14px; border: 0; background: #d9b46a; color: #17120a;
-  font: 800 15px/1 var(--gx-ui); letter-spacing: .08em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 1px 0 rgba(0, 0, 0, .4);
+  font: 800 17px/1 var(--gx-ui); letter-spacing: .08em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 1px 0 rgba(0, 0, 0, .4);
 }
 .go:active { background: #c9a35a; translate: 0 1px; }
 .go:focus-visible { outline: 2px solid #f0d28f; outline-offset: 2px; }

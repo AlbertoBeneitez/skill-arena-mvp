@@ -15,7 +15,7 @@
 }
 .shell :global(.logoButton) {
   min-height: 44px;
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.05em;
   text-shadow: none;
   color: #e9f4ff;
@@ -28,7 +28,7 @@
   background: #212124;
   box-shadow: none;
   color: #bdddeb;
-  font-size: 11px;
+  font-size: 13px;
 }
 .shell :global(.soundToggle) {
   min-height: 44px;
@@ -44,7 +44,7 @@
 .shell :global(.bottomNav) button {
   min-height: 52px;
   color: #a7bad0;
-  font-size: 10px;
+  font-size: 12px;
   gap: 5px;
 }
 .shell :global(.bottomNav) button:global(.active) {
@@ -87,13 +87,13 @@
   border-radius: 12px;
   background: #212124;
   color: #d9f3fc;
-  font-size: 11px;
+  font-size: 13px;
 }
 .shell :global(.galacticHelpButton) {
   min-height: 44px;
   color: #b8d6e9;
   text-align: left;
-  font-size: 12px;
+  font-size: 14px;
 }
 .shell :global(.quickStakeBar) {
   position: static;
@@ -128,7 +128,7 @@
   justify-content: space-between;
   gap: 8px;
   color: #c7d8e9;
-  font-size: 12px;
+  font-size: 14px;
 }
 .modeHeading span {
   color: #a3b8ce;
@@ -139,11 +139,11 @@
     gap: 4px;
   }
   .shell :global(.logoButton) {
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: 0.01em;
   }
   .shell :global(.balanceChip) {
-    font-size: 10px;
+    font-size: 12px;
     padding-inline: 7px;
   }
 }
@@ -231,11 +231,11 @@
   opacity: 0.45;
 }
 .accountView :global(.miniMovementList) {
-  font-size: 12px;
+  font-size: 14px;
 }
 .accountView :global(.miniMovementList) > div {
   border-color: #38383c;
-  font-size: 12px;
+  font-size: 14px;
 }
 .accountView :global(.negative) {
   color: #ffb3c0 !important;
@@ -254,20 +254,20 @@
   color: #e7eff9;
   border-color: #38383c;
   min-height: 52px;
-  font-size: 13px !important;
+  font-size: 15px !important;
 }
 .accountView :global(.settingsList) b {
   color: #a5e8ec;
 }
 .accountView :global(.resetNote) {
   color: #b3c7db;
-  font-size: 12px !important;
+  font-size: 14px !important;
 }
 .legalView :global(.textBack) {
   min-height: 44px;
   padding: 8px 0;
   color: #a5e8ec;
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 8px;
 }
 .legalView :global(.legalTabs) button {
@@ -276,7 +276,7 @@
   border: 1px solid #444449;
   border-radius: 10px;
   min-height: 48px;
-  font-size: 13px !important;
+  font-size: 15px !important;
 }
 .legalView :global(.legalTabs) button:global(.active) {
   background: #a5e8ec;
@@ -285,7 +285,7 @@
 }
 .legalView :global(.legalCopy) p {
   color: #c6d8eb;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.65;
 }
 .accountView button:focus-visible,

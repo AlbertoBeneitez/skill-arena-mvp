@@ -1,23 +1,23 @@
 .wrap { display: grid; gap: 14px; }
-.sample { justify-self: start; margin: 0; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(240,178,58,.5); color: #f0b23a; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.sample { justify-self: start; margin: 0; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(240,178,58,.5); color: #f0b23a; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
 .card { display: grid; gap: 2px; padding: 14px 14px 10px; border-radius: 10px; background: var(--av-surface, #121315); border: 1px solid var(--av-line, #2a2c30); }
 .cardHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.cardHead span { color: var(--av-ice, #9fe6ff); font-size: 13px; font-weight: 700; }
+.cardHead span { color: var(--av-ice, #9fe6ff); font-size: 15px; font-weight: 700; }
 .cardHead strong { font-family: var(--gx-display, inherit); font-size: 24px; color: #f2f6fa; font-variant-numeric: tabular-nums; }
-.sub { color: #8fa2b4; font-size: 12px; }
+.sub { color: #8fa2b4; font-size: 14px; }
 .chart { margin: 6px 0 0; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
 .line { fill: none; stroke: var(--av-ice, #9fe6ff); stroke-width: 1.25; stroke-linejoin: round; stroke-linecap: round; }
 .dot { fill: var(--av-ice, #9fe6ff); stroke: none; }
 .dotOn { fill: #ffffff; stroke: none; filter: drop-shadow(0 0 4px rgba(159,230,255,.8)); }
-.tip { fill: #f2f6fa; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip { fill: #f2f6fa; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .hit { fill: transparent; cursor: pointer; }
-.axis { position: relative; height: 16px; margin-top: 2px; color: #7d8a98; font-size: 11px; white-space: nowrap; }
+.axis { position: relative; height: 16px; margin-top: 2px; color: #7d8a98; font-size: 13px; white-space: nowrap; }
 .axis span { position: absolute; top: 0; transform: translateX(-50%); }
 .axis span:first-child { transform: none; }
 .axis span:last-child { transform: translateX(-100%); }
 .axis span[data-on] { color: #e9f4fb; font-weight: 700; }
-.listTitle { margin: 4px 0 8px; font-size: 14px; color: #e9f4fb; }
+.listTitle { margin: 4px 0 8px; font-size: 16px; color: #e9f4fb; }
 .list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .row { border-radius: 10px; background: var(--av-surface, #121315); border: 1px solid var(--av-line, #2a2c30); overflow: hidden; }
 .row[data-open] { border-color: rgba(159,230,255,.45); }
@@ -26,7 +26,7 @@
   align-items: center; width: 100%; min-height: 56px; padding: 10px 12px; border: 0; background: transparent; color: inherit; text-align: start; cursor: pointer;
 }
 .rowButton:focus-visible { outline: 2px solid var(--av-ice, #9fe6ff); outline-offset: -2px; }
-.pos { grid-row: 1 / span 2; color: var(--av-ice, #9fe6ff); font-weight: 800; font-size: 14px; text-align: center; }
+.pos { grid-row: 1 / span 2; color: var(--av-ice, #9fe6ff); font-weight: 800; font-size: 16px; text-align: center; }
 .rowButton img { grid-row: 1 / span 2; width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
 .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; color: #f2f6fa; }
 .value { font-variant-numeric: tabular-nums; color: #f2f6fa; }

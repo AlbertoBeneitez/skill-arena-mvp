@@ -4,9 +4,9 @@
   background: rgba(9, 9, 10, 0.94); backdrop-filter: blur(6px);
 }
 .card { display: grid; gap: 12px; justify-items: center; max-width: 340px; text-align: center; color: var(--gx-ink, #f2f4f7); }
-.brand { font-family: var(--gx-display, inherit); font-size: 12px; letter-spacing: 0.18em; color: var(--gx-mute, #9aa3ad); }
+.brand { font-family: var(--gx-display, inherit); font-size: 14px; letter-spacing: 0.18em; color: var(--gx-mute, #9aa3ad); }
 .card h2 { margin: 0; font-family: var(--gx-display, inherit); font-size: 24px; }
-.card p { margin: 0; font-size: 15px; line-height: 1.5; color: #d7e6f3; }
+.card p { margin: 0; font-size: 17px; line-height: 1.5; color: #d7e6f3; }
 .card button {
   min-height: 46px; margin-top: 6px; padding: 0 22px; border: 0; border-radius: 999px; cursor: pointer;
   background: #d2df3a; color: #121214; font-weight: 800; letter-spacing: 0.04em;

@@ -1,23 +1,23 @@
 /* v204 · The online extras use the group screen's own panels (GroupHub.module.css) and tokens; only lists and the
    two-way switch are drawn here, with the same variables. */
 .seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.seg button { min-height: 48px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--field); color: var(--mute); font: 600 14px/1.2 var(--gx-ui, sans-serif); }
+.seg button { min-height: 48px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--field); color: var(--mute); font: 600 16px/1.2 var(--gx-ui, sans-serif); }
 .seg button[aria-pressed="true"] { color: var(--ink); border-color: var(--ice, var(--gold)); background: var(--ice-soft, rgba(217, 180, 106, .1)); }
-.field { display: grid; gap: 6px; font-size: 12px; color: var(--mute); min-width: 0; }
-.field select, .field input { width: 100%; box-sizing: border-box; min-height: 48px; font-size: 16px; }
+.field { display: grid; gap: 6px; font-size: 14px; color: var(--mute); min-width: 0; }
+.field select, .field input { width: 100%; box-sizing: border-box; min-height: 48px; font-size: 18px; }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .list li { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--field); }
 .list li > div { flex: 1; display: grid; gap: 2px; min-width: 0; }
-.list strong { font-size: 14px; color: var(--ink); overflow-wrap: anywhere; }
-.list span { font-size: 12px; color: var(--mute); }
-.list b { font-size: 14px; color: var(--ink); }
+.list strong { font-size: 16px; color: var(--ink); overflow-wrap: anywhere; }
+.list span { font-size: 14px; color: var(--mute); }
+.list b { font-size: 16px; color: var(--ink); }
 .list .place { width: 22px; text-align: center; color: var(--mute); }
 .list button { min-height: 40px; padding: 0 14px; width: auto; }
 /* v211 · Group relay: the tower so far and each member's blocks. */
 .seg:has(> :nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .relayTower { margin: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.relayTower strong { font-size: 18px; color: var(--ink); }
-.relayTower span { font-size: 12px; color: var(--mute); }
+.relayTower strong { font-size: 20px; color: var(--ink); }
+.relayTower span { font-size: 14px; color: var(--mute); }
 .relayPlayers { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.relayPlayers li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--field); font-size: 13px; color: var(--mute); }
+.relayPlayers li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--field); font-size: 15px; color: var(--mute); }
 .relayPlayers b { color: var(--ink); }

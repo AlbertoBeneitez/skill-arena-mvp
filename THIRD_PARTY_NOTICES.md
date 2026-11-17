@@ -285,11 +285,9 @@ Uses the project's existing synthesized audio and shared orbital background.
 - Licencia: SIL Open Font License 1.1 — texto en `docs/licenses/jetbrains-mono-OFL.txt`.
 - Se sirve desde el propio dominio (CSP `font-src 'self'`).
 
-## qrcode-generator 1.4.4 (código QR del aviso "solo móvil", v116)
+## qrcode-generator 1.4.4 — retirado en v213
 
-- Uso: `components/MobileOnlyGate.tsx` genera el QR de la dirección actual (dibujado como SVG propio).
-- Origen: paquete npm `qrcode-generator` 1.4.4 (Kazuhiko Arase).
-- Licencia: MIT. "QR Code" es marca registrada de DENSO WAVE INCORPORATED.
+- Se usó para el QR junto al marco de ordenador; el propietario pidió quitar ese lateral y el paquete ya no se usa.
 
 ## Logotipos de inicio de sesión (v121)
 

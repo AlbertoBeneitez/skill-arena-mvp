@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v213-saturn · Interfaz (17-nov-2026)
+
+- Lateral de ordenador vacío, «Grupos», texto más grande, X junto a «2 Juegos», aviso central de modo. Pendiente: aclarar con el propietario el salto a Grupos al abrir la app.
+
 ## v212-saturn · Next.js 16.4.5 (17-nov-2026)
 
 - Actualización de seguridad (sin cambios de comportamiento).

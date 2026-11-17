@@ -514,11 +514,10 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           <li>
             <div className={st.stepHead}>
               <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
-              {(query || category || picked.length > 0) && (
-                <button type="button" className={st.clearStep} aria-label={t("group.clearGames")} onClick={() => { setQuery(""); setCategory(""); setPicked([]); }}>
-                  <UiIcon name="close" size={16} />
-                </button>
-              )}
+              {/* v213: the X sits right after the step title, always there (dimmed when there is nothing to clear). */}
+              <button type="button" className={st.clearStep} aria-label={t("group.clearGames")} disabled={!(query || category || picked.length > 0)} onClick={() => { setQuery(""); setCategory(""); setPicked([]); }}>
+                <UiIcon name="close" size={16} />
+              </button>
             </div>
             <div className={st.categories} role="group" aria-label={t("group.categories")}>
               {["", ...CATALOG_SHELVES].map((key) => (
