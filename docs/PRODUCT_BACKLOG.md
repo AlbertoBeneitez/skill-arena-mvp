@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v209-saturn · Shot Gallery V14 (17-nov-2026)
+
+- Pantalla hasta acertar todos los blancos; cada señuelo abatido hace salir un blanco nuevo en otro lado (contra disparar a todo). Pendiente: prueba del propietario en el móvil.
+
 ## v208-saturn · Regla online V2 (17-nov-2026)
 
 - Partidas públicas nuevas: puntuación del juego en su dirección y luego tiempo. Stack gana quien más bloques pone (desempate por superficie). V1 archivada.

@@ -3,10 +3,10 @@ import { useCallback } from "react";
 import type { GameRuntimeProps } from "@/lib/games";
 import { gameTone } from "@/lib/gameFeedback";
 import {
-  SHOT_GALLERY_CORE_V13 as core,
-  type GalleryBeingV13,
-  type GalleryStateV13,
-} from "@/lib/verified/shotGalleryCore.v13";
+  SHOT_GALLERY_CORE_V14 as core,
+  type GalleryBeingV14,
+  type GalleryStateV14,
+} from "@/lib/verified/shotGalleryCore.v14";
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import type { ScoreCell } from "../GameScoreboard";
 import { AURAS, BOX_H, BOX_W, ORX, ORY, WORLD_H, WORLD_W, WORLD_Y0, drawBeing, drawFormIcon, paintLayer, rgba } from "./galleryJungleArt";
@@ -14,8 +14,10 @@ import { AURAS, BOX_H, BOX_W, ORX, ORY, WORLD_H, WORLD_W, WORLD_Y0, drawBeing, d
 import { t as tx, formatNumber, useI18n } from "@/lib/i18n";
 
 /*
- * Presentation only (V13 core: "Jungla de Xeno" — beings of three forms and four auras come out at ten hiding
- * places; each order is an aura colour or a form; score = accumulated reaction time). Reads the authoritative state
+ * Presentation only (V14 core: "Jungla de Xeno" — beings of three forms and four auras come out at ten hiding
+ * places; each order is an aura colour or a form; a screen stays until every ordered being is down, and a wrong
+ * shot sends that being back into hiding while a new target comes out elsewhere; score = accumulated reaction time).
+ * The beings of the screen are `s.live`; a tap is sent as the hiding place it hit (PICK_n). Reads the authoritative state
  * and never writes it. The jungle is painted by code into four cached layers (backdrop, then the covers of the far,
  * mid and near hiding places); each depth's beings are drawn just before the cover that hides them. Every shot leaves
  * a mark where it landed for the rest of the run (presentation memory of the taps).
@@ -122,7 +124,7 @@ function flashOf(src: HTMLCanvasElement) {
 /* ---------------------------------------------------------------- shot marks (presentation memory of the taps) */
 type Mark = { x: number; y: number; tick: number; trial: number; layer: number; target: number; id: number };
 let marks: Mark[] = [], marksSeed = "", lastTickSeen = 0;
-function syncMarks(s: GalleryStateV13) {
+function syncMarks(s: GalleryStateV14) {
   if (marksSeed !== s.seed || s.tick < lastTickSeen) { marks = []; marksSeed = s.seed; }
   lastTickSeen = s.tick;
 }
@@ -131,11 +133,14 @@ let gridDy = 0;
 const offsetFor = (H: number) => Math.round(Math.min(130, Math.max(0, (H - 620) / 2)));
 
 /** How far a being is out of hiding (0 hidden, 1 out), its knock-down and where it is drawn this frame. */
-function pose(s: GalleryStateV13, i: number, t: GalleryBeingV13) {
+function pose(s: GalleryStateV14, i: number, t: GalleryBeingV14) {
   const sc = t.scaleMilli / 1000, fb = s.phase === "feedback" ? s.phaseTicks : 0;
   const delay = (t.spot * 5) % 9;
-  const up = s.phase === "waiting" || s.readyTick < 0 ? 0 : easeOutBack(clamp01((s.tick - s.readyTick - delay * 0.4) / 9));
-  const down = s.phase === "feedback" ? clamp01((fb - 54) / 14) : 0;
+  const from = Math.max(s.readyTick, t.born);
+  const up = s.phase === "waiting" || s.readyTick < 0 ? 0 : easeOutBack(clamp01((s.tick - from - (t.born >= 0 ? 0 : delay * 0.4)) / 9));
+  // v209: a wrongly shot being flinches, then sinks back into cover (its place frees up).
+  const hide = t.gone >= 0 ? clamp01((s.tick - t.gone - 10) / 12) : 0;
+  const down = Math.max(hide, s.phase === "feedback" ? clamp01((fb - 54) / 14) : 0);
   const hitAt = s.hits.indexOf(i), hitTick = hitAt >= 0 ? s.readyTick + (s.tapTicks[hitAt] ?? 0) : -1;
   const age = hitTick >= 0 ? s.tick - hitTick : -1;
   const knock = hitTick >= 0 ? clamp01((age - 3) / 14) : 0;
@@ -148,7 +153,7 @@ function pose(s: GalleryStateV13, i: number, t: GalleryBeingV13) {
   else { const side = t.dir === "LEFT" ? 1 : -1; x += side * (1 - rise) * 112 * sc; tilt = side * (1 - Math.min(1, rise)) * 0.18; }
   return { sc, rise, knock, age, wrongAge, x, y, tilt };
 }
-function clipFor(ctx: CanvasRenderingContext2D, t: GalleryBeingV13, H: number) {
+function clipFor(ctx: CanvasRenderingContext2D, t: GalleryBeingV14, H: number) {
   ctx.beginPath();
   if (t.dir === "UP") ctx.rect(-20, -400, 430, t.edge + gridDy + 400);
   else if (t.dir === "LEFT") ctx.rect(-20, -400, t.edge + 20, H + 800);
@@ -159,7 +164,7 @@ function clipFor(ctx: CanvasRenderingContext2D, t: GalleryBeingV13, H: number) {
 /** v158: a hit being bursts from the exact point the player tapped: a white flash, then the body shatters into
  * pieces thrown away from the shot, with a fireball and a shock ring in its aura colour. */
 const EXPLODE = 34, SHARDS_X = 4, SHARDS_Y = 5;
-function drawExplosion(ctx: CanvasRenderingContext2D, s: GalleryStateV13, i: number, t: GalleryBeingV13, p: ReturnType<typeof pose>, H: number) {
+function drawExplosion(ctx: CanvasRenderingContext2D, s: GalleryStateV14, i: number, t: GalleryBeingV14, p: ReturnType<typeof pose>, H: number) {
   const a = AURAS[t.aura] ?? AURAS[0], age = p.age;
   const m = [...marks].reverse().find((q) => q.target === i && q.trial === s.trial);
   const hx = m ? m.x : p.x, hy = (m ? m.y : t.y - 34 * p.sc) + gridDy;
@@ -207,14 +212,14 @@ function drawExplosion(ctx: CanvasRenderingContext2D, s: GalleryStateV13, i: num
   ctx.restore();
 }
 
-function drawBeingAt(ctx: CanvasRenderingContext2D, s: GalleryStateV13, i: number, t: GalleryBeingV13, H: number) {
+function drawBeingAt(ctx: CanvasRenderingContext2D, s: GalleryStateV14, i: number, t: GalleryBeingV14, H: number) {
   const p = pose(s, i, t);
   if (p.rise <= 0.001) return;
   if (p.age >= 0) { if (p.age < EXPLODE) drawExplosion(ctx, s, i, t, p, H); return; }
   const a = AURAS[t.aura] ?? AURAS[0];
   ctx.save();
   clipFor(ctx, t, H);
-  const dim = s.phase === "feedback" && !s.trials[s.trial].answers.includes(i) ? 0.45 : 1;
+  const dim = s.phase === "feedback" && !s.live[i]?.target ? 0.45 : 1;
   // outer aura: a slow pulse behind the body, brighter for the near ones
   const pulse = 0.75 + 0.25 * Math.sin((s.tick + t.spot * 31) * 0.09);
   ctx.globalCompositeOperation = "lighter";
@@ -310,7 +315,7 @@ function drawNebula(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
   ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(x, y, r * 0.42 * pulse, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
-function drawBriefing(ctx: CanvasRenderingContext2D, s: GalleryStateV13) {
+function drawBriefing(ctx: CanvasRenderingContext2D, s: GalleryStateV14) {
   const x = 8, y = 50, w = 374, h = 94;
   const bg = ctx.createLinearGradient(0, y, 0, y + h);
   bg.addColorStop(0, "rgba(6,20,18,.94)"); bg.addColorStop(1, "rgba(2,8,8,.95)");
@@ -341,16 +346,16 @@ function drawBriefing(ctx: CanvasRenderingContext2D, s: GalleryStateV13) {
   }
 }
 
-const hudLabel = (s: Readonly<GalleryStateV13>) => `${tx("gallery.timeHud", { n: formatNumber(s.totalMs), trial: Math.min(12, s.trial + 1) })}`;
-const feedbackScore = (s: Readonly<GalleryStateV13>) => s.totalMs;
-const scoreCells = (s: Readonly<GalleryStateV13>): ScoreCell[] => [
+const hudLabel = (s: Readonly<GalleryStateV14>) => `${tx("gallery.timeHud", { n: formatNumber(s.totalMs), trial: Math.min(12, s.trial + 1) })}`;
+const feedbackScore = (s: Readonly<GalleryStateV14>) => s.totalMs;
+const scoreCells = (s: Readonly<GalleryStateV14>): ScoreCell[] => [
   { label: tx("hud.reaction"), value: `${formatNumber(s.totalMs)} ms`, main: true },
   { label: tx("hud.target"), value: `${Math.min(12, s.trial + 1)}/12` },
 ];
 
 /** Reaction times are kept on this device (last 30 runs): presentation/storage only. */
 let savedSeed = "";
-function persistReactions(s: GalleryStateV13) {
+function persistReactions(s: GalleryStateV14) {
   if (s.status === "running" || savedSeed === s.seed) return;
   savedSeed = s.seed;
   try {
@@ -363,7 +368,7 @@ function persistReactions(s: GalleryStateV13) {
 }
 
 /** Drifting mist and spores over the jungle (deterministic from the tick). */
-function atmosphere(ctx: CanvasRenderingContext2D, s: GalleryStateV13, H: number) {
+function atmosphere(ctx: CanvasRenderingContext2D, s: GalleryStateV14, H: number) {
   const t = s.tick;
   for (let k = 0; k < 3; k++) {
     const y = 250 + k * 110 + gridDy, x = ((t * (0.12 + k * 0.05) + k * 140) % 620) - 115;
@@ -385,14 +390,13 @@ function atmosphere(ctx: CanvasRenderingContext2D, s: GalleryStateV13, H: number
 
 let posterMode = false;
 /** Whole frame (also used to render the catalogue cover offline: `poster` drops the texts and the flash). */
-export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV13, view?: { width: number; height: number }, poster = false) {
+export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV14, view?: { width: number; height: number }, poster = false) {
   posterMode = poster;
   syncMarks(s);
   if (!poster) persistReactions(s);
   const H = Math.max(620, view?.height ?? 620);
   gridDy = offsetFor(H);
   const L = jungle();
-  const trial = s.trials[Math.min(s.trial, 11)];
   const lastMark = marks[marks.length - 1];
   const since = lastMark ? s.tick - lastMark.tick : 999;
   const kick = since >= 0 && since < 6 ? (6 - since) * 0.45 : 0;
@@ -405,17 +409,17 @@ export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV13,
   };
   layer(0);
   // marks on the open backdrop (and on bodies already gone)
-  const bodyGone = (m: Mark) => m.target < 0 || m.trial !== s.trial || s.phase === "waiting" || pose(s, m.target, trial.targets[m.target] ?? trial.targets[0]).rise <= 0.001;
+  const bodyGone = (m: Mark) => m.target < 0 || m.trial !== s.trial || s.phase === "waiting" || !s.live[m.target] || pose(s, m.target, s.live[m.target]).rise <= 0.001;
   for (const m of marks) if (m.layer === 0 && bodyGone(m)) drawMark(ctx, m.x, m.y + gridDy, s.tick - m.tick, m.id, 0.8);
   // depth by depth: the beings of that depth, then the cover in front of them, then marks on that cover
   for (let d = 0; d < 3; d++) {
-    trial.targets.forEach((t, i) => { if (t.layer === d) drawBeingAt(ctx, s, i, t, H); });
+    s.live.forEach((t, i) => { if (t.layer === d) drawBeingAt(ctx, s, i, t, H); });
     layer(d + 1);
     for (const m of marks) if (m.layer === d + 1) drawMark(ctx, m.x, m.y + gridDy, s.tick - m.tick, m.id, 0.85 + d * 0.1);
   }
   atmosphere(ctx, s, H);
   // hit bursts: the aura escaping as sparks, and the time of the shot
-  trial.targets.forEach((t, i) => {
+  s.live.forEach((t, i) => {
     const k = s.hits.indexOf(i);
     if (k < 0) return;
     const age = s.tick - (s.readyTick + (s.tapTicks[k] ?? 0)), p = pose(s, i, t);
@@ -444,7 +448,7 @@ export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV13,
   const hitLast = s.hits.length > 0 && s.tapTickAbs === s.lastTapTick;
   const pAge = s.tick - s.lastTapTick;
   if (!hitLast && s.lastAddedMs > 0 && s.lastTapTick >= 0 && pAge >= 0 && pAge < 50 && !poster) {
-    const t = s.lastPick >= 0 ? trial.targets[s.lastPick] : null;
+    const t = s.lastPick >= 0 ? s.live[s.lastPick] ?? null : null;
     const px = t ? t.x : 195, py = (t ? t.y - 104 * (t.scaleMilli / 1000) : 380) + gridDy - pAge * 0.4;
     ctx.globalAlpha = clamp01(1 - pAge / 50);
     ctx.font = `900 14px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -455,9 +459,9 @@ export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV13,
     if (!t) { ctx.strokeStyle = `rgba(255,45,60,${0.8 * (1 - pAge / 50)})`; ctx.lineWidth = 5; ctx.strokeRect(4, 146, 382, H - 150); }
   }
   // feedback: ring the targets still standing
-  if (s.phase === "feedback") trial.answers.forEach((i) => {
-    if (s.hits.includes(i)) return;
-    const t = trial.targets[i], p = pose(s, i, t);
+  if (s.phase === "feedback") s.live.forEach((t, i) => {
+    if (!t.target || s.hits.includes(i) || t.gone >= 0) return;
+    const p = pose(s, i, t);
     if (p.rise <= 0.05) return;
     ctx.strokeStyle = `rgba(255,70,80,${0.6 + 0.4 * Math.sin(s.tick * 0.3)})`; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.arc(p.x, p.y - 34 * p.sc, 58 * p.sc, 0, Math.PI * 2); ctx.stroke();
@@ -468,14 +472,14 @@ export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV13,
   drawBriefing(ctx, s);
   const last = s.results.at(-1);
   if (s.phase === "feedback" && last) {
-    const text: Record<string, string> = { CORRECT: tx("gallery.clear"), PARTIAL: tx("gallery.partial"), WRONG: tx("gallery.wrong"), FALSE_START: tx("gallery.falseStart"), TIMEOUT: tx("gallery.timeout") };
+    const text: Record<string, string> = { CORRECT: tx("gallery.clear"), TIMEOUT: tx("gallery.timeout") };
     const grow = clamp01(s.phaseTicks / 6), label = text[last.type] ?? "", my = 150 + (H - 150) / 2;
     ctx.font = `900 ${18 + Math.round(8 * grow)}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     const wText = Math.min(360, ctx.measureText(label).width + 44);
     ctx.fillStyle = "rgba(2,10,8,.9)"; ctx.beginPath(); ctx.roundRect(195 - wText / 2, my - 30, wText, 62, 14); ctx.fill();
     const good = last.type === "CORRECT";
     ctx.strokeStyle = good ? "rgba(95,240,192,.7)" : "rgba(255,74,90,.7)"; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = good ? "#7ff6d6" : last.type === "PARTIAL" ? "#ffd36a" : "#ff6b78";
+    ctx.fillStyle = good ? "#7ff6d6" : "#ff6b78";
     ctx.fillText(label, 195, my - 6);
     ctx.font = `700 12px ${FONT}`; ctx.fillStyle = "#e8edf2";
     ctx.fillText(`+${formatNumber(last.addedMs ?? 0)} ms`, 195, my + 18);
@@ -484,17 +488,17 @@ export function renderGallery(ctx: CanvasRenderingContext2D, s: GalleryStateV13,
 
 /** The being under the finger (nearest depth first), unless a nearer cover is in the way (presentation hit test;
  * the core decides the outcome). */
-export function pickGallery(point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV13) {
+export function pickGallery(point: CorePoint, phase: "down" | "move" | "up", s: GalleryStateV14) {
   if (phase !== "down" || s.phase === "feedback" || point.y < 146) return null;
   syncMarks(s);
   jungle();
-  const trial = s.trials[s.trial], wy = point.y - gridDy;
+  const wy = point.y - gridDy;
   const cover = coverAt(point.x, wy);
   const addMark = (target: number, layer: number) => marks.push({ x: point.x, y: wy, tick: s.tick, trial: s.trial, layer, target, id: marks.length + s.trial * 31 });
   if (s.phase === "waiting") { addMark(-1, cover); return "PICK_0"; }
   let best = -1, bestD = 1, bestLayer = -1;
-  trial.targets.forEach((t, i) => {
-    if (s.hits.includes(i)) return;
+  s.live.forEach((t, i) => {
+    if (s.hits.includes(i) || t.gone >= 0) return;
     const p = pose(s, i, t);
     if (p.rise < 0.5) return;
     if (t.dir === "UP" ? wy > t.edge + 2 : t.dir === "LEFT" ? point.x > t.edge + 2 : point.x < t.edge - 2) return;
@@ -505,7 +509,7 @@ export function pickGallery(point: CorePoint, phase: "down" | "move" | "up", s: 
   if (best >= 0) {
     addMark(best, -1);
     gameTone("tap");
-    return `PICK_${best}`;
+    return `PICK_${s.live[best].spot}`;
   }
   addMark(-1, cover);
   return null;
@@ -513,7 +517,7 @@ export function pickGallery(point: CorePoint, phase: "down" | "move" | "up", s: 
 
 export default function ShotGallery(props: GameRuntimeProps) {
   useI18n();
-  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV13, view?: { width: number; height: number }) => renderGallery(ctx, s, view), []);
+  const render = useCallback((ctx: CanvasRenderingContext2D, s: GalleryStateV14, view?: { width: number; height: number }) => renderGallery(ctx, s, view), []);
   const pick = useCallback(pickGallery, []);
   return (
     <div className="shotGalleryVerified">

@@ -1,7 +1,7 @@
-// Browser entry for scripts/render-gallery-cover.mjs: plays a seeded Shot Gallery V13 run up to a moment and renders
+// Browser entry for scripts/render-gallery-cover.mjs: plays a seeded Shot Gallery V14 run up to a moment and renders
 // it with the game's own renderer (poster mode: no HUD texts), cropped to the 800 × 550 catalogue cover.
 import { renderGallery, pickGallery } from "@/components/games/ShotGallery";
-import { SHOT_GALLERY_CORE_V13 as core } from "@/lib/verified/shotGalleryCore.v13";
+import { SHOT_GALLERY_CORE_V14 as core } from "@/lib/verified/shotGalleryCore.v14";
 import { applyCoreInput, stepCore } from "@/lib/verified/coreRuntime.v1";
 
 type Cover = { seed: string; trial: number; at: number; picks: number[]; misses: [number, number][]; y0: number };
@@ -15,7 +15,7 @@ type Cover = { seed: string; trial: number; at: number; picks: number[]; misses:
   for (let guard = 0; guard < 40000 && !(s.trial === trial && s.phase === "ready" && s.tick - s.readyTick === at); guard++) {
     if (s.phase === "ready" && s.trial < trial && s.tick - s.readyTick === 40)
       for (const k of s.trials[s.trial].answers) {
-        const a = `PICK_${k}`, t = s.trials[s.trial].targets[k];
+        const t = s.live[k], a = `PICK_${t.spot}`;
         if (!core.canApply(s, a)) continue;
         pickGallery({ x: t.x, y: t.y - 30 }, "down", s); applyCoreInput(core, s, a, 1e9); stepCore(core, s, 1e9);
       }
@@ -24,7 +24,7 @@ type Cover = { seed: string; trial: number; at: number; picks: number[]; misses:
   for (const [x, y] of misses) pickGallery({ x, y }, "down", s);
   for (let k = 0; k < 14; k++) stepCore(core, s, 1e9);
   picks.forEach((k, n) => {
-    const t = s.trials[s.trial].targets[k], a = pickGallery({ x: t.x + 3, y: t.y - (34 * t.scaleMilli) / 1000 }, "down", s);
+    const t = s.live[k], a = pickGallery({ x: t.x + 3, y: t.y - (34 * t.scaleMilli) / 1000 }, "down", s);
     if (a && core.canApply(s, a)) { applyCoreInput(core, s, a, 1e9); if (n < picks.length - 1) stepCore(core, s, 1e9); }
   });
   for (let k = 0; k < 3; k++) stepCore(core, s, 1e9);

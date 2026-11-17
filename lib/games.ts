@@ -285,7 +285,7 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "reaction-test",
-    version: "13.0.0",
+    version: "14.0.0",
     resultMetric: "reaction-time-ms",
     status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/ShotGallery")),
@@ -302,7 +302,7 @@ const GAME_DEFINITIONS = [
     rivalName: "FLASH",
     rivalAvatar: "/avatars/avatar-1.svg",
     instruction: "Cuando asoman los seres de la jungla, abate a los que marca la orden: por su aura o por su forma. Puedes disparar con dos dedos a la vez.",
-    scoring: "Doce órdenes en una jungla nocturna de una luna alienígena. Hay tres formas de ser (cazadores, cornudos y sierpes) y cada uno irradia un aura interna verde, azul, roja o morada. Cada orden pide abatir a todos los de un aura o a todos los de una forma; seis órdenes son por aura y seis por forma. Asoman de 4 a 7 seres desde diez escondites a tres profundidades, tras troncos y maleza (nunca en filas); 2 o 3 son blancos y el resto señuelos. Desde la cuarta orden, algunos señuelos comparten el otro rasgo del blanco (la misma forma en una orden por aura, la misma aura en una orden por forma). La puntuación es tu tiempo de reacción acumulado (menos es mejor): cada blanco abatido suma el tiempo desde que asoman o desde el anterior; un señuelo suma 400 ms, disparar antes de tiempo 600 ms y cada blanco que quede en pie 1500 ms; tres señuelos cierran la orden.",
+    scoring: "Doce órdenes en una jungla nocturna de una luna alienígena. Hay tres formas de ser (cazadores, cornudos y sierpes) y cada uno irradia un aura interna verde, azul, roja o morada. Cada orden pide abatir a todos los de un aura o a todos los de una forma; seis órdenes son por aura y seis por forma. Asoman de 4 a 7 seres desde diez escondites a tres profundidades, tras troncos y maleza (nunca en filas); 2 o 3 son blancos y el resto señuelos. Desde la cuarta orden, algunos señuelos comparten el otro rasgo del blanco (la misma forma en una orden por aura, la misma aura en una orden por forma). La puntuación es tu tiempo de reacción acumulado (menos es mejor): cada blanco abatido suma el tiempo desde que asoman o desde el anterior. Cada pantalla sigue hasta que abates todos los blancos. Si disparas a un señuelo sumas 400 ms, el señuelo se esconde y aparece un blanco nuevo en otro escondite; disparar antes de que asomen suma 600 ms. Una pantalla abandonada se cierra a los 30 s y cada blanco en pie suma 1500 ms.",
   },
 
   {
