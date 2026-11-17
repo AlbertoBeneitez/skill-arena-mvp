@@ -13,3 +13,11 @@
 .list b { font-size: 14px; color: var(--ink); }
 .list .place { width: 22px; text-align: center; color: var(--mute); }
 .list button { min-height: 40px; padding: 0 14px; width: auto; }
+/* v211 · Group relay: the tower so far and each member's blocks. */
+.seg:has(> :nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.relayTower { margin: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.relayTower strong { font-size: 18px; color: var(--ink); }
+.relayTower span { font-size: 12px; color: var(--mute); }
+.relayPlayers { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.relayPlayers li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--field); font-size: 13px; color: var(--mute); }
+.relayPlayers b { color: var(--ink); }

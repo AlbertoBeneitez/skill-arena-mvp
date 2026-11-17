@@ -15,6 +15,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-migrations.js");
   await import("../.det-test/scripts/verify-groups.js");
   await import("../.det-test/scripts/verify-events.js");
+  await import("../.det-test/scripts/verify-group-relays.js");
 } else {
   await import("../.det-test/scripts/verify-wallet.js");
   await import("../.det-test/scripts/verify-group-versus.js");
@@ -121,6 +122,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-gallery-v12.js");
   await import("../.det-test/scripts/verify-gallery-v13.js");
   await import("../.det-test/scripts/verify-gallery-v14.js");
+  await import("../.det-test/scripts/verify-stack-relay.js");
   await import("../.det-test/scripts/verify-solitaire-solvable.js");
   await import("../.det-test/scripts/verify-progression.js");
   await (await import("./verify-gallery-presentation.cjs")).default;

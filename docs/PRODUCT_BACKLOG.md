@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v211-saturn · Juego grupal con Stack (17-nov-2026)
+
+- Relevo sobre la misma partida, turnos con bloqueo y plazo, avisos al que llega tarde, resultado común y bloques por jugador. Pendiente: otros juegos, modalidad competitiva, avisos push, grupos sin conexión.
+
 ## v210-saturn · Círculo morado (17-nov-2026)
 
 - Morado = tienes una partida de ese juego por jugar (siguiente partido de tu competición de grupo). Pendiente: turnos del juego grupal y competiciones online cuando se puedan jugar.

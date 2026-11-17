@@ -10,6 +10,7 @@ import { defaultSplit, GROUP_COMMISSION_BPS, isValidSplit, RANDOM_GAME, type Gro
 import { GAMES, lowerScoreWins } from "@/lib/games";
 import type { VersusSetup } from "@/lib/groupVersus";
 import { recordEvent } from "./events";
+import { relayOverview } from "./groupRelays";
 import {
   GroupError, acceptChallenge, cancelCompetition, closeGroup, createCompetition, createGroup, enterCompetition, groupWinningsRanking, joinGroup,
   leaveGroup, listGroupMembers, listMyCompetitions, listMyGroups, listOpenVersus, recordResult, renameGroup, startCompetition, type CompetitionMode,
@@ -61,7 +62,9 @@ export async function groupsOverview(pool: Pool, actor: Actor) {
     listMyGroups(pool, actor.accountId), listMyCompetitions(pool, actor.accountId), listOpenVersus(pool, actor.platform), groupWinningsRanking(pool, actor.platform, 20),
   ]);
   // v204: the group the screen shows (the newest one) with its members, as the offline screen shows its own group.
-  const current = groups[0] ? { group: groups[0], members: await listGroupMembers(pool, groups[0].id) } : null;
+  // v211: plus the group's relay ("juego grupal") in play or its latest one (null when there is none or the table is
+  // not there yet).
+  const current = groups[0] ? { group: groups[0], members: await listGroupMembers(pool, groups[0].id), relay: await relayOverview(pool, actor.accountId, groups[0].id).catch(() => null) } : null;
   return { platform: actor.platform, groups, competitions, open, ranking, current };
 }
 

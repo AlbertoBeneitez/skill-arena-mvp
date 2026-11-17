@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import GroupHub from "./GroupHub";
+import GroupRelay, { type RelayView } from "./GroupRelay";
 import UiIcon from "./UiIcon";
 import { GAMES, playableForMoney } from "@/lib/games";
 import { portraitSrc } from "@/lib/avatars";
@@ -26,7 +27,7 @@ type Comp = {
 type Overview = {
   groups: Group[]; competitions: Comp[]; open: Comp[];
   ranking: { groupId: string; name: string; netMinor: number; competitions: number }[];
-  current: { group: Group; members: Member[] } | null;
+  current: { group: Group; members: Member[]; relay?: RelayView | null } | null;
 };
 
 const money = (minor: number) => formatMoney(minor / 100);
@@ -96,9 +97,11 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
     });
   }
 
-  const top = (message || waiting) ? (
+  // v211: the group relay ("juego grupal") always sits at the top of an online group.
+  const top = current ? (
     <>
       {message && <p className={hub.hint} role="alert">{message}</p>}
+      <GroupRelay groupId={current.group.id} accountId={accountId} relay={current.relay ?? null} reload={load} />
       {waiting && (
         <div className={hub.panel}>
           <div className={hub.panelHead}>

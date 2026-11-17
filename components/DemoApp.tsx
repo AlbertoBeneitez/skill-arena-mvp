@@ -418,13 +418,6 @@ export default function DemoApp() {
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   /** v128: the group competition in progress (pure rules in lib/groupCompetition.ts), saved so it survives a restart. */
   const [groupComp, setGroupComp] = useState<GroupCompetition | null>(null);
-  // v210: games with a match of the player's own still to play (the next match of the group competition in progress).
-  const pendingGames = useMemo(() => {
-    const out = new Set<string>();
-    const next = groupComp && !groupComp.finished ? groupComp.matches[nextGroupMatch(groupComp, GROUP_YOU)] : undefined;
-    if (next && next.gameId !== RANDOM_GAME) out.add(next.gameId);
-    return out;
-  }, [groupComp]);
   const [groupMatch, setGroupMatch] = useState(-1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [pendingJoinCode, setPendingJoinCode] = useState("");
@@ -437,6 +430,38 @@ export default function DemoApp() {
   const settings = useSettings();
   /** v199: the header globe — online (real players) or offline (local group with invented rivals). */
   const offline = !settings.online;
+  // v211: whether the group relay ("juego grupal") of the player's online group is waiting for a turn (not held by
+  // anyone, last turn by someone else). Polled lightly while online and signed in.
+  const [relayFree, setRelayFree] = useState(false);
+  const accountIdForRelay = typeof serverAccount === "object" && serverAccount ? serverAccount.id : null;
+  useEffect(() => {
+    if (offline || !accountIdForRelay) { setRelayFree(false); return; }
+    let stop = false;
+    const check = async () => {
+      if (document.hidden) return;
+      try {
+        const r = await fetch("/api/groups", { cache: "no-store" });
+        if (!r.ok) return;
+        const d = (await r.json()) as { current?: { relay?: { status: string; lock: unknown; recent: { accountId: string }[] } | null } | null };
+        const relay = d.current?.relay;
+        if (!stop) setRelayFree(!!relay && relay.status === "open" && !relay.lock && relay.recent[0]?.accountId !== accountIdForRelay);
+      } catch { /* keep the last answer */ }
+    };
+    void check();
+    const id = setInterval(() => void check(), 45_000);
+    const onShow = () => { if (!document.hidden) void check(); };
+    document.addEventListener("visibilitychange", onShow);
+    return () => { stop = true; clearInterval(id); document.removeEventListener("visibilitychange", onShow); };
+  }, [offline, accountIdForRelay, screen]);
+  // v210: games with a match of the player's own still to play (the next match of the group competition in progress).
+  const pendingGames = useMemo(() => {
+    const out = new Set<string>();
+    const next = groupComp && !groupComp.finished ? groupComp.matches[nextGroupMatch(groupComp, GROUP_YOU)] : undefined;
+    if (next && next.gameId !== RANDOM_GAME) out.add(next.gameId);
+    // v211: the group's Stack tower is free to play on and the last turn was someone else's.
+    if (relayFree && !offline) out.add("precision-stack");
+    return out;
+  }, [groupComp, relayFree, offline]);
   const [doc, setDoc] = useState<DocId | null>(null);
   const [confirmAction, setConfirmAction] = useState<null | "reset" | "delete">(null);
   const [notice, setNotice] = useState("");

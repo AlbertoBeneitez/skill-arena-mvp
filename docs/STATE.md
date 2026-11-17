@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v210-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v211-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Juego grupal (17 de noviembre, v211, app 2.11):** botón «Juego grupal» en los grupos online: el grupo construye una sola torre de Stack, cada turno sigue la torre del anterior (3, 5 o 10 bloques por turno). Solo uno juega a la vez: el que empieza después recibe al momento quién juega y desde cuándo; un turno fuera de plazo, de otro o jugado más rápido que el tiempo real no cuenta y se avisa. Resultado común y bloques por jugador. Stack se pone morado cuando la torre espera turno. ADR 008, migración 015.
 - [x] **Círculo morado (17 de noviembre, v210, app 2.10):** el círculo de cada juego del catálogo se pone morado (gana al verde) cuando tienes una partida de ese juego por jugar: el siguiente partido de tu competición de grupo en curso. Los turnos del juego grupal se añadirán aquí. Las competiciones de grupo online aún no se pueden jugar, así que todavía no encienden el círculo.
 - [x] **Shot Gallery V14 (17 de noviembre, v209, app 2.09):** cada pantalla sigue hasta abatir todos los blancos (sin plazo ni «tres fallos»); disparar a un señuelo suma 400 ms, lo esconde y hace salir un blanco nuevo en otro escondite; disparar antes de tiempo suma 600 ms sin saltar la pantalla; seguro de 30 s solo para partidas abandonadas. Mismas pantallas que V13 por semilla; toques por escondite (`PICK_n`). V1–V13 congeladas con sus verificadores.
 - [x] **Regla online V2 (17 de noviembre, v208, app 2.08):** las partidas públicas nuevas se deciden por la puntuación de cada juego en su dirección y luego por tiempo (migración 014, ADR007). Stack: más bloques; a igual altura, más superficie (antes desempataba el tiempo). Shot Gallery: menos milisegundos (V1 ya lo hacía bien a través de `height`; el aviso de v207 era erróneo). Las partidas V1 se resuelven como siempre.
