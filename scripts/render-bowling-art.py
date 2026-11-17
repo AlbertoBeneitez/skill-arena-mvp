@@ -5,10 +5,10 @@ Outputs
                                 included) and y ∈ [0, PIT] mm, far end (pit) on the top row. components/games/Bowling.tsx
                                 samples one row per screen line, so the boards, grain, arrows and dots are in perspective.
   public/art/bowling-pit.webp   1024 × 560 RGBA: the wall behind the pins (pit opening with curtain, the masking unit
-                                with a ringed planet and neon tubes, side dividers), covering x ∈ [-1500, LANE + 1500] mm and
+                                with the GALACTIC GAMES sign (v215) and neon tubes, side dividers), covering x ∈ [-1500, LANE + 1500] mm and
                                 0–2200 mm of height, drawn standing on the floor at y = PIT + 300 mm.
 Geometry comes from lib/verified/bowlingCore.v3.ts (lane 1054 mm, head pin 32 004 mm, pit 33 416 mm).
-Usage: python3 scripts/render-bowling-art.py
+Usage: node scripts/render-bowling-sign.cjs && python3 scripts/render-bowling-art.py
 """
 import math, os
 import numpy as np
@@ -132,23 +132,7 @@ u = (WX - mx0) / (mx1 - mx0); v = (WZ - mz0) / (mz1 - mz0)
 sky = np.stack([0.05 + 0.10 * v, 0.03 + 0.05 * v, 0.16 + 0.22 * v], -1)
 stars = np.random.default_rng(5).random((PH, PW)) > 0.9965
 sky[stars] = [0.9, 0.92, 1.0]
-# Planet with bands and a terminator.
-pcx, pcz, pr = cxm + 420, mz0 + 640, 430.0
-ddx, ddz = (WX - pcx) / pr, (WZ - pcz) / pr
-rr = ddx * ddx + ddz * ddz
-pl = rr < 1
-nz = np.sqrt(np.clip(1 - rr, 0, 1))
-lam = np.clip(-0.55 * ddx + 0.45 * ddz + 0.7 * nz, 0, 1)
-band = 0.5 + 0.5 * np.sin(ddz * 11 + np.sin(ddx * 3) * 0.6)
-pcol = np.stack([0.95 * band + 0.55 * (1 - band), 0.62 * band + 0.38 * (1 - band), 0.42 * band + 0.55 * (1 - band)], -1)
-pcol *= (0.12 + 0.95 * lam)[..., None]
-sky = np.where(pl[..., None], pcol, sky)
-# Ring (an ellipse band, hidden behind the planet's upper half).
-ex, ez = (WX - pcx) / (pr * 2.1), (WZ - pcz) / (pr * 0.42)
-er = np.sqrt(ex * ex + ez * ez)
-ring = (er > 0.72) & (er < 1.0) & ~(pl & (WZ > pcz))
-rc = 0.55 + 0.35 * np.sin(er * 60)
-sky = np.where(ring[..., None], np.stack([rc * 0.95, rc * 0.82, rc * 0.62], -1), sky)
+# v215 (owner): no planet on the masking unit any more — the GALACTIC GAMES sign goes there (below).
 rgba[inside, :3] = sky[inside]
 # Neon frame: pink outer tube, cyan inner tube, both glowing.
 edge = np.minimum.reduce([WX - mx0, mx1 - WX, WZ - mz0, mz1 - WZ])
@@ -163,15 +147,15 @@ for xd in (-900.0, LANE + 900.0):
     rgba[..., :3] += s[..., None] * np.array([0.5, 0.88, 0.95]) * 0.7
 rgba[..., :3] = np.clip(rgba[..., :3], 0, 1)
 pit = Image.fromarray((rgba * 255).astype(np.uint8), "RGBA")
-# "GALACTIC" lettering on the masking unit (plain sans; vector-free, drawn with PIL's default font scaled up).
-txt = Image.new("L", (640, 70), 0)
-ImageDraw.Draw(txt).text((4, 2), "GALACTIC  LANES", fill=255, font_size=44)
-txt = txt.crop(txt.getbbox())
-tw = int((mx1 - mx0) * sx * 0.52); th = int(txt.height * tw / txt.width)
-txt = txt.resize((tw, th), Image.LANCZOS)
-tx0 = int((mx0 + 70 - XM0) * sx); tz = int((HM - (mz0 + 160)) * sy) - th
-glow = txt.filter(ImageFilter.GaussianBlur(4))
-pit.paste((255, 120, 210), (tx0, tz), glow)
-pit.paste((255, 245, 250), (tx0, tz), txt)
+# v215 (owner): the GALACTIC GAMES sign (insignia + wordmark, scripts/render-bowling-sign.cjs) centred on the masking
+# unit, with a soft cyan halo so it reads as a lit panel.
+sign = Image.open(os.path.join(ROOT, "scripts/art/bowling-sign.png")).convert("RGBA")
+sw = int((mx1 - mx0) * sx * 0.86); sh = int(sign.height * sw / sign.width)
+sign = sign.resize((sw, sh), Image.LANCZOS)
+sx0 = int((cxm - XM0) * sx) - sw // 2; sz0 = int((HM - czm) * sy) - sh // 2
+halo = Image.new("RGBA", sign.size, (120, 230, 220, 0))
+halo.putalpha(sign.getchannel("A").filter(ImageFilter.GaussianBlur(10)).point(lambda a: int(a * 0.45)))
+pit.alpha_composite(halo, (sx0, sz0))
+pit.alpha_composite(sign, (sx0, sz0))
 pit.save(os.path.join(ROOT, "public/art/bowling-pit.webp"), quality=88, method=6)
 print("bowling-lane.webp", lane_img.size, "bowling-pit.webp", pit.size)

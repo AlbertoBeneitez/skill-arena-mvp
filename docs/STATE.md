@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v214-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v215-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Bowling (17 de noviembre, v215, app 2.15):** el letrero del fondo de la pista muestra el logo y «GALACTIC GAMES» (antes un planeta y «GALACTIC LANES»). En ordenador el ratón es más sensible: el mismo trazo da más dirección, efecto y fuerza, con zonas muertas menores, lo que lo hace más difícil de controlar. En móvil no cambia nada; reglas y acciones grabadas iguales (Bowling 3.0.0).
 - [x] **Portada de Tower Drop (17 de noviembre, v214, app 2.14):** el contenedor siguiente cuelga recto de un cable, separado por encima de la torre; sin fantasmas de balanceo ni destellos, para que no parezca un contenedor encajado entre otros dos. Una línea discontinua marca dónde aterrizará.
 - [x] **Interfaz (17 de noviembre, v213, app 2.13):** sin textos ni QR junto al marco de ordenador; pestaña «Grupos»; texto más grande en toda la app (≤ 9 px +1, 10–18 px +2); la X de borrar juegos va justo a la derecha de «2 Juegos» y siempre visible; al cambiar Online/Offline aparece «Modo Online»/«Modo Offline» en el centro. Paquete `qrcode-generator` retirado.
 - [x] **Next.js 16.4.5 (17 de noviembre, v212, app 2.12):** corrige dos avisos moderados de seguridad de 16.4.2 (caché con `'use cache'`/`unstable_cache`, que la app no usa). `pnpm audit --prod`: sin vulnerabilidades.

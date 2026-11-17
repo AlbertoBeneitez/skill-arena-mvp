@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v215-saturn · Bowling: letrero y ratón (17-nov-2026)
+
+- Letrero GALACTIC GAMES; perfil de ratón más sensible en ordenador. Pendiente: prueba del propietario en ordenador; si quiere más dificultad que la del control, sería una versión nueva del juego solo para ordenador.
+
 ## v214-saturn · Portada de Tower Drop (17-nov-2026)
 
 - Contenedor colgante separado por encima de la torre (`tower_v214` en `scripts/generate-covers.py`).

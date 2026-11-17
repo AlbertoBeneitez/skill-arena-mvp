@@ -11,7 +11,10 @@ import {
 } from "@/lib/verified/bowlingCore.v3";
 import { BOWLING_V2_ANGLE_CENTRE, bowlingActionV2 as bowlingAction } from "@/lib/verified/bowlingProtocol.v2";
 import { drawCartoon } from "./bowlingShow";
-import { strokeOf, swipePower, throwFromStroke } from "@/lib/bowlingGesture.v3";
+import { strokeOf, swipePower, throwFromStroke, type ThrowProfile } from "@/lib/bowlingGesture.v3";
+import { currentPlatform } from "@/lib/platform";
+/** v215: computers (the desktop platform) throw with the more sensitive mouse mapping. */
+const throwProfile = (): ThrowProfile => (currentPlatform() === "desktop" ? "mouse" : "touch");
 import CoreCanvasGame, { type CorePoint } from "./CoreCanvasGame";
 import type { ScoreCell } from "../GameScoreboard";
 
@@ -39,7 +42,7 @@ function loadArt() {
   art.started = true;
   const load = (src: string, key: "lane" | "pit") => { const img = new Image(); img.decoding = "async"; img.onload = () => { art[key] = img; }; img.src = src; };
   load("/art/bowling-lane.webp?v=125", "lane");
-  load("/art/bowling-pit.webp?v=125", "pit");
+  load("/art/bowling-pit.webp?v=215", "pit");
 }
 const motion = { tick: -1, camZ: 0, camX: 0, seed: "" };
 type Gesture = { x: number; y: number; t: number; path: { x: number; y: number; t: number }[]; aimDrag: boolean };
@@ -437,7 +440,7 @@ function drawSwipe(ctx: CanvasRenderingContext2D, g: Gesture | null) {
     ctx.strokeStyle = `rgba(127,227,238,${0.15 + 0.7 * (i / stroke.length)})`; ctx.lineWidth = 2 + 8 * (i / stroke.length);
     ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
   }
-  const power = swipePower(stroke);
+  const power = swipePower(stroke, throwProfile());
   ctx.fillStyle = "rgba(6,12,28,.8)"; ctx.beginPath(); ctx.roundRect(362, 250, 14, 200, 7); ctx.fill();
   const fill = ctx.createLinearGradient(0, 450, 0, 250);
   fill.addColorStop(0, "#5cffb0"); fill.addColorStop(0.6, "#ffd23f"); fill.addColorStop(1, "#ff3d9a");
@@ -514,7 +517,7 @@ export default function Bowling(props: GameRuntimeProps) {
       return null;
     }
     gesture.current = null;
-    const th = throwFromStroke(strokeOf(g));
+    const th = throwFromStroke(strokeOf(g), throwProfile());
     if (!th) return null;
     gameTone("tap");
     return [bowlingAction("ANGLE", th.angle), bowlingAction("SPIN", th.spin), bowlingAction("POWER", th.power), "ROLL"];

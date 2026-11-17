@@ -22,4 +22,12 @@ assert.deepEqual([th(aimThenUp).angle, th(aimThenUp).spin], [24, 8]);
 // Power follows the flick speed; a short or downward stroke is not a throw.
 assert.ok(th(line(195, 195, 0, 4)).power > th(line(195, 195, 0, 20)).power, "a faster flick is more power");
 assert.equal(throwFromStroke(strokeOf({ path: line(195, 195, 0).slice(0, 2) })), null);
-console.log("Bowling gesture OK · chord → direction · bend → spin · flick → power");
+// v215 · Computers: the mouse mapping is more sensitive (same stroke → more angle, spin and power); touch unchanged.
+const mouse = (path: StrokePoint[]) => throwFromStroke(strokeOf({ path }), "mouse")!;
+assert.deepEqual([mouse(line(195, 195, 0)).angle, mouse(line(195, 195, 0)).spin], [24, 8], "straight is still straight");
+assert.ok(mouse(line(195, 205, 0)).angle > th(line(195, 205, 0)).angle, "more angle for the same slant");
+assert.ok(mouse(line(195, 195, -8)).spin > th(line(195, 195, -8)).spin, "more spin for the same bow");
+assert.ok(mouse(line(195, 195, 0, 30)).power > th(line(195, 195, 0, 30)).power, "a slower mouse flick reaches more power");
+assert.notEqual(mouse(line(195, 197, 0)).angle, 24, "2 px of slant already turns the mouse throw");
+assert.deepEqual(throwFromStroke(strokeOf({ path: line(195, 205, -10) }), "touch"), th(line(195, 205, -10)), "touch is the default");
+console.log("Bowling gesture OK · chord → direction · bend → spin · flick → power · mouse more sensitive");
