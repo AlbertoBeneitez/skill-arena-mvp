@@ -51,7 +51,7 @@ import dynamic from "next/dynamic";
 // v153: the studio proposal form loads only when the catalogue tab opens it.
 const GameProposal = dynamic(() => import("./GameProposal"), { ssr: false });
 
-type Screen = "welcome" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking" | "settings";
+type Screen = "welcome" | "welcome-back" | "avatar-setup" | "home" | "group" | "game" | "profile" | "legal" | "ranking" | "settings";
 type Provider = AuthProviderId | null;
 type Turn = "create" | "existing";
 type MatchScope = "duel" | "group";
@@ -1049,7 +1049,9 @@ export default function DemoApp() {
       setAvatarSrc(AVATARS[a.avatar - 1] ?? AVATARS[0]);
       setBalance(a.balanceMinor / 100);
       setOnboarded(true);
-      setScreen((current) => (current === "welcome" || current === "avatar-setup" ? "home" : current));
+      // v216 (owner): opening the app with an account already loaded shows its own start screen ("Hola de nuevo"),
+      // with a way to use another account; right after signing in, straight to the games.
+      setScreen((current) => (current === "welcome" || current === "avatar-setup" ? (justSignedIn ? "home" : "welcome-back") : current));
     } catch {
       toLocal();
     }
@@ -1635,6 +1637,29 @@ export default function DemoApp() {
           </p>
         </section>
         {doc && <DocSheet doc={doc} onClose={() => setDoc(null)} />}
+      </main>
+    );
+  }
+
+  if (screen === "welcome-back") {
+    return (
+      <main className="onboarding arenaOnboarding gxStage gxStageWelcome">
+        <OrbitalScene variant="welcome" />
+        <section className="welcomeCard welcomeCardCompact gxWelcome gxBack">
+          <div className="welcomeTopBar"><LanguagePicker compact /></div>
+          <h1 className="wordmark gxWordmark" aria-label={PRODUCT_NAME}>
+            {PRODUCT_NAME.split(" ").map((word) => <span key={word}>{word}</span>)}
+          </h1>
+          <div className="gxBackWho">
+            <img className="gxBackAvatar" src={avatarSrc} alt="" />
+            <p className="gxBackHello">{t("back.hello")}</p>
+            <p className="gxBackName">{playerName}</p>
+          </div>
+          <div className="authStack gxAuth">
+            <button type="button" className="authButton galacticEntryAction gxBackEnter" onClick={() => navigate("home", true)}><span>{t("back.enter")}</span></button>
+            <button type="button" className="gxBackOther" onClick={logoutDemo}>{t("back.other")}</button>
+          </div>
+        </section>
       </main>
     );
   }

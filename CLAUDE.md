@@ -51,6 +51,9 @@ producción y cualquier cambio de visibilidad o permisos del repositorio.
   días y avisar de cualquier cargo nuevo, aunque sea pequeño.
 - Si una tarea puede generar uso de pago (más tráfico, más compilaciones, más
   datos), avisar antes de hacerla, no después.
+- Propietario (18 de noviembre): una sola subida a `mobile-test` al final de cada
+  sesión, con todas las versiones juntas. Cada subida compila en Vercel y cuesta.
+  Solo compilan `mobile-test` y `main` (`vercel.json`); las ramas `vNNN-saturn` no.
 - Estado al 16 de noviembre: Vercel Pro (20 $ al mes más IVA) ya pagado; el propietario
   ordena **no cancelarlo hasta el 12 de diciembre de 2026** (no proponer cancelarlo antes;
   recordárselo ese día); Neon en plan gratis (1 GB; si se llena, deja de

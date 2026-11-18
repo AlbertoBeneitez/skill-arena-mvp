@@ -9323,3 +9323,13 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 .modeFlash[data-mode="online"] { border-color: rgba(53, 224, 122, .7); }
 @keyframes modeFlash { 0% { opacity: 0; transform: translate(-50%, -46%) scale(.96); } 14%, 78% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; } }
+
+/* v216 · Start screen when an account is already loaded: who you are, enter, or use another account. */
+.gxBackWho { display: grid; justify-items: center; gap: 6px; margin: 6px 0 4px; }
+.gxBackAvatar { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(160, 235, 225, .7); box-shadow: 0 0 0 6px rgba(160, 235, 225, .12), 0 16px 40px rgba(0, 0, 0, .5); }
+.gxBackHello { margin: 6px 0 0; font-size: 15px; color: var(--gx-mute, #9aa3ad); }
+.gxBackName { margin: 0; font: 800 26px/1.15 var(--gx-display, system-ui); color: var(--gx-ink, #eef0f2); text-align: center; overflow-wrap: anywhere; }
+.gxBack .gxAuth { width: 100%; }
+.gxBackEnter { width: 100%; }
+.gxBackOther { min-height: 48px; width: 100%; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .18); background: transparent; color: var(--gx-ink, #eef0f2); font: 700 16px/1 var(--gx-body, system-ui); }
+.gxBackOther:focus-visible, .gxBackEnter:focus-visible { outline: 2px solid #a0ebe1; outline-offset: 3px; }

@@ -243,3 +243,5 @@
 
 /* v205 · «Populares» shows bigger cards (owner): two and a half per screen instead of almost three. */
 .track[data-row="popular"] { grid-auto-columns: calc((100% - 2 * var(--gap)) / 2.4); }
+/* v216 (owner): "Tu selección" has the largest cards of the catalogue (two per view). */
+.track[data-row="mine"] { grid-auto-columns: calc((100% - var(--gap)) / 2); }

@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v215-saturn.
+Actualizado: 16 de noviembre de 2026 · base `mobile-test` en v216-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Inicio con cuenta y menos compilaciones (18 de noviembre, v216, app 2.16):** al abrir la app con una cuenta ya cargada aparece «Hola de nuevo» con avatar y nombre, «Entrar» y «Usar otra cuenta» (cierra la sesión y vuelve a la bienvenida); justo después de iniciar sesión se va directo a Juegos. «Tu selección» tiene las tarjetas más grandes del catálogo (dos por pantalla), Populares las segundas. Vercel solo compila `mobile-test` y `main` (antes cada subida compilaba dos veces: la rama de versión y `mobile-test`); una subida por sesión.
 - [x] **Bowling (17 de noviembre, v215, app 2.15):** el letrero del fondo de la pista muestra el logo y «GALACTIC GAMES» (antes un planeta y «GALACTIC LANES»). En ordenador el ratón es más sensible: el mismo trazo da más dirección, efecto y fuerza, con zonas muertas menores, lo que lo hace más difícil de controlar. En móvil no cambia nada; reglas y acciones grabadas iguales (Bowling 3.0.0).
 - [x] **Portada de Tower Drop (17 de noviembre, v214, app 2.14):** el contenedor siguiente cuelga recto de un cable, separado por encima de la torre; sin fantasmas de balanceo ni destellos, para que no parezca un contenedor encajado entre otros dos. Una línea discontinua marca dónde aterrizará.
 - [x] **Interfaz (17 de noviembre, v213, app 2.13):** sin textos ni QR junto al marco de ordenador; pestaña «Grupos»; texto más grande en toda la app (≤ 9 px +1, 10–18 px +2); la X de borrar juegos va justo a la derecha de «2 Juegos» y siempre visible; al cambiar Online/Offline aparece «Modo Online»/«Modo Offline» en el centro. Paquete `qrcode-generator` retirado.
