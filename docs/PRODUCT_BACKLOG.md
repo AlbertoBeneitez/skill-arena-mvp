@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v217-saturn · Modalidades de grupo (18-nov-2026)
+
+- Todos vs todos, 1 vs 1 y relevos (ADR 009); clasificación al final de Grupos. Pendiente fase 2: contra otros grupos con conexión (partidas de grupo online, cola de búsqueda en el servidor, Web Push con claves VAPID del propietario); decidir si el reto «grupo contra grupo» (liga/eliminatorias, v192) se retira a favor de las modalidades.
+
 ## v216-saturn · Inicio con cuenta, Tu selección grande, menos compilaciones (18-nov-2026)
 
 - Pantalla «Hola de nuevo»; «Tu selección» la fila más grande; solo compilan `mobile-test` y `main`.

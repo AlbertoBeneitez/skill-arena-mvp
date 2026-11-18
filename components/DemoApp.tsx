@@ -24,9 +24,9 @@ import WalletPanel from "./WalletPanel";
 import StudioWelcome from "./StudioWelcome";
 import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey, playableForMoney } from "@/lib/games";
 import { DEMO_MEMBERS, createDemoClosedGroup, isSimulatedMemberId, joinDemoClosedGroup, withoutSimulatedMembers, type ClosedGroup } from "@/lib/groupPlay";
-import { SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
-import { RANDOM_GAME, createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
-import { playSimulatedMembers, voteWithSimulatedMembers, type RivalSample } from "@/lib/demo/groupRivals";
+import { SAMPLE_GROUP_NAMES, SAMPLE_RANKING_NAMES } from "@/lib/demo/sampleNames";
+import { RANDOM_GAME, assignRival, createGroupCompetition, isGroupCompetition, nextGroupMatch, recordGroupScore, relayTotals, roundAwaitingRival, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
+import { inventRivalGroup, playSimulatedMembers, voteWithSimulatedMembers, type RivalSample } from "@/lib/demo/groupRivals";
 import type { GameResult } from "@/lib/types";
 import SoundMenu from "./SoundMenu";
 import ServerGroups from "./ServerGroups";
@@ -419,6 +419,10 @@ export default function DemoApp() {
   /** v128: the group competition in progress (pure rules in lib/groupCompetition.ts), saved so it survives a restart. */
   const [groupComp, setGroupComp] = useState<GroupCompetition | null>(null);
   const [groupMatch, setGroupMatch] = useState(-1);
+  /** v217: looking for a rival group (offline: an invented one appears after a short search). */
+  const [rivalSearch, setRivalSearch] = useState(false);
+  const rivalSearchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (rivalSearchTimerRef.current) clearTimeout(rivalSearchTimerRef.current); }, []);
   const [isLoaded, setIsLoaded] = useState(false);
   const [pendingJoinCode, setPendingJoinCode] = useState("");
   const [groupJoinError, setGroupJoinError] = useState("");
@@ -430,38 +434,13 @@ export default function DemoApp() {
   const settings = useSettings();
   /** v199: the header globe — online (real players) or offline (local group with invented rivals). */
   const offline = !settings.online;
-  // v211: whether the group relay ("juego grupal") of the player's online group is waiting for a turn (not held by
-  // anyone, last turn by someone else). Polled lightly while online and signed in.
-  const [relayFree, setRelayFree] = useState(false);
-  const accountIdForRelay = typeof serverAccount === "object" && serverAccount ? serverAccount.id : null;
-  useEffect(() => {
-    if (offline || !accountIdForRelay) { setRelayFree(false); return; }
-    let stop = false;
-    const check = async () => {
-      if (document.hidden) return;
-      try {
-        const r = await fetch("/api/groups", { cache: "no-store" });
-        if (!r.ok) return;
-        const d = (await r.json()) as { current?: { relay?: { status: string; lock: unknown; recent: { accountId: string }[] } | null } | null };
-        const relay = d.current?.relay;
-        if (!stop) setRelayFree(!!relay && relay.status === "open" && !relay.lock && relay.recent[0]?.accountId !== accountIdForRelay);
-      } catch { /* keep the last answer */ }
-    };
-    void check();
-    const id = setInterval(() => void check(), 45_000);
-    const onShow = () => { if (!document.hidden) void check(); };
-    document.addEventListener("visibilitychange", onShow);
-    return () => { stop = true; clearInterval(id); document.removeEventListener("visibilitychange", onShow); };
-  }, [offline, accountIdForRelay, screen]);
   // v210: games with a match of the player's own still to play (the next match of the group competition in progress).
   const pendingGames = useMemo(() => {
     const out = new Set<string>();
     const next = groupComp && !groupComp.finished ? groupComp.matches[nextGroupMatch(groupComp, GROUP_YOU)] : undefined;
     if (next && next.gameId !== RANDOM_GAME) out.add(next.gameId);
-    // v211: the group's Stack tower is free to play on and the last turn was someone else's.
-    if (relayFree && !offline) out.add("precision-stack");
     return out;
-  }, [groupComp, relayFree, offline]);
+  }, [groupComp]);
   const [doc, setDoc] = useState<DocId | null>(null);
   const [confirmAction, setConfirmAction] = useState<null | "reset" | "delete">(null);
   const [notice, setNotice] = useState("");
@@ -543,7 +522,8 @@ export default function DemoApp() {
       setLosses(0);
       setStreak(0);
       setGroup(null);
-      setGroupComp(null);
+      cancelRivalSearch();
+    setGroupComp(null);
       setScreen("welcome");
       setIsLoaded(true);
       return;
@@ -1370,6 +1350,29 @@ export default function DemoApp() {
     updateGroup(playSimulatedMembers(recordGroupScore(groupComp, groupMatch, GROUP_YOU, score, timeMs), GROUP_YOU, groupLook));
     setGroupMatch(-1);
   }
+  function cancelRivalSearch() {
+    if (rivalSearchTimerRef.current) clearTimeout(rivalSearchTimerRef.current);
+    rivalSearchTimerRef.current = null;
+    setRivalSearch(false);
+  }
+  /** v217 · «Buscar grupo rival» offline: after a short search an invented group of the same size appears for the
+   * matchday; its players (and our simulated members before the player in a relay) play at once. */
+  function findRivalGroup() {
+    if (!group || !groupComp || rivalSearch || !roundAwaitingRival(groupComp)) return;
+    const comp = groupComp, round = roundAwaitingRival(comp), look = groupLook;
+    const usedNames = new Set([...comp.players, ...(comp.rivals ?? []).flatMap((r) => r.players)].map((p) => p.name));
+    const usedGroups = new Set([group.name, ...(comp.rivals ?? []).map((r) => r.name)]);
+    const groupNames = SAMPLE_GROUP_NAMES.filter((n) => !usedGroups.has(n));
+    const rival = inventRivalGroup(`${comp.id}-r${round}`, comp.players.length, SAMPLE_RANKING_NAMES.filter((n) => !usedNames.has(n)), groupNames.length ? groupNames : SAMPLE_GROUP_NAMES, AVATARS);
+    setRivalSearch(true);
+    rivalSearchTimerRef.current = setTimeout(() => {
+      rivalSearchTimerRef.current = null;
+      setRivalSearch(false);
+      setGroupComp((c) => (c && c.id === comp.id && roundAwaitingRival(c) === round ? playSimulatedMembers(assignRival(c, rival), GROUP_YOU, look) : c));
+      gameTone("good");
+      haptic(18);
+    }, 1800 + Math.floor(Math.random() * 2400));
+  }
   function voteGroup() {
     if (groupComp) updateGroup(voteWithSimulatedMembers(groupComp, GROUP_YOU));
   }
@@ -1479,10 +1482,12 @@ export default function DemoApp() {
     setMatchScope("group");
     setLeagueMatch(null);
     setLeagueOutcome(null);
-    const best = rivals.length ? (lower ? Math.min(...rivals) : Math.max(...rivals)) : game.rivalScore;
+    // v217 relays: the target is what puts the group ahead of the rival group's total so far.
+    const relay = comp.config.format === "relay-groups" ? relayTotals(comp, m) : null;
+    const best = relay ? Math.max(0, relay.away - relay.home) : rivals.length ? (lower ? Math.min(...rivals) : Math.max(...rivals)) : game.rivalScore;
     setMatchTargetScore(best);
     const tiedTimes = m.players.filter((id) => id !== GROUP_YOU && m.scores[id] === best).map((id) => m.times?.[id]).filter((v): v is number => typeof v === "number");
-    setMatchTargetTime(comp.config.tieBreak === "time-v1" && tiedTimes.length ? Math.min(...tiedTimes) : null);
+    setMatchTargetTime(!relay && comp.config.tieBreak === "time-v1" && tiedTimes.length ? Math.min(...tiedTimes) : null);
     setShowWinAnimation(false);
     setExitConfirmOpen(false);
     void loadGameAssets(game, [portraitCrop(avatarSrc, "")]).then(() => {
@@ -1885,11 +1890,14 @@ export default function DemoApp() {
             onPlay={() => playGroupMatch()}
             onVote={voteGroup}
             onUpdateGroup={updateClosedGroup}
-            onClearCompetition={() => setGroupComp(null)}
+            onClearCompetition={() => { cancelRivalSearch(); setGroupComp(null); }}
             onDeleteGroup={deleteClosedGroup}
             offline={offline}
             onAddRival={addInventedRival}
             onRemoveRival={removeInventedRival}
+            onFindRival={findRivalGroup}
+            onCancelRival={cancelRivalSearch}
+            searchingRival={rivalSearch}
           />
         )}
 

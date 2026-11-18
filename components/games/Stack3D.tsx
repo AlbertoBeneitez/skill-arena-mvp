@@ -171,8 +171,6 @@ const scoreCells = (state: Readonly<Stack3DState>): ScoreCell[] => [
   { label: tx("hud.surface"), value: String(Math.floor(state.surfaceMilli2 / 1e8)) },
 ];
 const keys = { " ": "DROP", Enter: "DROP" } as const;
-/** v211: the same picture for the group relay (components/games/StackRelayPlay.tsx). */
-export { render as renderStack, finale as stackFinale, scoreCells as stackScoreCells };
 export default function Stack3D(props: GameRuntimeProps) {
   useI18n();
   return <CoreCanvasGame {...props} core={STACK_3D_CORE} name="Stack" render={render} failureFinale={finale} hideHudScore hudLabel={hudLabel} scoreCells={scoreCells} primaryAction="DROP" keys={keys} instruction={tx("stack.instruction")} />;

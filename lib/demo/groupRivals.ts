@@ -3,7 +3,7 @@
  * deterministic (a hash of the match seed and the member), so a saved competition replays the same way after the app
  * is reopened. v199: when other players' verified scores are available, each rival takes one of those instead.
  */
-import { recordGroupScore, voteToEndGroup, type GroupCompetition } from "../groupCompetition";
+import { recordGroupScore, relayWaitingFor, voteToEndGroup, type GroupCompetition, type GroupPlayer, type GroupRival } from "../groupCompetition";
 
 const unit = (text: string) => {
   let h = 2166136261;
@@ -22,9 +22,11 @@ type Lookup = {
  * stops at the human's next match (or carries on through a round in which the human rests). */
 export function playSimulatedMembers(c: GroupCompetition, human: string, look: Lookup): GroupCompetition {
   for (let guard = 0; guard < 500; guard++) {
-    const i = c.matches.findIndex((m) => m.players.some((id) => id !== human && m.scores[id] === undefined));
+    // v217: in a relay a member plays only once the previous member of their group has played.
+    const owes = (m: GroupCompetition["matches"][number], id: string) => id !== human && m.scores[id] === undefined && !relayWaitingFor(c, m, id);
+    const i = c.matches.findIndex((m) => m.players.some((id) => owes(m, id)));
     if (c.finished || i < 0) return c;
-    const m = c.matches[i], id = m.players.find((p) => p !== human && m.scores[p] === undefined)!;
+    const m = c.matches[i], id = m.players.find((p) => owes(m, p))!;
     const time = Math.round(45000 + unit(`${m.seed}:${id}:t`) * 75000); // v174: a deterministic play time (45–120 s)
     // v199: a real verified match of another player, picked the same way every time for this seed and rival.
     const pool = look.samples?.[m.gameId];
@@ -48,4 +50,18 @@ export function voteWithSimulatedMembers(c: GroupCompetition, human: string): Gr
     if (p.simulated && rounds > 2 && unit(`${c.id}:${p.id}:vote`) < 0.7) c = voteToEndGroup(c, p.id);
   }
   return c;
+}
+
+/**
+ * v217 · An invented rival group of `size` players for one matchday of an inter-group modality (offline only). Names
+ * and portraits come from the caller's lists, picked the same way every time for the same key; every player is
+ * simulated and plays like an invented group member.
+ */
+export function inventRivalGroup(key: string, size: number, names: readonly string[], groupNames: readonly string[], avatars: readonly string[]): Omit<GroupRival, "round"> {
+  const pick = <T,>(list: readonly T[], k: string) => list[Math.floor(unit(`${key}:${k}`) * list.length)];
+  const free = [...names].sort((a, b) => unit(`${key}:n:${a}`) - unit(`${key}:n:${b}`));
+  const players: GroupPlayer[] = Array.from({ length: size }, (_, i) => ({
+    id: `rv-${key}-${i}`, name: free[i % Math.max(1, free.length)] ?? `Rival ${i + 1}`, avatar: avatars.length ? pick(avatars, `a${i}`) : "", simulated: true,
+  }));
+  return { id: `rg-${key}`, name: groupNames.length ? pick(groupNames, "g") : "Rival", players };
 }

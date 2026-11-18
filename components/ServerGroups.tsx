@@ -7,7 +7,6 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import GroupHub from "./GroupHub";
-import GroupRelay, { type RelayView } from "./GroupRelay";
 import UiIcon from "./UiIcon";
 import { GAMES, playableForMoney } from "@/lib/games";
 import { portraitSrc } from "@/lib/avatars";
@@ -27,10 +26,12 @@ type Comp = {
 type Overview = {
   groups: Group[]; competitions: Comp[]; open: Comp[];
   ranking: { groupId: string; name: string; netMinor: number; competitions: number }[];
-  current: { group: Group; members: Member[]; relay?: RelayView | null } | null;
+  current: { group: Group; members: Member[] } | null;
 };
 
 const money = (minor: number) => formatMoney(minor / 100);
+/** v217: against other groups is played offline for now (no rival search on the server yet). */
+const VERSUS_SOON = ["duel-groups", "relay-groups"] as const;
 const face = (avatar: unknown) => portraitSrc(Math.max(1, Number(avatar) || 1), "-s");
 
 type Props = { accountId: string; playerName: string; avatarSrc: string; balance: number; onBalanceChanged(): void };
@@ -97,11 +98,10 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
     });
   }
 
-  // v211: the group relay ("juego grupal") always sits at the top of an online group.
+  // v217: the v211 group relay (one Stack tower between the members) gave way to the «Relevos» modality.
   const top = current ? (
     <>
       {message && <p className={hub.hint} role="alert">{message}</p>}
-      <GroupRelay groupId={current.group.id} accountId={accountId} relay={current.relay ?? null} reload={load} />
       {waiting && (
         <div className={hub.panel}>
           <div className={hub.panelHead}>
@@ -186,6 +186,7 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
       onCreateGroup={(name) => void act({ action: "create", name })}
       onJoinGroup={(code) => void act({ action: "join", code })}
       onCreateCompetition={createCompetition}
+      unavailableModalities={VERSUS_SOON}
       onPlay={() => setMessage(t("sg.playSoon"))}
       onVote={() => setMessage(t("sg.playSoon"))}
       onClearCompetition={() => active && setDismissed((d) => [...d, active.id])}

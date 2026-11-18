@@ -1,14 +1,15 @@
 "use client";
 /*
  * Groups (v128, reworked v166, black and gold v167): create or join a group, invite through one share button, set up
- * a competition in three numbered steps — format, games picked from their covers (a league or a tournament plays
- * several in the order chosen), entry and prizes — and play it through. The rules live in lib/groupCompetition.ts
+ * a competition in three numbered steps — modality (v217: todos vs todos, 1 vs 1 or relays against other groups),
+ * games picked from their covers (played matchday by matchday in the order chosen), entry and prizes — and play it
+ * through; the standings sit at the end of the tab. The rules live in lib/groupCompetition.ts
  * (pure); this screen only collects the choices and shows the state. Its look is self-contained in
  * GroupHub.module.css (no shared group classes from globals.css).
  */
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
-import { defaultSplit, GROUP_COMMISSION_BPS, groupMoney, groupStandings, nextGroupMatch, RANDOM_GAME, stepSplit, type GroupCompetition, type GroupConfig, type GroupFormat } from "@/lib/groupCompetition";
+import { defaultSplit, GROUP_COMMISSION_BPS, GROUP_MODALITIES, groupMoney, groupStandings, groupTeamStandings, HOME_TEAM, isInterGroup, nextGroupMatch, RANDOM_GAME, relayTotals, relayWaitingFor, roundAwaitingRival, stepSplit, waitingGroupMatch, type GroupCompetition, type GroupConfig, type GroupModality } from "@/lib/groupCompetition";
 import { groupArt } from "@/lib/groupArt";
 import { CATALOG_SHELVES, GAMES, gameShelf, playableForMoney } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
@@ -45,8 +46,22 @@ type Props = {
   offline?: boolean;
   onAddRival?: () => void;
   onRemoveRival?: (id: string) => void;
+  /** v217: inter-group modalities — look for a rival group for the matchday (searches until one appears). */
+  onFindRival?: () => void;
+  onCancelRival?: () => void;
+  searchingRival?: boolean;
+  /** v217: modalities that cannot be started here (shown, not selectable). */
+  unavailableModalities?: readonly GroupModality[];
 };
-type Kind = "single" | "league" | "tournament";
+type Kind = GroupModality;
+const MODALITY_LABEL = { "all-vs-all": "group.modeAll", "duel-groups": "group.modeDuelGroups", "relay-groups": "group.modeRelay" } as const;
+const MODALITY_HINT = { "all-vs-all": "group.modeAllHint", "duel-groups": "group.modeDuelHint", "relay-groups": "group.modeRelayHint" } as const;
+/** Title of a competition: its modality, or the format of one created before v217. */
+function competitionTitle(c: GroupCompetition) {
+  const f = c.config.format;
+  if (f === "all-vs-all" || f === "duel-groups" || f === "relay-groups") return t(MODALITY_LABEL[f]);
+  return t(f === "tournament" ? "group.tournament" : f === "single" ? "group.singleMatch" : "group.league");
+}
 
 function normalizeJoinCode(value: string) {
   const trimmed = value.trim();
@@ -61,6 +76,7 @@ function normalizeJoinCode(value: string) {
   return trimmed.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
 }
 const euros = (minor: number) => formatMoney(minor / 100);
+const pointsLabel = (n: number) => (n === 1 ? t("group.pointOne") : t("group.pointsShort", { n }));
 const MAX_SEQUENCE = 20;
 /** A phone photo cut to a centred square and shrunk to `size` px, as a JPEG data URL (stored with the group). */
 async function squarePhoto(file: File, size: number): Promise<string> {
@@ -109,7 +125,7 @@ function Medal({ place }: { place: number }) {
   );
 }
 
-export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup, offline = false, onAddRival, onRemoveRival, allowPhoto = true, top, bottom }: Props) {
+export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup, offline = false, onAddRival, onRemoveRival, onFindRival, onCancelRival, searchingRival = false, unavailableModalities = [], allowPhoto = true, top, bottom }: Props) {
   useI18n();
   const competitionRunning = Boolean(competition && !competition.finished);
   const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
@@ -122,8 +138,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const [copied, setCopied] = useState<"" | "code" | "link">("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [kind, setKind] = useState<Kind>("league");
-  const [duels, setDuels] = useState(false);
+  const [kind, setKind] = useState<Kind>("all-vs-all");
   /** v167/v168: the games picked, in play order; the same game may appear several times (a league or a tournament
    * plays them round by round). Empty = random mix. */
   const [picked, setPicked] = useState<string[]>([]);
@@ -132,8 +147,6 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const [category, setCategory] = useState<string>("");
   const [entry, setEntry] = useState("5");
   const [rounds, setRounds] = useState(5);
-  /** v171: Eliminatorias — players knocked out per round. */
-  const [knockout, setKnockout] = useState(1);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [photoError, setPhotoError] = useState("");
@@ -191,13 +204,12 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     setJoinCode(code); onJoinGroup(code);
   }
   function chooseKind(next: Kind) {
-    setKind(next);
-    if (next === "single") setPicked((list) => list.slice(0, 1));
+    if (!unavailableModalities.includes(next)) setKind(next);
   }
-  /** Single match: tap picks or unpicks the one game. League and tournament: every tap adds the game to the end of the
-   * order (repeats allowed, up to MAX_SEQUENCE); the small cross on a picked tile removes its last occurrence. */
+  /** Every tap adds the game to the end of the order (repeats allowed, up to MAX_SEQUENCE); the small cross on a picked
+   * tile removes its last occurrence. Matchday n plays the n-th game (the order starts again when it runs out). */
   function tapGame(id: string) {
-    setPicked((list) => kind === "single" ? (list[0] === id ? [] : [id]) : list.length >= MAX_SEQUENCE ? list : [...list, id]);
+    setPicked((list) => list.length >= MAX_SEQUENCE ? list : [...list, id]);
   }
   function unpick(id: string) {
     setPicked((list) => { const last = list.lastIndexOf(id); return last < 0 ? list : list.filter((_, i) => i !== last); });
@@ -257,27 +269,26 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     );
   }
 
-  const entryMinor = offline ? 0 : Math.max(0, Math.round(Number(entry.replace(",", ".")) * 100) || 0);
-  const format: GroupFormat = kind === "league" ? (duels ? "league-duels" : "league-rounds") : kind;
+  // v217: against other groups nobody pays an entry (lib/groupCompetition: inter-group modalities move no money).
+  const versus = isInterGroup(kind);
+  const entryMinor = offline || versus ? 0 : Math.max(0, Math.round(Number(entry.replace(",", ".")) * 100) || 0);
   // Fewer players than the chosen paid places: back to the default for as many places as the group allows.
   const split = shares && shares.length === Math.max(1, players) ? shares : defaultSplit(players);
   const paidSplit = split.filter((x) => x > 0);
-  const maxKnockout = Math.max(1, players - 1);
   const money = groupMoney({ config: { entryMinor, commissionBps: GROUP_COMMISSION_BPS }, players: group.members });
   // v189: with an entry fee the group plays for money, so games of chance (no licence) are left out.
   const forMoney = entryMinor > 0;
   const pickable = forMoney ? playable.filter(playableForMoney) : playable;
   const affordable = entryMinor <= Math.round(balance * 100);
-  const chosen = (kind === "single" ? picked.slice(0, 1) : picked).filter((id) => id === RANDOM_GAME || pickable.some((g) => g.id === id));
+  const chosen = picked.filter((id) => id === RANDOM_GAME || pickable.some((g) => g.id === id));
   function buildConfig(): GroupConfig {
     // Nothing picked: every round is a surprise. Random slots are drawn when their round starts (lib/groupCompetition).
     const ids = chosen.length ? [...chosen] : [RANDOM_GAME];
     return {
-      format, entryMinor, split: [...split], gameIds: ids,
+      format: kind, entryMinor, split: [...split], gameIds: ids,
       ...(ids.includes(RANDOM_GAME) ? { randomPool: pickable.map((g) => g.id) } : {}),
-      ...(kind === "tournament" ? { eliminatePerRound: Math.min(knockout, maxKnockout) } : {}),
       lowerWinsGameIds: playable.filter((g) => g.resultMetric === "reaction-time-ms").map((g) => g.id),
-      end: { kind: "rounds", rounds: kind === "league" ? rounds : 1 },
+      end: { kind: "rounds", rounds },
     };
   }
   async function pickPhoto(file: File | undefined) {
@@ -366,13 +377,27 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     const standings = groupStandings(competition), next = nextGroupMatch(competition, you);
     const match = next >= 0 ? competition.matches[next] : null;
     const round = competition.matches.reduce((r, m) => Math.max(r, m.round), 0);
-    const nameOf = (id: string) => competition.players.find((p) => p.id === id)?.name ?? id;
-    const opponent = match && competition.config.format === "league-duels" ? match.players.find((p) => p !== you) : undefined;
+    const format = competition.config.format, interGroup = isInterGroup(format);
+    const modality = format === "all-vs-all" || interGroup;
+    const everyone = [...competition.players, ...(competition.rivals ?? []).flatMap((r) => r.players)];
+    const nameOf = (id: string) => everyone.find((p) => p.id === id)?.name ?? id;
+    const opponent = match && (format === "league-duels" || format === "duel-groups") ? match.players.find((p) => p !== you) : undefined;
     const game = match ? playable.find((g) => g.id === match.gameId) : undefined;
     const voting = competition.config.end.kind === "vote" && !competition.finished;
     const voted = competition.votes.includes(you);
-    const tournament = competition.config.format === "tournament";
+    const tournament = format === "tournament";
     const pot = groupMoney(competition);
+    // v217: the matchday waiting for a rival group, the rival of the current one, the relay this player waits in.
+    const awaiting = roundAwaitingRival(competition);
+    const rival = competition.rivals?.find((r) => r.round === round);
+    const waitIndex = waitingGroupMatch(competition, you), waitMatch = waitIndex >= 0 ? competition.matches[waitIndex] : null;
+    const relayMatch = format === "relay-groups" ? competition.matches.find((m) => m.round === round) : undefined;
+    const totals = relayMatch ? relayTotals(competition, relayMatch) : null;
+    const relayBefore = waitMatch ? relayWaitingFor(competition, waitMatch, you) : null;
+    const roundLabel = round ? t(tournament ? "group.roundN" : "group.matchdayN", { n: awaiting || round }) : t("group.matchdayN", { n: 1 });
+    // The group table appears once a relay has been decided.
+    const teams = format === "relay-groups" ? groupTeamStandings(competition, group.name) : null;
+    const showTeams = !!teams && teams.some((row) => row.played > 0);
     return (
       <section className={st.screen}>
         {header}
@@ -380,10 +405,60 @@ export default function GroupHub({ joinError, group, competition, balance, playe
         {feedback}
         <div className={st.panel}>
           <div className={st.compTitle}>
-            <strong>{t(tournament ? "group.tournament" : competition.config.format === "single" ? "group.singleMatch" : "group.league")}</strong>
-            <span>{competition.finished ? t("group.finished") : t(tournament ? "group.roundN" : "group.matchdayN", { n: round })}</span>
+            <strong>{competitionTitle(competition)}</strong>
+            <span>{competition.finished ? t("group.finished") : awaiting && round === 0 ? t("group.matchdayN", { n: 1 }) : roundLabel}</span>
           </div>
-          {prizeBox(pot.prize, pot.commission)}
+          {!interGroup && prizeBox(pot.prize, pot.commission)}
+          {interGroup && rival && !awaiting && !competition.finished && (totals ? (
+            <dl className={st.relayBoard}>
+              <div data-you><dt>{group.name}</dt><dd dir="ltr">{totals.home}</dd></div>
+              <div><dt>{rival.name}</dt><dd dir="ltr">{totals.away}</dd></div>
+            </dl>
+          ) : <p className={st.versusLine}>{t("group.vsGroup", { name: rival.name })}</p>)}
+          {competition.finished ? (
+            <button className={st.primary} type="button" onClick={onClearCompetition}>{t("group.newCompetition")}</button>
+          ) : awaiting ? (
+            searchingRival ? (
+              <div className={st.searching} role="status">
+                <span className={st.radar} aria-hidden="true" />
+                <span>{t("group.searching", { n: competition.players.length })}</span>
+                {onCancelRival && <button type="button" className={st.secondary} onClick={onCancelRival}>{t("group.cancelSearch")}</button>}
+              </div>
+            ) : (
+              <button className={st.primary} type="button" disabled={!onFindRival} onClick={onFindRival}>{t("group.findRival")}</button>
+            )
+          ) : match ? (
+            <button className={st.primary} type="button" onClick={onPlay}>
+              {t("group.playNext", { game: game ? gameName(game) : match.gameId })}{opponent ? ` · ${t("group.vs", { name: nameOf(opponent) })}` : ""}
+            </button>
+          ) : (
+            <p className={st.note} role="status">{relayBefore ? t("group.relayWait", { name: nameOf(relayBefore) }) : t("group.waitingRound")}</p>
+          )}
+          {voting && (
+            <button className={st.secondary} type="button" disabled={voted} onClick={onVote}>
+              {voted ? t("group.voted", { n: competition.votes.length, total: competition.players.length }) : t("group.voteEnd")}
+            </button>
+          )}
+          <p className={st.note}>{t(modality ? MODALITY_HINT[format as GroupModality] : "group.resume", { n: competition.players.length })}</p>
+        </div>
+        {bottom}
+        {/* v217 (owner): the standings, updated matchday after matchday, at the end of the tab. */}
+        <div className={st.panel}>
+          <div className={st.compTitle}>
+            <strong>{t("group.standings")}</strong>
+            <span>{t("group.afterMatchdays", { n: Math.max(0, competition.finished ? round : round - 1) })}</span>
+          </div>
+          {showTeams && teams && (
+            <ol className={st.standings} aria-label={t("group.teamTable")}>
+              {teams.map((row) => (
+                <li key={row.id} data-team data-you={row.id === HOME_TEAM || undefined}>
+                  <b>{row.place}</b>
+                  <span>{row.name}</span>
+                  <em>{pointsLabel(row.points)}</em>
+                </li>
+              ))}
+            </ol>
+          )}
           <ol className={st.standings} aria-label={t("group.standings")}>
             {standings.map((s) => {
               const p = competition.players.find((x) => x.id === s.id)!;
@@ -392,41 +467,20 @@ export default function GroupHub({ joinError, group, competition, balance, playe
                   <b>{s.place}</b>
                   <img src={p.avatar} alt="" />
                   <span>{p.name}</span>
-                  <em>{competition.payouts ? (competition.payouts[s.id] ? `+${euros(competition.payouts[s.id])}` : "—") : s.out ? t("group.out") : tournament ? "" : t("group.winsShort", { n: s.wins })}</em>
+                  <em>{competition.payouts && competition.config.entryMinor > 0 ? (competition.payouts[s.id] ? `+${euros(competition.payouts[s.id])}` : "—") : s.out ? t("group.out") : tournament ? "" : modality ? pointsLabel(s.points) : t("group.winsShort", { n: s.wins })}</em>
                 </li>
               );
             })}
           </ol>
-          {competition.finished ? (
-            <button className={st.primary} type="button" onClick={onClearCompetition}>{t("group.newCompetition")}</button>
-          ) : match ? (
-            <button className={st.primary} type="button" onClick={onPlay}>
-              {t("group.playNext", { game: game ? gameName(game) : match.gameId })}{opponent ? ` · ${t("group.vs", { name: nameOf(opponent) })}` : ""}
-            </button>
-          ) : (
-            <p className={st.note} role="status">{t("group.waitingRound")}</p>
-          )}
-          {voting && (
-            <button className={st.secondary} type="button" disabled={voted} onClick={onVote}>
-              {voted ? t("group.voted", { n: competition.votes.length, total: competition.players.length }) : t("group.voteEnd")}
-            </button>
-          )}
-          <p className={st.note}>{t("group.resume")}</p>
         </div>
-        {bottom}
         {deleteBlock}
       </section>
     );
   }
 
-  const seg = <T extends string | boolean>(value: T, current: T, set: (v: T) => void, label: string, sub?: string) => (
-    <button type="button" aria-pressed={value === current} onClick={() => set(value)}>
-      <strong>{label}</strong>{sub ? <span>{sub}</span> : null}
-    </button>
-  );
   const shareText = t("group.shareText", { name: group.name, code: group.code });
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
-  const multi = kind !== "single";
+  const multi = true;
   /** v175: «Aleatorio» is one more game: it can be picked, repeated and ordered like the others. */
   const tiles = [{ id: RANDOM_GAME, name: t("group.randomMix"), cover: "" }, ...pickable.filter((g) => !category || gameShelf(g) === category).map((g) => ({ id: g.id, name: gameName(g), cover: g.cover }))]
     .filter((tile) => !query.trim() || fold(tile.name).includes(fold(query.trim())));
@@ -474,42 +528,26 @@ export default function GroupHub({ joinError, group, competition, balance, playe
         <h2 className={st.formTitle}>{t("group.newTitle")}</h2>
         <ol className={st.steps}>
           <li>
-            <span className={`${st.stepLabel} ${st.sc}`}>{t("group.format")}</span>
+            <span className={`${st.stepLabel} ${st.sc}`}>{t("group.modality")}</span>
             <div className={st.seg3}>
-              {seg<Kind>("single", kind, chooseKind, t("group.singleMatch"))}
-              {seg<Kind>("league", kind, chooseKind, t("group.league"))}
-              {seg<Kind>("tournament", kind, chooseKind, t("group.tournament"))}
+              {GROUP_MODALITIES.map((m) => (
+                <button key={m} type="button" aria-pressed={m === kind} disabled={unavailableModalities.includes(m)} onClick={() => chooseKind(m)}>
+                  <strong>{t(MODALITY_LABEL[m])}</strong>
+                </button>
+              ))}
             </div>
-            {kind === "league" && (
-              <div className={st.sub}>
-                <span className={st.subLabel}>{t("group.leagueMode")}</span>
-                <div className={st.seg2}>
-                  {seg(false, duels, setDuels, t("group.modeRounds"))}
-                  {seg(true, duels, setDuels, t("group.modeDuels"))}
-                </div>
-                <span className={st.subLabel}>{t("group.end")}</span>
-                <div className={st.counter}>
-                  <span>{t("group.roundsCount")}</span>
-                  <div className={st.stepper}>
-                    <button type="button" aria-label={t("group.lessRounds")} disabled={rounds <= 1} onClick={() => setRounds((n) => Math.max(1, n - 1))}>−</button>
-                    <output aria-live="polite">{rounds}</output>
-                    <button type="button" aria-label={t("group.moreRounds")} disabled={rounds >= 30} onClick={() => setRounds((n) => Math.min(30, n + 1))}>+</button>
-                  </div>
+            <p className={st.hint}>{t(MODALITY_HINT[kind], { n: Math.max(2, players) })}</p>
+            {unavailableModalities.length > 0 && <p className={st.hint}>{t("group.versusOfflineOnly")}</p>}
+            <div className={st.sub}>
+              <div className={st.counter}>
+                <span>{t("group.roundsCount")}</span>
+                <div className={st.stepper}>
+                  <button type="button" aria-label={t("group.lessRounds")} disabled={rounds <= 1} onClick={() => setRounds((n) => Math.max(1, n - 1))}>−</button>
+                  <output aria-live="polite">{rounds}</output>
+                  <button type="button" aria-label={t("group.moreRounds")} disabled={rounds >= 30} onClick={() => setRounds((n) => Math.min(30, n + 1))}>+</button>
                 </div>
               </div>
-            )}
-            {kind === "tournament" && (
-              <div className={st.sub}>
-                <div className={st.counter}>
-                  <span>{t("group.knockoutPerRound")}</span>
-                  <div className={st.stepper}>
-                    <button type="button" aria-label={t("group.lessKnockout")} disabled={knockout <= 1} onClick={() => setKnockout((n) => Math.max(1, n - 1))}>−</button>
-                    <output aria-live="polite">{Math.min(knockout, maxKnockout)}</output>
-                    <button type="button" aria-label={t("group.moreKnockout")} disabled={knockout >= maxKnockout} onClick={() => setKnockout((n) => Math.min(maxKnockout, n + 1))}>+</button>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
           </li>
           <li>
             <div className={st.stepHead}>
@@ -557,7 +595,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             {forMoney && GAMES.some((g) => !playableForMoney(g)) && <p className={st.hint}>{t("group.chanceExcluded")}</p>}
             <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
-          {!offline && <li>
+          {!offline && !versus && <li>
             <span className={st.stepLabel}>{t("group.stepEntry")}</span>
             <div className={st.field}>
               <label className={st.subLabel} htmlFor="group-entry">{t("group.entryPrice")}</label>
@@ -600,9 +638,9 @@ export default function GroupHub({ joinError, group, competition, balance, playe
         </ol>
         {/* v181: no simulated rivals any more — a competition starts once someone else has joined. */}
         {players < 2 && <p className={st.hint} role="status">{t(offline ? "group.needRivals" : "group.needPlayers")}</p>}
-        <button className={st.primary} type="button" disabled={players < 2 || !affordable || (kind === "single" && chosen.length === 0)}
+        <button className={st.primary} type="button" disabled={players < 2 || !affordable || unavailableModalities.includes(kind)}
           onClick={() => onCreateCompetition(buildConfig())}>
-          {offline ? t("group.startFree") : t("group.payAndStart", { amount: euros(entryMinor) })}
+          {offline || entryMinor === 0 ? t("group.startFree") : t("group.payAndStart", { amount: euros(entryMinor) })}
         </button>
       </div>
 

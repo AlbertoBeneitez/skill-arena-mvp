@@ -231,6 +231,9 @@ try {
   assert.equal(smuggled.commissionBps, 0, "commission is fixed on the server");
   assert.equal(smuggled.tieBreak, "time-v1");
   assert.ok(!smuggled.lowerWinsGameIds.includes(GAME), "lower-wins games come from the registry");
+  // v217: «Todos vs todos» is accepted online; play against other groups is not (no rival search on the server yet).
+  assert.equal((buildSetup("group", { format: "all-vs-all", entryMinor: 0, gameIds: [GAME], rounds: 3 }) as { format: string }).format, "all-vs-all");
+  for (const format of ["duel-groups", "relay-groups"]) assert.throws(() => buildSetup("group", { format, entryMinor: 0, gameIds: [GAME], rounds: 3 }), BadRequest);
   const hc = (await act("H1", "mobile", { action: "competition", mode: "group", groupIds: [hg.id], config: { format: "single", entryMinor: 5, gameIds: [GAME] } })).competition as { id: string };
   assert.equal((await act("H1", "mobile", { action: "enter", competitionId: hc.id })).entered, true);
   assert.equal((await act("H1", "mobile", { action: "enter", competitionId: hc.id })).entered, false, "a retried tap changes nothing");

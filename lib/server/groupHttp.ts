@@ -17,7 +17,9 @@ import {
 } from "./groups";
 
 export const MAX_ENTRY_MINOR = 10_000;
-const FORMATS: readonly GroupFormat[] = ["single", "league-rounds", "league-duels", "tournament"];
+/** v217: new competitions use the modalities; online, only «Todos vs todos» until play against other groups (rival
+ * search, notifications) exists on the server. The older formats stay accepted for existing clients. */
+const FORMATS: readonly GroupFormat[] = ["all-vs-all", "single", "league-rounds", "league-duels", "tournament"];
 const MODES: readonly CompetitionMode[] = ["group", "versus-league", "versus-tournament"];
 const enabledIds = () => GAMES.filter((g) => g.enabled).map((g) => g.id as string);
 const isUuid = (v: unknown): v is string => typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v);

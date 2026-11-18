@@ -685,3 +685,26 @@
 .clearStep:active { background: var(--ice-soft, rgba(127, 227, 234, .12)); }
 .clearStep:disabled { opacity: .35; }
 .search input:focus, .search input:focus-visible { outline: none; box-shadow: none; border: 0; }
+
+/* ---------- v217 · Modalities ---------- */
+.seg3 button:disabled { opacity: .45; }
+/* Group table (relays): no portrait column; one hairline between it and the players' table. */
+.standings li[data-team] { grid-template-columns: 24px minmax(0, 1fr) auto; }
+.standings + .standings { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); }
+/* The rival of the matchday and, in a relay, both groups' running totals. */
+.versusLine { margin: 0; font-weight: 600; color: var(--ink); }
+.relayBoard { margin: 0; display: grid; gap: 6px; }
+.relayBoard div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 8px; background: var(--field); border: 1px solid var(--line); }
+.relayBoard div[data-you] { border-color: var(--ice, var(--gold)); }
+.relayBoard dt { font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.relayBoard dd { margin: 0; font: 700 20px/1 var(--gx-data, monospace); color: var(--ice-hi, var(--gold-hi)); font-variant-numeric: tabular-nums; }
+/* Looking for a rival group: a slow sweep, the count of players wanted, a way out. */
+.searching { display: grid; justify-items: center; gap: 10px; text-align: center; color: var(--ink); font-weight: 600; }
+.searching .secondary { width: auto; padding-inline: 22px; }
+.radar {
+  width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line-2);
+  background: conic-gradient(from 0deg, transparent 0 75%, var(--ice-soft, rgba(241, 212, 149, .2)) 90%, var(--ice, var(--gold)) 100%);
+  animation: radarSweep 1.6s linear infinite;
+}
+@keyframes radarSweep { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) { .radar { animation: none; } }

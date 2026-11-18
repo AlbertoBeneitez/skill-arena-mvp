@@ -9300,20 +9300,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   .appShell .appHeader .balanceChip.gxHeadBtn { padding: 0 9px 0 8px !important; gap: 5px; }
 }
 
-/* v211 · Group relay turn (Stack): the whole screen, like a match. */
-.relayPlay {
-  position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; gap: 8px;
-  padding: max(10px, env(safe-area-inset-top)) 10px max(12px, env(safe-area-inset-bottom));
-  background: #03060c;
-}
-.relayPlay .relayCanvas { flex: 1 1 auto; min-height: 0; height: 100%; width: 100%; touch-action: none; }
-.relayBar { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; color: #c9d3de; font-size: 15px; }
-.relayLeave {
-  min-height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18);
-  background: transparent; color: #e8edf2; font: inherit; font-weight: 700;
-}
-.relayLeave:focus-visible { outline: 2px solid #a66bff; outline-offset: 2px; }
-
 /* v213 · Online/Offline switch: the mode, in the middle of the screen, for a moment. */
 .modeFlash {
   position: fixed; left: 50%; top: 50%; z-index: 96; transform: translate(-50%, -50%);

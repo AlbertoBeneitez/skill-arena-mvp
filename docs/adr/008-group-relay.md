@@ -26,3 +26,5 @@ por jugador, turno para el primero que llegue, empezar por Stack.
 - Solo grupos online (necesita servidor y cuenta). Sin dinero, ni ficticio.
 - Un relevo abierto por grupo. Quien lo creó puede cancelarlo.
 - El navegador nunca envía el historial: el servidor lo guarda y lo repite en cada turno.
+
+> Sustituida en la interfaz por la ADR 009 (v217): el panel y la pantalla de turno se retiran; la API, las tablas y las pruebas se conservan por los datos históricos.
