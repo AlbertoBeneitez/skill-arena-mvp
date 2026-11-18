@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v218-saturn · Ligas por victorias, perfil y arte de grupos (18-nov-2026)
+
+- Niveles por victorias por juego (5/15/30/50); perfil con los dos mejores juegos y la clasificación de los grupos; papelera en lugar del botón rojo; seis imágenes de grupo tipo película. Pendiente: propuesta de diseño retro a la espera de la decisión del propietario.
+
 ## v217-saturn · Modalidades de grupo (18-nov-2026)
 
 - Todos vs todos, 1 vs 1 y relevos (ADR 009); clasificación al final de Grupos. Pendiente fase 2: contra otros grupos con conexión (partidas de grupo online, cola de búsqueda en el servidor, Web Push con claves VAPID del propietario); decidir si el reto «grupo contra grupo» (liga/eliminatorias, v192) se retira a favor de las modalidades.

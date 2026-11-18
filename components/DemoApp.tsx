@@ -46,6 +46,7 @@ import LeagueResult from "./LeagueResult";
 import RankingHub from "./GameRanking";
 import { PORTRAIT_COUNT, portraitCrop, portraitSrc } from "@/lib/avatars";
 import PlayerProgress from "./PlayerProgress";
+import MyGroupTables, { type GroupTable } from "./MyGroupTables";
 import { RIVALS, emptyLeague, isLeagueState, leagueRival, recordLeagueResult, LEAGUE_COLORS, type LeagueRecord, type LeagueRival, type LeagueState, type LeagueTier } from "@/lib/leagues";
 import dynamic from "next/dynamic";
 // v153: the studio proposal form loads only when the catalogue tab opens it.
@@ -434,6 +435,33 @@ export default function DemoApp() {
   const settings = useSettings();
   /** v199: the header globe — online (real players) or offline (local group with invented rivals). */
   const offline = !settings.online;
+  // v218 (owner): standings of the player's groups at the bottom of the avatar tab. Offline: the local group; online:
+  // the groups on the server (latest competition of each), read when the tab opens.
+  const [serverGroupTables, setServerGroupTables] = useState<GroupTable[] | null>(null);
+  const accountIdForTables = typeof serverAccount === "object" && serverAccount ? serverAccount.id : null;
+  useEffect(() => {
+    if (screen !== "profile" || offline || !accountIdForTables) return;
+    let stop = false;
+    void (async () => {
+      try {
+        const r = await fetch("/api/groups", { cache: "no-store" });
+        if (!r.ok) return;
+        const d = (await r.json()) as { groups?: { id: string; name: string }[]; competitions?: { groupIds: string[]; mode: string; status: string; state?: unknown }[] };
+        const face = (avatar: unknown) => (typeof avatar === "string" && avatar ? avatar : portraitSrc(Math.max(1, Number(avatar) || 1), "-s"));
+        const tables = (d.groups ?? []).map((g) => {
+          const k = (d.competitions ?? []).find((c) => c.groupIds.includes(g.id) && (c.status === "running" || c.status === "finished"));
+          const raw = k ? (k.mode === "group" ? k.state : (k.state as { comp?: unknown } | null)?.comp) : null;
+          const competition = isGroupCompetition(raw) ? { ...raw, players: raw.players.map((p) => ({ ...p, avatar: face(p.avatar) })) } : null;
+          return { id: g.id, name: g.name, competition, you: accountIdForTables };
+        });
+        if (!stop) setServerGroupTables(tables);
+      } catch { /* the section stays as it was */ }
+    })();
+    return () => { stop = true; };
+  }, [screen, offline, accountIdForTables]);
+  const groupTables: GroupTable[] | null = offline || !accountIdForTables
+    ? (group ? [{ id: group.id, name: group.name, competition: groupComp, you: GROUP_YOU }] : [])
+    : serverGroupTables;
   // v210: games with a match of the player's own still to play (the next match of the group competition in progress).
   const pendingGames = useMemo(() => {
     const out = new Set<string>();
@@ -1226,6 +1254,11 @@ export default function DemoApp() {
     }
     const leagueResolved = leagueDuel && (selectedStake === 0 || replyAttempt);
     if (leagueResolved && gameResult.serverMatch?.reason !== "exact-tie") settleLeague(didWin, gameResult.score);
+    // v218: every other match won in this game (public, group, a league duel still waiting) also counts for its tier.
+    else if (didWin && gameResult.serverMatch?.reason !== "exact-tie") {
+      const id = selectedGame.id;
+      setLeagues((all) => ({ ...all, [id]: recordLeagueResult(all[id] ?? emptyLeague(), true) }));
+    }
     setAttemptSummary(resolvedResult);
     if(gameResult.serverMatch?.reason==="exact-tie"){
       setResult(resolvedResult);
@@ -2092,9 +2125,10 @@ export default function DemoApp() {
               <div><b>{streak}</b><span>{t("profile.streak")}</span></div>
             </div>
 
-            <PlayerProgress leagues={serverMode ? undefined : leagues} bestScores={bestScores} onPlay={(g) => void startMatch(g)} />
+            <PlayerProgress leagues={leagues} bestScores={bestScores} playCounts={playCounts} onPlay={(g) => void startMatch(g)} />
 
             {persistentTraining && <RecentAttempts />}
+            <MyGroupTables tables={groupTables} onOpen={() => navigate("group")} />
             </>}
           </section>
         )}

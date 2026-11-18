@@ -1,62 +1,50 @@
 "use client";
+/** v218 · The league of a game after a match: tier, wins in that game and what the next tier needs. */
 import { formatNumber, t, useI18n, type MessageKey } from "@/lib/i18n";
-import { LEAGUE_COLORS, LEAGUE_ICONS, LEAGUE_SERIES, type LeagueRecord, type LeagueRival, type LeagueTier } from "@/lib/leagues";
+import { LEAGUE_COLORS, LEAGUE_ICONS, LEAGUE_TIERS, tierProgress, type LeagueRecord, type LeagueRival, type LeagueTier } from "@/lib/leagues";
 
 const tierName = (tier: LeagueTier) => t(`league.tier${tier}` as MessageKey);
-
-/** Series dots: wins, losses and the matches still to play. */
-export function LeagueDots({ results, size = 10 }: { results: readonly boolean[]; size?: number }) {
+export const winsLabel = (n: number) => (n === 1 ? t("league.winsOne") : t("league.winsN", { n: formatNumber(n) }));
+/** «Faltan N victorias para Oro», or the top tier. */
+export function nextTierLabel(record: LeagueRecord) {
+  const p = tierProgress(record);
+  if (p.next === null) return t("league.maxTier", { tier: tierName(p.tier) });
+  return p.missing === 1 ? t("league.toNextOne", { tier: tierName(p.next) }) : t("league.toNext", { n: p.missing, tier: tierName(p.next) });
+}
+/** The road bronze → diamond: past tiers full, the current one filled by its wins. */
+export function TierRoad({ record }: { record: LeagueRecord }) {
+  const p = tierProgress(record);
   return (
-    <span className="leagueDots" aria-hidden="true">
-      {Array.from({ length: LEAGUE_SERIES }, (_, i) => (
-        <i key={i} className={i < results.length ? (results[i] ? "w" : "l") : ""} style={{ width: size, height: size }} />
+    <span className="tierRoad" aria-hidden="true">
+      {LEAGUE_TIERS.map((_, tier) => (
+        <i key={tier} style={{ ["--c" as string]: LEAGUE_COLORS[tier], ["--f" as string]: tier < p.tier ? 1 : tier === p.tier ? (p.next === null ? 1 : p.fill) : 0 }} />
       ))}
     </span>
   );
 }
 
-/** Compact league chip for catalogue cards. */
-export function LeagueBadge({ record }: { record: LeagueRecord }) {
-  useI18n();
-  return (
-    <span className="leagueBadge" style={{ ["--tier" as string]: LEAGUE_COLORS[record.tier] }}
-      aria-label={t("league.badgeAria", { tier: tierName(record.tier), n: record.results.length, total: LEAGUE_SERIES })}>
-      <b aria-hidden="true">{LEAGUE_ICONS[record.tier]}</b>
-      <span>{tierName(record.tier)}</span>
-      <LeagueDots results={record.results} size={6} />
-    </span>
-  );
-}
-
-/** League outcome under the match result: rival, series progress, promotion/relegation. */
+/** League outcome under the match result: rival, wins in the game, a new tier when reached. */
 export default function LeagueResult({ outcome }: { outcome: { won: boolean; record: LeagueRecord; rival: LeagueRival; score: number } }) {
   useI18n();
-  const { won, record, rival } = outcome, last = record.last;
-  const shownTier = last ? last.from : record.tier;
-  const results = last ? Array.from({ length: LEAGUE_SERIES }, (_, i) => i < last.wins) : record.results;
+  const { won, record, rival } = outcome, last = record.last, up = last?.change === "up";
   const target = rival.balanceGoal ? t("league.goalChips", { n: formatNumber(rival.target / 100) }) : rival.timeGoal ? t("common.ms", { n: formatNumber(rival.target) }) : formatNumber(rival.target);
+  const wins = tierProgress(record).wins;
   return (
-    <section className={`leagueResult ${won ? "won" : "lost"} ${last ? `change-${last.change}` : ""}`} style={{ ["--tier" as string]: LEAGUE_COLORS[shownTier] }} aria-label={t("league.title")}>
+    <section className={`leagueResult ${won ? "won" : "lost"} ${up ? "change-up" : ""}`} style={{ ["--tier" as string]: LEAGUE_COLORS[record.tier] }} aria-label={t("league.title")}>
       <header>
-        <span className="leagueTier"><b aria-hidden="true">{LEAGUE_ICONS[shownTier]}</b>{t("league.leagueOf", { tier: tierName(shownTier) })}</span>
-        <LeagueDots results={results} />
+        <span className="leagueTier"><b aria-hidden="true">{LEAGUE_ICONS[record.tier]}</b>{t("league.leagueOf", { tier: tierName(record.tier) })}</span>
+        <span className="leagueWins">{winsLabel(wins)}</span>
       </header>
       <div className="leagueVs">
         <img src={rival.avatar} alt="" width={34} height={34} />
         <span><b>{rival.name}</b><small>{target}</small></span>
         <strong>{won ? t("league.beat", { name: rival.name }) : t("league.lostTo", { name: rival.name })}</strong>
       </div>
-      {last ? (
-        <p className="leagueChange" role="status">
-          {last.change === "up" ? t("league.up", { tier: tierName(last.to) })
-            : last.change === "down" ? t("league.down", { tier: tierName(last.to) })
-            : last.to === 4 && last.wins >= 3 ? t("league.top", { tier: tierName(last.to) })
-            : t("league.stay", { tier: tierName(last.to) })}
-          <small>{t("league.seriesWins", { n: last.wins, total: LEAGUE_SERIES })}</small>
-        </p>
-      ) : (
-        <p className="leagueProgress">{t("league.progress", { n: record.results.length, total: LEAGUE_SERIES, wins: record.results.filter(Boolean).length })}</p>
-      )}
+      <TierRoad record={record} />
+      <p className={up ? "leagueChange" : "leagueProgress"} role={up ? "status" : undefined}>
+        {up && last ? t("league.up", { tier: tierName(last.to) }) : nextTierLabel(record)}
+        {up && <small>{nextTierLabel(record)}</small>}
+      </p>
     </section>
   );
 }

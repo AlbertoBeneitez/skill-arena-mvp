@@ -480,7 +480,7 @@
 
 /* v171 · Header in one row: the group picture (tap to set a phone photo), the name on a single line (tap to rename)
    and the code right under it. */
-.head { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 14px; padding: 14px 16px; }
+.head { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px 16px; }
 .groupPic {
   position: relative; width: 64px; height: 64px; padding: 0; border-radius: 50%; border: 0; display: grid; place-items: center;
   background: radial-gradient(circle at 50% 30%, #1d1a14, #0b0a09); color: var(--gold);
@@ -491,7 +491,7 @@
   position: absolute; right: -2px; bottom: -2px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
   background: var(--foil); color: var(--gold-ink); box-shadow: 0 0 0 2px #121110;
 }
-.headName { display: grid; gap: 8px; justify-items: start; }
+.headName { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; justify-items: start; }
 .nameBtn {
   display: flex; align-items: center; gap: 8px; max-width: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: var(--dim); text-align: start;
 }
@@ -651,13 +651,8 @@
 .dangerZone { display: grid; gap: 10px; margin-top: 4px; }
 .dangerZone p { margin: 0; color: #ffd1cc; font-size: 16px; line-height: 1.45; }
 .dangerRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.danger {
-  min-height: 48px; border: 1px solid #ff6b5e; border-radius: 12px; background: #c8322a; color: #fff;
-  font-weight: 800; letter-spacing: .04em; cursor: pointer;
-}
-.danger:active { background: #a8261f; }
 .cancel { min-height: 48px; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: transparent; color: #e9edf2; font-weight: 700; cursor: pointer; }
-.danger:focus-visible, .cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.cancel:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* v194 · category chips above the game search, and a clear (X) button at the right of the search field. */
 .categories { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box; padding: 2px 0 8px; max-height: calc(3 * 36px + 2 * 6px + 10px); overflow: hidden; }
@@ -708,3 +703,12 @@
 }
 @keyframes radarSweep { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { .radar { animation: none; } }
+
+/* v218 · Delete the group: a quiet bin in the header (no red button); the question opens right under the header. */
+.binBtn {
+  align-self: start; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border-radius: 10px;
+  border: 1px solid var(--line); background: transparent; color: var(--mute); cursor: pointer;
+}
+.binBtn[aria-expanded="true"] { color: var(--ink); border-color: var(--line-2); }
+.binBtn:focus-visible { outline: 2px solid var(--ice-hi, var(--gold-hi)); outline-offset: 2px; }
+.dangerZone p { color: var(--ink); }

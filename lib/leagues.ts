@@ -1,8 +1,10 @@
 /**
- * Demo leagues (simulated rivals, fictitious balance): one league per game, five tiers. A series is five
- * matches in that game; 3+ wins promote, 1 or fewer wins relegate, 2 wins keep the tier. Each match is paired
- * with a simulated rival of the player's tier: its score is the target to beat. Presentation/local state only —
- * never authoritative, never used for real money or real rankings.
+ * Leagues per game, five tiers (bronze → diamond). v218 (owner, 18-nov): the tier is earned by the number of wins in
+ * that game — every match won in it counts (league duels, public matches, group matches) — and is never lost
+ * (`TIER_WINS`). Before v218 a five-match series promoted or relegated; records saved then keep their tier (they
+ * start from that tier's threshold). Offline, each league match is paired with a simulated rival of the player's
+ * tier: its score is the target to beat. Presentation/local state only — never authoritative, never used for real
+ * money or real rankings.
  */
 import type { GameMeta } from "./games";
 import { createRng } from "./deterministic/seeded";
@@ -10,24 +12,37 @@ import { portraitSrc } from "@/lib/avatars";
 
 export const LEAGUE_TIERS = ["bronze", "silver", "gold", "platinum", "diamond"] as const;
 export type LeagueTier = 0 | 1 | 2 | 3 | 4;
-export const LEAGUE_SERIES = 5;
-export const LEAGUE_PROMOTE_WINS = 3;
-export const LEAGUE_RELEGATE_WINS = 1;
 export const LEAGUE_COLORS = ["#d08a4c", "#c9d3e0", "#f3c55a", "#7fe3ee", "#b98cff"] as const;
 export const LEAGUE_ICONS = ["🥉", "🥈", "🥇", "💠", "💎"] as const;
 
+/** v218: wins in a game needed for each tier (bronze, silver, gold, platinum, diamond). */
+export const TIER_WINS = [0, 5, 15, 30, 50] as const;
+export const tierForWins = (wins: number): LeagueTier => (TIER_WINS.reduce<number>((tier, need, i) => (wins >= need ? i : tier), 0) as LeagueTier);
+/** Wins still needed for the next tier (null at diamond) and how far the current one is filled (0–1). */
+export function tierProgress(record: LeagueRecord) {
+  const wins = gameWins(record), tier = tierForWins(wins);
+  if (tier === 4) return { tier, wins, next: null, missing: 0, fill: 1 };
+  const from = TIER_WINS[tier], to = TIER_WINS[tier + 1];
+  return { tier, wins, next: (tier + 1) as LeagueTier, missing: to - wins, fill: (wins - from) / (to - from) };
+}
+/** Wins counted in a game; a record saved before v218 starts at its tier's threshold. */
+export const gameWins = (record: LeagueRecord) => (typeof record.wins === "number" ? record.wins : TIER_WINS[record.tier]);
+
 export type LeagueRecord = {
   tier: LeagueTier;
+  /** v218: matches won in this game (missing in records saved before v218). */
+  wins?: number;
   /** Results of the current series, oldest first (true = win). */
   results: boolean[];
   /** Completed series so far (drives the rival rotation). */
   series: number;
   best: LeagueTier;
+  /** The last match: v218 "up" when it reached a new tier ("down" only in records saved before v218). */
   last?: { change: "up" | "down" | "stay"; from: LeagueTier; to: LeagueTier; wins: number };
 };
 export type LeagueState = Record<string, LeagueRecord>;
 
-export const emptyLeague = (): LeagueRecord => ({ tier: 0, results: [], series: 0, best: 0 });
+export const emptyLeague = (): LeagueRecord => ({ tier: 0, wins: 0, results: [], series: 0, best: 0 });
 
 /** Platinum-level reference score per game (higher is better). Balance games use their own goals. */
 const REFERENCE: Record<string, number> = {
@@ -68,7 +83,7 @@ const rivalTime = (rng: { nextInt(n: number): number }, tier: number) => Math.ro
 
 /** Matchmaking by league tier: the rival and its score depend only on game, tier and series position. */
 export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
-  const match = record.results.length;
+  const match = record.results.length; // v218: always 0; `series` counts the matches, so the rival still rotates
   const rng = createRng(`league:${game.id}:${record.tier}:${record.series}:${match}`);
   const pool = RIVALS[record.tier];
   const name = pool[rng.nextInt(pool.length)];
@@ -85,21 +100,17 @@ export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
   return { name, avatar, target, balanceGoal: false, timeGoal: lower, timeMs: rivalTime(rng, record.tier) };
 }
 
-/** Records one match; closes the series after five and applies promotion/relegation. */
+/** v218: records one match of a game; a win adds one to the game's wins and may reach the next tier (never lower). */
 export function recordLeagueResult(record: LeagueRecord, won: boolean): LeagueRecord {
-  const results = [...record.results, won];
-  if (results.length < LEAGUE_SERIES) return { ...record, results, last: undefined };
-  const wins = results.filter(Boolean).length;
-  const from = record.tier;
-  let to = from;
-  if (wins >= LEAGUE_PROMOTE_WINS && from < 4) to = (from + 1) as LeagueTier;
-  else if (wins <= LEAGUE_RELEGATE_WINS && from > 0) to = (from - 1) as LeagueTier;
+  const before = gameWins(record), wins = before + (won ? 1 : 0);
+  const from = record.tier, to = Math.max(from, tierForWins(wins)) as LeagueTier;
   return {
     tier: to,
+    wins,
     results: [],
     series: record.series + 1,
     best: Math.max(record.best, to) as LeagueTier,
-    last: { change: to > from ? "up" : to < from ? "down" : "stay", from, to, wins },
+    last: { change: to > from ? "up" : "stay", from, to, wins },
   };
 }
 
@@ -107,6 +118,7 @@ export function isLeagueState(value: unknown): value is LeagueState {
   if (!value || typeof value !== "object") return false;
   return Object.values(value as Record<string, unknown>).every((r) => {
     const x = r as Partial<LeagueRecord>;
-    return x && typeof x.tier === "number" && x.tier >= 0 && x.tier <= 4 && Array.isArray(x.results) && typeof x.series === "number";
+    return x && typeof x.tier === "number" && x.tier >= 0 && x.tier <= 4 && Array.isArray(x.results) && typeof x.series === "number"
+      && (x.wins === undefined || (typeof x.wins === "number" && x.wins >= 0));
   });
 }

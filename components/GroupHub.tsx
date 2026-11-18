@@ -17,6 +17,7 @@ import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
 import UiIcon, { type UiIconName } from "@/components/UiIcon";
 import st from "./GroupHub.module.css";
+import { MODALITY_LABEL, competitionTitle, pointsLabel } from "./groupLabels";
 
 type Props = {
   group: ClosedGroup | null;
@@ -54,14 +55,7 @@ type Props = {
   unavailableModalities?: readonly GroupModality[];
 };
 type Kind = GroupModality;
-const MODALITY_LABEL = { "all-vs-all": "group.modeAll", "duel-groups": "group.modeDuelGroups", "relay-groups": "group.modeRelay" } as const;
 const MODALITY_HINT = { "all-vs-all": "group.modeAllHint", "duel-groups": "group.modeDuelHint", "relay-groups": "group.modeRelayHint" } as const;
-/** Title of a competition: its modality, or the format of one created before v217. */
-function competitionTitle(c: GroupCompetition) {
-  const f = c.config.format;
-  if (f === "all-vs-all" || f === "duel-groups" || f === "relay-groups") return t(MODALITY_LABEL[f]);
-  return t(f === "tournament" ? "group.tournament" : f === "single" ? "group.singleMatch" : "group.league");
-}
 
 function normalizeJoinCode(value: string) {
   const trimmed = value.trim();
@@ -76,7 +70,6 @@ function normalizeJoinCode(value: string) {
   return trimmed.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
 }
 const euros = (minor: number) => formatMoney(minor / 100);
-const pointsLabel = (n: number) => (n === 1 ? t("group.pointOne") : t("group.pointsShort", { n }));
 const MAX_SEQUENCE = 20;
 /** A phone photo cut to a centred square and shrunk to `size` px, as a JPEG data URL (stored with the group). */
 async function squarePhoto(file: File, size: number): Promise<string> {
@@ -333,6 +326,9 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           <b dir="ltr">{group.code}</b>
         </button>
       </div>
+      <button type="button" className={st.binBtn} aria-label={t("group.deleteAria")} aria-expanded={confirmDelete} onClick={() => setConfirmDelete((v) => !v)}>
+        <UiIcon name="trash" size={18} />
+      </button>
     </div>
   );
   const feedback = (
@@ -356,21 +352,16 @@ export default function GroupHub({ joinError, group, competition, balance, playe
 
   /** v192 · Red «Borrar» of the leagues and tournaments tab: first tap asks, second deletes (an unfinished competition
    * gives its entry back). Shown under the competition and under the new-competition form. */
-  const deleteBlock = (
-    <div className={st.dangerZone}>
-          {confirmDelete ? (
-            <>
-              <p role="alert">{competition && !competition.finished ? t("group.deleteConfirmRefund") : t("group.deleteConfirm")}</p>
-              <div className={st.dangerRow}>
-                <button type="button" className={st.cancel} onClick={() => setConfirmDelete(false)}>{t("common.cancel")}</button>
-                <button type="button" className={st.danger} onClick={() => { setConfirmDelete(false); onDeleteGroup(); }}>{t("group.deleteYes")}</button>
-              </div>
-            </>
-          ) : (
-            <button type="button" className={st.danger} onClick={() => setConfirmDelete(true)}>{t("group.delete")}</button>
-          )}
-        </div>
-  );
+  // v218 (owner): no red button at the bottom; a small bin in the header asks first, right under it.
+  const deleteBlock = confirmDelete ? (
+    <div className={`${st.panel} ${st.dangerZone}`}>
+      <p role="alert">{competition && !competition.finished ? t("group.deleteConfirmRefund") : t("group.deleteConfirm")}</p>
+      <div className={st.dangerRow}>
+        <button type="button" className={st.cancel} onClick={() => setConfirmDelete(false)}>{t("common.cancel")}</button>
+        <button type="button" className={st.secondary} onClick={() => { setConfirmDelete(false); onDeleteGroup(); }}>{t("group.deleteYes")}</button>
+      </div>
+    </div>
+  ) : null;
 
   if (competition) {
     const you = group.members.find((m) => m.isYou)?.id ?? "you";
@@ -401,6 +392,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     return (
       <section className={st.screen}>
         {header}
+        {deleteBlock}
         {top}
         {feedback}
         <div className={st.panel}>
@@ -473,7 +465,6 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             })}
           </ol>
         </div>
-        {deleteBlock}
       </section>
     );
   }
@@ -487,6 +478,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   return (
     <section className={st.screen}>
       {header}
+      {deleteBlock}
       {top}
       {feedback}
 
@@ -645,7 +637,6 @@ export default function GroupHub({ joinError, group, competition, balance, playe
       </div>
 
       {bottom}
-      {deleteBlock}
 
       {sheetOpen && (
         <div className={st.backdrop} onClick={(event) => { if (event.target === event.currentTarget) setSheetOpen(false); }}>

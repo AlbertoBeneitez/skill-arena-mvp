@@ -7383,31 +7383,14 @@ html[dir="rtl"] .appHeader .logoButton { text-align: right; }
 /* =====================================================================
    v110 · Demo leagues, rival card, per-game ranking, Corner Sudoku
    ===================================================================== */
-.leagueBadge {
-  position: absolute;
-  top: 8px;
-  inset-inline-start: 8px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 8px 4px 6px;
-  border-radius: 999px;
-  background: rgba(9,9,11,.78);
-  border: 1px solid color-mix(in srgb, var(--tier) 70%, transparent);
-  color: var(--tier);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .02em;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  pointer-events: none;
+/* v218 · The road bronze → diamond: past tiers full, the current one filled by its wins. */
+.tierRoad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+.tierRoad i {
+  display: block; height: 4px; border-radius: 2px; background: rgba(255,255,255,.1);
+  background-image: linear-gradient(90deg, var(--c) calc(var(--f) * 100%), transparent calc(var(--f) * 100%));
 }
-.leagueBadge b { font-size: 14px; line-height: 1; }
-.leagueDots { display: inline-flex; gap: 3px; align-items: center; }
-.leagueDots i { display: block; border-radius: 50%; background: rgba(255,255,255,.18); }
-.leagueDots i.w { background: #5cffb0; box-shadow: 0 0 6px rgba(92,255,176,.6); }
-.leagueDots i.l { background: #ff5a6a; }
+.leagueResult .tierRoad { margin-top: 12px; }
+.leagueWins { color: #f4dcaa; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
 .gxIntroRival {
   display: flex;
@@ -7451,7 +7434,6 @@ html[dir="rtl"] .appHeader .logoButton { text-align: right; }
 .leagueChange { display: grid; gap: 2px; font-size: 18px; font-weight: 900; color: #fff; text-align: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
 .leagueChange small { font-size: 14px; font-weight: 600; color: #a9b9d6; }
 .leagueResult.change-up .leagueChange { color: #5cffb0; text-shadow: 0 0 14px rgba(92,255,176,.45); animation: leagueUp .6s cubic-bezier(.2,1.4,.3,1) both; }
-.leagueResult.change-down .leagueChange { color: #ff8a96; }
 @keyframes leagueUp { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: none; }
 
@@ -8575,9 +8557,6 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 @media (hover: hover) { .appShell :where(button):not(:disabled):not(.gameScreen button):hover { filter: brightness(1.08); } }
 @media (prefers-reduced-motion: reduce) { .appShell :where(button) { transition: none !important; } .appShell :where(button):active { translate: none !important; scale: none !important; } }
 /* v130 · Catalogue rows: the league chip shrinks to its medal and its five dots (the tier name stays in aria-label). */
-.homePlayMerged [role="list"] .leagueBadge { top: 6px; inset-inline-start: 6px; gap: 4px; padding: 3px 6px 3px 5px; }
-.homePlayMerged [role="list"] .leagueBadge > span:not(.leagueDots) { display: none; }
-.homePlayMerged [role="list"] .leagueBadge b { font-size: 13px; }
 
 /* v132 · Controls never cover the game: a game with buttons gets a control band under its canvas, and the canvas
    fits the space above it (the simulation does not depend on the canvas size). */
@@ -8894,11 +8873,27 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .playerProgress .progressMain strong { font: 700 16px/1.15 var(--gx-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .playerProgress .progressTier { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--tier); font-weight: 700; }
 .playerProgress .progressTier b { font-size: 15px; }
-.playerProgress .progressJourney { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; max-width: 150px; }
-.playerProgress .progressJourney i {
-  display: block; height: 4px; border-radius: 2px; background: rgba(255,255,255,.1);
-  background-image: linear-gradient(90deg, var(--c) calc(var(--f) * 100%), transparent calc(var(--f) * 100%));
-}
+.playerProgress .progressTier em { font-style: normal; font-weight: 600; color: var(--gx-mute); }
+.playerProgress .tierRoad { max-width: 150px; }
+.playerProgress .progressNext { font-size: 12.5px; color: var(--gx-mute); }
+.playerProgress .progressEmpty { margin: 0 2px; font-size: 14px; color: var(--gx-mute); }
+/* v218 · Standings of the player's groups, at the bottom of the avatar tab. */
+.myGroups { margin: 0 0 14px; padding: 12px; border-radius: 18px; border: 1px solid var(--gx-edge); background: linear-gradient(170deg, rgba(28,28,30,.8), rgba(15,15,17,.92)); display: grid; gap: 10px; }
+.myGroups h2 { margin: 0 2px; font: 700 17px/1.2 var(--gx-display); color: var(--gx-ink); }
+.myGroup { display: grid; gap: 6px; }
+.myGroup + .myGroup { padding-top: 10px; border-top: 1px solid rgba(255,255,255,.06); }
+.myGroupHead, .myGroupsEmpty { display: grid; gap: 2px; padding: 4px 2px; border: 0; background: none; color: var(--gx-ink); text-align: start; font: inherit; cursor: pointer; }
+.myGroupHead strong { font: 700 16px/1.2 var(--gx-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.myGroupHead span, .myGroupsEmpty { font-size: 13.5px; color: var(--gx-mute); }
+.myGroupHead:focus-visible, .myGroupsEmpty:focus-visible { outline: 2px solid var(--st-ion, #7fe3ee); outline-offset: 2px; border-radius: 8px; }
+.myGroup ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.myGroup li { display: grid; grid-template-columns: 22px 26px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: rgba(10,10,12,.72); border: 1px solid transparent; }
+.myGroup li[data-you] { border-color: rgba(127,227,238,.45); }
+.myGroup li[data-out] { opacity: .5; }
+.myGroup li b { text-align: center; font: 700 15px/1 var(--gx-display); color: #f4dcaa; }
+.myGroup li img, .myGroup li i { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,.08); }
+.myGroup li span { font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.myGroup li em { font-style: normal; font: 700 14px/1 var(--gx-display); color: var(--gx-ink); white-space: nowrap; }
 .playerProgress .progressMark { display: grid; justify-items: end; gap: 3px; text-align: end; }
 .playerProgress .progressMark small { font-size: 12px; color: var(--gx-mute); white-space: nowrap; }
 .playerProgress .progressMark b { font: 700 16px/1 var(--gx-display); color: #f4dcaa; white-space: nowrap; }

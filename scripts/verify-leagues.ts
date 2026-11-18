@@ -1,25 +1,27 @@
 import assert from "node:assert/strict";
 import { GAMES, lowerScoreWins } from "../lib/games";
-import { emptyLeague, leagueRival, recordLeagueResult, type LeagueRecord } from "../lib/leagues";
+import { TIER_WINS, emptyLeague, gameWins, isLeagueState, leagueRival, recordLeagueResult, tierForWins, tierProgress, type LeagueRecord } from "../lib/leagues";
 
 const play = (start: LeagueRecord, results: boolean[]) => results.reduce(recordLeagueResult, start);
-// Five matches per series: 3+ wins promote, 1 or fewer relegate, 2 keep the tier.
+// v218: the tier is earned by the wins in the game (0, 5, 15, 30, 50) and never lost.
 {
-  let r = play(emptyLeague(), [true, false, true, false]);
-  assert.equal(r.results.length, 4);
-  assert.equal(r.tier, 0);
+  assert.deepEqual([0, 4, 5, 14, 15, 29, 30, 49, 50, 999].map(tierForWins), [0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
+  let r = play(emptyLeague(), [true, false, true, true, false, true]);
+  assert.deepEqual([r.tier, r.wins, r.series, r.last?.change], [0, 4, 6, "stay"]);
   r = recordLeagueResult(r, true);
-  assert.deepEqual([r.tier, r.results.length, r.series, r.last?.change, r.last?.wins], [1, 0, 1, "up", 3]);
-  r = play(r, [true, true, false, false, false]);
-  assert.deepEqual([r.tier, r.last?.change], [1, "stay"]);
-  r = play(r, [false, true, false, false, false]);
-  assert.deepEqual([r.tier, r.last?.change], [0, "down"]);
-  r = play(r, [false, false, false, false, false]);
-  assert.deepEqual([r.tier, r.last?.change], [0, "stay"], "Bronze is the floor");
-  let top: LeagueRecord = { ...emptyLeague(), tier: 4, best: 4 };
-  top = play(top, [true, true, true, true, true]);
-  assert.deepEqual([top.tier, top.last?.change], [4, "stay"], "Diamond is the ceiling");
-  assert.equal(play({ ...emptyLeague(), tier: 2, best: 2 }, [true, true, true, false, false]).best, 3);
+  assert.deepEqual([r.tier, r.wins, r.last?.change, r.last?.from, r.last?.to], [1, 5, "up", 0, 1], "fifth win: silver");
+  r = play(r, Array(20).fill(false));
+  assert.deepEqual([r.tier, r.wins, r.last?.change], [1, 5, "stay"], "losses never take a tier away");
+  r = play(r, Array(45).fill(true));
+  assert.deepEqual([r.tier, r.wins, r.best], [4, 50, 4]);
+  assert.deepEqual(tierProgress(r), { tier: 4, wins: 50, next: null, missing: 0, fill: 1 });
+  assert.deepEqual(tierProgress({ ...emptyLeague(), wins: 10 }), { tier: 1, wins: 10, next: 2, missing: 5, fill: 0.5 });
+  // Records saved before v218 (no wins) keep their tier: they start at its threshold.
+  const old = { tier: 3, results: [true, false], series: 9, best: 4 } as LeagueRecord;
+  assert.ok(isLeagueState({ g: old }));
+  assert.equal(gameWins(old), TIER_WINS[3]);
+  assert.deepEqual([recordLeagueResult(old, false).tier, recordLeagueResult(old, true).wins], [3, 31]);
+  assert.ok(!isLeagueState({ g: { ...emptyLeague(), wins: -1 } }));
 }
 // Matchmaking by tier: reproducible, harder rivals in higher tiers, balance games use closing-balance goals.
 for (const game of GAMES) {
@@ -32,6 +34,6 @@ for (const game of GAMES) {
   if (lowerScoreWins(game)) assert.equal(leagueRival(game, emptyLeague()).timeGoal, true);
   if (game.resultMetric === "fictitious-balance") assert.equal(targets[0], 10000);
 }
-const a = leagueRival(GAMES[3], { ...emptyLeague(), tier: 2, results: [true] }), b = leagueRival(GAMES[3], { ...emptyLeague(), tier: 2, results: [true, false] });
-assert.notDeepEqual([a.name, a.target], [b.name, b.target], "each match in a series meets a different rival");
-console.log("Leagues OK · 5-match series · promote ≥3 · relegate ≤1 · tiered simulated rivals for", GAMES.length, "games");
+const a = leagueRival(GAMES[3], recordLeagueResult({ ...emptyLeague(), tier: 2 }, true)), b = leagueRival(GAMES[3], play({ ...emptyLeague(), tier: 2 }, [true, false]));
+assert.notDeepEqual([a.name, a.target], [b.name, b.target], "each match meets a different rival");
+console.log("Leagues OK · tiers by wins per game (0/5/15/30/50, never lost) · legacy records keep their tier · tiered simulated rivals for", GAMES.length, "games");
