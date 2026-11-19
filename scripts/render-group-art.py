@@ -379,7 +379,183 @@ def comets():
     finish(img, r, "comets")
 
 
+# ---------------------------------------------------------------- v220 · five more, chosen from the group picture
+
+def blackhole():
+    """A black hole: lensed accretion disk wrapped over and under the shadow, a photon ring, stars bent around it."""
+    r = rng(71)
+    img = nebula(r, (3, 3, 10), (60, 30, 90), (20, 40, 90), 0.5)
+    img = stars(r, img, 1300)
+    x, y = coords()
+    cx, cy = 0.5, 0.52
+    dx, dy = x - cx, y - cy
+    d = np.sqrt(dx ** 2 + dy ** 2)
+    shadow_r = 0.15
+    # Flat disk seen almost edge-on: a thin, hot band across the middle.
+    band_d = np.abs(dy / 0.045)
+    radial_d = np.abs(dx)
+    disk = np.exp(-band_d ** 2) * np.clip(1 - radial_d / 0.48, 0, 1) ** 0.8
+    swirl = 0.78 + 0.22 * np.sin(dx * 28 + fractal_noise(r, 4, 4) * 3)
+    doppler = np.clip(1.25 - dx * 2.2, 0.35, 1.6)  # the side coming towards us is brighter
+    # Lensed image of the far side of the disk: a ring arcing over and under the shadow.
+    ring_r = shadow_r * 1.35
+    lensed = np.exp(-((d - ring_r) / 0.03) ** 2) * (0.35 + 0.65 * np.abs(dy) / (d + 1e-6)) * np.clip(1.2 - dx * 2.5, 0.4, 1.5)
+    photon = np.exp(-((d - shadow_r * 1.04) / 0.006) ** 2)
+    hot = color((255, 210, 150))
+    img = img + hot * (disk * swirl * doppler)[..., None] * 2.2 + color((255, 170, 90)) * lensed[..., None] * 1.6 + color((255, 245, 225)) * photon[..., None] * 2.4
+    shadow = np.clip((shadow_r - d) * 400, 0, 1)
+    img = img * (1 - shadow[..., None])
+    # The near disk passes in front of the shadow.
+    front = disk * np.clip(1 - np.abs(dy) / 0.022, 0, 1) * (d < shadow_r)
+    img = img + hot * (front * swirl * doppler)[..., None] * 1.6
+    img = streak(img, cx - 0.2, cy, (255, 200, 140), 0.7, 0.25)
+    img = bloom(img, 0.65, 20, 1.0)
+    finish(img, r, "blackhole")
+
+
+def aurora():
+    """Aurora curtains over a frozen world at night, a lone outpost with its lights on the ridge."""
+    r = rng(83)
+    img = nebula(r, (3, 6, 14), (20, 60, 90), (40, 30, 90), 0.4)
+    img = stars(r, img, 1100)
+    x, y = coords()
+    for k, (base, tint, amp) in enumerate(((0.32, (60, 255, 170), 1.0), (0.24, (120, 220, 255), 0.7), (0.4, (200, 90, 255), 0.55))):
+        wave = base + 0.05 * np.sin(x * (4 + k * 2) + k) + 0.04 * (fractal_noise(r, 3, 3)[0:1, :] - 0.5)
+        below = np.clip((y - wave) / 0.33, 0, 1)
+        curtain = np.exp(-((y - wave) / 0.02) ** 2) * 1.4 + (y > wave) * (1 - below) ** 2.5 * 0.9
+        rays = 0.25 + 0.75 * np.sin(x * 160 + fractal_noise(r, 3, 4) * 10) ** 4
+        img = img + color(tint) * (curtain * rays * amp)[..., None] * 0.55
+    # The aurora lights the haze above the horizon, so the mountains stand out against it.
+    haze = np.exp(-((y - 0.66) / 0.09) ** 2)
+    img = img + color((40, 140, 110)) * haze[..., None] * 0.55
+    def ground(dr):
+        dr.polygon(P((0, 0.7), (0.08, 0.62), (0.16, 0.68), (0.27, 0.56), (0.36, 0.66), (0.44, 0.71), (1, 0.72), (1, 1), (0, 1)), fill=255)
+        dr.polygon(P((0.7, 0.72), (0.82, 0.6), (0.9, 0.66), (1, 0.58), (1, 0.75)), fill=255)
+        dr.polygon(P((0, 0.84), (0.3, 0.8), (0.6, 0.83), (1, 0.79), (1, 1), (0, 1)), fill=255)
+        dr.rectangle(P((0.5, 0.7), (0.66, 0.81)), fill=255)
+        dr.polygon(P((0.49, 0.7), (0.58, 0.64), (0.67, 0.7)), fill=255)
+        dr.rectangle(P((0.69, 0.6), (0.697, 0.81)), fill=255)
+    m = mask_from(ground, 0.6)
+    img = silhouette(img, m, (0, 1), (120, 255, 200), 5, body=(8, 12, 18), rim_gain=1.6)
+    snow = np.clip((y - 0.78) * 4, 0, 1) * m * (0.35 + 0.3 * fractal_noise(r, 4, 8))
+    img = img + color((90, 160, 170)) * snow[..., None] * 0.6
+    for ox, oy in ((0.53, 0.75), (0.565, 0.75), (0.6, 0.75), (0.635, 0.75)):
+        img = img + color((255, 190, 110)) * radial(ox, oy, 0.01, 1.4)[..., None] * 3.5
+    img = img + color((255, 80, 70)) * radial(0.6935, 0.6, 0.007, 1.4)[..., None] * 3
+    img = bloom(img, 0.7, 16, 0.8)
+    finish(img, r, "aurora")
+
+
+def miners():
+    """A mining ship docked on a huge tumbling asteroid, floodlights cutting through drifting dust."""
+    r = rng(97)
+    img = nebula(r, (6, 5, 12), (120, 70, 40), (40, 60, 110), 0.45)
+    img = stars(r, img, 900)
+    x, y = coords()
+    # Asteroid: lumpy disc, lit from the upper left, cratered.
+    cx, cy = 0.46, 0.64
+    ang = np.arctan2(y - cy, x - cx)
+    d = np.sqrt(((x - cx) / 1.05) ** 2 + (y - cy) ** 2)
+    edge = 0.36 + 0.03 * np.sin(ang * 5) + 0.02 * np.sin(ang * 11 + 1)
+    rock = np.clip((edge - d) * 300, 0, 1)
+    rough = fractal_noise(r, 6, 8)
+    craters = np.zeros((S, S))
+    for _ in range(14):
+        px, py, pr = r.uniform(0.2, 0.75), r.uniform(0.4, 0.95), r.uniform(0.02, 0.05)
+        dd = np.sqrt((x - px) ** 2 + (y - py) ** 2)
+        craters += np.clip(1 - dd / pr, 0, 1) ** 2 * 0.6 - np.clip(1 - np.abs(dd - pr) / 0.006, 0, 1) * 0.25
+    gy, gx = np.gradient(gaussian_filter(rough, 3) * 40 - craters * 6)
+    relief = np.clip(0.5 - gx * 0.9 - gy * 1.1, 0, 1)
+    lit = np.clip(((cx - x) * 0.9 + (cy - y) * 1.1) / 0.36 + 0.15, 0.02, 1) ** 1.4
+    surface = color((150, 125, 105)) * ((0.35 + 0.8 * relief) * lit)[..., None] + color((40, 60, 90)) * 0.06
+    img = img * (1 - rock[..., None]) + surface * rock[..., None]
+    rim = np.clip(1 - np.abs(d - edge) * 120, 0, 1) * np.clip(((cx - x) + (cy - y)) * 4, 0, 1)
+    img = img + color((255, 220, 180)) * rim[..., None] * 0.9
+    # Ship on the rim, floodlights down into the dust.
+    def ship(dr):
+        dr.polygon(P((0.5, 0.29), (0.66, 0.27), (0.72, 0.3), (0.66, 0.33), (0.5, 0.32)), fill=255)
+        dr.rectangle(P((0.53, 0.32), (0.545, 0.36)), fill=255)
+        dr.rectangle(P((0.62, 0.32), (0.635, 0.36)), fill=255)
+        dr.polygon(P((0.46, 0.295), (0.5, 0.29), (0.5, 0.32), (0.46, 0.315)), fill=255)
+    m = mask_from(ship, 0.5)
+    img = silhouette(img, m, (-1, -0.5), (255, 220, 170), 4, body=(14, 16, 22))
+    dust = fractal_noise(r, 5, 5)
+    for bx in (0.56, 0.64):
+        px, py = x - bx, y - 0.335
+        cone = np.clip(1 - np.abs(px) / (0.004 + np.clip(py, 0, 1) * 0.35), 0, 1) * (py > 0) * np.exp(-py * 3)
+        img = img + color((255, 235, 190)) * (cone * (0.5 + 0.8 * dust))[..., None] * 0.7
+        img = img + color((255, 250, 230)) * radial(bx, 0.34, 0.01, 1.5)[..., None] * 3
+    img = img + color((90, 220, 255)) * radial(0.475, 0.305, 0.012, 1.6)[..., None] * 2.5
+    img = bloom(img, 0.68, 16, 0.85)
+    finish(img, r, "miners")
+
+
+def supernova():
+    """A star tearing itself apart: shock rings racing outwards, filaments, a nearby world caught in the light."""
+    r = rng(109)
+    img = nebula(r, (6, 3, 12), (150, 40, 60), (40, 80, 170), 0.6)
+    img = stars(r, img, 900)
+    x, y = coords()
+    cx, cy = 0.6, 0.4
+    d = np.sqrt((x - cx) ** 2 + (y - cy) ** 2)
+    ang = np.arctan2(y - cy, x - cx)
+    filaments = np.clip(np.sin(ang * 23 + fractal_noise(r, 5, 6) * 9), 0, 1) ** 6
+    shell = np.exp(-((d - 0.3) / 0.05) ** 2) * (0.5 + 0.8 * fractal_noise(r, 5, 8))
+    inner = np.exp(-((d - 0.17) / 0.025) ** 2)
+    rays = filaments * np.exp(-d / 0.32) * (d > 0.02)
+    img = img + color((255, 120, 80)) * shell[..., None] * 1.2 + color((140, 220, 255)) * inner[..., None] * 1.4 + color((255, 230, 190)) * rays[..., None] * 1.4
+    img = img + color((255, 255, 245)) * radial(cx, cy, 0.06, 1.3)[..., None] * 5
+    img = streak(img, cx, cy, (255, 220, 190), 1.0, 1.0)
+    # A planet in the foreground, its day side blazing toward the blast.
+    px, py, pr = 0.22, 0.86, 0.33
+    dd = np.sqrt((x - px) ** 2 + (y - py) ** 2)
+    disc = np.clip((pr - dd) * 300, 0, 1)
+    shade = np.clip(((x - px) * (cx - px) + (y - py) * (cy - py)) / (pr * 0.62) + 0.2, 0, 1) ** 1.5
+    surf = color((40, 50, 90)) * (0.5 + 0.5 * fractal_noise(r, 5, 6)[..., None])
+    img = img * (1 - disc[..., None]) + (surf * 0.25 + color((255, 170, 120)) * shade[..., None] * 0.8 * fractal_noise(r, 4, 10)[..., None]) * disc[..., None]
+    img = img + color((255, 190, 140)) * (np.clip(1 - np.abs(dd - pr) * 70, 0, 1) ** 2 * shade)[..., None] * 1.6
+    img = bloom(img, 0.65, 22, 1.0)
+    finish(img, r, "supernova")
+
+
+def derelict():
+    """A colossal ring station, abandoned, silhouetted against a swollen red giant; a scout ship's lights approaching."""
+    r = rng(127)
+    img = nebula(r, (8, 3, 6), (160, 40, 30), (90, 30, 60), 0.6)
+    img = stars(r, img, 600)
+    x, y = coords()
+    # Red giant: huge, low, with granulation and a soft limb.
+    cx, cy, R = 0.5, 0.95, 0.62
+    d = np.sqrt((x - cx) ** 2 + (y - cy) ** 2)
+    disc = np.clip((R - d) * 120, 0, 1)
+    gran = fractal_noise(r, 6, 16)
+    limb = np.clip(1 - d / R, 0, 1) ** 0.45
+    star = (color((255, 110, 40)) * (0.6 + 0.6 * gran[..., None]) + color((255, 200, 120)) * (gran[..., None] ** 3)) * limb[..., None]
+    img = img * (1 - disc[..., None]) + star * disc[..., None] * 1.3
+    img = img + color((255, 90, 40)) * (np.exp(-(d - R) / 0.08) * (d > R))[..., None] * 0.9
+    # The ring station: thick torus seen tilted, with spokes and a hub; broken segment.
+    def station(dr):
+        bbox = [0.18 * S, 0.3 * S, 0.82 * S, 0.62 * S]
+        dr.ellipse(bbox, outline=255, width=int(0.035 * S))
+        dr.ellipse([0.46 * S, 0.43 * S, 0.54 * S, 0.49 * S], fill=255)
+        for a in range(0, 360, 60):
+            ex = 0.5 + 0.32 * math.cos(math.radians(a))
+            ey = 0.46 + 0.16 * math.sin(math.radians(a))
+            dr.line([0.5 * S, 0.46 * S, ex * S, ey * S], fill=255, width=int(0.008 * S))
+        dr.rectangle([0.495 * S, 0.2 * S, 0.505 * S, 0.43 * S], fill=255)
+    m = mask_from(station, 0.6)
+    gap = np.clip(1 - (np.abs(x - 0.75) < 0.05) * (y < 0.42) * (y > 0.3), 0, 1)  # a broken section
+    m = m * gap
+    img = silhouette(img, m, (0, 1), (255, 140, 70), 6, body=(10, 6, 8), rim_gain=2.4)
+    for k in range(5):
+        img = img + color((120, 220, 255)) * radial(0.24 + k * 0.11, 0.33 + (k % 2) * 0.27, 0.004, 1.5)[..., None] * 2 * (k != 4)
+    img = img + color((150, 240, 255)) * radial(0.3, 0.2, 0.01, 1.4)[..., None] * 3
+    img = streak(img, 0.3, 0.2, (150, 230, 255), 0.4, 0.4)
+    img = bloom(img, 0.68, 18, 0.9)
+    finish(img, r, "derelict")
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for scene in (crew, eclipse, stargate, launch, moonbase, comets):
+    for scene in (crew, eclipse, stargate, launch, moonbase, comets, blackhole, aurora, miners, supernova, derelict):
         scene()

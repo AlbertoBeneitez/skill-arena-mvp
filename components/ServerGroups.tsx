@@ -8,16 +8,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import GamePicker from "./GamePicker";
 import GroupHub from "./GroupHub";
+import { groupArtIdOf, groupArtSrc, isGroupArtId } from "@/lib/groupArt";
+import { StandingsList } from "./MyGroupTables";
+import { competitionStatus, competitionTitle } from "./groupLabels";
 import UiIcon from "./UiIcon";
 import { GAMES, playableForMoney } from "@/lib/games";
 import { portraitSrc } from "@/lib/avatars";
 import type { ClosedGroup } from "@/lib/groupPlay";
-import type { GroupCompetition, GroupConfig } from "@/lib/groupCompetition";
+import { isGroupCompetition, type GroupCompetition, type GroupConfig } from "@/lib/groupCompetition";
 import { formatMoney, t, useI18n } from "@/lib/i18n";
 import hub from "./GroupHub.module.css";
 import st from "./ServerGroups.module.css";
 
-type Group = { id: string; name: string; code: string; ownerId: string; members: number };
+type Group = { id: string; name: string; code: string; ownerId: string; members: number; art?: string | null };
 type Member = { accountId: string; name: string; avatar: number; role: string };
 type Comp = {
   id: string; mode: "group" | "versus-league" | "versus-tournament"; status: "open" | "running" | "finished" | "cancelled";
@@ -74,6 +77,7 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
   const owner = current?.group.ownerId === accountId;
   const group: ClosedGroup | null = useMemo(() => current && {
     id: current.group.id, name: current.group.name, code: current.group.code, stake: 0,
+    ...(isGroupArtId(current.group.art) ? { image: groupArtSrc(current.group.art) } : {}),
     members: current.members.map((m) => ({ id: m.accountId, name: m.name, avatar: face(m.avatar), isYou: m.accountId === accountId, scoreFactor: 1 })),
   }, [current, accountId]);
   const mine = (data?.competitions ?? []).filter((k) => current && k.mode === "group" && k.groupIds.includes(current.group.id));
@@ -117,6 +121,16 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
     </>
   ) : null;
 
+  // v220: every competition this group has played or is playing (its own and those against other groups), newest first.
+  const tables = (data?.competitions ?? [])
+    .filter((k) => current && k.groupIds.includes(current.group.id) && (k.status === "running" || k.status === "finished") && k.state)
+    .slice(0, 6)
+    .flatMap((k) => {
+      const raw = k.mode === "group" ? k.state : (k.state as { comp?: unknown } | null)?.comp;
+      if (!isGroupCompetition(raw)) return [];
+      const c: GroupCompetition = { ...raw, players: raw.players.map((p) => ({ ...p, avatar: face(p.avatar) })) };
+      return [{ id: k.id, competition: c, title: k.mode === "group" ? current!.group.name : t(k.mode === "versus-tournament" ? "sg.mode.versus-tournament" : "sg.mode.versus-league") }];
+    });
   const challenges = (data?.open ?? []).filter((k) => !k.groupIds.some((id) => (data?.groups ?? []).some((g) => g.id === id)));
   const bottom = (
     <>
@@ -154,20 +168,18 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
           </ul>
         )}
       </div>
-      <div className={hub.panel}>
-        <h2 className={hub.formTitle}>{t("sg.ranking")}</h2>
-        {(data?.ranking.length ?? 0) === 0 ? <p className={hub.hint}>{t("sg.noRanking")}</p> : (
-          <ol className={st.list}>
-            {data!.ranking.map((r, i) => (
-              <li key={r.groupId}>
-                <b className={st.place}>{i + 1}</b>
-                <div><strong>{r.name}</strong><span>{t("sg.competitionsPlayed", { n: r.competitions })}</span></div>
-                <b>{r.netMinor >= 0 ? "+" : ""}{money(r.netMinor)}</b>
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
+      {/* v220 (owner): no ranking of all groups; the standings of the competitions of the player's group instead. */}
+      {current && (
+        <div className={hub.panel}>
+          <h2 className={hub.formTitle}>{t("sg.ranking")}</h2>
+          {tables.length === 0 ? <p className={hub.hint}>{t("sg.noRanking")}</p> : tables.map(({ id, competition: c, title }) => (
+            <article key={id} className="myGroup">
+              <div className="myGroupHead"><strong>{title}</strong><span>{`${competitionTitle(c)} · ${competitionStatus(c)}`}</span></div>
+              <StandingsList competition={c} you={accountId} />
+            </article>
+          ))}
+        </div>
+      )}
     </>
   );
 
@@ -188,7 +200,13 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
       onPlay={() => setMessage(t("sg.playSoon"))}
       onVote={() => setMessage(t("sg.playSoon"))}
       onClearCompetition={() => active && setDismissed((d) => [...d, active.id])}
-      onUpdateGroup={(patch) => { if (current && patch.name) void act({ action: "rename", groupId: current.group.id, name: patch.name }); }}
+      onUpdateGroup={(patch) => {
+        if (!current) return;
+        if (patch.name) void act({ action: "rename", groupId: current.group.id, name: patch.name });
+        const art = groupArtIdOf(patch.image); // v220: photos are not kept online; the app's pictures are
+        if (art) void act({ action: "art", groupId: current.group.id, art });
+      }}
+      canChangePicture={owner}
       onDeleteGroup={() => { if (current) void act({ action: owner ? "close" : "leave", groupId: current.group.id }); }}
       top={group ? top : null}
       bottom={group ? bottom : null}

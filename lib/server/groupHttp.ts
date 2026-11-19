@@ -13,7 +13,7 @@ import { recordEvent } from "./events";
 import { relayOverview } from "./groupRelays";
 import {
   GroupError, acceptChallenge, cancelCompetition, closeGroup, createCompetition, createGroup, enterCompetition, groupWinningsRanking, joinGroup,
-  leaveGroup, listGroupMembers, listMyCompetitions, listMyGroups, listOpenVersus, recordResult, renameGroup, startCompetition, type CompetitionMode,
+  leaveGroup, listGroupMembers, listMyCompetitions, listMyGroups, listOpenVersus, recordResult, renameGroup, setGroupArt, startCompetition, type CompetitionMode,
 } from "./groups";
 
 export const MAX_ENTRY_MINOR = 10_000;
@@ -88,6 +88,9 @@ export async function groupAction(pool: Pool, actor: Actor, body: Record<string,
     }
     case "rename":
       await renameGroup(pool, accountId, isUuid(body.groupId) ? body.groupId : bad("groupId"), typeof body.name === "string" ? body.name : "");
+      return {};
+    case "art":
+      await setGroupArt(pool, accountId, isUuid(body.groupId) ? body.groupId : bad("groupId"), body.art === null ? null : typeof body.art === "string" ? body.art : bad("art"));
       return {};
     case "leave": await leaveGroup(pool, accountId, isUuid(body.groupId) ? body.groupId : bad("groupId")); return {};
     case "close": await closeGroup(pool, accountId, isUuid(body.groupId) ? body.groupId : bad("groupId")); return {};

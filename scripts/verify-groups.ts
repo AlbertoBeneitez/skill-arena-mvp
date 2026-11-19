@@ -10,7 +10,7 @@ import { applyMigrations } from "../lib/server/migrations";
 import { ledgerBalance } from "../lib/server/ledger";
 import {
   GroupError, acceptChallenge, cancelCompetition, closeGroup, createCompetition, createGroup, enterCompetition, groupWinningsRanking, joinGroup,
-  leaveGroup, listGroupMembers, listOpenVersus, recordResult, startCompetition,
+  leaveGroup, listGroupMembers, listMyGroups, listOpenVersus, recordResult, setGroupArt, startCompetition,
 } from "../lib/server/groups";
 
 const connectionString = process.env.TEST_DATABASE_URL;
@@ -89,6 +89,13 @@ try {
   assert.equal(await code(joinGroup(pool, ids.D1, g1.code, "desktop")), "PLATFORM_MISMATCH", "computers never join a phone group");
   assert.equal(await code(joinGroup(pool, ids.A2, "ZZZZZZZZ", "mobile")), "NO_GROUP");
   assert.equal((await joinGroup(pool, ids.A2, g1.code.toLowerCase(), "mobile")).members, 2);
+  // v220: the owner picks the group's picture among the app's pictures; nobody else can, nothing else is stored.
+  await setGroupArt(pool, ids.A1, g1.id, "blackhole");
+  assert.equal((await listMyGroups(pool, ids.A2)).find((g) => g.id === g1.id)?.art, "blackhole");
+  assert.equal(await code(setGroupArt(pool, ids.A2, g1.id, "aurora")), "NOT_OWNER");
+  assert.equal(await code(setGroupArt(pool, ids.A1, g1.id, "../x")), "INVALID_ART");
+  await setGroupArt(pool, ids.A1, g1.id, null);
+  assert.equal((await listMyGroups(pool, ids.A1)).find((g) => g.id === g1.id)?.art, null);
   assert.equal(await code(joinGroup(pool, ids.A2, g1.code, "mobile")), "ALREADY_MEMBER");
   await joinGroup(pool, ids.A4, g2.code, "mobile");
   assert.deepEqual((await listGroupMembers(pool, g1.id)).map((m) => m.role), ["owner", "member"]);

@@ -11,6 +11,7 @@ import type { Pool, PoolClient } from "pg";
 import { createGroupCompetition, recordGroupScore, roundGame, type GroupCompetition, type GroupConfig, type GroupPlayer } from "@/lib/groupCompetition";
 import { createGroupVersus, recordVersusScore, versusOutcome, versusPayouts, type GroupVersus, type VersusSetup } from "@/lib/groupVersus";
 import { isChanceGameId } from "@/lib/games";
+import { isGroupArtId } from "@/lib/groupArt";
 import type { Platform } from "@/lib/platform";
 import { ledgerBalance, postTransaction } from "./ledger";
 
@@ -21,12 +22,12 @@ export type CompetitionMode = "group" | "versus-league" | "versus-tournament";
 export type GroupErrorCode =
   | "INVALID_NAME" | "NO_ACCOUNT" | "NO_GROUP" | "PLATFORM_MISMATCH" | "GROUP_FULL" | "ALREADY_MEMBER" | "NOT_MEMBER" | "NOT_OWNER"
   | "OWNER_CANNOT_LEAVE" | "GROUP_BUSY" | "INVALID_COMPETITION" | "CHANCE_GAME_NOT_FOR_MONEY" | "NO_COMPETITION" | "NOT_OPEN"
-  | "NOT_RUNNING" | "INSUFFICIENT_BALANCE" | "INVALID_TEAMS" | "INVALID_ATTEMPT" | "ALREADY_RECORDED" | "PAYOUT_MISMATCH";
+  | "NOT_RUNNING" | "INSUFFICIENT_BALANCE" | "INVALID_TEAMS" | "INVALID_ATTEMPT" | "ALREADY_RECORDED" | "PAYOUT_MISMATCH" | "INVALID_ART";
 export class GroupError extends Error {
   constructor(readonly code: GroupErrorCode) { super(code); }
 }
 
-export type GroupView = { id: string; name: string; code: string; platform: Platform; ownerId: string; members: number };
+export type GroupView = { id: string; name: string; code: string; platform: Platform; ownerId: string; members: number; art?: string | null };
 export type CompetitionView = {
   id: string; mode: CompetitionMode; platform: Platform; status: "open" | "running" | "finished" | "cancelled"; entryMinor: number;
   groupIds: string[]; players: number; potMinor: number; result: unknown;
@@ -363,11 +364,11 @@ export async function groupWinningsRanking(pool: Pool, platform: Platform, limit
 /** The groups an account belongs to (the "my groups" list), newest first. */
 export async function listMyGroups(pool: Pool, accountId: string): Promise<GroupView[]> {
   const { rows } = await pool.query(
-    `SELECT g.group_id, g.name, g.code, g.platform, g.owner_account_id,
+    `SELECT g.group_id, g.name, g.code, g.platform, g.owner_account_id, g.art,
             (SELECT count(*) FROM arena_group_members x WHERE x.group_id = g.group_id AND x.left_at IS NULL) AS members
        FROM arena_groups g JOIN arena_group_members m ON m.group_id = g.group_id
       WHERE m.account_id = $1 AND m.left_at IS NULL AND g.closed_at IS NULL ORDER BY g.created_at DESC LIMIT 20`, [accountId]);
-  return rows.map((g) => ({ id: g.group_id as string, name: g.name as string, code: g.code as string, platform: g.platform as Platform, ownerId: g.owner_account_id as string, members: Number(g.members) }));
+  return rows.map((g) => ({ id: g.group_id as string, name: g.name as string, code: g.code as string, platform: g.platform as Platform, ownerId: g.owner_account_id as string, members: Number(g.members), art: (g.art as string | null) ?? null }));
 }
 
 /** Competitions of the groups an account belongs to, with its own entry state (the "my competitions" list). */
@@ -386,6 +387,13 @@ export async function listMyCompetitions(pool: Pool, accountId: string, limit = 
     groupIds: r.groups as string[], players: Number(r.players), potMinor: Number(r.entry_minor) * Number(r.players), result: r.result, entered: Boolean(r.entered),
     state: r.state ?? null,
   }));
+}
+
+/** v220: the owner picks the group's picture among the app's group pictures (null: back to the default one). */
+export async function setGroupArt(pool: Pool, ownerId: string, groupId: string, art: string | null): Promise<void> {
+  if (art !== null && !isGroupArtId(art)) throw new GroupError("INVALID_ART");
+  const { rowCount } = await pool.query("UPDATE arena_groups SET art = $3 WHERE group_id = $1 AND owner_account_id = $2 AND closed_at IS NULL", [groupId, ownerId, art]);
+  if (!rowCount) throw new GroupError("NOT_OWNER");
 }
 
 /** v204: the owner renames the group (2–30 characters). */

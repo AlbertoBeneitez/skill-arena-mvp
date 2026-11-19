@@ -10,7 +10,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, GROUP_COMMISSION_BPS, GROUP_MODALITIES, groupMoney, groupStandings, groupTeamStandings, HOME_TEAM, isInterGroup, nextGroupMatch, RANDOM_GAME, relayTotals, relayWaitingFor, roundAwaitingRival, stepSplit, waitingGroupMatch, type GroupCompetition, type GroupConfig, type GroupModality } from "@/lib/groupCompetition";
-import { groupArt } from "@/lib/groupArt";
+import { GROUP_ART_IDS, groupArt, groupArtSrc } from "@/lib/groupArt";
 import { GAMES, playableForMoney } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
@@ -44,6 +44,8 @@ type Props = {
   bottom?: ReactNode;
   /** v204: the group picture lives only on this device; the online screen hides it. */
   allowPhoto?: boolean;
+  /** v220: whether this player may change the group's picture (online: the owner). */
+  canChangePicture?: boolean;
   /** v199: offline (header globe off): invented rivals can be added; competitions are free (no entry, no prizes). */
   offline?: boolean;
   onAddRival?: () => void;
@@ -117,7 +119,7 @@ function Medal({ place }: { place: number }) {
   );
 }
 
-export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup, offline = false, onAddRival, onRemoveRival, onFindRival, onCancelRival, searchingRival = false, unavailableModalities = [], allowPhoto = true, top, bottom }: Props) {
+export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup, offline = false, onAddRival, onRemoveRival, onFindRival, onCancelRival, searchingRival = false, unavailableModalities = [], allowPhoto = true, canChangePicture = true, top, bottom }: Props) {
   useI18n();
   const competitionRunning = Boolean(competition && !competition.finished);
   const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
@@ -130,6 +132,8 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const [copied, setCopied] = useState<"" | "code" | "link">("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /** v220: the picture chooser under the header (the app's pictures, and a photo where photos are kept). */
+  const [choosingPicture, setChoosingPicture] = useState(false);
   const [kind, setKind] = useState<Kind>("all-vs-all");
   /** v167/v168: the games picked, in play order; the same game may appear several times (a league or a tournament
    * plays them round by round). Empty = random mix. */
@@ -296,13 +300,13 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   }
   const header = (
     <div className={st.head}>
-      {allowPhoto ? (
-        <button type="button" className={st.groupPic} onClick={() => photoRef.current?.click()} aria-label={t(group.image ? "group.photoChange" : "group.photoAdd")}>
+      {canChangePicture ? (
+        <button type="button" className={st.groupPic} onClick={() => setChoosingPicture((v) => !v)} aria-expanded={choosingPicture} aria-label={t(group.image ? "group.photoChange" : "group.photoAdd")}>
           <img src={group.image || groupArt(group.code || group.id)} alt="" />
           <span className={st.groupPicBadge} aria-hidden="true"><UiIcon name="camera" size={12} /></span>
         </button>
       ) : (
-        <span className={st.groupPic} aria-hidden="true"><img src={groupArt(group.code || group.id)} alt="" /></span>
+        <span className={st.groupPic} aria-hidden="true"><img src={group.image || groupArt(group.code || group.id)} alt="" /></span>
       )}
       <input ref={photoRef} type="file" accept="image/*" hidden onChange={(event) => { void pickPhoto(event.target.files?.[0]); event.target.value = ""; }} />
       <div className={st.headName}>
@@ -349,6 +353,27 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   /** v192 · Red «Borrar» of the leagues and tournaments tab: first tap asks, second deletes (an unfinished competition
    * gives its entry back). Shown under the competition and under the new-competition form. */
   // v218 (owner): no red button at the bottom; a small bin in the header asks first, right under it.
+  const currentPicture = group.image || groupArt(group.code || group.id);
+  const pictureBlock = choosingPicture && canChangePicture ? (
+    <div className={st.panel}>
+      <div className={st.panelHead}>
+        <h2>{t("group.pictureTitle")}</h2>
+        <button type="button" className={st.cancel} onClick={() => setChoosingPicture(false)}>{t("common.close")}</button>
+      </div>
+      <div className={st.artGrid} role="radiogroup" aria-label={t("group.pictureTitle")}>
+        {GROUP_ART_IDS.map((id, i) => {
+          const src = groupArtSrc(id);
+          return (
+            <button key={id} type="button" role="radio" aria-checked={currentPicture === src} aria-label={t("group.pictureN", { n: i + 1 })}
+              onClick={() => { onUpdateGroup({ image: src }); setChoosingPicture(false); }}>
+              <img src={src} alt="" loading="lazy" decoding="async" />
+            </button>
+          );
+        })}
+      </div>
+      {allowPhoto && <button type="button" className={st.secondary} onClick={() => { setChoosingPicture(false); photoRef.current?.click(); }}>{t("group.pictureUpload")}</button>}
+    </div>
+  ) : null;
   const deleteBlock = confirmDelete ? (
     <div className={`${st.panel} ${st.dangerZone}`}>
       <p role="alert">{competition && !competition.finished ? t("group.deleteConfirmRefund") : t("group.deleteConfirm")}</p>
@@ -388,6 +413,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     return (
       <section className={st.screen}>
         {header}
+        {pictureBlock}
         {deleteBlock}
         {top}
         {feedback}
@@ -472,6 +498,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   return (
     <section className={st.screen}>
       {header}
+      {pictureBlock}
       {deleteBlock}
       {top}
       {feedback}

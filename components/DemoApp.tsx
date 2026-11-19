@@ -11,6 +11,7 @@ import shellStyles from "./ProductShell.module.css";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePublicMatchAvailability, usePendingMatchResolution } from "@/lib/usePublicMatchState";
 import OrbitalScene from "./OrbitalScene";
+import AtomScene from "./AtomScene";
 import UiIcon from "./UiIcon";
 import ProviderLogo from "./ProviderLogo";
 import { AUTH_PROVIDERS, type AuthProviderId, type AuthProviderInfo } from "@/lib/authProviders";
@@ -1675,7 +1676,7 @@ export default function DemoApp() {
   if (screen === "welcome") {
     return (
       <main className="onboarding arenaOnboarding gxStage gxStageWelcome">
-        <OrbitalScene variant="welcome" />
+        <AtomScene />
         <section className="welcomeCard welcomeCardCompact gxWelcome">
           <div className="welcomeTopBar"><LanguagePicker compact /></div>
           <h1 className="wordmark gxWordmark" aria-label={PRODUCT_NAME}>
@@ -1720,7 +1721,7 @@ export default function DemoApp() {
   if (screen === "welcome-back") {
     return (
       <main className="onboarding arenaOnboarding gxStage gxStageWelcome">
-        <OrbitalScene variant="welcome" />
+        <AtomScene />
         <section className="welcomeCard welcomeCardCompact gxWelcome gxBack">
           <div className="welcomeTopBar"><LanguagePicker compact /></div>
           <h1 className="wordmark gxWordmark" aria-label={PRODUCT_NAME}>

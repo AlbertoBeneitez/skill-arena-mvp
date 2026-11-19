@@ -96,5 +96,11 @@ export const MIGRATIONS: readonly BundledMigration[] = [
     "file": "016-play-counts.sql",
     "sha256": "d7fa19638c4239241e42a6a2251faa570daefb81eaebffa67ec22ebe0f98ff29",
     "sql": "-- v219 · Matches started per game for each account, so «Tu selección» (the games played, most played first) is the\n-- same after signing in again or on another device. Additive only. Deleting an account removes its rows\n-- (lib/server/accounts.ts › deleteAccount); a game id is checked against the catalogue before it is stored.\nCREATE TABLE IF NOT EXISTS arena_play_counts (\n  account_id uuid NOT NULL REFERENCES arena_accounts(account_id) ON DELETE CASCADE,\n  game_id    text NOT NULL CHECK (game_id ~ '^[a-z0-9-]{1,40}$'),\n  plays      integer NOT NULL DEFAULT 0 CHECK (plays >= 0 AND plays <= 1000000),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  PRIMARY KEY (account_id, game_id)\n);\n"
+  },
+  {
+    "id": "017",
+    "file": "017-group-art.sql",
+    "sha256": "efc80e21a14b37bf8a6aadf5898dede45ec10d71e12d5bfd7035d7c1e7ce6364",
+    "sql": "-- v220 · The picture a group's owner chose among the app's group pictures (lib/groupArt.ts). Additive only; NULL keeps\n-- the default picture derived from the group. Photos are not stored on the server.\nALTER TABLE arena_groups ADD COLUMN IF NOT EXISTS art text CHECK (art IS NULL OR art ~ '^[a-z]{3,16}$');\n"
   }
 ];

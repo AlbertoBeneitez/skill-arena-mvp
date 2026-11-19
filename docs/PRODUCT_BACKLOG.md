@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v220-saturn · Átomo de inicio, más ligas, imágenes de grupo y retos (19-nov-2026)
+
+- Átomo retro interactivo en la bienvenida; ligas Madera/Ámbar/Perla; 11 imágenes de grupo elegibles; textos de retos; clasificación del grupo online. Pendiente: elección entre diseño A (Cabina 84) y B (Retro suave).
+
 ## v219-saturn · Arranque, Tu selección, megáfono y reto a otro grupo (19-nov-2026)
 
 - Sin parpadeos al abrir; Tu selección por partidas jugadas (servidor + dispositivo); X quita el último juego; megáfono simple sin pitidos; buscador de juegos en el reto. Pendiente: decisión del propietario sobre el diseño retro y fase 2 de grupos online.

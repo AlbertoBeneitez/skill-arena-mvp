@@ -1,5 +1,5 @@
 /**
- * Leagues per game, five tiers (bronze → diamond). v218 (owner, 18-nov): the tier is earned by the number of wins in
+ * Leagues per game, eight tiers (bronze → diamond, then v220 wood → amber → pearl). v218 (owner, 18-nov): the tier is earned by the number of wins in
  * that game — every match won in it counts (league duels, public matches, group matches) — and is never lost
  * (`TIER_WINS`). Before v218 a five-match series promoted or relegated; records saved then keep their tier (they
  * start from that tier's threshold). Offline, each league match is paired with a simulated rival of the player's
@@ -10,18 +10,21 @@ import type { GameMeta } from "./games";
 import { createRng } from "./deterministic/seeded";
 import { portraitSrc } from "@/lib/avatars";
 
-export const LEAGUE_TIERS = ["bronze", "silver", "gold", "platinum", "diamond"] as const;
-export type LeagueTier = 0 | 1 | 2 | 3 | 4;
-export const LEAGUE_COLORS = ["#d08a4c", "#c9d3e0", "#f3c55a", "#7fe3ee", "#b98cff"] as const;
-export const LEAGUE_ICONS = ["🥉", "🥈", "🥇", "💠", "💎"] as const;
+/** v220 (owner): after diamond come materials made by living things — far rarer in space than any gem: wood, amber,
+ * pearl. */
+export const LEAGUE_TIERS = ["bronze", "silver", "gold", "platinum", "diamond", "wood", "amber", "pearl"] as const;
+export type LeagueTier = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export const TOP_TIER = (LEAGUE_TIERS.length - 1) as LeagueTier;
+export const LEAGUE_COLORS = ["#d08a4c", "#c9d3e0", "#f3c55a", "#7fe3ee", "#b98cff", "#a4713f", "#ffae1f", "#efe7f6"] as const;
+export const LEAGUE_ICONS = ["🥉", "🥈", "🥇", "💠", "💎", "🪵", "🔶", "🦪"] as const;
 
 /** v218: wins in a game needed for each tier (bronze, silver, gold, platinum, diamond). */
-export const TIER_WINS = [0, 5, 15, 30, 50] as const;
+export const TIER_WINS = [0, 5, 15, 30, 50, 80, 120, 175] as const;
 export const tierForWins = (wins: number): LeagueTier => (TIER_WINS.reduce<number>((tier, need, i) => (wins >= need ? i : tier), 0) as LeagueTier);
 /** Wins still needed for the next tier (null at diamond) and how far the current one is filled (0–1). */
 export function tierProgress(record: LeagueRecord) {
   const wins = gameWins(record), tier = tierForWins(wins);
-  if (tier === 4) return { tier, wins, next: null, missing: 0, fill: 1 };
+  if (tier === TOP_TIER) return { tier, wins, next: null, missing: 0, fill: 1 };
   const from = TIER_WINS[tier], to = TIER_WINS[tier + 1];
   return { tier, wins, next: (tier + 1) as LeagueTier, missing: to - wins, fill: (wins - from) / (to - from) };
 }
@@ -61,9 +64,9 @@ const REFERENCE: Record<string, number> = {
 };
 /** Score caps: the target never exceeds what a perfect run can reach. */
 const CAP: Record<string, number> = {};
-const FACTORS = [0.45, 0.65, 0.85, 1, 1.2] as const;
+const FACTORS = [0.45, 0.65, 0.85, 1, 1.2, 1.42, 1.68, 2] as const;
 /** Balance games start with 100 chips (10 000 minor units): the goal is the closing balance. */
-const BALANCE_GOALS = [10000, 11000, 12500, 15000, 20000] as const;
+const BALANCE_GOALS = [10000, 11000, 12500, 15000, 20000, 26000, 33000, 42000] as const;
 
 export const RIVALS = [
   ["COMET", "PIXEL", "NUBE", "ROCKY", "LUNA", "ZIGGY"],
@@ -71,6 +74,9 @@ export const RIVALS = [
   ["NOVA", "ATLAS", "LYRA", "RIGEL", "SOL", "IRIS"],
   ["QUASAR", "ANDRO", "ELARA", "TITAN", "HALO", "ZENITH"],
   ["PULSAR", "AURORA", "SIRIUS", "NEBULA", "MAGNA", "ASTRA"],
+  ["ROBLE", "CEDRO", "SAUCE", "ARCE", "OLMO", "TEJO"],
+  ["RESINA", "FÓSIL", "MIEL", "OCRE", "SOLAR", "AURUM"],
+  ["NÁCAR", "OSTRA", "MAREA", "CORAL", "PERLA", "ABISMO"],
 ] as const;
 
 export type LeagueRival = {
@@ -118,7 +124,7 @@ export function isLeagueState(value: unknown): value is LeagueState {
   if (!value || typeof value !== "object") return false;
   return Object.values(value as Record<string, unknown>).every((r) => {
     const x = r as Partial<LeagueRecord>;
-    return x && typeof x.tier === "number" && x.tier >= 0 && x.tier <= 4 && Array.isArray(x.results) && typeof x.series === "number"
+    return x && typeof x.tier === "number" && x.tier >= 0 && x.tier <= TOP_TIER && Array.isArray(x.results) && typeof x.series === "number"
       && (x.wins === undefined || (typeof x.wins === "number" && x.wins >= 0));
   });
 }

@@ -23,23 +23,29 @@ export default function MyGroupTables({ tables, onOpen }: { tables: readonly Gro
             <strong>{name}</strong>
             <span>{competition ? `${competitionTitle(competition)} · ${competitionStatus(competition)}` : t("profile.groupNoComp")}</span>
           </button>
-          {competition && (
-            <ol>
-              {groupStandings(competition).map((s) => {
-                const p = competition.players.find((x) => x.id === s.id);
-                return (
-                  <li key={s.id} data-you={s.id === you || undefined} data-out={s.out || undefined}>
-                    <b>{s.place}</b>
-                    {p?.avatar ? <img src={p.avatar} alt="" width={26} height={26} /> : <i aria-hidden="true" />}
-                    <span>{s.id === you ? t("common.you") : p?.name ?? s.id}</span>
-                    <em>{standingValue(competition, s)}</em>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
+          {competition && <StandingsList competition={competition} you={you} />}
         </article>
       ))}
     </section>
+  );
+}
+
+/** v220 · The standings of one competition, the player's row marked (avatar tab and the Groups tab online). */
+export function StandingsList({ competition, you }: { competition: GroupCompetition; you: string }) {
+  useI18n();
+  return (
+    <ol className="myGroupRows">
+      {groupStandings(competition).map((s) => {
+        const p = competition.players.find((x) => x.id === s.id);
+        return (
+          <li key={s.id} data-you={s.id === you || undefined} data-out={s.out || undefined}>
+            <b>{s.place}</b>
+            {p?.avatar ? <img src={p.avatar} alt="" width={26} height={26} /> : <i aria-hidden="true" />}
+            <span>{s.id === you ? t("common.you") : p?.name ?? s.id}</span>
+            <em>{standingValue(competition, s)}</em>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
