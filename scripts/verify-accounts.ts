@@ -7,7 +7,7 @@ import { applyMigrations } from "../lib/server/migrations";
 import { ledgerBalance } from "../lib/server/ledger";
 import { sessionAccountId } from "../lib/server/accountHttp";
 import { encodeSession, SESSION_COOKIE } from "../lib/server/authSession";
-import { AccountError, accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findAccount, listMovements, updateProfile } from "../lib/server/accounts";
+import { AccountError, accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findAccount, listMovements, recordPlays, updateProfile } from "../lib/server/accounts";
 
 const connectionString = process.env.TEST_DATABASE_URL;
 assert.ok(connectionString);
@@ -75,11 +75,18 @@ try {
   }
   assert.equal((await pool.query("SELECT count(*)::int AS n FROM arena_ledger_transactions WHERE kind = 'deposit'")).rows[0].n, 1, "the retried deposit posted once");
 
+  // v219: matches started per game, kept with the account; device counts only raise them.
+  assert.deepEqual(await recordPlays(pool, k1, {}), {});
+  assert.deepEqual(await recordPlays(pool, k1, { add: "darts" }), { darts: 1 });
+  assert.deepEqual(await recordPlays(pool, k1, { add: "darts", atLeast: { bowling: 4, darts: 1 } }), { darts: 2, bowling: 4 }, "never lowered");
+  assert.equal(await recordPlays(pool, "f".repeat(64), { add: "darts" }), null, "no account, nothing stored");
+
   // Erasure anonymises: the account and its movements stay, without a name or sign-in identity.
   await assert.rejects(pool.query("UPDATE arena_wallet_entries SET amount_minor = 1"), /immutable/);
   await assert.rejects(pool.query("DELETE FROM arena_accounts WHERE account_id = $1", [aId]), /anonymised, never deleted/);
   assert.equal(await deleteAccount(pool, k1), true);
   assert.equal(await deleteAccount(pool, k1), false, "already erased");
+  assert.equal((await pool.query("SELECT count(*)::int AS n FROM arena_play_counts WHERE account_id = $1", [aId])).rows[0].n, 0, "play counts go with the account");
   assert.equal(await findAccount(pool, k1), null);
   const gone = (await pool.query("SELECT display_name, name_key, avatar, deleted_at FROM arena_accounts WHERE account_id = $1", [aId])).rows[0];
   assert.equal(gone.display_name, "Cuenta borrada");

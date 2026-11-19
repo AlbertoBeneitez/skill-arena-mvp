@@ -307,6 +307,13 @@ export default function DemoApp() {
   const [providerNotice, setProviderNotice] = useState<AuthProviderInfo | null>(null);
   const [authProviders, setAuthProviders] = useState<AuthProviderId[]>([]);
   const [authMessage, setAuthMessage] = useState<MessageKey | "">("");
+  /** v219 (owner: screens flashed for an instant on opening): nothing is shown until the saved state and the
+   * session (and its account) are known, so the first screen painted is the right one. */
+  const [authChecked, setAuthChecked] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => setAuthChecked(true), 4000); // a slow network never hides the app for good
+    return () => window.clearTimeout(id);
+  }, []);
   useEffect(() => {
     let alive = true;
     const params = new URLSearchParams(window.location.search);
@@ -324,12 +331,13 @@ export default function DemoApp() {
         const s = data.session;
         if (s && AUTH_PROVIDERS.some((p) => p.id === s.provider)) {
           setProvider(s.provider);
-          void loadServerAccount(outcome === "ok", s.name);
+          return loadServerAccount(outcome === "ok", s.name);
         } else if (outcome === "error" || outcome === "unavailable") {
           setAuthMessage(outcome === "error" ? "welcome.authFailed" : "welcome.authUnavailable");
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (alive) setAuthChecked(true); });
     return () => { alive = false; };
   }, []);
   useEffect(() => {
@@ -387,14 +395,11 @@ export default function DemoApp() {
   const [leagues, setLeagues] = useState<LeagueState>({});
   /** v168: matches started per game, for "Tu selección" in the catalogue. */
   const [playCounts, setPlayCounts] = useState<Record<string, number>>({});
-  /** Most played first (ties: catalogue order), up to eight games. */
-  // v173: always shown — the player's most played first, then filled with the catalogue's first (popular) games.
-  const favoriteGames = useMemo(() => {
-    const played = GAMES.filter((g) => g.enabled && (playCounts[g.id] ?? 0) > 0)
-      .sort((a, b) => (playCounts[b.id] ?? 0) - (playCounts[a.id] ?? 0)).slice(0, 8).map((g) => g.id);
-    const fill = GAMES.filter((g) => g.enabled && !played.includes(g.id)).map((g) => g.id);
-    return [...played, ...fill].slice(0, Math.max(6, played.length));
-  }, [playCounts]);
+  /** v219 (owner): «Tu selección» holds only the games this player has played, most played first (ties: catalogue
+   * order). The counts are kept on the device and, with an account, on the server (they come back after signing in
+   * again or on another device). */
+  const favoriteGames = useMemo(() => GAMES.filter((g) => g.enabled && (playCounts[g.id] ?? 0) > 0)
+    .sort((a, b) => (playCounts[b.id] ?? 0) - (playCounts[a.id] ?? 0)).map((g) => g.id), [playCounts]);
   const [bestScores, setBestScores] = useState<Record<string, number>>({});
   // v153: the studio proposal opens from a small tab at the top left of the catalogue.
   const [proposing, setProposing] = useState(false);
@@ -1035,6 +1040,29 @@ export default function DemoApp() {
   }
 
   /** v191 · Reads the signed-in player's server account; falls back to this device when accounts are not available. */
+  /** v219: one more match of this game — on the device and, with an account, on the server (fire and forget). */
+  function countPlay(gameId: string) {
+    setPlayCounts((counts) => ({ ...counts, [gameId]: (counts[gameId] ?? 0) + 1 }));
+    if (typeof serverAccount === "object" && serverAccount) {
+      void fetch("/api/account/plays", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ add: gameId }) }).catch(() => {});
+    }
+  }
+  /** v219: the account's counts come back from the server; counts this device had before are kept (the higher wins). */
+  async function syncPlayCounts() {
+    try {
+      const r = await fetch("/api/account/plays", { cache: "no-store" });
+      if (!r.ok) return;
+      const server = ((await r.json()) as { counts?: Record<string, number> }).counts ?? {};
+      setPlayCounts((local) => {
+        const ahead = Object.fromEntries(Object.entries(local).filter(([id, n]) => n > (server[id] ?? 0)));
+        if (Object.keys(ahead).length) {
+          void fetch("/api/account/plays", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ atLeast: ahead }) }).catch(() => {});
+        }
+        return { ...server, ...ahead };
+      });
+    } catch { /* the device's counts stay */ }
+  }
+
   async function loadServerAccount(justSignedIn: boolean, providerName: string) {
     const toLocal = () => {
       if (!justSignedIn) return;
@@ -1053,6 +1081,7 @@ export default function DemoApp() {
       }
       const a = data.account;
       setServerAccount({ id: a.id, name: a.name, avatar: a.avatar });
+      void syncPlayCounts();
       setPlayerName(a.name);
       setAvatarSrc(AVATARS[a.avatar - 1] ?? AVATARS[0]);
       setBalance(a.balanceMinor / 100);
@@ -1135,7 +1164,7 @@ export default function DemoApp() {
     setNextPairing(offline ? "solo" : "public");
     // v203: Offline, the invented rival plays a real verified match of another player of this game, when there is one.
     const sample = offline ? pickSample((await fetchSamplesFor([game.id]))[game.id]) : null;
-    setPlayCounts((counts) => ({ ...counts, [game.id]: (counts[game.id] ?? 0) + 1 }));
+    countPlay(game.id);
 
     setSelectedGame(game);
     setSelectedStake(stake);
@@ -1507,7 +1536,7 @@ export default function DemoApp() {
     setNextPairing("solo");
     setGroupMatch(index);
     setStartingGameId(game.id);
-    setPlayCounts((counts) => ({ ...counts, [game.id]: (counts[game.id] ?? 0) + 1 }));
+    countPlay(game.id);
     setSelectedGame(game);
     setSelectedStake(0);
     setSelectedMode("create");
@@ -1632,6 +1661,15 @@ export default function DemoApp() {
       setGroupComp(null);
     setCountdown(null);
     navigate("welcome", true);
+  }
+
+  if (!isLoaded || !authChecked) {
+    return (
+      <main className="gxBootSplash" role="status" aria-live="polite">
+        <span className="gxBootMark">{PRODUCT_NAME}</span>
+        <span className="visuallyHidden">{t("common.loading")}</span>
+      </main>
+    );
   }
 
   if (screen === "welcome") {

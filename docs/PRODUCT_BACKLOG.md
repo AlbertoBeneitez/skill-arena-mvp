@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v219-saturn · Arranque, Tu selección, megáfono y reto a otro grupo (19-nov-2026)
+
+- Sin parpadeos al abrir; Tu selección por partidas jugadas (servidor + dispositivo); X quita el último juego; megáfono simple sin pitidos; buscador de juegos en el reto. Pendiente: decisión del propietario sobre el diseño retro y fase 2 de grupos online.
+
 ## v218-saturn · Ligas por victorias, perfil y arte de grupos (18-nov-2026)
 
 - Niveles por victorias por juego (5/15/30/50); perfil con los dos mejores juegos y la clasificación de los grupos; papelera en lugar del botón rojo; seis imágenes de grupo tipo película. Pendiente: propuesta de diseño retro a la espera de la decisión del propietario.

@@ -75,7 +75,7 @@ export default function CatalogBrowser(props: Props) {
   // v130: rows by kind of game, each ordered by popularity (GAMES order), "Populares" first; rows scroll sideways.
   // v132: "Nuevos" (recently added) follows "Populares".
   const now = Date.now();
-  // v168/v173: "Tu selección" opens the list, always: the games this player plays most, filled with popular ones.
+  // v219: "Tu selección" opens the list once the player has played: only the games played, most played first.
   const rows: { key: "mine" | "popular" | "new" | (typeof CATALOG_SHELVES)[number]; games: GameMeta[]; studio: PublishedGame[] }[] = [
     { key: "mine" as const, games: (props.favorites ?? []).map((id) => GAMES.find((g) => g.id === id)).filter((g): g is GameMeta => Boolean(g)), studio: [] },
     { key: "popular" as const, games: GAMES.slice(0, POPULAR_COUNT), studio: [] },

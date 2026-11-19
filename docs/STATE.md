@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 18 de noviembre de 2026 · base `mobile-test` en v218-saturn.
+Actualizado: 19 de noviembre de 2026 · base `mobile-test` en v219-saturn.
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Arranque y Tu selección (19 de noviembre, v219, app 2.19):** pantalla de marca hasta conocer sesión y cuenta (sin parpadeos); Tu selección solo con juegos jugados, del más jugado al menos, con conteo guardado también en el servidor por cuenta (migración 016, `/api/account/plays`); Populares del tamaño del resto; la X de juegos quita el último; megáfono = activar/silenciar (sin selector de música) y sin pitidos sueltos; el reto a otro grupo usa el buscador de juegos.
 - [x] **Ligas por victorias y perfil (18 de noviembre, v218, app 2.18):** el nivel de cada juego se gana por victorias en ese juego (Plata 5, Oro 15, Platino 30, Diamante 50; no se pierde; cuentan todas las partidas ganadas). El avatar muestra solo los dos juegos con más rango y, al final, la clasificación de los grupos del jugador. Papelera discreta en lugar del botón rojo de borrar grupo. Imágenes de grupo por defecto tipo película (`scripts/render-group-art.py`).
 - [x] **Modalidades de grupo (18 de noviembre, v217, app 2.17, ADR 009):** al crear una competición se elige modalidad: todos vs todos (N … 1 puntos por jornada), 1 vs 1 contra jugadores de otro grupo (2/0) o relevos contra otro grupo del mismo tamaño (cada uno tras el anterior, puntos sumados, 2/0 por grupo). Botón «Buscar grupo rival» por jornada; clasificación al final de la pestaña. Sin conexión, las tres con grupos inventados; con conexión solo todos vs todos hasta la fase 2 (partidas de grupo online, búsqueda en el servidor y aviso en el móvil por Web Push con claves VAPID del propietario). Retirado de la interfaz el juego grupal de Stack (v211).
 - [x] **Inicio con cuenta y menos compilaciones (18 de noviembre, v216, app 2.16):** al abrir la app con una cuenta ya cargada aparece «Hola de nuevo» con avatar y nombre, «Entrar» y «Usar otra cuenta» (cierra la sesión y vuelve a la bienvenida); justo después de iniciar sesión se va directo a Juegos. «Tu selección» tiene las tarjetas más grandes del catálogo (dos por pantalla), Populares las segundas. Vercel solo compila `mobile-test` y `main` (antes cada subida compilaba dos veces: la rama de versión y `mobile-test`); una subida por sesión.

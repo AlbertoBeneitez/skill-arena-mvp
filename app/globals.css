@@ -7476,44 +7476,6 @@ html[data-reduce-motion="1"] .leagueResult.change-up .leagueChange { animation: 
 }
 @media (max-width: 760px) { .deskStage { padding: 12px; } }
 
-/* ---------- v118 · Megaphone menu: sound on/off + the six songs ---------- */
-.soundMenuAnchor { display: inline-grid; }
-.soundMenuBackdrop { position: fixed; inset: 0; z-index: 90; background: rgba(6,6,7,.35); }
-.soundMenu {
-  position: fixed; z-index: 91; width: min(272px, calc(100vw - 16px)); max-height: calc(100dvh - 90px); overflow: auto;
-  padding: 10px; border-radius: 20px; border: 1px solid rgba(127,227,238,.28);
-  background: linear-gradient(170deg, rgba(35,35,38,.97), rgba(13,13,15,.98)); color: #eaf4ff;
-  box-shadow: 0 18px 44px rgba(4,4,6,.6), 0 0 0 1px rgba(255,255,255,.04) inset;
-  transform-origin: top right; animation: soundMenuIn .16s ease-out;
-}
-@keyframes soundMenuIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
-.soundMenuSwitch {
-  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 0 12px;
-  border: 0; border-radius: 14px; background: rgba(255,255,255,.06); color: inherit; font: 700 17px/1 system-ui, sans-serif;
-}
-.soundMenuSwitch i { width: 44px; height: 26px; border-radius: 13px; background: rgba(255,255,255,.18); position: relative; transition: background .15s; }
-.soundMenuSwitch i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .15s; }
-.soundMenuSwitch[aria-checked="true"] i { background: #3ad1c0; }
-.soundMenuSwitch[aria-checked="true"] i::after { transform: translateX(18px); }
-.soundMenuTitle { margin: 12px 6px 6px; font: 700 14px/1.2 system-ui, sans-serif; color: #f3c55a; letter-spacing: .02em; }
-.soundMenuList { display: grid; gap: 4px; }
-.soundMenuItem {
-  display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px; min-height: 46px; padding: 0 10px;
-  border: 1px solid transparent; border-radius: 13px; background: transparent; color: #dbe8f6; text-align: start;
-  font: 600 17px/1.15 system-ui, sans-serif;
-}
-.soundMenuItem.extra { color: #a9bdd3; font-size: 16px; }
-.soundMenuItem.extra:first-of-type, .soundMenuItem.song + .soundMenuItem.extra { margin-top: 6px; border-top-color: rgba(255,255,255,.06); }
-.soundMenuItem.selected { border-color: rgba(127,227,238,.55); background: rgba(127,227,238,.12); color: #fff; }
-.soundMenuItem small { font: 700 13px/1 system-ui, sans-serif; color: #7fe3ee; }
-.soundMenuNote { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: rgba(255,255,255,.07); color: #7fe3ee; font-size: 16px; }
-.soundMenuEq { display: flex; align-items: flex-end; gap: 2px; height: 14px; }
-.soundMenuEq i { width: 3px; height: 100%; border-radius: 2px; background: #7fe3ee; animation: soundEq .9s ease-in-out infinite; transform-origin: bottom; }
-.soundMenuEq i:nth-child(2) { animation-delay: -.3s; }
-.soundMenuEq i:nth-child(3) { animation-delay: -.6s; }
-@keyframes soundEq { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
-html[data-reduce-motion="1"] .soundMenu, html[data-reduce-motion="1"] .soundMenuEq i { animation: none; }
-@media (prefers-reduced-motion: reduce) { .soundMenu, .soundMenuEq i { animation: none; } }
 
 /* ---------- v120 · Result screen: your result vs the rival's ---------- */
 .rivalBoard {
@@ -9314,3 +9276,9 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .gxBackEnter { width: 100%; }
 .gxBackOther { min-height: 48px; width: 100%; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .18); background: transparent; color: var(--gx-ink, #eef0f2); font: 700 16px/1 var(--gx-body, system-ui); }
 .gxBackOther:focus-visible, .gxBackEnter:focus-visible { outline: 2px solid #a0ebe1; outline-offset: 3px; }
+
+/* v219 · Until the saved state and the session are known: the brand on the night sky, nothing that can flash. */
+.gxBootSplash { min-height: 100dvh; display: grid; place-items: center; background: var(--gx-void, #0a0a0b); }
+.gxBootMark { font: 700 15px/1 var(--gx-display); letter-spacing: .32em; color: rgba(234, 244, 255, .55); animation: gxBootPulse 1.6s ease-in-out infinite; }
+@keyframes gxBootPulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .gxBootMark { animation: none; } }

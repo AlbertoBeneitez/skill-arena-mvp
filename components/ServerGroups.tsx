@@ -6,6 +6,7 @@
  * server; this screen only collects choices and shows state. Playing the matches from here arrives later.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import GamePicker from "./GamePicker";
 import GroupHub from "./GroupHub";
 import UiIcon from "./UiIcon";
 import { GAMES, playableForMoney } from "@/lib/games";
@@ -13,7 +14,6 @@ import { portraitSrc } from "@/lib/avatars";
 import type { ClosedGroup } from "@/lib/groupPlay";
 import type { GroupCompetition, GroupConfig } from "@/lib/groupCompetition";
 import { formatMoney, t, useI18n } from "@/lib/i18n";
-import { gameName } from "@/lib/i18n/games";
 import hub from "./GroupHub.module.css";
 import st from "./ServerGroups.module.css";
 
@@ -127,12 +127,10 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
             <button type="button" aria-pressed={vsMode === "versus-league"} onClick={() => setVsMode("versus-league")}>{t("sg.vsLeague")}</button>
             <button type="button" aria-pressed={vsMode === "versus-tournament"} onClick={() => setVsMode("versus-tournament")}>{t("sg.vsTournament")}</button>
           </div>
-          <label className={st.field}>{t("sg.game")}
-            <select className={hub.codeInput} value={vsGame} onChange={(e) => setVsGame(e.target.value)}>
-              {/* v205: with an entry, games that never take bets (Roulette and any like it) are not offered. */}
-              {GAMES.filter((g) => g.enabled && (vsEntry === 0 || playableForMoney(g))).map((g) => <option key={g.id} value={g.id}>{gameName(g)}</option>)}
-            </select>
-          </label>
+          {/* v219 (owner): the same game finder as the competition form above (categories, search, covers). */}
+          <span className={hub.stepLabel}>{t("sg.game")}</span>
+          <GamePicker games={GAMES.filter((g) => g.enabled && (vsEntry === 0 || playableForMoney(g)))} picked={vsGame ? [vsGame] : []} multi={false}
+            onTap={(id) => setVsGame((current) => (current === id ? "" : id))} label={t("sg.game")} />
           <label className={st.field}>{t("sg.entry")}
             <input className={hub.codeInput} type="number" inputMode="numeric" min={0} max={100} step={1} value={vsEntry}
               onChange={(e) => setVsEntry(Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))))} />

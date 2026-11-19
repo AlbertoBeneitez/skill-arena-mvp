@@ -424,7 +424,7 @@ const FOCUS: Record<FocusTrack, FocusDef> = {
       if (m >= 0 && i % 32 >= 16) musicVoice(ctx, { frequency: hz(chord[0] + 12 + m), duration: st * 1.8, volume: 0.0045, type: "sine", attack: 0.02, cutoff: 3000 });
     },
   },
-  // Ambient: slow detuned pads that swell and fade, with a distant bell now and then.
+  // Ambient: slow detuned pads that swell and fade.
   ambient: {
     bpm: 48, stepsPerBeat: 1,
     step(ctx, i, st) {
@@ -433,7 +433,7 @@ const FOCUS: Record<FocusTrack, FocusDef> = {
         const chord = chords[Math.floor(i / 8) % 4];
         for (const n of chord) for (const det of [-7, 7]) musicVoice(ctx, { frequency: hz(n), duration: st * 9.5, volume: 0.0018, type: "sawtooth", detune: det, attack: st * 2.5, release: st * 4, cutoff: 650 });
       }
-      if (i % 6 === 3) musicVoice(ctx, { frequency: hz([76, 79, 81, 84, 88][Math.floor(i / 6) % 5]), duration: st * 4, volume: 0.0035, type: "sine", attack: 0.01, release: st * 3.6, pan: (i % 12) < 6 ? -0.4 : 0.4 });
+      // v219 (owner: an annoying beep now and then): no more high sine "bell" over the pads.
     },
   },
   // Minimal piano: a gentle arpeggio over C – Am – F – G, soft hammer attack and long decay.
@@ -457,7 +457,7 @@ const FOCUS: Record<FocusTrack, FocusDef> = {
         musicVoice(ctx, { frequency: 165, duration: st * 9, volume: 0.0025, type: "triangle", attack: st * 3, release: st * 3, cutoff: 500 });
       }
       musicVoice(ctx, { frequency: 55, duration: st * 0.6, volume: 0.006, type: "sine", attack: 0.01, release: st * 0.5 });
-      if (i % 16 === 12) musicVoice(ctx, { frequency: hz(81), duration: st * 5, volume: 0.002, type: "sine", attack: 0.6, release: st * 4 });
+      // v219: the lone 880 Hz sine every 16 beats read as a beep; removed.
     },
   },
   // Calm synthwave: soft 16th-note arpeggio over a warm pad.

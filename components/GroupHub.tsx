@@ -11,13 +11,14 @@ import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type R
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, GROUP_COMMISSION_BPS, GROUP_MODALITIES, groupMoney, groupStandings, groupTeamStandings, HOME_TEAM, isInterGroup, nextGroupMatch, RANDOM_GAME, relayTotals, relayWaitingFor, roundAwaitingRival, stepSplit, waitingGroupMatch, type GroupCompetition, type GroupConfig, type GroupModality } from "@/lib/groupCompetition";
 import { groupArt } from "@/lib/groupArt";
-import { CATALOG_SHELVES, GAMES, gameShelf, playableForMoney } from "@/lib/games";
+import { GAMES, playableForMoney } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
 import UiIcon, { type UiIconName } from "@/components/UiIcon";
 import st from "./GroupHub.module.css";
 import { MODALITY_LABEL, competitionTitle, pointsLabel } from "./groupLabels";
+import GamePicker from "./GamePicker";
 
 type Props = {
   group: ClosedGroup | null;
@@ -89,8 +90,6 @@ async function squarePhoto(file: File, size: number): Promise<string> {
     URL.revokeObjectURL(url);
   }
 }
-/** Search: case and accents ignored. */
-const fold = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 /** Where an invite can go. Plain web share intents only: nothing is sent until the player confirms in that app. */
 type ShareTarget = { id: string; label: string; icon: UiIconName; tone: string; href: (text: string, url: string) => string };
@@ -135,9 +134,6 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   /** v167/v168: the games picked, in play order; the same game may appear several times (a league or a tournament
    * plays them round by round). Empty = random mix. */
   const [picked, setPicked] = useState<string[]>([]);
-  const [query, setQuery] = useState("");
-  /** v194: filter the game list by catalogue category ("" = all). */
-  const [category, setCategory] = useState<string>("");
   const [entry, setEntry] = useState("5");
   const [rounds, setRounds] = useState(5);
   const [editingName, setEditingName] = useState(false);
@@ -473,8 +469,6 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const multi = true;
   /** v175: «Aleatorio» is one more game: it can be picked, repeated and ordered like the others. */
-  const tiles = [{ id: RANDOM_GAME, name: t("group.randomMix"), cover: "" }, ...pickable.filter((g) => !category || gameShelf(g) === category).map((g) => ({ id: g.id, name: gameName(g), cover: g.cover }))]
-    .filter((tile) => !query.trim() || fold(tile.name).includes(fold(query.trim())));
   return (
     <section className={st.screen}>
       {header}
@@ -545,45 +539,11 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             <div className={st.stepHead}>
               <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
               {/* v213: the X sits right after the step title, always there (dimmed when there is nothing to clear). */}
-              <button type="button" className={st.clearStep} aria-label={t("group.clearGames")} disabled={!(query || category || picked.length > 0)} onClick={() => { setQuery(""); setCategory(""); setPicked([]); }}>
+              <button type="button" className={st.clearStep} aria-label={t("group.clearGames")} disabled={picked.length === 0} onClick={() => setPicked((list) => list.slice(0, -1))}>
                 <UiIcon name="close" size={16} />
               </button>
             </div>
-            <div className={st.categories} role="group" aria-label={t("group.categories")}>
-              {["", ...CATALOG_SHELVES].map((key) => (
-                <button key={key || "all"} type="button" aria-pressed={category === key} onClick={() => setCategory(key)}>
-                  {key ? t(`catalog.shelf.${key}` as "catalog.shelf.bar") : t("group.categoryAll")}
-                </button>
-              ))}
-            </div>
-            <label className={st.search}>
-              <UiIcon name="search" size={18} />
-              <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")} enterKeyHint="search" />
-            </label>
-            <div className={st.games} role="group" aria-label={t(multi ? "group.stepGames" : "group.stepGame")}>
-              {tiles.map(({ id, name, cover }) => {
-                const numbers = chosen.flatMap((x, i) => (x === id ? [i + 1] : []));
-                const label = numbers.length > 3 ? `${numbers.slice(0, 2).join(" ")} +${numbers.length - 2}` : numbers.join(" ");
-                return (
-                  <div key={id} className={st.tileWrap}>
-                    <button type="button" className={st.gameTile} aria-pressed={numbers.length > 0} onClick={() => tapGame(id)}
-                      aria-label={numbers.length ? `${name} · ${numbers.join(", ")}` : name}>
-                      {cover ? <span className={st.gameArt}><img src={cover} alt="" loading="lazy" decoding="async" /></span>
-                        : <span className={st.gameArt} data-random><UiIcon name="dice" size={26} /></span>}
-                      <span className={st.gameMark} data-wide={numbers.length > 1 || undefined} aria-hidden="true">{!numbers.length ? null : multi ? label : <UiIcon name="check" size={12} />}</span>
-                      <span className={st.gameName}>{name}</span>
-                    </button>
-                    {numbers.length > 0 && (
-                      <span className={st.unpickLayer}>
-                        <button type="button" className={st.unpick} onClick={() => unpick(id)}
-                          aria-label={t("group.removeFromSequence", { game: name, n: numbers[numbers.length - 1] })}><UiIcon name="close" size={10} /></button>
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {!tiles.length && <p className={st.hint}>{t("group.noGamesFound")}</p>}
+            <GamePicker games={pickable} picked={chosen} multi withRandom onTap={tapGame} onUnpick={unpick} label={t("group.stepGames")} />
             {forMoney && GAMES.some((g) => !playableForMoney(g)) && <p className={st.hint}>{t("group.chanceExcluded")}</p>}
             <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>

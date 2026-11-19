@@ -115,6 +115,7 @@ export async function deleteAccount(pool: Pool, authKey: string): Promise<boolea
       [id, `deleted:${id}`, randomBytes(32).toString("hex")],
     );
     await c.query("UPDATE arena_group_members SET left_at = now() WHERE account_id = $1 AND left_at IS NULL", [id]);
+    await c.query("DELETE FROM arena_play_counts WHERE account_id = $1", [id]); // v219: usage data goes with the account
     return true;
   });
 }
@@ -167,4 +168,34 @@ export async function exchangeFictitious(pool: Pool, authKey: string, direction:
   const r = rows[0];
   const movement: Movement = { id: String(r.entry_id), kind: r.kind, amountMinor: Number(r.amount_minor), feeMinor: Number(r.fee_minor), balanceAfter: Number(r.balance_after), at: new Date(r.created_at).toISOString() };
   return { account: (await findAccount(pool, authKey))!, movement };
+}
+
+/**
+ * v219 · Matches started per game (for «Tu selección»). `add` counts one match; `atLeast` raises each count to the
+ * number the device already had (never lowers one), so counts kept before v219 are not lost. Game ids must be checked
+ * by the caller against the catalogue. Returns the account's counts, or null without an account.
+ */
+export async function recordPlays(db: Pick<Pool, "query">, authKey: string, change: { add?: string; atLeast?: Record<string, number> }): Promise<Record<string, number> | null> {
+  const found = await db.query("SELECT account_id FROM arena_accounts WHERE auth_key = $1 AND deleted_at IS NULL", [authKey]);
+  const id = found.rows[0]?.account_id as string | undefined;
+  if (!id) return null;
+  if (change.add) {
+    await db.query(
+      `INSERT INTO arena_play_counts (account_id, game_id, plays) VALUES ($1, $2, 1)
+       ON CONFLICT (account_id, game_id) DO UPDATE SET plays = LEAST(arena_play_counts.plays + 1, 1000000), updated_at = now()`,
+      [id, change.add],
+    );
+  }
+  for (const [game, n] of Object.entries(change.atLeast ?? {})) {
+    await db.query(
+      `INSERT INTO arena_play_counts (account_id, game_id, plays) VALUES ($1, $2, $3)
+       ON CONFLICT (account_id, game_id) DO UPDATE SET plays = GREATEST(arena_play_counts.plays, EXCLUDED.plays), updated_at = now()`,
+      [id, game, n],
+    );
+  }
+  return playCounts(db, id);
+}
+export async function playCounts(db: Pick<Pool, "query">, accountId: string): Promise<Record<string, number>> {
+  const { rows } = await db.query("SELECT game_id, plays FROM arena_play_counts WHERE account_id = $1 AND plays > 0", [accountId]);
+  return Object.fromEntries(rows.map((r) => [r.game_id as string, Number(r.plays)]));
 }
