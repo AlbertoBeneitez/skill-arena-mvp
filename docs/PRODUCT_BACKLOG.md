@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v221-saturn · Átomo controlable con espectro (20-nov-2026)
+
+- Átomo: derecha sube (absorción), izquierda baja (emisión que sale de la pantalla), colores del espectro por salto, más arriba y última órbita menor. «Hola de nuevo»: nombre más cerca de «Entrar». Pendiente: decisión sobre implantar «Marea Coral».
+
 ## v220-saturn · Átomo de inicio, más ligas, imágenes de grupo y retos (19-nov-2026)
 
 - Átomo retro interactivo en la bienvenida; ligas Madera/Ámbar/Perla; 11 imágenes de grupo elegibles; textos de retos; clasificación del grupo online. Pendiente: elección entre diseño A (Cabina 84) y B (Retro suave).

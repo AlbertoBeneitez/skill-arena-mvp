@@ -9269,6 +9269,9 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 
 /* v216 · Start screen when an account is already loaded: who you are, enter, or use another account. */
 .gxBackWho { display: grid; justify-items: center; gap: 6px; margin: 6px 0 4px; }
+/* v221 (owner): the avatar sits lower, so the name ends close to «Entrar». */
+.gxWelcome.gxBack .gxBackWho { margin-top: clamp(18px, 3dvh, 28px); }
+.gxWelcome.gxBack .gxAuth { margin-top: 16px !important; }
 .gxBackAvatar { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(160, 235, 225, .7); box-shadow: 0 0 0 6px rgba(160, 235, 225, .12), 0 16px 40px rgba(0, 0, 0, .5); }
 .gxBackHello { margin: 6px 0 0; font-size: 15px; color: var(--gx-mute, #9aa3ad); }
 .gxBackName { margin: 0; font: 800 26px/1.15 var(--gx-display, system-ui); color: var(--gx-ink, #eef0f2); text-align: center; overflow-wrap: anywhere; }
