@@ -527,14 +527,12 @@ export default function GroupHub({ joinError, group, competition, balance, playe
             </li>
           )}
         </ul>
-        {offline
-          ? <p className={st.hint}>{t("group.offlineHint")}</p>
-          : (
-            <button type="button" className={st.secondary} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
-              <UiIcon name="share" size={18} />
-              <span>{t("group.share")}</span>
-            </button>
-          )}
+        {!offline && (
+          <button type="button" className={st.secondary} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => setSheetOpen(true)}>
+            <UiIcon name="share" size={18} />
+            <span>{t("group.share")}</span>
+          </button>
+        )}
       </div>
 
       <div className={st.panel}>

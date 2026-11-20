@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v222-saturn · Textos de grupos (20-nov-2026)
+
+- Fuera el aviso de rivales inventados; 1 vs 1 explicado como duelo (+2 / 0). Pendiente: elección de ecosistema visual entre 12 propuestas (sustituye a «Marea Coral»).
+
 ## v221-saturn · Átomo controlable con espectro (20-nov-2026)
 
 - Átomo: derecha sube (absorción), izquierda baja (emisión que sale de la pantalla), colores del espectro por salto, más arriba y última órbita menor. «Hola de nuevo»: nombre más cerca de «Entrar». Pendiente: decisión sobre implantar «Marea Coral».
