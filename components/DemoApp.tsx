@@ -288,6 +288,8 @@ export default function DemoApp() {
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
   const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
+  /** v224: the avatar editor was opened from Avatar › Perfil, so finishing it returns there. */
+  const editingFromProfileRef = useRef(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   // v164: the big portrait (and its ring) stays hidden until the first image has loaded — no empty ring flashes.
@@ -1134,6 +1136,12 @@ export default function DemoApp() {
     setPlayerName(clean);
     setOnboarded(true);
     freshOnboardingRef.current = false;
+    if (editingFromProfileRef.current) {
+      editingFromProfileRef.current = false;
+      setAvatarSection("profile");
+      navigate("profile", true);
+      return;
+    }
     navigate(pendingJoinCode ? "group" : "home", true);
   }
 
@@ -1566,6 +1574,7 @@ export default function DemoApp() {
   }
 
   function editProfile() {
+    editingFromProfileRef.current = true; // v224: CONTINUAR goes back to the avatar tab, not to the games
     setAvatarEditorOpen(true);
     setAvatarError("");
     navigate("avatar-setup");
@@ -2146,7 +2155,7 @@ export default function DemoApp() {
             </nav>
             {avatarSection === "ranking" ? <RankingHub platform={platform} bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!serverMode} /> : <>
             {/* v178: the profile card itself edits the name and avatar (the separate rows are gone). */}
-            <button type="button" className="profileStrip" onClick={editProfile} aria-label={`${playerName} · ${t("profile.editProfile")}`}><img src={smallAvatar(avatarSrc)} alt="" /><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div><span className="profileEdit" aria-hidden="true"><UiIcon name="pencil" size={16} /></span></button>
+            <button type="button" className="profileStrip" onClick={editProfile} aria-label={`${playerName} · ${t("profile.editProfile")}`}><span className="profileAvatar"><img src={smallAvatar(avatarSrc)} alt="" /><span className="profileEdit" aria-hidden="true"><UiIcon name="pencil" size={11} /></span></span><div><strong>{playerName}</strong><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span>{provider && <span>{t("profile.signedInWith", { provider: AUTH_PROVIDERS.find((p) => p.id === provider)?.name ?? provider })}</span>}</div></button>
 
             <div className="chartPanel">
               <div className="chartHead"><span>{t("profile.netProfit")}</span><strong dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</strong></div>

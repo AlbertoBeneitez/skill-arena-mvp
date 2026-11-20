@@ -10,6 +10,7 @@
 .dot { fill: var(--av-ice, #9fe6ff); stroke: none; }
 .dotOn { fill: #ffffff; stroke: none; filter: drop-shadow(0 0 4px rgba(159,230,255,.8)); }
 .tip { fill: #f2f6fa; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.guide { stroke: rgba(159, 230, 255, .55); stroke-width: 1; stroke-dasharray: 3 3; }
 .tipDate { fill: #8fa2b4; font-size: 10.5px; font-weight: 600; }
 .hit { fill: transparent; cursor: pointer; }
 .axis { position: relative; height: 16px; margin-top: 2px; color: #7d8a98; font-size: 13px; white-space: nowrap; }

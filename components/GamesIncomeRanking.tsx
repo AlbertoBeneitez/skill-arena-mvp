@@ -32,7 +32,7 @@ function LineChart({ values, labels, name }: { values: number[]; labels: string[
   // At most six labels under the axis (always the first and the last); the picked point names its date above it.
   const step = Math.max(1, Math.ceil((values.length - 1) / 5));
   const last = values.length - 1;
-  const shown = new Set(values.map((_, i) => i).filter((i) => i === last || (i % step === 0 && last - i >= step * 0.7)));
+  const shown = new Set(values.map((_, i) => i).filter((i) => i === last || (i % step === 0 && last - i >= step * 0.9)));
   return (
     <figure className={st.chart}>
       <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label={t("ranking.gamesChartAria", { name })}>
@@ -44,6 +44,8 @@ function LineChart({ values, labels, name }: { values: number[]; labels: string[
           </linearGradient>
         </defs>
         <polygon points={`${x(0)},${h - padBottom} ${points} ${x(values.length - 1)},${h - padBottom}`} fill={`url(#${fillId})`} />
+        {/* v224 (owner): a dashed drop line from the picked point down to the base. */}
+        <line x1={x(pick)} y1={y(values[pick]) + 5} x2={x(pick)} y2={h - padBottom} className={st.guide} />
         <polyline points={points} className={st.line} />
         {values.map((v, i) => (i === pick || values.length <= 12) && <circle key={i} cx={x(i)} cy={y(v)} r={i === pick ? 4.5 : 3} className={i === pick ? st.dotOn : st.dot} />)}
         {/* v223 (owner): the amount on top, its date underneath. */}

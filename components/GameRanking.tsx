@@ -58,12 +58,12 @@ export function GameRanking({ game, best, league, playerName, avatarSrc, platfor
           <small>{LEAGUE_ICONS[league.tier]} {t("league.leagueOf", { tier: t(`league.tier${league.tier}` as MessageKey) })}</small>
         </span>
         <strong>
-          {best !== undefined ? <>{scoreText(game, best)}<small>{t("ranking.bestScore")} · #{yourPosition}</small></> : <small>{t("ranking.noScore")}</small>}
+          {best !== undefined && <>{scoreText(game, best)}<small>{t("ranking.bestScore")} · #{yourPosition}</small></>}
         </strong>
       </div>
       <div className="rankingTableWrap">
         <table className="rankingTable gameRankingTable">
-          <caption>{t("ranking.gameCaption", { game: gameName(game) })}</caption>
+          <caption>{t("ranking.gameOf", { game: gameName(game) })}</caption>
           <thead>
             <tr>
               <th scope="col">{t("ranking.position")}</th>
@@ -176,12 +176,10 @@ export default function RankingHub({ bestScores, leagues, playerName, avatarSrc,
       </div>
       {kind === "games" ? <GamesIncomeRanking period={period} /> : <>
         <RankingPicker value={view} onChange={setView} />
-        {/* v179: phones and computers rank apart. */}
-        <p className="rankingPlatform">{t(platform === "desktop" ? "ranking.platformDesktop" : "ranking.platformMobile")}</p>
+        {/* v179: phones and computers rank apart (v224: without saying so on screen, owner). */}
         {!game ? <GlobalRanking embedded platform={platform} period={period} /> : (
           <>
             <GameRanking platform={platform} period={period} game={game} best={bestScores[bestScoreKey(game)]} league={showLeagues ? leagues[game.id] ?? emptyLeague() : emptyLeague()} playerName={playerName} avatarSrc={avatarSrc} />
-            <p className="rankingNote">{t("ranking.gameNote")}</p>
           </>
         )}
       </>}

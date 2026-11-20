@@ -16,7 +16,7 @@ export default function MyGroupTables({ tables, onOpen }: { tables: readonly Gro
     <section className="myGroups" aria-label={t("profile.groupsTitle")}>
       <header><h2>{t("profile.groupsTitle")}</h2></header>
       {tables.length === 0 ? (
-        <button type="button" className="myGroupsEmpty" onClick={onOpen}>{t("profile.groupsEmpty")}</button>
+        <p className="myGroupsEmpty">{t("profile.groupsEmpty")}</p>
       ) : tables.map(({ id, name, competition, you }) => (
         <article key={id} className="myGroup">
           <button type="button" className="myGroupHead" onClick={onOpen}>

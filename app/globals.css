@@ -7850,7 +7850,7 @@ html[data-reduce-motion="1"] .orbitalWorld { transition: none !important; }
 .gxAvatarAction[aria-expanded="true"] { border-color: rgba(127, 227, 238, .6); }
 .gxAvatarSetup .nameInput { margin-top: 14px; }
 .gxAvatarSetup .nameAvailability.nameAvailability { margin: 6px 0 0 !important; }
-.gxAvatarSetup .mainAction { margin-top: auto; }
+.gxAvatarSetup .mainAction { margin-top: 6px; } /* v224 (owner): right under the name, not at the bottom */
 .gxAvatarSetup .nameAvailability.nameAvailability { min-height: 16px !important; }
 
 /* Avatar sheet: 16 portraits, 8 rows × 2 columns, the whole phone screen */
@@ -9236,12 +9236,15 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 }
 
 /* v178 · Avatar › Perfil: the profile card is the button that edits name and avatar (Ajustes lives in the header gear). */
-.appShell .avatarScreen button.profileStrip { grid-template-columns: 52px minmax(0, 1fr) auto !important; width: 100%; font: inherit; text-align: start; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.appShell .avatarScreen button.profileStrip { grid-template-columns: 52px minmax(0, 1fr) !important; width: 100%; font: inherit; text-align: start; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .appShell .avatarScreen button.profileStrip:active { transform: translateY(1px); }
 .appShell .avatarScreen button.profileStrip:focus-visible { outline: 2px solid var(--av-accent, #d2df3a); outline-offset: 2px; }
+/* v224 (owner): a small, quiet pencil badge on the avatar itself instead of a yellow button at the side. */
+.appShell .avatarScreen .profileStrip .profileAvatar { position: relative; width: 52px; height: 52px; display: block; }
+.appShell .avatarScreen .profileStrip .profileAvatar img { width: 52px; height: 52px; }
 .appShell .avatarScreen .profileStrip .profileEdit {
-  align-self: center; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%;
-  border: 1px solid var(--av-line-2, rgba(255,255,255,.16)); color: var(--av-accent, #d2df3a) !important;
+  position: absolute; right: -3px; bottom: -3px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
+  background: #1a1d22; border: 1px solid rgba(255,255,255,.22); color: #c9ced6 !important; box-shadow: 0 2px 6px rgba(0,0,0,.5);
 }
 /* v179 · Which platform's ranking this is (phones and computers rank apart). */
 .rankingPlatform { margin: -2px 2px 0; color: #8f959c; font-size: 14.5px; }
@@ -9294,3 +9297,5 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px);
 }
 .atomVeil { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 35%, transparent 55%, rgba(0, 0, 0, .55)), linear-gradient(180deg, transparent 50%, rgba(7, 6, 26, .6) 74%, rgba(7, 6, 26, .88)); }
+
+p.myGroupsEmpty { margin: 0; cursor: default; }

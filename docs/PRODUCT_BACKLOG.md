@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v224-saturn · Ranking y perfil más limpios (20-nov-2026)
+
+- Línea discontinua en el gráfico; sin avisos de ejemplo/plataforma/mejor marca; lápiz sobre el avatar; editar perfil vuelve a Avatar › Perfil; CONTINUAR bajo el nombre; grupos vacíos sin enlace.
+
 ## v223-saturn · Buscador de juegos y Ranking › Juegos (20-nov-2026)
 
 - Categorías a todo el ancho, X cuadrada junto a la búsqueda, juegos más separados; Ranking › Juegos sin etiqueta de ejemplo ni periodo, cantidad arriba y fecha abajo. Diseño: se mantiene el actual (descartados los 12 ecosistemas y «Marea Coral»). Pendiente: datos reales de ingresos (simulaciones o probadores).
