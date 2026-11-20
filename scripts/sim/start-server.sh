@@ -7,5 +7,5 @@ set -euo pipefail
 case "$SIM_DATABASE_URL" in *127.0.0.1*|*localhost*) ;; *) echo "SIM_DATABASE_URL must be local" >&2; exit 1;; esac
 export SIM_AUTH_SECRET="${SIM_AUTH_SECRET:-sim-local-secret-0123456789-abcdefghijkl}"
 AUTH_SECRET="$SIM_AUTH_SECRET" MATCH_SIGNING_SECRET="sim-local-signing-0123456789-abcdefghijkl" \
-DATABASE_URL="$SIM_DATABASE_URL" ALLOW_PERSISTED_MATCH_TRAINING=1 \
+DATABASE_URL="$SIM_DATABASE_URL" ALLOW_PERSISTED_MATCH_TRAINING=1 ALLOW_PERSISTED_HIDDEN_TRAINING=1 \
 exec pnpm exec next start -p "${SIM_PORT:-3200}"

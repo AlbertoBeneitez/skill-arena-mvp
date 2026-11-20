@@ -1,12 +1,13 @@
 /**
  * Bot simulator · campaign. Usage (local server only, see docs/SIMULADOR_BOTS.md):
- *   node scripts/sim/run.mjs campaign [personas] [partidas] [competir] [trampas] [cuota]
+ *   node scripts/sim/run.mjs campaign [personas] [partidas] [competir] [trampas] [mejor] [mine] [cuota]
  * Every bot has «Bot» in its name. Writes sim-reports/<run>/report.json and report.md.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { GAMES, lowerScoreWins, type GameMeta } from "@/lib/games";
 import { Phone, mintSession, sleep, uuid } from "./http";
 import { playMatch, type Style } from "./policies";
+import { mineBots } from "./mine-bot";
 import { cores, newBot, pickGames, playableGames, playOnline, Report, type Bot } from "./world";
 
 const secret = process.env.SIM_AUTH_SECRET ?? process.env.AUTH_SECRET ?? "";
@@ -278,6 +279,7 @@ if (all || want.has("partidas")) await partidas();
 const group = all || want.has("competir") ? await competir() : undefined;
 if (all || want.has("trampas")) await trampas(group || undefined);
 if (all || want.has("mejor")) await mejorDeN();
+if (all || want.has("mine")) await mineBots(report, Number(process.env.SIM_MINE_BOTS ?? 6));
 if (want.has("cuota")) await cuota();
 
 for (const e of report.errors) report.add({ id: `5xx-${e.path}-${e.status}`, family: "errores", severity: "alto", title: `Error de servidor ${e.status} en ${e.path}`, detail: JSON.stringify(e.body).slice(0, 300) });

@@ -6,8 +6,9 @@ noviembre («Claude no juega partidas»): solo con bots, **solo en local** y nun
 
 ## Qué es
 
-- **Servidor real en local**: la compilación de producción (`next start`) con PostgreSQL propio y partidas durables
-  activadas, igual que Vercel con `ALLOW_PERSISTED_MATCH_TRAINING=1`. Nada sale de la máquina: coste 0 €.
+- **Servidor real en local**: la compilación de producción (`next start`) con PostgreSQL propio, partidas durables y
+  Mine Grid oculto activados, igual que Vercel con `ALLOW_PERSISTED_MATCH_TRAINING=1` y
+  `ALLOW_PERSISTED_HIDDEN_TRAINING=1`. Nada sale de la máquina: coste 0 €.
 - **Bots con «Bot» en el nombre** (por ejemplo «Bot Vega 131012»): cada uno tiene su cuenta (la misma cookie firmada que
   deja el inicio de sesión real), su cartera y sus cookies, como un móvil.
 - **Mismo camino que un jugador**: semilla emitida por el servidor, entradas generadas tick a tick con el núcleo
@@ -23,6 +24,8 @@ noviembre («Claude no juega partidas»): solo con bots, **solo en local** y nun
 | Competir | Grupo entre bots: código, competición «Todos vs todos», jornadas y resultados | `campaign competir` |
 | Trampas | Sesiones falsas, CSRF, entradas manipuladas, partidas más rápidas que el reloj, partidas ajenas, cuotas, semilla conocida, mejor de N en grupos | `campaign trampas` |
 | Cupo global | Agota el tope global de partidas para ver si bloquea a todos (**bloquea la base de datos de simulación**: lanzarlo al final) | `campaign cuota` |
+| Mine Grid | Juega por el protocolo de información oculta (`/api/hidden-game`) viendo solo lo que ve un móvil: abre lo que puede demostrar seguro, marca lo que puede demostrar mina y si no, la casilla menos arriesgada. Además prueba revisiones viejas, comandos repetidos, casillas inventadas, partidas ajenas, otra web y fugas de minas o semilla | `campaign mine` |
+| Solitaire | Navegador real que toca las cartas como una persona: descarte y cartas útiles (primero a fundaciones), si no roba; se rinde tras tres vueltas al mazo sin jugadas | `scripts/sim/solitaire-bot.cjs` |
 | Interfaz | Navegadores reales (móvil 375, móvil 360 y ordenador) que tocan, escriben, desplazan y vuelven atrás; registra errores de página, de consola, de servidor y pantallas más anchas que el móvil, con captura | `scripts/sim/ui-bots.cjs` |
 
 Estilos de juego (`scripts/sim/policies.ts`): **novato** (lento, jugadas al azar), **medio** (ritmo humano, elige la mejor
@@ -43,6 +46,8 @@ pnpm sim                      # personas, partidas, competir y trampas
 pnpm sim -- partidas          # una familia
 SIM_PLAYERS=24 SIM_MATCHES=3 pnpm sim -- partidas
 pnpm sim:ui -- 9 70           # 9 bots de interfaz × 70 toques
+pnpm sim -- mine              # Mine Grid por el protocolo oculto
+node scripts/sim/solitaire-bot.cjs 3   # Solitaire tocando las cartas
 ```
 
 Informes en `sim-reports/<fecha>/report.md` y `report.json` (fuera del repositorio). Seguridad: `SIM_BASE` y
@@ -50,9 +55,12 @@ Informes en `sim-reports/<fecha>/report.md` y `report.json` (fuera del repositor
 
 ## Limitaciones
 
-- Mine Grid y Solitaire Sprint usan su protocolo oculto propio: todavía no tienen bot.
-- Slot, Galoku y Reaction Test duran más de 150 s con estos estilos y se saltan en tiempo real
-  (`SIM_MAX_MATCH_S` lo cambia).
+- Solitaire se juega entero en el navegador (sin servidor), así que su bot va por la interfaz y es lento (unos 5 min).
+- Slot, Galoku y Reaction Test se saltan en las partidas en tiempo real: con estilos genéricos sus partidas pasan de
+  150 s (el bot no sabe resolver un sudoku ni cuándo plantarse, y la partida dura hasta el límite de tiempo). El
+  servidor exige que una partida tarde lo que dura de verdad, así que cada una costaría minutos. Sí pasan la
+  comprobación fuera de línea (`pnpm sim:offline`). Para incluirlas: `SIM_MAX_MATCH_S=900` en una campaña larga, o un
+  bot específico por juego.
 - Los estilos son genéricos: miden robustez y justicia, no son la mejor estrategia posible de cada juego. Un atacante
   dedicado haría un solucionador por juego, que sería todavía más fuerte que el «experto».
 - En grupos online solo existe todavía la modalidad «Todos vs todos».

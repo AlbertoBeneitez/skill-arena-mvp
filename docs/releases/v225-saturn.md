@@ -8,4 +8,8 @@
   en Vercel, hallazgos con evidencia de los bots y plan por fases. Críticos: bots con anticipación perfecta (la semilla
   llega al móvil) y tope global de 2000 partidas (bloqueado en 38 s). Altos: límites por cookie y no por cuenta, «mejor
   de N» en grupos, reparto a estudios inflable, progreso en el navegador y ninguna capa anti-bot activa.
+- Bots de **Mine Grid** (protocolo oculto del servidor, con pruebas de protocolo) y **Solitaire** (navegador real).
+  Nuevos hallazgos: A6 (Mine Grid y Solitaire dan el resultado desde el móvil en Vercel) y Solitaire sin final cuando
+  te quedas sin jugadas.
+- Traspaso para la siguiente sesión: [TRASPASO.md](../TRASPASO.md).
 - Sin cambios en el código de la app ni en Vercel.

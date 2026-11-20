@@ -105,6 +105,15 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 - **Qué.** BotID no está instalado; la comprobación de mismo origen solo frena a otras webs (CSRF), no a scripts.
 - **Arreglo.** BotID Basic (gratis) en inicio y cierre de partida, sesión y envíos de estudios.
 
+### A6 · Alto (con premios) · Mine Grid y Solitaire: el resultado lo da el móvil en Vercel
+- **Qué.** Los dos están marcados `client-result`. En Vercel no existe `ALLOW_PERSISTED_HIDDEN_TRAINING`, así que Mine
+  Grid usa la versión antigua del navegador; Solitaire siempre se juega entero en el navegador.
+- **Evidencia (simulador).** Con la versión oculta activada en local, Mine Grid aguanta todas las pruebas (sin fugas de
+  minas ni de semilla; revisiones viejas, casillas inventadas, partidas ajenas y otra web rechazadas) y 5 de 6 bots ganan
+  jugando limpio. Solitaire no tiene camino de servidor.
+- **Arreglo.** Activar Mine Grid oculto en Vercel (con base de datos `sslmode=verify-full`) y llevar Solitaire al mismo
+  protocolo oculto (`solitaireSetup.v1.server.ts` ya prepara el reparto privado). Hasta entonces, sin premios en estos dos.
+
 ### M1 · Medio · `AUTH_SECRET` probablemente compartido entre vista previa y producción
 - **Impacto.** Quien obtenga el secreto de la vista previa (que se usa para pruebas) puede firmar sesiones de producción,
   incluida la del propietario de estudios (`STUDIO_OWNER_ACCOUNTS`).
@@ -141,6 +150,11 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 ### B4 · Bajo · CSP con `'unsafe-inline'` en scripts
 - **Qué.** Debilita la defensa ante una inyección de HTML. **Arreglo.** Nonces de Next para los scripts en línea.
 
+### Observación · Solitaire no termina cuando el jugador se queda sin jugadas
+- **Evidencia (simulador).** Los bots se atascan con 6 de 52 cartas en la fundación: la partida solo termina al
+  destapar todas las cartas, el reloj sigue y la única salida es volver atrás (cuenta como abandono). **Arreglo
+  (experiencia).** Botón «Terminar» o fin automático cuando el mazo ha dado una vuelta completa sin jugadas.
+
 ### Observación · Un registro mal formado no cierra el intento
 - **Qué.** Un registro de partida con formato inválido se rechaza con 400 y el intento sigue «jugando»: el móvil puede
   enviar el bueno o abandonar. No da ventaja (solo cuenta el primer registro válido), pero un cliente con un fallo
@@ -155,6 +169,8 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 | Partidas | Más de 40 partidas completas en tiempo real (Billar, Bowling, Tower Drop, Orb Burst, Pinball…): todas aceptadas, con la misma puntuación en el bot y en el servidor |
 | Competir | Grupo de 4 bots, competición «Todos vs todos» de 2 jornadas: se juega, se anota y termina |
 | Trampas rechazadas | Sesión falsificada o caducada, otra web (CSRF), cuerpo de 600 KB, semilla elegida por el cliente, acción inventada, entradas desordenadas, final adelantado, partida más rápida que el reloj y partida ajena |
+| Mine Grid (oculto, local) | 6 bots: 5 victorias jugando solo con la vista pública; todas las pruebas de protocolo rechazadas |
+| Solitaire (navegador) | 3 bots juegan con criterio hasta atascarse (ver observación) |
 | Trampas que pasan | C1, C2, A1, A2 y B1 de esta revisión |
 
 Avisos sobre los propios bots: las primeras campañas dieron falsos fallos («partida abandonada», «error de red»)
