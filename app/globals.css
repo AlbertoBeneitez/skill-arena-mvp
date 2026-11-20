@@ -9239,12 +9239,14 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen button.profileStrip { grid-template-columns: 52px minmax(0, 1fr) !important; width: 100%; font: inherit; text-align: start; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .appShell .avatarScreen button.profileStrip:active { transform: translateY(1px); }
 .appShell .avatarScreen button.profileStrip:focus-visible { outline: 2px solid var(--av-accent, #d2df3a); outline-offset: 2px; }
-/* v224 (owner): a small, quiet pencil badge on the avatar itself instead of a yellow button at the side. */
+/* v224 (owner): a small, quiet grey pencil right after the name instead of a yellow button at the side. */
 .appShell .avatarScreen .profileStrip .profileAvatar { position: relative; width: 52px; height: 52px; display: block; }
 .appShell .avatarScreen .profileStrip .profileAvatar img { width: 52px; height: 52px; }
+.appShell .avatarScreen .profileStrip .profileNameRow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.appShell .avatarScreen .profileStrip .profileNameRow strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .appShell .avatarScreen .profileStrip .profileEdit {
-  position: absolute; right: -3px; bottom: -3px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
-  background: #1a1d22; border: 1px solid rgba(255,255,255,.22); color: #c9ced6 !important; box-shadow: 0 2px 6px rgba(0,0,0,.5);
+  flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%;
+  background: #1a1d22; border: 1px solid rgba(255,255,255,.2); color: #c9ced6 !important; box-shadow: 0 2px 6px rgba(0,0,0,.45);
 }
 /* v179 · Which platform's ranking this is (phones and computers rank apart). */
 .rankingPlatform { margin: -2px 2px 0; color: #8f959c; font-size: 14.5px; }

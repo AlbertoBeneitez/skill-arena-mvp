@@ -5,8 +5,8 @@
 - **Ranking (textos fuera, decisión del propietario):** «Juega una partida para entrar», «· datos de ejemplo y tu mejor
   marca» (la tabla se titula «Ranking de {juego}»), «Ranking de móvil: solo jugadores de móvil» y «Tu mejor marca se
   guarda en este navegador». Los rankings siguen separados por plataforma; solo deja de decirse en pantalla.
-- **Avatar › Perfil:** el lápiz deja de ser un botón amarillo al lado: es una insignia pequeña y gris sobre la esquina
-  del avatar (toda la tarjeta sigue siendo el botón). Al terminar de editar, «CONTINUAR» vuelve a Avatar › Perfil y no a
+- **Avatar › Perfil:** el lápiz deja de ser un botón amarillo al lado: es un círculo pequeño y gris a la derecha del
+  nombre (toda la tarjeta sigue siendo el botón). Al terminar de editar, «CONTINUAR» vuelve a Avatar › Perfil y no a
   Juegos. En la pantalla de edición, «CONTINUAR» queda justo debajo del nombre.
 - **Clasificación de tus grupos:** sin «Ir a Grupos»; queda «Aún no estás en ningún grupo.» como texto (10 idiomas).
 - Claves de traducción eliminadas: `ranking.gameCaption`, `ranking.noScore`, `ranking.gameNote`,
