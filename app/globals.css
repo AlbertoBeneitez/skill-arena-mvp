@@ -9242,12 +9242,12 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 /* v224 (owner): a small, quiet grey pencil right after the name instead of a yellow button at the side. */
 .appShell .avatarScreen .profileStrip .profileAvatar { position: relative; width: 52px; height: 52px; display: block; }
 .appShell .avatarScreen .profileStrip .profileAvatar img { width: 52px; height: 52px; }
-/* Card: avatar | name over the net profit; the pencil sits quietly in the top-right corner (v224, owner). */
-.appShell .avatarScreen button.profileStrip { position: relative; }
-.appShell .avatarScreen .profileStrip > div { gap: 4px !important; padding-inline-end: 30px; min-width: 0; }
-.appShell .avatarScreen .profileStrip > div strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Card: avatar | name (pencil right after it, centred on the name line, as most mobile games do) over the net profit (v224, owner). */
+.appShell .avatarScreen .profileStrip > div { gap: 4px !important; min-width: 0; }
+.appShell .avatarScreen .profileStrip .profileNameRow { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.appShell .avatarScreen .profileStrip .profileNameRow strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .appShell .avatarScreen .profileStrip .profileEdit {
-  position: absolute; top: 10px; inset-inline-end: 10px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
+  flex: none; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%;
   background: #1a1d22; border: 1px solid rgba(255,255,255,.18); color: #b9bfc8 !important; box-shadow: 0 2px 5px rgba(0,0,0,.4);
 }
 /* v179 · Which platform's ranking this is (phones and computers rank apart). */
