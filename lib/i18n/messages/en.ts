@@ -706,7 +706,6 @@ const messages: Messages = {
   "cookies.p4": "If you sign in with another account: \"ga_session\" keeps your session (30 days) and \"ga_oauth\" protects the trip to the provider (10 minutes).",
   "welcome.authFailed": "Sign-in couldn't be completed. Try again or use your local session.",
   "welcome.authUnavailable": "That sign-in isn't available right now. Use your local session.",
-  "profile.signedInWith": "Signed in with {provider}",
   "game.unitChips": "chips",
   "game.unitPoints": "points",
   "game.unitMs": "ms",

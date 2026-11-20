@@ -706,7 +706,6 @@ const messages: Messages = {
   "cookies.p4": "عند تسجيل الدخول بحساب آخر: «ga_session» تحفظ جلستك (30 يومًا) و«ga_oauth» تحمي الانتقال إلى المزوّد (10 دقائق).",
   "welcome.authFailed": "تعذّر إكمال تسجيل الدخول. حاول مرة أخرى أو ادخل بجلستك المحلية.",
   "welcome.authUnavailable": "طريقة الدخول هذه غير متاحة الآن. ادخل بجلستك المحلية.",
-  "profile.signedInWith": "متصل عبر {provider}",
   "game.unitChips": "رقائق",
   "game.unitPoints": "نقاط",
   "game.unitMs": "مللي ثانية",

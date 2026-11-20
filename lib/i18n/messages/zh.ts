@@ -706,7 +706,6 @@ const messages: Messages = {
   "cookies.p4": "如果使用其他账号登录：“ga_session”保存你的会话（30 天），“ga_oauth”保护前往提供方的登录过程（10 分钟）。",
   "welcome.authFailed": "登录未能完成。请重试，或使用本地会话。",
   "welcome.authUnavailable": "该登录方式暂不可用。请使用本地会话。",
-  "profile.signedInWith": "已通过 {provider} 登录",
   "game.unitChips": "筹码",
   "game.unitPoints": "分",
   "game.unitMs": "毫秒",

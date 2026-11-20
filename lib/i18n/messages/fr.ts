@@ -706,7 +706,6 @@ const messages: Messages = {
   "cookies.p4": "Si tu te connectes avec un autre compte : « ga_session » garde ta session (30 jours) et « ga_oauth » protège le passage par le fournisseur (10 minutes).",
   "welcome.authFailed": "La connexion n'a pas pu aboutir. Réessaie ou entre avec ta session locale.",
   "welcome.authUnavailable": "Cette connexion n'est pas disponible pour le moment. Entre avec ta session locale.",
-  "profile.signedInWith": "Connecté avec {provider}",
   "game.unitChips": "jetons",
   "game.unitPoints": "points",
   "game.unitMs": "ms",

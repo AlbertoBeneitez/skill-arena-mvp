@@ -706,7 +706,6 @@ const messages: Messages = {
   "cookies.p4": "При входе через другой аккаунт: «ga_session» хранит сеанс (30 дней), а «ga_oauth» защищает переход к провайдеру (10 минут).",
   "welcome.authFailed": "Не удалось завершить вход. Попробуйте ещё раз или войдите в локальный сеанс.",
   "welcome.authUnavailable": "Этот способ входа сейчас недоступен. Войдите в локальный сеанс.",
-  "profile.signedInWith": "Вход через {provider}",
   "game.unitChips": "фишки",
   "game.unitPoints": "очки",
   "game.unitMs": "мс",

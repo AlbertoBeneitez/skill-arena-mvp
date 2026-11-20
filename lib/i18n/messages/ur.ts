@@ -706,7 +706,6 @@ const messages: Messages = {
   "cookies.p4": "کسی دوسرے اکاؤنٹ سے سائن ان پر: «ga_session» آپ کا سیشن رکھتی ہے (30 دن) اور «ga_oauth» فراہم کنندہ تک جانے کے مرحلے کو محفوظ رکھتی ہے (10 منٹ)۔",
   "welcome.authFailed": "سائن ان مکمل نہیں ہو سکا۔ دوبارہ کوشش کریں یا مقامی سیشن سے داخل ہوں۔",
   "welcome.authUnavailable": "یہ سائن ان ابھی دستیاب نہیں۔ مقامی سیشن سے داخل ہوں۔",
-  "profile.signedInWith": "{provider} کے ساتھ سائن ان",
   "game.unitChips": "چپس",
   "game.unitPoints": "پوائنٹس",
   "game.unitMs": "ms",

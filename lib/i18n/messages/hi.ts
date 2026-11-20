@@ -706,7 +706,6 @@ const messages: Messages = {
   "cookies.p4": "दूसरे अकाउंट से साइन इन करने पर: «ga_session» आपका सेशन रखती है (30 दिन) और «ga_oauth» प्रदाता तक जाने की प्रक्रिया सुरक्षित करती है (10 मिनट)।",
   "welcome.authFailed": "साइन इन पूरा नहीं हो सका। फिर से कोशिश करें या लोकल सेशन से जाएँ।",
   "welcome.authUnavailable": "यह साइन इन अभी उपलब्ध नहीं है। लोकल सेशन से जाएँ।",
-  "profile.signedInWith": "{provider} से साइन इन",
   "game.unitChips": "चिप्स",
   "game.unitPoints": "अंक",
   "game.unitMs": "ms",

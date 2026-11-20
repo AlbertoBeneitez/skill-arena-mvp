@@ -744,7 +744,6 @@ const es = {
   "cookies.p4": "Si entras con otra cuenta: «ga_session» guarda tu sesión (30 días) y «ga_oauth» protege el paso por el proveedor (10 minutos).",
   "welcome.authFailed": "No se pudo completar el inicio de sesión. Inténtalo de nuevo o entra con tu sesión local.",
   "welcome.authUnavailable": "Ese acceso no está disponible ahora mismo. Entra con tu sesión local.",
-  "profile.signedInWith": "Conectado con {provider}",
   "game.unitChips": "fichas",
   "game.unitPoints": "puntos",
   "game.unitMs": "ms",

@@ -884,7 +884,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 
 ## v224-saturn · Ranking y perfil más limpios (20-nov-2026)
 
-- Línea discontinua en el gráfico; sin avisos de ejemplo/plataforma/mejor marca; lápiz a la derecha del nombre; editar perfil vuelve a Avatar › Perfil; CONTINUAR bajo el nombre; grupos vacíos sin enlace.
+- Línea discontinua en el gráfico; sin avisos de ejemplo/plataforma/mejor marca; lápiz en la esquina de la tarjeta, sin «Conectado con…»; editar perfil vuelve a Avatar › Perfil; CONTINUAR bajo el nombre; grupos vacíos sin enlace.
 
 ## v223-saturn · Buscador de juegos y Ranking › Juegos (20-nov-2026)
 
