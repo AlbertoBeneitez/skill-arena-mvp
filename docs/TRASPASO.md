@@ -1,4 +1,4 @@
-# Traspaso de trabajo (20-nov-2026, 18:30) — para la siguiente sesión o cuenta
+# Traspaso de trabajo (20-nov-2026, 18:50) — para la siguiente sesión o cuenta
 
 Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué está decidido y qué falta.
 
@@ -69,6 +69,19 @@ propietario. Propuesta para validar:
   también notificaciones del móvil (claves VAPID)?, ¿avisos de malas noticias también fuera de la app o solo dentro?,
   ¿límite diario de avisos para no saturar?
 
+
+## Mensaje del propietario (20-nov, 18:27) — estado
+
+| Punto | Estado |
+|---|---|
+| 7 · Enseñar las notificaciones | **Hecho**: propuesta visual en [design/avisos/avisos-propuesta.jpg](design/avisos/avisos-propuesta.jpg) (aviso bueno, aviso malo, buzón, notificación del móvil, ajustes y tabla de textos). **Esperando validación** antes de programar |
+| 1 · Logos muy originales (app del móvil / acceso directo, pantalla del ordenador y otro) | **Siguiente proceso.** Respetar «Galactic Games», 3 versiones como mínimo: icono de app (legible a 48 px, sin texto), marca horizontal para ordenador y una tercera (por ejemplo, sello animado para la pantalla de carga o insignia para compartir). Entregar imágenes y esperar aprobación |
+| 2 · ¿Hay que lanzar el simulador a mano? | Respondido: puede ir en paralelo con **GitHub Actions** cada noche (gratis en repositorio público; no compila en Vercel). Falta el «sí» del propietario para crear `.github/workflows/sim-bots.yml` (servidor local + PostgreSQL de servicio + `pnpm sim`; el informe se guarda como artefacto) |
+| 3 · Cuenta de Apple | Respondido: el código ya lo soporta (v122). Para activarlo hace falta el Apple Developer Program, **99 $ al año**, que se cancela no renovándolo. Las credenciales las pone el propietario en Vercel. Pendiente de su decisión por el coste |
+| 4 · Fechas de rankings «como en la imagen» | **No llegó ninguna imagen.** Pedirla de nuevo |
+| 5 · ¿Por qué no salen los bots en los rankings? | Respondido: los bots juegan solo en la copia local, con su propia base de datos, y los rankings de Vercel solo muestran datos reales del servidor (hoy vacíos: las partidas durables no están activadas en Vercel). Meter bots en Vercel costaría uso de pago y ensuciaría los rankings reales. Si se quiere verlos, que sea en una rama de base de datos de Neon aparte (gratis) y con la marca «Bot» |
+| 6 · Información oculta por pasos + detección + identidad | **Aprobado por el propietario; pendiente de empezar.** Matiz que hay que mantener: en juegos de física (Billar, Pinball…) el resultado de tu propio tiro se puede calcular siempre; lo que se oculta es el azar futuro (siguiente mesa, pieza, carta, diana, rebote aleatorio). Contra la precisión imposible, detección. Orden propuesto: (a) fase 0 de seguridad (C2, A1, A2); (b) protocolo oculto por pasos reutilizando el de Mine Grid: primero Solitaire, después Tower y Stack (siguiente pieza) y Dardos (siguiente diana); (c) capa de comportamiento en modo observación, calibrada con el simulador; (d) identidad: una cuenta por persona y KYC antes del dinero. Cada juego cambiado es una versión competitiva nueva (las antiguas se conservan) |
+
 ## Decisiones pendientes del propietario
 
 1. Fase 0 de seguridad (0 €): quitar el tope global con límite por cuenta y día más limpieza, límites por cuenta,
@@ -76,8 +89,9 @@ propietario. Propuesta para validar:
 2. Cambiar `AUTH_SECRET` de producción para que no sea el mismo que el de la vista previa (lo hace el propietario en
    Vercel; cierra las sesiones abiertas).
 3. Instalar BotID Basic (gratis).
-4. Notificaciones: respuestas a las preguntas del punto 4.
-5. Arrastradas de antes: nombres de ligas Ámbar y Perla; fase 2 de grupos (juego online entre grupos y Web Push);
+4. Notificaciones: validar o cambiar la propuesta de `design/avisos/`.
+5. Apple (99 $ al año), simulador nocturno en GitHub Actions (gratis) y la imagen de las fechas del ranking.
+6. Arrastradas de antes: nombres de ligas Ámbar y Perla; fase 2 de grupos (juego online entre grupos y Web Push);
    `ALLOW_PERSISTED_MATCH_TRAINING=1` en la vista previa (solo después de arreglar el tope global, C2).
 
 ## Forma de trabajar que espera el propietario
