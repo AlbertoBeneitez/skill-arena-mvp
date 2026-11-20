@@ -9245,7 +9245,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .appShell .avatarScreen .profileStrip .profileNameRow { display: flex; align-items: flex-end; gap: 4px; min-width: 0; }
 .appShell .avatarScreen .profileStrip .profileNameRow strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .appShell .avatarScreen .profileStrip .profileEdit {
-  flex: none; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; transform: translateY(5px);
+  flex: none; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; transform: translateY(1px);
   background: #1a1d22; border: 1px solid rgba(255,255,255,.2); color: #c9ced6 !important; box-shadow: 0 2px 6px rgba(0,0,0,.45);
 }
 /* v179 · Which platform's ranking this is (phones and computers rank apart). */
