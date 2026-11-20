@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 20 de noviembre de 2026 · base `mobile-test` en v221-saturn (v222, v223 y v224 listas, pendientes de subir).
+Actualizado: 20 de noviembre de 2026 · base `mobile-test` en v224-saturn (v225-saturn: solo simulador y documentación).
 
 ## Catálogo
 
@@ -89,6 +89,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Simulador de bots y revisión de seguridad (20 de noviembre, v225, sin cambios en la app):** `scripts/sim` (local, 0 €, bots «Bot …») y [revisión de seguridad](security/REVISION_2026-11.md). Pendiente decidir la fase 0: tope de partidas por cuenta y día, límites por cuenta, partida de la jornada emitida por el servidor en grupos y nombres confundibles.
 - [x] **Ranking y perfil más limpios (20 de noviembre, v224, app 2.24):** línea discontinua en el gráfico de Juegos; fuera los avisos de ejemplo, plataforma y mejor marca; lápiz discreto a la derecha del nombre, sin «Conectado con Google» y con el beneficio neto más grande; editar el perfil vuelve a Avatar › Perfil con «CONTINUAR» bajo el nombre; grupos vacíos sin «Ir a Grupos». Los rankings siguen separados por plataforma aunque no se diga.
 - [x] **Buscador y Ranking › Juegos (20 de noviembre, v223, app 2.23):** categorías a todo el ancho, X cuadrada a la derecha de la búsqueda, juegos más separados; sin «DATOS DE EJEMPLO» ni «Último mes» (los ingresos por juego siguen siendo de ejemplo hasta que exista el registro de comisiones); etiqueta del gráfico con cantidad arriba y fecha abajo.
 - [x] **Textos de grupos (20 de noviembre, v222, app 2.22):** sin el aviso de rivales inventados; 1 vs 1 explicado como «duelo… Ganas: +2 puntos. Pierdes: 0.».

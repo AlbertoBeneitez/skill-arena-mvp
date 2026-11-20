@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "outDir": ".sim-build",
+    "noEmit": false,
+    "incremental": false
+  },
+  "include": ["scripts/sim/**/*.ts"]
+}

@@ -10,7 +10,10 @@
     "check": "pnpm lint && pnpm test:determinism",
     "test:determinism": "node -e \"require('fs').rmSync('.det-test',{recursive:true,force:true})\" && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs",
     "test:repository": "node scripts/verify-i18n.cjs && tsc --project tsconfig.determinism.json && node scripts/run-determinism.mjs repository",
-    "test:i18n": "node scripts/verify-i18n.cjs"
+    "test:i18n": "node scripts/verify-i18n.cjs",
+    "sim": "tsc -p tsconfig.sim.json && node scripts/sim/run.mjs campaign",
+    "sim:ui": "node scripts/sim/ui-bots.cjs",
+    "sim:offline": "tsc -p tsconfig.sim.json && node scripts/sim/run.mjs offline"
   },
   "dependencies": {
     "arctic": "3.7.0",

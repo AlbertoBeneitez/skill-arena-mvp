@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v225-saturn · Simulador de bots y revisión de seguridad (20-nov-2026)
+
+- Simulador local de bots (personas, partidas, grupos, trampas, cupo e interfaz) y revisión de seguridad con plan por fases. Pendiente (fase 0, 0 €): C2 tope global → por cuenta y día con limpieza; A1 límites por cuenta; A2 partida de la jornada emitida por el servidor; B1 nombres confundibles. Fase 1: BotID Basic y capa de comportamiento en observación.
+
 ## v224-saturn · Ranking y perfil más limpios (20-nov-2026)
 
 - Línea discontinua en el gráfico; sin avisos de ejemplo/plataforma/mejor marca; lápiz a la derecha del nombre, sin «Conectado con…»; editar perfil vuelve a Avatar › Perfil; CONTINUAR bajo el nombre; grupos vacíos sin enlace.

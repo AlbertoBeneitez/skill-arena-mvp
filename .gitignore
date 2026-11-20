@@ -14,3 +14,7 @@ node_modules/
 # Artefactos de las pruebas y de TypeScript
 .det-test/
 *.tsbuildinfo
+
+# Bot simulator (local only)
+.sim-build/
+sim-reports/

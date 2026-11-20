@@ -1,5 +1,7 @@
 # Módulo anti-bots — diseño (v188, 13-nov-2026)
 
+> Estado real y plan por fases actualizados el 20-nov-2026: [revisión de seguridad](security/REVISION_2026-11.md).
+
 Pedido por el propietario: «hay que hacer un módulo anti-bots bueno». Un bot en Galactic Games puede (a) jugar
 perfecto y ganar torneos, (b) inflar las partidas de un juego para cobrar más reparto de estudios, (c) crear miles de
 identidades para saltarse límites y (d) saturar el servidor. Ninguna capa sola basta; este es el diseño por capas, en
