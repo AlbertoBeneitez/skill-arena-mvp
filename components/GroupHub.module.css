@@ -657,7 +657,7 @@
 /* v194 · category chips above the game search, and a clear (X) button at the right of the search field. */
 .categories { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box; padding: 2px 0 8px; max-height: calc(3 * 36px + 2 * 6px + 10px); overflow: hidden; }
 .categories::-webkit-scrollbar { display: none; }
-.categories button { flex: none; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--field); color: var(--dim); font: 600 14.5px/1 var(--gx-ui, sans-serif); }
+.categories button { flex: 1 1 auto; text-transform: uppercase; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--field); color: var(--dim); font: 600 14.5px/1 var(--gx-ui, sans-serif); }
 .categories button[aria-pressed="true"] { color: var(--ink); border-color: var(--ice); background: var(--ice-soft); }
 .search .clear { flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin-inline-end: -6px; border: 0; border-radius: 50%; background: none; color: var(--dim); }
 .search .clear:disabled { opacity: .35; }
@@ -676,9 +676,14 @@
 
 /* v202 · The step «Juegos» carries its own clear (X): search, category and chosen games. */
 .stepHead { display: flex; align-items: center; justify-content: flex-start; gap: 10px; min-width: 0; }
-.clearStep { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-2); background: var(--field); color: var(--ink); padding: 0; }
-.clearStep:active { background: var(--ice-soft, rgba(127, 227, 234, .12)); }
-.clearStep:disabled { opacity: .35; }
+.searchRow { display: flex; align-items: stretch; gap: 8px; min-width: 0; }
+.searchRow .search { flex: 1; }
+.clearLast { flex: none; width: 48px; display: grid; place-items: center; padding: 0; border-radius: 8px; border: 1px solid var(--line-2); background: linear-gradient(180deg, #1c2026, #121519); color: var(--ink); box-shadow: 0 3px 8px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .07); }
+.clearLast:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .05); background: var(--ice-soft, rgba(127, 227, 234, .12)); }
+.clearLast:disabled { opacity: .35; box-shadow: none; }
+.clearLast:focus-visible { outline: 2px solid var(--ice, #7fe3ea); outline-offset: 2px; }
+/* v223: games a little further from the search box. */
+.searchRow + .games { margin-top: 10px; }
 .search input:focus, .search input:focus-visible { outline: none; box-shadow: none; border: 0; }
 
 /* ---------- v217 · Modalities ---------- */

@@ -23,10 +23,13 @@ type Props = {
   withRandom?: boolean;
   onTap(id: string): void;
   onUnpick?(id: string): void;
+  /** v223: square button right of the search box that removes the last game picked (multi only). */
+  onClearLast?(): void;
+  clearLabel?: string;
   label: string;
 };
 
-export default function GamePicker({ games, picked, multi, withRandom = false, onTap, onUnpick, label }: Props) {
+export default function GamePicker({ games, picked, multi, withRandom = false, onTap, onUnpick, onClearLast, clearLabel, label }: Props) {
   useI18n();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
@@ -43,10 +46,17 @@ export default function GamePicker({ games, picked, multi, withRandom = false, o
           </button>
         ))}
       </div>
-      <label className={st.search}>
-        <UiIcon name="search" size={18} />
-        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")} enterKeyHint="search" />
-      </label>
+      <div className={st.searchRow}>
+        <label className={st.search}>
+          <UiIcon name="search" size={18} />
+          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("group.searchGames")} aria-label={t("group.searchGames")} enterKeyHint="search" />
+        </label>
+        {onClearLast && (
+          <button type="button" className={st.clearLast} aria-label={clearLabel} disabled={picked.length === 0} onClick={onClearLast}>
+            <UiIcon name="close" size={18} />
+          </button>
+        )}
+      </div>
       <div className={st.games} role="group" aria-label={label}>
         {tiles.map(({ id, name, cover }) => {
           const numbers = picked.flatMap((x, i) => (x === id ? [i + 1] : []));

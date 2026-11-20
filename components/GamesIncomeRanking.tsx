@@ -4,11 +4,12 @@
  * on changing euros ↔ cosmicoins, by its counted matches (lib/studioPayout.ts). Until that ledger exists the tab shows
  * sample data and says so («datos de ejemplo»). One series per chart (one hue, no legend): the month total over six
  * months, and each game's bar; tapping a game opens its own six-month line. Values are text, never colour alone, and
- * every chart has a table for screen readers.
+ * every chart has a table for screen readers. v223 (owner): no «datos de ejemplo» badge and no period subtitle; the
+ * series is still sample data until the commission ledger exists (docs/STATE.md).
  */
 import { useId, useMemo, useState } from "react";
 import { GAMES, playableForMoney } from "@/lib/games";
-import { COIN_SYMBOL, formatNumber, getLocale, t, useI18n, type MessageKey } from "@/lib/i18n";
+import { COIN_SYMBOL, formatNumber, getLocale, t, useI18n } from "@/lib/i18n";
 import { localeInfo } from "@/lib/i18n/locales";
 import { gameName } from "@/lib/i18n/games";
 import { sampleIncomeSeries } from "@/lib/demo/sampleGameIncome";
@@ -22,7 +23,7 @@ function LineChart({ values, labels, name }: { values: number[]; labels: string[
   const [pickRaw, setPick] = useState(values.length - 1);
   const fillId = `gi-fill-${useId().replace(/:/g, "")}`;
   const pick = Math.min(pickRaw, values.length - 1);
-  const w = 300, h = 96, padTop = 22, padBottom = 6;
+  const w = 300, h = 108, padTop = 38, padBottom = 6;
   const max = Math.max(...values, 1) * 1.08;
   const x = (i: number) => (values.length === 1 ? w / 2 : 12 + (i * (w - 24)) / (values.length - 1));
   const y = (v: number) => padTop + (1 - v / max) * (h - padTop - padBottom);
@@ -45,7 +46,9 @@ function LineChart({ values, labels, name }: { values: number[]; labels: string[
         <polygon points={`${x(0)},${h - padBottom} ${points} ${x(values.length - 1)},${h - padBottom}`} fill={`url(#${fillId})`} />
         <polyline points={points} className={st.line} />
         {values.map((v, i) => (i === pick || values.length <= 12) && <circle key={i} cx={x(i)} cy={y(v)} r={i === pick ? 4.5 : 3} className={i === pick ? st.dotOn : st.dot} />)}
-        <text x={tipX} y={Math.max(12, y(values[pick]) - 9)} textAnchor="middle" className={st.tip}>{euros(values[pick])} · {labels[pick]}</text>
+        {/* v223 (owner): the amount on top, its date underneath. */}
+        <text x={tipX} y={Math.max(14, y(values[pick]) - 23)} textAnchor="middle" className={st.tip}>{euros(values[pick])}</text>
+        <text x={tipX} y={Math.max(28, y(values[pick]) - 10)} textAnchor="middle" className={st.tipDate}>{labels[pick]}</text>
         {values.map((_, i) => (
           <rect key={i} x={x(i) - (w - 24) / (2 * Math.max(1, values.length - 1))} y="0" width={(w - 24) / Math.max(1, values.length - 1)} height={h}
             className={st.hit} onPointerEnter={() => setPick(i)} onClick={() => setPick(i)} />
@@ -90,13 +93,11 @@ export default function GamesIncomeRanking({ period }: { period: RankingPeriod }
   const [open, setOpen] = useState<string | null>(null);
   return (
     <div className={st.wrap}>
-      <p className={st.sample}>{t("ranking.exampleNotice")}</p>
       <section className={st.card} aria-labelledby="gi-total">
         <div className={st.cardHead}>
           <span id="gi-total">{t("ranking.gamesPeriodTotal")}</span>
           <strong dir="ltr">{euros(periodTotal)}</strong>
         </div>
-        <small className={st.sub}>{t(`ranking.periodLong.${period}` as MessageKey)}</small>
         <LineChart values={totals} labels={labels} name={t("ranking.gamesAll")} />
       </section>
       <section aria-labelledby="gi-list">
@@ -115,7 +116,7 @@ export default function GamesIncomeRanking({ period }: { period: RankingPeriod }
                 </button>
                 {isOpen && (
                   <div className={st.detail}>
-                    <small className={st.sub}>{t("ranking.gamesEvolution", { game: gameName(r.game) })} · {t(`ranking.periodLong.${period}` as MessageKey)}</small>
+                    <small className={st.sub}>{t("ranking.gamesEvolution", { game: gameName(r.game) })}</small>
                     <LineChart values={r.series} labels={labels} name={gameName(r.game)} />
                   </div>
                 )}

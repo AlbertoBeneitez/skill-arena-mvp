@@ -563,12 +563,10 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           <li>
             <div className={st.stepHead}>
               <span className={st.stepLabel}>{t(multi ? "group.stepGames" : "group.stepGame")}</span>
-              {/* v213: the X sits right after the step title, always there (dimmed when there is nothing to clear). */}
-              <button type="button" className={st.clearStep} aria-label={t("group.clearGames")} disabled={picked.length === 0} onClick={() => setPicked((list) => list.slice(0, -1))}>
-                <UiIcon name="close" size={16} />
-              </button>
             </div>
-            <GamePicker games={pickable} picked={chosen} multi withRandom onTap={tapGame} onUnpick={unpick} label={t("group.stepGames")} />
+            {/* v223: the X that removes the last game picked sits right of the search box (square, owner). */}
+            <GamePicker games={pickable} picked={chosen} multi withRandom onTap={tapGame} onUnpick={unpick}
+              onClearLast={() => setPicked((list) => list.slice(0, -1))} clearLabel={t("group.clearGames")} label={t("group.stepGames")} />
             {forMoney && GAMES.some((g) => !playableForMoney(g)) && <p className={st.hint}>{t("group.chanceExcluded")}</p>}
             <p className={st.hint}>{multi ? (chosen.length ? "" : t("group.gamesPickHint")) : chosen.length ? "" : t("group.pickOne")}</p>
           </li>
