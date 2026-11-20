@@ -30,3 +30,8 @@ export const AUTH_PROVIDERS: readonly AuthProviderInfo[] = [
 
 /** Server variable shared by every provider: the cookie signing key (≥ 32 characters). */
 export const AUTH_SHARED_CONFIG = ["AUTH_SECRET"] as const;
+
+/** v226 (owner, 20-nov-2026): Apple stays wired on the server but is not offered yet (Apple Developer Program, 99 $/year,
+ *  see docs/SERVICIOS_A_CONTRATAR.md). Remove the id from this set to show its button again. */
+export const HIDDEN_SIGN_IN = new Set<AuthProviderId>(["apple"]);
+export const visibleProviders = (placement: "primary" | "secondary") => AUTH_PROVIDERS.filter((p) => p.placement === placement && !HIDDEN_SIGN_IN.has(p.id));

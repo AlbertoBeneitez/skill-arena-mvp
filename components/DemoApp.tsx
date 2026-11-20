@@ -14,7 +14,7 @@ import OrbitalScene from "./OrbitalScene";
 import AtomScene from "./AtomScene";
 import UiIcon from "./UiIcon";
 import ProviderLogo from "./ProviderLogo";
-import { AUTH_PROVIDERS, type AuthProviderId, type AuthProviderInfo } from "@/lib/authProviders";
+import { AUTH_PROVIDERS, visibleProviders, type AuthProviderId, type AuthProviderInfo } from "@/lib/authProviders";
 import { assignTop, codePlatform, currentPlatform, platformLetter, type Platform } from "@/lib/platform";
 import { PRODUCT_NAME } from "@/lib/productIdentity";
 import GameLoader from "./GameLoader";
@@ -1693,7 +1693,7 @@ export default function DemoApp() {
           </h1>
           <div className="authStack gxAuth">
             <div className="gxProviderList">
-              {AUTH_PROVIDERS.filter((p) => p.placement === "primary").map((p) => (
+              {visibleProviders("primary").map((p) => (
                 <button key={p.id} type="button" className={`gxProvider gxProvider-${p.id}`} aria-describedby={providerNotice?.id === p.id ? "provider-notice" : undefined}
                   onClick={() => chooseProvider(p)}>
                   <ProviderLogo id={p.id} />
@@ -1703,7 +1703,7 @@ export default function DemoApp() {
             </div>
             <div className="gxProviderMore">
               <div className="gxProviderIcons">
-                {AUTH_PROVIDERS.filter((p) => p.placement === "secondary").map((p) => (
+                {visibleProviders("secondary").map((p) => (
                   <button key={p.id} type="button" className={`gxProviderIcon gxProvider-${p.id}`} aria-label={t("welcome.continueWith", { provider: p.name })}
                     aria-describedby={providerNotice?.id === p.id ? "provider-notice" : undefined}
                     onClick={() => chooseProvider(p)}>

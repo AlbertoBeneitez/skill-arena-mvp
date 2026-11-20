@@ -186,6 +186,23 @@ conexiones reutilizadas). Están corregidos y no son fallos de la app.
 | 2 | Antes de premios | Activar partidas durables (A4); revelar información por tramos donde el juego lo permita (cartas, mesas o rondas siguientes solo al llegar); antigüedad mínima de cuenta; límites por cuenta y día; detección de colusión en grupos | 0 € |
 | 3 | Antes de dinero real | Verificación de identidad (KYC), una cuenta por persona; BotID Deep Analysis solo en cierre de partida y retirada; revisión manual de casos marcados; atestación de dispositivo si hay app nativa; auditoría externa | Deep Analysis: 1 $ cada 1 000 comprobaciones (avisar y aprobar antes) |
 
+## Política para Billar y Pinball (decisión del propietario, 20-nov-2026)
+
+Billar y Pinball **se quedan como están**: sin información oculta por pasos (es física, y calcular el propio tiro es
+parte del juego). Se protegen solo con política anti-bots:
+
+1. **Detección de comportamiento específica.** Billar: tiempo entre tiros, precisión de ángulo y fuerza respecto al
+   tiro ideal y constancia entre partidas. Pinball: reacción de los flippers ante la bola (por debajo de unos 120 ms de
+   forma sostenida, sospechoso) y regularidad de los toques. El simulador aporta los perfiles «experto» como ejemplos
+   de bot.
+2. **Umbral de revisión.** Una puntuación por encima del percentil 99,9 de los humanos se marca para revisión y no
+   entra en premios hasta revisarla. En ranking se muestra, pero con marca «en revisión».
+3. **Límite de partidas puntuables.** Solo cuentan para premios las primeras N partidas del día por cuenta (sin
+   reintentos ilimitados para elegir la mejor).
+4. **Fricción e identidad.** BotID en inicio y cierre de partida; con premios, cuenta con antigüedad mínima y, con
+   dinero, KYC.
+5. **Sin cambios de juego:** las versiones competitivas actuales de Billar y Pinball no se tocan.
+
 ## Lo que se repite en cada versión
 
 El simulador queda en el repositorio: `pnpm sim` (API) y `pnpm sim:ui` (interfaz). Antes de cada fase, repetir la

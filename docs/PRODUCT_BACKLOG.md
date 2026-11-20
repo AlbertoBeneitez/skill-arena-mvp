@@ -882,6 +882,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v226-saturn · Fecha del ranking, sin Apple y servicios a contratar (20-nov-2026)
+
+- Cápsula con cantidad y fecha completa en el gráfico de Juegos; Apple oculto; checklist de servicios por fases; política anti-bots de Billar y Pinball. Pendiente: logo y estética retro, simulador nocturno en GitHub Actions, notificaciones con los cambios del propietario, fase 0 de seguridad e información oculta por pasos.
+
 ## v225-saturn · Simulador de bots y revisión de seguridad (20-nov-2026)
 
 - Simulador local de bots (personas, partidas, grupos, trampas, cupo e interfaz) y revisión de seguridad con plan por fases. Pendiente (fase 0, 0 €): C2 tope global → por cuenta y día con limpieza; A1 límites por cuenta; A2 partida de la jornada emitida por el servidor; B1 nombres confundibles. Fase 1: BotID Basic y capa de comportamiento en observación.

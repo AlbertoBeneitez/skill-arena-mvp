@@ -1,4 +1,4 @@
-# Traspaso de trabajo (20-nov-2026, 18:50) — para la siguiente sesión o cuenta
+# Traspaso de trabajo (20-nov-2026, 19:05) — para la siguiente sesión o cuenta
 
 Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué está decidido y qué falta.
 
@@ -6,8 +6,8 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v224-saturn** (app 2.24), comprobada en Vercel (`/api/health` → 2.24, esquema 017) |
-| Último trabajo | Rama **v225-saturn** (en GitHub): simulador de bots y revisión de seguridad. **No cambia la app**: no hace falta subirla a `mobile-test` |
+| App en el móvil | `mobile-test` = **v226-saturn** (app 2.26) |
+| Último trabajo | Rama **v226-saturn**: fecha del ranking, Apple oculto, [servicios a contratar](SERVICIOS_A_CONTRATAR.md) y política anti-bots de Billar y Pinball (incluye v225: simulador y revisión) |
 | Simulador de bots | `scripts/sim/` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
 | Revisión de seguridad | [security/REVISION_2026-11.md](security/REVISION_2026-11.md) |
 | Normas del propietario | `CLAUDE.md` y `AGENTS.md` (una sola subida a `mobile-test` por sesión; nada de pago sin permiso; Vercel Pro no se cancela antes del 12-dic-2026, recordárselo ese día) |
@@ -70,6 +70,17 @@ propietario. Propuesta para validar:
   ¿límite diario de avisos para no saturar?
 
 
+## Mensaje del propietario (20-nov, 18:46) — estado y órdenes
+
+| Punto | Estado |
+|---|---|
+| 0 · Logo de Galactic Games y estética hacia lo retro | **SIGUIENTE PROCESO (prioridad 1).** Logo muy original con al menos 3 versiones: icono de app / acceso directo del móvil (sin texto, legible a 48 px), marca para la pantalla del ordenador y una tercera (sello para carga o para compartir). Más una propuesta de estética retro basada en la app actual: al propietario le gusta lo retro y el aspecto actual; rechazó «Marea Coral» y 12 ecosistemas nuevos, así que debe ser una evolución del aspecto actual, no un cambio total. Entregar imágenes (`SendUserFile`) y esperar aprobación antes de implantar |
+| 0.5 · Montar el simulador | **Pendiente (prioridad 2):** `.github/workflows/sim-bots.yml`, nocturno, en GitHub Actions (gratis, repositorio público; no compila en Vercel). PostgreSQL como servicio, `pnpm build`, `scripts/sim/start-server.sh`, `pnpm sim` (sin «cuota»), `pnpm sim:ui -- 6 50` y el informe `sim-reports/` como artefacto. El propietario ya dijo «monta el simulador»: aprobado |
+| 1–4 · Notificaciones (cambios sobre `design/avisos/avisos-propuesta.jpg`) | **Aprobado con cambios, sin programar:** (1) fuera el aviso «subes de liga o nuevo récord»: eso debe ser una **animación en el momento** en que pasa; (2) fuera **todos** los avisos de malas noticias; (3) en «Dónde», dos opciones: **App** y **Móvil**; (4) que aparezca el **logo de Galactic Games** (depende del punto 0). Quedan como avisos: rival encontrado o reto aceptado, te toca jugar (relevos y turnos) y ganas una jornada o competición. Los avisos fuera de la app necesitan las claves VAPID (las pone el propietario en Vercel) |
+| 5 · Apple | **Hecho (v226):** opción oculta; la lista de servicios está en `SERVICIOS_A_CONTRATAR.md` |
+| 6 · Formato de fecha del ranking | **Hecho (v226)** según la imagen |
+| 7 · Billar y Pinball | **Hecho (v226), como política:** los juegos no cambian; la política anti-bots está en la revisión |
+
 ## Mensaje del propietario (20-nov, 18:27) — estado
 
 | Punto | Estado |
@@ -89,8 +100,8 @@ propietario. Propuesta para validar:
 2. Cambiar `AUTH_SECRET` de producción para que no sea el mismo que el de la vista previa (lo hace el propietario en
    Vercel; cierra las sesiones abiertas).
 3. Instalar BotID Basic (gratis).
-4. Notificaciones: validar o cambiar la propuesta de `design/avisos/`.
-5. Apple (99 $ al año), simulador nocturno en GitHub Actions (gratis) y la imagen de las fechas del ranking.
+4. Notificaciones: aprobadas con cambios (ver arriba); falta el logo y las claves VAPID para los avisos fuera de la app.
+5. Apple queda para el futuro (ver `SERVICIOS_A_CONTRATAR.md`).
 6. Arrastradas de antes: nombres de ligas Ámbar y Perla; fase 2 de grupos (juego online entre grupos y Web Push);
    `ALLOW_PERSISTED_MATCH_TRAINING=1` en la vista previa (solo después de arreglar el tope global, C2).
 

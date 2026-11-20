@@ -19,16 +19,20 @@ import st from "./GamesIncomeRanking.module.css";
 const euros = (cents: number, decimals = 0) =>
   `${formatNumber(cents / 100, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ${COIN_SYMBOL}`;
 
-function LineChart({ values, labels, name }: { values: number[]; labels: string[]; name: string }) {
+function LineChart({ values, labels, fullLabels, name }: { values: number[]; labels: string[]; fullLabels: string[]; name: string }) {
   const [pickRaw, setPick] = useState(values.length - 1);
   const fillId = `gi-fill-${useId().replace(/:/g, "")}`;
   const pick = Math.min(pickRaw, values.length - 1);
-  const w = 300, h = 108, padTop = 38, padBottom = 6;
+  const w = 300, h = 112, padTop = 40, padBottom = 6;
   const max = Math.max(...values, 1) * 1.08;
   const x = (i: number) => (values.length === 1 ? w / 2 : 12 + (i * (w - 24)) / (values.length - 1));
   const y = (v: number) => padTop + (1 - v / max) * (h - padTop - padBottom);
   const points = values.map((v, i) => `${x(i)},${y(v)}`).join(" ");
-  const tipX = Math.min(w - 58, Math.max(58, x(pick)));
+  // v226 (owner, from a stock-chart reference): one pill at the top, amount then date on the same line, and a dashed
+  // line from the pill down through the picked point to the base.
+  const amount = euros(values[pick]), when = fullLabels[pick] ?? labels[pick];
+  const pillW = Math.round(amount.length * 7.6 + when.length * 6.1 + 26);
+  const pillX = Math.min(w - pillW - 2, Math.max(2, x(pick) - pillW / 2));
   // At most six labels under the axis (always the first and the last); the picked point names its date above it.
   const step = Math.max(1, Math.ceil((values.length - 1) / 5));
   const last = values.length - 1;
@@ -44,13 +48,11 @@ function LineChart({ values, labels, name }: { values: number[]; labels: string[
           </linearGradient>
         </defs>
         <polygon points={`${x(0)},${h - padBottom} ${points} ${x(values.length - 1)},${h - padBottom}`} fill={`url(#${fillId})`} />
-        {/* v224 (owner): a dashed drop line from the picked point down to the base. */}
-        <line x1={x(pick)} y1={y(values[pick]) + 5} x2={x(pick)} y2={h - padBottom} className={st.guide} />
+        <line x1={x(pick)} y1={26} x2={x(pick)} y2={h - padBottom} className={st.guide} />
         <polyline points={points} className={st.line} />
         {values.map((v, i) => (i === pick || values.length <= 12) && <circle key={i} cx={x(i)} cy={y(v)} r={i === pick ? 4.5 : 3} className={i === pick ? st.dotOn : st.dot} />)}
-        {/* v223 (owner): the amount on top, its date underneath. */}
-        <text x={tipX} y={Math.max(14, y(values[pick]) - 23)} textAnchor="middle" className={st.tip}>{euros(values[pick])}</text>
-        <text x={tipX} y={Math.max(28, y(values[pick]) - 10)} textAnchor="middle" className={st.tipDate}>{labels[pick]}</text>
+        <rect x={pillX} y={3} width={pillW} height={23} rx={6} className={st.pill} />
+        <text x={pillX + 10} y={19} className={st.tip}>{amount}<tspan dx={8} className={st.tipDate}>{when}</tspan></text>
         {values.map((_, i) => (
           <rect key={i} x={x(i) - (w - 24) / (2 * Math.max(1, values.length - 1))} y="0" width={(w - 24) / Math.max(1, values.length - 1)} height={h}
             className={st.hit} onPointerEnter={() => setPick(i)} onClick={() => setPick(i)} />
@@ -82,6 +84,12 @@ export default function GamesIncomeRanking({ period }: { period: RankingPeriod }
       : new Intl.DateTimeFormat(intl, period === "all" || period === "1y" ? { month: "short", year: "2-digit", timeZone: "UTC" } : { month: "short", timeZone: "UTC" });
     return series.points.map((m) => f.format(m).replace(".", ""));
   }, [series, locale, period]);
+  // The picked point names its full date: «14 jun 2026» (by day) or «jun 2026» (by month).
+  const fullLabels = useMemo(() => {
+    const intl = localeInfo(locale).intl;
+    const f = new Intl.DateTimeFormat(intl, series.granularity === "day" ? { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" } : { month: "short", year: "numeric", timeZone: "UTC" });
+    return series.points.map((m) => f.format(m).replace(/\./g, "").replace(/ de /g, " "));
+  }, [series, locale]);
   const rows = useMemo(
     () => moneyGames.map((g) => {
       const values = series.perGame[g.id];
@@ -100,7 +108,7 @@ export default function GamesIncomeRanking({ period }: { period: RankingPeriod }
           <span id="gi-total">{t("ranking.gamesPeriodTotal")}</span>
           <strong dir="ltr">{euros(periodTotal)}</strong>
         </div>
-        <LineChart values={totals} labels={labels} name={t("ranking.gamesAll")} />
+        <LineChart values={totals} labels={labels} fullLabels={fullLabels} name={t("ranking.gamesAll")} />
       </section>
       <section aria-labelledby="gi-list">
         <h2 id="gi-list" className={st.listTitle}>{t("ranking.gamesByGame")}</h2>
@@ -119,7 +127,7 @@ export default function GamesIncomeRanking({ period }: { period: RankingPeriod }
                 {isOpen && (
                   <div className={st.detail}>
                     <small className={st.sub}>{t("ranking.gamesEvolution", { game: gameName(r.game) })}</small>
-                    <LineChart values={r.series} labels={labels} name={gameName(r.game)} />
+                    <LineChart values={r.series} labels={labels} fullLabels={fullLabels} name={gameName(r.game)} />
                   </div>
                 )}
               </li>
