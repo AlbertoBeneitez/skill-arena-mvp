@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SkillArena — Torneos de habilidad",
-  description: "MVP de una plataforma de torneos deterministas de habilidad.",
+  description: "MVP de una plataforma de torneos de habilidad.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
