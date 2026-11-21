@@ -1,5 +1,9 @@
 # Servicios a contratar según beneficios (checklist del propietario)
 
+> **Documento vivo (el que se usa): [Galactic Games · Servicios a contratar](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** — en Claude, editable y con
+> comentarios, para marcar casillas y apuntar cada contratación. Este archivo es la copia de referencia en el
+> repositorio; si no coinciden, manda el documento vivo.
+
 Pedida por el propietario el 20-nov-2026. Regla (`CLAUDE.md`): nada de pago sin su permiso explícito. Antes de
 proponer cualquier servicio hay que decir el importe, cada cuánto se cobra y cómo se cancela. Los precios son
 orientativos y **se comprueban el día de contratar**.

@@ -53,6 +53,19 @@ node scripts/sim/solitaire-bot.cjs 3   # Solitaire tocando las cartas
 Informes en `sim-reports/<fecha>/report.md` y `report.json` (fuera del repositorio). Seguridad: `SIM_BASE` y
 `SIM_DATABASE_URL` solo aceptan `127.0.0.1` o `localhost`.
 
+## Ejecución automática (v227)
+
+No hace falta lanzarlo a mano: `.github/workflows/sim-bots.yml` lo ejecuta en GitHub Actions, gratis por ser el
+repositorio público, sin tocar Vercel ni Neon (PostgreSQL desechable dentro del propio trabajo).
+
+- **Cuándo:** con cada subida a `mobile-test` (una por sesión) y cada noche a las 03:17 (hora de Madrid en invierno).
+  La ejecución nocturna solo empieza cuando el archivo llegue a `main`, porque GitHub programa desde la rama
+  principal. También se puede lanzar a mano en *Actions › Simulador de bots › Run workflow*.
+- **Qué corre:** personas, partidas, grupo, trampas, mejor de N y Mine Grid por API; 6 bots de interfaz (móvil y
+  ordenador) y 2 de Solitaire en Chromium. No corre `cuota` (dura mucho y no aporta cada noche).
+- **Dónde se ve:** el informe aparece en el resumen de la ejecución y se adjunta como `sim-reports` (14 días). Los
+  hallazgos conocidos no hacen fallar el trabajo; un fallo rojo es del propio simulador o de la compilación.
+
 ## Limitaciones
 
 - Solitaire se juega entero en el navegador (sin servidor), así que su bot va por la interfaz y es lento (unos 5 min).

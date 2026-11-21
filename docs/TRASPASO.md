@@ -1,4 +1,4 @@
-# Traspaso de trabajo (20-nov-2026, 19:05) — para la siguiente sesión o cuenta
+# Traspaso de trabajo (21-nov-2026) — para la siguiente sesión o cuenta
 
 Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué está decidido y qué falta.
 
@@ -6,14 +6,31 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v226-saturn** (app 2.26) |
-| Último trabajo | Rama **v226-saturn**: fecha del ranking, Apple oculto, [servicios a contratar](SERVICIOS_A_CONTRATAR.md) y política anti-bots de Billar y Pinball (incluye v225: simulador y revisión) |
-| Simulador de bots | `scripts/sim/` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
-| Revisión de seguridad | [security/REVISION_2026-11.md](security/REVISION_2026-11.md) |
+| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27) |
+| Último trabajo | Rama **v227-saturn**: seguridad fase 0 (C2, A1, A2, B1), simulador en GitHub Actions, propuesta de logo y estética retro |
+| Servicios a contratar | **[Documento vivo en Claude](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** (decisión del propietario; copia en [SERVICIOS_A_CONTRATAR.md](SERVICIOS_A_CONTRATAR.md)) |
+| Simulador de bots | `scripts/sim/` y `.github/workflows/sim-bots.yml` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
+| Revisión de seguridad | [security/REVISION_2026-11.md](security/REVISION_2026-11.md) (lo arreglado en v227 está marcado) |
+| Propuesta de logo | [design/logo/](design/logo/) (`logo-propuesta.png`, `retro-propuesta.png`; fuentes en `gen.py`, `*.html`) |
 | Normas del propietario | `CLAUDE.md` y `AGENTS.md` (una sola subida a `mobile-test` por sesión; nada de pago sin permiso; Vercel Pro no se cancela antes del 12-dic-2026, recordárselo ese día) |
 
 Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`, `pnpm build`, arrancar
 `scripts/sim/start-server.sh` y lanzar `pnpm sim` (ver la guía). Los informes quedan en `sim-reports/` (fuera de git).
+
+## Siguiente trabajo (21-nov), en orden
+
+1. **Logo y retro:** esperar la respuesta del propietario a la propuesta. Con el visto bueno: sustituir `public/icon-*.png`,
+   `apple-touch-icon.png` y el favicon (mismo `?v=` nuevo en `app/manifest.ts`), y crear el icono monocromo de avisos.
+   Si aprueba la estética retro: la fuente Pixelify Sans es OFL; registrarla en `THIRD_PARTY_NOTICES.md`.
+2. **Avisos dentro de la app** (tarea pedida el 20-nov): solo buenas noticias (rival encontrado o reto aceptado, tu turno,
+   ganas jornada o competición); subir de liga y récord son animación en el momento; ajuste «Dónde» con App y Móvil;
+   logo en los avisos. Los avisos al móvil necesitan las claves VAPID, que pone el propietario en Vercel.
+3. **Información oculta por pasos** (aprobada el 20-nov): Solitaire primero (el servidor revela cada carta), después Tower,
+   Stack y Dardos; Billar y Pinball no cambian. Luego la capa de detección de comportamiento (solo observar) y la
+   identidad por fases. Es versión competitiva nueva en cada juego: conservar las antiguas.
+4. **Decisiones pendientes del propietario:** retención de partidas antiguas (propuesta: 90 días, conservar el resultado);
+   primera partida de grupo abandonada (propuesta: peor puntuación posible); cambiar `AUTH_SECRET` de producción
+   (él, en Vercel); instalar BotID Basic (gratis, falta su «sí»); nombres de niveles Ámbar/Perla; grupos fase 2.
 
 ## Preguntas del propietario (20-nov, 18:00) y respuestas
 

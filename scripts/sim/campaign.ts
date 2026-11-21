@@ -185,12 +185,12 @@ async function trampas(group?: { competitionId: string; members: Bot[]; gameIds:
     await p.post("/api/verified-match/attempt", { attempt_id: s.body.ticket.attempt_id, action: "abandon" });
   }
 
-  // Quota per cookie: 20 starts a day per "actor"; a new cookie is a new actor.
+  // Daily quota (v227: per signed-in account, 200 by default; 20 per bare cookie). A new cookie must not reset it.
   let quotaHit = 0;
   const statuses: string[] = [];
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < Number(process.env.SIM_QUOTA_PROBE ?? 210); i++) {
     const st = await p.post("/api/verified-match/start", { game_id: fast.id, stake_minor: 0, start_key: uuid() });
-    statuses.push(`${st.status}${st.body?.error ? ":" + st.body.error : ""}`);
+    if (st.status !== 200 || i % 50 === 0) statuses.push(`#${i + 1} ${st.status}${st.body?.error ? ":" + st.body.error : ""}`);
     if (st.status === 429) { quotaHit = i + 1; break; }
     if (st.body?.ticket) await p.post("/api/verified-match/attempt", { attempt_id: st.body.ticket.attempt_id, action: "abandon" });
   }
@@ -216,9 +216,12 @@ async function trampas(group?: { competitionId: string; members: Bot[]; gameIds:
     const gameId = view?.state?.matches?.[0]?.gameId as string | undefined;
     if (gameId) {
       const gm = GAMES.find((x) => x.id === gameId)!;
-      const tries = await Promise.all([0, 1].map(() => playOnline(m, gm, report)));
-      const ok = tries.filter((x) => x.verified);
-      if (ok.length >= 2) report.add({ id: "group-best-of-n", family: "trampas", severity: "alto", title: "En grupos se puede jugar varias veces y anotar solo la mejor partida", detail: `El servidor acepta cualquier partida verificada del juego de la jornada empezada después de la competición; no exige que sea la primera ni una sola. Puntuaciones obtenidas: ${ok.map((x) => x.serverScore).join(", ")}.` });
+      // Played one after the other, so «the second» is unambiguous; then try to record the second one.
+      const tries = [await playOnline(m, gm, report), await playOnline(m, gm, report)];
+      const index = (view?.state?.matches ?? []).findIndex((x: any) => x.players.includes(m.accountId) && x.scores?.[m.accountId ?? ""] === undefined);
+      const rec = tries[1].verified && tries[1].attemptId && index >= 0
+        ? await m.phone.post("/api/groups", { action: "result", competitionId: group.competitionId, matchIndex: index, attemptId: tries[1].attemptId }) : null;
+      if (rec?.status === 200) report.add({ id: "group-best-of-n", family: "trampas", severity: "alto", title: "En grupos se puede jugar varias veces y anotar solo la mejor partida", detail: `El servidor aceptó como resultado de la jornada la segunda partida (${tries.map((x) => x.serverScore).join(", ")}); solo debería contar la primera.` });
     }
   }
   report.watch(p);
@@ -244,6 +247,7 @@ async function cuota() {
   }
   const honest = await bot("medium");
   const st = await honest.phone.post("/api/verified-match/start", { game_id: g.id, stake_minor: 0, start_key: uuid() });
+  if (st.status !== 429) report.add({ id: "global-cap-dos-blocked", family: "trampas", severity: "info", title: "Agotar el cupo con cookies nuevas no bloquea a los demás", detail: `${total} partidas desde cookies nuevas; un jugador con cuenta sigue empezando (status ${st.status}).` });
   if (st.status === 429)
     report.add({ id: "global-cap-dos", family: "trampas", severity: "crítico", title: "Unos pocos bots sin cuenta bloquean las partidas de todo el mundo", detail: `Con ${total} partidas empezadas y abandonadas desde cookies nuevas, el servidor responde TRAINING_QUOTA a cualquier jugador nuevo: el tope de 2000 partidas es global y no caduca.` });
   report.count("quota-starts", total);

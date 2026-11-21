@@ -126,6 +126,16 @@ export class PostgresPublicAttemptRepository
     }
     return row;
   }
+  /** Database size, checked at most once a minute per server instance (it is cheap, but not free). */
+  private storageCheckedAt = 0;
+  private storageWasFull = false;
+  private async storageFull(c: PoolClient) {
+    if (Date.now() - this.storageCheckedAt < 60_000) return this.storageWasFull;
+    const r = await c.query("SELECT pg_database_size(current_database())::bigint AS bytes");
+    this.storageCheckedAt = Date.now();
+    this.storageWasFull = Number(r.rows[0].bytes) >= trainingLimits().storageGuardBytes;
+    return this.storageWasFull;
+  }
   async recoverStart(actor: string, key: string, requestHash: string) {
     return this.tx(async (c) => {
       const r = await c.query<PublicAttempt>(
@@ -160,12 +170,20 @@ export class PostgresPublicAttemptRepository
       for (const row of active)
         if ((await this.expire(c, row)).state === "playing")
           throw new PublicAttemptError("ATTEMPT_ALREADY_ACTIVE");
+      // v227 (security review C2 + A1). No fixed total any more: 2000 attempts ever blocked everyone, and anyone could
+      // reach it in seconds with fresh cookies. Instead: a daily limit per signed-in account (a new cookie does not
+      // reset it), a small one per anonymous cookie, and a guard on the database's real size (Neon's free 1 GB).
+      // (The account column exists from migration 008 on; older schemas only ever see anonymous starts.)
       const quota = await c.query(
-        `SELECT count(*)::int AS total,count(*) FILTER(WHERE player_id=$1 AND started_at>clock_timestamp()-interval '24 hours')::int AS own FROM arena_public_attempts`,
-        [args.actor],
+        args.accountId
+          ? "SELECT count(*)::int AS n FROM arena_public_attempts WHERE account_id=$1::uuid AND started_at>clock_timestamp()-interval '24 hours'"
+          : "SELECT count(*)::int AS n FROM arena_public_attempts WHERE player_id=$1 AND started_at>clock_timestamp()-interval '24 hours'",
+        [args.accountId ?? args.actor],
       );
-      if (quota.rows[0].total >= 2000 || quota.rows[0].own >= 20)
+      const limits = trainingLimits();
+      if (quota.rows[0].n >= (args.accountId ? limits.perAccountDay : limits.perAnonymousDay))
         throw new PublicAttemptError("TRAINING_QUOTA", 429);
+      if (await this.storageFull(c)) throw new PublicAttemptError("STORAGE_FULL", 503);
       const pools = await this.hasPlatformColumn(c);
       if (!pools && args.platform !== "mobile") throw new PublicAttemptError("PLATFORM_POOL_UNAVAILABLE", 503);
       const solos = await this.hasSoloColumn(c);
@@ -397,4 +415,17 @@ export class PostgresPublicAttemptRepository
       }));
     });
   }
+}
+
+/** v227: training limits (docs/security/REVISION_2026-11.md, C2 and A1). Environment overrides exist for tests. */
+export function trainingLimits(env: Record<string, string | undefined> = process.env) {
+  const n = (v: string | undefined, d: number) => { const x = Number(v); return Number.isFinite(x) && x > 0 ? x : d; };
+  return {
+    /** A person plays as much as they like: 200 matches a day is far beyond a human session. */
+    perAccountDay: n(env.TRAINING_MATCHES_PER_ACCOUNT_DAY, 200),
+    /** Without an account (a bare cookie) only a taste: farms of fresh cookies get little. */
+    perAnonymousDay: n(env.TRAINING_MATCHES_PER_COOKIE_DAY, 20),
+    /** Stop new matches before the database is full (Neon free plan: 1 GB; it stops writing, it does not bill). */
+    storageGuardBytes: n(env.DATABASE_STORAGE_GUARD_MB, 870) * 1024 * 1024,
+  };
 }

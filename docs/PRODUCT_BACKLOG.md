@@ -882,6 +882,18 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v227-saturn · Seguridad fase 0, simulador automático y propuesta de logo (21-nov-2026)
+
+- [x] C2: sin tope global de 2000 partidas; límite diario por cuenta (200) y por cookie sin cuenta (20); freno al llegar a 870 MB.
+- [x] A1: con sesión, el límite cuenta la cuenta (una cookie nueva no lo reinicia).
+- [x] A2: en grupos solo cuenta la primera partida terminada del juego de la jornada.
+- [x] B1: nombres que mezclan latín con cirílico o griego, rechazados.
+- [x] Simulador de bots en GitHub Actions (cada subida a `mobile-test` y cada noche).
+- [ ] Logo (icono, marca de ordenador, icono de avisos) y estética retro: propuesta enviada, pendiente de aprobación.
+- [ ] Avisos dentro de la app (tras aprobar el logo).
+- [ ] Información oculta por pasos (Solitaire primero), detección de comportamiento e identidad por fases.
+- [ ] Decisiones: retención de partidas antiguas; cómo puntúa una primera partida de grupo abandonada.
+
 ## v226-saturn · Fecha del ranking, sin Apple y servicios a contratar (20-nov-2026)
 
 - Cápsula con cantidad y fecha completa en el gráfico de Juegos; Apple oculto; checklist de servicios por fases; política anti-bots de Billar y Pinball. Pendiente: logo y estética retro, simulador nocturno en GitHub Actions, notificaciones con los cambios del propietario, fase 0 de seguridad e información oculta por pasos.

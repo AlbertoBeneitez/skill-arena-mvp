@@ -4,7 +4,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Pool } from "pg";
 import { PublicMatchService } from "../lib/server/publicMatchService";
-import { PostgresPublicAttemptRepository } from "../lib/server/postgresPublicAttemptRepository";
+import { PostgresPublicAttemptRepository, trainingLimits } from "../lib/server/postgresPublicAttemptRepository";
 import { PublicAttemptError } from "../lib/server/publicAttemptRepository";
 import { getServerGameAdapter } from "../lib/server/gameVerifiers";
 import { STACK_3D_CORE as core } from "../lib/verified/precisionStackCore.v4";
@@ -516,8 +516,27 @@ try {
   assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "darts", { score: 5, time_ms: 7 }, { score: 5, time_ms: 7 }), { winner: null, reason: "exact-tie" });
   for (const g of GAMES) assert.equal(LOWER_SCORE_WINS_GAMES.has(g.id), g.resultMetric === "reaction-time-ms", `${g.id}: score direction mirrors the catalogue`);
   await assert.rejects(pool.query("UPDATE arena_public_matches SET policy_version='forfeit-on-disconnect-v9' WHERE match_id=$1", [soloA.manifest.match_id]));
+  // v227 (security review C2 + A1): no global cap; a bare cookie gets 20 starts a day; storage guard before Neon fills.
+  const limits = trainingLimits({});
+  assert.deepEqual([limits.perAccountDay, limits.perAnonymousDay, limits.storageGuardBytes], [200, 20, 870 * 1024 * 1024]);
+  assert.equal(trainingLimits({ TRAINING_MATCHES_PER_ACCOUNT_DAY: "5", TRAINING_MATCHES_PER_COOKIE_DAY: "-1" }).perAccountDay, 5);
+  assert.equal(trainingLimits({ TRAINING_MATCHES_PER_COOKIE_DAY: "-1" }).perAnonymousDay, 20, "nonsense overrides fall back");
+  for (let i = 0; i < 20; i++) {
+    const id = `quota-${i}-${randomBytes(3).toString("hex")}`;
+    await pool.query("INSERT INTO arena_matches(match_id, manifest, manifest_hash, player_a) VALUES ($1,$3::jsonb,$2,'quota-cookie')", [id, `sha256:${"0".repeat(64)}`, JSON.stringify({ match_id: id, manifest_version: "3", game_id: "precision-stack" })]);
+    await pool.query("INSERT INTO arena_public_matches(match_id, policy_version, scope, expires_at) VALUES ($1,$2,'training', now() + interval '1 day')", [id, PUBLIC_MATCH_POLICY]);
+    await pool.query(
+      `INSERT INTO arena_public_attempts(attempt_id, match_id, player_id, slot, start_key, request_hash, ticket, state, lease_until, deadline)
+       VALUES ($1,$1,'quota-cookie','A',$1,'h','{}'::jsonb,'forfeited', now(), now())`, [id]);
+  }
+  await rejects(() => start("quota-cookie"), "TRAINING_QUOTA");
+  const other = await start("quota-other-cookie");
+  assert.ok(other.ticket, "one cookie at its limit does not block anybody else (no global cap)");
+  process.env.DATABASE_STORAGE_GUARD_MB = "1";
+  await rejects(() => new PublicMatchService(new PostgresPublicAttemptRepository(pool)).start("quota-third", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID() }), "STORAGE_FULL");
+  delete process.env.DATABASE_STORAGE_GUARD_MB;
   console.log(
-    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools, solo (Offline) matches, policy V2 by game score direction (V1 archived) passed",
+    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools, solo (Offline) matches, policy V2 by game score direction (V1 archived), daily limits per cookie without a global cap, storage guard passed",
   );
 } finally {
   Date.now = originalNow;

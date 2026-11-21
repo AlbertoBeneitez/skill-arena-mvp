@@ -98,5 +98,6 @@ async function bot(i, browser) {
   const results = await Promise.all(Array.from({ length: BOTS }, (_, i) => bot(i + 1, browser).catch((e) => ({ name: `bot ${i + 1}`, error: e.message }))));
   await browser.close();
   fs.writeFileSync(`${dir}/report.json`, JSON.stringify(results, null, 2));
+  fs.writeFileSync(`${dir}/report.md`, [`# Bots de Solitaire ${run}`, "", ...results.map((r) => `- ${r.name}: ${r.moves ?? 0} jugadas, ${r.draws ?? 0} robos, ${r.seconds ?? 0} s, ${r.finished ? "terminada" : "sin terminar"}${r.errors?.length ? " · errores: " + r.errors.join(" | ") : ""}`)].join("\n"));
   for (const r of results) console.log(`- ${r.name}: ${r.moves ?? 0} jugadas, ${r.draws ?? 0} robos, ${r.seconds ?? 0} s, ${r.finished ? "terminada: " + r.summary : "sin terminar"}${r.errors?.length ? " · errores: " + r.errors.join(" | ") : ""}${r.error ? " · fallo: " + r.error : ""}`);
 })();

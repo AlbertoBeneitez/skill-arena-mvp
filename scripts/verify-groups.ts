@@ -135,9 +135,18 @@ try {
   assert.equal(await rec(ids.A1, await attempt(ids.A1, "darts", 99)), "INVALID_ATTEMPT", "another game");
   assert.equal(await rec(ids.A1, "nope"), "INVALID_ATTEMPT");
   assert.equal(await rec(ids.D1, await attempt(ids.D1, first.gameId, 99)), "INVALID_ATTEMPT", "not playing in it");
+  // v227 (A2): only the first finished attempt of the game counts. The refused ones above are cleared so «dup» is first.
+  const second = first.players.find((p: string) => p !== ids.A1)!;
+  await pool.query("DELETE FROM arena_public_attempts WHERE account_id = ANY($1::uuid[])", [[ids.A1, second]]);
   const dup = await attempt(ids.A1, first.gameId, 90);
+  const planned: Record<string, number> = { [ids.A1]: 90, [ids.A2]: 70, [ids.A3]: 80, [ids.A4]: 50 };
+  const early = await attempt(second, first.gameId, planned[second]), better = await attempt(second, first.gameId, 999);
+  assert.equal(await rec(second, better), "FIRST_ATTEMPT_REQUIRED", "best-of-N: a later, better attempt does not count");
+  assert.equal(await rec(second, early), "ok", "the first attempt does");
   assert.equal(await rec(ids.A1, dup), "ok");
   assert.equal(await rec(ids.A1, dup), "INVALID_ATTEMPT", "the same attempt twice");
+  // The probes above leave unused attempts behind; under the first-attempt rule they would be the next matches' results.
+  await pool.query("DELETE FROM arena_public_attempts t WHERE NOT EXISTS (SELECT 1 FROM arena_competition_results r WHERE r.attempt_id = t.attempt_id)");
 
   // League: positions add up per group; the lower sum takes the pot. A1 1st, A3 2nd, A2 3rd, A4 4th → g1 4, g2 6.
   const scores = { [ids.A1]: 90, [ids.A2]: 70, [ids.A3]: 80, [ids.A4]: 50 };

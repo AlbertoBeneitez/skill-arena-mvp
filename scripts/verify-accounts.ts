@@ -25,6 +25,10 @@ try {
   assert.equal(cleanName("  Mr   Beny "), "Mr Beny");
   assert.equal(cleanName("a"), null);
   assert.equal(cleanName("Admin"), null);
+  assert.equal(cleanName("\u0410dmin"), null, "v227: Cyrillic А posing as Latin A");
+  assert.equal(cleanName("Nik\u03bfs"), null, "v227: Greek ο among Latin letters");
+  assert.equal(cleanName("Иван"), "Иван", "a name fully in another script is fine");
+  assert.equal(cleanName("Νίκος"), "Νίκος");
   assert.equal(cleanName("Galactic_Games"), null);
   assert.equal(cleanName("<script>"), null);
   const k1 = accountAuthKey("google", "sub-1", SECRET), k2 = accountAuthKey("google", "sub-2", SECRET);

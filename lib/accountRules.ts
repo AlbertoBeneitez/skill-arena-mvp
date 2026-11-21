@@ -14,6 +14,9 @@ export function cleanName(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
   const name = raw.normalize("NFC").trim().replace(/\s+/g, " ");
   if (!NAME_PATTERN.test(name)) return null;
+  // v227 (security review B1): «Аdmin» with a Cyrillic А must not pass for «Admin». A name may be written in any
+  // script, but not mixing Latin with Cyrillic or Greek letters (the usual look-alike trick).
+  if (/\p{Script=Latin}/u.test(name) && /[\p{Script=Cyrillic}\p{Script=Greek}]/u.test(name)) return null;
   const folded = foldName(name);
   if (RESERVED_NAMES.some((r) => folded === r || folded.replace(/[ _]/g, "") === r.replace(/[ _]/g, ""))) return null;
   return name;

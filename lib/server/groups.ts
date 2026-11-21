@@ -22,7 +22,7 @@ export type CompetitionMode = "group" | "versus-league" | "versus-tournament";
 export type GroupErrorCode =
   | "INVALID_NAME" | "NO_ACCOUNT" | "NO_GROUP" | "PLATFORM_MISMATCH" | "GROUP_FULL" | "ALREADY_MEMBER" | "NOT_MEMBER" | "NOT_OWNER"
   | "OWNER_CANNOT_LEAVE" | "GROUP_BUSY" | "INVALID_COMPETITION" | "CHANCE_GAME_NOT_FOR_MONEY" | "NO_COMPETITION" | "NOT_OPEN"
-  | "NOT_RUNNING" | "INSUFFICIENT_BALANCE" | "INVALID_TEAMS" | "INVALID_ATTEMPT" | "ALREADY_RECORDED" | "PAYOUT_MISMATCH" | "INVALID_ART";
+  | "NOT_RUNNING" | "INSUFFICIENT_BALANCE" | "INVALID_TEAMS" | "INVALID_ATTEMPT" | "ALREADY_RECORDED" | "FIRST_ATTEMPT_REQUIRED" | "PAYOUT_MISMATCH" | "INVALID_ART";
 export class GroupError extends Error {
   constructor(readonly code: GroupErrorCode) { super(code); }
 }
@@ -242,6 +242,16 @@ export async function recordResult(pool: Pool, a: { competitionId: string; match
     const state = k.state as GroupCompetition | GroupVersus;
     const current = comp(k.mode as string, state), match = current.matches[a.matchIndex];
     if (!match || !match.players.includes(a.accountId) || match.scores[a.accountId] !== undefined || roundGame(current, match.round) !== att.game_id) throw new GroupError("INVALID_ATTEMPT");
+    // v227 (security review A2): only the player's FIRST finished attempt of that game since the competition started,
+    // not yet used for another match of it, can be the matchday's result — no playing twenty times and keeping the best
+    // one. Abandoned or rejected attempts count as that first one too (abandoning a bad run does not buy a retry).
+    const first = (await c.query(
+      `SELECT t.attempt_id FROM arena_public_attempts t JOIN arena_matches m USING (match_id)
+        WHERE t.account_id = $1 AND m.game_id = $2 AND t.started_at >= $3 AND t.state IN ('verified','rejected','forfeited')
+          AND NOT EXISTS (SELECT 1 FROM arena_competition_results r WHERE r.competition_id = $4 AND r.attempt_id = t.attempt_id)
+        ORDER BY t.started_at, t.attempt_id LIMIT 1`,
+      [a.accountId, att.game_id, k.started_at, a.competitionId])).rows[0];
+    if (first?.attempt_id !== a.attemptId) throw new GroupError("FIRST_ATTEMPT_REQUIRED");
     const time = typeof response.time_ms === "number" ? response.time_ms : undefined;
     const done = await c.query(
       `INSERT INTO arena_competition_results(competition_id, match_index, account_id, score, time_ms, attempt_id) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING RETURNING 1`,

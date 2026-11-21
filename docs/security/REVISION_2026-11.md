@@ -8,6 +8,9 @@ Pedida por el propietario el 20 de noviembre de 2026. Sustituye como referencia 
 [simulador de bots](../SIMULADOR_BOTS.md) contra la compilación de producción en local, con PostgreSQL y partidas
 durables. No se ha atacado Vercel ni se ha leído ningún secreto.
 
+> **Arreglado en v227 (21-nov-2026), fase 0:** C2, A1 (límite por cuenta), A2 (primera partida) y B1. Comprobado con
+> pruebas de repositorio y con el simulador. Detalle bajo cada hallazgo.
+
 ## Resumen
 
 - **Lo que aguanta.** La verificación por repetición en el servidor rechazó todas las manipulaciones de los bots:
@@ -66,6 +69,13 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 - **Arreglo.** Quitar el tope global y sustituirlo por un límite por cuenta y día, más una limpieza programada de
   intentos antiguos (retención). Esfuerzo pequeño.
 - **Cuándo.** Antes de activar `ALLOW_PERSISTED_MATCH_TRAINING`.
+- **Arreglado (v227).** Ya no hay tope total. Límite diario de 200 partidas por cuenta con sesión y 20 por cookie sin
+  cuenta (`trainingLimits()`, ajustables con `TRAINING_MATCHES_PER_ACCOUNT_DAY` y `TRAINING_MATCHES_PER_COOKIE_DAY`).
+  Para que la base gratuita no se llene, el servidor deja de abrir partidas nuevas al llegar a 870 MB
+  (`DATABASE_STORAGE_GUARD_MB`; error `STORAGE_FULL`). El simulador lo confirma: 2 200 partidas desde cookies nuevas y
+  un jugador con cuenta sigue empezando. **Pendiente de decisión:** la retención de partidas antiguas (borrar datos es
+  irreversible, así que la decide el propietario; propuesta: borrar las entradas de partidas de entrenamiento de más
+  de 90 días y conservar el resultado).
 
 ### A1 · Alto · Los límites cuentan cookies, no cuentas
 - **Qué.** El límite de 20 partidas al día va por «actor», que es la cookie de partida; basta pedir otra en
@@ -74,6 +84,9 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 - **Impacto.** Sin tope real por persona: granjas de partidas, inflado de juegos y abuso de recursos.
 - **Arreglo.** Límites por cuenta (y por dispositivo cuando exista) además de por cookie. Exigir cuenta para jugar
   online.
+- **Arreglado (v227) en lo que toca a cuentas:** con sesión, el límite cuenta la cuenta, no la cookie; una cookie
+  nueva ya no lo reinicia (lo confirma el simulador). Sin sesión, 20 al día por cookie. Falta, para dinero, exigir
+  cuenta e identidad (fases de identidad).
 
 ### A2 · Alto · Grupos online: «mejor de N» y semillas distintas en la misma jornada
 - **Qué.** `recordResult` acepta cualquier partida verificada del juego de la jornada, empezada después de la
@@ -86,6 +99,11 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 - **Arreglo.** Que el servidor emita la partida de la jornada (una por jugador y jornada, con la semilla de la jornada,
   igual para todos) y anote solo esa. Hay que hacerlo antes de construir el flujo de juego de grupos online; hoy el móvil
   todavía no lo usa.
+- **Arreglado (v227) en parte:** solo cuenta la **primera** partida terminada de ese juego desde que empezó la
+  competición y aún no usada en otra jornada; abandonar o ser rechazado también la consume (error
+  `FIRST_ATTEMPT_REQUIRED`). El simulador: «Anotar la mejor de varias partidas: rechazado». **Falta** la semilla común
+  de la jornada (se hará con el flujo de grupos online). **Decisión pendiente:** si la primera partida se abandona,
+  hoy la jornada queda sin resultado para ese jugador; propuesta: contarla como la peor puntuación posible.
 
 ### A3 · Alto (cuando haya pagos a estudios) · Reparto inflable
 - **Qué.** El recuento para pagar a estudios (`playCounts.ts`) limita a 20 partidas por jugador, juego y día, pero
@@ -138,6 +156,8 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 - **Evidencia (simulador).** «Аdmin» con la A cirílica se acepta como nombre; los reservados solo miran letras latinas.
 - **Arreglo.** Normalizar confusables (por ejemplo, con la tabla de Unicode) antes de comparar con los reservados y
   entre nombres.
+- **Arreglado (v227):** un nombre no puede mezclar letras latinas con cirílicas o griegas («Аdmin» se rechaza); un
+  nombre escrito entero en otro alfabeto («Иван») sigue valiendo.
 
 ### B2 · Bajo · «Tu selección» la fija el móvil
 - **Qué.** `/api/account/plays` acepta `atLeast` hasta 1 000 000 por juego. Es cosmético; no debe usarse nunca para
