@@ -143,6 +143,17 @@ try {
   const early = await attempt(second, first.gameId, planned[second]), better = await attempt(second, first.gameId, 999);
   assert.equal(await rec(second, better), "FIRST_ATTEMPT_REQUIRED", "best-of-N: a later, better attempt does not count");
   assert.equal(await rec(second, early), "ok", "the first attempt does");
+  // v228: an abandoned first attempt is a loss with 0 points (owner, 21-nov-2026); it cannot be swapped for a later one.
+  const third = first.players.find((p: string) => p !== ids.A1 && p !== second);
+  assert.ok(third, "match 0 has a third player"); if (third) {
+    await pool.query("DELETE FROM arena_public_attempts t WHERE account_id = $1 AND NOT EXISTS (SELECT 1 FROM arena_competition_results r WHERE r.attempt_id = t.attempt_id)", [third]);
+    const quit = await attempt(third, first.gameId, 0, { state: "forfeited" }), later = await attempt(third, first.gameId, 500);
+    assert.equal(await rec(third, later), "FIRST_ATTEMPT_REQUIRED", "abandoning does not buy a retry");
+    assert.equal(await rec(third, quit), "ok", "the abandoned attempt is recorded");
+    const saved = (await pool.query("SELECT score, time_ms FROM arena_competition_results WHERE attempt_id = $1", [quit])).rows[0];
+    assert.deepEqual([Number(saved.score), saved.time_ms], [0, null], "a loss with 0 points");
+    await pool.query("DELETE FROM arena_public_attempts WHERE attempt_id = $1", [later]);
+  }
   assert.equal(await rec(ids.A1, dup), "ok");
   assert.equal(await rec(ids.A1, dup), "INVALID_ATTEMPT", "the same attempt twice");
   // The probes above leave unused attempts behind; under the first-attempt rule they would be the next matches' results.

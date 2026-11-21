@@ -882,9 +882,13 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
-## v228-saturn · Logo nuevo (21-nov-2026)
+## v228-saturn · Logo nuevo, BotID, retención y abandono en grupos (21-nov-2026)
 
 - [x] Icono de la app, pestaña del navegador e imagen al compartir con el átomo pixelado; icono de avisos preparado.
+- [x] Vercel BotID Basic en inicio de partida, creación de cuenta y acciones de grupo.
+- [x] Retención: las acciones de cada partida se borran a los 90 días; el resultado se conserva (migración 018).
+- [x] Grupos: una primera partida abandonada es derrota con 0 puntos.
+- [x] Ligas Ámbar y Perla confirmadas por el propietario (ya estaban desde v220).
 - [ ] Estética retro: propuesta enviada, sin respuesta.
 
 ## v227-saturn · Seguridad fase 0, simulador automático y propuesta de logo (21-nov-2026)
@@ -897,7 +901,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] Logo aprobado y aplicado en v228. Estética retro: pendiente.
 - [ ] Avisos dentro de la app (tras aprobar el logo).
 - [ ] Información oculta por pasos (Solitaire primero), detección de comportamiento e identidad por fases.
-- [ ] Decisiones: retención de partidas antiguas; cómo puntúa una primera partida de grupo abandonada.
+- [x] Decisiones: retención (90 días) y abandono en grupos (0 puntos), aplicadas en v228.
 
 ## v226-saturn · Fecha del ranking, sin Apple y servicios a contratar (20-nov-2026)
 

@@ -10,6 +10,7 @@ durables. No se ha atacado Vercel ni se ha leído ningún secreto.
 
 > **Arreglado en v227 (21-nov-2026), fase 0:** C2, A1 (límite por cuenta), A2 (primera partida) y B1. Comprobado con
 > pruebas de repositorio y con el simulador. Detalle bajo cada hallazgo.
+> **v228:** BotID Basic activo (A5, primera capa); retención de 90 días aplicada; abandono en grupos = 0 puntos.
 
 ## Resumen
 
@@ -73,9 +74,8 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
   cuenta (`trainingLimits()`, ajustables con `TRAINING_MATCHES_PER_ACCOUNT_DAY` y `TRAINING_MATCHES_PER_COOKIE_DAY`).
   Para que la base gratuita no se llene, el servidor deja de abrir partidas nuevas al llegar a 870 MB
   (`DATABASE_STORAGE_GUARD_MB`; error `STORAGE_FULL`). El simulador lo confirma: 2 200 partidas desde cookies nuevas y
-  un jugador con cuenta sigue empezando. **Pendiente de decisión:** la retención de partidas antiguas (borrar datos es
-  irreversible, así que la decide el propietario; propuesta: borrar las entradas de partidas de entrenamiento de más
-  de 90 días y conservar el resultado).
+  un jugador con cuenta sigue empezando. **Retención (v228, decisión del propietario):** las acciones de cada partida
+  se borran a los 90 días y el resultado se conserva (migración 018, `lib/server/attemptRetention.ts`).
 
 ### A1 · Alto · Los límites cuentan cookies, no cuentas
 - **Qué.** El límite de 20 partidas al día va por «actor», que es la cookie de partida; basta pedir otra en
@@ -102,8 +102,8 @@ poco esfuerzo, impacto real), **medio**, **bajo**. «Cuándo» indica si hay que
 - **Arreglado (v227) en parte:** solo cuenta la **primera** partida terminada de ese juego desde que empezó la
   competición y aún no usada en otra jornada; abandonar o ser rechazado también la consume (error
   `FIRST_ATTEMPT_REQUIRED`). El simulador: «Anotar la mejor de varias partidas: rechazado». **Falta** la semilla común
-  de la jornada (se hará con el flujo de grupos online). **Decisión pendiente:** si la primera partida se abandona,
-  hoy la jornada queda sin resultado para ese jugador; propuesta: contarla como la peor puntuación posible.
+  de la jornada (se hará con el flujo de grupos online). **v228 (decisión del propietario):** si la primera partida
+  se abandona, es derrota con 0 puntos (en juegos de «menos es mejor», el peor tiempo posible).
 
 ### A3 · Alto (cuando haya pagos a estudios) · Reparto inflable
 - **Qué.** El recuento para pagar a estudios (`playCounts.ts`) limita a 20 partidas por jugador, juego y día, pero

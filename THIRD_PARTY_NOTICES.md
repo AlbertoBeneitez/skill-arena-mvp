@@ -341,3 +341,11 @@ Uses the project's existing synthesized audio and shared orbital background.
 - **License:** Apache-2.0
 - **Use:** only `scripts/studio-strip-comments.mjs` (parser and printer to copy studio packages without comments).
   Dev dependency; nothing of it ships in the app, which keeps TypeScript 7 for type checking.
+
+## botid 1.5.13 (Vercel BotID, v228)
+
+- **Paquete:** `botid` (npm), de Vercel. Repositorio: https://github.com/vercel/botid-package
+- **Licencia:** MIT (según su README; el `package.json` no declara el campo `license`).
+- **Uso:** comprobación invisible del navegador antes de empezar partidas, crear cuenta y acciones de grupo
+  (`instrumentation-client.ts`, `lib/server/botProtection.ts`). Solo el modo Basic, gratuito; Deep Analysis (de pago) no
+  se usa.

@@ -220,7 +220,8 @@ export class PublicMatchService {
         response,
       );
     }
-    if (row.response?.forfeited && row.record && !row.replay_audit)
+    // v228: inputs older than 90 days are pruned to a stub (lib/server/attemptRetention.ts); nothing left to audit.
+    if (row.response?.forfeited && row.record && !row.replay_audit && !("pruned_at" in row.record))
       await this.repository.audit(
         actor,
         row.attempt_id,

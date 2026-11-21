@@ -18,6 +18,7 @@ import {
   requireLegacyStatelessTraining,
 } from "@/lib/server/publicMatchHttp";
 import { sessionAccountId } from "@/lib/server/accountHttp";
+import { refuseBot } from "@/lib/server/botProtection";
 export const runtime = "nodejs";
 type StartRequest = {
   game_id?: string;
@@ -33,6 +34,8 @@ function reject(error: string, status = 400) {
 }
 
 export async function POST(request: NextRequest) {
+  const bot = await refuseBot();
+  if (bot) return bot;
   if (persistentMatchesRequested()) {
     try {
       sameOrigin(request);

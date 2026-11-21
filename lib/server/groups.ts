@@ -221,6 +221,8 @@ export async function startCompetition(pool: Pool, competitionId: string, byAcco
   });
 }
 
+/** v228: an abandoned attempt in a game where the lower result wins (milliseconds): worse than any real run. */
+export const ABANDONED_LOWER_WINS_SCORE = 999_999;
 const comp = (mode: string, state: GroupCompetition | GroupVersus): GroupCompetition => (mode === "group" ? (state as GroupCompetition) : (state as GroupVersus).comp);
 
 /**
@@ -237,8 +239,12 @@ export async function recordResult(pool: Pool, a: { competitionId: string; match
       `SELECT t.state, t.account_id, t.response, t.started_at, m.game_id FROM arena_public_attempts t JOIN arena_matches m USING (match_id) WHERE t.attempt_id = $1`,
       [a.attemptId])).rows[0];
     const response = att?.response as { authoritative_source?: string; score?: unknown; time_ms?: unknown } | null | undefined;
-    if (!att || att.state !== "verified" || att.account_id !== a.accountId || response?.authoritative_source !== "SERVER_REPLAY"
-      || typeof response.score !== "number" || new Date(att.started_at as string) < new Date(k.started_at as string)) throw new GroupError("INVALID_ATTEMPT");
+    // v228 (owner, 21-nov-2026): an abandoned (or rejected) matchday attempt is a loss with 0 points. It still has to be
+    // the player's first attempt (checked below), so abandoning cannot be used to retry.
+    const lost = att?.state === "forfeited" || att?.state === "rejected";
+    if (!att || att.account_id !== a.accountId || new Date(att.started_at as string) < new Date(k.started_at as string)
+      || (!lost && (att.state !== "verified" || response?.authoritative_source !== "SERVER_REPLAY" || typeof response.score !== "number")))
+      throw new GroupError("INVALID_ATTEMPT");
     const state = k.state as GroupCompetition | GroupVersus;
     const current = comp(k.mode as string, state), match = current.matches[a.matchIndex];
     if (!match || !match.players.includes(a.accountId) || match.scores[a.accountId] !== undefined || roundGame(current, match.round) !== att.game_id) throw new GroupError("INVALID_ATTEMPT");
@@ -252,14 +258,16 @@ export async function recordResult(pool: Pool, a: { competitionId: string; match
         ORDER BY t.started_at, t.attempt_id LIMIT 1`,
       [a.accountId, att.game_id, k.started_at, a.competitionId])).rows[0];
     if (first?.attempt_id !== a.attemptId) throw new GroupError("FIRST_ATTEMPT_REQUIRED");
-    const time = typeof response.time_ms === "number" ? response.time_ms : undefined;
+    // A loss is 0 points; in games where less is better (reaction time) 0 would win, so it is the worst time instead.
+    const score = lost ? (current.config.lowerWinsGameIds.includes(att.game_id as string) ? ABANDONED_LOWER_WINS_SCORE : 0) : (response!.score as number);
+    const time = !lost && typeof response!.time_ms === "number" ? response!.time_ms : undefined;
     const done = await c.query(
       `INSERT INTO arena_competition_results(competition_id, match_index, account_id, score, time_ms, attempt_id) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING RETURNING 1`,
-      [a.competitionId, a.matchIndex, a.accountId, response.score, time === undefined ? null : Math.round(time), a.attemptId]);
+      [a.competitionId, a.matchIndex, a.accountId, score, time === undefined ? null : Math.round(time), a.attemptId]);
     if (!done.rows[0]) throw new GroupError("ALREADY_RECORDED");
     const next = k.mode === "group"
-      ? recordGroupScore(state as GroupCompetition, a.matchIndex, a.accountId, response.score, time)
-      : recordVersusScore(state as GroupVersus, a.matchIndex, a.accountId, response.score, time);
+      ? recordGroupScore(state as GroupCompetition, a.matchIndex, a.accountId, score, time)
+      : recordVersusScore(state as GroupVersus, a.matchIndex, a.accountId, score, time);
     await c.query("UPDATE arena_competitions SET state = $2::jsonb, state_version = state_version + 1 WHERE competition_id = $1", [a.competitionId, JSON.stringify(next)]);
     const finished = k.mode === "group" ? (next as GroupCompetition).finished : versusOutcome(next as GroupVersus).finished;
     if (finished) await settle(c, a.competitionId, k.mode as string, next);

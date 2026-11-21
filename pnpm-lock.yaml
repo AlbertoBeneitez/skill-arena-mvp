@@ -169,6 +169,9 @@ importers:
       arctic:
         specifier: 3.7.0
         version: 3.7.0
+      botid:
+        specifier: ^1.5.13
+        version: 1.5.13(next@16.4.5(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
       fflate:
         specifier: 0.8.3
         version: 0.8.3
@@ -722,6 +725,17 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  botid@1.5.13:
+    resolution: {integrity: sha512-bd1oGgunQXOXQOctgLm/XuJKji5E8EUJdHYQAHJhJPgFeBo/mLQMeEsokO9nbrjjOZsSoKZfGHRfM/VAux44GA==}
+    peerDependencies:
+      next: '*'
+      react: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      next:
+        optional: true
+      react:
+        optional: true
+
   caniuse-lite@1.0.30001812:
     resolution: {integrity: sha512-qN+QNNBr93TCmFrmte0bBCjSDMuRvt78VlHT99qIGPszm4QsqCX8lnyWUFkHi8B7ZBAPq8SH+UqyXNy/odMdng==}
 
@@ -1210,6 +1224,11 @@ snapshots:
       '@oslojs/jwt': 0.2.0
 
   baseline-browser-mapping@2.11.26: {}
+
+  botid@1.5.13(next@16.4.5(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1):
+    optionalDependencies:
+      next: 16.4.5(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react: 19.3.1
 
   caniuse-lite@1.0.30001812: {}
 

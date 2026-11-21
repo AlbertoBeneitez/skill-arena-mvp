@@ -2,6 +2,7 @@ import { findAccount } from "@/lib/server/accounts";
 import { accountContext, json, readJson } from "@/lib/server/accountHttp";
 import { BadRequest, GroupError, groupAction, groupErrorStatus, groupsOverview } from "@/lib/server/groupHttp";
 import { getProductionPostgresPool } from "@/lib/server/postgresPool";
+import { refuseBot } from "@/lib/server/botProtection";
 
 /**
  * v197 · Groups on the server (fictitious balance). GET: my groups and competitions, open challenges, group money
@@ -32,6 +33,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const bot = await refuseBot();
+  if (bot) return bot;
   const ctx = accountContext(req, true);
   if (ctx instanceof Response) return ctx;
   const body = await readJson(req, 4096);

@@ -9,6 +9,7 @@ import {
 } from "../publicMatch";
 import type { VerifiedAttemptResult } from "../verified/contracts";
 import { hashManifest } from "./matchIntegrity";
+import { maybePruneOldAttempts } from "./attemptRetention";
 import type { Platform } from "../platform";
 import {
   PublicAttemptError,
@@ -149,6 +150,7 @@ export class PostgresPublicAttemptRepository
     });
   }
   async start(args: StartPublicAttempt) {
+    maybePruneOldAttempts(this.pool); // v228: 90-day retention of match inputs, at most hourly, never blocking
     return this.tx(async (c) => {
       // Training-only storage quota and ordering; not a substitute for production abuse controls.
       await c.query("SELECT pg_advisory_xact_lock(19462814)");

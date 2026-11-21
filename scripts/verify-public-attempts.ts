@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import { Pool } from "pg";
 import { PublicMatchService } from "../lib/server/publicMatchService";
 import { PostgresPublicAttemptRepository, trainingLimits } from "../lib/server/postgresPublicAttemptRepository";
+import { pruneOldAttempts } from "../lib/server/attemptRetention";
 import { PublicAttemptError } from "../lib/server/publicAttemptRepository";
 import { getServerGameAdapter } from "../lib/server/gameVerifiers";
 import { STACK_3D_CORE as core } from "../lib/verified/precisionStackCore.v4";
@@ -516,6 +517,19 @@ try {
   assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "darts", { score: 5, time_ms: 7 }, { score: 5, time_ms: 7 }), { winner: null, reason: "exact-tie" });
   for (const g of GAMES) assert.equal(LOWER_SCORE_WINS_GAMES.has(g.id), g.resultMetric === "reaction-time-ms", `${g.id}: score direction mirrors the catalogue`);
   await assert.rejects(pool.query("UPDATE arena_public_matches SET policy_version='forfeit-on-disconnect-v9' WHERE match_id=$1", [soloA.manifest.match_id]));
+  // v228: 90-day retention of inputs — the result stays, the inputs become a stub; only the job may do it.
+  {
+    const done = (await pool.query("SELECT attempt_id, response, record_hash FROM arena_public_attempts WHERE state='verified' AND record IS NOT NULL LIMIT 1")).rows[0];
+    await assert.rejects(pool.query(`UPDATE arena_public_attempts SET record='{"pruned_at":"x"}'::jsonb WHERE attempt_id=$1`, [done.attempt_id]), "outside the job the record is immutable");
+    for (let i = 0; i < 2; i++) await pool.query(await readFile("db/migrations/018-attempt-retention.sql", "utf8")); // repeatable
+    assert.equal(await pruneOldAttempts(pool), 0, "nothing is 90 days old yet");
+    assert.ok(await pruneOldAttempts(pool, -1) >= 1, "old enough: pruned");
+    const after = (await pool.query("SELECT response, record_hash, record FROM arena_public_attempts WHERE attempt_id=$1", [done.attempt_id])).rows[0];
+    assert.deepEqual([after.response, after.record_hash], [done.response, done.record_hash], "result and hash kept");
+    assert.ok(after.record.pruned_at && !after.record.inputs, "inputs gone");
+    assert.equal(await pruneOldAttempts(pool, -1), 0, "idempotent");
+    await assert.rejects(pool.query("UPDATE arena_public_attempts SET response='{}'::jsonb WHERE attempt_id=$1", [done.attempt_id]), "the result stays immutable");
+  }
   // v227 (security review C2 + A1): no global cap; a bare cookie gets 20 starts a day; storage guard before Neon fills.
   const limits = trainingLimits({});
   assert.deepEqual([limits.perAccountDay, limits.perAnonymousDay, limits.storageGuardBytes], [200, 20, 870 * 1024 * 1024]);
@@ -536,7 +550,7 @@ try {
   await rejects(() => new PublicMatchService(new PostgresPublicAttemptRepository(pool)).start("quota-third", { game_id: "precision-stack", stake_minor: 0, start_key: randomUUID() }), "STORAGE_FULL");
   delete process.env.DATABASE_STORAGE_GUARD_MB;
   console.log(
-    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools, solo (Offline) matches, policy V2 by game score direction (V1 archived), daily limits per cookie without a global cap, storage guard passed",
+    "Public attempts PG: 1000 unique scenarios/cycle, shared manifests, start/record idempotency, race for one seat, replay/result recovery, immutable records, 21 game prefixes, abandon/disconnect/late submission/outsider/forgery rejection, phone/computer pools, solo (Offline) matches, policy V2 by game score direction (V1 archived), daily limits per cookie without a global cap, storage guard, 90-day input retention passed",
   );
 } finally {
   Date.now = originalNow;

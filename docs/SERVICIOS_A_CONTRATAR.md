@@ -19,7 +19,7 @@ orientativos y **se comprueban el día de contratar**.
 
 | ✓ | Servicio | Para qué | Coste orientativo | Cómo se cancela | Disparador |
 |---|---|---|---|---|---|
-| [ ] | Vercel BotID **Basic** | Frenar scripts sin navegador en inicio y cierre de partida | Gratis en Pro | Quitarlo del código | Ya (pendiente de «sí») |
+| [x] | Vercel BotID **Basic** (activado el 21-nov-2026, v228) | Frenar scripts sin navegador al empezar partida, crear cuenta y en grupos | Gratis en Pro | Quitarlo del código | Hecho |
 | [ ] | Dominio propio (`.com` o `.games`) | Marca y confianza; necesario para Apple y para el correo | 10–40 € al año | No renovar | Antes de anunciar la app |
 | [ ] | Correo transaccional (por ejemplo, Resend) | Avisos por correo y recuperación de cuenta | Gratis hasta unos 3 000 correos al mes | Darse de baja | Si se añade correo |
 

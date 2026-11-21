@@ -3,6 +3,7 @@ import { isPlatform } from "@/lib/platform";
 import { AccountError, createAccount, deleteAccount, findAccount, updateProfile } from "@/lib/server/accounts";
 import { accountContext, json, readJson } from "@/lib/server/accountHttp";
 import { getProductionPostgresPool } from "@/lib/server/postgresPool";
+import { refuseBot } from "@/lib/server/botProtection";
 
 /**
  * v191 · The signed-in player's account. GET: the account or null (then the app asks for name and avatar). POST: create
@@ -25,6 +26,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const bot = await refuseBot();
+  if (bot) return bot;
   const ctx = accountContext(req, true);
   if (ctx instanceof Response) return ctx;
   const body = await readJson(req);

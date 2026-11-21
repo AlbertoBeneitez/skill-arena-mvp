@@ -102,5 +102,11 @@ export const MIGRATIONS: readonly BundledMigration[] = [
     "file": "017-group-art.sql",
     "sha256": "efc80e21a14b37bf8a6aadf5898dede45ec10d71e12d5bfd7035d7c1e7ce6364",
     "sql": "-- v220 · The picture a group's owner chose among the app's group pictures (lib/groupArt.ts). Additive only; NULL keeps\n-- the default picture derived from the group. Photos are not stored on the server.\nALTER TABLE arena_groups ADD COLUMN IF NOT EXISTS art text CHECK (art IS NULL OR art ~ '^[a-z]{3,16}$');\n"
+  },
+  {
+    "id": "018",
+    "file": "018-attempt-retention.sql",
+    "sha256": "b66b140d6874f9db176eae0b84bd0d8b864f2dadd4921f9e223a6d32acd8dc7c",
+    "sql": "-- v228 · Retention of match inputs (owner decision, 21-nov-2026: 90 days). Additive only: no row is deleted.\n-- After 90 days the retention job replaces an attempt's ordered inputs (record) with a small stub\n-- ({record_kind, pruned_at}); the result (response, score), the record hash, the manifest and every reference stay, so\n-- rankings, play counts, group results and the ledger are unchanged. Only the job may do it (SET LOCAL arena.retention).\nCREATE OR REPLACE FUNCTION arena_public_record_immutable()\nRETURNS trigger LANGUAGE plpgsql AS $$\nBEGIN\n IF current_setting('arena.retention', true) = 'on'\n  AND OLD.record IS NOT NULL AND NEW.record ? 'pruned_at' AND NOT (OLD.record ? 'pruned_at')\n  AND (to_jsonb(NEW) - 'record') = (to_jsonb(OLD) - 'record')\n THEN RETURN NEW; END IF;\n IF NEW.attempt_id<>OLD.attempt_id OR NEW.match_id<>OLD.match_id OR NEW.player_id<>OLD.player_id\n OR NEW.slot<>OLD.slot OR NEW.ticket<>OLD.ticket OR NEW.start_key<>OLD.start_key\n OR NEW.request_hash<>OLD.request_hash OR NEW.started_at<>OLD.started_at OR NEW.deadline<>OLD.deadline\n OR (OLD.record IS NOT NULL AND (NEW.record IS DISTINCT FROM OLD.record OR NEW.record_hash IS DISTINCT FROM OLD.record_hash OR NEW.record_received_at IS DISTINCT FROM OLD.record_received_at))\n OR (OLD.response IS NOT NULL AND NEW.response IS DISTINCT FROM OLD.response)\n OR (OLD.state IN ('verified','rejected','forfeited') AND NEW.state<>OLD.state)\n THEN RAISE EXCEPTION 'IMMUTABLE_ATTEMPT' USING ERRCODE='23514'; END IF;\n RETURN NEW;\nEND;\n$$;\nCREATE INDEX IF NOT EXISTS arena_public_attempts_unpruned ON arena_public_attempts(started_at) WHERE record IS NOT NULL AND NOT (record ? 'pruned_at');\n"
   }
 ];

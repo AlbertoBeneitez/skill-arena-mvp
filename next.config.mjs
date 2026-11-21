@@ -1,3 +1,5 @@
+import { withBotId } from "botid/next/config";
+
 const isProduction = process.env.NODE_ENV === "production";
 
 /**
@@ -51,4 +53,5 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// v228: Vercel BotID (Basic) proxies its check through this origin, so the content policy stays 'self'.
+export default withBotId(nextConfig);

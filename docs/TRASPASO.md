@@ -6,7 +6,7 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228-saturn** (logo) está en su rama, sin subir: va en la próxima subida a `mobile-test` (una por sesión) |
+| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228-saturn** (logo, BotID, retención, abandono) está en su rama, sin subir: va en la próxima subida a `mobile-test` (una por sesión) |
 | Último trabajo | Rama **v227-saturn**: seguridad fase 0 (C2, A1, A2, B1), simulador en GitHub Actions, propuesta de logo y estética retro |
 | Servicios a contratar | **[Documento vivo en Claude](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** (decisión del propietario; copia en [SERVICIOS_A_CONTRATAR.md](SERVICIOS_A_CONTRATAR.md)) |
 | Simulador de bots | `scripts/sim/` y `.github/workflows/sim-bots.yml` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
@@ -27,9 +27,13 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
 3. **Información oculta por pasos** (aprobada el 20-nov): Solitaire primero (el servidor revela cada carta), después Tower,
    Stack y Dardos; Billar y Pinball no cambian. Luego la capa de detección de comportamiento (solo observar) y la
    identidad por fases. Es versión competitiva nueva en cada juego: conservar las antiguas.
-4. **Decisiones pendientes del propietario:** retención de partidas antiguas (propuesta: 90 días, conservar el resultado);
-   primera partida de grupo abandonada (propuesta: peor puntuación posible); cambiar `AUTH_SECRET` de producción
-   (él, en Vercel); instalar BotID Basic (gratis, falta su «sí»); nombres de niveles Ámbar/Perla; grupos fase 2.
+4. **Decidido el 21-nov (aplicado en v228):** retención de 90 días, abandono en grupos = 0 puntos, BotID Basic, ligas
+   Ámbar y Perla. **Pendiente del propietario:** cambiar `AUTH_SECRET` de producción y poner las claves VAPID (él, en
+   Vercel); estética retro; fase 2 de grupos (explicada el 21-nov; falta su decisión sobre el reto «grupo contra
+   grupo»); fusionar con `main`.
+5. **Comprobar tras subir v228 a `mobile-test`:** que la app empieza partidas, crea cuenta y actúa en grupos con
+   BotID (si apareciera `BOT_DETECTED` a jugadores reales, quitar la ruta de `lib/botRoutes.ts`), y `schema` 018 en
+   `/api/health`.
 
 ## Preguntas del propietario (20-nov, 18:00) y respuestas
 

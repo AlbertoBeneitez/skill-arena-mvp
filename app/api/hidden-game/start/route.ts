@@ -9,8 +9,11 @@ import {
   readHiddenBody,
 } from "@/lib/server/hiddenHttp";
 import { CommandAuthorityError } from "@/lib/server/commandAttemptRepository";
+import { refuseBot } from "@/lib/server/botProtection";
 export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
+  const bot = await refuseBot();
+  if (bot) return bot;
   try {
     checkHiddenOrigin(request);
     const body = await readHiddenBody(request);
