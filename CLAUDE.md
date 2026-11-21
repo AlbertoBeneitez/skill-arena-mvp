@@ -51,6 +51,8 @@ producción y cualquier cambio de visibilidad o permisos del repositorio.
   días y avisar de cualquier cargo nuevo, aunque sea pequeño.
 - Si una tarea puede generar uso de pago (más tráfico, más compilaciones, más
   datos), avisar antes de hacerla, no después.
+- Propietario (21 de noviembre): «NO SUBAS NADA QUE CUESTE DINERO». Ninguna subida a `mobile-test` ni a `main` (cada
+  una compila en Vercel y cuesta) sin su orden expresa en ese momento. Las ramas `vNNN-saturn` sí se suben (no compilan).
 - Propietario (18 de noviembre): una sola subida a `mobile-test` al final de cada
   sesión, con todas las versiones juntas. Cada subida compila en Vercel y cuesta.
   Solo compilan `mobile-test` y `main` (`vercel.json`); las ramas `vNNN-saturn` no.

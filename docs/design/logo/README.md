@@ -19,4 +19,4 @@ Regenerar: `python3 docs/design/logo/gen.py` (escribe los SVG en `/tmp/logo/`), 
 `mono.svg` y `maskable.svg` ahí si no están, y `NODE_PATH=<playwright>/node_modules node docs/design/logo/raster.cjs`.
 Al cambiar los PNG, subir el `?v=` en `app/manifest.ts` y `app/layout.tsx` para que los móviles los recarguen.
 
-La estética retro (`retro-propuesta.png`) sigue siendo una propuesta: no está aplicada.
+La estética retro (`retro-propuesta.png`) fue **rechazada** por el propietario el 21-nov-2026; se guarda solo como historial.

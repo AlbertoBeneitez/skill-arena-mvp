@@ -889,7 +889,8 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] Retención: las acciones de cada partida se borran a los 90 días; el resultado se conserva (migración 018).
 - [x] Grupos: una primera partida abandonada es derrota con 0 puntos.
 - [x] Ligas Ámbar y Perla confirmadas por el propietario (ya estaban desde v220).
-- [ ] Estética retro: propuesta enviada, sin respuesta.
+- [x] Estética retro: rechazada por el propietario (21-nov). Se mantiene el aspecto actual.
+- [ ] Grupos: mantener todas las modalidades; estructura pedida por el propietario: Liga (1 vs 1, todos contra todos, relevos) y Eliminatoria (sin submodos). Pendiente de confirmar el detalle antes de cambiar la pantalla.
 
 ## v227-saturn · Seguridad fase 0, simulador automático y propuesta de logo (21-nov-2026)
 
@@ -898,7 +899,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] A2: en grupos solo cuenta la primera partida terminada del juego de la jornada.
 - [x] B1: nombres que mezclan latín con cirílico o griego, rechazados.
 - [x] Simulador de bots en GitHub Actions (cada subida a `mobile-test` y cada noche).
-- [x] Logo aprobado y aplicado en v228. Estética retro: pendiente.
+- [x] Logo aprobado y aplicado en v228. Estética retro: rechazada.
 - [ ] Avisos dentro de la app (tras aprobar el logo).
 - [ ] Información oculta por pasos (Solitaire primero), detección de comportamiento e identidad por fases.
 - [x] Decisiones: retención (90 días) y abandono en grupos (0 puntos), aplicadas en v228.

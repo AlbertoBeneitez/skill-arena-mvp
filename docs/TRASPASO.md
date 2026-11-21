@@ -19,8 +19,10 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
 
 ## Siguiente trabajo (21-nov), en orden
 
-1. **Logo:** aprobado y aplicado en v228 ([design/logo/README.md](design/logo/README.md)). **Estética retro:** sin respuesta
-   todavía; si la aprueba, la fuente Pixelify Sans es OFL y se registra en `THIRD_PARTY_NOTICES.md`.
+1. **Logo:** aprobado y aplicado en v228 ([design/logo/README.md](design/logo/README.md)). **Estética retro: rechazada**
+   (21-nov); no aplicarla.
+   **Subidas:** el propietario prohíbe subir nada que cueste dinero sin su orden (21-nov, en `CLAUDE.md`): ni
+   `mobile-test` ni `main`. v228 espera en su rama.
 2. **Avisos dentro de la app** (tarea pedida el 20-nov): solo buenas noticias (rival encontrado o reto aceptado, tu turno,
    ganas jornada o competición); subir de liga y récord son animación en el momento; ajuste «Dónde» con App y Móvil;
    logo en los avisos. Los avisos al móvil necesitan las claves VAPID, que pone el propietario en Vercel.
@@ -29,8 +31,8 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
    identidad por fases. Es versión competitiva nueva en cada juego: conservar las antiguas.
 4. **Decidido el 21-nov (aplicado en v228):** retención de 90 días, abandono en grupos = 0 puntos, BotID Basic, ligas
    Ámbar y Perla. **Pendiente del propietario:** cambiar `AUTH_SECRET` de producción y poner las claves VAPID (él, en
-   Vercel); estética retro; fase 2 de grupos (explicada el 21-nov; falta su decisión sobre el reto «grupo contra
-   grupo»); fusionar con `main`.
+   Vercel); fusionar con `main`. **Grupos:** mantener todas las modalidades; estructura pedida: Liga con 1 vs 1, todos
+   contra todos y relevos, y Eliminatoria sin submodos (pendiente de confirmar el detalle; pregunta del 21-nov).
 5. **Comprobar tras subir v228 a `mobile-test`:** que la app empieza partidas, crea cuenta y actúa en grupos con
    BotID (si apareciera `BOT_DETECTED` a jugadores reales, quitar la ruta de `lib/botRoutes.ts`), y `schema` 018 en
    `/api/health`.
