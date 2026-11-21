@@ -882,6 +882,11 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v228-saturn · Logo nuevo (21-nov-2026)
+
+- [x] Icono de la app, pestaña del navegador e imagen al compartir con el átomo pixelado; icono de avisos preparado.
+- [ ] Estética retro: propuesta enviada, sin respuesta.
+
 ## v227-saturn · Seguridad fase 0, simulador automático y propuesta de logo (21-nov-2026)
 
 - [x] C2: sin tope global de 2000 partidas; límite diario por cuenta (200) y por cookie sin cuenta (20); freno al llegar a 870 MB.
@@ -889,7 +894,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] A2: en grupos solo cuenta la primera partida terminada del juego de la jornada.
 - [x] B1: nombres que mezclan latín con cirílico o griego, rechazados.
 - [x] Simulador de bots en GitHub Actions (cada subida a `mobile-test` y cada noche).
-- [ ] Logo (icono, marca de ordenador, icono de avisos) y estética retro: propuesta enviada, pendiente de aprobación.
+- [x] Logo aprobado y aplicado en v228. Estética retro: pendiente.
 - [ ] Avisos dentro de la app (tras aprobar el logo).
 - [ ] Información oculta por pasos (Solitaire primero), detección de comportamiento e identidad por fases.
 - [ ] Decisiones: retención de partidas antiguas; cómo puntúa una primera partida de grupo abandonada.

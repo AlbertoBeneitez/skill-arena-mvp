@@ -6,7 +6,7 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27) |
+| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228-saturn** (logo) está en su rama, sin subir: va en la próxima subida a `mobile-test` (una por sesión) |
 | Último trabajo | Rama **v227-saturn**: seguridad fase 0 (C2, A1, A2, B1), simulador en GitHub Actions, propuesta de logo y estética retro |
 | Servicios a contratar | **[Documento vivo en Claude](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** (decisión del propietario; copia en [SERVICIOS_A_CONTRATAR.md](SERVICIOS_A_CONTRATAR.md)) |
 | Simulador de bots | `scripts/sim/` y `.github/workflows/sim-bots.yml` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
@@ -19,9 +19,8 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
 
 ## Siguiente trabajo (21-nov), en orden
 
-1. **Logo y retro:** esperar la respuesta del propietario a la propuesta. Con el visto bueno: sustituir `public/icon-*.png`,
-   `apple-touch-icon.png` y el favicon (mismo `?v=` nuevo en `app/manifest.ts`), y crear el icono monocromo de avisos.
-   Si aprueba la estética retro: la fuente Pixelify Sans es OFL; registrarla en `THIRD_PARTY_NOTICES.md`.
+1. **Logo:** aprobado y aplicado en v228 ([design/logo/README.md](design/logo/README.md)). **Estética retro:** sin respuesta
+   todavía; si la aprueba, la fuente Pixelify Sans es OFL y se registra en `THIRD_PARTY_NOTICES.md`.
 2. **Avisos dentro de la app** (tarea pedida el 20-nov): solo buenas noticias (rival encontrado o reto aceptado, tu turno,
    ganas jornada o competición); subir de liga y récord son animación en el momento; ajuste «Dónde» con App y Móvil;
    logo en los avisos. Los avisos al móvil necesitan las claves VAPID, que pone el propietario en Vercel.

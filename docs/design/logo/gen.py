@@ -65,3 +65,9 @@ def svg(w,h,body,bg="none"):
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">{"" if bg=="none" else f"<rect width=\"{w}\" height=\"{h}\" fill=\"{bg}\"/>"}{body}</svg>'
 open("/tmp/logo/icon.svg","w").write(svg(512,512,mark(512)))
 open("/tmp/logo/mono.svg","w").write(svg(96,96,mark(96,bg=False,mono="#ffffff",th=1.0)))
+open("/tmp/logo/square.svg","w").write(svg(512,512,mark(512,corner=0)))
+open("/tmp/logo/mono-badge.svg","w").write(svg(96,96,mark(96,bg=False,mono="#ffffff",th=1.0)))
+# maskable (Android adaptive): full-bleed background, artwork scaled to 80 % so it stays inside the safe circle
+_m=mark(512,corner=0); _bg='<rect width="512" height="512" rx="0" fill="url(#g)"/>'
+_defs,_rest=_m.split(_bg)
+open("/tmp/logo/maskable.svg","w").write(svg(512,512,_defs+_bg+'<g transform="translate(51.2 51.2) scale(.8)">'+_rest+'</g>'))

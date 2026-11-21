@@ -1,4 +1,6 @@
-"""GALACTIC GAMES app icon (v125, developed in v131), rendered procedurally with numpy — the icon the phone shows on the home screen and
+"""SUPERSEDED in v228 by the pixel-atom logo (docs/design/logo/README.md); kept for history, do not run.
+
+GALACTIC GAMES app icon (v125, developed in v131), rendered procedurally with numpy — the icon the phone shows on the home screen and
 on the launch (splash) screen.
 
 The original mark (app/icon.svg: a cyan G inside a lilac orbit with a gold moon) developed into a lit scene: a banded
