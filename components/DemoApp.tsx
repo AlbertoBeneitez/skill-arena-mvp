@@ -1,30 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import RunnerGame from "./RunnerGame";
+import { useEffect, useState } from "react";
 
-type Result = { won: boolean; score: number; timeMs: number };
-
-const ENTRY = 5;
-const PRIZE = 9;
 const STARTING_BALANCE = 25;
 
 const tournaments = [
-  {
-    name: "Neon Dash",
-    mode: "1 vs 1 · recorrido fijo",
-    entry: 5,
-    prize: 9,
-    players: "1/2",
-    playable: true,
-  },
   {
     name: "Tap Sprint",
     mode: "8 jugadores · velocidad",
     entry: 3,
     prize: 20,
     players: "5/8",
-    playable: false,
   },
   {
     name: "Precision Grid",
@@ -32,25 +18,20 @@ const tournaments = [
     entry: 2,
     prize: 24,
     players: "11/16",
-    playable: false,
   },
 ];
 
 export default function DemoApp() {
   const [balance, setBalance] = useState(STARTING_BALANCE);
-  const [activeGame, setActiveGame] = useState(false);
-  const [gameKey, setGameKey] = useState(0);
-  const [result, setResult] = useState<Result | null>(null);
-  const [history, setHistory] = useState<string[]>([]);
   const [notice, setNotice] = useState(
-    "Demo: saldo y premios son créditos ficticios."
+    "Demo: el saldo son créditos ficticios."
   );
 
   // Evita sobrescribir localStorage antes de haber recuperado
   // los datos guardados previamente.
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 1. Recuperar saldo e historial guardados al abrir la web.
+  // 1. Recuperar el saldo guardado al abrir la web.
   useEffect(() => {
     const saved = localStorage.getItem("skillarena-demo");
 
@@ -60,10 +41,6 @@ export default function DemoApp() {
 
         if (typeof data.balance === "number") {
           setBalance(data.balance);
-        }
-
-        if (Array.isArray(data.history)) {
-          setHistory(data.history.slice(0, 8));
         }
       } catch {
         console.warn("No se pudieron recuperar los datos guardados.");
@@ -78,73 +55,11 @@ export default function DemoApp() {
   useEffect(() => {
     if (!isLoaded) return;
 
-    localStorage.setItem(
-      "skillarena-demo",
-      JSON.stringify({
-        balance,
-        history,
-      })
-    );
-  }, [balance, history, isLoaded]);
-
-  const canEnter = balance >= ENTRY && !activeGame;
-
-  const stats = useMemo(() => {
-    const wins = history.filter((x) => x.startsWith("Victoria")).length;
-    const losses = history.filter((x) => x.startsWith("Derrota")).length;
-
-    return {
-      wins,
-      losses,
-      played: wins + losses,
-    };
-  }, [history]);
-
-  function enterTournament() {
-    if (!canEnter) return;
-
-    setBalance((b) => b - ENTRY);
-    setResult(null);
-    setGameKey((k) => k + 1);
-    setActiveGame(true);
-    setNotice(
-      `${ENTRY} créditos bloqueados como entrada. Partida iniciada.`
-    );
-  }
-
-  function finishGame(r: Result) {
-    setActiveGame(false);
-    setResult(r);
-
-    if (r.won) {
-      setBalance((b) => b + PRIZE);
-
-      setHistory((h) =>
-        [
-          `Victoria · +${PRIZE} cr · ${(r.timeMs / 1000).toFixed(2)} s`,
-          ...h,
-        ].slice(0, 8)
-      );
-
-      setNotice(
-        `Victoria. Premio simulado de ${PRIZE} créditos abonado al ledger demo.`
-      );
-    } else {
-      setHistory((h) =>
-        [`Derrota · -${ENTRY} cr · score ${r.score}`, ...h].slice(0, 8)
-      );
-
-      setNotice(
-        "Partida finalizada. La entrada queda consumida en esta simulación."
-      );
-    }
-  }
+    localStorage.setItem("skillarena-demo", JSON.stringify({ balance }));
+  }, [balance, isLoaded]);
 
   function resetDemo() {
     setBalance(STARTING_BALANCE);
-    setHistory([]);
-    setResult(null);
-    setActiveGame(false);
     setNotice("Demo restablecida a 25 créditos ficticios.");
   }
 
@@ -160,7 +75,6 @@ export default function DemoApp() {
 
         <nav className="nav">
           <a href="#lobby">Torneos</a>
-          <a href="#ranking">Ranking</a>
           <a href="#wallet">Wallet</a>
         </nav>
 
@@ -178,72 +92,30 @@ export default function DemoApp() {
           <div className="eyebrow">COMPITE · DEMUESTRA · GANA</div>
 
           <h1>
-            Torneos de habilidad.
-            <br />
-            <span>Sin azar.</span>
+            <span>Torneos de habilidad.</span>
           </h1>
 
           <p>
-            Una primera versión funcional de tu plataforma: eliges torneo,
-            pagas una entrada ficticia, juegas un recorrido determinista y el
-            resultado actualiza tu saldo demo.
+            Primera versión de demostración de la plataforma. Los créditos son
+            ficticios y todavía no hay juegos publicados.
           </p>
 
           <div className="heroActions">
-            <a className="primary" href="#play">
-              Probar torneo
+            <a className="primary" href="#lobby">
+              Ver torneos
             </a>
-
-            <a className="secondary" href="#lobby">
-              Ver lobby
-            </a>
-          </div>
-
-          <div className="trustRow">
-            <span>◉ Resultado por habilidad</span>
-            <span>◉ Recorrido idéntico</span>
-            <span>◉ Ledger simulado</span>
           </div>
         </div>
 
         <div className="heroPanel">
-          <div className="liveTag">● TORNEO DESTACADO</div>
+          <div className="liveTag">● SIN JUEGOS PUBLICADOS</div>
 
-          <h3>Neon Dash</h3>
+          <h3>Próximamente</h3>
 
           <p>
-            Todos juegan exactamente el mismo recorrido. No existe RNG ni
-            generación aleatoria.
+            Cada juego necesita su especificación y una versión registrada
+            antes de publicarse.
           </p>
-
-          <div className="prizeGrid">
-            <div>
-              <span>Entrada</span>
-              <b>5 cr</b>
-            </div>
-
-            <div>
-              <span>Premio</span>
-              <b>9 cr</b>
-            </div>
-
-            <div>
-              <span>Formato</span>
-              <b>1 vs 1</b>
-            </div>
-          </div>
-
-          <button
-            className="primary full"
-            onClick={enterTournament}
-            disabled={!canEnter}
-          >
-            {balance < ENTRY
-              ? "Saldo insuficiente"
-              : activeGame
-                ? "Partida en curso"
-                : "Entrar y jugar"}
-          </button>
         </div>
       </section>
 
@@ -262,8 +134,8 @@ export default function DemoApp() {
         <div className="cards">
           {tournaments.map((t, i) => (
             <article className="tournament" key={t.name}>
-              <div className={`gameThumb g${i + 1}`}>
-                <span>{i === 0 ? "▶" : i === 1 ? "⚡" : "◎"}</span>
+              <div className={`gameThumb g${i + 2}`}>
+                <span>{i === 0 ? "⚡" : "◎"}</span>
               </div>
 
               <div className="cardBody">
@@ -284,12 +156,8 @@ export default function DemoApp() {
                   </span>
                 </div>
 
-                <button
-                  className={t.playable ? "cardButton active" : "cardButton"}
-                  onClick={t.playable ? enterTournament : undefined}
-                  disabled={!t.playable || !canEnter}
-                >
-                  {t.playable ? "Jugar demo" : "Próximamente"}
+                <button className="cardButton" disabled>
+                  Próximamente
                 </button>
               </div>
             </article>
@@ -297,42 +165,7 @@ export default function DemoApp() {
         </div>
       </section>
 
-      <section className="section playSection" id="play">
-        <div className="sectionHead">
-          <div>
-            <span className="eyebrow">JUEGO DEMO</span>
-            <h2>Neon Dash</h2>
-          </div>
-
-          <button
-            className="ghost"
-            onClick={enterTournament}
-            disabled={!canEnter}
-          >
-            Nueva partida · {ENTRY} cr
-          </button>
-        </div>
-
-        <RunnerGame
-          key={gameKey}
-          active={activeGame}
-          onFinish={finishGame}
-        />
-
-        {result && (
-          <div className={`resultBox ${result.won ? "win" : "loss"}`}>
-            <strong>{result.won ? "Victoria" : "Eliminado"}</strong>
-
-            <span>
-              {result.won
-                ? `Tiempo: ${(result.timeMs / 1000).toFixed(2)} s · +${PRIZE} cr`
-                : `Distancia: ${result.score} · -${ENTRY} cr`}
-            </span>
-          </div>
-        )}
-      </section>
-
-      <section className="section split" id="wallet">
+      <section className="section" id="wallet">
         <div className="panel">
           <span className="eyebrow">WALLET DEMO</span>
 
@@ -356,77 +189,6 @@ export default function DemoApp() {
             </button>
 
             <button onClick={resetDemo}>Restablecer</button>
-          </div>
-
-          <div className="history">
-            <h4>Últimos movimientos</h4>
-
-            {history.length === 0 ? (
-              <p className="muted">Todavía no hay partidas.</p>
-            ) : (
-              history.map((x, i) => (
-                <div className="historyRow" key={`${x}-${i}`}>
-                  <span>{x}</span>
-                  <small>ahora</small>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="panel" id="ranking">
-          <span className="eyebrow">PERFIL / RANKING</span>
-
-          <div className="profileRow">
-            <div className="avatar big">AB</div>
-
-            <div>
-              <h3>Jugador Demo</h3>
-              <p className="muted">#247 global</p>
-            </div>
-          </div>
-
-          <div className="stats">
-            <div>
-              <b>{stats.played}</b>
-              <span>Partidas</span>
-            </div>
-
-            <div>
-              <b>{stats.wins}</b>
-              <span>Victorias</span>
-            </div>
-
-            <div>
-              <b>{stats.losses}</b>
-              <span>Derrotas</span>
-            </div>
-          </div>
-
-          <div className="leaderboard">
-            <div>
-              <b>1</b>
-              <span>NovaRunner</span>
-              <strong>2.481</strong>
-            </div>
-
-            <div>
-              <b>2</b>
-              <span>Vector9</span>
-              <strong>2.344</strong>
-            </div>
-
-            <div>
-              <b>3</b>
-              <span>ByteFox</span>
-              <strong>2.201</strong>
-            </div>
-
-            <div className="you">
-              <b>247</b>
-              <span>Jugador Demo</span>
-              <strong>1.180</strong>
-            </div>
           </div>
         </div>
       </section>
@@ -465,7 +227,7 @@ export default function DemoApp() {
 
       <footer>
         <span>SkillArena MVP · nombre provisional</span>
-        <span>Sin pagos reales · sin RNG</span>
+        <span>Sin pagos reales</span>
       </footer>
     </main>
   );

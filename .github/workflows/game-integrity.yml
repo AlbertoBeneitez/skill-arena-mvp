@@ -1,0 +1,37 @@
+name: Integridad de juegos
+
+# Falla si el código o la especificación de un juego no coincide con la versión registrada en
+# games/versions.log.jsonl, si falta algo de la especificación o si el registro se ha reescrito respecto a la
+# rama base. Ver docs/game-spec-template.md.
+# Para que bloquee de verdad la entrada en main, márcalo como comprobación obligatoria:
+#   GitHub › Settings › Branches › Branch protection rule › Require status checks › «Verificar versiones».
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verificar versiones
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (historial completo para comparar el registro)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Verificar hashes y registro
+        env:
+          BASE_PR: ${{ github.event.pull_request.base.sha }}
+          BASE_PUSH: ${{ github.event.before }}
+        run: |
+          BASE="${BASE_PR:-$BASE_PUSH}"
+          case "$BASE" in ""|0000000000000000000000000000000000000000) BASE="";; esac
+          node scripts/game-integrity.mjs verify ${BASE:+--base "$BASE"}
+      - name: Aviso sobre azar y reloj en la lógica de juego (informativo)
+        run: node scripts/game-integrity.mjs scan --warn

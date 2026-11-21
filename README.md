@@ -1,14 +1,12 @@
 # SkillArena MVP
 
-Primera versión funcional de una plataforma de torneos deterministas de habilidad.
+Primera versión de demostración de una plataforma de torneos de habilidad.
 
 ## Qué incluye
 
 - Landing + lobby de torneos.
 - Wallet visual con créditos ficticios.
-- Historial y ranking demo.
-- Un minijuego jugable (`Neon Dash`) con recorrido fijo y sin RNG.
-- Flujo de entrada de 5 créditos y premio ficticio de 9 créditos.
+- Sin juegos publicados por ahora: cada juego se añade con su especificación y versión registrada (ver más abajo).
 - Persistencia temporal mediante `localStorage`.
 - Responsive para PC y móvil.
 - Preparado para desplegar en Vercel.
@@ -30,6 +28,18 @@ Después abre el puerto 3000 que detecte Codespaces.
 4. Deploy.
 
 En esta versión no necesitas `DATABASE_URL` ni `BETTER_AUTH_SECRET`, porque aún no existe una base de datos ni autenticación real.
+
+## Especificación e integridad de los juegos
+
+Cada juego vive con una especificación (`games/<id>/SPEC.md`, plantilla en `docs/game-spec-template.md`) y un manifiesto (`games/<id>/manifest.json`). Los hashes de cada versión quedan en `games/versions.log.jsonl`, un registro solo-añadir encadenado.
+
+```bash
+node scripts/game-integrity.mjs verify                      # comprueba hashes, especificación y registro
+node scripts/game-integrity.mjs register <id> --version X.Y.Z   # registra una versión nueva tras cambiar el juego
+node scripts/game-integrity.mjs scan                        # busca azar o reloj en la lógica de juego
+```
+
+Un workflow de GitHub (`Integridad de juegos`) ejecuta `verify` en cada PR y push a `main`. Cuando exista el servidor de partidas, cada partida debe guardar el `digest` de la versión con la que se jugó y rechazarse si no está registrado.
 
 ## Siguiente fase recomendada
 
