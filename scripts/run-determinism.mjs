@@ -38,6 +38,7 @@ if (process.argv[2] === "repository") {
   await import("../.det-test/scripts/verify-attempt-records.js");
   await import("../.det-test/scripts/verify-production-gates.js");
   await import("../.det-test/scripts/verify-core-runtime.js");
+  await import("../.det-test/scripts/verify-solitaire-v1.js");
   await import("../.det-test/scripts/verify-canvas-viewport.js");
   await import("../.det-test/scripts/verify-stack-v3.js");
   await import("../.det-test/scripts/verify-stack-v4.js");

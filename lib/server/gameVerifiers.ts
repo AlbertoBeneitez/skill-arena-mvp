@@ -75,6 +75,7 @@ import { BILLIARDS_CORE } from "../verified/billiardsCore.v1";
 import { BILLIARDS_CORE_V2 } from "../verified/billiardsCore.v2";
 import { MINE_GRID_CORE } from "../verified/mineGridCore.v1";
 import { MINE_GRID_CORE_V2 } from "../verified/mineGridCore.v2";
+import { SOLITAIRE_CORE_V1 } from "../verified/solitaireCore.v1.server";
 import { ORB_BURST_CORE } from "../verified/orbBurstCore.v1";
 import { ORB_BURST_CORE_V2 } from "../verified/orbBurstCore.v2";
 import { ORB_BURST_CORE_V3 } from "../verified/orbBurstCore.v3";
@@ -361,6 +362,7 @@ const SERVER_GAME_ADAPTERS: Record<string, VerifiedGameAdapter> = {
   [adapterKey(BILLIARDS_CORE_V2.gameId,BILLIARDS_CORE_V2.gameVersion)]: coreAdapter(BILLIARDS_CORE_V2),
   [adapterKey(MINE_GRID_CORE.gameId,MINE_GRID_CORE.gameVersion)]: coreAdapter(MINE_GRID_CORE),
   [adapterKey(MINE_GRID_CORE_V2.gameId,MINE_GRID_CORE_V2.gameVersion)]: coreAdapter(MINE_GRID_CORE_V2),
+  [adapterKey(SOLITAIRE_CORE_V1.gameId,SOLITAIRE_CORE_V1.gameVersion)]: coreAdapter(SOLITAIRE_CORE_V1),
   [adapterKey(ORB_BURST_CORE.gameId,ORB_BURST_CORE.gameVersion)]: coreAdapter(ORB_BURST_CORE),
   [adapterKey(ORB_BURST_CORE_V2.gameId,ORB_BURST_CORE_V2.gameVersion)]: coreAdapter(ORB_BURST_CORE_V2),
   [adapterKey(ORB_BURST_CORE_V3.gameId,ORB_BURST_CORE_V3.gameVersion)]: coreAdapter(ORB_BURST_CORE_V3),

@@ -22,6 +22,7 @@
     "scripts/verify-attempt-records.ts",
     "scripts/verify-production-gates.ts",
     "scripts/verify-core-runtime.ts",
+    "scripts/verify-solitaire-v1.ts",
     "scripts/verify-canvas-viewport.ts",
     "scripts/verify-stack-v3.ts",
     "scripts/verify-stack-v4.ts",
