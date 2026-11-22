@@ -844,6 +844,7 @@ const messages: Messages = {
   "sg.vsLeague": "Liga",
   "sg.vsTournament": "Eliminatória",
   "sg.vsTournamentHint": "5 jornadas contra o outro grupo. Em cada jornada somam pontos pela posição e o pior fica de fora; ganha o grupo com mais pontos.",
+  "sg.vsLeagueHint": "Todos os jogadores dos dois grupos na mesma liga; ganha o grupo cujos jogadores acabam mais bem classificados.",
   "sg.challengeCreate": "Lançar desafio",
   "sg.acceptShort": "Aceitar",
   "sg.loading": "A carregar grupos…",

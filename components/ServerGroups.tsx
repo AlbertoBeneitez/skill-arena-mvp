@@ -46,7 +46,6 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [dismissed, setDismissed] = useState<string[]>([]);
-  const [vsMode, setVsMode] = useState<"versus-league" | "versus-tournament">("versus-league");
   const [vsGame, setVsGame] = useState<string>(GAMES.find((g) => g.enabled)?.id ?? "");
   const [vsEntry, setVsEntry] = useState(5);
 
@@ -141,12 +140,9 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
     <>
       {current && owner && (
         <div className={hub.panel}>
-          <h2 className={hub.formTitle}>{t("sg.challengeTitle")}</h2>
-          <div className={st.seg} role="group" aria-label={t("sg.mode")}>
-            <button type="button" aria-pressed={vsMode === "versus-league"} onClick={() => setVsMode("versus-league")}>{t("sg.vsLeague")}</button>
-            <button type="button" aria-pressed={vsMode === "versus-tournament"} onClick={() => setVsMode("versus-tournament")}>{t("sg.vsTournament")}</button>
-          </div>
-          {vsMode === "versus-tournament" && <p className={hub.hint}>{t("sg.vsTournamentHint")}</p>}
+          <h2 className={hub.formTitle}>{t("sg.challengeTitle")} · {t("sg.vsLeague")}</h2>
+          {/* v229: the Eliminatoria is created from «Nueva competición» (Liga / Eliminatoria); here, the league of both groups. */}
+          <p className={hub.hint}>{t("sg.vsLeagueHint")}</p>
           {/* v219 (owner): the same game finder as the competition form above (categories, search, covers). */}
           <span className={hub.stepLabel}>{t("sg.game")}</span>
           <GamePicker games={GAMES.filter((g) => g.enabled && (vsEntry === 0 || playableForMoney(g)))} picked={vsGame ? [vsGame] : []} multi={false}
@@ -156,7 +152,7 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
               onChange={(e) => setVsEntry(Math.max(0, Math.min(100, Math.round(Number(e.target.value) || 0))))} />
           </label>
           <button type="button" className={hub.primary} disabled={busy || !vsGame || (vsEntry > 0 && !playableForMoney(GAMES.find((g) => g.id === vsGame) ?? { playKind: "chance" }))}
-            onClick={() => void act({ action: "competition", mode: vsMode, groupIds: [current.group.id], config: { entryMinor: vsEntry * 100, gameIds: [vsGame], rounds: 1 } })}>
+            onClick={() => void act({ action: "competition", mode: "versus-league", groupIds: [current.group.id], config: { entryMinor: vsEntry * 100, gameIds: [vsGame], rounds: 1 } })}>
             {t("sg.challengeCreate")}
           </button>
         </div>

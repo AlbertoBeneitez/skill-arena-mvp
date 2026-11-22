@@ -12,6 +12,12 @@ Base: v228-saturn (sin subir todavía: el propietario decide cuándo, porque cad
   grupo con más puntos (empate: el que conserva más jugadores; si no, empate y se devuelven las entradas). Termina antes
   si un grupo se queda sin jugadores. `lib/groupVersus.ts` (`rules: "v2"`, `versusPoints`), `stopAfterRounds` en
   `lib/groupCompetition.ts`. Las eliminatorias ya guardadas conservan sus reglas de v192.
+- **Sin despliegues de ramas en Vercel (propietario: «no quiero cargos en Vercel»):** `vercel.json` desactiva los
+  despliegues de cualquier rama salvo `mobile-test` y `main` (`git.deploymentEnabled`). Antes cada rama subida creaba
+  un despliegue que se cancelaba; ahora ni se crea. Solo vale para ramas que lleven este `vercel.json`: `main` no lo
+  tiene todavía, así que las ramas que otras sesiones creen desde `main` aún generan ese despliegue cancelado.
+- **Panel «Retar a otro grupo»:** ahora solo crea la liga grupo contra grupo (todos los jugadores de los dos grupos en
+  una liga); la Eliminatoria se crea desde «Nueva competición» y ya no aparece dos veces.
 - **Formulario «Nueva competición» (con conexión):** primero **Liga** o **Eliminatoria**. Liga muestra sus tres
   modalidades (Todos vs todos, 1 vs 1, Relevos); Eliminatoria no tiene submodos y lanza el reto contra otro grupo. En
   la clasificación de una eliminatoria se ven los puntos de cada grupo.

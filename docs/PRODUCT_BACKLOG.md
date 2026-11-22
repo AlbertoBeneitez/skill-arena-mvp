@@ -888,8 +888,8 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] «Enviar juego» centrado, más sutil y fino.
 - [x] Eliminatoria entre grupos v2: 5 jornadas, puntos por puesto, uno fuera por jornada, gana quien más puntos sume.
 - [x] Formulario de competición: Liga (Todos vs todos, 1 vs 1, Relevos) o Eliminatoria (sin submodos).
-- [ ] El panel «Retar a otro grupo» repite Liga/Eliminatoria: decidir con el propietario si se queda solo para la liga
-      grupo contra grupo o se integra en el formulario.
+- [x] «Retar a otro grupo» queda solo para la liga grupo contra grupo; la Eliminatoria, en «Nueva competición».
+- [x] `vercel.json`: sin despliegues de ramas salvo `mobile-test` y `main`.
 - [ ] 1 vs 1, Relevos y Eliminatoria sin conexión (grupos inventados) y con conexión contra cualquier grupo: fase 2.
 
 ## v228-saturn · Logo nuevo, BotID, retención y abandono en grupos (21-nov-2026)

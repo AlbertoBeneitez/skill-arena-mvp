@@ -844,6 +844,7 @@ const messages: Messages = {
   "sg.vsLeague": "League",
   "sg.vsTournament": "Knockout",
   "sg.vsTournamentHint": "5 matchdays against the other group. Each matchday you score points by place and the worst player is out; the group with the most points wins.",
+  "sg.vsLeagueHint": "Every player of both groups in one league; the group whose players finish higher wins.",
   "sg.challengeCreate": "Launch challenge",
   "sg.acceptShort": "Accept",
   "sg.loading": "Loading groups…",

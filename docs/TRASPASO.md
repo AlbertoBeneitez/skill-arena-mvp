@@ -33,7 +33,11 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
    Ámbar y Perla. **Pendiente del propietario:** cambiar `AUTH_SECRET` de producción y poner las claves VAPID (él, en
    Vercel); fusionar con `main`. **Grupos:** hecho en v229 (Liga con tres modalidades, Eliminatoria v2 entre dos
    grupos: 5 jornadas, puntos por puesto, uno fuera por jornada). Falta decidir qué hacer con el panel «Retar a otro
-   grupo», que repite Liga/Eliminatoria.
+   grupo»: decidido en v229 (solo liga grupo contra grupo; el propietario lo revisará).
+   **Costes de Vercel (22-nov):** el 21-nov hubo además un despliegue de producción desde `main` (PR #11, otra
+   sesión) y despliegues cancelados de ramas de otras sesiones (`feat/solitaire-v1-oculto`,
+   `chore/especificaciones-juegos`, `feat/game-spec-integrity`). `main` no tiene `vercel.json`: sus ramas no llevan
+   el bloqueo de despliegues de v229.
 5. **Comprobar tras subir v228 a `mobile-test`:** que la app empieza partidas, crea cuenta y actúa en grupos con
    BotID (si apareciera `BOT_DETECTED` a jugadores reales, quitar la ruta de `lib/botRoutes.ts`), y `schema` 018 en
    `/api/health`.

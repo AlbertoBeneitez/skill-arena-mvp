@@ -882,6 +882,7 @@ const es = {
   "sg.vsLeague": "Liga",
   "sg.vsTournament": "Eliminatoria",
   "sg.vsTournamentHint": "5 jornadas contra el otro grupo. Cada jornada sumáis puntos por puesto y queda fuera el peor; gana el grupo con más puntos.",
+  "sg.vsLeagueHint": "Todos los jugadores de los dos grupos en una misma liga; gana el grupo cuyos jugadores acaban mejor clasificados.",
   "sg.challengeCreate": "Lanzar reto",
   "sg.acceptShort": "Aceptar",
   "sg.loading": "Cargando grupos…",
