@@ -9,6 +9,8 @@ import { ORB_ACTIONS_V6 as ORB_ACTIONS } from "./verified/orbBurstProtocol.v6";
 import { PINBALL_ACTIONS_V3 } from "./verified/pinballProtocol.v3";
 import { CORNER_SUDOKU_ACTIONS_V3 } from "./verified/cornerSudokuProtocol.v3";
 import { BOWLING_ACTIONS_V2 } from "./verified/bowlingProtocol.v2";
+import { SOLITAIRE_ACTIONS_V1 } from "./verified/solitaireProtocol.v1";
+import { MINE_ACTIONS } from "./verified/mineGridProtocol.v1";
 import type { ComponentType } from "react";
 import type { GameResult } from "./types";
 
@@ -44,6 +46,16 @@ export type GameCompetitionDefinition =
     }
   | {
       verification: "server-replay";
+      engineVersion: string;
+      inputProtocolVersion: number;
+      allowedActions: readonly string[];
+    }
+  | {
+      /**
+       * Hidden information (22-nov-2026): the server keeps the secret state and the phone plays one command per move
+       * (lib/server/hiddenMatchService.ts). Same core contract as server-replay, but the phone never gets the seed.
+       */
+      verification: "server-commands";
       engineVersion: string;
       inputProtocolVersion: number;
       allowedActions: readonly string[];
@@ -83,15 +95,19 @@ export type GameDefinition<TId extends string = string> = {
    * How the score reads. Default: points (higher wins). "fictitious-balance": closing chips.
    * "reaction-time-ms": accumulated milliseconds, LOWER wins (the core also publishes reach = base − ms).
    * "orbs-eliminated": orbs popped or dropped (higher wins).
+   * "solve-time-or-cards": Solitaire 1.0.0, LOWER wins: solve time in ms, or (unsolved) a base plus the cards left to
+   * turn (`readSolitaireScoreV1`).
    */
   resultMetric?: ResultMetric;
 };
-export type ResultMetric = "fictitious-balance" | "reaction-time-ms" | "orbs-eliminated";
+export type ResultMetric = "fictitious-balance" | "reaction-time-ms" | "orbs-eliminated" | "solve-time-or-cards";
 /** Local best-score slot: a game whose score unit changed keeps its new bests apart from the old ones. */
-export const bestScoreKey = (game: Pick<GameMeta, "id" | "resultMetric">) => (game.resultMetric === "orbs-eliminated" ? `${game.id}@orbs` : game.id);
+export const bestScoreKey = (game: Pick<GameMeta, "id" | "resultMetric">) =>
+  game.resultMetric === "orbs-eliminated" ? `${game.id}@orbs` : game.resultMetric === "solve-time-or-cards" ? `${game.id}@time` : game.id;
 
 /** True when a smaller score is the better one. */
-export const lowerScoreWins = (game: Pick<GameMeta, "resultMetric">) => game.resultMetric === "reaction-time-ms";
+export const lowerScoreWins = (game: Pick<GameMeta, "resultMetric">) =>
+  game.resultMetric === "reaction-time-ms" || game.resultMetric === "solve-time-or-cards";
 /** Does `score` beat (or tie) the `target`? */
 export const scoreBeats = (game: Pick<GameMeta, "resultMetric">, score: number, target: number) =>
   lowerScoreWins(game) ? score <= target : score >= target;
@@ -172,31 +188,32 @@ const GAME_DEFINITIONS = [
   },
   {
     id: "solitaire-sprint",
-    version: "0.2.0",
-    status: "INTEGRATED",
+    version: "1.0.0",
+    status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/SolitaireSprint")),
-    competition: { verification: "client-result" },
+    competition: { verification: "server-commands", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: SOLITAIRE_ACTIONS_V1 },
+    resultMetric: "solve-time-or-cards",
     name: "Solitaire Sprint",
     cover: "/covers/solitaire-sprint.webp?v=164",
     enabled: true,
     waitingStakes: [1, 5],
     category: "CARTAS",
-    tagline: "Misma baraja. Gana quien avance más y más rápido.",
+    tagline: "Mismo reparto. Gana quien lo resuelve antes.",
     difficulty: "MEDIA",
     skillLabel: "PLANIFICACIÓN + VELOCIDAD",
-    rivalScore: 22500,
+    rivalScore: 180_000,
     rivalName: "ACE",
     rivalAvatar: "/avatars/avatar-5.svg",
-    instruction: "Toca cartas para moverlas. Ambos jugadores reciben exactamente la misma baraja.",
-    scoring: "Sube cartas a las bases y optimiza cada movimiento.",
+    instruction: "Toca cartas para moverlas. Los dos jugadores reciben el mismo reparto, que guarda el servidor.",
+    scoring: "Gana quien lo resuelve en menos tiempo, con 5 minutos como máximo. Si no lo resuelves, cuentan las cartas que te quedan por descubrir: cuantas menos, mejor, pero siempre por detrás de quien lo resuelve.",
     deterministicSeed: "solitaire-arena-001",
   },
   {
     id: "mine-grid",
-    version: "0.2.0",
-    status: "INTEGRATED",
+    version: "2.0.0",
+    status: "VERIFIED",
     loadComponent: adaptGameComponent(() => import("@/components/games/MineGridEntry")),
-    competition: { verification: "client-result" },
+    competition: { verification: "server-commands", engineVersion: "skill-core-3", inputProtocolVersion: 1, allowedActions: MINE_ACTIONS },
     name: "Mine Grid",
     cover: "/covers/mine-grid.webp?v=175",
     enabled: true,
@@ -209,7 +226,7 @@ const GAME_DEFINITIONS = [
     rivalName: "NODE",
     rivalAvatar: "/avatars/avatar-4.svg",
     instruction: "Toca para destapar y mantén pulsada una casilla para marcarla. Ambos jugadores reciben el mismo campo.",
-    scoring: "Si no lo resuelves, puntúan las casillas bien asignadas. Si lo resuelves, puntúa el tiempo: cuanto más rápido, más puntos.",
+    scoring: "Cada casilla segura que destapas suma 120. Resolver el campo da un bonus de hasta 600 que baja 3 por cada acción de más. Pisar una mina resta 250 y tienes 2 vidas.",
     deterministicSeed: "mine-grid-arena-001",
   },
 

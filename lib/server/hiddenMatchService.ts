@@ -15,7 +15,8 @@ import type { MatchManifest, MatchManifestV3, VerifiedAttemptResult } from "../v
 import { HEARTBEAT_MS, PUBLIC_MATCH_POLICY, type PublicRecord } from "../publicMatch";
 import { isPlatform, type Platform } from "../platform";
 import { SOLITAIRE_CORE_V1, projectSolitaireV1 } from "../verified/solitaireCore.v1.server";
-import { SOLITAIRE_V1_TIME_LIMIT_MS } from "../verified/solitaireProtocol.v1";
+import { SOLITAIRE_V1_TIME_LIMIT_MS, solitaireRankingScoreV1 } from "../verified/solitaireProtocol.v1";
+import type { SolitaireStateV1 } from "../verified/solitaireCore.v1.server";
 import { MINE_GRID_CORE_V2, projectMineV2 } from "../verified/mineGridCore.v2";
 import { HiddenCommandAuthority, type HiddenGamePolicy } from "./hiddenCommandAuthority";
 import { createSolitaireMatchManifest } from "./solitaireDeals";
@@ -27,9 +28,6 @@ import type { MatchRepository } from "./matchRepository";
 import { CommandAuthorityError, type CommandAttemptRepository } from "./commandAttemptRepository";
 import { PublicAttemptError, type PublicAttempt, type PublicAttemptRepository } from "./publicAttemptRepository";
 
-/** Same value as `ABANDONED_LOWER_WINS_SCORE` (lib/server/groups.ts): worse than any real time. */
-export const UNSOLVED_LOWER_WINS_SCORE = 999_999;
-
 type HiddenMatchGame = Readonly<{
   gameVersion: string;
   /** Public-attempt deadline: the game's own limit plus a margin (the lease still forfeits a silent phone). */
@@ -38,12 +36,12 @@ type HiddenMatchGame = Readonly<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   policy: HiddenGamePolicy<any, unknown>;
   /** Authoritative ranking score from the server replay and the server-measured time. */
-  score(replay: { won: boolean; score: number }, elapsedMs: number): number;
+  score(replay: { won: boolean; score: number; state: CoreState }, elapsedMs: number): number;
 }>;
 
 export const HIDDEN_MATCH_GAMES: Readonly<Record<string, HiddenMatchGame>> = Object.freeze({
-  // Owner, 22-nov-2026: the same deal for both; the fastest solve wins; unsolved after 5 minutes loses.
-  // "Less is better" (LOWER_SCORE_WINS_GAMES) follows the catalogue and is switched on with Solitaire 1.0.0 there.
+  // Owner, 22-nov-2026: the same deal for both; the fastest solve wins (5 minutes at most); unsolved: the cards left
+  // to turn, always behind any solve. Less is better (catalogue metric "solve-time-or-cards").
   "solitaire-sprint": {
     gameVersion: SOLITAIRE_CORE_V1.gameVersion,
     durationMs: SOLITAIRE_V1_TIME_LIMIT_MS + 30_000,
@@ -53,7 +51,10 @@ export const HIDDEN_MATCH_GAMES: Readonly<Record<string, HiddenMatchGame>> = Obj
       project: projectSolitaireV1,
       clock: { limitMs: SOLITAIRE_V1_TIME_LIMIT_MS, timeUpAction: "TIME_UP" },
     },
-    score: (replay, elapsedMs) => (replay.won ? elapsedMs : UNSOLVED_LOWER_WINS_SCORE),
+    score: (replay, elapsedMs) => {
+      const s = replay.state as SolitaireStateV1;
+      return solitaireRankingScoreV1(replay.won, elapsedMs, s.columns.reduce((n, c, i) => n + c.length - s.up[i], 0));
+    },
   },
   // Owner, 22-nov-2026: both players must get the same field. Score and rules of Mine Grid 2.0.0 unchanged.
   "mine-grid": {

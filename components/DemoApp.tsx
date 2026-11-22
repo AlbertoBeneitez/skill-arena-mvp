@@ -35,6 +35,7 @@ import { setNextPairing } from "@/lib/verified/attemptTransport";
 import { flushAnalytics, setAnalyticsEnabled, track } from "@/lib/analytics";
 import { gameTone, haptic, setGameSoundEnabled, startGameMusic, stopGameMusic } from "@/lib/gameFeedback";
 import { formatMoney, formatNumber, initLocale, setLocale, t, useI18n, LOCALE_STORAGE_KEY, type MessageKey, type Vars } from "@/lib/i18n";
+import { formatScore } from "@/lib/scoreFormat";
 import { matchLocale } from "@/lib/i18n/locales";
 import { gameName } from "@/lib/i18n/games";
 import type { DocId } from "@/lib/i18n/docs";
@@ -2044,8 +2045,9 @@ export default function DemoApp() {
                     // score to beat lower down (the scoreboard's number design) and, below, who made the game.
                     const chips = leagueMatch.rival.balanceGoal, ms = !chips && lowerScoreWins(selectedGame);
                     const n = chips ? leagueMatch.rival.target / 100 : leagueMatch.rival.target;
-                    const value = ms ? `${formatNumber(n)} ms` : formatNumber(n);
-                    const unit = chips ? t("hud.chips") : ms ? t("hud.reaction") : selectedGame.resultMetric === "orbs-eliminated" ? t("hud.bubbles") : t("hud.points");
+                    const solveGame = selectedGame.resultMetric === "solve-time-or-cards";
+                    const value = solveGame ? formatScore(n, selectedGame.resultMetric) : ms ? `${formatNumber(n)} ms` : formatNumber(n);
+                    const unit = chips ? t("hud.chips") : solveGame ? t("hud.time") : ms ? t("hud.reaction") : selectedGame.resultMetric === "orbs-eliminated" ? t("hud.bubbles") : t("hud.points");
                     const who = t("league.rivalOf", { tier: t(`league.tier${leagueMatch.tier}` as MessageKey) });
                     return (
                       <div className="gxRivalCard" role="group" aria-label={`${who}: ${leagueMatch.rival.name}, ${value} ${unit}`} style={{ ["--tier" as string]: LEAGUE_COLORS[leagueMatch.tier] }}>

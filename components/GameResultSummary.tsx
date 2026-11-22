@@ -1,6 +1,8 @@
 import type { GameResult } from "@/lib/types";
 import type { ResultMetric } from "@/lib/games";
 import { formatNumber, useI18n } from "@/lib/i18n";
+import { formatScore } from "@/lib/scoreFormat";
+import { readSolitaireScoreV1 } from "@/lib/verified/solitaireProtocol.v1";
 export default function GameResultSummary({
   result,
   gameName,
@@ -17,6 +19,9 @@ export default function GameResultSummary({
   // Time-scored games show the accumulated milliseconds (their "reach" is only the duel mirror).
   const timed = resultMetric === "reaction-time-ms";
   const orbs = resultMetric === "orbs-eliminated";
+  // Solitaire 1.0.0: solved = the time; unsolved = the cards left to turn.
+  const solve = resultMetric === "solve-time-or-cards" ? readSolitaireScoreV1(result.score) : null;
+  const solveLabel = solve ? (solve.solved ? t("result.solveTime") : t("result.cardsLeft")) : "";
   const reach =
     !timed &&
     result.verified === true &&
@@ -52,7 +57,9 @@ export default function GameResultSummary({
       <dl className="resultFacts">
         <div>
           <dt>
-            {balance
+            {solve
+              ? solveLabel
+              : balance
               ? t("result.finalChips")
               : timed
                 ? t("result.reactionTotal")
@@ -64,7 +71,9 @@ export default function GameResultSummary({
           </dt>
           <dd
             aria-label={
-              balance
+              solve
+                ? solveLabel
+                : balance
                 ? t("result.chipsAria")
                 : timed
                   ? t("result.reactionTotal")
@@ -75,7 +84,9 @@ export default function GameResultSummary({
                   : t("result.pointsAria")
             }
           >
-            {balance
+            {solve
+              ? formatScore(result.score, resultMetric)
+              : balance
               ? t("common.chips", { n: formatNumber((reach ?? result.score) / 100, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) })
               : timed
                 ? t("common.ms", { n: formatNumber(result.score) })

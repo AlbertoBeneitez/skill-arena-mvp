@@ -26,6 +26,20 @@ export const SOLITAIRE_ACTIONS_V1 = Object.freeze([
 ] as const);
 export type SolitaireActionV1 = (typeof SOLITAIRE_ACTIONS_V1)[number];
 
+/**
+ * Ranking score (owner, 22-nov-2026), LOWER is better: solved = server-measured milliseconds (at most 5 minutes);
+ * unsolved = UNSOLVED_BASE + face-down tableau cards still to turn (21 at the start). Every solve beats every unsolved
+ * deal, fewer cards left beats more, and both stay below the groups' "abandoned" 999 999.
+ */
+export const SOLITAIRE_V1_UNSOLVED_BASE = 400_000;
+export const solitaireRankingScoreV1 = (won: boolean, elapsedMs: number, faceDownLeft: number) =>
+  won ? Math.min(elapsedMs, SOLITAIRE_V1_TIME_LIMIT_MS) : SOLITAIRE_V1_UNSOLVED_BASE + faceDownLeft;
+export function readSolitaireScoreV1(score: number): { solved: true; ms: number } | { solved: false; cardsLeft: number } {
+  return score >= SOLITAIRE_V1_UNSOLVED_BASE && score <= SOLITAIRE_V1_UNSOLVED_BASE + 52
+    ? { solved: false, cardsLeft: score - SOLITAIRE_V1_UNSOLVED_BASE }
+    : { solved: true, ms: score };
+}
+
 export type SolitairePublicViewV1 = Readonly<{
   /** Per column: `null` for each face-down card (no id), then the ids of the face-up run, bottom to top. */
   tableau: readonly (readonly (number | null)[])[];

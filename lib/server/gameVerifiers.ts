@@ -395,8 +395,9 @@ function assertCurrentAdapterContract(
   }
 
   const competition = definition.competition;
+  const authoritative = competition.verification === "server-replay" || competition.verification === "server-commands";
   const sameActions =
-    competition.verification === "server-replay" &&
+    authoritative &&
     competition.allowedActions.length ===
       adapter.inputProtocol.allowedActions.length &&
     competition.allowedActions.every(
@@ -405,7 +406,7 @@ function assertCurrentAdapterContract(
     );
 
   if (
-    competition.verification !== "server-replay" ||
+    !authoritative ||
     competition.engineVersion !== adapter.engineVersion ||
     competition.inputProtocolVersion !==
       adapter.inputProtocol.version ||

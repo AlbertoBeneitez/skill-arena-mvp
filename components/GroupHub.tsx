@@ -11,7 +11,7 @@ import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type R
 import type { ClosedGroup } from "@/lib/groupPlay";
 import { defaultSplit, GROUP_COMMISSION_BPS, GROUP_MODALITIES, groupMoney, groupStandings, groupTeamStandings, HOME_TEAM, isInterGroup, nextGroupMatch, RANDOM_GAME, relayTotals, relayWaitingFor, roundAwaitingRival, stepSplit, waitingGroupMatch, type GroupCompetition, type GroupConfig, type GroupModality } from "@/lib/groupCompetition";
 import { GROUP_ART_IDS, groupArt, groupArtSrc } from "@/lib/groupArt";
-import { GAMES, playableForMoney } from "@/lib/games";
+import { GAMES, lowerScoreWins, playableForMoney } from "@/lib/games";
 import { COIN_SYMBOL, formatMoney, t, useI18n } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { portraitSrc } from "@/lib/avatars";
@@ -280,7 +280,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
     return {
       format: kind, entryMinor, split: [...split], gameIds: ids,
       ...(ids.includes(RANDOM_GAME) ? { randomPool: pickable.map((g) => g.id) } : {}),
-      lowerWinsGameIds: playable.filter((g) => g.resultMetric === "reaction-time-ms").map((g) => g.id),
+      lowerWinsGameIds: playable.filter((g) => lowerScoreWins(g)).map((g) => g.id),
       end: { kind: "rounds", rounds },
     };
   }

@@ -1,7 +1,8 @@
 "use client";
 import { useId, useMemo, useState } from "react";
-import { GAMES, POPULAR_COUNT, bestScoreKey, compareScores, type GameMeta } from "@/lib/games";
-import { formatNumber, t, useI18n, type MessageKey } from "@/lib/i18n";
+import { GAMES, POPULAR_COUNT, bestScoreKey, compareScores, lowerScoreWins, type GameMeta } from "@/lib/games";
+import { formatScore } from "@/lib/scoreFormat";
+import { t, useI18n, type MessageKey } from "@/lib/i18n";
 import { gameName } from "@/lib/i18n/games";
 import { createRng } from "@/lib/deterministic/seeded";
 import { emptyLeague, leagueRival, LEAGUE_COLORS, LEAGUE_ICONS, type LeagueRecord, type LeagueState, type LeagueTier } from "@/lib/leagues";
@@ -29,16 +30,13 @@ function sampleRows(game: GameMeta, platform: Platform, period: RankingPeriod): 
     const base = leagueRival(game, record).target;
     const spread = (1.12 - (i % 6) * 0.035) * (0.97 + rng.nextInt(7) / 100);
     // Time-scored games: a stronger player has a SMALLER time.
-    const score = Math.round(game.resultMetric === "reaction-time-ms" ? base / spread : base * spread);
+    const score = Math.round(lowerScoreWins(game) ? base / spread : base * spread);
     return { id: `sample-${i}`, name, avatar: portraitSrc(1 + ((i * 7) % 16), "-s"), score, tier };
   }).sort((a, b) => compareScores(game)(a.score, b.score));
 }
 
 export function scoreText(game: GameMeta, score: number) {
-  if (game.resultMetric === "fictitious-balance") return t("common.chips", { n: formatNumber(score / 100) });
-  if (game.resultMetric === "reaction-time-ms") return t("common.ms", { n: formatNumber(score) });
-  if (game.resultMetric === "orbs-eliminated") return t("common.orbs", { n: formatNumber(score) });
-  return formatNumber(score);
+  return formatScore(score, game.resultMetric);
 }
 
 export function GameRanking({ game, best, league, playerName, avatarSrc, platform = "mobile", period = "all" }: { game: GameMeta; best?: number; league: LeagueRecord; playerName: string; avatarSrc: string; platform?: Platform; period?: RankingPeriod }) {

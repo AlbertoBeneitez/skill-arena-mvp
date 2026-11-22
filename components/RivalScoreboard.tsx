@@ -1,6 +1,7 @@
 "use client";
 import type { ResultMetric } from "@/lib/games";
-import { formatNumber, t, useI18n } from "@/lib/i18n";
+import { t, useI18n } from "@/lib/i18n";
+import { formatScore } from "@/lib/scoreFormat";
 
 export type RivalResult = {
   name: string;
@@ -10,12 +11,7 @@ export type RivalResult = {
   status: "final" | "pending" | "none";
 };
 
-function format(score: number, metric?: ResultMetric) {
-  if (metric === "fictitious-balance") return t("common.chips", { n: formatNumber(score / 100, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) });
-  if (metric === "reaction-time-ms") return t("common.ms", { n: formatNumber(score) });
-  if (metric === "orbs-eliminated") return t("common.orbs", { n: formatNumber(score) });
-  return formatNumber(score);
-}
+const format = formatScore;
 
 /**
  * Head-to-head line on every result screen: the player's result next to the rival's (league rival, online opponent,

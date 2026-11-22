@@ -16,7 +16,7 @@ import {
   sameOrigin,
 } from "../lib/server/publicMatchHttp";
 import { decidePublicMatch, LOWER_SCORE_WINS_GAMES, MAX_ATTEMPT_RECORD_BYTES, PUBLIC_MATCH_POLICY, PUBLIC_MATCH_POLICY_V1 } from "../lib/publicMatch";
-import { GAMES } from "../lib/games";
+import { GAMES, lowerScoreWins } from "../lib/games";
 const connectionString = process.env.TEST_DATABASE_URL;
 assert.ok(connectionString, "TEST_DATABASE_URL required; no skip");
 const url = new URL(connectionString);
@@ -515,7 +515,7 @@ try {
   assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY_V1, "precision-stack", tallNarrow, tallWide), { winner: "B", reason: "time" }, "V1 archived: time tie-break");
   assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "darts", { score: 5, time_ms: 9 }, { score: 5, time_ms: 7 }), { winner: "B", reason: "time" });
   assert.deepEqual(decidePublicMatch(PUBLIC_MATCH_POLICY, "darts", { score: 5, time_ms: 7 }, { score: 5, time_ms: 7 }), { winner: null, reason: "exact-tie" });
-  for (const g of GAMES) assert.equal(LOWER_SCORE_WINS_GAMES.has(g.id), g.resultMetric === "reaction-time-ms", `${g.id}: score direction mirrors the catalogue`);
+  for (const g of GAMES) assert.equal(LOWER_SCORE_WINS_GAMES.has(g.id), lowerScoreWins(g), `${g.id}: score direction mirrors the catalogue`);
   await assert.rejects(pool.query("UPDATE arena_public_matches SET policy_version='forfeit-on-disconnect-v9' WHERE match_id=$1", [soloA.manifest.match_id]));
   // v228: 90-day retention of inputs — the result stays, the inputs become a stub; only the job may do it.
   {

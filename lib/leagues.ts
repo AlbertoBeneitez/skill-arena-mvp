@@ -6,7 +6,7 @@
  * tier: its score is the target to beat. Presentation/local state only — never authoritative, never used for real
  * money or real rankings.
  */
-import type { GameMeta } from "./games";
+import { lowerScoreWins, type GameMeta } from "./games";
 import { createRng } from "./deterministic/seeded";
 import { portraitSrc } from "@/lib/avatars";
 
@@ -52,7 +52,7 @@ const REFERENCE: Record<string, number> = {
   darts: 800,
   billiards: 8000,
   "tower-drop": 6200,
-  "solitaire-sprint": 22500,
+  "solitaire-sprint": 180_000,
   "mine-grid": 6000,
   "stack-shift": 16000,
   "orb-burst": 110, // orbs eliminated (V8)
@@ -100,7 +100,7 @@ export function leagueRival(game: GameMeta, record: LeagueRecord): LeagueRival {
   const reference = REFERENCE[game.id] ?? game.rivalScore;
   const jitter = 0.92 + rng.nextInt(17) / 100; // 0.92–1.08
   // Time-scored games: higher tiers must be FASTER, so the target time shrinks with the tier factor.
-  const lower = game.resultMetric === "reaction-time-ms";
+  const lower = lowerScoreWins(game);
   let target = Math.max(1, Math.round(lower ? reference / (FACTORS[record.tier] * jitter) : reference * FACTORS[record.tier] * jitter));
   if (CAP[game.id]) target = Math.min(CAP[game.id], target);
   return { name, avatar, target, balanceGoal: false, timeGoal: lower, timeMs: rivalTime(rng, record.tier) };

@@ -5,14 +5,14 @@ import { applyMigrations } from "../lib/server/migrations";
 import { PostgresPublicAttemptRepository } from "../lib/server/postgresPublicAttemptRepository";
 import { PostgresMatchRepository } from "../lib/server/postgresMatchRepository";
 import { PostgresCommandAttemptRepository } from "../lib/server/postgresCommandAttemptRepository";
-import { HiddenMatchService, UNSOLVED_LOWER_WINS_SCORE } from "../lib/server/hiddenMatchService";
+import { HiddenMatchService } from "../lib/server/hiddenMatchService";
 import { ABANDONED_LOWER_WINS_SCORE } from "../lib/server/groups";
 import { PublicMatchService } from "../lib/server/publicMatchService";
 import { PublicAttemptError } from "../lib/server/publicAttemptRepository";
 import { solitaireDeckFromSeed } from "../lib/server/solitaireDeals";
 import { solveKlondike } from "../lib/solitaireSolver";
 import { SOLITAIRE_CORE_V1, createSolitaireV1 } from "../lib/verified/solitaireCore.v1.server";
-import { SOLITAIRE_V1_TIME_LIMIT_MS } from "../lib/verified/solitaireProtocol.v1";
+import { SOLITAIRE_V1_TIME_LIMIT_MS, SOLITAIRE_V1_UNSOLVED_BASE, readSolitaireScoreV1 } from "../lib/verified/solitaireProtocol.v1";
 import { createMineV2 } from "../lib/verified/mineGridCore.v2";
 import { mineAction } from "../lib/verified/mineGridProtocol.v1";
 
@@ -43,7 +43,8 @@ const storedManifest = async (attemptId: string) =>
 try {
   await admin.query(`CREATE SCHEMA ${schema}`);
   await applyMigrations(pool);
-  assert.equal(UNSOLVED_LOWER_WINS_SCORE, ABANDONED_LOWER_WINS_SCORE, "same 'worse than any time' value as groups");
+  assert.ok(SOLITAIRE_V1_UNSOLVED_BASE + 52 < ABANDONED_LOWER_WINS_SCORE, "unsolved stays ahead of an abandoned match");
+  assert.ok(SOLITAIRE_V1_UNSOLVED_BASE > SOLITAIRE_V1_TIME_LIMIT_MS, "every solve beats every unsolved deal");
 
   // 1 · First player: a running session with the public view only. Never the manifest, seed or ticket.
   const keyA = randomUUID();
@@ -97,13 +98,15 @@ try {
   assert.equal(manifestB.match_id, manifestA.match_id);
   assert.equal(manifestB.seed, manifestA.seed);
   assert.deepEqual(b.session!.view, openingA);
-  // B gives up (TIME_UP is also the resign move): unsolved scores worse than any solve time. The match is decided
-  // (both runs closed); "less is better" for Solitaire switches on with the catalogue entry 1.0.0, in the game PR.
+  // B gives up (TIME_UP is also the resign move) with all 21 face-down cards still to turn: A's solve wins.
   b = await move("player-b", b, "TIME_UP");
   assert.equal(b.state, "verified");
-  assert.equal(b.result!.score, UNSOLVED_LOWER_WINS_SCORE);
+  assert.equal(b.result!.score, SOLITAIRE_V1_UNSOLVED_BASE + 21);
+  assert.deepEqual(readSolitaireScoreV1(b.result!.score!), { solved: false, cardsLeft: 21 });
+  assert.deepEqual(readSolitaireScoreV1(a.result!.score!), { solved: true, ms: a.result!.time_ms });
   assert.equal(b.result!.won, false);
-  assert.ok(b.result!.match!.winnerSlot !== undefined, "the paired match is resolved");
+  assert.equal(b.result!.match!.winnerSlot, "A");
+  assert.equal(b.result!.match!.reason, "score");
   // Moves after the end change nothing; the answer is the final result.
   assert.equal((await move("player-b", b, "DRAW")).state, "verified");
 
@@ -115,7 +118,7 @@ try {
   assert.equal(c.session!.status, "failed");
   assert.equal(c.session!.failure, "TIME_UP");
   assert.equal(c.state, "verified");
-  assert.equal(c.result!.score, UNSOLVED_LOWER_WINS_SCORE);
+  assert.equal(c.result!.score, SOLITAIRE_V1_UNSOLVED_BASE + 21);
   assert.equal(c.result!.time_ms, SOLITAIRE_V1_TIME_LIMIT_MS);
 
   // 5 · Mine Grid: the second player gets the first player's field. A plays to the end (opens the start cell, then

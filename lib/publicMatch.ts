@@ -7,8 +7,8 @@ export const PUBLIC_MATCH_POLICY_V1 = "forfeit-on-disconnect-v1";
  */
 export const PUBLIC_MATCH_POLICY = "forfeit-on-disconnect-v2";
 export const PUBLIC_MATCH_POLICIES = [PUBLIC_MATCH_POLICY_V1, PUBLIC_MATCH_POLICY] as const;
-/** Games whose score is a time or a cost (less is better). Mirrors `resultMetric: "reaction-time-ms"` in lib/games.ts. */
-export const LOWER_SCORE_WINS_GAMES: ReadonlySet<string> = new Set(["reaction-test"]);
+/** Games whose score is a time or a cost (less is better). Mirrors `lowerScoreWins` in lib/games.ts. */
+export const LOWER_SCORE_WINS_GAMES: ReadonlySet<string> = new Set(["reaction-test", "solitaire-sprint"]);
 
 type Run = { score?: number; height?: number; time_ms?: number };
 /** Winner of two verified runs under a public-match policy: "A", "B" or null (exact tie), with the deciding reason. */
