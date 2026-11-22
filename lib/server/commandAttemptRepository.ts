@@ -14,6 +14,10 @@ export type StoredCommandAttempt = Readonly<{
   inputs: readonly ReplayInput[];
   commands: readonly AcceptedCommand[];
   terminal: boolean;
+  /** Server wall clock (ms since epoch) when the attempt was created. */
+  startedAtMs: number;
+  /** Server wall clock when the terminal command was accepted (or the deadline, if closed for time); null while running. */
+  finishedAtMs: number | null;
 }>;
 export interface CommandAttemptRepository {
   create(record: StoredCommandAttempt): Promise<void>;

@@ -38,6 +38,10 @@ try {
   const sql = await readFile("db/migrations/002-command-attempts.sql", "utf8");
   await pool.query(sql);
   await pool.query(sql);
+  // 019 · server clock; repeatable.
+  const clockSql = await readFile("db/migrations/019-command-attempt-clock.sql", "utf8");
+  await pool.query(clockSql);
+  await pool.query(clockSql);
   const matches = new PostgresMatchRepository(pool),
     attempts = new PostgresCommandAttemptRepository(pool),
     manifest = createPrivateMatchManifest("mine-grid", "1.0.0");
@@ -50,9 +54,20 @@ try {
     inputs: [],
     commands: [],
     terminal: false,
+    startedAtMs: 1_795_000_000_000,
+    finishedAtMs: null,
     manifestHash: hashManifest(manifest),
   };
   await attempts.create(record);
+  // The server clock round-trips through PostgreSQL to the millisecond; a running attempt has no finish time.
+  const stored = await attempts.findForPlayer(record.attemptId, record.playerId);
+  assert.equal(stored!.startedAtMs, record.startedAtMs);
+  assert.equal(stored!.finishedAtMs, null);
+  await assert.rejects(
+    attempts.compareAndSwap(0, { ...stored!, revision: 1, inputs: [{ seq: 0, tick: 0, action: "OPEN_0" }], commands: [{ commandId: "x", requestRevision: 0, action: "OPEN_0" }], terminal: true, finishedAtMs: null }),
+    /CORRUPT_ATTEMPT/,
+    "a terminal attempt must carry its finish time",
+  );
   await assert.rejects(
     attempts.create({ ...record, attemptId: "duplicate-player" }),
   );

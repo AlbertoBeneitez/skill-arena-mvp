@@ -57,6 +57,8 @@ export class PersistedHiddenTraining {
         inputs: [],
         commands: [],
         terminal: false,
+        startedAtMs: Date.now(),
+        finishedAtMs: null,
       });
       await client.query("COMMIT");
     } catch (error) {

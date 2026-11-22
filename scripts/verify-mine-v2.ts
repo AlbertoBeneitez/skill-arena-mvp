@@ -112,6 +112,8 @@ for (const [attemptId, playerId] of [
     inputs: [],
     commands: [],
     terminal: false,
+    startedAtMs: 1_795_000_000_000,
+    finishedAtMs: null,
   });
 const authority = new HiddenCommandAuthority(
   matches,

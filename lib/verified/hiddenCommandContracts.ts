@@ -18,4 +18,7 @@ export type HiddenPublicSession<TView> = Readonly<{
   failure: string | null;
   view: TView;
   verified: boolean;
+  /** Only for games with a real-time limit: the limit and the server-measured time used so far (or final). */
+  timeLimitMs?: number;
+  elapsedMs?: number;
 }>;

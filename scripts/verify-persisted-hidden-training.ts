@@ -44,6 +44,7 @@ try {
   await pool.query(
     await readFile("db/migrations/002-command-attempts.sql", "utf8"),
   );
+  await pool.query(await readFile("db/migrations/019-command-attempt-clock.sql", "utf8"));
   assert.equal(await service.available(), true);
   const boards = new Set<string>();
   let first: Awaited<ReturnType<typeof service.start>> | undefined;

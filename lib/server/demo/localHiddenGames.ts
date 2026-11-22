@@ -39,6 +39,8 @@ function createLocalService() {
         inputs: [],
         commands: [],
         terminal: false,
+        startedAtMs: Date.now(),
+        finishedAtMs: null,
       });
       count++;
       return authority.read(attemptId, actorId);

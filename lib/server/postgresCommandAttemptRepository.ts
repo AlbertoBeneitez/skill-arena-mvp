@@ -14,6 +14,8 @@ interface Row extends QueryResultRow {
   inputs: StoredCommandAttempt["inputs"];
   commands: StoredCommandAttempt["commands"];
   terminal: boolean;
+  started_at: Date;
+  finished_at: Date | null;
 }
 function record(row: Row): StoredCommandAttempt {
   return {
@@ -25,6 +27,8 @@ function record(row: Row): StoredCommandAttempt {
     inputs: row.inputs,
     commands: row.commands,
     terminal: row.terminal,
+    startedAtMs: row.started_at.getTime(),
+    finishedAtMs: row.finished_at ? row.finished_at.getTime() : null,
   };
 }
 export class PostgresCommandAttemptRepository
@@ -36,14 +40,16 @@ export class PostgresCommandAttemptRepository
       next.revision !== 0 ||
       next.inputs.length ||
       next.commands.length ||
-      next.terminal
+      next.terminal ||
+      next.finishedAtMs !== null ||
+      !Number.isSafeInteger(next.startedAtMs)
     )
       throw new CommandAuthorityError("CORRUPT_ATTEMPT");
     const result = await this.pool.query(
-      `INSERT INTO arena_command_attempts(attempt_id,match_id,player_id,manifest_hash)
-   SELECT $1,m.match_id,$3,$4 FROM arena_matches m WHERE m.match_id=$2 AND m.manifest_hash=$4 AND (m.player_a=$3 OR m.player_b=$3)
+      `INSERT INTO arena_command_attempts(attempt_id,match_id,player_id,manifest_hash,started_at)
+   SELECT $1,m.match_id,$3,$4,to_timestamp($5::double precision/1000) FROM arena_matches m WHERE m.match_id=$2 AND m.manifest_hash=$4 AND (m.player_a=$3 OR m.player_b=$3)
    ON CONFLICT DO NOTHING RETURNING attempt_id`,
-      [next.attemptId, next.matchId, next.playerId, next.manifestHash],
+      [next.attemptId, next.matchId, next.playerId, next.manifestHash, next.startedAtMs],
     );
     if (result.rowCount !== 1)
       throw new CommandAuthorityError("COMMAND_CONFLICT");
@@ -60,11 +66,14 @@ export class PostgresCommandAttemptRepository
     if (
       next.revision !== expectedRevision + 1 ||
       next.inputs.length !== next.revision ||
-      next.commands.length !== next.revision
+      next.commands.length !== next.revision ||
+      next.terminal !== (next.finishedAtMs !== null) ||
+      (next.finishedAtMs !== null && !Number.isSafeInteger(next.finishedAtMs))
     )
       throw new CommandAuthorityError("CORRUPT_ATTEMPT");
     const result = await this.pool.query(
-      `UPDATE arena_command_attempts SET revision=$1,inputs=$2::jsonb,commands=$3::jsonb,terminal=$4
+      `UPDATE arena_command_attempts SET revision=$1,inputs=$2::jsonb,commands=$3::jsonb,terminal=$4,
+   finished_at=CASE WHEN $4 THEN to_timestamp($12::double precision/1000) ELSE NULL END
    WHERE attempt_id=$5 AND player_id=$6 AND match_id=$7 AND manifest_hash=$8 AND revision=$9 AND NOT terminal
    AND inputs=$10::jsonb AND commands=$11::jsonb RETURNING attempt_id`,
       [
@@ -79,6 +88,7 @@ export class PostgresCommandAttemptRepository
         expectedRevision,
         JSON.stringify(next.inputs.slice(0, -1)),
         JSON.stringify(next.commands.slice(0, -1)),
+        next.finishedAtMs,
       ],
     );
     return result.rowCount === 1;

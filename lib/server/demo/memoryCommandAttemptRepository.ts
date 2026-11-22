@@ -13,7 +13,9 @@ export class MemoryCommandAttemptRepository
       record.revision !== 0 ||
       record.inputs.length ||
       record.commands.length ||
-      record.terminal
+      record.terminal ||
+      record.finishedAtMs !== null ||
+      !Number.isSafeInteger(record.startedAtMs)
     )
       throw new CommandAuthorityError("CORRUPT_ATTEMPT");
     if (this.records.has(record.attemptId) || [...this.records.values()].some(r=>r.matchId===record.matchId&&r.playerId===record.playerId))
@@ -38,7 +40,9 @@ export class MemoryCommandAttemptRepository
       next.revision !== before.revision + 1 ||
       next.playerId !== before.playerId ||
       next.matchId !== before.matchId ||
-      next.manifestHash !== before.manifestHash
+      next.manifestHash !== before.manifestHash ||
+      next.startedAtMs !== before.startedAtMs ||
+      next.terminal !== (next.finishedAtMs !== null)
     )
       throw new CommandAuthorityError("CORRUPT_ATTEMPT");
     this.records.set(next.attemptId, structuredClone(next));

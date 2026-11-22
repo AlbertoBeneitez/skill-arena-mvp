@@ -19,7 +19,14 @@ import {
 export type HiddenGamePolicy<S extends CoreState, V> = Readonly<{
   core: GameCore<S>;
   project(state: S): V;
+  /**
+   * Optional real-time limit, measured with the server's own clock from the attempt's creation. When it passes, the
+   * server itself appends `timeUpAction` (a core action that ends the attempt) and the attempt closes at the deadline.
+   */
+  clock?: Readonly<{ limitMs: number; timeUpAction: string }>;
 }>;
+/** Command id the server uses when it closes an attempt for time. Clients cannot send it (ids are `[a-zA-Z0-9_-]`). */
+export const SERVER_TIME_UP_COMMAND_ID = "server:time-up";
 /** A mode of the existing replay pipeline, not a second simulation engine. */
 export class HiddenCommandAuthority<S extends CoreState, V> {
   constructor(
@@ -27,7 +34,34 @@ export class HiddenCommandAuthority<S extends CoreState, V> {
     private readonly attempts: CommandAttemptRepository,
     private readonly policy: HiddenGamePolicy<S, V>,
     private readonly mode: "demo" | "production",
+    private readonly now: () => number = () => Date.now(),
   ) {}
+  private deadline(attempt: StoredCommandAttempt) {
+    return this.policy.clock ? attempt.startedAtMs + this.policy.clock.limitMs : null;
+  }
+  /** Closes a running attempt whose deadline has passed: TIME_UP at the deadline, through the same atomic swap. */
+  private async expire(attempt: StoredCommandAttempt, manifest: MatchManifest): Promise<StoredCommandAttempt> {
+    const deadline = this.deadline(attempt);
+    if (attempt.terminal || deadline === null || this.now() < deadline) return attempt;
+    const action = this.policy.clock!.timeUpAction,
+      inputs = [...attempt.inputs, { seq: attempt.inputs.length, tick: attempt.inputs.length, action }],
+      replay = replayCore(this.policy.core, inputs, inputs.length - 1, manifest.seed, manifest.competition.target_score);
+    if (!replay.valid || replay.state.status === "running")
+      throw new CommandAuthorityError("CORRUPT_ATTEMPT");
+    const next: StoredCommandAttempt = {
+      ...attempt,
+      revision: attempt.revision + 1,
+      inputs,
+      commands: [...attempt.commands, { commandId: SERVER_TIME_UP_COMMAND_ID, requestRevision: attempt.revision, action }],
+      terminal: true,
+      finishedAtMs: deadline,
+    };
+    if (await this.attempts.compareAndSwap(attempt.revision, next)) return next;
+    // Someone else moved first (the player's last command or a concurrent read): use what was stored.
+    const stored = await this.attempts.findForPlayer(attempt.attemptId, attempt.playerId);
+    if (!stored) throw new CommandAuthorityError("NOT_FOUND");
+    return stored.terminal ? stored : this.expire(stored, manifest);
+  }
   private async load(attemptId: string, actorId: string) {
     const attempt = await this.attempts.findForPlayer(attemptId, actorId);
     if (!attempt) throw new CommandAuthorityError("NOT_FOUND");
@@ -86,12 +120,21 @@ export class HiddenCommandAuthority<S extends CoreState, V> {
       failure: replay.failure,
       view: this.policy.project(replay.state),
       verified: replay.valid,
+      ...(this.policy.clock
+        ? {
+            timeLimitMs: this.policy.clock.limitMs,
+            elapsedMs: Math.max(
+              0,
+              Math.min(this.policy.clock.limitMs, (attempt.finishedAtMs ?? this.now()) - attempt.startedAtMs),
+            ),
+          }
+        : {}),
     };
     return session;
   }
   async read(attemptId: string, actorId: string) {
     const { attempt, manifest } = await this.load(attemptId, actorId);
-    return this.view(attempt, manifest);
+    return this.view(await this.expire(attempt, manifest), manifest);
   }
   async command(request: HiddenCommandRequest, actorId: string) {
     if (
@@ -123,6 +166,9 @@ export class HiddenCommandAuthority<S extends CoreState, V> {
       return this.view(attempt, manifest);
     }
     if (attempt.terminal) throw new CommandAuthorityError("ATTEMPT_CLOSED");
+    // Past the deadline the move is not applied: the attempt closes for time and the player gets the final view.
+    const expired = await this.expire(attempt, manifest);
+    if (expired.terminal) return this.view(expired, manifest);
     if (attempt.revision !== request.expectedRevision)
       throw new CommandAuthorityError("REVISION_CONFLICT");
     const inputs = [
@@ -156,6 +202,7 @@ export class HiddenCommandAuthority<S extends CoreState, V> {
         },
       ],
       terminal: replay.state.status !== "running",
+      finishedAtMs: replay.state.status !== "running" ? this.now() : null,
     };
     if (!(await this.attempts.compareAndSwap(attempt.revision, next))) {
       const retry = await this.attempts.findForPlayer(

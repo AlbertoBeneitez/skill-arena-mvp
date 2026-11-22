@@ -61,6 +61,8 @@ const create = (playerId: string, attemptId: string): StoredCommandAttempt => ({
   inputs: [],
   commands: [],
   terminal: false,
+  startedAtMs: 1_795_000_000_000,
+  finishedAtMs: null,
 });
 await attempts.create(create("local-demo-a", "attempt-a"));
 await attempts.create(create("local-demo-b", "attempt-b"));
