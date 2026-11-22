@@ -21,6 +21,7 @@ import {
 import { sha256 } from "./matchIntegrity";
 import { isPlatform, type Platform } from "../platform";
 import { getServerGameAdapter } from "./gameVerifiers";
+import { hiddenMatchGameFor } from "./hiddenMatchService";
 import {
   PublicAttemptError,
   type PublicAttempt,
@@ -149,6 +150,8 @@ export class PublicMatchService {
       throw new PublicAttemptError("INVALID_RECORD", 400);
     // Resolve the authoritative manifest from storage; no browser seed/ticket/result accepted.
     const current = await this.repository.inspect(actor, b.attempt_id);
+    // Hidden-information matches are played by commands; their record is written by the server, never submitted.
+    if (hiddenMatchGameFor(current.manifest)) throw new PublicAttemptError("HIDDEN_MATCH_USES_COMMANDS", 400);
     const adapter = getServerGameAdapter(
       current.manifest.game_id,
       current.manifest.game_version,
@@ -181,6 +184,9 @@ export class PublicMatchService {
     actor: string,
     row: PublicAttempt,
   ): Promise<{ status: number; body: VerifiedAttemptResult }> {
+    // A hidden-information match is finalised by HiddenMatchService with the server clock, not by this replay.
+    if (!row.response && hiddenMatchGameFor(row.manifest))
+      return { status: 202, body: { ok: true, verified: false, durable: true, processing: true, attempt_id: row.attempt_id } };
     if (!row.response) {
       const claimed = await this.repository.claim(actor, row.attempt_id);
       if (!claimed)

@@ -24,6 +24,7 @@
     "scripts/verify-core-runtime.ts",
     "scripts/verify-solitaire-v1.ts",
     "scripts/verify-hidden-clock.ts",
+    "scripts/verify-hidden-matches.ts",
     "scripts/verify-canvas-viewport.ts",
     "scripts/verify-stack-v3.ts",
     "scripts/verify-stack-v4.ts",

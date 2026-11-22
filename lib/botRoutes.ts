@@ -4,6 +4,7 @@
 export const BOT_PROTECTED_ROUTES: { path: string; method: "POST" }[] = [
   { path: "/api/verified-match/start", method: "POST" },
   { path: "/api/hidden-game/start", method: "POST" },
+  { path: "/api/verified-match/hidden/start", method: "POST" },
   { path: "/api/account", method: "POST" },
   { path: "/api/groups", method: "POST" },
 ];
