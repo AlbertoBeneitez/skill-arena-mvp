@@ -100,9 +100,13 @@ export function createSolitaireV1(seed: string): SolitaireStateV1 {
   };
 }
 
+/** Player moves stop one short of the input limit, so the server can always append TIME_UP. */
+export const SOLITAIRE_V1_MOVE_LIMIT = 999;
+
 export function canApplySolitaireV1(s: SolitaireStateV1, action: string) {
   const p = parse(action);
   if (!p || s.status !== "running") return false;
+  if (p.kind !== "TIME_UP" && s.tick >= SOLITAIRE_V1_MOVE_LIMIT) return false;
   const wasteTop = s.waste.length ? s.waste[s.waste.length - 1] : undefined;
   switch (p.kind) {
     case "TIME_UP":
@@ -189,9 +193,9 @@ export const SOLITAIRE_CORE_V1: GameCore<SolitaireStateV1> = {
   width: 390,
   height: 844,
   tickRate: 120,
-  // One tick per command; the real limit is the 5-minute clock on the server.
-  maxFinalTick: 2001,
-  maxInputs: 2000,
+  // One tick per command (the command table allows 1000); the real limit is the 5-minute clock on the server.
+  maxFinalTick: 1000,
+  maxInputs: 1000,
   inputVersion: 1,
   actions: SOLITAIRE_ACTIONS_V1,
   content: {
@@ -201,7 +205,7 @@ export const SOLITAIRE_CORE_V1: GameCore<SolitaireStateV1> = {
       columns: 7,
       stock: 24,
       autoWin: "all-tableau-face-up",
-      commandLimit: 2000,
+      commandLimit: SOLITAIRE_V1_MOVE_LIMIT,
       timeLimitMs: SOLITAIRE_V1_TIME_LIMIT_MS,
     },
     generator: "private-hmac-fisher-yates-v1 (solitaireSetup.v1.server)",
