@@ -843,6 +843,7 @@ const messages: Messages = {
   "sg.challengeTitle": "挑战其他群组",
   "sg.vsLeague": "联赛",
   "sg.vsTournament": "淘汰赛",
+  "sg.vsTournamentHint": "与另一群组进行 5 轮比赛。每轮按名次得分，成绩最差者出局；总分最高的群组获胜。",
   "sg.challengeCreate": "发起挑战",
   "sg.acceptShort": "接受",
   "sg.loading": "正在加载群组…",

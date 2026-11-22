@@ -843,6 +843,7 @@ const messages: Messages = {
   "sg.challengeTitle": "Вызвать другую группу",
   "sg.vsLeague": "Лига",
   "sg.vsTournament": "На выбывание",
+  "sg.vsTournamentHint": "5 туров против другой группы. В каждом туре очки начисляются по месту, а худший игрок выбывает; побеждает группа с наибольшим числом очков.",
   "sg.challengeCreate": "Бросить вызов",
   "sg.acceptShort": "Принять",
   "sg.loading": "Загрузка групп…",

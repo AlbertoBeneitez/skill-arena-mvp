@@ -10,7 +10,8 @@ import GamePicker from "./GamePicker";
 import GroupHub from "./GroupHub";
 import { groupArtIdOf, groupArtSrc, isGroupArtId } from "@/lib/groupArt";
 import { StandingsList } from "./MyGroupTables";
-import { competitionStatus, competitionTitle } from "./groupLabels";
+import { competitionStatus, competitionTitle, pointsLabel } from "./groupLabels";
+import { versusPoints, type GroupVersus } from "@/lib/groupVersus";
 import UiIcon from "./UiIcon";
 import { GAMES, playableForMoney } from "@/lib/games";
 import { portraitSrc } from "@/lib/avatars";
@@ -129,7 +130,11 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
       const raw = k.mode === "group" ? k.state : (k.state as { comp?: unknown } | null)?.comp;
       if (!isGroupCompetition(raw)) return [];
       const c: GroupCompetition = { ...raw, players: raw.players.map((p) => ({ ...p, avatar: face(p.avatar) })) };
-      return [{ id: k.id, competition: c, title: k.mode === "group" ? current!.group.name : t(k.mode === "versus-tournament" ? "sg.mode.versus-tournament" : "sg.mode.versus-league") }];
+      // v229: an eliminatoria v2 shows each group's victory points (the result is decided by them).
+      const versus = k.state as GroupVersus | null;
+      const points = k.mode === "versus-tournament" && versus?.rules === "v2" && versus.teams
+        ? versusPoints(versus).map((p, i) => `${versus.teams[i].name} ${pointsLabel(p)}`).join(" · ") : "";
+      return [{ id: k.id, competition: c, points, title: k.mode === "group" ? current!.group.name : t(k.mode === "versus-tournament" ? "sg.mode.versus-tournament" : "sg.mode.versus-league") }];
     });
   const challenges = (data?.open ?? []).filter((k) => !k.groupIds.some((id) => (data?.groups ?? []).some((g) => g.id === id)));
   const bottom = (
@@ -141,6 +146,7 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
             <button type="button" aria-pressed={vsMode === "versus-league"} onClick={() => setVsMode("versus-league")}>{t("sg.vsLeague")}</button>
             <button type="button" aria-pressed={vsMode === "versus-tournament"} onClick={() => setVsMode("versus-tournament")}>{t("sg.vsTournament")}</button>
           </div>
+          {vsMode === "versus-tournament" && <p className={hub.hint}>{t("sg.vsTournamentHint")}</p>}
           {/* v219 (owner): the same game finder as the competition form above (categories, search, covers). */}
           <span className={hub.stepLabel}>{t("sg.game")}</span>
           <GamePicker games={GAMES.filter((g) => g.enabled && (vsEntry === 0 || playableForMoney(g)))} picked={vsGame ? [vsGame] : []} multi={false}
@@ -172,9 +178,10 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
       {current && (
         <div className={hub.panel}>
           <h2 className={hub.formTitle}>{t("sg.ranking")}</h2>
-          {tables.length === 0 ? <p className={hub.hint}>{t("sg.noRanking")}</p> : tables.map(({ id, competition: c, title }) => (
+          {tables.length === 0 ? <p className={hub.hint}>{t("sg.noRanking")}</p> : tables.map(({ id, competition: c, title, points }) => (
             <article key={id} className="myGroup">
               <div className="myGroupHead"><strong>{title}</strong><span>{`${competitionTitle(c)} · ${competitionStatus(c)}`}</span></div>
+              {points && <p className={hub.hint}>{points}</p>}
               <StandingsList competition={c} you={accountId} />
             </article>
           ))}
@@ -196,6 +203,7 @@ export default function ServerGroups({ accountId, playerName, avatarSrc, balance
       onCreateGroup={(name) => void act({ action: "create", name })}
       onJoinGroup={(code) => void act({ action: "join", code })}
       onCreateCompetition={createCompetition}
+      onCreateEliminatoria={owner ? (setup) => void act({ action: "competition", mode: "versus-tournament", groupIds: [current!.group.id], config: { entryMinor: 0, ...setup, rounds: 5 } }) : undefined}
       unavailableModalities={VERSUS_SOON}
       onPlay={() => setMessage(t("sg.playSoon"))}
       onVote={() => setMessage(t("sg.playSoon"))}

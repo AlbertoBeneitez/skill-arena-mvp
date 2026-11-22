@@ -65,6 +65,9 @@ export type GroupConfig = {
   end: GroupEnd;
   /** Eliminatorias: players knocked out per round (v171; 1 when absent). */
   eliminatePerRound?: number;
+  /** v229: an eliminatoria that also stops after `end.rounds` rounds (group against group, owner 21-nov). Absent on
+   * older competitions, which play on until one player is left. */
+  stopAfterRounds?: boolean;
   /** v174: tie-break rule; absent on competitions created before it (they keep shared results). */
   tieBreak?: "time-v1";
   /** v186: platform commission in basis points, fixed at creation (0). Absent on older competitions: 5 %. */
@@ -189,7 +192,7 @@ export function createGroupCompetition(id: string, config: GroupConfig, players:
   if (players.length < 2) throw new Error("A group competition needs at least two players");
   if (!config.gameIds.length) throw new Error("A group competition needs a game");
   if (config.gameIds.includes(RANDOM_GAME) && (!config.randomPool?.length || config.randomPool.includes(RANDOM_GAME))) throw new Error("A random slot needs a pool of games");
-  const end: GroupEnd = config.format === "single" || config.format === "tournament" ? { kind: "rounds", rounds: 1 } : config.end;
+  const end: GroupEnd = config.format === "single" || (config.format === "tournament" && !config.stopAfterRounds) ? { kind: "rounds", rounds: 1 } : config.end;
   // v217: inter-group modalities move no money (a pot between two groups is not defined yet).
   const entryMinor = isInterGroup(config.format) ? 0 : config.entryMinor;
   return schedule({ id, config: { ...config, entryMinor, end, tieBreak: "time-v1", commissionBps: GROUP_COMMISSION_BPS }, players, ...(isInterGroup(config.format) ? { rivals: [] } : {}), matches: [], votes: [], eliminated: [], finished: false, payouts: null }, 1);
@@ -277,6 +280,10 @@ function tieDraw(c: GroupCompetition, m: GroupMatch, id: string) {
 }
 const timeOf = (m: GroupMatch, id: string) => { const t = m.times?.[id]; return typeof t === "number" && Number.isFinite(t) ? t : Number.POSITIVE_INFINITY; };
 /** Player ids ordered from best to worst result in a match (only those with a score). */
+/** v229: the finishing order of a complete match (best first), with the competition's tie-breaks. */
+export function matchOrder(c: GroupCompetition, m: GroupMatch): string[] {
+  return ranking(c, m);
+}
 function ranking(c: GroupCompetition, m: GroupMatch) {
   const lower = c.config.lowerWinsGameIds.includes(m.gameId);
   const byScore = (a: string, b: string) => (lower ? m.scores[a] - m.scores[b] : m.scores[b] - m.scores[a]);
@@ -358,7 +365,8 @@ function advance(c: GroupCompetition): GroupCompetition {
     // knocked out in the same round with a better score ranks above.
     const k = Math.max(1, Math.min(Math.floor(c.config.eliminatePerRound ?? 1), order.length - 1));
     next = { ...c, eliminated: [...c.eliminated, ...order.slice(-k).reverse()] };
-    return active(next).length <= 1 ? settle(next) : schedule(next, round + 1);
+    const lastRound = c.config.stopAfterRounds && c.config.end.kind === "rounds" && round >= c.config.end.rounds;
+    return active(next).length <= 1 || lastRound ? settle(next) : schedule(next, round + 1);
   }
   if (c.config.end.kind === "rounds" && round >= c.config.end.rounds) return settle(next);
   return schedule(next, round + 1);

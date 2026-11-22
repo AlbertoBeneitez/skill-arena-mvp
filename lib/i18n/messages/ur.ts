@@ -843,6 +843,7 @@ const messages: Messages = {
   "sg.challengeTitle": "دوسرے گروپ کو چیلنج کریں",
   "sg.vsLeague": "لیگ",
   "sg.vsTournament": "ناک آؤٹ",
+  "sg.vsTournamentHint": "دوسرے گروپ کے خلاف 5 راؤنڈ۔ ہر راؤنڈ میں پوزیشن کے حساب سے پوائنٹس ملتے ہیں اور سب سے کمزور کھلاڑی باہر ہو جاتا ہے؛ سب سے زیادہ پوائنٹس والا گروپ جیتتا ہے۔",
   "sg.challengeCreate": "چیلنج دیں",
   "sg.acceptShort": "قبول کریں",
   "sg.loading": "گروپ لوڈ ہو رہے ہیں…",

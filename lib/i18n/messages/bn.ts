@@ -843,6 +843,7 @@ const messages: Messages = {
   "sg.challengeTitle": "অন্য গ্রুপকে চ্যালেঞ্জ করুন",
   "sg.vsLeague": "লিগ",
   "sg.vsTournament": "নকআউট",
+  "sg.vsTournamentHint": "অন্য গ্রুপের বিরুদ্ধে ৫টি রাউন্ড। প্রতি রাউন্ডে অবস্থান অনুযায়ী পয়েন্ট মেলে এবং সবচেয়ে খারাপ খেলোয়াড় বাদ পড়ে; সবচেয়ে বেশি পয়েন্টের গ্রুপ জেতে।",
   "sg.challengeCreate": "চ্যালেঞ্জ ছুড়ুন",
   "sg.acceptShort": "গ্রহণ করুন",
   "sg.loading": "গ্রুপ লোড হচ্ছে…",

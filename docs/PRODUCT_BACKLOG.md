@@ -882,6 +882,16 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v229-saturn · Átomo con ratón, «Enviar juego» y Eliminatoria v2 (22-nov-2026)
+
+- [x] Átomo: botón izquierdo del ratón sube de órbita, derecho baja.
+- [x] «Enviar juego» centrado, más sutil y fino.
+- [x] Eliminatoria entre grupos v2: 5 jornadas, puntos por puesto, uno fuera por jornada, gana quien más puntos sume.
+- [x] Formulario de competición: Liga (Todos vs todos, 1 vs 1, Relevos) o Eliminatoria (sin submodos).
+- [ ] El panel «Retar a otro grupo» repite Liga/Eliminatoria: decidir con el propietario si se queda solo para la liga
+      grupo contra grupo o se integra en el formulario.
+- [ ] 1 vs 1, Relevos y Eliminatoria sin conexión (grupos inventados) y con conexión contra cualquier grupo: fase 2.
+
 ## v228-saturn · Logo nuevo, BotID, retención y abandono en grupos (21-nov-2026)
 
 - [x] Icono de la app, pestaña del navegador e imagen al compartir con el átomo pixelado; icono de avisos preparado.
@@ -890,7 +900,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] Grupos: una primera partida abandonada es derrota con 0 puntos.
 - [x] Ligas Ámbar y Perla confirmadas por el propietario (ya estaban desde v220).
 - [x] Estética retro: rechazada por el propietario (21-nov). Se mantiene el aspecto actual.
-- [ ] Grupos: mantener todas las modalidades; estructura pedida por el propietario: Liga (1 vs 1, todos contra todos, relevos) y Eliminatoria (sin submodos). Pendiente de confirmar el detalle antes de cambiar la pantalla.
+- [x] Grupos: estructura Liga (1 vs 1, todos contra todos, relevos) y Eliminatoria (sin submodos): hecha en v229.
 
 ## v227-saturn · Seguridad fase 0, simulador automático y propuesta de logo (21-nov-2026)
 

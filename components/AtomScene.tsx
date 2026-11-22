@@ -8,6 +8,8 @@
  *   around it is drawn into the electron and that zone goes dark, then slowly returns to the tone of the rest.
  * - Tap the left half: it falls one orbit and gives off a flash, a thin ring that grows until it leaves the screen
  *   and a photon (a small light wave) that flies out in a straight line.
+ * - With a mouse (v229, owner): the left button jumps up and the right button drops down, wherever you click (the
+ *   browser's right-click menu is not shown over the background).
  * - Each jump has its own colour of the visible spectrum, like a real atom: the closer to the nucleus, the more
  *   energetic the jump and the bluer the light (1↔2 violet, 2↔3 blue, 3↔4 green, 4↔5 red). Each orbit is tinted
  *   with the colour of the jump that reaches it.
@@ -104,14 +106,23 @@ export default function AtomScene() {
       }
     };
 
+    const INTERACTIVE = "button, a, input, select, textarea, label, [role=dialog], [role=button], [role=listbox], [role=option]";
+    const onBackground = (event: Event) => !(event.target as Element | null)?.closest(INTERACTIVE);
     const onPointer = (event: PointerEvent) => {
-      const target = event.target as Element | null;
-      if (target?.closest("button, a, input, select, textarea, label, [role=dialog], [role=button], [role=listbox], [role=option]")) return;
+      if (!onBackground(event)) return;
+      // v229: with a mouse, left button up and right button down; on touch screens, the half of the screen tapped.
+      let up: boolean;
+      if (event.pointerType === "mouse") {
+        if (event.button !== 0 && event.button !== 2) return;
+        up = event.button === 0;
+      } else up = event.clientX >= window.innerWidth / 2;
       const now = performance.now();
       lastTouch = now;
-      jump(event.clientX >= window.innerWidth / 2 ? level + 1 : level - 1, now);
+      jump(up ? level + 1 : level - 1, now);
     };
+    const onContextMenu = (event: MouseEvent) => { if (onBackground(event)) event.preventDefault(); };
     window.addEventListener("pointerdown", onPointer);
+    window.addEventListener("contextmenu", onContextMenu);
 
     const dot = (x: number, y: number, size = 1) => ctx.fillRect(Math.round(x), Math.round(y), size, size);
 
@@ -265,6 +276,7 @@ export default function AtomScene() {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointerdown", onPointer);
+      window.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("visibilitychange", visibility);
     };
   }, []);

@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 21 de noviembre de 2026 · base `mobile-test` en v227-saturn (app 2.27); v228-saturn (logo, BotID, retención, abandono) en su rama, sin subir: el propietario no quiere subidas con coste sin su orden (21-nov).
+Actualizado: 22 de noviembre de 2026 · base `mobile-test` en v227-saturn (app 2.27); v228 y v229 en sus ramas, sin subir: el propietario no quiere subidas con coste sin su orden (21-nov).
 
 > **Traspaso (21-nov):** dónde se quedó el trabajo, respuestas y decisiones pendientes en [TRASPASO.md](TRASPASO.md).
 >
@@ -93,6 +93,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Átomo con ratón, «Enviar juego» y Eliminatoria v2 (22 de noviembre, v229, app 2.29):** botón izquierdo sube y derecho baja; «Enviar juego» centrado y más fino; Eliminatoria entre grupos con 5 jornadas, puntos por puesto y uno fuera por jornada; formulario con Liga (tres modalidades) o Eliminatoria.
 - [x] **Logo, BotID, retención y abandono (21 de noviembre, v228, app 2.28):** átomo pixelado como icono, pestaña e imagen al compartir ([design/logo](design/logo/README.md)); Vercel BotID Basic en inicio de partida, cuenta y grupos; acciones de las partidas borradas a los 90 días (migración 018, resultado conservado); en grupos, abandonar es perder con 0 puntos; privacidad actualizada.
 - [x] **Seguridad fase 0 y simulador automático (21 de noviembre, v227, app 2.27):** sin tope global de partidas (límite diario por cuenta y por cookie, freno de almacenamiento a 870 MB), en grupos solo cuenta la primera partida, nombres sin mezclar alfabetos; simulador de bots en GitHub Actions; propuesta de logo (aprobada en v228) y estética retro (pendiente) en [design/logo](design/logo/).
 - [x] **Fecha del ranking y sin Apple (20 de noviembre, v226, app 2.26):** cápsula con cantidad y fecha completa arriba del gráfico; «Continuar con Apple» oculto; [servicios a contratar](SERVICIOS_A_CONTRATAR.md); política anti-bots de Billar y Pinball.

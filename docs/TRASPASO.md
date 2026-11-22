@@ -6,7 +6,7 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228-saturn** (logo, BotID, retención, abandono) está en su rama, sin subir: va en la próxima subida a `mobile-test` (una por sesión) |
+| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228-saturn** y **v229-saturn** (la más reciente, contiene la anterior) están en sus ramas, sin subir: solo se sube con orden expresa del propietario |
 | Último trabajo | Rama **v227-saturn**: seguridad fase 0 (C2, A1, A2, B1), simulador en GitHub Actions, propuesta de logo y estética retro |
 | Servicios a contratar | **[Documento vivo en Claude](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** (decisión del propietario; copia en [SERVICIOS_A_CONTRATAR.md](SERVICIOS_A_CONTRATAR.md)) |
 | Simulador de bots | `scripts/sim/` y `.github/workflows/sim-bots.yml` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
@@ -31,8 +31,9 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
    identidad por fases. Es versión competitiva nueva en cada juego: conservar las antiguas.
 4. **Decidido el 21-nov (aplicado en v228):** retención de 90 días, abandono en grupos = 0 puntos, BotID Basic, ligas
    Ámbar y Perla. **Pendiente del propietario:** cambiar `AUTH_SECRET` de producción y poner las claves VAPID (él, en
-   Vercel); fusionar con `main`. **Grupos:** mantener todas las modalidades; estructura pedida: Liga con 1 vs 1, todos
-   contra todos y relevos, y Eliminatoria sin submodos (pendiente de confirmar el detalle; pregunta del 21-nov).
+   Vercel); fusionar con `main`. **Grupos:** hecho en v229 (Liga con tres modalidades, Eliminatoria v2 entre dos
+   grupos: 5 jornadas, puntos por puesto, uno fuera por jornada). Falta decidir qué hacer con el panel «Retar a otro
+   grupo», que repite Liga/Eliminatoria.
 5. **Comprobar tras subir v228 a `mobile-test`:** que la app empieza partidas, crea cuenta y actúa en grupos con
    BotID (si apareciera `BOT_DETECTED` a jugadores reales, quitar la ruta de `lib/botRoutes.ts`), y `schema` 018 en
    `/api/health`.

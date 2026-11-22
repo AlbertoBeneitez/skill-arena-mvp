@@ -843,6 +843,7 @@ const messages: Messages = {
   "sg.challengeTitle": "Défier un autre groupe",
   "sg.vsLeague": "Ligue",
   "sg.vsTournament": "Élimination",
+  "sg.vsTournamentHint": "5 journées contre l'autre groupe. À chaque journée, vous marquez des points selon votre place et le dernier est éliminé ; le groupe qui a le plus de points gagne.",
   "sg.challengeCreate": "Lancer le défi",
   "sg.acceptShort": "Accepter",
   "sg.loading": "Chargement des groupes…",

@@ -843,6 +843,7 @@ const messages: Messages = {
   "sg.challengeTitle": "تحدَّ مجموعة أخرى",
   "sg.vsLeague": "دوري",
   "sg.vsTournament": "إقصائي",
+  "sg.vsTournamentHint": "5 جولات ضد المجموعة الأخرى. في كل جولة تجمعون نقاطًا حسب الترتيب ويخرج الأسوأ؛ تفوز المجموعة صاحبة أكثر النقاط.",
   "sg.challengeCreate": "أطلق التحدي",
   "sg.acceptShort": "قبول",
   "sg.loading": "جارٍ تحميل المجموعات…",

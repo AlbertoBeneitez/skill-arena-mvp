@@ -9303,3 +9303,22 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 .atomVeil { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 35%, transparent 55%, rgba(0, 0, 0, .55)), linear-gradient(180deg, transparent 50%, rgba(7, 6, 26, .6) 74%, rgba(7, 6, 26, .88)); }
 
 p.myGroupsEmpty { margin: 0; cursor: default; }
+
+/* v229 · «Enviar juego» centred, quieter and finer (owner, 22-nov): a narrow pill of its own width, a dark lacquer body,
+   a single champagne hairline that is brightest in the middle, the label in ivory with a little letter-spacing and the
+   coin in muted gold. No glow and no animated glint. */
+.appShell .homePlayHeading.gxHomeBar { display: flex !important; justify-content: center; }
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtn.gxHomeBtnMoney {
+  width: auto; height: 40px; min-height: 40px; padding: 0 20px 0 16px !important; gap: 9px; border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, rgba(255,240,210,.045), rgba(255,240,210,0) 60%) padding-box,
+    linear-gradient(180deg, #16140f, #0e0d0a) padding-box,
+    linear-gradient(90deg, rgba(201,168,103,.22), rgba(236,212,156,.78) 50%, rgba(201,168,103,.22)) border-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,236,196,.06), 0 6px 16px -10px rgba(0,0,0,.9) !important;
+}
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney::after { opacity: .25; }
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney .gxBtnLabel { font: 600 14.5px/1 var(--gx-ui); letter-spacing: .07em; color: #f1e6cf; }
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney > .uiIcon { color: #d6b46e !important; animation: none; width: 17px; height: 17px; }
+.appShell .gxHomeBar .gxHomeBtn.gxHomeBtnMoney:active {
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6), inset 0 0 0 1px rgba(214,180,110,.35) !important;
+}

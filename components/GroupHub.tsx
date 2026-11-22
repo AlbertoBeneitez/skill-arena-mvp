@@ -56,6 +56,9 @@ type Props = {
   searchingRival?: boolean;
   /** v217: modalities that cannot be started here (shown, not selectable). */
   unavailableModalities?: readonly GroupModality[];
+  /** v229 (owner, 21-nov): «Eliminatoria» against another group — five matchdays, points by place, one player out each
+   * matchday (lib/groupVersus, rules v2). Only where it can be played (online); without it the form shows Liga only. */
+  onCreateEliminatoria?: (setup: { gameIds: string[]; randomPool?: string[] }) => void;
 };
 type Kind = GroupModality;
 const MODALITY_HINT = { "all-vs-all": "group.modeAllHint", "duel-groups": "group.modeDuelHint", "relay-groups": "group.modeRelayHint" } as const;
@@ -119,7 +122,7 @@ function Medal({ place }: { place: number }) {
   );
 }
 
-export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup, offline = false, onAddRival, onRemoveRival, onFindRival, onCancelRival, searchingRival = false, unavailableModalities = [], allowPhoto = true, canChangePicture = true, top, bottom }: Props) {
+export default function GroupHub({ joinError, group, competition, balance, playerName, avatarSrc, initialJoinCode = "", onCreateGroup, onJoinGroup, onCreateCompetition, onPlay, onVote, onClearCompetition, onUpdateGroup, onDeleteGroup, offline = false, onAddRival, onRemoveRival, onFindRival, onCancelRival, searchingRival = false, unavailableModalities = [], onCreateEliminatoria, allowPhoto = true, canChangePicture = true, top, bottom }: Props) {
   useI18n();
   const competitionRunning = Boolean(competition && !competition.finished);
   const [entryMode, setEntryMode] = useState<"create" | "join">(initialJoinCode ? "join" : "create");
@@ -135,6 +138,9 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   /** v220: the picture chooser under the header (the app's pictures, and a photo where photos are kept). */
   const [choosingPicture, setChoosingPicture] = useState(false);
   const [kind, setKind] = useState<Kind>("all-vs-all");
+  /** v229: Liga (three modalities) or Eliminatoria (no modalities). */
+  const [structure, setStructure] = useState<"league" | "knockout">("league");
+  const knockout = structure === "knockout" && !!onCreateEliminatoria;
   /** v167/v168: the games picked, in play order; the same game may appear several times (a league or a tournament
    * plays them round by round). Empty = random mix. */
   const [picked, setPicked] = useState<string[]>([]);
@@ -263,7 +269,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
   }
 
   // v217: against other groups nobody pays an entry (lib/groupCompetition: inter-group modalities move no money).
-  const versus = isInterGroup(kind);
+  const versus = isInterGroup(kind) || knockout;
   const entryMinor = offline || versus ? 0 : Math.max(0, Math.round(Number(entry.replace(",", ".")) * 100) || 0);
   // Fewer players than the chosen paid places: back to the default for as many places as the group allows.
   const split = shares && shares.length === Math.max(1, players) ? shares : defaultSplit(players);
@@ -539,6 +545,13 @@ export default function GroupHub({ joinError, group, competition, balance, playe
         <h2 className={st.formTitle}>{t("group.newTitle")}</h2>
         <ol className={st.steps}>
           <li>
+            {onCreateEliminatoria && (
+              <div className={st.seg2} role="group" aria-label={t("sg.mode")}>
+                <button type="button" aria-pressed={!knockout} onClick={() => setStructure("league")}><strong>{t("group.league")}</strong></button>
+                <button type="button" aria-pressed={knockout} onClick={() => setStructure("knockout")}><strong>{t("sg.vsTournament")}</strong></button>
+              </div>
+            )}
+            {knockout ? <p className={st.hint}>{t("sg.vsTournamentHint")}</p> : <>
             <span className={`${st.stepLabel} ${st.sc}`}>{t("group.modality")}</span>
             <div className={st.seg3}>
               {GROUP_MODALITIES.map((m) => (
@@ -559,6 +572,7 @@ export default function GroupHub({ joinError, group, competition, balance, playe
                 </div>
               </div>
             </div>
+            </>}
           </li>
           <li>
             <div className={st.stepHead}>
@@ -612,10 +626,14 @@ export default function GroupHub({ joinError, group, competition, balance, playe
           </li>}
         </ol>
         {/* v181: no simulated rivals any more — a competition starts once someone else has joined. */}
-        {players < 2 && <p className={st.hint} role="status">{t(offline ? "group.needRivals" : "group.needPlayers")}</p>}
-        <button className={st.primary} type="button" disabled={players < 2 || !affordable || unavailableModalities.includes(kind)}
-          onClick={() => onCreateCompetition(buildConfig())}>
-          {offline || entryMinor === 0 ? t("group.startFree") : t("group.payAndStart", { amount: euros(entryMinor) })}
+        {!knockout && players < 2 && <p className={st.hint} role="status">{t(offline ? "group.needRivals" : "group.needPlayers")}</p>}
+        <button className={st.primary} type="button" disabled={knockout ? players < 1 : players < 2 || !affordable || unavailableModalities.includes(kind)}
+          onClick={() => {
+            if (!knockout) return onCreateCompetition(buildConfig());
+            const config = buildConfig();
+            onCreateEliminatoria!({ gameIds: [...config.gameIds], ...(config.randomPool ? { randomPool: [...config.randomPool] } : {}) });
+          }}>
+          {knockout ? t("sg.challengeCreate") : offline || entryMinor === 0 ? t("group.startFree") : t("group.payAndStart", { amount: euros(entryMinor) })}
         </button>
       </div>
 
