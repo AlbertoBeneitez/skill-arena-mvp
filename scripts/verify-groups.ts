@@ -7,6 +7,8 @@ import { accountAuthKey, createAccount, deleteAccount, exchangeFictitious, findA
 import { BadRequest, buildSetup, groupAction, groupErrorStatus, groupsOverview } from "../lib/server/groupHttp";
 import { rivalSamples } from "../lib/server/rivalSamples";
 import { applyMigrations } from "../lib/server/migrations";
+import { markNoticesRead, noticeInbox, saveNoticeSettings } from "../lib/server/notifications";
+import { DEFAULT_NOTICE_SETTINGS } from "../lib/notices";
 import { ledgerBalance } from "../lib/server/ledger";
 import {
   GroupError, acceptChallenge, cancelCompetition, closeGroup, createCompetition, createGroup, enterCompetition, groupWinningsRanking, joinGroup,
@@ -177,6 +179,35 @@ try {
   ]);
   assert.deepEqual(await groupWinningsRanking(pool, "desktop"), []);
 
+  // v230 · notices: filed by the server with the fact (good news only), never by the phone.
+  const notices = async (who: string, competitionId: string) =>
+    (await pool.query("SELECT kind, data FROM arena_notifications WHERE account_id = $1 AND data->>'competitionId' = $2 ORDER BY created_at, kind", [ids[who], competitionId])).rows;
+  const kinds = async (who: string, competitionId: string) => (await notices(who, competitionId)).map((r) => r.kind);
+  assert.deepEqual((await notices("A2", league.id)).find((r) => r.kind === "challenge-accepted")?.data,
+    { competitionId: league.id, mode: "versus-league", group: "Cometas" }, "the challenging group hears who accepted");
+  assert.ok(!(await kinds("A3", league.id)).includes("challenge-accepted"), "the group that accepted is not told");
+  assert.ok(!(await kinds("A1", league.id)).includes("your-turn") || (await notices("A1", league.id)).every((r) => r.kind !== "your-turn" || r.data.round > 1),
+    "the one who pressed start is not told matchday 1 started");
+  for (const who of ["A2", "A3", "A4"]) assert.ok((await notices(who, league.id)).some((r) => r.kind === "your-turn" && r.data.round === 1 && r.data.gameId), `${who}: your turn on matchday 1`);
+  for (const who of ["A1", "A2"]) assert.deepEqual((await notices(who, league.id)).filter((r) => r.kind === "competition-won").map((r) => r.data.group), ["Los Rápidos"], `${who}: the group won`);
+  for (const who of ["A3", "A4"]) assert.ok(!(await kinds(who, league.id)).includes("competition-won"), "no bad news for the losers");
+  assert.ok((await kinds("A1", league.id)).includes("matchday-won"), "A1 won a matchday");
+  assert.ok(!(await kinds("A4", league.id)).includes("matchday-won"));
+  assert.equal((await pool.query("SELECT count(*)::int AS n FROM arena_notifications WHERE dedupe_key LIKE 'won:%' AND account_id = $1", [ids.A1])).rows[0].n, 1, "one notice per fact");
+  // The inbox: newest first, unread count, mark read; another person's ids are ignored.
+  const box = await noticeInbox(pool, ids.A2);
+  assert.ok(box.unread >= 3 && box.notices.length === box.unread && !box.phoneAvailable);
+  assert.deepEqual(box.settings, DEFAULT_NOTICE_SETTINGS);
+  await markNoticesRead(pool, ids.A3, [box.notices[0].id]);
+  assert.equal((await noticeInbox(pool, ids.A2)).unread, box.unread, "someone else cannot mark my notices");
+  await markNoticesRead(pool, ids.A2, [box.notices[0].id]);
+  assert.equal((await noticeInbox(pool, ids.A2)).unread, box.unread - 1);
+  await markNoticesRead(pool, ids.A2, "all");
+  assert.equal((await noticeInbox(pool, ids.A2)).unread, 0);
+  // A switch turned off means nothing is filed for it.
+  assert.deepEqual(await saveNoticeSettings(pool, ids.A4, { topics: { turn: false }, app: "yes" }),
+    { ...DEFAULT_NOTICE_SETTINGS, topics: { ...DEFAULT_NOTICE_SETTINGS.topics, turn: false } }, "unknown values fall back to the default");
+
   // Tournament: the two worst of everyone go each round; the group that keeps players wins. Free entry: no money moves.
   const tour = await createCompetition(pool, { createdBy: ids.A1, mode: "versus-tournament", groupIds: [g1.id, g2.id], config: { ...setup, entryMinor: 0 } });
   for (const who of ["A1", "A2", "A3", "A4"]) await enterCompetition(pool, tour.id, ids[who]);
@@ -185,6 +216,8 @@ try {
   const t = await stateOf(tour.id);
   assert.equal(t.status, "finished");
   assert.equal(t.result.winnerGroupId, g1.id);
+  assert.ok(!(await kinds("A4", tour.id)).includes("your-turn"), "A4 turned «your turn» off");
+  assert.ok((await kinds("A3", tour.id)).includes("your-turn"));
   const uneven = await createCompetition(pool, { createdBy: ids.A1, mode: "versus-league", groupIds: [g1.id, g2.id], config: { ...setup, entryMinor: 0 } });
   await enterCompetition(pool, uneven.id, ids.A1);
   assert.equal(await code(startCompetition(pool, uneven.id, ids.A1)), "INVALID_TEAMS", "both groups need players, the same number each");
@@ -233,7 +266,9 @@ try {
 
   // Foundation 3 · erasing an account anonymises it: it leaves its groups, the money records stay.
   const afterBalance = await balance(ids.A2);
+  assert.ok((await pool.query("SELECT 1 FROM arena_notifications WHERE account_id = $1", [ids.A2])).rows.length > 0);
   assert.equal(await deleteAccount(pool, keys.A2), true);
+  assert.equal((await pool.query("SELECT 1 FROM arena_notifications WHERE account_id = $1 UNION ALL SELECT 1 FROM arena_notification_settings WHERE account_id = $1", [ids.A2])).rows.length, 0, "v230: notices leave with the account");
   assert.equal((await listGroupMembers(pool, g1.id)).length, 1);
   assert.equal(await balance(ids.A2), afterBalance, "the ledger is kept");
   assert.equal(await code(createGroup(pool, ids.A2, "Fantasmas", "mobile")), "NO_ACCOUNT");

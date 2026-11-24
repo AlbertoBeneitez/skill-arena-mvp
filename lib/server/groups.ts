@@ -8,12 +8,14 @@
  */
 import { randomInt, randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
-import { createGroupCompetition, recordGroupScore, roundGame, type GroupCompetition, type GroupConfig, type GroupPlayer } from "@/lib/groupCompetition";
+import { createGroupCompetition, groupStandings, matchOrder, recordGroupScore, roundGame, type GroupCompetition, type GroupConfig, type GroupPlayer } from "@/lib/groupCompetition";
 import { createGroupVersus, recordVersusScore, versusOutcome, versusPayouts, type GroupVersus, type VersusSetup } from "@/lib/groupVersus";
 import { isChanceGameId } from "@/lib/games";
 import { isGroupArtId } from "@/lib/groupArt";
 import type { Platform } from "@/lib/platform";
 import { ledgerBalance, postTransaction } from "./ledger";
+import { addNotices, type NoticeDraft } from "./notifications";
+import type { NoticeData } from "@/lib/notices";
 
 export const GROUP_RULES_VERSION = "group-competition-v1";
 export const GROUP_MAX_MEMBERS = 20;
@@ -218,6 +220,9 @@ export async function startCompetition(pool: Pool, competitionId: string, byAcco
       throw new GroupError("INVALID_TEAMS");
     }
     await c.query("UPDATE arena_competitions SET status = 'running', state = $2::jsonb, state_version = 1, started_at = now() WHERE competition_id = $1", [competitionId, JSON.stringify(state)]);
+    // v230: everyone who entered (but the one who just pressed start) is told it is their turn on matchday 1.
+    const base = await noticeBase(c, competitionId, k.mode as string);
+    await addNotices(c, turnNotices(base, comp(k.mode as string, state), 0).filter((d) => d.accountId !== byAccount));
   });
 }
 
@@ -270,6 +275,17 @@ export async function recordResult(pool: Pool, a: { competitionId: string; match
       : recordVersusScore(state as GroupVersus, a.matchIndex, a.accountId, score, time);
     await c.query("UPDATE arena_competitions SET state = $2::jsonb, state_version = state_version + 1 WHERE competition_id = $1", [a.competitionId, JSON.stringify(next)]);
     const finished = k.mode === "group" ? (next as GroupCompetition).finished : versusOutcome(next as GroupVersus).finished;
+    // v230 · notices: the winner of a matchday once its last result is in, and everyone in the next matchday.
+    const after = comp(k.mode as string, next), played = after.matches[a.matchIndex];
+    const base = await noticeBase(c, a.competitionId, k.mode as string);
+    const drafts: NoticeDraft[] = [];
+    if (played && played.players.length >= 2 && played.players.every((id) => played.scores[id] !== undefined)) {
+      const winner = matchOrder(after, played)[0];
+      if (winner) drafts.push({ accountId: winner, kind: "matchday-won", key: `day:${a.competitionId}:${a.matchIndex}`,
+        data: { ...base, round: played.round, gameId: roundGame(after, played.round) } });
+    }
+    if (!finished) drafts.push(...turnNotices(base, after, current.matches.length));
+    await addNotices(c, drafts);
     if (finished) await settle(c, a.competitionId, k.mode as string, next);
     return { finished };
   });
@@ -300,6 +316,34 @@ async function settle(c: PoolClient, competitionId: string, mode: string, state:
     });
   }
   await c.query("UPDATE arena_competitions SET status = 'finished', result = $2::jsonb, finished_at = now() WHERE competition_id = $1", [competitionId, JSON.stringify(result)]);
+  // v230: the winners are told (first place in a group competition; every player of the winning group in a versus).
+  const base = await noticeBase(c, competitionId, mode);
+  let winners: { id: string; group?: string }[] = [];
+  if (mode === "group") winners = groupStandings(state as GroupCompetition).filter((r) => r.place === 1).map((r) => ({ id: r.id }));
+  else {
+    const outcome = versusOutcome(state as GroupVersus), team = (state as GroupVersus).teams.find((t) => outcome.finished && t.id === outcome.winner);
+    if (team) winners = team.players.map((p) => ({ id: p.id, group: team.name }));
+  }
+  await addNotices(c, winners.map((w) => ({ accountId: w.id, kind: "competition-won" as const, key: `won:${competitionId}`,
+    data: { ...base, ...(w.group ? { group: w.group } : {}) } })));
+}
+
+/** v230: what every notice of a competition carries — its id, its mode and (in a group competition) the group's name. */
+async function noticeBase(c: PoolClient, competitionId: string, mode: string): Promise<NoticeData> {
+  const m = mode === "versus-league" || mode === "versus-tournament" ? mode : "group";
+  if (m !== "group") return { competitionId, mode: m };
+  const g = (await c.query("SELECT g.name FROM arena_competition_groups cg JOIN arena_groups g USING (group_id) WHERE cg.competition_id = $1 AND cg.side = 0", [competitionId])).rows[0];
+  return { competitionId, mode: m, ...(g ? { group: String(g.name) } : {}) };
+}
+
+/** v230: «te toca jugar» for every player of the matches scheduled from index `from` on (one notice per matchday). */
+function turnNotices(base: NoticeData, c: GroupCompetition, from: number): NoticeDraft[] {
+  const out = new Map<string, NoticeDraft>();
+  for (const m of c.matches.slice(from))
+    for (const id of m.players)
+      if (!out.has(`${id}:${m.round}`))
+        out.set(`${id}:${m.round}`, { accountId: id, kind: "your-turn", key: `turn:${base.competitionId}:${m.round}`, data: { ...base, round: m.round, gameId: roundGame(c, m.round) } });
+  return [...out.values()];
 }
 
 /** The creator cancels an open or running competition; every entry goes back to its player. */
@@ -355,6 +399,11 @@ export async function acceptChallenge(pool: Pool, competitionId: string, groupId
     const sides = (await c.query("SELECT group_id FROM arena_competition_groups WHERE competition_id = $1", [competitionId])).rows;
     if (sides.length !== 1 || sides[0].group_id === groupId) throw new GroupError("INVALID_COMPETITION");
     await c.query("INSERT INTO arena_competition_groups(competition_id, group_id, side) VALUES ($1,$2,1)", [competitionId, groupId]);
+    // v230: the members of the group that launched the challenge are told who accepted it.
+    const name = (await c.query("SELECT name FROM arena_groups WHERE group_id = $1", [groupId])).rows[0]?.name as string | undefined;
+    const members = (await c.query("SELECT account_id FROM arena_group_members WHERE group_id = $1 AND left_at IS NULL", [sides[0].group_id])).rows;
+    await addNotices(c, members.map((r) => ({ accountId: r.account_id as string, kind: "challenge-accepted" as const, key: `accept:${competitionId}`,
+      data: { competitionId, mode: k.mode as NoticeData["mode"], ...(name ? { group: name } : {}) } })));
   });
 }
 

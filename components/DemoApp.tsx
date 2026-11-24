@@ -22,6 +22,7 @@ import RecentAttempts from "./RecentAttempts";
 import GroupHub from "./GroupHub";
 import { exchange } from "@/lib/wallet";
 import WalletPanel from "./WalletPanel";
+import { NoticeInboxView, NoticeToast, useNotices } from "./NoticeCenter";
 import StudioWelcome from "./StudioWelcome";
 import { GAMES, GAME_CREATOR_DEFAULT, getGameDefinition, modeForStake, prizeForStake, type GameMeta, type MatchMode, type Stake, scoreBeats, lowerScoreWins, isBetterScore, bestScoreKey, playableForMoney } from "@/lib/games";
 import { DEMO_MEMBERS, createDemoClosedGroup, isSimulatedMemberId, joinDemoClosedGroup, withoutSimulatedMembers, type ClosedGroup } from "@/lib/groupPlay";
@@ -287,7 +288,7 @@ export default function DemoApp() {
   }, []);
   // v154: the avatar setup opens on an empty portrait; no pre-filled face until the player picks or uploads one.
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
-  const [avatarSection, setAvatarSection] = useState<"profile" | "ranking">("profile");
+  const [avatarSection, setAvatarSection] = useState<"profile" | "ranking" | "notices">("profile");
   /** v224: the avatar editor was opened from Avatar › Perfil, so finishing it returns there. */
   const editingFromProfileRef = useRef(false);
   const [avatarError, setAvatarError] = useState("");
@@ -447,6 +448,9 @@ export default function DemoApp() {
   // the groups on the server (latest competition of each), read when the tab opens.
   const [serverGroupTables, setServerGroupTables] = useState<GroupTable[] | null>(null);
   const accountIdForTables = typeof serverAccount === "object" && serverAccount ? serverAccount.id : null;
+  // v230 · in-app notices (good news only) for a signed-in, online account; see components/NoticeCenter.tsx.
+  const noticesOn = !offline && accountIdForTables !== null;
+  const notices = useNotices(noticesOn, screen);
   useEffect(() => {
     if (screen !== "profile" || offline || !accountIdForTables) return;
     let stop = false;
@@ -1931,6 +1935,7 @@ export default function DemoApp() {
           </div>
         </header>
       )}
+      {screen !== "game" && <NoticeToast notices={notices} onAct={() => navigate("group")} />}
       {screen !== "game" && walletOpen && (
         <WalletPanel balance={balance} format={euro} onMove={moveMoney} onClose={() => setWalletOpen(false)}
           movements={movements.slice(0, 3).map((movement) => ({ label: movementLabel(movement), amount: movement.amount }))} />
@@ -2152,8 +2157,14 @@ export default function DemoApp() {
             <nav className="avatarSections" aria-label={t("profile.sections")}>
               <button type="button" aria-pressed={avatarSection === "profile"} onClick={() => setAvatarSection("profile")}>{t("profile.tabProfile")}</button>
               <button type="button" aria-pressed={avatarSection === "ranking"} onClick={() => setAvatarSection("ranking")}>{t("profile.tabRanking")}</button>
+              {noticesOn && (
+                <button type="button" aria-pressed={avatarSection === "notices"} onClick={() => setAvatarSection("notices")}
+                  aria-label={notices.unread ? t("notice.bellUnread", { n: notices.unread }) : undefined}>
+                  {t("notice.title")}{notices.unread > 0 && <i className="gxNoticeDot" aria-hidden="true">{notices.unread > 9 ? "9+" : notices.unread}</i>}
+                </button>
+              )}
             </nav>
-            {avatarSection === "ranking" ? <RankingHub platform={platform} bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!serverMode} /> : <>
+            {avatarSection === "notices" && noticesOn ? <NoticeInboxView notices={notices} onAct={() => navigate("group")} /> : avatarSection === "ranking" ? <RankingHub platform={platform} bestScores={bestScores} leagues={leagues} playerName={playerName} avatarSrc={avatarSrc} showLeagues={!serverMode} /> : <>
             {/* v178: the profile card itself edits the name and avatar (the separate rows are gone). */}
             <button type="button" className="profileStrip" onClick={editProfile} aria-label={`${playerName} · ${t("profile.editProfile")}`}><span className="profileAvatar"><img src={smallAvatar(avatarSrc)} alt="" /></span><div><span className="profileNameRow"><strong>{playerName}</strong><span className="profileEdit" aria-hidden="true"><UiIcon name="pencil" size={10} /></span></span><span className="profileNet">{t("profile.netLabel")} <b className={netEarnings < 0 ? "negative" : ""} dir="ltr">{netEarnings > 0 ? "+" : ""}{euro(netEarnings)}</b></span></div></button>
 
@@ -2206,7 +2217,7 @@ export default function DemoApp() {
             <span className="gxTabGlyph"><UiIcon name="group" size={24} /></span><em className="gxTabLabel">{t("nav.group")}</em>
           </button>
           <button className={screen === "profile" ? "active" : ""} aria-current={screen === "profile" ? "page" : undefined} onClick={() => navigate("profile")}>
-            <span className="gxTabGlyph gxTabAvatar"><img src={smallAvatar(avatarSrc)} alt="" /></span><em className="gxTabLabel navName">{playerName || t("nav.avatar")}</em>
+            <span className="gxTabGlyph gxTabAvatar"><img src={smallAvatar(avatarSrc)} alt="" />{notices.unread > 0 && <i className="gxNoticeDot gxNoticeDotTab" aria-label={t("notice.bellUnread", { n: notices.unread })}>{notices.unread > 9 ? "9+" : notices.unread}</i>}</span><em className="gxTabLabel navName">{playerName || t("nav.avatar")}</em>
           </button>
         </nav>
       )}

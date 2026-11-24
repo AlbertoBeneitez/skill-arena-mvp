@@ -882,6 +882,15 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - Orb Burst y Stack Shift: más detalle.
 - Botones de jugar: borde mecanizado, bisel y un barrido de luz cada pocos segundos.
 
+## v230-saturn · Avisos dentro de la app (24-nov-2026)
+
+- [x] Avisos de buenas noticias escritos por el servidor: reto aceptado, te toca jugar, ganas una jornada o competición.
+- [x] Aviso arriba con el logo y una acción; sección «Avisos» en la pestaña del avatar con contador de no leídos.
+- [x] Ajustes: qué te avisamos y Dónde (App / Móvil).
+- [ ] Avisos al móvil (Web Push): necesita las claves VAPID que pone el propietario en Vercel.
+- [ ] Subir de liga y nuevo récord como animación en el momento (pedido el 20-nov).
+- [ ] «Rival encontrado» y «te toca en el relevo» cuando 1 vs 1 y Relevos jueguen con conexión (fase 2 de grupos).
+
 ## v229-saturn · Átomo con ratón, «Enviar juego» y Eliminatoria v2 (22-nov-2026)
 
 - [x] Átomo: botón izquierdo del ratón sube de órbita, derecho baja.
@@ -910,7 +919,7 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] B1: nombres que mezclan latín con cirílico o griego, rechazados.
 - [x] Simulador de bots en GitHub Actions (cada subida a `mobile-test` y cada noche).
 - [x] Logo aprobado y aplicado en v228. Estética retro: rechazada.
-- [ ] Avisos dentro de la app (tras aprobar el logo).
+- [x] Avisos dentro de la app: hechos en v230.
 - [ ] Información oculta por pasos (Solitaire primero), detección de comportamiento e identidad por fases.
 - [x] Decisiones: retención (90 días) y abandono en grupos (0 puntos), aplicadas en v228.
 

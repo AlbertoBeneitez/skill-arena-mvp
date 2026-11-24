@@ -6,7 +6,7 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228-saturn** y **v229-saturn** (la más reciente, contiene la anterior) están en sus ramas, sin subir: solo se sube con orden expresa del propietario |
+| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228**, **v229** y **v230-saturn** (la más reciente, contiene las anteriores) están en sus ramas, sin subir: solo se sube con orden expresa del propietario |
 | Último trabajo | Rama **v227-saturn**: seguridad fase 0 (C2, A1, A2, B1), simulador en GitHub Actions, propuesta de logo y estética retro |
 | Servicios a contratar | **[Documento vivo en Claude](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** (decisión del propietario; copia en [SERVICIOS_A_CONTRATAR.md](SERVICIOS_A_CONTRATAR.md)) |
 | Simulador de bots | `scripts/sim/` y `.github/workflows/sim-bots.yml` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
@@ -23,7 +23,9 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
    (21-nov); no aplicarla.
    **Subidas:** el propietario prohíbe subir nada que cueste dinero sin su orden (21-nov, en `CLAUDE.md`): ni
    `mobile-test` ni `main`. v228 espera en su rama.
-2. **Avisos dentro de la app** (tarea pedida el 20-nov): solo buenas noticias (rival encontrado o reto aceptado, tu turno,
+2. **Avisos dentro de la app: hechos en v230** ([releases/v230-saturn.md](releases/v230-saturn.md)). Pendiente: Web Push
+   (claves VAPID del propietario), animación de liga y récord, y los avisos de 1 vs 1 y Relevos con conexión. Texto original de la tarea:
+   solo buenas noticias (rival encontrado o reto aceptado, tu turno,
    ganas jornada o competición); subir de liga y récord son animación en el momento; ajuste «Dónde» con App y Móvil;
    logo en los avisos. Los avisos al móvil necesitan las claves VAPID, que pone el propietario en Vercel.
 3. **Información oculta por pasos** (aprobada el 20-nov): Solitaire primero (el servidor revela cada carta), después Tower,

@@ -116,6 +116,9 @@ export async function deleteAccount(pool: Pool, authKey: string): Promise<boolea
     );
     await c.query("UPDATE arena_group_members SET left_at = now() WHERE account_id = $1 AND left_at IS NULL", [id]);
     await c.query("DELETE FROM arena_play_counts WHERE account_id = $1", [id]); // v219: usage data goes with the account
+    // v230: notices and notice settings go with the account too.
+    await c.query("DELETE FROM arena_notifications WHERE account_id = $1", [id]);
+    await c.query("DELETE FROM arena_notification_settings WHERE account_id = $1", [id]);
     return true;
   });
 }
