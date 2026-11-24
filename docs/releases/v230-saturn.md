@@ -15,7 +15,7 @@ el momento, tarea aparte).
   propuesta no va en la cabecera: con cuatro controles, una quinta pieza encogía el nombre GALACTIC GAMES.
 - **Ajustes** (debajo de la lista): qué te avisamos (reto aceptado, te toca jugar, ganas) y Dónde: App / Móvil. «Móvil»
   aparece como no disponible hasta que el propietario ponga las claves de Web Push (VAPID) en Vercel.
-- **Servidor:** migración 019 (`arena_notifications`, `arena_notification_settings`), `lib/server/notifications.ts` y
+- **Servidor:** migración 020 (`arena_notifications`, `arena_notification_settings`), `lib/server/notifications.ts` y
   `GET/POST /api/notifications`. Los avisos los escribe el servidor en la misma transacción que decide el hecho
   (`lib/server/groups.ts`), tras un punto de guardado: un fallo del aviso nunca deshace ni bloquea la partida. Un aviso
   apagado no se guarda. Un mismo hecho no se avisa dos veces. Solo se guarda lo que el texto necesita (competición,
@@ -27,3 +27,7 @@ el momento, tarea aparte).
 
 Pruebas: `verify-groups` (quién recibe cada aviso, ninguno a los perdedores, uno por hecho, bandeja, marcar como leído,
 ajustes apagados, borrado con la cuenta). Revisión visual local del aviso y de la sección con avisos de muestra.
+
+**Coordinación con otra sesión:** la rama `feat/reloj-partidas-ocultas` (y las que salen de ella) ya usa la migración
+**019** (`019-command-attempt-clock.sql`). Por eso los avisos son la **020**: las migraciones se identifican por su
+número y dos 019 distintas chocarían al juntar las ramas. Cuando se junten, quedarán 019 y 020 en ese orden.

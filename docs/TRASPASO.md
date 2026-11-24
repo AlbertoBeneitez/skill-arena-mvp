@@ -23,7 +23,9 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
    (21-nov); no aplicarla.
    **Subidas:** el propietario prohíbe subir nada que cueste dinero sin su orden (21-nov, en `CLAUDE.md`): ni
    `mobile-test` ni `main`. v228 espera en su rama.
-2. **Avisos dentro de la app: hechos en v230** ([releases/v230-saturn.md](releases/v230-saturn.md)). Pendiente: Web Push
+2. **Migraciones en paralelo:** `feat/reloj-partidas-ocultas` (otra sesión) usa la **019**; los avisos de v230 son la
+   **020**. No reutilizar esos números al juntar ramas.
+3. **Avisos dentro de la app: hechos en v230** ([releases/v230-saturn.md](releases/v230-saturn.md)). Pendiente: Web Push
    (claves VAPID del propietario), animación de liga y récord, y los avisos de 1 vs 1 y Relevos con conexión. Texto original de la tarea:
    solo buenas noticias (rival encontrado o reto aceptado, tu turno,
    ganas jornada o competición); subir de liga y récord son animación en el momento; ajuste «Dónde» con App y Móvil;

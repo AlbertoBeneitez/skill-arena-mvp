@@ -1,5 +1,5 @@
 /**
- * v230 · In-app notices on the server (db/migrations/019-notifications.sql).
+ * v230 · In-app notices on the server (db/migrations/020-notifications.sql).
  *
  * The facts are decided elsewhere (lib/server/groups.ts: a challenge accepted, a matchday or competition starting, a
  * matchday or competition won); this module only files the notice for each person, in the same transaction and
