@@ -6,7 +6,7 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228**, **v229** y **v230-saturn** (la más reciente, contiene las anteriores) están en sus ramas, sin subir: solo se sube con orden expresa del propietario |
+| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228** a **v231-saturn** (la más reciente, contiene las anteriores) están en sus ramas, sin subir: solo se sube con orden expresa del propietario |
 | Último trabajo | Rama **v227-saturn**: seguridad fase 0 (C2, A1, A2, B1), simulador en GitHub Actions, propuesta de logo y estética retro |
 | Servicios a contratar | **[Documento vivo en Claude](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** (decisión del propietario; copia en [SERVICIOS_A_CONTRATAR.md](SERVICIOS_A_CONTRATAR.md)) |
 | Simulador de bots | `scripts/sim/` y `.github/workflows/sim-bots.yml` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
@@ -23,7 +23,9 @@ Para retomar el simulador en una máquina nueva: crear la base `skill_arena_sim`
    (21-nov); no aplicarla.
    **Subidas:** el propietario prohíbe subir nada que cueste dinero sin su orden (21-nov, en `CLAUDE.md`): ni
    `mobile-test` ni `main`. v228 espera en su rama.
-2. **Migraciones en paralelo:** `feat/reloj-partidas-ocultas` (otra sesión) usa la **019**; los avisos de v230 son la
+2. **Reglas de competición con entrada (propietario, 27-nov):** en `AGENTS.md` (misma semilla para todos, sin juegos de
+   azar, desempates por habilidad, reglas visibles antes de pagar). El Slot V4 **no** es juego de azar.
+3. **Migraciones en paralelo:** `feat/reloj-partidas-ocultas` (otra sesión) usa la **019**; los avisos de v230 son la
    **020**. No reutilizar esos números al juntar ramas.
 3. **Avisos dentro de la app: hechos en v230** ([releases/v230-saturn.md](releases/v230-saturn.md)). Pendiente: Web Push
    (claves VAPID del propietario), animación de liga y récord, y los avisos de 1 vs 1 y Relevos con conexión. Texto original de la tarea:

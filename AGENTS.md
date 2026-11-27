@@ -110,6 +110,21 @@ V2 receipt semantics and never treat a browser receipt as a financial instructio
 
 Never downgrade a `VERIFIED` game to client-trusted scoring.
 
+## Competitions with an entry fee: chance never decides (owner, 27 November 2026)
+Under the Spanish gambling law (Ley 13/2011) paying to play + chance in the result + a money prize is regulated
+gambling; when chance does not decide the result it is not. Every mode where players pay to enter must therefore keep:
+
+1. **Same seed for everyone.** Every participant of a competition or match plays the same game version, scenario and
+   seed (duels, groups, leagues, eliminatorias). Randomness may exist, but it must be identical for all.
+2. **No chance games.** Games marked `playKind: "chance"` in `lib/games.ts` (today only Roulette) stay in free mode
+   (`playableForMoney`). **Slot is not a chance game** (owner, v192 and 27-nov-2026): despite the name, V4 shows the
+   reels and the player chooses each move (`REEL_POSITIONS_NOT_RNG`; spec in `docs/especificaciones/galactic-slot.md`).
+   Do not describe or treat it as a slot machine of chance.
+3. **Ties broken by skill** (time, precision, fewer moves), never by draw or lot.
+4. **Rules published before playing**: scoring, ties and prizes visible before the player pays.
+
+Before charging the first real entry, the owner plans a written query to the DGOJ with this model.
+
 ## Versioning
 Published competitive behavior is immutable.
 
