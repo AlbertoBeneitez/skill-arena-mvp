@@ -28,8 +28,10 @@ export async function addNotices(c: PoolClient, drafts: readonly NoticeDraft[]):
     for (const d of drafts) {
       if (!(prefs.get(d.accountId) ?? DEFAULT_NOTICE_SETTINGS).topics[topicOf(d.kind)]) continue;
       await c.query(
-        `INSERT INTO arena_notifications(notification_id, account_id, kind, data, dedupe_key)
-         SELECT $1, $2, $3, $4::jsonb, $5 WHERE EXISTS (SELECT 1 FROM arena_accounts WHERE account_id = $2 AND deleted_at IS NULL)
+        // clock_timestamp(), not now(): several notices of one transaction keep the order of the facts (matchday won,
+        // then competition won), so the inbox lists them newest first correctly.
+        `INSERT INTO arena_notifications(notification_id, account_id, kind, data, dedupe_key, created_at)
+         SELECT $1, $2, $3, $4::jsonb, $5, clock_timestamp() WHERE EXISTS (SELECT 1 FROM arena_accounts WHERE account_id = $2 AND deleted_at IS NULL)
          ON CONFLICT (account_id, dedupe_key) DO NOTHING`,
         [randomUUID(), d.accountId, d.kind, JSON.stringify(d.data), d.key.slice(0, 200)],
       );
