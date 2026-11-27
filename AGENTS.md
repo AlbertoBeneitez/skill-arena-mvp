@@ -123,7 +123,8 @@ gambling; when chance does not decide the result it is not. Every mode where pla
 3. **Ties broken by skill** (time, precision, fewer moves), never by draw or lot.
 4. **Rules published before playing**: scoring, ties and prizes visible before the player pays.
 
-Before charging the first real entry, the owner plans a written query to the DGOJ with this model.
+Whether and when to consult the DGOJ is the owner's decision (27-nov-2026: not for now). Do not propose it again
+unless he brings it up.
 
 ## Versioning
 Published competitive behavior is immutable.
