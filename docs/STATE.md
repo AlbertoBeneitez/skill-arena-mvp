@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 24 de noviembre de 2026 · base `mobile-test` en v227-saturn (app 2.27); v228 a v231 en sus ramas (v231 contiene las anteriores), sin subir: el propietario no quiere subidas con coste sin su orden (21-nov).
+Actualizado: 27 de noviembre de 2026 · base `mobile-test` en v227-saturn (app 2.27); v228 a v231 en sus ramas (v231 contiene las anteriores), sin subir: el propietario no quiere subidas con coste sin su orden (21-nov).
 
 > **Traspaso (21-nov):** dónde se quedó el trabajo, respuestas y decisiones pendientes en [TRASPASO.md](TRASPASO.md).
 >
