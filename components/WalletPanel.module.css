@@ -5,7 +5,7 @@
   --ink: #eef0f2; --mute: #8f959c; --dim: #5a5f65;
   --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .14); --field: #08090a;
   --ice: #9fe6ff; --ice-hi: #d8f6ff;
-  --accent: #d2df3a; --accent-hi: #e2ec68; --on-accent: #151903;
+  --accent: #8fe2d8; --accent-hi: #b6f4ec; --on-accent: #06201d; /* v232: one action colour app-wide */
   --amber: #f0b23a; --amber-hi: #f7c75c; --on-amber: #1d1303;
 }
 .scrim { position: fixed; inset: 0; z-index: 70; background: rgba(0, 0, 0, .5); }

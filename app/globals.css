@@ -9185,7 +9185,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
    ice segmented control, ice data readouts, the accent kept for action only. */
 .appShell .avatarScreen {
   --av-ink: #eef0f2; --av-mute: #8f959c; --av-dim: #5a5f65; --av-line: rgba(255,255,255,.07); --av-line-2: rgba(255,255,255,.14);
-  --av-ice: #9fe6ff; --av-ice-hi: #d8f6ff; --av-accent: #d2df3a;
+  --av-ice: #9fe6ff; --av-ice-hi: #d8f6ff; --av-accent: #8fe2d8;
   --av-foil-text: linear-gradient(180deg, #f1fbff, #9fe6ff);
   /* v175: no corner marks (the owner removed the two-segment corners). */
   --av-surface:
@@ -9238,7 +9238,7 @@ main.appShell:has(> .gameScreen), main.appShell:has(.gameScreen) { padding-botto
 /* v178 · Avatar › Perfil: the profile card is the button that edits name and avatar (Ajustes lives in the header gear). */
 .appShell .avatarScreen button.profileStrip { grid-template-columns: 52px minmax(0, 1fr) !important; width: 100%; font: inherit; text-align: start; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .appShell .avatarScreen button.profileStrip:active { transform: translateY(1px); }
-.appShell .avatarScreen button.profileStrip:focus-visible { outline: 2px solid var(--av-accent, #d2df3a); outline-offset: 2px; }
+.appShell .avatarScreen button.profileStrip:focus-visible { outline: 2px solid var(--av-accent, #8fe2d8); outline-offset: 2px; }
 /* v224 (owner): a small, quiet grey pencil right after the name instead of a yellow button at the side. */
 .appShell .avatarScreen .profileStrip .profileAvatar { position: relative; width: 52px; height: 52px; display: block; }
 .appShell .avatarScreen .profileStrip .profileAvatar img { width: 52px; height: 52px; }
@@ -9326,9 +9326,39 @@ p.myGroupsEmpty { margin: 0; cursor: default; }
 /* v230 · Unread notices: a small green count next to «Avisos» in the avatar tab and on the avatar in the tab bar. */
 .gxNoticeDot {
   display: inline-grid; place-items: center; min-width: 18px; height: 18px; margin-inline-start: 6px; padding: 0 5px; border-radius: 9px;
-  font: 800 11px/1 var(--gx-ui, system-ui); font-style: normal; color: #06130b; background: #7ee2a3; vertical-align: 1px;
+  font: 800 11px/1 var(--gx-ui, system-ui); font-style: normal; color: #06130b; background: #8fe2d8; vertical-align: 1px;
 }
 .gxTabAvatar { position: relative; overflow: visible !important; }
 .gxNoticeDot.gxNoticeDotTab { position: absolute; top: -5px; right: -9px; margin: 0; box-shadow: 0 0 0 2px #0b0c10; }
 .appShell .avatarScreen .avatarSections:has(> button:nth-child(3)) { grid-template-columns: 1fr 1fr 1fr; }
 .appShell .avatarScreen .avatarSections button[aria-pressed="true"] .gxNoticeDot { background: #1f8a4c; color: #fff; }
+
+/* ======================================================================================================
+   v232 · Calmer moves between screens (owner, 27-nov-2026: «no puede haber muchos cambios de color de una pantalla a
+   otra; a poder ser, una transición sutil»).
+   - One action colour everywhere: the welcome mint (also the tab bar). Gold only for money. See the module files.
+   - The chosen section in the avatar tab is a mint-tinted chip, not a white block.
+   - Every screen fades in (opacity only, so fixed layers inside keep their place); nothing moves when the system
+     asks for reduced motion.
+   ====================================================================================================== */
+.appShell .avatarScreen :is(.avatarSections button[aria-pressed="true"]) {
+  background: rgba(143, 226, 216, .14) !important; color: #dff8f4 !important;
+  box-shadow: inset 0 0 0 1px rgba(143, 226, 216, .55) !important;
+}
+.appShell .avatarScreen .avatarSections button[aria-pressed="true"] .gxNoticeDot { background: #8fe2d8; color: #06201d; }
+@keyframes gxScreenIn { from { opacity: 0; } }
+main.appShell, main.onboarding.gxStage { animation: gxScreenIn .32s ease-out both; }
+.appShell .appBody:not(.gameBody) > * { animation: gxScreenIn .26s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  main.appShell, main.onboarding.gxStage, .appShell .appBody:not(.gameBody) > * { animation: none; }
+}
+
+/* v232 · Avatar picker centred on the screen (owner): the title stays on top and the 4 × 4 grid sits in the middle of
+   the space left, with the same margin on both sides; on a wide frame it keeps a phone width. */
+.galacticAvatarSetup .avatarMenu.gxAvatarSheet { align-items: center; }
+.galacticAvatarSetup .avatarMenu.gxAvatarSheet > .gxSheetHead { width: 100%; max-width: 520px; }
+.galacticAvatarSetup .avatarMenuGrid.gxAvatarGrid { width: 100%; max-width: 520px; margin: auto 0 !important; }
+/* v232: the picker covers the screen fully (no logo or button showing through), and settings headings use the
+   same light ink as the other screens' headings instead of gold (gold is for money). */
+.galacticAvatarSetup .avatarMenu.gxAvatarSheet { background: #09090b; }
+.settingsGroup h2 { color: #e6e9ec; }

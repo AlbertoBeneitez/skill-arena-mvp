@@ -1,5 +1,5 @@
 /* v178 · Ranking picker (Avatar › Ranking), in the Avatar tab's Telemetría look: carbon field, citron accent. */
-.picker { --acc: #d2df3a; --ink: #eef0f2; --mute: #9aa0a8; --line: rgba(255, 255, 255, .09); --line2: rgba(255, 255, 255, .16); --field: #0b0c0e; }
+.picker { --acc: #8fe2d8; --ink: #eef0f2; --mute: #9aa0a8; --line: rgba(255, 255, 255, .09); --line2: rgba(255, 255, 255, .16); --field: #0b0c0e; }
 .field {
   width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 14px 0 16px;
   border-radius: 10px; border: 1px solid var(--line2); background: var(--field); color: var(--ink);

@@ -4,7 +4,7 @@ Fuente única del estado del producto. Prevalece sobre `PRODUCT_BACKLOG_STATUS.m
 (congelado en v98) y sobre las notas de versión antiguas. Cada pull request que
 cambie algo de lo que aparece aquí lo actualiza.
 
-Actualizado: 27 de noviembre de 2026 · base `mobile-test` en v227-saturn (app 2.27); v228 a v231 en sus ramas (v231 contiene las anteriores), sin subir: el propietario no quiere subidas con coste sin su orden (21-nov).
+Actualizado: 27 de noviembre de 2026 · base `mobile-test` en **v232-saturn** (app 2.32), subida por orden expresa del propietario (27-nov); contiene v228 a v231.
 
 > **Traspaso (21-nov):** dónde se quedó el trabajo, respuestas y decisiones pendientes en [TRASPASO.md](TRASPASO.md).
 >
@@ -93,6 +93,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Avatar centrado y un solo color de acción (27 de noviembre, v232):** cuadrícula de avatares centrada, menta como único color de acción (dorado solo para dinero) y fundido sutil entre pantallas. [Notas](releases/v232-saturn.md).
 - [x] **Reglas de competición con entrada (27 de noviembre, v231, solo documentación):** misma semilla para todos, sin juegos de azar (solo Roulette; el Slot V4 no es de azar), desempates por habilidad y reglas visibles antes de pagar. En `AGENTS.md`.
 - [x] **Avisos dentro de la app (24 de noviembre, v230, app 2.30):** solo buenas noticias (reto aceptado, te toca jugar, ganas jornada o competición), aviso arriba con el logo y sección «Avisos» en la pestaña del avatar con sus ajustes (App / Móvil; Móvil espera las claves VAPID). Migración 020; borrado a los 30 días.
 - [x] **Átomo con ratón, «Enviar juego» y Eliminatoria v2 (22 de noviembre, v229, app 2.29):** botón izquierdo sube y derecho baja; «Enviar juego» centrado y más fino; Eliminatoria entre grupos con 5 jornadas, puntos por puesto y uno fuera por jornada; formulario con Liga (tres modalidades) o Eliminatoria.

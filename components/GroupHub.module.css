@@ -550,8 +550,10 @@
   --gold: var(--accent); --gold-hi: var(--ice-hi); --gold-ink: var(--on-accent);
   --foil: linear-gradient(180deg, var(--accent-hi), var(--accent)); --foil-text: linear-gradient(180deg, #f1fbff, var(--ice));
   --grain: none;
-  /* v173: the owner's accent — the amber variant, made greener (citron). */
-  --accent: #d2df3a; --accent-hi: #e2ec68; --on-accent: #151903;
+  /* v173: the owner's accent — the amber variant, made greener (citron).
+     v232 (owner, 27-nov: few colour changes between screens): the app's one action colour, the mint of the welcome
+     button and the tab bar, on every screen. Gold stays only for money. */
+  --accent: #8fe2d8; --accent-hi: #b6f4ec; --on-accent: #06201d;
 }
 
 /* Carbon panels: engineering grid and a hairline lit along the top (v175: no corner marks). */

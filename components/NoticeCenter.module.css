@@ -4,7 +4,7 @@
 .toast {
   position: fixed; z-index: 80; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 50%; transform: translateX(-50%);
   width: min(380px, calc(100vw - 20px)); display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px;
-  padding: 10px 8px 10px 10px; border-radius: 14px; border: 1px solid rgba(126, 226, 163, .45);
+  padding: 10px 8px 10px 10px; border-radius: 14px; border: 1px solid rgba(143, 226, 216, .45);
   background: linear-gradient(180deg, rgba(22, 28, 25, .97), rgba(12, 15, 14, .97));
   box-shadow: 0 18px 40px -12px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .05);
   color: #eef0f2; animation: drop .22s ease-out;
@@ -15,9 +15,9 @@
 .toastText { display: grid; gap: 2px; min-width: 0; }
 .toastText strong { font: 700 15px/1.25 var(--gx-ui, system-ui); }
 .toastText span { color: #a8b0b8; font-size: 13.5px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.up { color: #7ee2a3; font-size: 11px; margin-right: 6px; position: relative; top: -1px; }
+.up { color: #8fe2d8; font-size: 11px; margin-right: 6px; position: relative; top: -1px; }
 .toastAct {
-  min-height: 36px; padding: 0 14px; border-radius: 999px; border: 0; color: #06130b; background: #7ee2a3;
+  min-height: 36px; padding: 0 14px; border-radius: 999px; border: 0; color: #06130b; background: #8fe2d8;
   font: 800 13.5px/1 var(--gx-ui, system-ui); letter-spacing: .02em;
 }
 .toastClose { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #8f959c; }
@@ -30,7 +30,7 @@
   width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 4px 8px; text-align: start;
   padding: 10px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .06); background: rgba(255, 255, 255, .02); color: inherit;
 }
-.item.unread { border-color: rgba(126, 226, 163, .35); background: rgba(126, 226, 163, .06); box-shadow: inset 2px 0 0 #7ee2a3; }
+.item.unread { border-color: rgba(143, 226, 216, .35); background: rgba(143, 226, 216, .06); box-shadow: inset 2px 0 0 #8fe2d8; }
 .item .up { margin: 3px 0 0; }
 .itemText { display: grid; gap: 2px; min-width: 0; }
 .itemText strong { font: 700 15px/1.25 var(--gx-ui, system-ui); }
@@ -44,7 +44,7 @@
 .row:disabled { color: #5a5f65; }
 .switch { flex: none; width: 40px; height: 24px; border-radius: 12px; background: #2a2d31; position: relative; transition: background .15s; }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #8f959c; transition: transform .15s, background .15s; }
-.row[aria-checked="true"] .switch { background: rgba(126, 226, 163, .35); }
-.row[aria-checked="true"] .switch::after { transform: translateX(16px); background: #7ee2a3; }
+.row[aria-checked="true"] .switch { background: rgba(143, 226, 216, .35); }
+.row[aria-checked="true"] .switch::after { transform: translateX(16px); background: #8fe2d8; }
 .hint { margin: 0 2px 4px; color: #6c727a; font-size: 13px; line-height: 1.4; }
 :is(.toastAct, .toastClose, .item, .row):focus-visible { outline: 2px solid #9fe6ff; outline-offset: 2px; }

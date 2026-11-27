@@ -1497,3 +1497,10 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
   - publicar los juegos aprobados en el catálogo (primero en entrenamiento);
   - paquetes de más de 4 MB mediante un almacén de archivos;
   - el acuerdo completo, revisado por un abogado.
+
+## v232-saturn · Avatar centrado y transición sutil (27-nov-2026)
+
+- [x] Cuadrícula de «Elige avatar» centrada y fondo opaco.
+- [x] Un solo color de acción (menta) en todas las pantallas; dorado solo para dinero.
+- [x] Fundido sutil al cambiar de pantalla, respetando «reducir movimiento».
+- [ ] Revisión del propietario en el móvil.

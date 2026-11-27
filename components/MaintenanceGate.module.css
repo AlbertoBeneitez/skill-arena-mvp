@@ -9,6 +9,6 @@
 .card p { margin: 0; font-size: 17px; line-height: 1.5; color: #d7e6f3; }
 .card button {
   min-height: 46px; margin-top: 6px; padding: 0 22px; border: 0; border-radius: 999px; cursor: pointer;
-  background: #d2df3a; color: #121214; font-weight: 800; letter-spacing: 0.04em;
+  background: #8fe2d8; color: #121214; font-weight: 800; letter-spacing: 0.04em;
 }
 .card button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }

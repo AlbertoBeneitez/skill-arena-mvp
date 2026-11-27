@@ -6,7 +6,7 @@ Léelo después de `docs/STATE.md`. Cuenta dónde se quedó el trabajo, qué est
 
 | Qué | Dónde |
 |---|---|
-| App en el móvil | `mobile-test` = **v227-saturn** (app 2.27). **v228** a **v231-saturn** (la más reciente, contiene las anteriores) están en sus ramas, sin subir: solo se sube con orden expresa del propietario |
+| App en el móvil | `mobile-test` = **v232-saturn** (app 2.32, contiene v228–v231), subida el 27-nov por orden del propietario. Solo se sube con orden expresa suya |
 | Último trabajo | Rama **v227-saturn**: seguridad fase 0 (C2, A1, A2, B1), simulador en GitHub Actions, propuesta de logo y estética retro |
 | Servicios a contratar | **[Documento vivo en Claude](https://claude.ai/artifact/BWap6G5AZ3i6ioQiF9wuPP)** (decisión del propietario; copia en [SERVICIOS_A_CONTRATAR.md](SERVICIOS_A_CONTRATAR.md)) |
 | Simulador de bots | `scripts/sim/` y `.github/workflows/sim-bots.yml` — guía en [SIMULADOR_BOTS.md](SIMULADOR_BOTS.md) |
