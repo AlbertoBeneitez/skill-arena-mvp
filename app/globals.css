@@ -9362,3 +9362,13 @@ main.appShell, main.onboarding.gxStage { animation: gxScreenIn .32s ease-out bot
    same light ink as the other screens' headings instead of gold (gold is for money). */
 .galacticAvatarSetup .avatarMenu.gxAvatarSheet { background: #09090b; }
 .settingsGroup h2 { color: #e6e9ec; }
+
+/* v233 · Avatar setup (owner, 28-nov-2026: «la foto donde se elige el avatar tiene que estar mejor encuadrada»): the
+   portrait sat at the bottom of the free space, right on the buttons, with a big empty band under the title. It now
+   takes the space between the title and the buttons and sits in its middle, a little larger, capped by the width. */
+.gxAvatarSetup.avatarSetupMinimal .avatarPortraitWrap { flex: 1 1 auto; margin: 0; padding: 12px 0; display: grid; place-items: center; }
+.gxAvatarSetup.avatarSetupMinimal .avatarPortrait {
+  width: min(70vw, clamp(150px, 34dvh, 290px));
+  height: min(70vw, clamp(150px, 34dvh, 290px));
+}
+.gxAvatarActions { margin-top: 8px; }

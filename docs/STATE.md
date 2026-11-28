@@ -93,6 +93,7 @@ para replay). Fuente de verdad: `lib/games.ts`.
   - nada puede solaparse en ningún momento: los botones van fuera del tablero y `scripts/qa-overlap.cjs` lo comprueba.
 - [x] **Ruleta V16 y bordes (1 de noviembre, v136):** la bola se lanza de verdad desde el lanzador y entra con su velocidad (sin círculo forzado ni velocidad mínima); bordes de tarjeta con un color por categoría.
 - [x] **Pinball V9 (1 de noviembre, v137):** bloqueo y multibola de tres bolas, jackpots crecientes, súper jackpot y modos de 20 s.
+- [x] **Foto del avatar centrada (28 de noviembre, v233, en su rama):** la foto de la pantalla de avatar queda en el centro del espacio libre. [Notas](releases/v233-saturn.md).
 - [x] **Avatar centrado y un solo color de acción (27 de noviembre, v232):** cuadrícula de avatares centrada, menta como único color de acción (dorado solo para dinero) y fundido sutil entre pantallas. [Notas](releases/v232-saturn.md).
 - [x] **Reglas de competición con entrada (27 de noviembre, v231, solo documentación):** misma semilla para todos, sin juegos de azar (solo Roulette; el Slot V4 no es de azar), desempates por habilidad y reglas visibles antes de pagar. En `AGENTS.md`.
 - [x] **Avisos dentro de la app (24 de noviembre, v230, app 2.30):** solo buenas noticias (reto aceptado, te toca jugar, ganas jornada o competición), aviso arriba con el logo y sección «Avisos» en la pestaña del avatar con sus ajustes (App / Móvil; Móvil espera las claves VAPID). Migración 020; borrado a los 30 días.

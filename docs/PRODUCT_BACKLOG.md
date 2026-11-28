@@ -1504,3 +1504,8 @@ Detalle: [releases/v125-saturn.md](releases/v125-saturn.md).
 - [x] Un solo color de acción (menta) en todas las pantallas; dorado solo para dinero.
 - [x] Fundido sutil al cambiar de pantalla, respetando «reducir movimiento».
 - [ ] Revisión del propietario en el móvil.
+
+## v233-saturn · Foto del avatar centrada (28-nov-2026)
+
+- [x] Foto de la pantalla de avatar centrada entre el título y los botones.
+- [ ] Ranking de jugadores: hoy solo existe el de beneficio neto en euros (liquidaciones reales), vacío hasta que haya dinero real; las partidas gratis y las de los bots no entran. Decisión del propietario pendiente.
